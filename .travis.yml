@@ -1,0 +1,36 @@
+jobs:
+  include:
+    - stage: Tests
+      name: "ESLint"
+      language: node_js
+      node_js: 12
+      cache:
+        directories:
+          - ~/.npm
+          - ~/.cache
+          - node_modules # NPM packages
+
+      install:
+        - npm install --silent --unsafe-perm
+
+      script:
+        - npm run test:lint
+
+    - stage: Tests
+      name: "Functionnal Tests"
+      language: node_js
+      node_js: 12
+      cache:
+        directories:
+          - ~/.npm
+          - ~/.cache
+          - node_modules # NPM packages
+
+      install:
+        - npm install --silent --unsafe-perm
+        - npm run build
+
+      script:
+        - npx kourou app:start-services
+        - bash features/run-kuzzle.sh
+        - npm run test:functional

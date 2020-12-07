@@ -1,0 +1,55 @@
+{
+  "name": "kuzzle-plugin-device-management",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "scripts": {
+    "npm:docker": "docker-compose run kuzzle npm",
+    "install:docker": "npm run npm:docker install kuzzle",
+    "dev:docker": "docker-compose up",
+    "dev": "NODE_ENV=development npx nodemon --ignore features --ext 'js,json,ts' --inspect=0.0.0.0:9229 --exec node -r ts-node/register app.ts",
+    "test": "npm run test:lint && npm run test:unit && npm run test:functional",
+    "test:unit": "mocha",
+    "test:functional": "cucumber-js --exit --fail-fast",
+    "test:lint": "eslint ./lib --ext .ts --config .eslintrc.json",
+    "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
+    "build": "tsc --build tsconfig.json",
+    "clean": "npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
+    "package:create": "npm run build && npm pack"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bluebird": "^3.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.10",
+    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/parser": "^4.9.0",
+    "cucumber": "^6.0.5",
+    "lodash": "^4.17.20",
+    "eslint": "^7.14.0",
+    "eslint-friendly-formatter": "^4.0.1",
+    "eslint-loader": "^4.0.2",
+    "mocha": "8.2.1",
+    "mock-require": "^3.0.3",
+    "nodemon": "^2.0.6",
+    "rewire": "^5.0.0",
+    "should": "13.2.3",
+    "should-sinon": "0.0.6",
+    "sinon": "^9.2.1",
+    "ts-node": "^9.0.0",
+    "kuzzle-sdk": "^7.4.3",
+    "typescript": "^4.1.2",
+    "kuzzle": "^2.7.2"
+  },
+  "peerDependencies": {
+    "kuzzle": "^2.7.2"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "lib/**/*.json"
+  ]
+}
