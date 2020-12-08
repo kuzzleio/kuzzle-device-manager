@@ -134,7 +134,7 @@ export class SensorController extends NativeController {
   /**
    * Unlink a sensor.
    * Will also unlink the asset.
-   * If it fails to unlink the asset then it will unlink the sensor.
+   * If it fails to unlink the asset then it will link the sensor again.
    * 
    * @param request 
    */
