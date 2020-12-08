@@ -22,6 +22,11 @@ export class SensorController extends NativeController {
     return this.context['kuzzle'];
   }
 
+  /**
+   * Constructor
+   * 
+   * @param context 
+   */
   constructor (context) {
     super(context['kuzzle']);
 
@@ -55,6 +60,13 @@ export class SensorController extends NativeController {
     };
   }
 
+  /**
+   * Link a sensor to an asset.
+   * Will also link the asset to the sensor.
+   * If it fails to link the asset then it will unlink the sensor.
+   * 
+   * @param request 
+   */
   async link(request: KuzzleRequest) {
     const index = this.getIndex(request);
     const assetId = this.getBodyString(request, 'assetId');
@@ -119,6 +131,13 @@ export class SensorController extends NativeController {
     return res;
   }
 
+  /**
+   * Unlink a sensor.
+   * Will also unlink the asset.
+   * If it fails to unlink the asset then it will unlink the sensor.
+   * 
+   * @param request 
+   */
   async unlink(request: KuzzleRequest) {
     const index = this.getIndex(request);
     const sensorId = this.getId(request);

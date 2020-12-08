@@ -10,12 +10,21 @@ export class DeviceManagement extends Plugin {
   private assetController: AssetController;
   private sensorController: SensorController;
 
+  /**
+   * Constructor
+   */
   constructor () {
     super({
       kuzzleVersion: '>=2.8.0 <3'
     });
   }
 
+  /**
+   * Init the plugin
+   * 
+   * @param config 
+   * @param context 
+   */
   async init (config: JSONObject, context: PluginContext) {
     this.config = config;
     this.context = context;

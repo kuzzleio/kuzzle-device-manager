@@ -17,6 +17,11 @@ export class CRUDService {
     this.controllerContext = controllerContext;
   }
 
+  /**
+   * Create an asset or a sensor depending on the collection.
+   * 
+   * @param request 
+   */
   async create(request: KuzzleRequest) {
     const index = this.controllerContext.getIndex(request);
     const asset = this.controllerContext.getBody(request);
@@ -35,6 +40,11 @@ export class CRUDService {
     return res;
   }
 
+  /**
+   * Delete an asset or a sensor depending on the collection.
+   * 
+   * @param request 
+   */
   async delete(request: KuzzleRequest) {
     const index = this.controllerContext.getIndex(request);
     const id = this.controllerContext.getId(request);
@@ -60,6 +70,11 @@ export class CRUDService {
     return res;
   }
 
+  /**
+   * List assets or a sensors depending on the collection.
+   * 
+   * @param request 
+   */
   async list(request: KuzzleRequest) {
     const index = this.controllerContext.getIndex(request);
     const searchParams = this.controllerContext.getSearchParams(request);

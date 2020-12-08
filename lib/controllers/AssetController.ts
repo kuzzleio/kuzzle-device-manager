@@ -22,6 +22,11 @@ export class AssetController extends NativeController {
     return this.context['kuzzle'];
   }
 
+  /**
+   * Constructor
+   * 
+   * @param context 
+   */
   constructor(context) {
     super(context['kuzzle']);
 
@@ -55,6 +60,13 @@ export class AssetController extends NativeController {
     };
   }
 
+  /**
+   * Link an asset to a sensor.
+   * Will also link the sensor to the asset.
+   * If it fails to link the sensor then it will unlink the asset.
+   * 
+   * @param request 
+   */
   async link(request: KuzzleRequest) {
     const index = this.getIndex(request);
     const assetId = this.getId(request);
@@ -119,6 +131,13 @@ export class AssetController extends NativeController {
     return res;
   }
 
+  /**
+   * Unlink an asset.
+   * Will also unlink the sensor.
+   * If it fails to unlink the sensor then it will unlink the asset.
+   * 
+   * @param request 
+   */
   async unlink(request: KuzzleRequest) {
     const index = this.getIndex(request);
     const assetId = this.getId(request);
