@@ -1,13 +1,13 @@
-import { Backend, KuzzleRequest } from 'kuzzle';
+import { Backend, KuzzleRequest } from '../kuzzle';
 import { DeviceManagement } from './lib/DeviceManagement';
 
 const app = new Backend('kuzzle');
 
-const DeviceManagement = new DeviceManagement();
+const deviceManagement = new DeviceManagement();
 
-app.plugin.use(DeviceManagement);
+app.plugin.use(deviceManagement);
 
-app.hook.register('request:onError', (request: KuzzleRequest) => {
+app.hook.register('request:onError', async (request: KuzzleRequest) => {
   app.log.error(request.error);
 });
 

@@ -1,10 +1,18 @@
 module.exports = {
   iot: {
-    devices: {
-      properties: {}
+    asset: {
+      properties: {
+        sensorId: {
+          type: "keyword"
+        }
+      }
     },
-    alarms: {
-      properties: {}
+    sensor: {
+      properties: {
+        assetId: {
+          type: "keyword"
+        }
+      }
     }
   }
 };
