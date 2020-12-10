@@ -1,4 +1,4 @@
-import { Backend, KuzzleRequest } from '../kuzzle';
+import { Backend, KuzzleRequest } from 'kuzzle';
 import { DeviceManagement } from './lib/DeviceManagement';
 
 const app = new Backend('kuzzle');

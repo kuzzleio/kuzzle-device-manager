@@ -2,7 +2,7 @@ import {
   Plugin,
   PluginContext,
   JSONObject
-} from '../../kuzzle';
+} from 'kuzzle';
 import { AssetController } from './controllers/AssetController';
 import { SensorController } from './controllers/SensorController';
 

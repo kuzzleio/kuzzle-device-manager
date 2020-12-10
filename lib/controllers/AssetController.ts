@@ -1,20 +1,13 @@
 import {
   ControllerDefinition,
   KuzzleRequest,
-  PluginContext,
-  PreconditionError
-} from '../../../kuzzle';
+  PreconditionError,
+} from 'kuzzle';
 
-// import { NativeController } from '../../node_modules/kuzzle/lib/api/controller/base.js'
-import { NativeController } from '../../../kuzzle/lib/api/controller/base.js';
-import { CRUDService } from '../services/CRUDService';
+import { CRUDController } from './CRUDController';
 
-export class AssetController extends NativeController {
+export class AssetController extends CRUDController {
   [key: string]: any;
-
-  private context: PluginContext;
-
-  private crudService: CRUDService;
 
   public definition: ControllerDefinition;
 
@@ -28,24 +21,22 @@ export class AssetController extends NativeController {
    * @param context 
    */
   constructor(context) {
-    super(context['kuzzle']);
+    super(context, 'asset');
 
     this.context = context;
-
-    this.crudService = new CRUDService(context, this, 'asset');
 
     this.definition = {
       actions: {
         create: {
-          handler: this.crudService.create.bind(this.crudService),
+          handler: this.create.bind(this),
           http: [{ verb: 'post', path: 'device-manager/asset/create' }],
         },
         delete: {
-          handler: this.crudService.delete.bind(this.crudService),
+          handler: this.delete.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/asset' }],
         },
         list: {
-          handler: this.crudService.list.bind(this.crudService),
+          handler: this.list.bind(this),
           http: [{ verb: 'get', path: 'device-manager/asset' }],
         },
         link: {
@@ -77,7 +68,7 @@ export class AssetController extends NativeController {
       'sensor',
       {
         query: {
-          match: {
+          term: {
             _id: sensorId,
           },
         },
@@ -147,7 +138,7 @@ export class AssetController extends NativeController {
       'sensor',
       {
         query: {
-          match: {
+          term: {
             assetId
           },
         },

@@ -1,22 +1,15 @@
 import {
   ControllerDefinition,
   KuzzleRequest,
-  PluginContext,
-  PreconditionError
-} from '../../../kuzzle';
+  PreconditionError,
+} from 'kuzzle';
 
-// import { NativeController } from '../../node_modules/kuzzle/lib/api/controller/base.js'
-import { NativeController } from '../../../kuzzle/lib/api/controller/base.js'
-import { CRUDService } from '../services/CRUDService';
+import { CRUDController } from './CRUDController';
 
-export class SensorController extends NativeController {
+export class SensorController extends CRUDController {
   [key: string]: any;
 
-  private context: PluginContext;
-
-  private crudService: CRUDService;
-
-  public definition: ControllerDefinition
+  public definition: ControllerDefinition;
 
   get kuzzle (): any {
     return this.context['kuzzle'];
@@ -27,25 +20,23 @@ export class SensorController extends NativeController {
    * 
    * @param context 
    */
-  constructor (context) {
-    super(context['kuzzle']);
+  constructor(context) {
+    super(context, 'sensor');
 
     this.context = context;
-
-    this.crudService = new CRUDService(context, this, 'sensor');
 
     this.definition = {
       actions: {
         create: {
-          handler: this.crudService.create.bind(this.crudService),
+          handler: this.create.bind(this),
           http: [{ verb: 'post', path: 'device-manager/sensor/create' }]
         },
         delete: {
-          handler: this.crudService.delete.bind(this.crudService),
+          handler: this.delete.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/sensor' }]
         },
         list: {
-          handler: this.crudService.list.bind(this.crudService),
+          handler: this.list.bind(this),
           http: [{ verb: 'get', path: 'device-manager/sensor' }]
         },
         link: {
@@ -77,7 +68,7 @@ export class SensorController extends NativeController {
       'asset',
       {
         query: {
-          match: {
+          term: {
             _id: assetId,
           },
         },
@@ -147,7 +138,7 @@ export class SensorController extends NativeController {
       'asset',
       {
         query: {
-          match: {
+          term: {
             sensorId
           },
         },
