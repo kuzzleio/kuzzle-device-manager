@@ -13,6 +13,26 @@ module.exports = {
           type: "keyword"
         }
       }
+    },
+    measurement: {
+      properties: {
+        metadata: {
+          properties: {
+            sensorId: {
+              type: "keyword"
+            },
+            assetId: {
+              type: "keyword"
+            }
+          }
+        },
+        type: {
+          type: "keyword"
+        },
+        value: {
+          type: "keyword"
+        }
+      }
     }
   }
 };
