@@ -74,11 +74,11 @@ export class CRUDController extends NativeController {
   }
 
   /**
-   * List assets or a sensors depending on the collection.
+   * search assets or sensors depending on the collection.
    * 
    * @param request 
    */
-  list(request: KuzzleRequest) {
+  search(request: KuzzleRequest) {
     const index = this.getIndex(request);
     const searchParams = this.getSearchParams(request);
 

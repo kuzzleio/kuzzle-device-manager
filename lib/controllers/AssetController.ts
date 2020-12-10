@@ -35,9 +35,9 @@ export class AssetController extends CRUDController {
           handler: this.delete.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/asset' }],
         },
-        list: {
-          handler: this.list.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/asset/list' }],
+        search: {
+          handler: this.search.bind(this),
+          http: [{ verb: 'post', path: 'device-manager/asset/search' }],
         },
         link: {
           handler: this.link.bind(this),

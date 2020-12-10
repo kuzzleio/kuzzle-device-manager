@@ -35,9 +35,9 @@ export class SensorController extends CRUDController {
           handler: this.delete.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/sensor' }]
         },
-        list: {
-          handler: this.list.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/list' }]
+        search: {
+          handler: this.search.bind(this),
+          http: [{ verb: 'post', path: 'device-manager/sensor/search' }]
         },
         link: {
           handler: this.link.bind(this),

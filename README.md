@@ -92,15 +92,15 @@ Method: DELETE
 
 ---
 
-## List
+## search
 
-List assets. 
+search assets. 
 Can take a query to filter.
 
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/asset/list?index=<tenant>[&from=<int>&size=<int>]
+URL: http://kuzzle:7512/_/device-manager/asset/search?index=<tenant>[&from=<int>&size=<int>]
 Method: POST
 BODY:
 ```
@@ -125,7 +125,7 @@ BODY:
 {
   "index": "tenant",
   "controller": "device-manager/asset",
-  "action": "list",
+  "action": "search",
   "body": {
     "query": {
       // ...
@@ -308,15 +308,15 @@ Method: DELETE
 
 ---
 
-## List
+## search
 
-List sensors. 
+search sensors. 
 Can take a query to filter.
 
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/sensor/list?index=<tenant>[&from=<int>&size=<int>]
+URL: http://kuzzle:7512/_/device-manager/sensor/search?index=<tenant>[&from=<int>&size=<int>]
 Method: POST
 BODY:
 ```
@@ -341,7 +341,7 @@ BODY:
 {
   "index": "tenant",
   "controller": "device-manager/sensor",
-  "action": "list",
+  "action": "search",
   "body": {
     "query": {
       // ...
