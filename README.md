@@ -221,7 +221,7 @@ Method: POST
 
 ## SensorController
 
-Designed to manage an `asset`, representing either a room, a person, a physical object etc..
+Designed to manage a `sensor`.
 
 The API of this controller is the following:
 
