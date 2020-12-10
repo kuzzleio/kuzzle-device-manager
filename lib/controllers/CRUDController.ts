@@ -82,7 +82,6 @@ export class CRUDController extends NativeController {
     const index = this.getIndex(request);
     const searchParams = this.getSearchParams(request);
 
-    console.log(searchParams);
     return this.context.accessors.sdk.document.search(
       index,
       this.collection,
