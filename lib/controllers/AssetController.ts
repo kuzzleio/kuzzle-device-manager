@@ -7,13 +7,7 @@ import {
 import { CRUDController } from './CRUDController';
 
 export class AssetController extends CRUDController {
-  [key: string]: any;
-
   public definition: ControllerDefinition;
-
-  get kuzzle(): any {
-    return this.context['kuzzle'];
-  }
 
   /**
    * Constructor
