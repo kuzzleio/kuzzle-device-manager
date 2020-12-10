@@ -37,7 +37,7 @@ export class AssetController extends CRUDController {
         },
         list: {
           handler: this.list.bind(this),
-          http: [{ verb: 'get', path: 'device-manager/asset' }],
+          http: [{ verb: 'post', path: 'device-manager/asset/list' }],
         },
         link: {
           handler: this.link.bind(this),
@@ -124,7 +124,7 @@ export class AssetController extends CRUDController {
 
   /**
    * Unlink an asset.
-   * Will also unlink the sensor.
+   * Will also unlink the sensor the asset is linked to.
    * If it fails to unlink the sensor then it will link the asset again.
    * 
    * @param request 

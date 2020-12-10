@@ -32,7 +32,7 @@ export class CRUDController extends NativeController {
   create(request: KuzzleRequest) {
     const index = this.getIndex(request);
     const asset = this.getBody(request);
-    const id = this.getId(request);
+    const id = request.input.resource._id;
 
     return this.context.accessors.sdk.document.create(
       index,
@@ -52,7 +52,7 @@ export class CRUDController extends NativeController {
    */
   async delete(request: KuzzleRequest) {
     const index = this.getIndex(request);
-    const id = this.getId(request);
+    const id = request.input.resource._id;
 
     const entity = await this.context.accessors.sdk.document.get(
       index,
@@ -82,10 +82,15 @@ export class CRUDController extends NativeController {
     const index = this.getIndex(request);
     const searchParams = this.getSearchParams(request);
 
+    console.log(searchParams);
     return this.context.accessors.sdk.document.search(
       index,
       this.collection,
-      searchParams.searchBody
+      searchParams.searchBody,
+      {
+        from: searchParams.from,
+        size: searchParams.size
+      }
     );
   }
 }

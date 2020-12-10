@@ -37,7 +37,7 @@ export class SensorController extends CRUDController {
         },
         list: {
           handler: this.list.bind(this),
-          http: [{ verb: 'get', path: 'device-manager/sensor' }]
+          http: [{ verb: 'post', path: 'device-manager/sensor/list' }]
         },
         link: {
           handler: this.link.bind(this),
@@ -46,6 +46,10 @@ export class SensorController extends CRUDController {
         unlink: {
           handler: this.unlink.bind(this),
           http: [{ verb: 'post', path: 'device-manager/sensor/unlink' }]
+        },
+        push: {
+          handler: this.push.bind(this),
+          http: [{ verb: 'post', path: 'device-manager/sensor/push'}]
         }
       }
     };
@@ -124,7 +128,7 @@ export class SensorController extends CRUDController {
 
   /**
    * Unlink a sensor.
-   * Will also unlink the asset.
+   * Will also unlink the sensor the asset is linked to.
    * If it fails to unlink the asset then it will link the sensor again.
    * 
    * @param request 
@@ -187,5 +191,10 @@ export class SensorController extends CRUDController {
     }
 
     return res;
+  }
+
+  // eslint-disable-next-line
+  push(request: Request) {
+    // @TODO
   }
 }
