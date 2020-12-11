@@ -6,6 +6,7 @@ node_modules/
 .DS_STORE
 *#
 *~
+front.js
 
 # Typescript related files
 app.js
