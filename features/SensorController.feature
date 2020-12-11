@@ -6,7 +6,7 @@ Feature: Device Manager sensor controller
       | index                          | "iot"                      |
       | body.name                      | "sensor-01"                 |
       | _id                            | "sensor-01"                 |
-    And I successfully call the action "device-manager/sensor":"list" with args:
+    And I successfully call the action "device-manager/sensor":"search" with args:
       | index                          | "iot"                      |
     Then I count 1 documents in "iot":"sensor"
     And I successfully call the action "device-manager/sensor":"delete" with args:
@@ -31,7 +31,7 @@ Feature: Device Manager sensor controller
       | index                          | "iot"                      |
       | _id                            | "sensor-01"                 |
       | body.assetId                   | "asset-01"                |
-    And I successfully call the action "device-manager/sensor":"list" with args:
+    And I successfully call the action "device-manager/sensor":"search" with args:
       | index                          | "iot"                      |
     Then The property "hits[0]" of the result should match:
       | _id                            | "sensor-01"                 |
@@ -55,10 +55,10 @@ Feature: Device Manager sensor controller
       | refresh                        | "wait_for"                 |
       | index                          | "iot"                      |
       | _id                            | "asset-01"                 |
-    And I successfully call the action "device-manager/sensor":"list" with args:
+    And I successfully call the action "device-manager/sensor":"search" with args:
       | index                          | "iot"                      |
     Then I count 0 documents in "iot":"sensor"
-    And I successfully call the action "device-manager/asset":"list" with args:
+    And I successfully call the action "device-manager/asset":"search" with args:
       | index                          | "iot"                      |
     Then I count 0 documents in "iot":"asset"
 

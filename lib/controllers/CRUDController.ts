@@ -9,6 +9,10 @@ import { NativeController } from 'kuzzle/lib/api/controller/base.js'
 export class CRUDController extends NativeController {
   [key: string]: any;
 
+  get kuzzle(): any {
+    return this.context['kuzzle'];
+  }
+
   protected context: PluginContext;
   private collection: string;
 
@@ -52,7 +56,7 @@ export class CRUDController extends NativeController {
    */
   async delete(request: KuzzleRequest) {
     const index = this.getIndex(request);
-    const id = request.input.resource._id;
+    const id = this.getId(request);
 
     const entity = await this.context.accessors.sdk.document.get(
       index,
@@ -74,21 +78,21 @@ export class CRUDController extends NativeController {
   }
 
   /**
-   * List assets or a sensors depending on the collection.
+   * search assets or sensors depending on the collection.
    * 
    * @param request 
    */
-  list(request: KuzzleRequest) {
+  search(request: KuzzleRequest) {
     const index = this.getIndex(request);
-    const searchParams = this.getSearchParams(request);
+    const { searchBody, from, size } = this.getSearchParams(request);
 
     return this.context.accessors.sdk.document.search(
       index,
       this.collection,
-      searchParams.searchBody,
+      searchBody,
       {
-        from: searchParams.from,
-        size: searchParams.size
+        from,
+        size
       }
     );
   }
