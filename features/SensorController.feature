@@ -61,3 +61,34 @@ Feature: Device Manager sensor controller
     And I successfully call the action "device-manager/asset":"search" with args:
       | index                          | "iot"                      |
     Then I count 0 documents in "iot":"asset"
+
+  Scenario: Push a measurement
+    When I successfully call the action "device-manager/sensor":"create" with args:
+      | refresh                        | "wait_for"                  |
+      | index                          | "iot"                       |
+      | body.name                      | "sensor-01"                 |
+      | _id                            | "sensor-01"                 |
+    And I successfully call the action "device-manager/asset":"create" with args:
+      | refresh                        | "wait_for"                  |
+      | index                          | "iot"                       |
+      | body.name                      | "asset-01"                  |
+      | _id                            | "asset-01"                  |
+    And I successfully call the action "device-manager/sensor":"link" with args:
+      | refresh                        | "wait_for"                 |
+      | index                          | "iot"                      |
+      | _id                            | "sensor-01"                 |
+      | body.assetId                   | "asset-01"                |
+    And I successfully call the action "device-manager/sensor":"push" with args:
+      | refresh                        | "wait_for"                  |
+      | index                          | "iot"                       |
+      | body.type                      | "temperature"               |
+      | body.value                     | "42C"                       |
+      | _id                            | "sensor-01"                 |
+    And I successfully call the action "document":"search" with args:
+      | index                          | "iot"                       |
+      | collection                     | "measurement"               |
+    Then The property "hits[0]" of the result should match:
+      | _source.metadata.sensorId      | "sensor-01"                 |
+      | _source.metadata.assetId       | "asset-01"                        |
+      | _source.type                   | "temperature"               |
+      | _source.value                  | "42C"                       |

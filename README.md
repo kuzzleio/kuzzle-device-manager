@@ -437,6 +437,37 @@ Method: POST
 
 ## Push
 
-TODO
+Push a measurement.
+A sensor can push a measurement even if it is not linked to an asset.
+
+### HTTP
+
+```http
+URL: http://kuzzle:7512/_/device-manager/asset/push?index=<tenant>&_id=<sensorId>[&refresh=wait_for]
+Method: POST
+Body:
+```
+
+```js
+{
+  "type": "<measurement type>"
+  "value": "<measurement value>"
+}
+```
+
+### Other protocols
+
+```js
+{
+  "index": "tenant",
+  "controller": "device-manager/asset",
+  "action": "push",
+  "_id": "<sensorId>",
+  "body": {
+    "type": "<measurement type>"
+    "value": "<measurement value>"
+  }
+}
+```
 
 ---
