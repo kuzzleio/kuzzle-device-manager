@@ -62,4 +62,4 @@ Feature: Device Manager asset controller
     Then I count 0 documents in "tenant-kuzzle":"asset"
     And I successfully execute the action "device-manager/sensor":"search" with args:
       | index | "tenant-kuzzle" |
-    Then I count 0 documents in "iot":"sensor"
+    Then I count 0 documents in "tenant-kuzzle":"sensor"
