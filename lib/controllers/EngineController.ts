@@ -1,7 +1,5 @@
 import {
   ControllerDefinition,
-  KuzzleRequest,
-  PreconditionError,
   PluginContext,
   KuzzleRequest,
   EmbeddedSDK,
@@ -24,9 +22,10 @@ export class EngineController extends NativeController {
    *
    * @param context
    */
-  constructor (context) {
+  constructor (config, context) {
     super(context['kuzzle']);
 
+    this.config = config;
     this.context = context;
 
     this.definition = {
@@ -49,9 +48,8 @@ export class EngineController extends NativeController {
 
   async create (request: KuzzleRequest) {
     const index = this.getIndex(request);
-    const refresh = this.getRefresh(request);
 
-    const collections = this.context.config.collections;
+    const collections = this.config.collections;
 
     const promises = [];
 
@@ -74,7 +72,7 @@ export class EngineController extends NativeController {
   async delete (request: KuzzleRequest) {
     const index = this.getIndex(request);
 
-    const collections = Object.keys(this.context.config.collections);
+    const collections = Object.keys(this.config.collections);
 
     const promises = [];
 
@@ -100,6 +98,8 @@ export class EngineController extends NativeController {
       {},
       { size: 1000 });
 
-    return result.hits.map(hit => hit._source as any);
+    return {
+      engines: result.hits.map(hit => hit._source as any)
+    };
   }
 }

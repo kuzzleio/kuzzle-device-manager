@@ -13,6 +13,12 @@ Given('an existing index {string}', async function (index) {
   this.props.index = index;
 });
 
+Given('an index {string}', async function (index) {
+  await this.sdk.index.create(index);
+
+  this.props.index = index;
+});
+
 Given('a collection {string}:{string}', async function (index, collection) {
   this.props.result = await this.sdk.collection.create(index, collection);
 

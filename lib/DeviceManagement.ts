@@ -29,12 +29,12 @@ export class DeviceManagement extends Plugin {
     });
 
     this.defaultConfig = {
-      adminIndex: 'alerts-engine',
+      adminIndex: 'device-management',
       adminCollections: {
         engines: {
           dynamic: 'strict',
           properties: {
-            index: { type: 'keyword' }
+            index: { type: 'keyword' },
           }
         },
       },
@@ -42,13 +42,15 @@ export class DeviceManagement extends Plugin {
         asset: {
           dynamic: 'strict',
           properties: {
-            sensorId: { type: 'keyword' }
+            sensorId: { type: 'keyword' },
+            name: { type: 'keyword' },
           }
         },
         sensor: {
           dynamic: 'strict',
           properties: {
-            assetId: { type: 'keyword' }
+            assetId: { type: 'keyword' },
+            name: { type: 'keyword' },
           }
         },
         measurement: {
@@ -57,11 +59,11 @@ export class DeviceManagement extends Plugin {
             metadata: {
               properties: {
                 sensorId: { type: 'keyword' },
-                assetId: { type: 'keyword' }
+                assetId: { type: 'keyword' },
               }
             },
             type: { type: 'keyword' },
-            value: { type: 'keyword' }
+            value: { type: 'keyword' },
           }
         }
       }
@@ -80,6 +82,7 @@ export class DeviceManagement extends Plugin {
 
     this.assetController = new AssetController(context);
     this.sensorController = new SensorController(context);
+    this.engineController = new EngineController(this.config, context);
 
     this.api = {
       'device-manager/asset': this.assetController.definition,
