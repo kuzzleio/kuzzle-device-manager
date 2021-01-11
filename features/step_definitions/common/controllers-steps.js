@@ -6,7 +6,7 @@ const
     Then
   } = require('cucumber');
 
-When(/I (successfully )?call the action "(.*?)":"(.*?)" with args:/, async function (expectSuccess, controller, action, dataTable) {
+When(/I (successfully )?execute the action "(.*?)":"(.*?)" with args:/, async function (expectSuccess, controller, action, dataTable) {
   const args = this.parseObject(dataTable);
 
   try {
@@ -23,7 +23,7 @@ When(/I (successfully )?call the action "(.*?)":"(.*?)" with args:/, async funct
   }
 });
 
-When(/I (successfully )?call the action "(.*?)":"(.*?)"$/, async function (expectSuccess, controller, action) {
+When(/I (successfully )?execute the action "(.*?)":"(.*?)"$/, async function (expectSuccess, controller, action) {
   try {
     const response = await this.sdk.query({ controller, action });
 

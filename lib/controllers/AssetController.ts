@@ -11,8 +11,8 @@ export class AssetController extends CRUDController {
 
   /**
    * Constructor
-   * 
-   * @param context 
+   *
+   * @param context
    */
   constructor(context) {
     super(context, 'asset');
@@ -49,8 +49,8 @@ export class AssetController extends CRUDController {
    * Link an asset to a sensor.
    * Will also link the sensor to the asset.
    * If it fails to link the sensor then it will unlink the asset.
-   * 
-   * @param request 
+   *
+   * @param request
    */
   async link(request: KuzzleRequest) {
     const index = this.getIndex(request);
@@ -120,8 +120,8 @@ export class AssetController extends CRUDController {
    * Unlink an asset.
    * Will also unlink the sensor the asset is linked to.
    * If it fails to unlink the sensor then it will link the asset again.
-   * 
-   * @param request 
+   *
+   * @param request
    */
   async unlink(request: KuzzleRequest) {
     const index = this.getIndex(request);
