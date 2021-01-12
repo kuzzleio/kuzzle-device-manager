@@ -9,10 +9,6 @@ import { NativeController } from 'kuzzle/lib/api/controller/base.js'
 export class CRUDController extends NativeController {
   [key: string]: any;
 
-  get kuzzle(): any {
-    return this.context['kuzzle'];
-  }
-
   protected context: PluginContext;
   private collection: string;
 

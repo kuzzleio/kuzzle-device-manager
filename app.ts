@@ -1,11 +1,12 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
-import { DeviceManagement } from './lib/DeviceManagement';
+import { DeviceManager } from './lib/DeviceManager';
 
-const app = new Backend('kuzzle');
+const app = new Backend('device-management');
 
-const deviceManagement = new DeviceManagement();
+app._support.mappings = require('./fixtures/mappings.json');
+app._support.fixtures = require('./fixtures/fixtures.json');
 
-app.plugin.use(deviceManagement);
+app.plugin.use(new DeviceManager(app));
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
   app.log.error(request.error);
