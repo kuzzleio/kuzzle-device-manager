@@ -187,8 +187,51 @@ export class SensorController extends CRUDController {
     return res;
   }
 
-  // eslint-disable-next-line
-  push(request: Request) {
-    // @TODO
+  /**
+   * Push a measurement from a sensor.
+   * The measurement will include the sensorId and the assetId if it is linked.
+   * It is possible for a sensor to push measurement if it is not linked to an asset.
+   * 
+   * @param request 
+   */
+  async push(request: Request) {
+    const index = this.getIndex(request);
+    const sensorId = this.getId(request);
+    const type = this.getBodyString(request, 'type');
+    const value = this.getBodyString(request, 'value');
+    let asset;
+
+    const sensor = await this.context.accessors.sdk.document.get(
+      index,
+      'sensor',
+      sensorId
+    );
+
+    try {
+      asset = await this.context.accessors.sdk.document.get(
+        index,
+        'asset',
+        sensor._source.assetId
+      );
+    } catch (_) {
+      asset = null;
+    }
+
+    return this.context.accessors.sdk.document.create(
+      index,
+      'measurement',
+      {
+        metadata: {
+          sensorId,
+          assetId: (asset ? asset._id : null)
+        },
+        type,
+        value
+      }, 
+      null,
+      {
+        refresh: this.getRefresh(request),
+      }
+    );
   }
 }

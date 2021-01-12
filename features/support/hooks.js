@@ -49,17 +49,13 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.connect();
 
   try {
-    await Promise.all([
-      // truncateCollections(this.sdk, 'iot'),
-    ]);
+    await this.sdk.index.delete('tenant-kuzzle')
   }
-  catch (error) {
-    // Silently catch errors
+  catch (_) {
+    // silent fail
   }
 
-  await Promise.all([
-    // refreshCollections(this.sdk, 'iot'),
-  ]);
+  await this.sdk.collection.truncate('device-management', 'engines');
 });
 
 After(async function () {
@@ -107,37 +103,3 @@ After({ tags: '@realtime' }, function () {
 
   return Promise.all(promises);
 });
-
-async function refreshCollections (sdk, index) {
-  if (! await sdk.index.exists(index)) {
-    return;
-  }
-
-  const { collections } = await sdk.collection.list(index);
-
-  const promises = collections.map(({ name }) => (
-    sdk.collection.refresh(index, name)
-  ));
-
-  return Promise.all(promises);
-}
-
-async function truncateCollections(sdk, index) {
-  if (! await sdk.index.exists(index)) {
-    return;
-  }
-
-  const { collections } = await sdk.collection.list(index);
-
-  const promises = collections.map(async ({ name }) => {
-    await sdk.collection.refresh(index, name);
-
-    return sdk.document.deleteByQuery(
-      index,
-      name,
-      { query: {} },
-      { size: 100, refresh: 'wait_for' });
-  });
-
-  return Promise.all(promises);
-}
