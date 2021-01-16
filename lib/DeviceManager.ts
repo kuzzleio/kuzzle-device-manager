@@ -22,6 +22,13 @@ export class DeviceManager extends Plugin {
   private engineController: EngineController;
   private payloadService: PayloadService;
 
+  public mappings: {
+    sensors: {
+      metadata: JSONObject;
+      measures: JSONObject;
+    },
+  }
+
   /**
    * List of registered decoders.
    * Map<action, decoder>
@@ -39,6 +46,13 @@ export class DeviceManager extends Plugin {
     super({
       kuzzleVersion: '>=2.8.0 <3'
     });
+
+    this.mappings = {
+      sensors: {
+        metadata: {},
+        measures: {}
+      }
+    };
 
     this.api = {
       'device-manager/payloads': {
@@ -131,6 +145,8 @@ export class DeviceManager extends Plugin {
     this.config = { ...this.defaultConfig, ...config };
     this.context = context;
 
+    this.mergeCustomMappings();
+
     this.assetController = new AssetController(context);
     this.sensorController = new SensorController(context);
     this.engineController = new EngineController(this.config, context);
@@ -175,23 +191,35 @@ export class DeviceManager extends Plugin {
     // @todo need mutex
     try {
       await this.sdk.index.create(this.config.adminIndex);
-
-      await Promise.all([
-        this.sdk.collection.create(
-          this.config.adminIndex,
-          'engines',
-          { mappings: this.config.adminCollections.engines }),
-        this.sdk.collection.create(
-          this.config.adminIndex,
-          'sensors',
-          { mappings: this.config.adminCollections.sensors })
-        ]);
-      }
+    }
     catch (error) {
       if (error.id !== 'services.storage.index_already_exists') {
         throw new InternalError(`Cannot initialize plugin database: ${error}`);
       }
     }
+
+    await Promise.all([
+      this.sdk.collection.create(
+        this.config.adminIndex,
+        'engines',
+        { mappings: this.config.adminCollections.engines }),
+      this.sdk.collection.create(
+        this.config.adminIndex,
+        'sensors',
+        { mappings: this.config.adminCollections.sensors })
+      ]);
+  }
+
+  private mergeCustomMappings () {
+    this.config.collections.sensors.properties.metadata.properties = {
+      ...this.config.collections.sensors.properties.metadata.properties,
+      ...this.mappings.sensors.metadata,
+    };
+
+    this.config.collections.sensors.properties.measures.properties = {
+      ...this.config.collections.sensors.properties.measures.properties,
+      ...this.mappings.sensors.measures,
+    };
   }
 }
 

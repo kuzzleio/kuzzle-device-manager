@@ -11,6 +11,20 @@ const deviceManager = new DeviceManager();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
+deviceManager.mappings.sensors.measures = {
+  shock: {
+    properties: {
+      updatedAt: { type: 'date' },
+      payloadUuid: { type: 'keyword' },
+      value: { type: 'float' },
+    }
+  }
+};
+
+deviceManager.mappings.sensors.metadata = {
+  battery: { type: 'integer' }
+};
+
 app.plugin.use(deviceManager);
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
