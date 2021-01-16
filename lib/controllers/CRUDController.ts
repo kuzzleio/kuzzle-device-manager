@@ -5,6 +5,7 @@ import {
 } from 'kuzzle';
 
 import { NativeController } from 'kuzzle/lib/api/controller/base.js'
+import { request } from 'http';
 
 export class CRUDController extends NativeController {
   [key: string]: any;
@@ -18,10 +19,10 @@ export class CRUDController extends NativeController {
 
   /**
    * Constructor
-   * 
-   * @param context 
+   *
+   * @param context
    */
-  constructor(context, collection: string) {
+  constructor (context, collection: string) {
     super(context['kuzzle']);
 
     this.context = context;
@@ -30,10 +31,10 @@ export class CRUDController extends NativeController {
 
   /**
    * Create an asset or a sensor depending on the collection.
-   * 
-   * @param request 
+   *
+   * @param request
    */
-  create(request: KuzzleRequest) {
+  create (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const asset = this.getBody(request);
     const id = request.input.resource._id;
@@ -43,26 +44,23 @@ export class CRUDController extends NativeController {
       this.collection,
       asset,
       id,
-      {
-        refresh: this.getRefresh(request)
-      }
-    );
+      { ...request.input.args });
   }
 
   /**
    * Delete an asset or a sensor depending on the collection.
-   * 
-   * @param request 
+   *
+   * @param request
    */
-  async delete(request: KuzzleRequest) {
+  async delete (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const id = this.getId(request);
 
     const entity = await this.context.accessors.sdk.document.get(
       index,
       this.collection,
-      id
-    );
+      id);
+
     if (entity._source.assetId || entity._source.sensorId) {
       throw new PreconditionError(`${id} is linked to ${entity._source.assetId || entity._source.sensorId}.`);
     }
@@ -71,29 +69,41 @@ export class CRUDController extends NativeController {
       index,
       this.collection,
       id,
-      {
-        refresh: this.getRefresh(request)
-      }
-    );
+      { ...request.input.args });
   }
 
   /**
    * search assets or sensors depending on the collection.
-   * 
-   * @param request 
+   *
+   * @param request
    */
-  search(request: KuzzleRequest) {
+  search (request: KuzzleRequest) {
     const index = this.getIndex(request);
-    const { searchBody, from, size } = this.getSearchParams(request);
+    const { searchBody } = this.getSearchParams(request);
 
     return this.context.accessors.sdk.document.search(
       index,
       this.collection,
       searchBody,
-      {
-        from,
-        size
-      }
-    );
+      { ...request.input.args });
   }
+
+  /**
+   * Create an asset or a sensor depending on the collection.
+   *
+   * @param request
+   */
+  update (request: KuzzleRequest) {
+    const index = this.getIndex(request);
+    const body = this.getBody(request);
+    const id = this.getId(request);
+
+    return this.context.accessors.sdk.document.update(
+      index,
+      this.collection,
+      id,
+      body,
+      { ...request.input.args });
+  }
+
 }

@@ -22,8 +22,8 @@ export class Sensor {
   _id: string;
   _source: SensorContent;
 
-  constructor (sensorContent: SensorContent) {
-    this._id = `${sensorContent.model}/${sensorContent.manufacturerId}`;
+  constructor (sensorContent: SensorContent, _id?: string) {
+    this._id = _id || `${sensorContent.model}/${sensorContent.manufacturerId}`;
 
     this._source = {
       ...{

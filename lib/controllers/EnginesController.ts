@@ -7,7 +7,7 @@ import {
 
 import { NativeController } from 'kuzzle/lib/api/controller/base.js'
 
-export class EngineController extends NativeController {
+export class EnginesController extends NativeController {
   [key: string]: any;
 
   get sdk (): EmbeddedSDK {
@@ -42,6 +42,10 @@ export class EngineController extends NativeController {
           handler: this.list.bind(this),
           http: [{ verb: 'get', path: 'device-manager/engines' }],
         },
+        exists: {
+          handler: this.exists.bind(this),
+          http: [{ verb: 'get', path: 'device-manager/engine/:index/_exists' }],
+        }
       },
     };
   }
@@ -101,5 +105,11 @@ export class EngineController extends NativeController {
     return {
       engines: result.hits.map(hit => hit._source as any)
     };
+  }
+
+  async exists (request: KuzzleRequest) {
+    const index = this.getIndex(request);
+
+    return this.sdk.document.exists(this.config.adminIndex, 'engines', index);
   }
 }

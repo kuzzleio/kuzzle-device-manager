@@ -7,9 +7,9 @@ import {
   PluginImplementationError,
 } from 'kuzzle';
 
-import { AssetController } from './controllers/AssetController';
-import { SensorController } from './controllers/SensorController';
-import { EngineController } from './controllers/EngineController';
+import { AssetsController } from './controllers/AssetsController';
+import { SensorsController } from './controllers/SensorsController';
+import { EnginesController } from './controllers/EnginesController';
 import { PayloadService } from './services/PayloadService';
 import { Decoder } from './decoders/Decoder';
 import { sensorsMappings } from './models/Sensor';
@@ -17,9 +17,9 @@ import { sensorsMappings } from './models/Sensor';
 export class DeviceManager extends Plugin {
   public defaultConfig: JSONObject;
 
-  private assetController: AssetController;
-  private sensorController: SensorController;
-  private engineController: EngineController;
+  private assetsController: AssetsController;
+  private sensorsController: SensorsController;
+  private enginesController: EnginesController;
   private payloadService: PayloadService;
 
   public mappings: {
@@ -31,7 +31,7 @@ export class DeviceManager extends Plugin {
 
   /**
    * List of registered decoders.
-   * Map<action, decoder>
+   * Map<model, decoder>
    */
   private decoders = new Map<string, Decoder>();
 
@@ -147,40 +147,40 @@ export class DeviceManager extends Plugin {
 
     this.mergeCustomMappings();
 
-    this.assetController = new AssetController(context);
-    this.sensorController = new SensorController(context);
-    this.engineController = new EngineController(this.config, context);
+    this.assetsController = new AssetsController(context);
+    this.sensorsController = new SensorsController(this.config, context, this.decoders);
+    this.enginesController = new EnginesController(this.config, context);
 
     this.payloadService = new PayloadService(this.config, context);
 
-    this.api['device-manager/asset'] = this.assetController.definition;
-    this.api['device-manager/sensor'] = this.sensorController.definition;
-    this.api['device-manager/engine'] = this.engineController.definition;
+    this.api['device-manager/assets'] = this.assetsController.definition;
+    this.api['device-manager/sensors'] = this.sensorsController.definition;
+    this.api['device-manager/engines'] = this.enginesController.definition;
 
     await this.initDatabase();
 
-    for (const [action, decoder] of Array.from(this.decoders.entries())) {
-      this.context.log.info(`Register API action "device-manager/payloads:${action}" with decoder for sensor "${decoder.sensorModel}"`);
+    for (const decoder of Array.from(this.decoders.values())) {
+      this.context.log.info(`Register API action "device-manager/payloads:${decoder.action}" with decoder for sensor "${decoder.sensorModel}"`);
     }
   }
 
   registerDecoder (decoder: Decoder) {
-    const action = decoder.action || kebabCase(decoder.sensorModel);
+    decoder.action = decoder.action || kebabCase(decoder.sensorModel);
 
-    if (this.api['device-manager/payloads'].actions[action]) {
+    if (this.api['device-manager/payloads'].actions[decoder.action]) {
       throw new PluginImplementationError(`A decoder for "${decoder.sensorModel}" has already been registered.`);
     }
 
-    this.api['device-manager/payloads'].actions[action] = {
+    this.api['device-manager/payloads'].actions[decoder.action] = {
       handler: request => this.payloadService.process(request, decoder),
       http: decoder.http,
     };
 
-    this.decoders.set(action, decoder);
+    this.decoders.set(decoder.sensorModel, decoder);
 
     return {
       controller: 'device-manager/payloads',
-      action,
+      action: decoder.action,
     };
   }
 

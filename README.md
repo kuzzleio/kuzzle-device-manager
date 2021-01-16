@@ -435,43 +435,6 @@ Method: POST
 
 ---
 
-## Push
-
-Push a measurement.
-A sensor can push a measurement even if it is not linked to an asset.
-
-### HTTP
-
-```http
-URL: http://kuzzle:7512/_/device-manager/asset/push?index=<tenant>&_id=<sensorId>[&refresh=wait_for]
-Method: POST
-Body:
-```
-
-```js
-{
-  "type": "<measurement type>"
-  "value": "<measurement value>"
-}
-```
-
-### Other protocols
-
-```js
-{
-  "index": "tenant",
-  "controller": "device-manager/asset",
-  "action": "push",
-  "_id": "<sensorId>",
-  "body": {
-    "type": "<measurement type>"
-    "value": "<measurement value>"
-  }
-}
-```
-
----
-
 ## Reception de Payload
 
 ```json
@@ -576,7 +539,7 @@ plugin.registerDecoder(new IneoDecoder());
 ```
 
 L'enregistrement du `IneoDecoder` déclenche les actions suivantes:
- - ajout d'une action `ineo` au contrôleur `payloads`
+ - ajout d'une action `ineo-temp` au contrôleur `payloads`
 
 ### Reception du premier payload
 
@@ -633,7 +596,7 @@ Route d'API pour assigner un sensor à un tenant.
 
 Lors de l'assignation d'un sensor à un tenant:
   - set le `tenantId` dans la collection `sensors` de l'index maitre
-  - création du document dans la collection `sensors` du tenant (sans le `tenantId`)
+  - création du document dans la collection `sensors` du tenant
 
 ## Liaison avec un asset
 
@@ -642,7 +605,7 @@ Route d'API pour lier un sensor à un asset.
 Lors de la liaison d'un sensor à un asset:
   - set le `assetId` dans la collection `sensors` de l'index maitre
   - set le `assetId` dans la collection `sensors` du tenant
-  - ajout du sensor dans la propriété `measures` de l'asset avec les mesures
+  - ajout des mesures du sensor dans la propriété `measures` de l'asset
 
 ```js
 // Example of an Asset

@@ -5,6 +5,7 @@ const { After, Before, BeforeAll } = require('cucumber');
 const { Kuzzle, WebSocket } = require('kuzzle-sdk');
 
 const defaultMappings = require('../fixtures/mappings');
+const defaultFixtures = require('../fixtures/fixtures');
 const defaultRights = require('../fixtures/rights');
 
 const World = require('./world');
@@ -54,6 +55,13 @@ Before({ timeout: 30 * 1000 }, async function () {
 
   await this.sdk.collection.truncate('device-manager', 'engines');
   await this.sdk.collection.truncate('device-manager', 'sensors');
+
+  await this.sdk.query({
+    controller: 'admin',
+    action: 'loadFixtures',
+    body: defaultFixtures,
+    refresh: 'wait_for'
+  });
 });
 
 After(async function () {
