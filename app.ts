@@ -35,6 +35,6 @@ app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
 
 app.start()
   .then(() => {
-    app.log.info('Application started')
+    app.log.info('Application started');
   })
   .catch(console.error);
