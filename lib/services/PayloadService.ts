@@ -39,9 +39,8 @@ export class PayloadService {
     if (exists) {
       return this.update(sensor, decoder, request);
     }
-    else {
-      return this.register(sensor, decoder, request);
-    }
+
+    return this.register(sensor, decoder, request);
   }
 
   private async register (sensor: Sensor, decoder: Decoder, request: KuzzleRequest) {
@@ -75,7 +74,7 @@ export class PayloadService {
 
       // Historize
       await this.sdk.document.create(
-        this.config.adminIndex,
+        enrichedSensor._source.tenantId,
         'sensors-history',
         enrichedSensor._source);
     }

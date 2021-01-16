@@ -15,12 +15,16 @@ import { Decoder } from './decoders/Decoder';
 import { sensorsMappings } from './models/Sensor';
 
 export class DeviceManager extends Plugin {
-  public defaultConfig: JSONObject;
+  private defaultConfig: JSONObject;
 
   private assetsController: AssetsController;
   private sensorsController: SensorsController;
   private enginesController: EnginesController;
   private payloadService: PayloadService;
+
+  private get sdk(): EmbeddedSDK {
+    return this.context.accessors.sdk;
+  }
 
   /**
    * Define custom mappings
@@ -47,10 +51,6 @@ export class DeviceManager extends Plugin {
    * Map<model, decoder>
    */
   private decoders = new Map<string, Decoder>();
-
-  private get sdk(): EmbeddedSDK {
-    return this.context.accessors.sdk;
-  }
 
   /**
    * Constructor
@@ -131,19 +131,6 @@ export class DeviceManager extends Plugin {
         },
         // sensors collection
         sensors: sensorsMappings,
-        measurement: {
-          dynamic: 'strict',
-          properties: {
-            metadata: {
-              properties: {
-                sensorId: { type: 'keyword' },
-                assetId: { type: 'keyword' },
-              }
-            },
-            type: { type: 'keyword' },
-            value: { type: 'keyword' },
-          }
-        }
       }
     };
   }
