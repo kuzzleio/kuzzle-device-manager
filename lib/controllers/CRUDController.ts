@@ -1,11 +1,9 @@
 import {
   KuzzleRequest,
   PluginContext,
-  PreconditionError
 } from 'kuzzle';
 
 import { NativeController } from 'kuzzle/lib/api/controller/base.js'
-import { request } from 'http';
 
 export class CRUDController extends NativeController {
   [key: string]: any;
@@ -22,7 +20,7 @@ export class CRUDController extends NativeController {
    *
    * @param context
    */
-  constructor (context, collection: string) {
+  constructor (context: PluginContext, collection: string) {
     super(context['kuzzle']);
 
     this.context = context;
@@ -55,15 +53,6 @@ export class CRUDController extends NativeController {
   async delete (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const id = this.getId(request);
-
-    const entity = await this.context.accessors.sdk.document.get(
-      index,
-      this.collection,
-      id);
-
-    if (entity._source.assetId || entity._source.sensorId) {
-      throw new PreconditionError(`${id} is linked to ${entity._source.assetId || entity._source.sensorId}.`);
-    }
 
     return this.context.accessors.sdk.document.delete(
       index,

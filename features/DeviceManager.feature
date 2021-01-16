@@ -1,5 +1,6 @@
 Feature: Device Manager Plugin
 
+  # Custom mappings are defined in app.ts
   Scenario: Merge custom mappings
     When I successfully execute the action "collection":"getMapping" with args:
       | index      | "device-manager" |

@@ -1,7 +1,7 @@
 Feature: Payloads Controller
 
   Scenario: Register a DummyTemp payload
-    When I receive a "dummy-temp" payload with:
+    When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345"     |
       | register55   | 23.3        |
       | batteryLevel | 0.8         |
@@ -48,7 +48,7 @@ Feature: Payloads Controller
 
 
   Scenario: Receive a payload with 2 measures
-    When I receive a "dummy-temp-position" payload with:
+    When I successfully receive a "dummy-temp-position" payload with:
       | deviceEUI     | "12345"     |
       | register55    | 23.3        |
       | location.lat  | 42.2        |
@@ -72,7 +72,7 @@ Feature: Payloads Controller
       | assetId                          | null                |
 
   Scenario: Enrich tag with beforeRegister and beforeUpdate hooks
-    When I receive a "dummy-temp" payload with:
+    When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345"     |
       | register55   | 23.3        |
       | batteryLevel | 0.8         |
@@ -81,7 +81,7 @@ Feature: Payloads Controller
       | metadata.registerEnriched | true          |
       | metadata.updateEnriched   | "_UNDEFINED_" |
     # Update
-    When I receive a "dummy-temp" payload with:
+    When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345"     |
       | register55   | 23.3        |
       | batteryLevel | 0.8         |
@@ -91,7 +91,7 @@ Feature: Payloads Controller
       | metadata.updateEnriched   | true |
 
   Scenario: Execute afterRegister and afterUpdate hooks
-    When I receive a "dummy-temp" payload with:
+    When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345"     |
       | register55   | 23.3        |
       | batteryLevel | 0.8         |
@@ -99,10 +99,41 @@ Feature: Payloads Controller
     Then I should receive a result matching:
       | afterRegister | true |
     # Update
-    When I receive a "dummy-temp" payload with:
+    When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345"     |
       | register55   | 23.3        |
       | batteryLevel | 0.8         |
       | uuid         | "some-uuid" |
     Then I should receive a result matching:
       | afterUpdate | true |
+
+  Scenario: Propagate sensor to tenant index
+    When I successfully receive a "dummy-temp" payload with:
+      | deviceEUI    | "assigned-panja-unlinked" |
+      | register55   | 42.2                      |
+      | batteryLevel | 0.4                       |
+      | uuid         | "some-other-uuid"         |
+    Then The document "tenant-panja":"sensors":"DummyTemp/assigned-panja-unlinked" content match:
+      | measures.temperature.updatedAt   | "_DATE_NOW_"      |
+      | measures.temperature.payloadUuid | "some-other-uuid" |
+      | measures.temperature.value       | 42.2              |
+      | metadata.battery                 | 40                |
+
+  Scenario: Propagate sensor measures to asset
+    Given I successfully execute the action "device-manager/sensors":"link" with args:
+      | _id     | "DummyTemp/assigned-panja-unlinked" |
+      | assetId | "PERFO/unlinked"                    |
+    When I successfully receive a "dummy-temp" payload with:
+      | deviceEUI    | "assigned-panja-unlinked" |
+      | register55   | 42.2                      |
+      | batteryLevel | 0.4                       |
+      | uuid         | "some-other-uuid"         |
+    Then The document "tenant-panja":"assets":"PERFO/unlinked" content match:
+      | measures.temperature.id               | "DummyTemp/assigned-panja-unlinked" |
+      | measures.temperature.manufacturerId   | "assigned-panja-unlinked"           |
+      | measures.temperature.model            | "DummyTemp"                         |
+      | measures.temperature.updatedAt        | "_DATE_NOW_"                        |
+      | measures.temperature.payloadUuid      | "some-other-uuid"                   |
+      | measures.temperature.value            | 42.2                                |
+      | measures.temperature.metadata.battery | 40                                  |
+

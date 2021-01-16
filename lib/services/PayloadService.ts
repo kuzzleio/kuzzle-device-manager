@@ -56,6 +56,11 @@ export class PayloadService {
   }
 
   private async update (sensor: Sensor, decoder: Decoder, request: KuzzleRequest) {
+    const previousSensor = await this.sdk.document.get(
+      this.config.adminIndex,
+      'sensors',
+      sensor._id);
+
     const enrichedSensor = await decoder.beforeUpdate(sensor, request);
 
     await this.sdk.document.update(
@@ -64,29 +69,31 @@ export class PayloadService {
       enrichedSensor._id,
       enrichedSensor._source);
 
+    const tenantId = previousSensor._source.tenantId;
     // Propagate sensor into tenant index
-    if (enrichedSensor._source.tenantId) {
+    if (tenantId) {
       await this.sdk.document.update(
-        enrichedSensor._source.tenantId,
+        tenantId,
         'sensors',
         enrichedSensor._id,
         enrichedSensor._source);
 
       // Historize
       await this.sdk.document.create(
-        enrichedSensor._source.tenantId,
+        tenantId,
         'sensors-history',
         enrichedSensor._source);
     }
 
     // Propagate measures into linked asset
-    if (enrichedSensor._source.assetId) {
+    const assetId = previousSensor._source.assetId;
+    if (assetId) {
       const assetMeasures = await decoder.copyToAsset(enrichedSensor);
 
       await this.sdk.document.update(
-        enrichedSensor._source.tenantId,
+        tenantId,
         'assets',
-        enrichedSensor._source.assetId,
+        assetId,
         { measures: assetMeasures });
     }
 

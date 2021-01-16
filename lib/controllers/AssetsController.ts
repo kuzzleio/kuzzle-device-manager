@@ -1,7 +1,6 @@
 import {
   ControllerDefinition,
   KuzzleRequest,
-  PreconditionError,
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
@@ -14,7 +13,7 @@ export class AssetsController extends CRUDController {
    *
    * @param context
    */
-  constructor(context) {
+  constructor (context) {
     super(context, 'assets');
 
     this.context = context;

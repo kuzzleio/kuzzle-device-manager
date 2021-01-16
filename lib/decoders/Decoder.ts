@@ -1,9 +1,10 @@
 import { JSONObject, KuzzleRequest } from 'kuzzle';
-import _ from 'lodash';
 
 import { Sensor, SensorContent } from '../models/Sensor';
 
 import { AssetMeasures } from '../types/Measure';
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 // @todo use Kuzzle export
 type HttpRoute = {
@@ -134,3 +135,5 @@ export abstract class Decoder {
     return measures;
   }
 }
+
+/* eslint-enable @typescript-eslint/no-unused-vars */

@@ -83,7 +83,6 @@ export class DeviceManager extends Plugin {
           }
         },
         sensors: sensorsMappings,
-        'sensors-history': sensorsMappings
       },
       collections: {
         // assets collection
@@ -131,6 +130,8 @@ export class DeviceManager extends Plugin {
         },
         // sensors collection
         sensors: sensorsMappings,
+        // sensors-history collection
+        'sensors-history': sensorsMappings,
       }
     };
   }
