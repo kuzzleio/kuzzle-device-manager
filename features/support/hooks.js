@@ -48,14 +48,12 @@ Before({ timeout: 30 * 1000 }, async function () {
 
   await this.sdk.connect();
 
-  try {
+  if (await this.sdk.index.exists('tenant-kuzzle')) {
     await this.sdk.index.delete('tenant-kuzzle')
   }
-  catch (_) {
-    // silent fail
-  }
 
-  await this.sdk.collection.truncate('device-management', 'engines');
+  await this.sdk.collection.truncate('device-manager', 'engines');
+  await this.sdk.collection.truncate('device-manager', 'sensors');
 });
 
 After(async function () {

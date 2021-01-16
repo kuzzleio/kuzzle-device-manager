@@ -1,11 +1,17 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
-import { DeviceManagement } from './lib/DeviceManagement';
+
+import { DeviceManager } from './lib/DeviceManager';
+import { DummyTempDecoder } from './features/fixtures/decoders/DummyTempDecoder';
+import { DummyTempPositionDecoder } from './features/fixtures/decoders/DummyTempPositionDecoder';
 
 const app = new Backend('kuzzle');
 
-const deviceManagement = new DeviceManagement();
+const deviceManager = new DeviceManager();
 
-app.plugin.use(deviceManagement);
+deviceManager.registerDecoder(new DummyTempDecoder());
+deviceManager.registerDecoder(new DummyTempPositionDecoder());
+
+app.plugin.use(deviceManager);
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
   app.log.error(request.error);

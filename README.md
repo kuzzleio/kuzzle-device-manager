@@ -471,3 +471,201 @@ Body:
 ```
 
 ---
+
+## Reception de Payload
+
+```json
+// Payload
+{
+  "devEUI": "12345-azerty",
+  "register55": 23.3,
+  "batteryLevel": 0.8
+}
+```
+
+### Enregistrement du décodeur
+
+```ts
+// Declared in the plugin
+type Measure = {
+  type: string;
+  value: {
+    properties: {
+      temperature: { type: 'float' },
+      position: {
+        properties: {
+          latitude: { type: 'float' },
+          longitude: { type: 'float' },
+          accuracy: { type: 'float' },
+        }
+      }
+    }
+  };
+  updatedAt: number;
+  payloadUuid: string;
+} 
+
+
+
+class Sensor {
+  _id: string;
+
+  _source: {
+    model: string;
+    manufacturerId: string;
+
+    measures: Measure[];    
+    metadata: JSONObject;
+
+    assetId?: string;
+    tenantId?: string;
+  };
+
+  constructor (model: string, manufacturerId: string, measures: Measure[]) {
+    this._id = `${model}/${manufacturerId}`;
+  
+    this._source = {
+      model,
+      manufacturerId,
+      measures,
+      metadata: {},
+      assetId: null,
+      tenantId: null
+    };
+  }
+}
+
+// Declared by the developer
+class IneoDecoder extends Decoder {
+  constructor () {
+    super('IneoTemp');
+
+    // Default route (optional)
+    this.http = [{ verb: 'post', path: 'payloads/ineo' }]
+  }
+
+  async validate (payload: JSONObject, request?: KuzzleRequest): Promise<boolean> | never {
+    if (! payload.manufacturerId) {
+      throw new Error('Missing "manufacturerId"');
+    }
+
+    return true; 
+  }
+
+  async decode (payload: JSONObject): Promise<SensorContent> {
+    const sensorContent: SensorContent = {
+      manufacturerId: payload.devEUI,
+      model: this.sensorModel,
+      measures: {
+        temperature: {
+          updatedAt: Date.now(),
+          payloadUuid: uuidv4(),
+          value: payload.register55,
+        }
+      },
+      metadata: {
+        battery: payload.batteryLevel
+      }
+    };
+
+    return sensorContent;
+  }
+}
+
+plugin.registerDecoder(new IneoDecoder());
+```
+
+L'enregistrement du `IneoDecoder` déclenche les actions suivantes:
+ - ajout d'une action `ineo` au contrôleur `payloads`
+
+### Reception du premier payload
+
+La première fois qu'un payload est reçu:
+  - execution de `valid` pour continuer ou non le process
+  - execution de `decode`
+  - creation du document du sensor dans la collection `sensors` de l'index maitre
+  - execution de `afterRegister` (pipe)
+  - renvoi réponse d'API (retour de `afterRegister` ou le contenu du sensor créé)
+
+L'ID du document est la concaténation de `model` et `manufacturerId`.
+
+```js
+// Example of a sensor document
+ID: "IneoGTO42/98765poiuyt"
+
+{
+  "manufacturerId": "98765poiuyt",
+  "model": "IneoGTO42",
+  "measures": {
+    "temperature": {
+      "updatedAt": 1610561030361,
+      "payloadUuid": "...",
+      "value": 23.3,
+    }
+  },
+  "metadata": {
+    "battery": 2.3
+  },
+  "assetId": "HYjsk562Kzk",
+  "tenantId": "tenant-worksite-kuzzle", 
+}
+```
+
+### Reception d'un nouveau payload
+
+Lorsqu'une mise à jour est reçu:
+  - execution de `validate` pour continuer ou non le process
+  - execution de `decode`
+  - execution de `beforeUpdate` (pipe d'enrichissement)
+  - mise à jour du document du sensor dans la collection `sensors` de l'index maitre
+  - Si assigné à un tenant:
+    - propagation dans la collection `sensors` du tenant
+    - Si lié à un asset:
+      - copie du résultat de `copyToAsset` dans le document de l'asset lié
+  - execution de `afterUpdate` (pipe)
+  - historisation
+  - renvoi réponse d'API (retour de `afterUpdate` ou le contenu du sensor mis à jour)
+
+
+## Assignation à un tenant
+
+Route d'API pour assigner un sensor à un tenant.
+
+Lors de l'assignation d'un sensor à un tenant:
+  - set le `tenantId` dans la collection `sensors` de l'index maitre
+  - création du document dans la collection `sensors` du tenant (sans le `tenantId`)
+
+## Liaison avec un asset
+
+Route d'API pour lier un sensor à un asset.
+
+Lors de la liaison d'un sensor à un asset:
+  - set le `assetId` dans la collection `sensors` de l'index maitre
+  - set le `assetId` dans la collection `sensors` du tenant
+  - ajout du sensor dans la propriété `measures` de l'asset avec les mesures
+
+```js
+// Example of an Asset
+{
+  "reference": "XYZ-42-AZE",
+  "model": "PERFO-GTX1",
+  
+  "metadata": {},
+
+  "measures": {
+    "temperature": {
+      "id": "IneoGTO42-98765poiuyt",
+      "model": "IneoGTO42",
+      "manufacturerId": "98765poiuyt",
+
+      "updatedAt": 1610561030361,
+      "payloadUuid": "...",
+      "value": 23.3,
+
+      "metadata": {
+        "battery": 2.3
+      }
+    }
+  },
+}
+```
