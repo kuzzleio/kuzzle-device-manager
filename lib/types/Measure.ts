@@ -18,18 +18,20 @@ export type TagMeasures = {
 
 export type AssetMeasures = {
   [measureType: string]: {
+    // Sensors info
     id: string;
     model: string;
     manufacturerId: string;
+    metadata: JSONObject;
 
+    // Measure common info
     updatedAt: number;
     payloadUuid: string;
-    temperature?: number;
+
+    value?: number;
     latitude?: number;
     longitude?: number;
     altitude?: number;
     accuracy?: number;
-
-    metadata: JSONObject;
   }
 }

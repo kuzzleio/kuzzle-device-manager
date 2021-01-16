@@ -26,11 +26,7 @@ export class Sensor {
     this._id = _id || `${sensorContent.model}/${sensorContent.manufacturerId}`;
 
     this._source = {
-      ...{
-        metadata: {},
-        assetId: null,
-        tenantId: null
-      },
+      metadata: {},
       ...sensorContent,
     };
   }

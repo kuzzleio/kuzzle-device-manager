@@ -82,7 +82,10 @@ export class PayloadService {
       await this.sdk.document.create(
         tenantId,
         'sensors-history',
-        enrichedSensor._source);
+        {
+          ...previousSensor._source,
+          ...enrichedSensor._source
+        });
     }
 
     // Propagate measures into linked asset

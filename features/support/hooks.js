@@ -50,11 +50,13 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.connect();
 
   if (await this.sdk.index.exists('tenant-kuzzle')) {
-    await this.sdk.index.delete('tenant-kuzzle')
+    await this.sdk.index.delete('tenant-kuzzle');
   }
 
   await this.sdk.collection.truncate('device-manager', 'engines');
   await this.sdk.collection.truncate('device-manager', 'sensors');
+
+  await this.sdk.collection.truncate('tenant-panja', 'sensors-history');
 
   await this.sdk.query({
     controller: 'device-manager/engines',
