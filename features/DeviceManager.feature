@@ -10,6 +10,7 @@ Feature: Device Manager Plugin
       | properties.measures.properties.shock.properties.value.type | "float"   |
     When I successfully execute the action "collection":"getMapping" with args:
       | index      | "tenant-panja" |
-      | collection | "assets"        |
+      | collection | "assets"       |
     Then I should receive a result matching:
-      | properties.measures.properties.shock.properties.value.type | "float"   |
+      | properties.measures.properties.shock.properties.value.type                       | "float"   |
+      | properties.measures.properties.shock.properties.metadata.properties.battery.type | "integer" |
