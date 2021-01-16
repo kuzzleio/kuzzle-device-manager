@@ -164,7 +164,18 @@ export class DeviceManager extends Plugin {
     }
   }
 
-  registerDecoder (decoder: Decoder) {
+  /**
+   * Register a new decoder for a sensor model.
+   *
+   * This will register a new API action:
+   *  - controller: "device-manager/payloads"
+   *  - action: "action" property of the decoder or the sensor model in kebab-case
+   *
+   * @param decoder Instantiated decoder
+   *
+   * @returns Corresponding API action requestPayload
+   */
+  registerDecoder (decoder: Decoder): { controller: string, action: string } {
     decoder.action = decoder.action || kebabCase(decoder.sensorModel);
 
     if (this.api['device-manager/payloads'].actions[decoder.action]) {
