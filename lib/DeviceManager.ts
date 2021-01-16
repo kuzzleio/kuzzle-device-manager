@@ -32,7 +32,6 @@ export class DeviceManager extends Plugin {
   public mappings: {
     /**
      * Define custom mappings for the "sensors" collection.
-     * @todo apply inside the "assets" collection
      */
     sensors: {
       /**
@@ -98,12 +97,12 @@ export class DeviceManager extends Plugin {
                     id: { type: 'keyword' },
                     manufacturerId: { type: 'keyword' },
                     model: { type: 'keyword' },
+                    updatedAt: { type: 'date' },
+                    payloadUuid: { type: 'keyword' },
                     latitude: { type: 'float' },
                     longitude: { type: 'float' },
                     altitude: { type: 'float' },
                     accuracy: { type: 'integer' },
-                    updatedAt: { type: 'date' },
-                    payloadUuid: { type: 'keyword' },
                     metadata: {
                       dynamic: 'false',
                       properties: {}
@@ -232,6 +231,24 @@ export class DeviceManager extends Plugin {
       ...this.config.collections.sensors.properties.measures.properties,
       ...this.mappings.sensors.measures,
     };
+
+    const sensorProperties = {
+      id: { type: 'keyword' },
+      manufacturerId: { type: 'keyword' },
+      model: { type: 'keyword' },
+    };
+
+    for (const [measureType, definition] of Object.entries(this.config.collections.sensors.properties.measures.properties) as any) {
+      this.config.collections.assets.properties.measures.properties[measureType] = {
+        properties: {
+          ...sensorProperties,
+          ...definition.properties,
+          metadata: {
+            properties: this.config.collections.sensors.properties.metadata.properties
+          }
+        }
+      };
+    }
   }
 }
 
