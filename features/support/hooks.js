@@ -57,6 +57,12 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.collection.truncate('device-manager', 'sensors');
 
   await this.sdk.query({
+    controller: 'device-manager/engines',
+    action: 'create',
+    index: 'tenant-panja'
+  });
+
+  await this.sdk.query({
     controller: 'admin',
     action: 'loadFixtures',
     body: defaultFixtures,

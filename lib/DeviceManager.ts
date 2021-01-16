@@ -22,9 +22,22 @@ export class DeviceManager extends Plugin {
   private enginesController: EnginesController;
   private payloadService: PayloadService;
 
+  /**
+   * Define custom mappings
+   */
   public mappings: {
+    /**
+     * Define custom mappings for the "sensors" collection.
+     * @todo apply inside the "assets" collection
+     */
     sensors: {
+      /**
+       * Define custom mappings for the "sensors.metadata" property
+       */
       metadata: JSONObject;
+      /**
+       * Define custom mappings for the "sensors.measures" property
+       */
       measures: JSONObject;
     },
   }
@@ -35,14 +48,14 @@ export class DeviceManager extends Plugin {
    */
   private decoders = new Map<string, Decoder>();
 
-  private get sdk (): EmbeddedSDK {
+  private get sdk(): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
   /**
    * Constructor
    */
-  constructor () {
+  constructor() {
     super({
       kuzzleVersion: '>=2.8.0 <3'
     });
@@ -79,22 +92,19 @@ export class DeviceManager extends Plugin {
           properties: {
             model: { type: 'keyword' },
             reference: { type: 'keyword' },
-            sensors: {
+            measures: {
               properties: {
                 position: {
                   properties: {
+                    id: { type: 'keyword' },
                     manufacturerId: { type: 'keyword' },
                     model: { type: 'keyword' },
-                    measure: {
-                      properties: {
-                        latitude: { type: 'float' },
-                        longitude: { type: 'float' },
-                        altitude: { type: 'float' },
-                        accuracy: { type: 'integer' },
-                        updatedAt: { type: 'date' },
-                        payloadUuid: { type: 'keyword' }
-                      }
-                    },
+                    latitude: { type: 'float' },
+                    longitude: { type: 'float' },
+                    altitude: { type: 'float' },
+                    accuracy: { type: 'integer' },
+                    updatedAt: { type: 'date' },
+                    payloadUuid: { type: 'keyword' },
                     metadata: {
                       dynamic: 'false',
                       properties: {}
@@ -103,9 +113,12 @@ export class DeviceManager extends Plugin {
                 },
                 temperature: {
                   properties: {
+                    id: { type: 'keyword' },
                     manufacturerId: { type: 'keyword' },
                     model: { type: 'keyword' },
-                    measure: { type: 'float' },
+                    updatedAt: { type: 'date' },
+                    payloadUuid: { type: 'keyword' },
+                    value: { type: 'float' },
                     metadata: {
                       dynamic: 'false',
                       properties: {}
@@ -141,7 +154,7 @@ export class DeviceManager extends Plugin {
    * @param config
    * @param context
    */
-  async init (config: JSONObject, context: PluginContext) {
+  async init(config: JSONObject, context: PluginContext) {
     this.config = { ...this.defaultConfig, ...config };
     this.context = context;
 
@@ -175,7 +188,7 @@ export class DeviceManager extends Plugin {
    *
    * @returns Corresponding API action requestPayload
    */
-  registerDecoder (decoder: Decoder): { controller: string, action: string } {
+  registerDecoder(decoder: Decoder): { controller: string, action: string } {
     decoder.action = decoder.action || kebabCase(decoder.sensorModel);
 
     if (this.api['device-manager/payloads'].actions[decoder.action]) {
@@ -198,7 +211,7 @@ export class DeviceManager extends Plugin {
   /**
    * Initialize the administration index of the plugin
    */
-  private async initDatabase () {
+  private async initDatabase() {
     // @todo need mutex
     try {
       await this.sdk.index.create(this.config.adminIndex);
@@ -218,10 +231,10 @@ export class DeviceManager extends Plugin {
         this.config.adminIndex,
         'sensors',
         { mappings: this.config.adminCollections.sensors })
-      ]);
+    ]);
   }
 
-  private mergeCustomMappings () {
+  private mergeCustomMappings() {
     this.config.collections.sensors.properties.metadata.properties = {
       ...this.config.collections.sensors.properties.metadata.properties,
       ...this.mappings.sensors.metadata,
@@ -234,9 +247,9 @@ export class DeviceManager extends Plugin {
   }
 }
 
-function kebabCase (string) {
+function kebabCase(string) {
   return string
-  // get all lowercase letters that are near to uppercase ones
+    // get all lowercase letters that are near to uppercase ones
     .replace(/([a-z])([A-Z])/g, '$1-$2')
     // replace all spaces and low dash
     .replace(/[\s_]+/g, '-')

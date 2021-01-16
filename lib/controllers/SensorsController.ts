@@ -118,6 +118,10 @@ export class SensorsController extends CRUDController {
       throw new BadRequestError(`Sensor "${sensor._id}" is not assigned to a tenant`);
     }
 
+    if (sensor._source.assetId) {
+      throw new BadRequestError(`Sensor "${sensor._id}" is still linked to an asset`);
+    }
+
     await this.sdk.document.delete(
       sensor._source.tenantId,
       'sensors',
