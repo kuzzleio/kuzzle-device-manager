@@ -22,21 +22,21 @@ export class AssetController extends CRUDController {
       actions: {
         create: {
           handler: this.create.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/asset' }],
+          http: [{ verb: 'post', path: 'device-manager/:index/asset' }],
         },
         update: {
           handler: this.update.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/asset/:_id' }],
+          http: [{ verb: 'put', path: 'device-manager/:index/asset/:_id' }],
         },
         delete: {
           handler: this.delete.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/asset/:_id' }],
+          http: [{ verb: 'delete', path: 'device-manager/:index/asset/:_id' }],
         },
         search: {
           handler: this.search.bind(this),
           http: [
-            { verb: 'post', path: 'device-manager/asset/_search' },
-            { verb: 'get', path: 'device-manager/asset/_search' },
+            { verb: 'post', path: 'device-manager/:index/assets/_search' },
+            { verb: 'get', path: 'device-manager/:index/assets/_search' },
           ],
         },
       },

@@ -14,3 +14,4 @@ Feature: Device Manager Plugin
     Then I should receive a result matching:
       | properties.measures.properties.shock.properties.value.type                       | "float"   |
       | properties.measures.properties.shock.properties.metadata.properties.battery.type | "integer" |
+      | properties.metadata.properties.warranty.type                                      | "keyword" |

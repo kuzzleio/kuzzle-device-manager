@@ -25,6 +25,10 @@ deviceManager.mappings.sensors.metadata = {
   battery: { type: 'integer' }
 };
 
+deviceManager.mappings.assets.metadata = {
+  warranty: { type: 'keyword' }
+};
+
 app.plugin.use(deviceManager);
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
