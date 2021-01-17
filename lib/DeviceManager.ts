@@ -24,12 +24,12 @@ export class DeviceManager extends Plugin {
   private engineController: EngineController;
   private payloadService: PayloadService;
 
-  private get sdk(): EmbeddedSDK {
+  private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
   /**
-   * Define custom mappings
+   * Define custom mappings for "sensors" and "assets" colections
    */
   public mappings: {
     /**
@@ -81,7 +81,7 @@ export class DeviceManager extends Plugin {
     };
 
     this.api = {
-      'device-manager/payloads': {
+      'device-manager/payload': {
         actions: {}
       }
     };
@@ -150,7 +150,7 @@ export class DeviceManager extends Plugin {
     await this.initDatabase();
 
     for (const decoder of Array.from(this.decoders.values())) {
-      this.context.log.info(`Register API action "device-manager/payloads:${decoder.action}" with decoder for sensor "${decoder.sensorModel}"`);
+      this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder for sensor "${decoder.sensorModel}"`);
     }
   }
 
@@ -158,8 +158,8 @@ export class DeviceManager extends Plugin {
    * Register a new decoder for a sensor model.
    *
    * This will register a new API action:
-   *  - controller: "device-manager/payloads"
-   *  - action: "action" property of the decoder or the sensor model in kebab-case
+   *  - controller: `"device-manager/payload"`
+   *  - action: `action` property of the decoder or the sensor model in kebab-case
    *
    * @param decoder Instantiated decoder
    *
@@ -168,11 +168,11 @@ export class DeviceManager extends Plugin {
   registerDecoder (decoder: Decoder): { controller: string, action: string } {
     decoder.action = decoder.action || kebabCase(decoder.sensorModel);
 
-    if (this.api['device-manager/payloads'].actions[decoder.action]) {
+    if (this.api['device-manager/payload'].actions[decoder.action]) {
       throw new PluginImplementationError(`A decoder for "${decoder.sensorModel}" has already been registered.`);
     }
 
-    this.api['device-manager/payloads'].actions[decoder.action] = {
+    this.api['device-manager/payload'].actions[decoder.action] = {
       handler: request => this.payloadService.process(request, decoder),
       http: decoder.http,
     };
@@ -180,7 +180,7 @@ export class DeviceManager extends Plugin {
     this.decoders.set(decoder.sensorModel, decoder);
 
     return {
-      controller: 'device-manager/payloads',
+      controller: 'device-manager/payload',
       action: decoder.action,
     };
   }

@@ -12,7 +12,7 @@ Then(/I (successfully )?receive a "(.*?)" payload with:/, async function (expect
 
   try {
     const response = await this.sdk.query({
-      controller: 'device-manager/payloads',
+      controller: 'device-manager/payload',
       action: payloadType,
       body: payload
     });
