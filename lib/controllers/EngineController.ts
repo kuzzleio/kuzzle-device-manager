@@ -8,7 +8,7 @@ import {
 
 import { NativeController } from 'kuzzle/lib/api/controller/base.js'
 
-export class EnginesController extends NativeController {
+export class EngineController extends NativeController {
   [key: string]: any;
 
   get sdk (): EmbeddedSDK {
@@ -45,7 +45,7 @@ export class EnginesController extends NativeController {
         },
         list: {
           handler: this.list.bind(this),
-          http: [{ verb: 'get', path: 'device-manager/engines' }],
+          http: [{ verb: 'get', path: 'device-manager/engine' }],
         },
         exists: {
           handler: this.exists.bind(this),
@@ -82,7 +82,7 @@ export class EnginesController extends NativeController {
     const index = this.getIndex(request);
 
     const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engines',
+      controller: 'device-manager/engine',
       action: 'exists',
       index,
     });
@@ -108,7 +108,7 @@ export class EnginesController extends NativeController {
     const index = this.getIndex(request);
 
     const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engines',
+      controller: 'device-manager/engine',
       action: 'exists',
       index,
     });

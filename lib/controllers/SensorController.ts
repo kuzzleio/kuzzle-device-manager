@@ -11,7 +11,7 @@ import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders/Decoder';
 import { Sensor } from '../models/Sensor';
 
-export class SensorsController extends CRUDController {
+export class SensorController extends CRUDController {
   public definition: ControllerDefinition;
   private decoders: Map<string, Decoder>;
 
@@ -25,7 +25,7 @@ export class SensorsController extends CRUDController {
    * @param context
    */
   constructor (config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>) {
-    super(context, 'sensor');
+    super(context, 'sensors');
 
     this.context = context;
     this.config = config;
@@ -44,8 +44,8 @@ export class SensorsController extends CRUDController {
         search: {
           handler: this.search.bind(this),
           http: [
-            { verb: 'post', path: 'device-manager/sensors/_search' },
-            { verb: 'get', path: 'device-manager/sensors/_search' }
+            { verb: 'post', path: 'device-manager/sensor/_search' },
+            { verb: 'get', path: 'device-manager/sensor/_search' }
           ]
         },
         assign: {
@@ -82,7 +82,7 @@ export class SensorsController extends CRUDController {
     }
 
     const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engines',
+      controller: 'device-manager/engine',
       action: 'exists',
       index: tenantId,
     });

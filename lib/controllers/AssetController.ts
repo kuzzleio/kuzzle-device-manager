@@ -5,7 +5,7 @@ import {
 
 import { CRUDController } from './CRUDController';
 
-export class AssetsController extends CRUDController {
+export class AssetController extends CRUDController {
   public definition: ControllerDefinition;
 
   /**
@@ -22,7 +22,7 @@ export class AssetsController extends CRUDController {
       actions: {
         create: {
           handler: this.create.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/assets' }],
+          http: [{ verb: 'post', path: 'device-manager/asset' }],
         },
         update: {
           handler: this.update.bind(this),
@@ -35,8 +35,8 @@ export class AssetsController extends CRUDController {
         search: {
           handler: this.search.bind(this),
           http: [
-            { verb: 'post', path: 'device-manager/assets/_search' },
-            { verb: 'get', path: 'device-manager/assets/_search' },
+            { verb: 'post', path: 'device-manager/asset/_search' },
+            { verb: 'get', path: 'device-manager/asset/_search' },
           ],
         },
       },

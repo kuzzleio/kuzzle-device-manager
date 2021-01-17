@@ -59,7 +59,7 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.collection.truncate('tenant-panja', 'sensors-history');
 
   await this.sdk.query({
-    controller: 'device-manager/engines',
+    controller: 'device-manager/engine',
     action: 'create',
     index: 'tenant-panja'
   });

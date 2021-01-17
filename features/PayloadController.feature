@@ -129,7 +129,7 @@ Feature: Payloads Controller
     And I count 1 documents in "tenant-panja":"sensors-history"
 
   Scenario: Propagate sensor measures to asset
-    Given I successfully execute the action "device-manager/sensors":"link" with args:
+    Given I successfully execute the action "device-manager/sensor":"link" with args:
       | _id     | "DummyTemp/assigned-panja-unlinked" |
       | assetId | "PERFO/unlinked"                    |
     When I successfully receive a "dummy-temp" payload with:

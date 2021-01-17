@@ -2,7 +2,7 @@ Feature: Device Manager sensor controller
 
   Scenario: Assign a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensors":"assign" with args:
+    When I successfully execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
       | tenantId | "tenant-kuzzle"        |
     Then The document "device-manager":"sensors":"DummyTemp/unassigned" content match:
@@ -11,15 +11,15 @@ Feature: Device Manager sensor controller
 
   Scenario: Error when assigning a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
-    When I execute the action "device-manager/sensors":"assign" with args:
+    When I execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
       | tenantId | "tenant-kaliop"         |
     Then I should receive an error matching:
       | message | "Tenant \"tenant-kaliop\" does not have a device-manager engine" |
-    And I successfully execute the action "device-manager/sensors":"assign" with args:
+    And I successfully execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
       | tenantId | "tenant-kuzzle"        |
-    When I execute the action "device-manager/sensors":"assign" with args:
+    When I execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
       | tenantId | "tenant-kuzzle"        |
     Then I should receive an error matching:
@@ -27,10 +27,10 @@ Feature: Device Manager sensor controller
 
   Scenario: Unassign sensor from a tenant
     Given an engine on index "tenant-kuzzle"
-    And I successfully execute the action "device-manager/sensors":"assign" with args:
+    And I successfully execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
       | tenantId | "tenant-kuzzle"        |
-    When I successfully execute the action "device-manager/sensors":"unassign" with args:
+    When I successfully execute the action "device-manager/sensor":"unassign" with args:
       | _id | "DummyTemp/unassigned" |
     Then The document "device-manager":"sensors":"DummyTemp/unassigned" content match:
       | tenantId | null |
@@ -38,20 +38,20 @@ Feature: Device Manager sensor controller
 
   Scenario: Error when unassigning from a tenant
     Given an engine on index "tenant-kuzzle"
-    When I execute the action "device-manager/sensors":"unassign" with args:
+    When I execute the action "device-manager/sensor":"unassign" with args:
       | _id | "DummyTemp/unassigned" |
     Then I should receive an error matching:
       | message | "Sensor \"DummyTemp/unassigned\" is not assigned to a tenant" |
-    Given I successfully execute the action "device-manager/sensors":"link" with args:
+    Given I successfully execute the action "device-manager/sensor":"link" with args:
       | _id     | "DummyTemp/assigned-panja-unlinked" |
       | assetId | "PERFO/unlinked"                    |
-    When I execute the action "device-manager/sensors":"unassign" with args:
+    When I execute the action "device-manager/sensor":"unassign" with args:
       | _id | "DummyTemp/assigned-panja-unlinked" |
     Then I should receive an error matching:
       | message | "Sensor \"DummyTemp/assigned-panja-unlinked\" is still linked to an asset" |
 
   Scenario: Link sensor to an asset
-    When I successfully execute the action "device-manager/sensors":"link" with args:
+    When I successfully execute the action "device-manager/sensor":"link" with args:
       | _id     | "DummyTemp/assigned-panja-unlinked" |
       | assetId | "PERFO/unlinked"                    |
     Then The document "device-manager":"sensors":"DummyTemp/assigned-panja-unlinked" content match:
@@ -68,22 +68,22 @@ Feature: Device Manager sensor controller
       | measures.temperature.metadata.battery | 80                                  |
 
   Scenario: Error when linking sensor to an asset
-    When I execute the action "device-manager/sensors":"link" with args:
+    When I execute the action "device-manager/sensor":"link" with args:
       | _id     | "DummyTemp/unassigned" |
       | assetId | "PERFO/unlinked"       |
     Then I should receive an error matching:
       | message | "Sensor \"DummyTemp/unassigned\" is not assigned to a tenant" |
-    When I execute the action "device-manager/sensors":"link" with args:
+    When I execute the action "device-manager/sensor":"link" with args:
       | _id     | "DummyTemp/assigned-panja-unlinked" |
       | assetId | "PERFO/non-existing"                |
     Then I should receive an error matching:
       | message | "Asset \"PERFO/non-existing\" does not exists" |
 
   Scenario: Unlink sensor from an asset
-    Given I successfully execute the action "device-manager/sensors":"link" with args:
+    Given I successfully execute the action "device-manager/sensor":"link" with args:
       | _id     | "DummyTemp/assigned-panja-unlinked" |
       | assetId | "PERFO/unlinked"                    |
-    When I successfully execute the action "device-manager/sensors":"unlink" with args:
+    When I successfully execute the action "device-manager/sensor":"unlink" with args:
       | _id | "DummyTemp/assigned-panja-unlinked" |
     Then The document "device-manager":"sensors":"DummyTemp/assigned-panja-unlinked" content match:
       | assetId | null |
@@ -92,7 +92,7 @@ Feature: Device Manager sensor controller
       | measures | null |
 
   Scenario: Error when unlinking from an asset
-    When I execute the action "device-manager/sensors":"unlink" with args:
+    When I execute the action "device-manager/sensor":"unlink" with args:
       | _id | "DummyTemp/assigned-panja-unlinked" |
     Then I should receive an error matching:
       | message | "Sensor \"DummyTemp/assigned-panja-unlinked\" is not linked to an asset" |

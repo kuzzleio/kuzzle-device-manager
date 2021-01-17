@@ -7,9 +7,9 @@ import {
   PluginImplementationError,
 } from 'kuzzle';
 
-import { AssetsController } from './controllers/AssetsController';
-import { SensorsController } from './controllers/SensorsController';
-import { EnginesController } from './controllers/EnginesController';
+import { AssetController } from './controllers/AssetController';
+import { SensorController } from './controllers/SensorController';
+import { EngineController } from './controllers/EngineController';
 import { PayloadService } from './services/PayloadService';
 import { Decoder } from './decoders/Decoder';
 import { sensorsMappings } from './models/Sensor';
@@ -17,9 +17,9 @@ import { sensorsMappings } from './models/Sensor';
 export class DeviceManager extends Plugin {
   private defaultConfig: JSONObject;
 
-  private assetsController: AssetsController;
-  private sensorsController: SensorsController;
-  private enginesController: EnginesController;
+  private assetController: AssetController;
+  private sensorController: SensorController;
+  private engineController: EngineController;
   private payloadService: PayloadService;
 
   private get sdk(): EmbeddedSDK {
@@ -73,8 +73,8 @@ export class DeviceManager extends Plugin {
     };
 
     this.pipes = {
-      'multi-tenancy/tenant:afterCreate': request => this.enginesController.create(request),
-      'multi-tenancy/tenant:afterDelete': request => this.enginesController.delete(request),
+      'multi-tenancy/tenant:afterCreate': request => this.engineController.create(request),
+      'multi-tenancy/tenant:afterDelete': request => this.engineController.delete(request),
     };
 
     this.defaultConfig = {
@@ -119,13 +119,13 @@ export class DeviceManager extends Plugin {
 
     this.mergeCustomMappings();
 
-    this.assetsController = new AssetsController(context);
-    this.sensorsController = new SensorsController(this.config, context, this.decoders);
-    this.enginesController = new EnginesController(this.config, context);
+    this.assetController = new AssetController(context);
+    this.sensorController = new SensorController(this.config, context, this.decoders);
+    this.engineController = new EngineController(this.config, context);
 
-    this.api['device-manager/assets'] = this.assetsController.definition;
-    this.api['device-manager/sensors'] = this.sensorsController.definition;
-    this.api['device-manager/engines'] = this.enginesController.definition;
+    this.api['device-manager/asset'] = this.assetController.definition;
+    this.api['device-manager/sensor'] = this.sensorController.definition;
+    this.api['device-manager/engine'] = this.engineController.definition;
 
     this.payloadService = new PayloadService(this.config, context);
 
