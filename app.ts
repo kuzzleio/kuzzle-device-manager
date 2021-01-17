@@ -1,6 +1,6 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
 
-import { DeviceManager } from './lib/DeviceManager';
+import { DeviceManager } from './index';
 import { DummyTempDecoder } from './features/fixtures/decoders/DummyTempDecoder';
 import { DummyTempPositionDecoder } from './features/fixtures/decoders/DummyTempPositionDecoder';
 
