@@ -24,7 +24,7 @@
     "doc:deploy": "npm run doc:upload && npm run doc:cloudfront"
   },
   "license": "Apache-2.0",
-  "dependencies": { },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^14.14.21",
     "@typescript-eslint/eslint-plugin": "^4.13.0",

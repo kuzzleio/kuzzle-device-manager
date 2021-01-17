@@ -5,6 +5,7 @@ import {
   EmbeddedSDK,
   InternalError,
   PluginImplementationError,
+  Mutex,
 } from 'kuzzle';
 
 import {
@@ -189,14 +190,17 @@ export class DeviceManager extends Plugin {
    * Initialize the administration index of the plugin
    */
   private async initDatabase () {
-    // @todo need mutex
+    const mutex = new Mutex('device-manager/initDatabase');
+
+    await mutex.lock();
+
     try {
-      await this.sdk.index.create(this.config.adminIndex);
-    }
-    catch (error) {
-      if (error.id !== 'services.storage.index_already_exists') {
-        throw new InternalError(`Cannot initialize plugin database: ${error}`);
+      if (! await this.sdk.index.exists(this.config.adminIndex)) {
+        await this.sdk.index.create(this.config.adminIndex);
       }
+    }
+    finally {
+      await mutex.unlock();
     }
 
     await Promise.all(Object.entries(this.config.adminCollections)

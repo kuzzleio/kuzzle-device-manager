@@ -1,24 +1,10 @@
-import { JSONObject, KuzzleRequest } from 'kuzzle';
+import { JSONObject, KuzzleRequest, HttpRoute } from 'kuzzle';
 
 import { Sensor } from '../models';
 
 import { AssetMeasures, SensorContent } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-// @todo use Kuzzle export
-type HttpRoute = {
-  /**
-   * HTTP verb.
-   */
-  verb: 'get' | 'post' | 'put' | 'delete' | 'head',
-  /**
-   * Route path.
-   * A route starting with `/` will be prefixed by `/_` otherwise the route
-   * will be prefixed by `/_/<application-name>/`.
-   */
-  path: string
-};
 
 /**
  * Base class to implement a decoder for a sensor model.
