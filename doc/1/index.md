@@ -6,4 +6,4 @@ title: Kuzzle IoT Platform - Device Manager
 description: Kuzzle IoT Platform - Device Manager Documentation
 ---
 
-<Redirect to="guides/main-concepts" />
+<Redirect to="guides/sensors" />

@@ -8,7 +8,7 @@ order: 100
 
 # Sensors
 
-A sensor document represents the digital twin of a real sensor in the field.
+A sensor document represents the digital twin of a real sensor.
 
 The document contains sensor identification information, the last measurement received and metadata.
 
@@ -99,7 +99,7 @@ deviceManager.mappings.sensors.measures = {
 };
 ```
 
-## Assignation
+## Assign to a tenant
 
 Sensors can be assigned to tenant by using the [device-manager/sensor:assign](/kuzzle-iot-platform/device-manager/1/controllers/sensor/assign) API action.
 

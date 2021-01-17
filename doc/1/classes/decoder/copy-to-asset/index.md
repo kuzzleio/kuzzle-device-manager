@@ -7,7 +7,7 @@ description: Decoder abstract class copyToAsset() method
 
 # copyToAsset
 
-Build the "measures" property that will be persisted in the asset document.
+Build the `measures` property that will be persisted in the asset document.
 
 By default this method will copy the measures with sensor informations and metadata.
 
