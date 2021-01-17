@@ -3,7 +3,6 @@ import {
   PluginContext,
   JSONObject,
   EmbeddedSDK,
-  InternalError,
   PluginImplementationError,
   Mutex,
 } from 'kuzzle';
@@ -138,7 +137,7 @@ export class DeviceManager extends Plugin {
 
     this.mergeCustomMappings();
 
-    this.assetController = new AssetController(context);
+    this.assetController = new AssetController(this.config, context);
     this.sensorController = new SensorController(this.config, context, this.decoders);
     this.engineController = new EngineController(this.config, context);
 

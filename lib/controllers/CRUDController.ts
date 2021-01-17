@@ -1,6 +1,8 @@
 import {
   KuzzleRequest,
   PluginContext,
+  JSONObject,
+  ControllerDefinition,
 } from 'kuzzle';
 
 import { NativeController } from 'kuzzle/lib/api/controller/base.js'
@@ -8,21 +10,15 @@ import { NativeController } from 'kuzzle/lib/api/controller/base.js'
 export class CRUDController extends NativeController {
   [key: string]: any;
 
-  get kuzzle(): any {
-    return this.context['kuzzle'];
-  }
-
   protected context: PluginContext;
+  protected config: JSONObject;
   private collection: string;
+  public definition: ControllerDefinition;
 
-  /**
-   * Constructor
-   *
-   * @param context
-   */
-  constructor (context: PluginContext, collection: string) {
-    super(context['kuzzle']);
+  constructor (config: JSONObject, context: PluginContext, collection: string) {
+    super();
 
+    this.config = config;
     this.context = context;
     this.collection = collection;
   }

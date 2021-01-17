@@ -1,5 +1,4 @@
 import {
-  ControllerDefinition,
   KuzzleRequest,
   EmbeddedSDK,
   JSONObject,
@@ -12,23 +11,15 @@ import { Decoder } from '../decoders';
 import { Sensor } from '../models';
 
 export class SensorController extends CRUDController {
-  public definition: ControllerDefinition;
   private decoders: Map<string, Decoder>;
 
   get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
-  /**
-   * Constructor
-   *
-   * @param context
-   */
   constructor (config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>) {
-    super(context, 'sensors');
+    super(config, context, 'sensors');
 
-    this.context = context;
-    this.config = config;
     this.decoders = decoders;
 
     this.definition = {

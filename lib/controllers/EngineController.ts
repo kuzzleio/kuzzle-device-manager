@@ -4,6 +4,7 @@ import {
   KuzzleRequest,
   EmbeddedSDK,
   BadRequestError,
+  JSONObject,
 } from 'kuzzle';
 
 import { NativeController } from 'kuzzle/lib/api/controller/base.js'
@@ -11,20 +12,14 @@ import { NativeController } from 'kuzzle/lib/api/controller/base.js'
 export class EngineController extends NativeController {
   [key: string]: any;
 
+  public definition: ControllerDefinition;
+
   get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
-  private context: PluginContext;
-  public definition: ControllerDefinition;
-
-  /**
-   * Constructor
-   *
-   * @param context
-   */
-  constructor (config, context) {
-    super(context['kuzzle']);
+  constructor (config: JSONObject, context: PluginContext) {
+    super();
 
     this.config = config;
     this.context = context;
