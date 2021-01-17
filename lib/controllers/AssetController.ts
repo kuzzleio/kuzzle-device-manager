@@ -1,5 +1,4 @@
 import {
-  ControllerDefinition,
   KuzzleRequest,
   JSONObject,
   PluginContext,
@@ -8,13 +7,6 @@ import {
 import { CRUDController } from './CRUDController';
 
 export class AssetController extends CRUDController {
-  public definition: ControllerDefinition;
-
-  /**
-   * Constructor
-   *
-   * @param context
-   */
   constructor (config: JSONObject, context: PluginContext) {
     super(config, context, 'assets');
 
