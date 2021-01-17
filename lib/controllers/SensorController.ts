@@ -35,34 +35,34 @@ export class SensorController extends CRUDController {
       actions: {
         update: {
           handler: this.update.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/sensor/:_id' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
         },
         delete: {
           handler: this.delete.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/sensor/:_id' }]
+          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id' }]
         },
         search: {
           handler: this.search.bind(this),
           http: [
-            { verb: 'post', path: 'device-manager/sensor/_search' },
-            { verb: 'get', path: 'device-manager/sensor/_search' }
+            { verb: 'post', path: 'device-manager/:index/sensors/_search' },
+            { verb: 'get', path: 'device-manager/:index/sensors/_search' }
           ]
         },
         assign: {
           handler: this.assign.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/_:id/_assign/:tenantId' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_assign' }]
         },
         unassign: {
           handler: this.unassign.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/:_id/_unassign' }]
+          http: [{ verb: 'delete', path: 'device-manager/sensors/:_id/_unassign' }]
         },
         link: {
           handler: this.link.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/_:id/_link/:assetId' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
         },
         unlink: {
           handler: this.unlink.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/:_id/_unlink' }]
+          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id/_unlink' }]
         },
       }
     };
@@ -72,7 +72,7 @@ export class SensorController extends CRUDController {
    * Assign a sensor to a tenant
    */
   async assign (request: KuzzleRequest) {
-    const tenantId = this.getString(request, 'tenantId');
+    const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
     const sensor = await this.getSensor(sensorId);

@@ -21,7 +21,7 @@ export class PayloadService {
     this.context = context;
   }
 
-  async process (request: KuzzleRequest, decoder: Decoder) {
+  async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
     const payload = request.input.body;
 
     // Will throw if the payload is invalid
@@ -37,25 +37,38 @@ export class PayloadService {
       sensor._id);
 
     if (exists) {
-      return this.update(sensor, decoder, request);
+      return this.update(sensor, decoder, request, { refresh });
     }
 
-    return this.register(sensor, decoder, request);
+    return this.register(sensor, decoder, request, { refresh });
   }
 
-  private async register (sensor: Sensor, decoder: Decoder, request: KuzzleRequest) {
+  private async register (
+    sensor: Sensor,
+    decoder: Decoder,
+    request: KuzzleRequest,
+    { refresh }
+  ) {
     const enrichedSensor = await decoder.beforeRegister(sensor, request);
 
     await this.sdk.document.create(
       this.config.adminIndex,
       'sensors',
       enrichedSensor._source,
-      enrichedSensor._id);
+      enrichedSensor._id,
+      { refresh });
 
     return decoder.afterRegister(enrichedSensor, request);
   }
 
-  private async update (sensor: Sensor, decoder: Decoder, request: KuzzleRequest) {
+  private async update (
+    sensor: Sensor,
+    decoder: Decoder,
+    request: KuzzleRequest,
+    { refresh }
+  ) {
+    const refreshableCollections = [];
+
     const previousSensor = await this.sdk.document.get(
       this.config.adminIndex,
       'sensors',
@@ -68,6 +81,8 @@ export class PayloadService {
       'sensors',
       enrichedSensor._id,
       enrichedSensor._source);
+
+    refreshableCollections.push([this.config.adminIndex, 'sensors']);
 
     const tenantId = previousSensor._source.tenantId;
     // Propagate sensor into tenant index
@@ -86,6 +101,9 @@ export class PayloadService {
           ...previousSensor._source,
           ...enrichedSensor._source
         });
+
+      refreshableCollections.push([tenantId, 'sensors']);
+      refreshableCollections.push([tenantId, 'sensors-history']);
     }
 
     // Propagate measures into linked asset
@@ -98,6 +116,14 @@ export class PayloadService {
         'assets',
         assetId,
         { measures: assetMeasures });
+
+      refreshableCollections.push([tenantId, 'assets']);
+    }
+
+    if (refresh === 'wait_for') {
+      await Promise.all(refreshableCollections.map(([index, collection]) => (
+        this.sdk.collection.refresh(index, collection)
+      )));
     }
 
     return decoder.afterUpdate(enrichedSensor, request);

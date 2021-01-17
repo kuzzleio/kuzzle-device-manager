@@ -16,3 +16,6 @@ app.js.map
 lib/**/*.d.ts
 lib/**/*.js.map
 lib/**/*.js
+
+# Doc
+doc/framework
