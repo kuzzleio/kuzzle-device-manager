@@ -1,8 +1,7 @@
 import _ from 'lodash';
 
-import { Decoder } from '../../../lib/decoders/Decoder';
+import { Decoder, SensorContent, Sensor } from '../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
-import { SensorContent, Sensor } from '../../../lib/models/Sensor';
 
 export class DummyTempDecoder extends Decoder {
   constructor () {
@@ -19,7 +18,7 @@ export class DummyTempDecoder extends Decoder {
 
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
     const sensorContent: SensorContent = {
-      manufacturerId: payload.deviceEUI,
+      reference: payload.deviceEUI,
       model: this.sensorModel,
       measures: {
         temperature: {

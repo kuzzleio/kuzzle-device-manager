@@ -7,12 +7,14 @@ import {
   PluginImplementationError,
 } from 'kuzzle';
 
-import { AssetController } from './controllers/AssetController';
-import { SensorController } from './controllers/SensorController';
-import { EngineController } from './controllers/EngineController';
-import { PayloadService } from './services/PayloadService';
-import { Decoder } from './decoders/Decoder';
-import { sensorsMappings } from './models/Sensor';
+import {
+  AssetController,
+  SensorController,
+  EngineController,
+} from './controllers';
+import { PayloadService } from './services';
+import { Decoder } from './decoders';
+import { sensorsMappings } from './models';
 
 export class DeviceManager extends Plugin {
   private defaultConfig: JSONObject;
@@ -227,7 +229,7 @@ export class DeviceManager extends Plugin {
     // for the "measures" property
     const sensorProperties = {
       id: { type: 'keyword' },
-      manufacturerId: { type: 'keyword' },
+      reference: { type: 'keyword' },
       model: { type: 'keyword' },
     };
 

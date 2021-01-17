@@ -1,8 +1,8 @@
 import { JSONObject, KuzzleRequest } from 'kuzzle';
 
-import { Sensor, SensorContent } from '../models/Sensor';
+import { Sensor } from '../models';
 
-import { AssetMeasures } from '../types/Measure';
+import { AssetMeasures, SensorContent } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -38,7 +38,7 @@ export abstract class Decoder {
   }
 
   /**
-   * Validate the payload format for processing.
+   * Validate the payload format before processing.
    *
    * @param payload Raw payload received in the API action body
    * @param request Original request
@@ -51,7 +51,7 @@ export abstract class Decoder {
 
   /**
    * Decode the payload:
-   *  - set "manufacturerId" and "model"
+   *  - set "reference" and "model"
    *  - fetch measures
    *  - fetch metadata
    *
@@ -65,7 +65,7 @@ export abstract class Decoder {
   /**
    * Enrichment hook executed before registering a sensor
    *
-   * @param sensor Sensor before being persisted (no "_id" property)
+   * @param sensor Sensor before being persisted
    * @param request Original request
    *
    * @returns Enriched sensor
@@ -81,7 +81,7 @@ export abstract class Decoder {
    * @param sensor Sensor after being persisted
    * @param request Original request
    *
-   * @returns Result of the API action
+   * @returns Result of the corresponding API action
    */
   async afterRegister (sensor: Sensor, request: KuzzleRequest): Promise<any> {
     return sensor.serialize();
@@ -106,7 +106,7 @@ export abstract class Decoder {
    * @param sensor Sensor after being updated
    * @param request Original request
    *
-   * @returns Result of the API action
+   * @returns Result of the corresponding API action
    */
   async afterUpdate (sensor: Sensor, request: KuzzleRequest): Promise<any> {
     return sensor.serialize();
@@ -126,7 +126,7 @@ export abstract class Decoder {
       measures[measureType] = {
         id: sensor._id,
         model: sensor._source.model,
-        manufacturerId: sensor._source.manufacturerId,
+        reference: sensor._source.reference,
         ...measure,
         metadata: sensor._source.metadata,
       };

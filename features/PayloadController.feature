@@ -7,7 +7,7 @@ Feature: Payloads Controller
       | batteryLevel | 0.8         |
       | uuid         | "some-uuid" |
     Then The document "device-manager":"sensors":"DummyTemp/12345" content match:
-      | manufacturerId                   | "12345"       |
+      | reference                   | "12345"       |
       | model                            | "DummyTemp"   |
       | measures.temperature.updatedAt   | "_DATE_NOW_"  |
       | measures.temperature.payloadUuid | "some-uuid"   |
@@ -28,7 +28,7 @@ Feature: Payloads Controller
       | batteryLevel | 0.7               |
       | uuid         | "some-other-uuid" |
     Then The document "device-manager":"sensors":"DummyTemp/12345" content match:
-      | manufacturerId                   | "12345"           |
+      | reference                   | "12345"           |
       | model                            | "DummyTemp"       |
       | measures.temperature.updatedAt   | "_DATE_NOW_"      |
       | measures.temperature.payloadUuid | "some-other-uuid" |
@@ -57,7 +57,7 @@ Feature: Payloads Controller
       | batteryLevel  | 0.8         |
       | uuid          | "some-uuid" |
     Then The document "device-manager":"sensors":"DummyTempPosition/12345" content match:
-      | manufacturerId                   | "12345"             |
+      | reference                   | "12345"             |
       | model                            | "DummyTempPosition" |
       | measures.temperature.updatedAt   | "_DATE_NOW_"        |
       | measures.temperature.payloadUuid | "some-uuid"         |
@@ -145,7 +145,7 @@ Feature: Payloads Controller
       | assetId  | "PERFO/unlinked" |
     And The document "tenant-panja":"assets":"PERFO/unlinked" content match:
       | measures.temperature.id               | "DummyTemp/assigned-panja-unlinked" |
-      | measures.temperature.manufacturerId   | "assigned-panja-unlinked"           |
+      | measures.temperature.reference   | "assigned-panja-unlinked"           |
       | measures.temperature.model            | "DummyTemp"                         |
       | measures.temperature.updatedAt        | "_DATE_NOW_"                        |
       | measures.temperature.payloadUuid      | "some-other-uuid"                   |

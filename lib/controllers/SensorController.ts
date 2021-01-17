@@ -8,8 +8,8 @@ import {
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
-import { Decoder } from '../decoders/Decoder';
-import { Sensor } from '../models/Sensor';
+import { Decoder } from '../decoders';
+import { Sensor } from '../models';
 
 export class SensorController extends CRUDController {
   public definition: ControllerDefinition;

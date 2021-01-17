@@ -1,3 +1,7 @@
-export * from './lib/DeviceManagement';
+export * from './lib/DeviceManager';
 
-export * from './lib/controllers/AssetController';
+export * from './lib/decoders/';
+
+export * from './lib/models/';
+
+export * from './lib/types/';

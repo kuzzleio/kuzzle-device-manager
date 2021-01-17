@@ -3,7 +3,7 @@ module.exports = {
     sensors: [
       { index: { _id: 'DummyTemp/unassigned' } },
       {
-        manufacturerId: 'unassigned',
+        reference: 'unassigned',
         model: 'DummyTemp',
         measures: {},
         metadata: {},
@@ -12,7 +12,7 @@ module.exports = {
       },
       { index: { _id: 'DummyTemp/assigned-panja-unlinked' } },
       {
-        manufacturerId: 'assigned-panja-unlinked',
+        reference: 'assigned-panja-unlinked',
         model: 'DummyTemp',
         measures: {
           temperature: {
@@ -33,7 +33,7 @@ module.exports = {
     sensors: [
       { index: { _id: 'DummyTemp/assigned-panja-unlinked' } },
       {
-        manufacturerId: 'assigned-panja-unlinked',
+        reference: 'assigned-panja-unlinked',
         model: 'DummyTemp',
         measures: {
           temperature: {

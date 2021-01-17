@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle"
+import { JSONObject } from 'kuzzle'
 
 export type Measure = {
   updatedAt: number;
@@ -12,7 +12,7 @@ export type Measure = {
   accuracy?: number;
 }
 
-export type TagMeasures = {
+export type SensorMeasures = {
   [measureType: string]: Measure;
 }
 
@@ -21,7 +21,7 @@ export type AssetMeasures = {
     // Sensors info
     id: string;
     model: string;
-    manufacturerId: string;
+    reference: string;
     metadata: JSONObject;
 
     // Measure common info

@@ -1,29 +1,13 @@
 import { JSONObject } from 'kuzzle';
 
-import { TagMeasures } from '../types/Measure';
-
-export type SensorContent = {
-  manufacturerId: string;
-  model: string;
-  measures: TagMeasures;
-  metadata: JSONObject;
-  assetId?: string;
-  tenantId?: string;
-
-  _kuzzle_info?: {
-    author?: string,
-    createdAt?: number,
-    updater?: string | null,
-    updatedAt?: number | null
-  }
-}
+import { SensorContent } from '../types';
 
 export class Sensor {
   _id: string;
   _source: SensorContent;
 
   constructor (sensorContent: SensorContent, _id?: string) {
-    this._id = _id || `${sensorContent.model}/${sensorContent.manufacturerId}`;
+    this._id = _id || `${sensorContent.model}/${sensorContent.reference}`;
 
     this._source = {
       metadata: {},
@@ -42,7 +26,7 @@ export class Sensor {
 export const sensorsMappings = {
   dynamic: 'strict',
   properties: {
-    manufacturerId: { type: 'keyword' },
+    reference: { type: 'keyword' },
     model: { type: 'keyword' },
     measures: {
       properties: {

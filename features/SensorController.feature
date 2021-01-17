@@ -4,7 +4,7 @@ Feature: Device Manager sensor controller
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
-      | tenantId | "tenant-kuzzle"        |
+      | index | "tenant-kuzzle"        |
     Then The document "device-manager":"sensors":"DummyTemp/unassigned" content match:
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp/unassigned" exists
@@ -13,15 +13,15 @@ Feature: Device Manager sensor controller
     Given an engine on index "tenant-kuzzle"
     When I execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
-      | tenantId | "tenant-kaliop"         |
+      | index | "tenant-kaliop"         |
     Then I should receive an error matching:
       | message | "Tenant \"tenant-kaliop\" does not have a device-manager engine" |
     And I successfully execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
-      | tenantId | "tenant-kuzzle"        |
+      | index | "tenant-kuzzle"        |
     When I execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
-      | tenantId | "tenant-kuzzle"        |
+      | index | "tenant-kuzzle"        |
     Then I should receive an error matching:
       | message | "Sensor \"DummyTemp/unassigned\" is already assigned to a tenant" |
 
@@ -29,7 +29,7 @@ Feature: Device Manager sensor controller
     Given an engine on index "tenant-kuzzle"
     And I successfully execute the action "device-manager/sensor":"assign" with args:
       | _id      | "DummyTemp/unassigned" |
-      | tenantId | "tenant-kuzzle"        |
+      | index | "tenant-kuzzle"        |
     When I successfully execute the action "device-manager/sensor":"unassign" with args:
       | _id | "DummyTemp/unassigned" |
     Then The document "device-manager":"sensors":"DummyTemp/unassigned" content match:
@@ -61,7 +61,7 @@ Feature: Device Manager sensor controller
     And The document "tenant-panja":"assets":"PERFO/unlinked" content match:
       | measures.temperature.id               | "DummyTemp/assigned-panja-unlinked" |
       | measures.temperature.model            | "DummyTemp"                         |
-      | measures.temperature.manufacturerId   | "assigned-panja-unlinked"           |
+      | measures.temperature.reference   | "assigned-panja-unlinked"           |
       | measures.temperature.updatedAt        | 1610793427950                       |
       | measures.temperature.payloadUuid      | "some-uuid"                         |
       | measures.temperature.value            | 23.3                                |

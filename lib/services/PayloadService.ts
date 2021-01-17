@@ -5,8 +5,8 @@ import {
   EmbeddedSDK,
 } from 'kuzzle';
 
-import { Decoder } from '../decoders/Decoder';
-import { Sensor } from '../models/Sensor';
+import { Decoder } from '../decoders';
+import { Sensor } from '../models';
 
 export class PayloadService {
   private config: JSONObject;

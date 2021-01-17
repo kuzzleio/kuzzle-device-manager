@@ -475,7 +475,7 @@ class Sensor {
 
   _source: {
     model: string;
-    manufacturerId: string;
+    reference: string;
 
     measures: Measure[];    
     metadata: JSONObject;
@@ -484,12 +484,12 @@ class Sensor {
     tenantId?: string;
   };
 
-  constructor (model: string, manufacturerId: string, measures: Measure[]) {
-    this._id = `${model}/${manufacturerId}`;
+  constructor (model: string, reference: string, measures: Measure[]) {
+    this._id = `${model}/${reference}`;
   
     this._source = {
       model,
-      manufacturerId,
+      reference,
       measures,
       metadata: {},
       assetId: null,
@@ -508,8 +508,8 @@ class IneoDecoder extends Decoder {
   }
 
   async validate (payload: JSONObject, request?: KuzzleRequest): Promise<boolean> | never {
-    if (! payload.manufacturerId) {
-      throw new Error('Missing "manufacturerId"');
+    if (! payload.reference) {
+      throw new Error('Missing "reference"');
     }
 
     return true; 
@@ -517,7 +517,7 @@ class IneoDecoder extends Decoder {
 
   async decode (payload: JSONObject): Promise<SensorContent> {
     const sensorContent: SensorContent = {
-      manufacturerId: payload.devEUI,
+      reference: payload.devEUI,
       model: this.sensorModel,
       measures: {
         temperature: {
@@ -550,14 +550,14 @@ La première fois qu'un payload est reçu:
   - execution de `afterRegister` (pipe)
   - renvoi réponse d'API (retour de `afterRegister` ou le contenu du sensor créé)
 
-L'ID du document est la concaténation de `model` et `manufacturerId`.
+L'ID du document est la concaténation de `model` et `reference`.
 
 ```js
 // Example of a sensor document
 ID: "IneoGTO42/98765poiuyt"
 
 {
-  "manufacturerId": "98765poiuyt",
+  "reference": "98765poiuyt",
   "model": "IneoGTO42",
   "measures": {
     "temperature": {
@@ -619,7 +619,7 @@ Lors de la liaison d'un sensor à un asset:
     "temperature": {
       "id": "IneoGTO42-98765poiuyt",
       "model": "IneoGTO42",
-      "manufacturerId": "98765poiuyt",
+      "reference": "98765poiuyt",
 
       "updatedAt": 1610561030361,
       "payloadUuid": "...",
