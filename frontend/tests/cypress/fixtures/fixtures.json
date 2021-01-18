@@ -1,0 +1,131 @@
+{
+  "tenant1": {
+    "asset": [
+      {
+        "index": {
+          "_id": "01"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Container 01",
+          "reference": "cont01",
+          "weight": 500
+        }
+      },
+      {
+        "index": {
+          "_id": "02"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Container 02",
+          "reference": "cont02",
+          "weight": 500
+        }
+      },
+      {
+        "index": {
+          "_id": "03"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Container 03",
+          "reference": "cont03",
+          "weight": 550
+        }
+      },
+      {
+        "index": {
+          "_id": "04"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Container 04",
+          "reference": "cont04",
+          "weight": 824
+        }
+      }
+    ],
+    "sensor": [
+      {
+        "index": {
+          "_id": "01"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Sensor 01",
+          "reference": "s01",
+          "sensors": [
+            "GPS",
+            "TEMP"
+          ]
+        }
+      },
+      {
+        "index": {
+          "_id": "02"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Sensor 02",
+          "reference": "s02",
+          "sensors": [
+            "GPS"
+          ]
+        }
+      },
+      {
+        "index": {
+          "_id": "03"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Sensor 03",
+          "reference": "s03",
+          "sensors": [
+            "GPS",
+            "BATT"
+          ]
+        }
+      },
+      {
+        "index": {
+          "_id": "04"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Sensor 04",
+          "reference": "s04",
+          "sensors": [
+            "GPS",
+            "TEMP",
+            "BATT"
+          ]
+        }
+      },
+      {
+        "index": {
+          "_id": "05"
+        }
+      },
+      {
+        "metadata": {
+          "name": "Sensor 05",
+          "reference": "s05",
+          "sensors": [
+            "TEMP",
+            "BATT"
+          ]
+        }
+      }
+    ]
+  }
+}

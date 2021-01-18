@@ -11,7 +11,7 @@ import { SensorController } from './controllers/SensorController';
 import { EngineController } from './controllers/EngineController';
 import { FrontController } from './controllers/FrontController';
 
-export class DeviceManagement extends Plugin {
+export class DeviceManager extends Plugin {
   private assetController: AssetController;
   private sensorController: SensorController;
   private engineController: EngineController;
@@ -31,7 +31,7 @@ export class DeviceManagement extends Plugin {
     });
 
     this.defaultConfig = {
-      adminIndex: 'device-management',
+      adminIndex: 'device-manager',
       adminCollections: {
         engines: {
           dynamic: 'strict',
@@ -85,6 +85,8 @@ export class DeviceManagement extends Plugin {
     this.assetController = new AssetController(context);
     this.sensorController = new SensorController(context);
     this.engineController = new EngineController(this.config, context);
+    this.frontController = new FrontController(context, 'device-manager/front/');
+    await this.frontController.init(context);
 
     this.api = {
       'device-manager/asset': this.assetController.definition,

@@ -1,0 +1,15 @@
+{
+  "users": {
+    "admin": {
+      "content": {
+        "profileIds": ["admin"]
+      },
+      "credentials": {
+        "local": {
+          "username": "admin",
+          "password": "admin"
+        }
+      }
+    }
+  }
+}

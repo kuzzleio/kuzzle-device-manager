@@ -1,0 +1,41 @@
+{
+  "tenant1": {
+    "asset": {
+      "properties": {
+        "sensorId": {
+          "type": "keyword"
+        },
+        "metadata": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "reference": {
+              "type": "keyword"
+            },
+            "weight": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "properties": {
+        "assetId": {
+          "type": "keyword"
+        },
+        "metadata": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "sensors": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}
