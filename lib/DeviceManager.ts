@@ -162,7 +162,7 @@ export class DeviceManager extends Plugin {
     await this.initDatabase();
 
     for (const decoder of Array.from(this.decoders.values())) {
-      this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder for sensor "${decoder.sensorModel}"`);
+      this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for sensor "${decoder.sensorModel}"`);
     }
   }
 
