@@ -42,6 +42,10 @@ When a new engine is created for on a tenant index, it will create the following
     "type": "object",
     "dynamic": "false"
   },
+  "qos": {
+    "type": "object",
+    "dynamic": "false"
+  },
   "measures": {
     "properties": {
       "position": {
@@ -124,7 +128,7 @@ When a new engine is created for on a tenant index, it will create the following
           "longitude": {
             "type": "float"
           },
-          "metadata": {
+          "qos": {
             "type": "object"
           },
           "model": {
@@ -147,7 +151,7 @@ When a new engine is created for on a tenant index, it will create the following
           "id": {
             "type": "keyword"
           },
-          "metadata": {
+          "qos": {
             "type": "object"
           },
           "model": {
