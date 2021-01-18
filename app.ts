@@ -21,8 +21,12 @@ deviceManager.mappings.sensors.measures = {
   }
 };
 
-deviceManager.mappings.sensors.metadata = {
+deviceManager.mappings.sensors.qos = {
   battery: { type: 'integer' }
+};
+
+deviceManager.mappings.sensors.metadata = {
+  group: { type: 'keyword' }
 };
 
 deviceManager.mappings.assets.metadata = {
