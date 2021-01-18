@@ -106,6 +106,15 @@ export class DeviceManager extends Plugin {
           }
         },
         sensors: sensorsMappings,
+        payloads: {
+          dynamic: 'false',
+          // @todo have API action to clean
+          properties: {
+            uuid: { type: 'keyword' },
+            sensorId: { type: 'keyword' },
+            sensorModel: { type: 'keyword' },
+          }
+        }
       },
       collections: {
         // assets collection
