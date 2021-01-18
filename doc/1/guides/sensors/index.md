@@ -8,7 +8,7 @@ order: 100
 
 # Sensors
 
-A sensor document represents the digital twin of a real sensor.
+A sensor document represents a real sensor on the field.
 
 The document contains sensor identification information, the last measurement received and metadata.
 
@@ -112,10 +112,6 @@ Sensors can be linked to an asset by using the [device-manager/sensor:link](/kuz
 When linked, the sensor measures are copied inside the asset document.
 
 New measures received by the sensor will be propagated inside the asset document.
-
-## Historization
-
-When a sensor is associated to a tenant, its content is historized with each new measurement received within the `sensor-history` collection of the tenant's index.
 
 ## Metadata
 

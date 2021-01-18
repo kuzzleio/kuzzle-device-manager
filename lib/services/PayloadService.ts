@@ -93,17 +93,7 @@ export class PayloadService {
         enrichedSensor._id,
         enrichedSensor._source);
 
-      // Historize
-      await this.sdk.document.create(
-        tenantId,
-        'sensors-history',
-        {
-          ...previousSensor._source,
-          ...enrichedSensor._source
-        });
-
       refreshableCollections.push([tenantId, 'sensors']);
-      refreshableCollections.push([tenantId, 'sensors-history']);
     }
 
     // Propagate measures into linked asset
@@ -111,13 +101,21 @@ export class PayloadService {
     if (assetId) {
       const assetMeasures = await decoder.copyToAsset(enrichedSensor);
 
-      await this.sdk.document.update(
+      const updatedAsset = await this.sdk.document.update(
         tenantId,
         'assets',
         assetId,
-        { measures: assetMeasures });
+        { measures: assetMeasures },
+        { source: true });
+
+      // Historize
+      await this.sdk.document.create(
+        tenantId,
+        'assets-history',
+        updatedAsset._source);
 
       refreshableCollections.push([tenantId, 'assets']);
+      refreshableCollections.push([tenantId, 'assets-history']);
     }
 
     if (refresh === 'wait_for') {

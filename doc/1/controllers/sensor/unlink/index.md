@@ -2,7 +2,7 @@
 code: true
 type: page
 title: unlink
-description: Assign a sensor to a tenant index
+description: Unlink a sensor from an asset
 ---
 
 # unlink

@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: link
-description: Assign a sensor to a tenant index
+title: linkAsset
+description: Link a sensor to an asset
 ---
 
-# link
+# linkAsset
 
 Link a sensor to an asset.
 
@@ -18,7 +18,7 @@ The sensor measures will be copied into the asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/_:id/_link/:assetId[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/:index/sensors/_:id/_linkAsset/:assetId[?refresh=wait_for]
 Method: PUT
 ```
 
@@ -28,7 +28,7 @@ Method: PUT
 {
   "index": "<index>",
   "controller": "device-manager/sensor",
-  "action": "link",
+  "action": "linkAsset",
   "_id": "<sensorId>",
   "assetId": "<assetId>"
 }
@@ -55,7 +55,7 @@ Method: PUT
   "error": null,
   "index": "<index>",
   "controller": "device-manager/sensor",
-  "action": "link",
+  "action": "linkAsset",
   "requestId": "<unique request identifier>",
   "result": {}
 }

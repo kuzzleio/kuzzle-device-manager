@@ -8,7 +8,7 @@ order: 300
 
 # Assets
 
-An asset document represents the digital twin of a real asset in the field to which one or more sensors can be attached.
+An asset document represents the real asset in the field to which one or more sensors can be attached.
 
 The document contains asset identification information, the latest measurements received by the associated sensors and metadata.
 
@@ -80,3 +80,7 @@ By default, for each measurement type the following information are copied in ad
 ```
 
 It is possible to override the [Decoder.copyToAsset](/kuzzle-iot-platform/device-manager/1/classes/decoder/copy-to-asset) method to choose what to copy into the asset.
+
+## Historization
+
+When a new measure is received from a linked sensor, the asset content is historized in the `assets-history` collection of the tenant's index.

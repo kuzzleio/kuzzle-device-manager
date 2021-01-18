@@ -39,16 +39,16 @@ export class SensorController extends CRUDController {
             { verb: 'get', path: 'device-manager/:index/sensors/_search' }
           ]
         },
-        assign: {
-          handler: this.assign.bind(this),
+        assignTenant: {
+          handler: this.assignTenant.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_assign' }]
         },
         unassign: {
           handler: this.unassign.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/sensors/:_id/_unassign' }]
         },
-        link: {
-          handler: this.link.bind(this),
+        linkAsset: {
+          handler: this.linkAsset.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
         },
         unlink: {
@@ -62,7 +62,7 @@ export class SensorController extends CRUDController {
   /**
    * Assign a sensor to a tenant
    */
-  async assign (request: KuzzleRequest) {
+  async assignTenant (request: KuzzleRequest) {
     const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
@@ -128,7 +128,7 @@ export class SensorController extends CRUDController {
   /**
    * Link a sensor to an asset.
    */
-  async link (request: KuzzleRequest) {
+  async linkAsset (request: KuzzleRequest) {
     const assetId = this.getString(request, 'assetId');
     const sensorId = this.getId(request);
 

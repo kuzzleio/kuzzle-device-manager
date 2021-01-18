@@ -1,7 +1,7 @@
 ---
 code: false
 type: page
-title: Decoder
+title: Decoders
 description: Use decoders to receive process various payload 
 order: 200
 ---

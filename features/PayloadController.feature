@@ -7,7 +7,7 @@ Feature: Payloads Controller
       | batteryLevel | 0.8         |
       | uuid         | "some-uuid" |
     Then The document "device-manager":"sensors":"DummyTemp/12345" content match:
-      | reference                   | "12345"       |
+      | reference                        | "12345"       |
       | model                            | "DummyTemp"   |
       | measures.temperature.updatedAt   | "_DATE_NOW_"  |
       | measures.temperature.payloadUuid | "some-uuid"   |
@@ -28,7 +28,7 @@ Feature: Payloads Controller
       | batteryLevel | 0.7               |
       | uuid         | "some-other-uuid" |
     Then The document "device-manager":"sensors":"DummyTemp/12345" content match:
-      | reference                   | "12345"           |
+      | reference                        | "12345"           |
       | model                            | "DummyTemp"       |
       | measures.temperature.updatedAt   | "_DATE_NOW_"      |
       | measures.temperature.payloadUuid | "some-other-uuid" |
@@ -57,7 +57,7 @@ Feature: Payloads Controller
       | batteryLevel  | 0.8         |
       | uuid          | "some-uuid" |
     Then The document "device-manager":"sensors":"DummyTempPosition/12345" content match:
-      | reference                   | "12345"             |
+      | reference                        | "12345"             |
       | model                            | "DummyTempPosition" |
       | measures.temperature.updatedAt   | "_DATE_NOW_"        |
       | measures.temperature.payloadUuid | "some-uuid"         |
@@ -109,46 +109,46 @@ Feature: Payloads Controller
 
   Scenario: Propagate sensor to tenant index
     When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "assigned-panja-unlinked" |
-      | register55   | 42.2                      |
-      | batteryLevel | 0.4                       |
-      | uuid         | "some-other-uuid"         |
-    Then The document "device-manager":"sensors":"DummyTemp/assigned-panja-unlinked" content match:
-      | tenantId                         | "tenant-panja"    |
+      | deviceEUI    | "assigned-ayse-unlinked" |
+      | register55   | 42.2                     |
+      | batteryLevel | 0.4                      |
+      | uuid         | "some-other-uuid"        |
+    Then The document "device-manager":"sensors":"DummyTemp/assigned-ayse-unlinked" content match:
+      | tenantId                         | "tenant-ayse"     |
       | measures.temperature.updatedAt   | "_DATE_NOW_"      |
       | measures.temperature.payloadUuid | "some-other-uuid" |
       | measures.temperature.value       | 42.2              |
       | metadata.battery                 | 40                |
-    And The document "tenant-panja":"sensors":"DummyTemp/assigned-panja-unlinked" content match:
-      | tenantId                         | "tenant-panja"    |
+    And The document "tenant-ayse":"sensors":"DummyTemp/assigned-ayse-unlinked" content match:
+      | tenantId                         | "tenant-ayse"     |
       | measures.temperature.updatedAt   | "_DATE_NOW_"      |
       | measures.temperature.payloadUuid | "some-other-uuid" |
       | measures.temperature.value       | 42.2              |
       | metadata.battery                 | 40                |
-    And I refresh the collection "tenant-panja":"sensors-history"
-    And I count 1 documents in "tenant-panja":"sensors-history"
 
   Scenario: Propagate sensor measures to asset
-    Given I successfully execute the action "device-manager/sensor":"link" with args:
-      | _id     | "DummyTemp/assigned-panja-unlinked" |
-      | assetId | "PERFO/unlinked"                    |
+    Given I successfully execute the action "device-manager/sensor":"linkAsset" with args:
+      | _id     | "DummyTemp/assigned-ayse-unlinked" |
+      | assetId | "PERFO/unlinked"                   |
     When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "assigned-panja-unlinked" |
-      | register55   | 42.2                      |
-      | batteryLevel | 0.4                       |
-      | uuid         | "some-other-uuid"         |
-    Then The document "device-manager":"sensors":"DummyTemp/assigned-panja-unlinked" content match:
-      | tenantId | "tenant-panja"   |
+      | deviceEUI    | "assigned-ayse-unlinked" |
+      | register55   | 42.2                     |
+      | batteryLevel | 0.4                      |
+      | uuid         | "some-other-uuid"        |
+    Then The document "device-manager":"sensors":"DummyTemp/assigned-ayse-unlinked" content match:
+      | tenantId | "tenant-ayse"    |
       | assetId  | "PERFO/unlinked" |
-    Then The document "tenant-panja":"sensors":"DummyTemp/assigned-panja-unlinked" content match:
-      | tenantId | "tenant-panja"   |
+    Then The document "tenant-ayse":"sensors":"DummyTemp/assigned-ayse-unlinked" content match:
+      | tenantId | "tenant-ayse"    |
       | assetId  | "PERFO/unlinked" |
-    And The document "tenant-panja":"assets":"PERFO/unlinked" content match:
-      | measures.temperature.id               | "DummyTemp/assigned-panja-unlinked" |
-      | measures.temperature.reference   | "assigned-panja-unlinked"           |
-      | measures.temperature.model            | "DummyTemp"                         |
-      | measures.temperature.updatedAt        | "_DATE_NOW_"                        |
-      | measures.temperature.payloadUuid      | "some-other-uuid"                   |
-      | measures.temperature.value            | 42.2                                |
-      | measures.temperature.metadata.battery | 40                                  |
+    And The document "tenant-ayse":"assets":"PERFO/unlinked" content match:
+      | measures.temperature.id               | "DummyTemp/assigned-ayse-unlinked" |
+      | measures.temperature.reference        | "assigned-ayse-unlinked"           |
+      | measures.temperature.model            | "DummyTemp"                        |
+      | measures.temperature.updatedAt        | "_DATE_NOW_"                       |
+      | measures.temperature.payloadUuid      | "some-other-uuid"                  |
+      | measures.temperature.value            | 42.2                               |
+      | measures.temperature.metadata.battery | 40                                 |
+    And I refresh the collection "tenant-ayse":"assets-history"
+    And I count 1 documents in "tenant-ayse":"assets-history"
 

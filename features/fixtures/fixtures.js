@@ -10,9 +10,9 @@ module.exports = {
         tenantId: null,
         assetId: null
       },
-      { index: { _id: 'DummyTemp/assigned-panja-unlinked' } },
+      { index: { _id: 'DummyTemp/assigned-ayse-unlinked' } },
       {
-        reference: 'assigned-panja-unlinked',
+        reference: 'assigned-ayse-unlinked',
         model: 'DummyTemp',
         measures: {
           temperature: {
@@ -24,16 +24,16 @@ module.exports = {
         metadata: {
           battery: 80
         },
-        tenantId: 'tenant-panja',
+        tenantId: 'tenant-ayse',
         assetId: null
       },
     ]
   },
-  'tenant-panja': {
+  'tenant-ayse': {
     sensors: [
-      { index: { _id: 'DummyTemp/assigned-panja-unlinked' } },
+      { index: { _id: 'DummyTemp/assigned-ayse-unlinked' } },
       {
-        reference: 'assigned-panja-unlinked',
+        reference: 'assigned-ayse-unlinked',
         model: 'DummyTemp',
         measures: {
           temperature: {
@@ -45,7 +45,7 @@ module.exports = {
         metadata: {
           battery: 80
         },
-        tenantId: 'tenant-panja',
+        tenantId: 'tenant-ayse',
         assetId: null
       },
     ],

@@ -56,12 +56,14 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.collection.truncate('device-manager', 'engines');
   await this.sdk.collection.truncate('device-manager', 'sensors');
 
-  await this.sdk.collection.truncate('tenant-panja', 'sensors-history');
+  if (await this.sdk.index.exists('tenant-ayse')) {
+    await this.sdk.index.delete('tenant-ayse');
+  }
 
   await this.sdk.query({
     controller: 'device-manager/engine',
     action: 'create',
-    index: 'tenant-panja'
+    index: 'tenant-ayse'
   });
 
   await this.sdk.query({

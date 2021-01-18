@@ -122,8 +122,6 @@ export class DeviceManager extends Plugin {
         },
         // sensors collection
         sensors: sensorsMappings,
-        // sensors-history collection
-        'sensors-history': sensorsMappings,
       }
     };
   }
@@ -248,6 +246,8 @@ export class DeviceManager extends Plugin {
         }
       };
     }
+
+    this.config.collections['assets-history'] = this.config.collections.assets;
   }
 }
 
