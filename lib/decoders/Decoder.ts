@@ -114,7 +114,7 @@ export abstract class Decoder {
         model: sensor._source.model,
         reference: sensor._source.reference,
         ...measure,
-        metadata: sensor._source.metadata,
+        qos: sensor._source.qos,
       };
     }
 

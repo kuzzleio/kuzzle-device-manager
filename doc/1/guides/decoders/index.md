@@ -49,7 +49,7 @@ class KarakoyDecoder extends Decoder {
           value: payload.register55,
         }
       },
-      metadata: {
+      qos: {
         battery: payload.batteryLevel * 100
       }
     };

@@ -41,6 +41,10 @@ export class DeviceManager extends Plugin {
        */
       metadata: JSONObject;
       /**
+       * Define custom mappings for the "sensors.qos" property
+       */
+      qos: JSONObject;
+      /**
        * Define custom mappings for the "sensors.measures" property
        */
       measures: JSONObject;
@@ -73,6 +77,7 @@ export class DeviceManager extends Plugin {
     this.mappings = {
       sensors: {
         metadata: {},
+        qos: {},
         measures: {},
       },
       assets: {
@@ -208,6 +213,12 @@ export class DeviceManager extends Plugin {
   }
 
   private mergeCustomMappings () {
+    // Merge sensors qos custom mappings
+    this.config.collections.sensors.properties.qos.properties = {
+      ...this.config.collections.sensors.properties.qos.properties,
+      ...this.mappings.sensors.qos,
+    };
+
     // Merge sensors metadata custom mappings
     this.config.collections.sensors.properties.metadata.properties = {
       ...this.config.collections.sensors.properties.metadata.properties,
@@ -240,8 +251,8 @@ export class DeviceManager extends Plugin {
         properties: {
           ...sensorProperties,
           ...definition.properties,
-          metadata: {
-            properties: this.config.collections.sensors.properties.metadata.properties
+          qos: {
+            properties: this.config.collections.sensors.properties.qos.properties
           }
         }
       };

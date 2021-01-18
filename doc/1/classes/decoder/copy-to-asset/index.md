@@ -9,7 +9,7 @@ description: Decoder abstract class copyToAsset() method
 
 Build the `measures` property that will be persisted in the asset document.
 
-By default this method will copy the measures with sensor informations and metadata.
+By default this method will copy the measures with sensor information and qos information.
 
 ```ts
 copyToAsset (sensor: Sensor, request: KuzzleRequest): Promise<AssetMeasures>
@@ -44,7 +44,7 @@ class KarakoyDecoder extends Decoder {
         model: sensor._source.model,
         reference: sensor._source.reference,
         ...measure,
-        metadata: sensor._source.metadata,
+        qos: sensor._source.qos,
       };
     }
 

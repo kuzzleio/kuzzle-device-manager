@@ -13,7 +13,7 @@ It has to return a promise resolving to a [SensorContent](/kuzzle-iot-platform/d
   - `reference`: sensor identifier
   - `model`: sensor model
   - `measures`: mesures received in the payload
-  - `metadata`: additional metadata (optional)
+  - `qos`: additional qos (optional)
 
 ```ts
 abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent>
@@ -61,7 +61,7 @@ class KarakoyDecoder extends Decoder {
           value: payload.register55,
         }
       },
-      metadata: {
+      qos: {
         battery: payload.batteryLevel * 100
       }
     };

@@ -27,7 +27,7 @@ export class DummyTempDecoder extends Decoder {
           value: payload.register55,
         }
       },
-      metadata: {
+      qos: {
         battery: payload.batteryLevel * 100
       }
     };
@@ -36,13 +36,13 @@ export class DummyTempDecoder extends Decoder {
   }
 
   async beforeRegister (sensor: Sensor, request: KuzzleRequest) {
-    sensor._source.metadata.registerEnriched = true;
+    sensor._source.qos.registerEnriched = true;
 
     return sensor;
   }
 
   async beforeUpdate (sensor: Sensor, request: KuzzleRequest) {
-    sensor._source.metadata.updateEnriched = true;
+    sensor._source.qos.updateEnriched = true;
 
     return sensor;
   }

@@ -142,13 +142,13 @@ Feature: Payloads Controller
       | tenantId | "tenant-ayse"    |
       | assetId  | "PERFO/unlinked" |
     And The document "tenant-ayse":"assets":"PERFO/unlinked" content match:
-      | measures.temperature.id               | "DummyTemp/assigned-ayse-unlinked" |
-      | measures.temperature.reference        | "assigned-ayse-unlinked"           |
-      | measures.temperature.model            | "DummyTemp"                        |
-      | measures.temperature.updatedAt        | "_DATE_NOW_"                       |
-      | measures.temperature.payloadUuid      | "some-other-uuid"                  |
-      | measures.temperature.value            | 42.2                               |
-      | measures.temperature.metadata.battery | 40                                 |
+      | measures.temperature.id          | "DummyTemp/assigned-ayse-unlinked" |
+      | measures.temperature.reference   | "assigned-ayse-unlinked"           |
+      | measures.temperature.model       | "DummyTemp"                        |
+      | measures.temperature.updatedAt   | "_DATE_NOW_"                       |
+      | measures.temperature.payloadUuid | "some-other-uuid"                  |
+      | measures.temperature.value       | 42.2                               |
+      | measures.temperature.qos.battery | 40                                 |
     And I refresh the collection "tenant-ayse":"assets-history"
     And I count 1 documents in "tenant-ayse":"assets-history"
 

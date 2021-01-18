@@ -6,12 +6,13 @@ Feature: Device Manager Plugin
       | index      | "device-manager" |
       | collection | "sensors"        |
     Then I should receive a result matching:
-      | properties.metadata.properties.battery.type                | "integer" |
+      | properties.metadata.properties.group.type                  | "keyword" |
+      | properties.qos.properties.battery.type                     | "integer" |
       | properties.measures.properties.shock.properties.value.type | "float"   |
     When I successfully execute the action "collection":"getMapping" with args:
       | index      | "tenant-ayse" |
       | collection | "assets"      |
     Then I should receive a result matching:
-      | properties.measures.properties.shock.properties.value.type                       | "float"   |
-      | properties.measures.properties.shock.properties.metadata.properties.battery.type | "integer" |
-      | properties.metadata.properties.warranty.type                                     | "keyword" |
+      | properties.measures.properties.shock.properties.value.type                  | "float"   |
+      | properties.measures.properties.shock.properties.qos.properties.battery.type | "integer" |
+      | properties.metadata.properties.warranty.type                                | "keyword" |

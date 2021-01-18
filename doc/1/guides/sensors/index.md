@@ -30,6 +30,9 @@ A sensor is uniquely identified by the pair `model` + `reference`.
     }
   },
   "metadata": {
+    "groupe": "red-team"
+  },
+  "qos": {
     "battery": 86
   },
   "tenantId": null,
@@ -117,7 +120,28 @@ New measures received by the sensor will be propagated inside the asset document
 
 It is possible to attach metadata to the sensors within the `metadata` property.
 
-It is possible to define metadata mappings by declaring it at plugin initialization:
+It is possible to define `metadata` property mappings by declaring it at plugin initialization:
+
+```js
+import { DeviceManager } from 'kuzzle-plugin-device-manager';
+
+const deviceManager = new DeviceManager();
+
+// Declare a "group" metadata of type "keyword" 
+deviceManager.mappings.sensors.metadata = {
+  group: { type: 'keyword' }
+};
+```
+
+## QOS
+
+Alongside measures, a sensor may send information about it state (e.g. battery, signal strenght, etc.)
+
+Those information should stored in the `qos` property.
+
+They will be copied alongside the measure when the sensor in linked to an asset.
+
+It is possible to define `qos` property mappings by declaring it at plugin initialization:
 
 ```js
 import { DeviceManager } from 'kuzzle-plugin-device-manager';
@@ -125,7 +149,7 @@ import { DeviceManager } from 'kuzzle-plugin-device-manager';
 const deviceManager = new DeviceManager();
 
 // Declare a "battery" metadata of type "integer" 
-deviceManager.mappings.sensors.metadata = {
+deviceManager.mappings.sensors.qos = {
   battery: { type: 'integer' }
 };
 ```

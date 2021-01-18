@@ -36,7 +36,7 @@ export type AssetMeasures = {
     id: string;
     model: string;
     reference: string;
-    metadata: JSONObject;
+    qos: JSONObject;
 
     // Measure common info
     updatedAt: number;

@@ -52,7 +52,7 @@ By default, for each measurement type the following information are copied in ad
  - `id`: sensor document unique identifier
  - `model`: sensor model
  - `reference`: sensor reference
- - `metadata`: sensor metadata
+ - `qos`: sensor qos info
 
 **Example:** _Content of asset document linked to a sensor with a temperature measure_
 ```js
@@ -66,7 +66,7 @@ By default, for each measurement type the following information are copied in ad
       "id": "IneoGTO42-98765poiuyt",
       "model": "IneoGTO42",
       "reference": "98765poiuyt",
-      "metadata": {
+      "qos": {
         "battery": 2.3
       },
       

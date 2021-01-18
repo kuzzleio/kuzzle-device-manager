@@ -34,7 +34,7 @@ export class DummyTempPositionDecoder extends Decoder {
           accuracy: payload.location.accu,
         }
       },
-      metadata: {
+      qos: {
         battery: payload.batteryLevel * 100
       }
     };

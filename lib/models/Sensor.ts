@@ -10,6 +10,7 @@ export class Sensor {
     this._id = _id || `${sensorContent.model}/${sensorContent.reference}`;
 
     this._source = {
+      qos: {},
       metadata: {},
       ...sensorContent,
     };
@@ -52,6 +53,10 @@ export const sensorsMappings = {
           }
         },
       }
+    },
+    qos: {
+      dynamic: 'false',
+      properties: {}
     },
     metadata: {
       dynamic: 'false',

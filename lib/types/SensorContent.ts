@@ -6,7 +6,8 @@ export type SensorContent = {
   reference: string;
   model: string;
   measures: SensorMeasures;
-  metadata: JSONObject;
+  qos?: JSONObject;
+  metadata?: JSONObject;
   assetId?: string;
   tenantId?: string;
 
