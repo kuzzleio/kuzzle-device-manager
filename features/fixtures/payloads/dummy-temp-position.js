@@ -7,5 +7,4 @@ module.exports = {
     accu: 2100,
   },
   batteryLevel: 0.8,
-  uuid: 'some-uuid',
 };

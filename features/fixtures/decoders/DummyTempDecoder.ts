@@ -19,11 +19,9 @@ export class DummyTempDecoder extends Decoder {
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
     const sensorContent: SensorContent = {
       reference: payload.deviceEUI,
-      model: this.sensorModel,
       measures: {
         temperature: {
           updatedAt: Date.now(),
-          payloadUuid: payload.uuid,
           value: payload.register55,
         }
       },

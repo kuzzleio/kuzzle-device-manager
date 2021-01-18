@@ -19,16 +19,13 @@ export class DummyTempPositionDecoder extends Decoder {
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
     const sensorContent: SensorContent = {
       reference: payload.deviceEUI,
-      model: this.sensorModel,
       measures: {
         temperature: {
           updatedAt: Date.now(),
-          payloadUuid: payload.uuid,
           value: payload.register55,
         },
         position: {
           updatedAt: Date.now(),
-          payloadUuid: payload.uuid,
           latitude: payload.location.lat,
           longitude: payload.location.lon,
           accuracy: payload.location.accu,

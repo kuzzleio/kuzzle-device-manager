@@ -21,7 +21,7 @@ module.exports = {
             value: 23.3,
           }
         },
-        metadata: {
+        qos: {
           battery: 80
         },
         tenantId: 'tenant-ayse',
@@ -42,7 +42,7 @@ module.exports = {
             value: 23.3,
           }
         },
-        metadata: {
+        qos: {
           battery: 80
         },
         tenantId: 'tenant-ayse',

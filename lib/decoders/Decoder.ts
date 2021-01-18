@@ -37,9 +37,9 @@ export abstract class Decoder {
 
   /**
    * Decode the payload:
-   *  - set "reference" and "model"
+   *  - set "reference"
    *  - fetch measures
-   *  - fetch metadata
+   *  - fetch qos
    *
    * @param payload Raw payload received in the API action body
    * @param request Original request

@@ -4,8 +4,11 @@ import { SensorMeasures } from './Measure';
 
 export type SensorContent = {
   reference: string;
-  model: string;
   measures: SensorMeasures;
+  /**
+   * This will be auto-filled by Kuzzle
+   */
+  model?: string;
   qos?: JSONObject;
   metadata?: JSONObject;
   assetId?: string;

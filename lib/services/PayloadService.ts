@@ -23,11 +23,39 @@ export class PayloadService {
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
     const payload = request.input.body;
+    const uuid = request.input.args.uuid || request.internalId;
+    let valid = true;
 
-    // Will throw if the payload is invalid
-    await decoder.validate(payload, request);
+    try {
+      await decoder.validate(payload, request);
+    }
+    catch (error) {
+      valid = false;
+      throw error;
+    }
+    finally {
+      await this.sdk.document.create(
+        this.config.adminIndex,
+        'payloads',
+        {
+          uuid,
+          valid,
+          payload,
+          sensorModel: decoder.sensorModel,
+        });
+    }
 
     const sensorContent = await decoder.decode(payload, request);
+
+    // Inject payload uuid
+    for (const measure of Object.values(sensorContent.measures)) {
+      if (! measure.payloadUuid) {
+        measure.payloadUuid = uuid;
+      }
+    }
+    if (! sensorContent.model) {
+      sensorContent.model = decoder.sensorModel;
+    }
 
     const sensor = new Sensor(sensorContent);
 

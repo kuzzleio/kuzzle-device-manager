@@ -41,11 +41,9 @@ class KarakoyDecoder extends Decoder {
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
     const sensorContent: SensorContent = {
       reference: payload.deviceEUI,
-      model: this.sensorModel,
       measures: {
         temperature: {
           updatedAt: Date.now(),
-          payloadUuid: request.internalId,
           value: payload.register55,
         }
       },
@@ -76,3 +74,13 @@ It is possible to intervene during the processing of a payload with hooks:
   - `afterUpdate`: Hook executed after updating a sensor
 
 See also: [Decoder abstract class](/kuzzle-iot-platform/device-manager/1/classes/decoder).
+
+## Troubleshooting
+
+Every payload received by Kuzzle will be stored in the `payloads` collection of the admin index.
+
+Each document contains the following property:
+  - `uuid`: payload unique identifier (also found in measures)
+  - `valid`: payload validity
+  - `sensorModel`: sensor model registered for this payload
+  - `payload`: raw payload content 

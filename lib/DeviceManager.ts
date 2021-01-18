@@ -111,8 +111,11 @@ export class DeviceManager extends Plugin {
           // @todo have API action to clean
           properties: {
             uuid: { type: 'keyword' },
-            sensorId: { type: 'keyword' },
+            valid: { type: 'boolean' },
             sensorModel: { type: 'keyword' },
+            payload: {
+              properties: {}
+            }
           }
         }
       },

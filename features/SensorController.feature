@@ -63,7 +63,7 @@ Feature: Device Manager sensor controller
       | measures.temperature.model       | "DummyTemp"                        |
       | measures.temperature.reference   | "assigned-ayse-unlinked"           |
       | measures.temperature.updatedAt   | 1610793427950                      |
-      | measures.temperature.payloadUuid | "some-uuid"                        |
+      | measures.temperature.payloadUuid | "_STRING_"                         |
       | measures.temperature.value       | 23.3                               |
       | measures.temperature.qos.battery | 80                                 |
 
