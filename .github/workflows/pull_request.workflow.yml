@@ -48,6 +48,7 @@ jobs:
            node-version: "12"
        - run: |
            npm install
+           npm run build
            npx kourou app:start-services
            bash features/run-kuzzle.sh
            npm run test:functional
