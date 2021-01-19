@@ -12,7 +12,7 @@ This method must be implemented in order to decode the payload.
 It has to return a promise resolving to a [SensorContent](/kuzzle-iot-platform/device-manager/1/types/sensor-content) with the following informations:
   - `reference`: sensor identifier
   - `measures`: mesures received in the payload
-  - `qos`: additional qos (optional)
+  - `qos`: additional information about sensor state like battery, etc. (optional)
 
 ```ts
 abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent>

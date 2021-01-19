@@ -21,6 +21,7 @@ An asset is uniquely identified by the `type` + `model` + `reference` pair.
   "type": "<asset type>",
   "model": "<asset model designation>",
   "reference": "<asset model unique identifier>",
+
   "measures": {
     "position": {
       "id": "<associated sensor unique identifier>",
@@ -37,9 +38,11 @@ An asset is uniquely identified by the `type` + `model` + `reference` pair.
       "altitude": 12
     }
   },
+
   "metadata": {
-    "battery": 86
+    "owner": "Ayse"
   },
+  
   "tenantId": null,
   "assetId": null
 }
