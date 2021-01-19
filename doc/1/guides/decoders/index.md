@@ -56,11 +56,33 @@ class KarakoyDecoder extends Decoder {
   }
 }
 
-// A new API action will be generated to handle the "Karakoy" sensor model payloads:
-//  - controller: "device-manager/payload"
-//  - action: "karakoy"
-//  - url: POST "/_/device-manager/payload/karakoy"
 deviceManager.registerDecoder(new KarakoyDecoder());
+```
+
+## Receive payloads
+
+When registering a decoder, a corresponding API action is registered in the `device-manager/payload` controller.
+
+The API action name is the name of the model in `kebab-case`.
+
+The generated URL is the following: `POST /_/device-manager/payload/<model-kebab-case>`.
+
+You can specify a custom API action and customs HTTP routes by defining the `action` and `http` properties on the decoder class.
+
+```js
+class KarakoyDecoder extends Decoder {
+  constructor () {
+    super("Karakoy");
+
+    // Generated API action: "device-manager/payload:karakoy-v1"
+    this.action = 'karakoy-v1';
+
+    // Generated HTTP route: PUT /_/v1/device-manager/payload/karakoy
+    this.http = [
+      { verb: 'put', path: 'v1/device-manager/payload/karakoy' }
+    ];
+  }
+}
 ```
 
 ## Hooks 
