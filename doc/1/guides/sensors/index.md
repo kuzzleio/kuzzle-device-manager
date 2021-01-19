@@ -8,7 +8,7 @@ order: 100
 
 # Sensors
 
-A sensor document represents a real sensor on the field.
+An asset document represents the physical asset.
 
 The document contains sensor identification information, the last measurement received and metadata.
 

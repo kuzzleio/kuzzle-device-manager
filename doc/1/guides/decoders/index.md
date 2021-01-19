@@ -2,7 +2,7 @@
 code: false
 type: page
 title: Decoders
-description: Use decoders to receive process various payload 
+description: Use decoders to receive or process various payload 
 order: 200
 ---
 
@@ -65,7 +65,7 @@ deviceManager.registerDecoder(new KarakoyDecoder());
 
 ## Hooks 
 
-It is possible to intervene during the processing of a payload with hooks:
+You can then use lifecycle hooks to modify the payload during it’s process
 
   - `validate`: Validate the payload format before processing
   - `beforeRegister`: Enrichment hook executed before registering a sensor

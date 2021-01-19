@@ -8,7 +8,7 @@ order: 300
 
 # Assets
 
-An asset document represents the real asset in the field to which one or more sensors can be attached.
+An asset document represents the physical asset to which one or more sensors can be attached.
 
 The document contains asset identification information, the latest measurements received by the associated sensors and metadata.
 

@@ -11,7 +11,7 @@ Hooks allows to modify the processing of a payload and it's propagation into the
 
 ## `beforeRegister`
 
-Enrichment hook executed before registering a sensor
+Lifecycle hook triggered before a sensor is registered
 
 ---
 
@@ -32,7 +32,7 @@ Returns the enriched sensor document.
 
 ## `beforeUpdate`
 
-Enrichment hook executed before updating a sensor
+Lifecycle hook triggered before a sensor is updated
 
 ---
 
