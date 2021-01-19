@@ -16,7 +16,7 @@ The super constructor must be called with the sensor model.
 ## Constructor
 
 ```ts
-Decoder(sensorModel: string)
+Decoder()
 ```
 
 <br/>
