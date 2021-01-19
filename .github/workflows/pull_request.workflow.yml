@@ -46,9 +46,4 @@ jobs:
        - uses: actions/setup-node@v1.4.4
          with:
            node-version: "12"
-       - run: |
-           npm install
-           npm run build
-           npx kourou app:start-services
-           bash features/run-kuzzle.sh
-           npm run test:functional
+       - uses: ./.github/actions/es-lint

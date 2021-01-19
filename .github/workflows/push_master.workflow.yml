@@ -49,30 +49,4 @@ jobs:
         - uses: actions/setup-node@v1.4.4
           with:
             node-version: "12"
-        - run: |
-           npm install
-           npm run build
-           npx kourou app:start-services
-           bash features/run-kuzzle.sh
-           npm run test:functional
-
-  deploy:
-     name: Build and deploy
-     runs-on: ubuntu-18.04
-     needs: [functional-tests]
-     steps:
-        - name: Checkout
-          uses: actions/checkout@v2
-        - name: Login to DockerHub
-          uses: docker/login-action@v1
-          with:
-            registry: registry.gitlab.com
-            username: ${{ secrets.GITLAB_DOCKER_USERNAME }}
-            password: ${{ secrets.GITLAB_DOCKER_TOKEN }}
-        - name: Build and push
-          uses: docker/build-push-action@v2
-          with:
-            context: .
-            file: ./backend/Dockerfile
-            push: true
-            tags: registry.gitlab.com/kuzzle/laposte-caisse-mobile:latest
+        - uses: ./.github/actions/es-lint

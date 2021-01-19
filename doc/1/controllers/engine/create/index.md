@@ -8,9 +8,7 @@ description: Creates a new Device Manager engine on an index
 # create
 
 
-Safely stops a Kuzzle instance after all remaining requests are processed.
-
-In a cluster environment, the shutdown action will be propagated across all nodes.
+Creates a new device manager engine on an index
 
 ---
 
@@ -19,7 +17,7 @@ In a cluster environment, the shutdown action will be propagated across all node
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/admin/_shutdown
+URL: http://kuzzle:7512/_/device-manager/engine/:index
 Method: POST
 ```
 
@@ -27,8 +25,9 @@ Method: POST
 
 ```js
 {
-  "controller": "admin",
-  "action": "shutdown"
+  "controller": "device-manager/engine",
+  "action": "create",
+  "index": "tenant-ayse"
 }
 ```
 
@@ -36,17 +35,27 @@ Method: POST
 
 ## Response
 
-Returns a confirmation that the command is being executed.
+Returns an object containing the index name and the list of created collections with their mappings.
 
 ```js
 {
   "requestId": "d16d5e8c-464a-4589-938f-fd84f46080b9",
   "status": 200,
   "error": null,
-  "controller": "admin",
-  "action": "shutdown",
+  "controller": "device-manager/engine",
+  "action": "create",
   "collection": null,
   "index": null,
-  "result": { "acknowledge": true }
+  "result": { 
+    "index": "tenant-ayse",
+    "collections": {
+      "assets": {
+        "properties": {
+          // Mappings properties
+        }
+      },
+      // other collections are returned as well
+    }
+  }
 }
 ```
