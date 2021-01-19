@@ -19,12 +19,6 @@ The super constructor must be called with the sensor model.
 Decoder()
 ```
 
-<br/>
-
-| Arguments     | Type              | Description  |
-|---------------|-------------------|--------------|
-| `sensorModel` | <pre>string</pre> | Sensor model |
-
 ### Example
 
 ```ts
