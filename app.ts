@@ -12,7 +12,7 @@ deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
 deviceManager.mappings.sensors.measures = {
-  shock: {
+  humidity: {
     properties: {
       updatedAt: { type: 'date' },
       payloadUuid: { type: 'keyword' },

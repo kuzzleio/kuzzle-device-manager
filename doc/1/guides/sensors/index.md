@@ -90,9 +90,9 @@ import { DeviceManager } from 'kuzzle-plugin-device-manager';
 
 const deviceManager = new DeviceManager();
 
-// Declare a new "shock" measure 
+// Declare a new "humidity" measure 
 deviceManager.mappings.sensors.measures = {
-  shock: {
+  humidity: {
     properties: {
       updatedAt: { type: 'date' },
       payloadUuid: { type: 'keyword' },
