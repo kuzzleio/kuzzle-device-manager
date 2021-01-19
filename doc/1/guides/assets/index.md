@@ -12,12 +12,13 @@ An asset document represents the real asset in the field to which one or more se
 
 The document contains asset identification information, the latest measurements received by the associated sensors and metadata.
 
-An asset is uniquely identified by the `model` + `reference` pair.
+An asset is uniquely identified by the `type` + `model` + `reference` pair.
 
 **Example:** _Asset document with a GPS measure_
 
 ```js
 {
+  "type": "<asset type>",
   "model": "<asset model designation>",
   "reference": "<asset model unique identifier>",
   "measures": {

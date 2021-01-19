@@ -124,6 +124,7 @@ export class DeviceManager extends Plugin {
         assets: {
           dynamic: 'strict',
           properties: {
+            type: { type: 'keyword' },
             model: { type: 'keyword' },
             reference: { type: 'keyword' },
             measures: {
