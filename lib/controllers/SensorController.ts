@@ -9,6 +9,7 @@ import {
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
+import { SensorContent } from 'lib/types';
 
 export class SensorController extends CRUDController {
   private decoders: Map<string, Decoder>;
@@ -24,6 +25,10 @@ export class SensorController extends CRUDController {
 
     this.definition = {
       actions: {
+        create: {
+          handler: this.create.bind(this),
+          http: [{ verb: 'post', path: 'device-manager/:index/sensors' }]
+        },
         update: {
           handler: this.update.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
@@ -57,6 +62,24 @@ export class SensorController extends CRUDController {
         },
       }
     };
+  }
+
+  async create (request: KuzzleRequest) {
+    const model = this.getBodyString(request, 'model');
+    const reference = this.getBodyString(request, 'reference');
+
+    if (! request.input.resource._id) {
+      const sensorContent: SensorContent = {
+        model,
+        reference,
+        measures: {}
+      };
+
+      const sensor = new Sensor(sensorContent);
+      request.input.resource._id = sensor._id;
+    }
+
+    return super.create(request);
   }
 
   /**
