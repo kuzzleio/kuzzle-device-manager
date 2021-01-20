@@ -4,6 +4,7 @@ import {
   PluginContext,
   EmbeddedSDK,
 } from 'kuzzle';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
@@ -23,7 +24,7 @@ export class PayloadService {
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
     const payload = request.input.body;
-    const uuid = request.input.args.uuid || request.internalId;
+    const uuid = request.input.args.uuid || uuidv4();
     let valid = true;
 
     try {
