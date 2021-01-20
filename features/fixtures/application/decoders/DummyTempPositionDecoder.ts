@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { Decoder, SensorContent } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
@@ -9,7 +7,7 @@ export class DummyTempPositionDecoder extends Decoder {
   }
 
   async validate (payload: JSONObject, request: KuzzleRequest) {
-    if (_.isEmpty(payload.deviceEUI)) {
+    if (payload.deviceEUI === undefined) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
   }
