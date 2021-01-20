@@ -97,7 +97,7 @@ You can then use lifecycle hooks to modify the payload during it’s process
 
 See also: [Decoder abstract class](/kuzzle-iot-platform/device-manager/1/classes/decoder).
 
-## Troubleshooting
+## Saving raw payloads
 
 Every payload received by Kuzzle will be stored in the `payloads` collection of the admin index.
 
