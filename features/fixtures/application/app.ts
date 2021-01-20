@@ -1,8 +1,7 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
 
-import { DeviceManager } from './index';
-import { DummyTempDecoder } from './features/fixtures/decoders/DummyTempDecoder';
-import { DummyTempPositionDecoder } from './features/fixtures/decoders/DummyTempPositionDecoder';
+import { DeviceManager } from '../../../index';
+import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
 
 const app = new Backend('kuzzle');
 

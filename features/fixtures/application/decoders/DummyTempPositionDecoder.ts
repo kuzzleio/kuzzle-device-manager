@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Decoder, SensorContent } from '../../../index';
+import { Decoder, SensorContent } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
 export class DummyTempPositionDecoder extends Decoder {
