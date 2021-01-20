@@ -11,7 +11,7 @@ Creates a new asset inside a tenant index.
 
 Returns an error if the document already exists.
 
-See also [document:create](/core/2/api/controllers/document/create) API action.
+See also the [document:create](/core/2/api/controllers/document/create) API action.
 
 ---
 
@@ -64,7 +64,7 @@ Assets must contains at least the following properties:
   - `model`: Asset model designation
   - `reference`: Unique identifier scoped to a model
 
-Asset can contains custom metadata in `metadata` property.
+Assets can contain custom values in the `metadata` property.
 
 ---
 

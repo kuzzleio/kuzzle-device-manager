@@ -8,9 +8,9 @@ order: 100
 
 # Sensors
 
-A sensor document represents the physical sensor.
+A sensor document represents a physical sensor.
 
-The document contains sensor identification information, the last measurement received and metadata.
+The document contains sensor identification information, the last measurement received and the sensor's metadata.
 
 A sensor is uniquely identified by the pair `model` + `reference`.
 
@@ -48,8 +48,8 @@ Each measurement must be stored in the key corresponding to its type: `measures.
 
 The plugin provides the following measurement types:
 
-  - `position`: store a GPS location
-  - `temperature`: store a temperature
+  - `position`: stores a GPS location
+  - `temperature`: stores a temperature
 
 <details><summary>See associated mappings</summary>
 
@@ -120,7 +120,7 @@ New measures received by the sensor will be propagated inside the asset document
 
 It is possible to attach metadata to the sensors within the `metadata` property.
 
-It is possible to define `metadata` property mappings by declaring it at plugin initialization:
+It is possible to define `metadata` property mappings by declaring them at plugin initialization:
 
 ```js
 import { DeviceManager } from 'kuzzle-plugin-device-manager';
@@ -135,13 +135,13 @@ deviceManager.mappings.sensors.metadata = {
 
 ## QOS
 
-Alongside measures, a sensor may send information about it state (e.g. battery, signal strenght, etc.)
+Alongside measures, a sensor may send information about its state (e.g. battery, signal strenght, etc.)
 
-Those information should stored in the `qos` property.
+Those information should be stored in the `qos` property.
 
-They will be copied alongside the measure when the sensor in linked to an asset.
+They will be copied alongside measures when the sensor in linked to an asset.
 
-It is possible to define `qos` property mappings by declaring it at plugin initialization:
+It is possible to define the `qos` property mappings by declaring them at plugin initialization:
 
 ```js
 import { DeviceManager } from 'kuzzle-plugin-device-manager';

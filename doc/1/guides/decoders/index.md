@@ -67,7 +67,7 @@ The API action name is the name of the model in `kebab-case`.
 
 The generated URL is the following: `POST /_/device-manager/payload/<model-kebab-case>`.
 
-You can specify a custom API action and customs HTTP routes by defining the `action` and `http` properties on the decoder class.
+You can specify a custom API action and custom HTTP routes by defining the `action` and `http` properties of the decoder class.
 
 ```js
 class KarakoyDecoder extends Decoder {
@@ -87,9 +87,9 @@ class KarakoyDecoder extends Decoder {
 
 ## Hooks 
 
-You can then use lifecycle hooks to modify the payload during it’s process
+You can then use lifecycle hooks to modify a payload while it's been processed
 
-  - `validate`: Validate the payload format before processing
+  - `validate`: Validates the payload format before processing
   - `beforeRegister`: Enrichment hook executed before registering a sensor
   - `afterRegister`: Hook executed after registering a sensor
   - `beforeUpdate`: Enrichment hook executed before updating a sensor
