@@ -40,8 +40,7 @@ export abstract class Decoder {
    *
    * @throws BadRequestError if the payload is invalid
    */
-  async validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
-    return true;
+  async validate (payload: JSONObject, request: KuzzleRequest): Promise<void> | never {
   }
 
   /**

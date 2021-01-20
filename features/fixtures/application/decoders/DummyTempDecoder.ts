@@ -1,19 +1,17 @@
 import _ from 'lodash';
 
-import { Decoder, SensorContent } from '../../../index';
+import { Decoder, SensorContent, Sensor } from '../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
-export class DummyTempPositionDecoder extends Decoder {
+export class DummyTempDecoder extends Decoder {
   constructor () {
-    super('DummyTempPosition');
+    super('DummyTemp');
   }
 
   async validate (payload: JSONObject, request: KuzzleRequest) {
     if (_.isEmpty(payload.deviceEUI)) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
-
-    return true;
   }
 
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
@@ -23,12 +21,6 @@ export class DummyTempPositionDecoder extends Decoder {
         temperature: {
           updatedAt: Date.now(),
           value: payload.register55,
-        },
-        position: {
-          updatedAt: Date.now(),
-          latitude: payload.location.lat,
-          longitude: payload.location.lon,
-          accuracy: payload.location.accu,
         }
       },
       qos: {
@@ -37,5 +29,25 @@ export class DummyTempPositionDecoder extends Decoder {
     };
 
     return sensorContent;
+  }
+
+  async beforeRegister (sensor: Sensor, request: KuzzleRequest) {
+    sensor._source.qos.registerEnriched = true;
+
+    return sensor;
+  }
+
+  async beforeUpdate (sensor: Sensor, request: KuzzleRequest) {
+    sensor._source.qos.updateEnriched = true;
+
+    return sensor;
+  }
+
+  async afterRegister (sensor: Sensor, request: KuzzleRequest) {
+    return { afterRegister: true };
+  }
+
+  async afterUpdate (sensor: Sensor, request: KuzzleRequest) {
+    return { afterUpdate: true };
   }
 }

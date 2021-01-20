@@ -10,11 +10,9 @@ description: Decoder abstract class validate() method
 Validate the payload format before processing.
 
 This method must throw an error if the payload is not valid.
-
-By default this method always returns `true`.
  
 ```ts
-validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never
+validate (payload: JSONObject, request: KuzzleRequest): Promise<void> | never
 ```
 
 <br/>
@@ -26,7 +24,7 @@ validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never
 
 ## Returns
 
-Returns a promise resolving to `true` if the payload is valid.
+Returns a promise resolving if the payload is valid.
 
 ## Usage
 
@@ -48,12 +46,10 @@ import { Decoder } from 'kuzzle-plugin-device-manager';
 
 class KarakoyDecoder extends Decoder {
   // [...]
-  async validate (payload: JSONObject, request: KuzzleRequest): Promise<true> | never {
+  async validate (payload: JSONObject, request: KuzzleRequest): Promise<void> | never {
     if (typeof payload.deviceEUI !== 'string') {
       throw new BadRequestError('Missing "deviceEUI" property');
     }
-
-    return true;
   }
 }
 ```
