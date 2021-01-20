@@ -9,7 +9,7 @@ import {
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
-import { SensorContent } from 'lib/types';
+import { SensorContent } from '../types';
 
 export class SensorController extends CRUDController {
   private decoders: Map<string, Decoder>;
