@@ -12,9 +12,18 @@ import { AssetMeasures, SensorContent } from '../types';
  * The abstract "decode" method must be implemented.
  */
 export abstract class Decoder {
+  private _http?: HttpRoute[];
+
   sensorModel: string;
-  http?: HttpRoute[];
   action?: string;
+
+  get http (): HttpRoute[] {
+    return this._http || [{ verb: 'post', path: `device-manager/payload/${this.action}` }]
+  }
+
+  set http (http: HttpRoute[]) {
+    this._http = http;
+  }
 
   /**
    * @param sensorModel Sensor model for this decoder
