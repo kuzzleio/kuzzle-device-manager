@@ -35,7 +35,7 @@ should.Assertion.add(
           expectedValue,
           `"${keyPath}" does not match. Expected "${JSON.stringify(expectedValue)}" have "${JSON.stringify(objectValue)}"`);
       }
-      else if (_.isArray(objectValue)) {
+      else if (Array.isArray(objectValue)) {
         for (let i = 0; i < objectValue.length; i++) {
           should(objectValue[i]).matchObject(
             expectedValue[i],
