@@ -2,7 +2,7 @@ Feature: Device Manager sensor controller
 
   Scenario: Attach a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensor":"assignTenant" with args:
+    When I successfully execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
       | index | "tenant-kuzzle"        |
     Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
@@ -11,15 +11,15 @@ Feature: Device Manager sensor controller
 
   Scenario: Error when assigning a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
-    When I execute the action "device-manager/sensor":"assignTenant" with args:
+    When I execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
       | index | "tenant-kaliop"        |
     Then I should receive an error matching:
       | message | "Tenant \"tenant-kaliop\" does not have a device-manager engine" |
-    And I successfully execute the action "device-manager/sensor":"assignTenant" with args:
+    And I successfully execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
       | index | "tenant-kuzzle"        |
-    When I execute the action "device-manager/sensor":"assignTenant" with args:
+    When I execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
       | index | "tenant-kuzzle"        |
     Then I should receive an error matching:
@@ -27,7 +27,7 @@ Feature: Device Manager sensor controller
 
   Scenario: Detach sensor from a tenant
     Given an engine on index "tenant-kuzzle"
-    And I successfully execute the action "device-manager/sensor":"assignTenant" with args:
+    And I successfully execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
       | index | "tenant-kuzzle"        |
     When I successfully execute the action "device-manager/sensor":"detach" with args:

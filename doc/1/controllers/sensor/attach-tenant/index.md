@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: assignTenant
+title: attachTenant
 description: Attach a sensor to a tenant index
 ---
 
-# assignTenant
+# attachTenant
 
 Attach a sensor to a tenant.
 
@@ -28,7 +28,7 @@ Method: PUT
 {
   "index": "<index>",
   "controller": "device-manager/sensor",
-  "action": "assignTenant",
+  "action": "attachTenant",
   "_id": "<sensorId>"
 }
 ```
@@ -53,7 +53,7 @@ Method: PUT
   "error": null,
   "index": "<index>",
   "controller": "device-manager/sensor",
-  "action": "assignTenant",
+  "action": "attachTenant",
   "requestId": "<unique request identifier>",
   "result": {}
 }
