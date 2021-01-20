@@ -7,7 +7,7 @@ description: Measure type definition
 
 # Measure, SensorMeasures and AssetMeasures
 
-The `Measure` type represents a sensor measure.
+The `Measure` type represents a single sensor measure.
 
 The `SensorMeasures` type represents measures stored inside a sensor document.
 

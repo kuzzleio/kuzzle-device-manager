@@ -167,7 +167,7 @@ export class SensorController extends CRUDController {
       assetId);
 
     if (! assetExists) {
-      throw new BadRequestError(`Asset "${assetId}" does not exists`);
+      throw new BadRequestError(`Asset "${assetId}" does not exist`);
     }
 
     await this.sdk.document.update(

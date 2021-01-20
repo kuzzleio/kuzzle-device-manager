@@ -165,13 +165,13 @@ export class DeviceManager extends Plugin {
 
     await this.initDatabase();
 
-    for (const decoder of Array.from(this.decoders.values())) {
+    for (const decoder of this.decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for sensor "${decoder.sensorModel}"`);
     }
   }
 
   /**
-   * Register a new decoder for a sensor model.
+   * Registers a new decoder for a sensor model.
    *
    * This will register a new API action:
    *  - controller: `"device-manager/payload"`

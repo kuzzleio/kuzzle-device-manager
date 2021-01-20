@@ -9,7 +9,7 @@ description: Decoder abstract class constructor
 
 Custom decoders must inherit the provided abstract `Decoder` class.
 
-The super constructor must be called with the sensor model.
+The super constructor must be called with the sensor model name.
 
 ---
 
