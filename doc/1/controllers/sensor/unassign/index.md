@@ -1,13 +1,13 @@
 ---
 code: true
 type: page
-title: unassign
-description: Unassign a sensor from a tenant
+title: detach
+description: Detach a sensor from a tenant
 ---
 
-# unassign
+# detach
 
-Unassign a sensor from a tenant.
+Detach a sensor from a tenant.
 
 ---
 
@@ -25,7 +25,7 @@ Method: DELETE
 ```js
 {
   "controller": "device-manager/sensor",
-  "action": "unassign",
+  "action": "detach",
   "_id": "<sensorId>"
 }
 ```
@@ -48,7 +48,7 @@ Method: DELETE
   "error": null,
   "index": "<index>",
   "controller": "device-manager/sensor",
-  "action": "unassign",
+  "action": "detach",
   "requestId": "<unique request identifier>",
   "result": {}
 }

@@ -50,7 +50,7 @@ An asset is uniquely identified by the `type` + `model` + `reference` pair.
 
 ## Copy measures from sensors
 
-When a sensor is assigned to an asset, it will automatically propagate the new measurements it receives into the asset's `measures` property.
+When a sensor is attached to an asset, it will automatically propagate the new measurements it receives into the asset's `measures` property.
 
 By default, for each measurement type the following information are copied in addition of the measure content:
  - `id`: sensor document unique identifier

@@ -1,18 +1,18 @@
 module.exports = {
   'device-manager': {
     sensors: [
-      { index: { _id: 'DummyTemp/unassigned' } },
+      { index: { _id: 'DummyTemp/detached' } },
       {
-        reference: 'unassigned',
+        reference: 'detached',
         model: 'DummyTemp',
         measures: {},
         metadata: {},
         tenantId: null,
         assetId: null
       },
-      { index: { _id: 'DummyTemp/assigned-ayse-unlinked' } },
+      { index: { _id: 'DummyTemp/attached-ayse-unlinked' } },
       {
-        reference: 'assigned-ayse-unlinked',
+        reference: 'attached-ayse-unlinked',
         model: 'DummyTemp',
         measures: {
           temperature: {
@@ -31,9 +31,9 @@ module.exports = {
   },
   'tenant-ayse': {
     sensors: [
-      { index: { _id: 'DummyTemp/assigned-ayse-unlinked' } },
+      { index: { _id: 'DummyTemp/attached-ayse-unlinked' } },
       {
-        reference: 'assigned-ayse-unlinked',
+        reference: 'attached-ayse-unlinked',
         model: 'DummyTemp',
         measures: {
           temperature: {

@@ -44,13 +44,13 @@ export class SensorController extends CRUDController {
             { verb: 'get', path: 'device-manager/:index/sensors/_search' }
           ]
         },
-        assignTenant: {
-          handler: this.assignTenant.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_assign' }]
+        attachTenant: {
+          handler: this.attachTenant.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_attach' }]
         },
-        unassign: {
-          handler: this.unassign.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/sensors/:_id/_unassign' }]
+        detach: {
+          handler: this.detach.bind(this),
+          http: [{ verb: 'delete', path: 'device-manager/sensors/:_id/_detach' }]
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
@@ -83,16 +83,16 @@ export class SensorController extends CRUDController {
   }
 
   /**
-   * Assign a sensor to a tenant
+   * Attach a sensor to a tenant
    */
-  async assignTenant (request: KuzzleRequest) {
+  async attachTenant (request: KuzzleRequest) {
     const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
     const sensor = await this.getSensor(sensorId);
 
     if (sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is already assigned to a tenant`);
+      throw new BadRequestError(`Sensor "${sensor._id}" is already attached to a tenant`);
     }
 
     const { result: tenantExists } = await this.sdk.query({
@@ -121,15 +121,15 @@ export class SensorController extends CRUDController {
   }
 
   /**
-   * Unassign a sensor from it's tenant
+   * Unattach a sensor from it's tenant
    */
-  async unassign (request: KuzzleRequest) {
+  async detach (request: KuzzleRequest) {
     const sensorId = this.getId(request);
 
     const sensor = await this.getSensor(sensorId);
 
     if (! sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not assigned to a tenant`);
+      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
     }
 
     if (sensor._source.assetId) {
@@ -158,7 +158,7 @@ export class SensorController extends CRUDController {
     const sensor = await this.getSensor(sensorId);
 
     if (! sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not assigned to a tenant`);
+      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
     }
 
     const assetExists = await this.sdk.document.exists(

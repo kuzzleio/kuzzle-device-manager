@@ -2,12 +2,12 @@
 code: true
 type: page
 title: assignTenant
-description: Assign a sensor to a tenant index
+description: Attach a sensor to a tenant index
 ---
 
 # assignTenant
 
-Assign a sensor to a tenant.
+Attach a sensor to a tenant.
 
 The sensor document will be duplicated inside the tenant "sensors" collection.
 

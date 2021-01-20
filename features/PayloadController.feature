@@ -99,16 +99,16 @@ Feature: Payloads Controller
 
   Scenario: Propagate sensor to tenant index
     When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "assigned-ayse-unlinked" |
+      | deviceEUI    | "attached-ayse-unlinked" |
       | register55   | 42.2                     |
       | batteryLevel | 0.4                      |
-    Then The document "device-manager":"sensors":"DummyTemp/assigned-ayse-unlinked" content match:
+    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
       | tenantId                         | "tenant-ayse" |
       | measures.temperature.updatedAt   | "_DATE_NOW_"  |
       | measures.temperature.payloadUuid | "_STRING_"    |
       | measures.temperature.value       | 42.2          |
       | qos.battery                      | 40            |
-    And The document "tenant-ayse":"sensors":"DummyTemp/assigned-ayse-unlinked" content match:
+    And The document "tenant-ayse":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
       | tenantId                         | "tenant-ayse" |
       | measures.temperature.updatedAt   | "_DATE_NOW_"  |
       | measures.temperature.payloadUuid | "_STRING_"    |
@@ -117,21 +117,21 @@ Feature: Payloads Controller
 
   Scenario: Propagate sensor measures to asset
     Given I successfully execute the action "device-manager/sensor":"linkAsset" with args:
-      | _id     | "DummyTemp/assigned-ayse-unlinked" |
+      | _id     | "DummyTemp/attached-ayse-unlinked" |
       | assetId | "PERFO/unlinked"                   |
     When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "assigned-ayse-unlinked" |
+      | deviceEUI    | "attached-ayse-unlinked" |
       | register55   | 42.2                     |
       | batteryLevel | 0.4                      |
-    Then The document "device-manager":"sensors":"DummyTemp/assigned-ayse-unlinked" content match:
+    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
       | tenantId | "tenant-ayse"    |
       | assetId  | "PERFO/unlinked" |
-    Then The document "tenant-ayse":"sensors":"DummyTemp/assigned-ayse-unlinked" content match:
+    Then The document "tenant-ayse":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
       | tenantId | "tenant-ayse"    |
       | assetId  | "PERFO/unlinked" |
     And The document "tenant-ayse":"assets":"PERFO/unlinked" content match:
-      | measures.temperature.id          | "DummyTemp/assigned-ayse-unlinked" |
-      | measures.temperature.reference   | "assigned-ayse-unlinked"           |
+      | measures.temperature.id          | "DummyTemp/attached-ayse-unlinked" |
+      | measures.temperature.reference   | "attached-ayse-unlinked"           |
       | measures.temperature.model       | "DummyTemp"                        |
       | measures.temperature.updatedAt   | "_DATE_NOW_"                       |
       | measures.temperature.payloadUuid | "_STRING_"                         |

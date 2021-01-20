@@ -5,6 +5,7 @@ import { Sensor } from '../models';
 import { AssetMeasures, SensorContent } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
 
 /**
  * Base class to implement a decoder for a sensor model.
@@ -131,3 +132,4 @@ export abstract class Decoder {
 }
 
 /* eslint-enable @typescript-eslint/no-unused-vars */
+/* eslint-enable @typescript-eslint/no-empty-function */

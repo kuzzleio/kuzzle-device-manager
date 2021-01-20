@@ -102,11 +102,11 @@ deviceManager.mappings.sensors.measures = {
 };
 ```
 
-## Assign to a tenant
+## Attach to a tenant
 
-Sensors can be assigned to tenant by using the [device-manager/sensor:assign](/kuzzle-iot-platform/device-manager/1/controllers/sensor/assign) API action.
+Sensors can be attached to tenant by using the [device-manager/sensor:attach](/kuzzle-iot-platform/device-manager/1/controllers/sensor/attach) API action.
 
-When assigned, the sensor document is copied inside the `sensors` collection of the tenant index.
+When attached, the sensor document is copied inside the `sensors` collection of the tenant index.
 
 ## Link to an asset
 
