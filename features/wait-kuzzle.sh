@@ -1,4 +1,4 @@
-#!/bin/sh
+# #!/bin/sh
 
 set -e
 
@@ -16,3 +16,7 @@ do
 
     sleep 1
 done
+
+docker_ps=( $(docker ps | grep kuzzle_1) )
+length=${#docker_ps[@]}
+docker logs ${docker_ps[$length-1]}
