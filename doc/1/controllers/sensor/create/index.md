@@ -9,7 +9,7 @@ description: Creates a new sensor
 
 Creates a new sensor. 
 
-See also [document:create](/core/2/api/controllers/document/create) API action.
+See also the [document:create](/core/2/api/controllers/document/create) API action.
 
 ---
 
@@ -51,7 +51,7 @@ Body:
 
 ### Optional:
 
-- `refresh`: if set to `wait_for`, Kuzzle will not respond until the create is indexed
+- `refresh`: if set to `wait_for`, Kuzzle will not respond until the sensor document is indexed
 - `_id`: set the document unique ID to the provided value, instead of auto-generating an ID with the `model` and the `reference`
 
 ---

@@ -9,7 +9,7 @@ description: Updates a sensor
 
 Applies partial changes to a sensor. 
 
-See also [document:update](/core/2/api/controllers/document/update) API action.
+See also the [document:update](/core/2/api/controllers/document/update) API action.
 
 ---
 

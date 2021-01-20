@@ -9,7 +9,7 @@ description: Updates an asset
 
 Applies partial changes to an asset. 
 
-See also [document:update](/core/2/api/controllers/document/update) API action.
+See also the [document:update](/core/2/api/controllers/document/update) API action.
 
 ---
 

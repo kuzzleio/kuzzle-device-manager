@@ -26,7 +26,7 @@ When assigning the sensor to a tenant, the `tenantId` property is updated and th
 
 ### Collections
 
-When a new engine is created for on a tenant index, it will create the following collections:
+When a new engine is created on a tenant index, it will create the following collections:
 
 **sensors**
 
@@ -175,4 +175,3 @@ When a new engine is created for on a tenant index, it will create the following
   },
 }
 ```
-

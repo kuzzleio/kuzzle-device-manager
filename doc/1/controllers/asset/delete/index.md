@@ -9,7 +9,7 @@ description: Deletes an asset
 
 Deletes an asset.
 
-See also [document:delete](/core/2/api/controllers/document/delete) API action.
+See also the [document:delete](/core/2/api/controllers/document/delete) API action.
 
 ---
 
@@ -51,7 +51,7 @@ Method: DELETE
 Returns information about the deleted asset:
 
 - `_id`: asset unique identifier
-- `_source`: deleted asset source, only if option `source` is set to `true`
+- `_source`: deleted asset source, only if the `source` option is set to `true`
 
 ```js
 {

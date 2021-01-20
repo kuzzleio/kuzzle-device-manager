@@ -9,7 +9,7 @@ description: Decoder abstract class copyToAsset() method
 
 Build the `measures` property that will be persisted in the asset document.
 
-By default this method will copy the measures with sensor information and qos information.
+By default this method will copy the measures with sensor and qos information.
 
 ```ts
 copyToAsset (sensor: Sensor, request: KuzzleRequest): Promise<AssetMeasures>

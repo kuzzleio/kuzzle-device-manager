@@ -2,12 +2,12 @@
 code: true
 type: page
 title: unlink
-description: Unlink a sensor from an asset
+description: Unlinks a sensor from an asset
 ---
 
 # unlink
 
-Unlink a sensor from its asset.
+Unlinks a sensor from its asset.
 
 ---
 

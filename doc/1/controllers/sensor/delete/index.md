@@ -9,7 +9,7 @@ description: Deletes a sensor
 
 Deletes a sensor.
 
-See also [document:delete](/core/2/api/controllers/document/delete) API action.
+See also the [document:delete](/core/2/api/controllers/document/delete) API action.
 
 ---
 
@@ -41,7 +41,7 @@ Method: DELETE
 
 ### Optional:
 
-- `refresh`: if set to `wait_for`, Kuzzle will not respond until the delete is indexed
+- `refresh`: if set to `wait_for`, Kuzzle will not respond until the document is removed from the search indexes
 - `source`: if set to `true` Kuzzle will return the entire deleted document body in the response.
 
 ---

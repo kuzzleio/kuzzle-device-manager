@@ -7,7 +7,7 @@ description: Decoder abstract class lifecycle hooks
 
 # Hooks
 
-Hooks allows to modify the processing of a payload and it's propagation into the associated collections.
+Hooks allow to modify the processing of a payload and its propagation into the associated collections.
 
 ## `beforeRegister`
 
@@ -54,7 +54,7 @@ Returns the enriched sensor document.
 ## `afterRegister`
 
 Hook executed after registering a sensor.
-Return value of this method will be returned in the API action result.
+The value returned by this method will be used as the API action result.
 
 By default, the sensor document content is returned.
 
@@ -78,7 +78,7 @@ Result of the corresponding API action.
 ## `afterUpdate`
 
 Hook executed after updating a sensor.
-Return value of this method will be returned in the API action result.
+The value returned by this method will be used as the API action result.
 
 By default, the sensor document content is returned.
 

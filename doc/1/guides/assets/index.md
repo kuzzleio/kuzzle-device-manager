@@ -8,11 +8,11 @@ order: 300
 
 # Assets
 
-An asset document represents the physical asset to which one or more sensors can be attached.
+An asset document represents the physical asset to which one or more sensors can be linked.
 
-The document contains asset identification information, the latest measurements received by the associated sensors and metadata.
+The document contains asset identification information, the latest measurements received by the associated sensors and their metadata.
 
-An asset is uniquely identified by the `type` + `model` + `reference` pair.
+An asset is uniquely identified by the `type` + `model` + `reference` triplet.
 
 **Example:** _Asset document with a GPS measure_
 
