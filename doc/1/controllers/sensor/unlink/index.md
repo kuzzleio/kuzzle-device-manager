@@ -7,7 +7,7 @@ description: Unlink a sensor from an asset
 
 # unlink
 
-Unlink a sensor from it's asset.
+Unlink a sensor from its asset.
 
 ---
 
