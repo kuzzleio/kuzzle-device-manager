@@ -9,7 +9,7 @@ description: Decoder abstract class abstract decode() method
 
 This method must be implemented in order to decode the payload.
 
-It has to return a promise resolving to a [SensorContent](/kuzzle-iot-platform/device-manager/1/types/sensor-content) with the following informations:
+It has to return a promise resolving to a [SensorContent](/kuzzle-iot-platform/device-manager/1/types/sensor-content) with the following information:
   - `reference`: sensor identifier
   - `measures`: mesures received in the payload
   - `qos`: additional information about sensor state like battery, etc. (optional)
