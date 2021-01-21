@@ -24,12 +24,6 @@ Then('The document {string}:{string}:{string} content match:', async function (i
   should(document._source).matchObject(expectedContent);
 });
 
-Then('The document {string}:{string}:{string} does not exists', async function (index, collection, documentId) {
-  const exists = await this.sdk.document.exists(index, collection, documentId);
-
-  should(exists).be.false();
-});
-
 Then('I {string} the following documents:', async function (action, dataTable) {
   action = `m${action[0].toUpperCase() + action.slice(1)}`;
 
@@ -136,11 +130,8 @@ Then('I count {int} documents matching:', async function (expectedCount, dataTab
   should(count).be.eql(expectedCount);
 });
 
-Then(/The document "(.*?)" should( not)? exist/, async function (id, not) {
-  const exists = await this.sdk.document.exists(
-    this.props.index,
-    this.props.collection,
-    id);
+Then(/The document "(.*?)":"(.*?)":"(.*?)"( does not)? exist/, async function (index, collection, id, not) {
+  const exists = await this.sdk.document.exists(index, collection, id);
 
   if (not && exists) {
     throw new Error(`Document ${id} exists, but it shouldn't`);

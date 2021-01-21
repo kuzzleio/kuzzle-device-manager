@@ -3,6 +3,8 @@ import {
   PluginContext,
   KuzzleRequest,
   EmbeddedSDK,
+  BadRequestError,
+  JSONObject,
 } from 'kuzzle';
 
 import { NativeController } from 'kuzzle/lib/api/controller/base.js'
@@ -10,20 +12,14 @@ import { NativeController } from 'kuzzle/lib/api/controller/base.js'
 export class EngineController extends NativeController {
   [key: string]: any;
 
+  public definition: ControllerDefinition;
+
   get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
-  private context: PluginContext;
-  public definition: ControllerDefinition;
-
-  /**
-   * Constructor
-   *
-   * @param context
-   */
-  constructor (config, context) {
-    super(context['kuzzle']);
+  constructor (config: JSONObject, context: PluginContext) {
+    super();
 
     this.config = config;
     this.context = context;
@@ -34,14 +30,22 @@ export class EngineController extends NativeController {
           handler: this.create.bind(this),
           http: [{ verb: 'post', path: 'device-manager/engine/:index' }],
         },
+        update: {
+          handler: this.update.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/engine/:index' }],
+        },
         delete: {
           handler: this.delete.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/engine/:index' }],
         },
         list: {
           handler: this.list.bind(this),
-          http: [{ verb: 'get', path: 'device-manager/engines' }],
+          http: [{ verb: 'get', path: 'device-manager/engine' }],
         },
+        exists: {
+          handler: this.exists.bind(this),
+          http: [{ verb: 'get', path: 'device-manager/engine/:index/_exists' }],
+        }
       },
     };
   }
@@ -69,8 +73,44 @@ export class EngineController extends NativeController {
     return { index, collections };
   }
 
+  async update (request: KuzzleRequest) {
+    const index = this.getIndex(request);
+
+    const { result: tenantExists } = await this.sdk.query({
+      controller: 'device-manager/engine',
+      action: 'exists',
+      index,
+    });
+
+    if (! tenantExists) {
+      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
+    }
+
+    const collections = this.config.collections;
+
+    const promises = [];
+
+    for (const [collection, mappings] of Object.entries(collections)) {
+      promises.push(this.sdk.collection.update(index, collection, { mappings }));
+    }
+
+    await Promise.all(promises);
+
+    return { index, collections };
+  }
+
   async delete (request: KuzzleRequest) {
     const index = this.getIndex(request);
+
+    const { result: tenantExists } = await this.sdk.query({
+      controller: 'device-manager/engine',
+      action: 'exists',
+      index,
+    });
+
+    if (! tenantExists) {
+      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
+    }
 
     const collections = Object.keys(this.config.collections);
 
@@ -101,5 +141,11 @@ export class EngineController extends NativeController {
     return {
       engines: result.hits.map(hit => hit._source as any)
     };
+  }
+
+  async exists (request: KuzzleRequest) {
+    const index = this.getIndex(request);
+
+    return this.sdk.document.exists(this.config.adminIndex, 'engines', index);
   }
 }

@@ -1,0 +1,13 @@
+name: Functional Tests
+description: Run Functional Tests
+runs:
+  using: "composite"
+  steps:
+    - name: Run functional test
+      shell: bash
+      run: |
+        npm install
+        npm run build
+        npx kourou app:start-services
+        bash features/run-kuzzle.sh
+        npm run test:functional

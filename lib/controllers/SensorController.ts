@@ -1,237 +1,234 @@
 import {
-  ControllerDefinition,
   KuzzleRequest,
-  PreconditionError,
+  EmbeddedSDK,
+  JSONObject,
+  PluginContext,
+  BadRequestError,
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
+import { Decoder } from '../decoders';
+import { Sensor } from '../models';
+import { SensorContent } from '../types';
 
 export class SensorController extends CRUDController {
-  public definition: ControllerDefinition;
+  private decoders: Map<string, Decoder>;
 
-  /**
-   * Constructor
-   * 
-   * @param context 
-   */
-  constructor(context) {
-    super(context, 'sensor');
+  get sdk (): EmbeddedSDK {
+    return this.context.accessors.sdk;
+  }
 
-    this.context = context;
+  constructor (config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>) {
+    super(config, context, 'sensors');
+
+    this.decoders = decoders;
 
     this.definition = {
       actions: {
         create: {
           handler: this.create.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/create' }]
+          http: [{ verb: 'post', path: 'device-manager/:index/sensors' }]
+        },
+        update: {
+          handler: this.update.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
         },
         delete: {
           handler: this.delete.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/sensor' }]
+          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id' }]
         },
         search: {
           handler: this.search.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/search' }]
+          http: [
+            { verb: 'post', path: 'device-manager/:index/sensors/_search' },
+            { verb: 'get', path: 'device-manager/:index/sensors/_search' }
+          ]
         },
-        link: {
-          handler: this.link.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/link' }]
+        attachTenant: {
+          handler: this.attachTenant.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_attach' }]
+        },
+        detach: {
+          handler: this.detach.bind(this),
+          http: [{ verb: 'delete', path: 'device-manager/sensors/:_id/_detach' }]
+        },
+        linkAsset: {
+          handler: this.linkAsset.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
         },
         unlink: {
           handler: this.unlink.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/unlink' }]
+          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id/_unlink' }]
         },
-        push: {
-          handler: this.push.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/sensor/push'}]
-        }
       }
     };
   }
 
+  async create (request: KuzzleRequest) {
+    const model = this.getBodyString(request, 'model');
+    const reference = this.getBodyString(request, 'reference');
+
+    if (! request.input.resource._id) {
+      const sensorContent: SensorContent = {
+        model,
+        reference,
+        measures: {}
+      };
+
+      const sensor = new Sensor(sensorContent);
+      request.input.resource._id = sensor._id;
+    }
+
+    return super.create(request);
+  }
+
+  /**
+   * Attach a sensor to a tenant
+   */
+  async attachTenant (request: KuzzleRequest) {
+    const tenantId = this.getIndex(request);
+    const sensorId = this.getId(request);
+
+    const sensor = await this.getSensor(sensorId);
+
+    if (sensor._source.tenantId) {
+      throw new BadRequestError(`Sensor "${sensor._id}" is already attached to a tenant`);
+    }
+
+    const { result: tenantExists } = await this.sdk.query({
+      controller: 'device-manager/engine',
+      action: 'exists',
+      index: tenantId,
+    });
+
+    if (! tenantExists) {
+      throw new BadRequestError(`Tenant "${tenantId}" does not have a device-manager engine`);
+    }
+
+    sensor._source.tenantId = tenantId;
+
+    await this.sdk.document.update(
+      this.config.adminIndex,
+      'sensors',
+      sensor._id,
+      sensor._source);
+
+    await this.sdk.document.create(
+      tenantId,
+      'sensors',
+      sensor._source,
+      sensor._id);
+  }
+
+  /**
+   * Unattach a sensor from it's tenant
+   */
+  async detach (request: KuzzleRequest) {
+    const sensorId = this.getId(request);
+
+    const sensor = await this.getSensor(sensorId);
+
+    if (! sensor._source.tenantId) {
+      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
+    }
+
+    if (sensor._source.assetId) {
+      throw new BadRequestError(`Sensor "${sensor._id}" is still linked to an asset`);
+    }
+
+    await this.sdk.document.delete(
+      sensor._source.tenantId,
+      'sensors',
+      sensor._id);
+
+    await this.sdk.document.update(
+      this.config.adminIndex,
+      'sensors',
+      sensor._id,
+      { tenantId: null });
+  }
+
   /**
    * Link a sensor to an asset.
-   * Will also link the asset to the sensor.
-   * If it fails to link the asset then it will unlink the sensor.
-   * 
-   * @param request 
    */
-  async link(request: KuzzleRequest) {
-    const index = this.getIndex(request);
-    const assetId = this.getBodyString(request, 'assetId');
+  async linkAsset (request: KuzzleRequest) {
+    const assetId = this.getString(request, 'assetId');
     const sensorId = this.getId(request);
 
-    const asset = await this.context.accessors.sdk.document.search(
-      index,
-      'asset',
-      {
-        query: {
-          term: {
-            _id: assetId,
-          },
-        },
-      }
-    );
-    if (asset.total === 0) {
-      throw new PreconditionError(`The asset with id ${assetId} does not exits.`);
+    const sensor = await this.getSensor(sensorId);
+
+    if (! sensor._source.tenantId) {
+      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
     }
 
-    const res = await this.context.accessors.sdk.document.update(
-      index,
-      'sensor',
-      sensorId,
-      {
-        assetId,
-      },
-      {
-        refresh: this.getRefresh(request),
-      }
-    );
+    const assetExists = await this.sdk.document.exists(
+      sensor._source.tenantId,
+      'assets',
+      assetId);
 
-    try {
-      // Update the asset as well
-      await this.context.accessors.sdk.document.update(
-        index,
-        'asset',
-        asset.hits[0]._id,
-        {
-          sensorId
-        },
-        {
-          refresh: this.getRefresh(request),
-        }
-      );
-    } catch (e) {
-      // If the asset is not updated then rollback
-      await this.context.accessors.sdk.document.update(
-        index,
-        'sensor',
-        sensorId,
-        {
-          assetId: null
-        },
-        {
-          refresh: this.getRefresh(request),
-        }
-      );
-      throw e;
+    if (! assetExists) {
+      throw new BadRequestError(`Asset "${assetId}" does not exist`);
     }
 
-    return res;
+    await this.sdk.document.update(
+      this.config.adminIndex,
+      'sensors',
+      sensor._id,
+      { assetId });
+
+    await this.sdk.document.update(
+      sensor._source.tenantId,
+      'sensors',
+      sensor._id,
+      { assetId });
+
+    const decoder = this.decoders.get(sensor._source.model);
+
+    const assetMeasures = await decoder.copyToAsset(sensor);
+
+    await this.sdk.document.update(
+      sensor._source.tenantId,
+      'assets',
+      assetId,
+      { measures: assetMeasures });
   }
 
   /**
-   * Unlink a sensor.
-   * Will also unlink the sensor the asset is linked to.
-   * If it fails to unlink the asset then it will link the sensor again.
-   * 
-   * @param request 
+   * Unlink a sensor from an asset.
    */
-  async unlink(request: KuzzleRequest) {
-    const index = this.getIndex(request);
+  async unlink (request: KuzzleRequest) {
     const sensorId = this.getId(request);
 
-    const asset = await this.context.accessors.sdk.document.search(
-      index,
-      'asset',
-      {
-        query: {
-          term: {
-            sensorId
-          },
-        },
-      }
-    );
+    const sensor = await this.getSensor(sensorId);
 
-    const res = await this.context.accessors.sdk.document.update(
-      index,
-      'sensor',
-      sensorId,
-      {
-        assetId: null
-      },
-      {
-        refresh: this.getRefresh(request),
-      }
-    );
-
-    try {
-      // Update the asset as well
-      await this.context.accessors.sdk.document.update(
-        index,
-        'asset',
-        asset.hits[0]._id,
-        {
-          sensorId: null
-        },
-        {
-          refresh: this.getRefresh(request),
-        }
-      );
-    } catch (e) {
-      // If the asset is not updated then rollback
-      await this.context.accessors.sdk.document.update(
-        index,
-        'sensor',
-        sensorId,
-        {
-          assetId: asset.hits[0]._id
-        },
-        {
-          refresh: this.getRefresh(request),
-        }
-      );
-      throw e;
+    if (! sensor._source.assetId) {
+      throw new BadRequestError(`Sensor "${sensor._id}" is not linked to an asset`);
     }
 
-    return res;
+    await this.sdk.document.update(
+      this.config.adminIndex,
+      'sensors',
+      sensor._id,
+      { assetId: null });
+
+    await this.sdk.document.delete(
+      sensor._source.tenantId,
+      'sensors',
+      sensor._id);
+
+    await this.sdk.document.update(
+      sensor._source.tenantId,
+      'assets',
+      sensor._source.assetId,
+      { measures: null });
   }
 
-  /**
-   * Push a measurement from a sensor.
-   * The measurement will include the sensorId and the assetId if it is linked.
-   * It is possible for a sensor to push measurement if it is not linked to an asset.
-   * 
-   * @param request 
-   */
-  async push(request: Request) {
-    const index = this.getIndex(request);
-    const sensorId = this.getId(request);
-    const type = this.getBodyString(request, 'type');
-    const value = this.getBodyString(request, 'value');
-    let asset;
+  private async getSensor (sensorId: string): Promise<Sensor> {
+    const document: any = await this.sdk.document.get(
+      this.config.adminIndex,
+      'sensors',
+      sensorId);
 
-    const sensor = await this.context.accessors.sdk.document.get(
-      index,
-      'sensor',
-      sensorId
-    );
-
-    try {
-      asset = await this.context.accessors.sdk.document.get(
-        index,
-        'asset',
-        sensor._source.assetId
-      );
-    } catch (_) {
-      asset = null;
-    }
-
-    return this.context.accessors.sdk.document.create(
-      index,
-      'measurement',
-      {
-        metadata: {
-          sensorId,
-          assetId: (asset ? asset._id : null)
-        },
-        type,
-        value
-      }, 
-      null,
-      {
-        refresh: this.getRefresh(request),
-      }
-    );
+    return new Sensor(document._source, document._id);
   }
 }

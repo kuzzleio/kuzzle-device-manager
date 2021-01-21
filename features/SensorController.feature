@@ -1,97 +1,98 @@
 Feature: Device Manager sensor controller
 
-  Scenario: Create and delete a sensor
+  Scenario: Attach a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensor":"create" with args:
-      | refresh   | "wait_for"      |
-      | index     | "tenant-kuzzle" |
-      | body.name | "sensor-01"     |
-      | _id       | "sensor-01"     |
-    And I successfully execute the action "device-manager/sensor":"search" with args:
-      | index | "tenant-kuzzle" |
-    Then I count 1 documents in "tenant-kuzzle":"sensor"
-    And I successfully execute the action "device-manager/sensor":"delete" with args:
-      | refresh | "wait_for"      |
-      | index   | "tenant-kuzzle" |
-      | _id     | "sensor-01"     |
-    Then I count 0 documents in "tenant-kuzzle":"sensor"
+    When I successfully execute the action "device-manager/sensor":"attachTenant" with args:
+      | _id   | "DummyTemp/detached" |
+      | index | "tenant-kuzzle"        |
+    Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
+      | tenantId | "tenant-kuzzle" |
+    And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
 
-  Scenario: Create, link and try to delete a sensor before unlinking it and deleting it
+  Scenario: Error when assigning a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensor":"create" with args:
-      | refresh   | "wait_for"      |
-      | index     | "tenant-kuzzle" |
-      | body.name | "sensor-01"     |
-      | _id       | "sensor-01"     |
-    And I successfully execute the action "device-manager/asset":"create" with args:
-      | refresh   | "wait_for"      |
-      | index     | "tenant-kuzzle" |
-      | body.name | "asset-01"      |
-      | _id       | "asset-01"      |
-    And I successfully execute the action "device-manager/sensor":"link" with args:
-      | refresh      | "wait_for"      |
-      | index        | "tenant-kuzzle" |
-      | _id          | "sensor-01"     |
-      | body.assetId | "asset-01"      |
-    And I successfully execute the action "device-manager/sensor":"search" with args:
-      | index | "tenant-kuzzle" |
-    Then The property "hits[0]" of the result should match:
-      | _id             | "sensor-01" |
-      | _source.name    | "sensor-01" |
-      | _source.assetId | "asset-01"  |
-    When I execute the action "device-manager/sensor":"delete" with args:
-      | refresh | "wait_for"      |
-      | index   | "tenant-kuzzle" |
-      | _id     | "sensor-01"     |
+    When I execute the action "device-manager/sensor":"attachTenant" with args:
+      | _id   | "DummyTemp/detached" |
+      | index | "tenant-kaliop"        |
     Then I should receive an error matching:
-      | message | "sensor-01 is linked to asset-01." |
-    When I execute the action "device-manager/sensor":"unlink" with args:
-      | refresh | "wait_for"      |
-      | index   | "tenant-kuzzle" |
-      | _id     | "sensor-01"     |
-    And I successfully execute the action "device-manager/sensor":"delete" with args:
-      | refresh | "wait_for"      |
-      | index   | "tenant-kuzzle" |
-      | _id     | "sensor-01"     |
-    And I successfully execute the action "device-manager/asset":"delete" with args:
-      | refresh | "wait_for"      |
-      | index   | "tenant-kuzzle" |
-      | _id     | "asset-01"      |
-    And I successfully execute the action "device-manager/sensor":"search" with args:
-      | index | "tenant-kuzzle" |
-    Then I count 0 documents in "tenant-kuzzle":"sensor"
-    And I successfully execute the action "device-manager/asset":"search" with args:
-      | index | "tenant-kuzzle" |
-    Then I count 0 documents in "tenant-kuzzle":"asset"
+      | message | "Tenant \"tenant-kaliop\" does not have a device-manager engine" |
+    And I successfully execute the action "device-manager/sensor":"attachTenant" with args:
+      | _id   | "DummyTemp/detached" |
+      | index | "tenant-kuzzle"        |
+    When I execute the action "device-manager/sensor":"attachTenant" with args:
+      | _id   | "DummyTemp/detached" |
+      | index | "tenant-kuzzle"        |
+    Then I should receive an error matching:
+      | message | "Sensor \"DummyTemp/detached\" is already attached to a tenant" |
 
-  Scenario: Push a measurement
+  Scenario: Detach sensor from a tenant
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensor":"create" with args:
-      | refresh   | "wait_for"      |
-      | index     | "tenant-kuzzle" |
-      | body.name | "sensor-01"     |
-      | _id       | "sensor-01"     |
-    And I successfully execute the action "device-manager/asset":"create" with args:
-      | refresh   | "wait_for"      |
-      | index     | "tenant-kuzzle" |
-      | body.name | "asset-01"      |
-      | _id       | "asset-01"      |
-    And I successfully execute the action "device-manager/sensor":"link" with args:
-      | refresh      | "wait_for"      |
-      | index        | "tenant-kuzzle" |
-      | _id          | "sensor-01"     |
-      | body.assetId | "asset-01"      |
-    And I successfully execute the action "device-manager/sensor":"push" with args:
-      | refresh    | "wait_for"      |
-      | index      | "tenant-kuzzle" |
-      | body.type  | "temperature"   |
-      | body.value | "42C"           |
-      | _id        | "sensor-01"     |
-    And I successfully execute the action "document":"search" with args:
-      | index      | "tenant-kuzzle" |
-      | collection | "measurement"   |
-    Then The property "hits[0]" of the result should match:
-      | _source.metadata.sensorId | "sensor-01"   |
-      | _source.metadata.assetId  | "asset-01"    |
-      | _source.type              | "temperature" |
-      | _source.value             | "42C"         |
+    And I successfully execute the action "device-manager/sensor":"attachTenant" with args:
+      | _id   | "DummyTemp/detached" |
+      | index | "tenant-kuzzle"        |
+    When I successfully execute the action "device-manager/sensor":"detach" with args:
+      | _id | "DummyTemp/detached" |
+    Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
+      | tenantId | null |
+    And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" does not exists
+
+  Scenario: Error when unassigning from a tenant
+    Given an engine on index "tenant-kuzzle"
+    When I execute the action "device-manager/sensor":"detach" with args:
+      | _id | "DummyTemp/detached" |
+    Then I should receive an error matching:
+      | message | "Sensor \"DummyTemp/detached\" is not attached to a tenant" |
+    Given I successfully execute the action "device-manager/sensor":"linkAsset" with args:
+      | _id     | "DummyTemp/attached-ayse-unlinked" |
+      | assetId | "PERFO/unlinked"                   |
+    When I execute the action "device-manager/sensor":"detach" with args:
+      | _id | "DummyTemp/attached-ayse-unlinked" |
+    Then I should receive an error matching:
+      | message | "Sensor \"DummyTemp/attached-ayse-unlinked\" is still linked to an asset" |
+
+  Scenario: Link sensor to an asset
+    When I successfully execute the action "device-manager/sensor":"linkAsset" with args:
+      | _id     | "DummyTemp/attached-ayse-unlinked" |
+      | assetId | "PERFO/unlinked"                   |
+    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
+      | assetId | "PERFO/unlinked" |
+    And The document "tenant-ayse":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
+      | assetId | "PERFO/unlinked" |
+    And The document "tenant-ayse":"assets":"PERFO/unlinked" content match:
+      | measures.temperature.id          | "DummyTemp/attached-ayse-unlinked" |
+      | measures.temperature.model       | "DummyTemp"                        |
+      | measures.temperature.reference   | "attached-ayse-unlinked"           |
+      | measures.temperature.updatedAt   | 1610793427950                      |
+      | measures.temperature.payloadUuid | "_STRING_"                         |
+      | measures.temperature.value       | 23.3                               |
+      | measures.temperature.qos.battery | 80                                 |
+
+  Scenario: Error when linking sensor to an asset
+    When I execute the action "device-manager/sensor":"linkAsset" with args:
+      | _id     | "DummyTemp/detached" |
+      | assetId | "PERFO/unlinked"       |
+    Then I should receive an error matching:
+      | message | "Sensor \"DummyTemp/detached\" is not attached to a tenant" |
+    When I execute the action "device-manager/sensor":"linkAsset" with args:
+      | _id     | "DummyTemp/attached-ayse-unlinked" |
+      | assetId | "PERFO/non-existing"               |
+    Then I should receive an error matching:
+      | message | "Asset \"PERFO/non-existing\" does not exist" |
+
+  Scenario: Unlink sensor from an asset
+    Given I successfully execute the action "device-manager/sensor":"linkAsset" with args:
+      | _id     | "DummyTemp/attached-ayse-unlinked" |
+      | assetId | "PERFO/unlinked"                   |
+    When I successfully execute the action "device-manager/sensor":"unlink" with args:
+      | _id | "DummyTemp/attached-ayse-unlinked" |
+    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
+      | assetId | null |
+    And The document "tenant-ayse":"sensors":"DummyTemp/attached-ayse-unlinked" does not exists
+    And The document "tenant-ayse":"assets":"PERFO/unlinked" content match:
+      | measures | null |
+
+  Scenario: Error when unlinking from an asset
+    When I execute the action "device-manager/sensor":"unlink" with args:
+      | _id | "DummyTemp/attached-ayse-unlinked" |
+    Then I should receive an error matching:
+      | message | "Sensor \"DummyTemp/attached-ayse-unlinked\" is not linked to an asset" |
