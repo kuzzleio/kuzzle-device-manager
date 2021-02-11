@@ -12,7 +12,7 @@ export interface BaseMeasure {
   payloadUuid?: string;
 
   [property: string]: any;
-};
+}
 
 export interface PositionMeasure extends BaseMeasure {
   point: {

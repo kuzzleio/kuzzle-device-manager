@@ -6,4 +6,4 @@ export interface BaseAssetContent {
   reference: string;
   measures?: JSONObject,
   metadata?: JSONObject,
-};
+}

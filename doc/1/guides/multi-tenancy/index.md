@@ -78,7 +78,7 @@ When a new engine is created on a tenant index, it will create the following col
           "updatedAt": {
             "type": "date"
           },
-          "value": {
+          "degree": {
             "type": "float"
           }
         }
@@ -166,7 +166,7 @@ When a new engine is created on a tenant index, it will create the following col
           "updatedAt": {
             "type": "date"
           },
-          "value": {
+          "degree": {
             "type": "float"
           }
         }

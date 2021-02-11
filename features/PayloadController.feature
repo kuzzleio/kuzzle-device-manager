@@ -42,7 +42,6 @@ Feature: Payloads Controller
     Then I should receive an error matching:
       | message | "Invalid payload: missing \"deviceEUI\"" |
 
-
   Scenario: Receive a payload with 2 measures
     When I successfully receive a "dummy-temp-position" payload with:
       | deviceEUI     | "12345" |
@@ -138,5 +137,5 @@ Feature: Payloads Controller
       | measures.temperature.degree      | 42.2                               |
       | measures.temperature.qos.battery | 40                                 |
     And I refresh the collection "tenant-ayse":"assets-history"
-    And I count 1 documents in "tenant-ayse":"assets-history"
+    And I count 2 documents in "tenant-ayse":"assets-history"
 

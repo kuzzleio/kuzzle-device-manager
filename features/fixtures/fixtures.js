@@ -18,7 +18,7 @@ module.exports = {
           temperature: {
             updatedAt: 1610793427950,
             payloadUuid: 'some-uuid',
-            value: 23.3,
+            degree: 23.3,
           }
         },
         qos: {
@@ -39,7 +39,7 @@ module.exports = {
           temperature: {
             updatedAt: 1610793427950,
             payloadUuid: 'some-uuid',
-            value: 23.3,
+            degree: 23.3,
           }
         },
         qos: {
