@@ -20,7 +20,7 @@ When used with the multi-tenant plugin, the collections needed by the device-man
 
 ### Sensors
 
-The list of available sensors is stored in the sensors collection of the administration index (device-manager).
+The list of available sensors is stored in the `sensors` collection of the administration index (`device-manager`).
 
 When assigning the sensor to a tenant, the `tenantId` property is updated and the sensor is copied to the `sensors` collection of the tenant's index.
 

@@ -42,9 +42,6 @@ An asset is uniquely identified by the `type` + `model` + `reference` triplet.
   "metadata": {
     "owner": "Ayse"
   },
-  
-  "tenantId": null,
-  "assetId": null
 }
 ```
 

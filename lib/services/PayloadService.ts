@@ -3,6 +3,7 @@ import {
   JSONObject,
   PluginContext,
   EmbeddedSDK,
+  BadRequestError,
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -24,6 +25,13 @@ export class PayloadService {
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
     const payload = request.input.body;
+
+    if ( ! payload
+      || (typeof payload === 'object' && Object.keys(payload).length === 0)
+    ) {
+      throw new BadRequestError('The body must contain the payload.');
+    }
+
     const uuid = request.input.args.uuid || uuidv4();
     let valid = true;
 
@@ -39,11 +47,12 @@ export class PayloadService {
         this.config.adminIndex,
         'payloads',
         {
+          sensorModel: decoder.sensorModel,
           uuid,
           valid,
           payload,
-          sensorModel: decoder.sensorModel,
-        });
+        },
+        uuid);
     }
 
     const sensorContent = await decoder.decode(payload, request);
@@ -141,7 +150,8 @@ export class PayloadService {
       await this.sdk.document.create(
         tenantId,
         'assets-history',
-        updatedAsset._source);
+        updatedAsset._source,
+        `${updatedAsset._id}_${request.id}`);
 
       refreshableCollections.push([tenantId, 'assets']);
       refreshableCollections.push([tenantId, 'assets-history']);

@@ -14,10 +14,9 @@ do
     ((tries=tries+1))
 
     if [ $tries -eq $max_tries ]; then
-        docker_ps=( $(docker ps -a | grep kuzzle_1) )
-        length=${#docker_ps[@]}
-        docker logs ${docker_ps[$length-1]}
-
+        docker-compose logs
+        curl http://localhost:7512?pretty
+        echo "Cannot connect to Kuzzle after $tries s. Aborting."
         exit 1
     fi
 

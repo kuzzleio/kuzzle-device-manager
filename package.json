@@ -4,6 +4,8 @@
   "description": "",
   "author": "",
   "scripts": {
+    "prepare-plugin": "npm run install-plugin && npm run build",
+    "install-plugin": "npm install --production && rm -rf node_modules/kuzzle ; ln -s ../../../node_modules/kuzzle node_modules/kuzzle",
     "npm:docker": "docker-compose run kuzzle npm",
     "install:docker": "npm run npm:docker install kuzzle",
     "dev:docker": "docker-compose up",
@@ -15,7 +17,7 @@
     "test:lint": "eslint ./lib --ext .ts --config .eslintrc.json",
     "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
     "build": "tsc --build tsconfig.json",
-    "clean": "npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
+    "clean": "touch index.ts && npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
     "package:create": "npm run build && npm pack",
     "doc:prepare": "npx kuzdoc framework:install",
     "doc:dev": "npx kuzdoc repo:dev -d /kuzzle-iot-platform/device-manager/1/ -v 1",
@@ -29,29 +31,27 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/node": "^14.14.21",
-    "@typescript-eslint/eslint-plugin": "^4.13.0",
-    "@typescript-eslint/parser": "^4.13.0",
+    "@types/node": "^14.14.25",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
     "cucumber": "^6.0.5",
-    "lodash": "^4.17.20",
-    "eslint": "^7.18.0",
+    "eslint": "^7.19.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-loader": "^4.0.2",
+    "kuzzle-sdk": "^7.5.3",
+    "lodash": "^4.17.20",
     "mocha": "8.2.1",
     "mock-require": "^3.0.3",
     "nodemon": "^2.0.7",
     "rewire": "^5.0.0",
     "should": "13.2.3",
     "should-sinon": "0.0.6",
-    "sinon": "^9.2.3",
+    "sinon": "^9.2.4",
     "ts-node": "^9.1.1",
-    "kuzzle-sdk": "^7.4.9",
-    "typescript": "^4.1.3",
-    "kuzzle": ">=2.9.0 <3"
+    "kuzzle": "^2.9.3",
+    "typescript": "^4.1.5"
   },
-  "peerDependencies": {
-    "kuzzle": ">=2.9.0 <3"
-  },
+  "peerDependencies": {},
   "files": [
     "index.js",
     "index.d.ts",

@@ -9,7 +9,7 @@ description: Attach a sensor to a tenant index
 
 Attach a sensor to a tenant.
 
-The sensor document will be duplicated inside the tenant "sensors" collection.
+The sensor document will be duplicated inside the tenant `sensors` collection.
 
 ---
 
@@ -18,7 +18,7 @@ The sensor document will be duplicated inside the tenant "sensors" collection.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/_:id/_assign[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/:index/sensors/:_id/_attach[?refresh=wait_for]
 Method: PUT
 ```
 
@@ -33,6 +33,11 @@ Method: PUT
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/sensor:attachTenant <index> --id <sensorId>
+```
 ---
 
 ## Arguments

@@ -6,6 +6,10 @@ import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 export class DummyTempDecoder extends Decoder {
   constructor () {
     super('DummyTemp');
+
+    this.payloadsMappings = {
+      deviceEUI: { type: 'keyword' }
+    };
   }
 
   async validate (payload: JSONObject, request: KuzzleRequest) {
@@ -20,7 +24,7 @@ export class DummyTempDecoder extends Decoder {
       measures: {
         temperature: {
           updatedAt: Date.now(),
-          value: payload.register55,
+          degree: payload.register55,
         }
       },
       qos: {

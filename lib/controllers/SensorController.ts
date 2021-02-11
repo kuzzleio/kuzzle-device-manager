@@ -46,7 +46,7 @@ export class SensorController extends CRUDController {
         },
         attachTenant: {
           handler: this.attachTenant.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_attach' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_attach' }]
         },
         detach: {
           handler: this.detach.bind(this),
@@ -54,7 +54,7 @@ export class SensorController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_link/:assetId' }]
         },
         unlink: {
           handler: this.unlink.bind(this),
@@ -167,7 +167,7 @@ export class SensorController extends CRUDController {
       assetId);
 
     if (! assetExists) {
-      throw new BadRequestError(`Asset "${assetId}" does not exist`);
+      throw new BadRequestError(`Asset "${assetId}" does not exists`);
     }
 
     await this.sdk.document.update(
@@ -186,11 +186,19 @@ export class SensorController extends CRUDController {
 
     const assetMeasures = await decoder.copyToAsset(sensor);
 
-    await this.sdk.document.update(
+    const updatedAsset = await this.sdk.document.update(
       sensor._source.tenantId,
       'assets',
       assetId,
-      { measures: assetMeasures });
+      { measures: assetMeasures },
+      { source: true });
+
+    // Historize
+    await this.sdk.document.create(
+      sensor._source.tenantId,
+      'assets-history',
+      updatedAsset._source,
+      `${updatedAsset._id}_${request.id}`);
   }
 
   /**
@@ -211,16 +219,20 @@ export class SensorController extends CRUDController {
       sensor._id,
       { assetId: null });
 
-    await this.sdk.document.delete(
-      sensor._source.tenantId,
-      'sensors',
-      sensor._id);
-
-    await this.sdk.document.update(
+    // @todo remove only the unlinked sensor measures:
+    // each sensors must declare what kind of measure it's going to copy
+    const updatedAsset = await this.sdk.document.update(
       sensor._source.tenantId,
       'assets',
       sensor._source.assetId,
       { measures: null });
+
+    // Historize
+    await this.sdk.document.create(
+      sensor._source.tenantId,
+      'assets-history',
+      updatedAsset._source,
+      `${updatedAsset._id}_${request.id}`);
   }
 
   private async getSensor (sensorId: string): Promise<Sensor> {
