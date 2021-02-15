@@ -12,7 +12,7 @@
   },
   "rootDir": "lib/",
   "include": [
-    "app.ts",
+    "index.ts",
     "lib/**/*.ts",
     "features/**/*.ts"
   ],
