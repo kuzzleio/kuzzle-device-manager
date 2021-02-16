@@ -68,16 +68,24 @@ export class SensorController extends CRUDController {
     const model = this.getBodyString(request, 'model');
     const reference = this.getBodyString(request, 'reference');
 
-    if (! request.input.resource._id) {
-      const sensorContent: SensorContent = {
-        model,
-        reference,
-        measures: {}
-      };
+    const sensorContent: SensorContent = {
+      model,
+      reference,
+      measures: {}
+    };
 
-      const sensor = new Sensor(sensorContent);
+    const sensor = new Sensor(sensorContent);
+
+    if (! request.input.resource._id) {
       request.input.resource._id = sensor._id;
     }
+
+    await this.sdk.document.create(
+      'device-manager',
+      'sensors',
+      sensor._source,
+      sensor._id,
+      { refresh: request.input.args.refresh });
 
     return super.create(request);
   }
