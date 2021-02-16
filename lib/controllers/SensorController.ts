@@ -70,11 +70,11 @@ export class SensorController extends CRUDController {
     const index = this.getString(request, 'index');
 
     const sensorContent: SensorContent = {
+      measures: {},
       ...request.input.body,
       ...{
         model,
         reference,
-        measures: {},
         tenantId: index,
       },
     };
