@@ -65,18 +65,15 @@ export class SensorController extends CRUDController {
   }
 
   async create (request: KuzzleRequest) {
-    const model = this.getBodyString(request, 'model');
-    const reference = this.getBodyString(request, 'reference');
-    const index = this.getString(request, 'index');
+    const index = this.getIndex(request);
 
-    const sensorContent: SensorContent = {
-      measures: {},
+    // Ensure mandatory properties
+    this.getBodyString(request, 'model');
+    this.getBodyString(request, 'reference');
+
+    const sensorContent: any = {
       ...request.input.body,
-      ...{
-        model,
-        reference,
-        tenantId: index,
-      },
+      tenantId: index,
     };
 
     const sensor = new Sensor(sensorContent);
@@ -91,6 +88,8 @@ export class SensorController extends CRUDController {
       sensor._source,
       sensor._id,
       { refresh: request.input.args.refresh });
+
+    request.input.body = sensor._source;
 
     return super.create(request);
   }

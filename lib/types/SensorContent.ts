@@ -11,7 +11,7 @@ export type SensorContent = {
   /**
    * Sensor measures gathered from a payload
    */
-  measures: SensorMeasures;
+  measures?: SensorMeasures;
 
   /**
    * Sensor model
