@@ -37,6 +37,7 @@ export class PayloadService {
 
     try {
       await decoder.validate(payload, request);
+      await decoder.beforeProcessing(payload, request);
     }
     catch (error) {
       valid = false;

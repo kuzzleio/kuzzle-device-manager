@@ -92,6 +92,16 @@ export abstract class Decoder {
   abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent>
 
   /**
+   * Hook executed before processing the payload but after validation
+   *
+   * @param payload Raw payload received in the API action body
+   * @param request Original request
+   */
+  async beforeProcessing (payload: JSONObject, request: KuzzleRequest): Promise<void> {
+
+  }
+
+  /**
    * Enrichment hook executed before registering a sensor
    *
    * @param sensor Sensor before being persisted
