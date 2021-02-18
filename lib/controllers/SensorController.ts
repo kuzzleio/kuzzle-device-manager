@@ -9,7 +9,6 @@ import {
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
-import { SensorContent } from '../types';
 
 export class SensorController extends CRUDController {
   private decoders: Map<string, Decoder>;
@@ -25,17 +24,9 @@ export class SensorController extends CRUDController {
 
     this.definition = {
       actions: {
-        create: {
-          handler: this.create.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/:index/sensors' }]
-        },
         update: {
           handler: this.update.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
-        },
-        delete: {
-          handler: this.delete.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id' }]
         },
         search: {
           handler: this.search.bind(this),
@@ -62,36 +53,6 @@ export class SensorController extends CRUDController {
         },
       }
     };
-  }
-
-  async create (request: KuzzleRequest) {
-    const index = this.getIndex(request);
-
-    // Ensure mandatory properties
-    this.getBodyString(request, 'model');
-    this.getBodyString(request, 'reference');
-
-    const sensorContent: any = {
-      ...request.input.body,
-      tenantId: index,
-    };
-
-    const sensor = new Sensor(sensorContent);
-
-    if (! request.input.resource._id) {
-      request.input.resource._id = sensor._id;
-    }
-
-    await this.sdk.document.create(
-      'device-manager',
-      'sensors',
-      sensor._source,
-      sensor._id,
-      { refresh: request.input.args.refresh });
-
-    request.input.body = sensor._source;
-
-    return super.create(request);
   }
 
   /**
