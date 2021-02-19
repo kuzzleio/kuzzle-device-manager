@@ -4,6 +4,7 @@
   "description": "",
   "author": "",
   "scripts": {
+    "postinstall": "npm run build",
     "npm:docker": "docker-compose run kuzzle npm",
     "install:docker": "npm run npm:docker install kuzzle",
     "dev:docker": "docker-compose up",
