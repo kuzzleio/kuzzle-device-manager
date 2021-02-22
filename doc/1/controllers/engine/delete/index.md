@@ -7,7 +7,7 @@ description: Deletes a Device Manager engine from an index
 
 # delete
 
-Deletes a new Device Manager engine from an index
+Deletes a Device Manager engine from an index
 
 ---
 
