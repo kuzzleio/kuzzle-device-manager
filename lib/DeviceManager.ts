@@ -12,7 +12,7 @@ import {
   SensorController,
   EngineController,
 } from './controllers';
-import { PayloadService } from './services';
+import { EngineService, PayloadService } from './services';
 import { Decoder } from './decoders';
 import { sensorsMappings } from './models';
 
@@ -22,7 +22,9 @@ export class DeviceManager extends Plugin {
   private assetController: AssetController;
   private sensorController: SensorController;
   private engineController: EngineController;
+
   private payloadService: PayloadService;
+  private engineService = new EngineService();
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -92,8 +94,14 @@ export class DeviceManager extends Plugin {
     };
 
     this.pipes = {
-      'multi-tenancy/tenant:afterCreate': request => this.engineController.create(request),
-      'multi-tenancy/tenant:afterDelete': request => this.engineController.delete(request),
+      'multi-tenancy/tenant:afterCreate': async request => {
+        const tenantIndex = request.result.index;
+
+        await this.engineService.create(tenantIndex);
+
+        return request;
+      }
+      // 'multi-tenancy/tenant:afterDelete': request => this.engineController.delete(request), // WIP
     };
 
     this.defaultConfig = {
@@ -153,15 +161,16 @@ export class DeviceManager extends Plugin {
 
     this.mergeCustomMappings();
 
+    this.engineService.init(this.config, context);
+    this.payloadService = new PayloadService(this.config, context);
+
     this.assetController = new AssetController(this.config, context);
     this.sensorController = new SensorController(this.config, context, this.decoders);
-    this.engineController = new EngineController(this.config, context);
+    this.engineController = new EngineController(this.config, context, this.engineService);
 
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/sensor'] = this.sensorController.definition;
     this.api['device-manager/engine'] = this.engineController.definition;
-
-    this.payloadService = new PayloadService(this.config, context);
 
     await this.initDatabase();
 

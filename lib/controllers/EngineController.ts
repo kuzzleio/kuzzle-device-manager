@@ -8,9 +8,11 @@ import {
 } from 'kuzzle';
 
 import { NativeController } from 'kuzzle/lib/api/controller/base.js'
+import { EngineService } from '../services';
 
 export class EngineController extends NativeController {
   [key: string]: any;
+  private engineService: EngineService;
 
   public definition: ControllerDefinition;
 
@@ -18,11 +20,12 @@ export class EngineController extends NativeController {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext) {
+  constructor (config: JSONObject, context: PluginContext, engineService: EngineService) {
     super();
 
     this.config = config;
     this.context = context;
+    this.engineService = engineService;
 
     this.definition = {
       actions: {
@@ -52,23 +55,9 @@ export class EngineController extends NativeController {
 
   async create (request: KuzzleRequest) {
     const index = this.getIndex(request);
-
     const collections = this.config.collections;
 
-    const promises = [];
-
-    for (const [collection, mappings] of Object.entries(collections)) {
-      promises.push(this.sdk.collection.create(index, collection, { mappings }));
-    }
-
-    await Promise.all(promises);
-
-    await this.sdk.document.create(
-      this.config.adminIndex,
-      'engines',
-      { index },
-      index,
-      { refresh: 'wait_for' })
+    await this.engineService.create(index);
 
     return { index, collections };
   }
