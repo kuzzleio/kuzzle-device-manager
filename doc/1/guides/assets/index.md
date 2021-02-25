@@ -14,6 +14,8 @@ The document contains asset identification information, the latest measurements 
 
 An asset is uniquely identified by the `type` + `model` + `reference` triplet.
 
+![asset data model with sensors measures](./asset-data-model.png)
+
 **Example:** _Asset document with a GPS measure_
 
 ```js
