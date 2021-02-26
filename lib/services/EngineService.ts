@@ -14,9 +14,9 @@ export class EngineService {
     return this.context.accessors.sdk;
   }
 
-  init (config: JSONObject, context: PluginContext) {
-    this.context = context;
+  constructor (config: JSONObject, context: PluginContext) {
     this.config = config;
+    this.context = context;
   }
 
   private async hasEngine (index: string) {

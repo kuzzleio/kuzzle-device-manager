@@ -24,7 +24,7 @@ export class DeviceManager extends Plugin {
   private engineController: EngineController;
 
   private payloadService: PayloadService;
-  private engineService = new EngineService();
+  private engineService: EngineService;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -167,7 +167,7 @@ export class DeviceManager extends Plugin {
 
     this.mergeCustomMappings();
 
-    this.engineService.init(this.config, context);
+    this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
 
     this.assetController = new AssetController(this.config, context);
