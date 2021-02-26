@@ -5,9 +5,9 @@ app.js.map
 lib/**/*.d.ts
 lib/**/*.js.map
 lib/**/*.js
-features/fixtures/decoders/*.d.ts
-features/fixtures/decoders/*.js
-features/fixtures/decoders/*.js.map
+features/fixtures/application/**/*.d.ts
+features/fixtures/application/**/*.js
+features/fixtures/application/**/*.js.map
 index.d.ts
 index.js
 index.js.map

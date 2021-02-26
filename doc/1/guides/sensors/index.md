@@ -14,6 +14,8 @@ The document contains sensor identification information, the last measurement re
 
 A sensor is uniquely identified by the pair `model` + `reference`.
 
+![sensor document](./sensor-document.png)
+
 **Example:** _GPS sensor document_
 ```js
 {

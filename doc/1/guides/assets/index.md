@@ -55,6 +55,8 @@ By default, for each measurement type the following information are copied in ad
  - `reference`: sensor reference
  - `qos`: sensor qos info
 
+![asset data model with sensors measures](./asset-data-model.png)
+
 **Example:** _Content of asset document linked to a sensor with a temperature measure_
 ```js
 {

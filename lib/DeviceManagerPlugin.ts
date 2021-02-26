@@ -71,7 +71,7 @@ export class DeviceManagerPlugin extends Plugin {
    */
   constructor() {
     super({
-      kuzzleVersion: '>=2.9.2 <3'
+      kuzzleVersion: '>=2.10.0 <3'
     });
 
     this.mappings = {
