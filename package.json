@@ -37,7 +37,7 @@
     "eslint": "^7.18.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-loader": "^4.0.2",
-    "kuzzle": ">=2.9.0 <3",
+    "kuzzle": "2.10.0",
     "lodash": "^4.17.20",
     "kuzzle-sdk": "^7.4.9",
     "mocha": "8.2.1",
