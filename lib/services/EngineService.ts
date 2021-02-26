@@ -2,7 +2,6 @@ import {
     PluginContext,
     EmbeddedSDK,
     JSONObject,
-    DocumentNotification,
     BadRequestError,
   } from 'kuzzle';
 
