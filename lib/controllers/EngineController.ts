@@ -3,7 +3,6 @@ import {
   PluginContext,
   KuzzleRequest,
   EmbeddedSDK,
-  BadRequestError,
   JSONObject,
 } from 'kuzzle';
 
