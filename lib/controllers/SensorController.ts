@@ -3,7 +3,6 @@ import {
   EmbeddedSDK,
   JSONObject,
   PluginContext,
-  BadRequestError,
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
