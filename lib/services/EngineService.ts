@@ -1,9 +1,9 @@
 import {
-    PluginContext,
-    EmbeddedSDK,
-    JSONObject,
-    BadRequestError,
-  } from 'kuzzle';
+  PluginContext,
+  EmbeddedSDK,
+  JSONObject,
+  BadRequestError,
+} from 'kuzzle';
 
 export class EngineService {
   private context: PluginContext;
