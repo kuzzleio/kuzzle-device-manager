@@ -18,12 +18,14 @@ export class DummyTempPositionDecoder extends Decoder {
       measures: {
         temperature: {
           updatedAt: Date.now(),
-          value: payload.register55,
+          degree: payload.register55,
         },
         position: {
           updatedAt: Date.now(),
-          latitude: payload.location.lat,
-          longitude: payload.location.lon,
+          point: {
+            lat: payload.location.lat,
+            lon: payload.location.lon,
+          },
           accuracy: payload.location.accu,
         }
       },

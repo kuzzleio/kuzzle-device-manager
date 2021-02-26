@@ -1,4 +1,10 @@
-import { JSONObject, KuzzleRequest, HttpRoute } from 'kuzzle';
+import {
+  JSONObject,
+  KuzzleRequest,
+  HttpRoute,
+  BadRequestError,
+} from 'kuzzle';
+import _ from 'lodash';
 
 import { Sensor } from '../models';
 
@@ -15,15 +21,43 @@ import { AssetMeasures, SensorContent } from '../types';
 export abstract class Decoder {
   private _http?: HttpRoute[];
 
+  /**
+   * Sensor model name
+   */
   sensorModel: string;
+
+  /**
+   * Custom name for the associated API action in the "payload" controller
+   */
   action?: string;
+
+  /**
+   * Custom mappings for the payload collection.
+   * It will be injected in the "payload" property and it should allows to index
+   * the device model unique identifier field.
+   *
+   * @example
+   * this.payloadsMappings = {
+   *   device_properties: {
+   *     properties: {
+   *       deveui: { type: 'keyword' }
+   *     }
+   *   }
+   * }
+   */
+  payloadsMappings?: JSONObject = {};
+
+  /**
+   * Define custom HTTP routes
+   *
+   * @param http HttpRoute array
+   */
+  set http (http: HttpRoute[]) {
+    this._http = http;
+  }
 
   get http (): HttpRoute[] {
     return this._http || [{ verb: 'post', path: `device-manager/payload/${this.action}` }]
-  }
-
-  set http (http: HttpRoute[]) {
-    this._http = http;
   }
 
   /**
@@ -56,6 +90,16 @@ export abstract class Decoder {
    * @returns Sensor content to save
    */
   abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent>
+
+  /**
+   * Hook executed before processing the payload but after validation
+   *
+   * @param payload Raw payload received in the API action body
+   * @param request Original request
+   */
+  async beforeProcessing (payload: JSONObject, request: KuzzleRequest): Promise<void> {
+
+  }
 
   /**
    * Enrichment hook executed before registering a sensor
@@ -128,6 +172,22 @@ export abstract class Decoder {
     }
 
     return measures;
+  }
+
+  /**
+   * Checks if the provided properties are present in the payload
+   *
+   * @param payload Raw payload received in the API action body
+   * @param paths Paths of properties (lodash style)
+   *
+   * @throws
+   */
+  ensureProperties (payload: JSONObject, paths: string[]): void | never {
+    for (const path of paths) {
+      if (! _.has(payload, path)) {
+        throw new BadRequestError(`Missing property "${path}" in payload`);
+      }
+    }
   }
 }
 

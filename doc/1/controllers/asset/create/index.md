@@ -44,6 +44,16 @@ Body:
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/asset:create <index> --body '{ 
+  type: "<asset type>", 
+  model: "<asset model>", 
+  reference: "<asset reference>" 
+}'
+```
+
 ---
 
 ## Arguments
@@ -53,6 +63,7 @@ Body:
 ### Optional:
 
 - `refresh`: if set to `wait_for`, Kuzzle will not respond until the newly created document is indexed
+- `_id`: set the document unique ID to the provided value, instead of auto-generating an ID with the `type`, `model` and the `reference`
 
 ---
 

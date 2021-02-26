@@ -1,11 +1,11 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
 
-import { DeviceManager } from '../../../index';
+import { DeviceManagerPlugin } from '../../../index';
 import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
 
 const app = new Backend('kuzzle');
 
-const deviceManager = new DeviceManager();
+const deviceManager = new DeviceManagerPlugin();
 
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());

@@ -18,7 +18,7 @@ The sensor measures will be copied into the asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/_:id/_linkAsset/:assetId[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/:index/sensors/:_id/_linkAsset/:assetId[?refresh=wait_for]
 Method: PUT
 ```
 
@@ -34,6 +34,11 @@ Method: PUT
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/sensor:linkAsset <index> --id <sensorId> -a assetId=<assetId>
+```
 ---
 
 ## Arguments
