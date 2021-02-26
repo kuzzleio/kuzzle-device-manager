@@ -185,6 +185,10 @@ export class SensorController extends CRUDController {
     const decoder = this.decoders.get(sensor._source.model);
 
     const assetMeasures = await decoder.copyToAsset(sensor);
+    {
+      position: ...,
+      temperature: ...
+    }
 
     await this.sdk.document.update(
       sensor._source.tenantId,
