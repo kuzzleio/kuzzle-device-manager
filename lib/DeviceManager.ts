@@ -100,8 +100,14 @@ export class DeviceManager extends Plugin {
         await this.engineService.create(tenantIndex);
 
         return request;
+      },
+      'multi-tenancy/tenant:afterDelete': async request => {
+        const tenantIndex = request.result.index;
+
+        await this.engineService.delete(tenantIndex);
+
+        return request;
       }
-      // 'multi-tenancy/tenant:afterDelete': request => this.engineController.delete(request), // WIP
     };
 
     this.defaultConfig = {
