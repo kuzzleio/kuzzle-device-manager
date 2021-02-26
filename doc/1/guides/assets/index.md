@@ -14,8 +14,6 @@ The document contains asset identification information, the latest measurements 
 
 An asset is uniquely identified by the `type` + `model` + `reference` triplet.
 
-![asset data model with sensors measures](./asset-data-model.png)
-
 **Example:** _Asset document with a GPS measure_
 
 ```js
@@ -59,6 +57,8 @@ By default, for each measurement type the following information are copied in ad
  - `model`: sensor model
  - `reference`: sensor reference
  - `qos`: sensor qos info
+
+![asset data model with sensors measures](./asset-data-model.png)
 
 **Example:** _Content of asset document linked to a sensor with a temperature measure_
 ```js
