@@ -9,22 +9,21 @@ import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
 import { SensorContent } from '../types';
-import { SensorService } from 'lib/services/SensorService';
+import { SensorService } from 'lib/services';
 
 export class SensorController extends CRUDController {
   private decoders: Map<string, Decoder>;
-  private sensorService: SensorService
 
   get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>) {
+  constructor (config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>, sensorService: SensorService) {
     super(config, context, 'sensors');
 
     this.decoders = decoders;
 
-    this.sensorService = new SensorService(this.config, context);
+    this.sensorService = sensorService;
 
     this.definition = {
       actions: {
@@ -128,7 +127,7 @@ export class SensorController extends CRUDController {
 
     const sensor = await this.getSensor(sensorId);
 
-    this.sensorService.unlink(sensor);
+    await this.sensorService.unlink(sensor);
   }
 
   private async getSensor (sensorId: string): Promise<Sensor> {
