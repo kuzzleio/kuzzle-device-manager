@@ -185,6 +185,10 @@ export class SensorController extends CRUDController {
     const decoder = this.decoders.get(sensor._source.model);
 
     const assetMeasures = await decoder.copyToAsset(sensor);
+    {
+      position: ...,
+      temperature: ...
+    }
 
     await this.sdk.document.update(
       sensor._source.tenantId,
@@ -211,11 +215,13 @@ export class SensorController extends CRUDController {
       sensor._id,
       { assetId: null });
 
-    await this.sdk.document.delete(
+    await this.sdk.document.update(
       sensor._source.tenantId,
       'sensors',
-      sensor._id);
+      sensor._id,
+      { assetId: null });
 
+    // @todo only remove the measures coming from the unlinked sensor
     await this.sdk.document.update(
       sensor._source.tenantId,
       'assets',
