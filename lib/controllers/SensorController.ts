@@ -3,13 +3,13 @@ import {
   EmbeddedSDK,
   JSONObject,
   PluginContext,
-  BadRequestError,
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
 import { SensorContent } from '../types';
+import { SensorService } from 'lib/services';
 
 export class SensorController extends CRUDController {
   private decoders: Map<string, Decoder>;
@@ -18,10 +18,12 @@ export class SensorController extends CRUDController {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>) {
+  constructor (config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>, sensorService: SensorService) {
     super(config, context, 'sensors');
 
     this.decoders = decoders;
+
+    this.sensorService = sensorService;
 
     this.definition = {
       actions: {
@@ -91,33 +93,7 @@ export class SensorController extends CRUDController {
 
     const sensor = await this.getSensor(sensorId);
 
-    if (sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is already attached to a tenant`);
-    }
-
-    const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engine',
-      action: 'exists',
-      index: tenantId,
-    });
-
-    if (! tenantExists) {
-      throw new BadRequestError(`Tenant "${tenantId}" does not have a device-manager engine`);
-    }
-
-    sensor._source.tenantId = tenantId;
-
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'sensors',
-      sensor._id,
-      sensor._source);
-
-    await this.sdk.document.create(
-      tenantId,
-      'sensors',
-      sensor._source,
-      sensor._id);
+    await this.sensorService.attachTenant(sensor, tenantId);
   }
 
   /**
@@ -128,24 +104,7 @@ export class SensorController extends CRUDController {
 
     const sensor = await this.getSensor(sensorId);
 
-    if (! sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
-    }
-
-    if (sensor._source.assetId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is still linked to an asset`);
-    }
-
-    await this.sdk.document.delete(
-      sensor._source.tenantId,
-      'sensors',
-      sensor._id);
-
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'sensors',
-      sensor._id,
-      { tenantId: null });
+    await this.sensorService.detach(sensor);
   }
 
   /**
@@ -157,40 +116,7 @@ export class SensorController extends CRUDController {
 
     const sensor = await this.getSensor(sensorId);
 
-    if (! sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
-    }
-
-    const assetExists = await this.sdk.document.exists(
-      sensor._source.tenantId,
-      'assets',
-      assetId);
-
-    if (! assetExists) {
-      throw new BadRequestError(`Asset "${assetId}" does not exist`);
-    }
-
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'sensors',
-      sensor._id,
-      { assetId });
-
-    await this.sdk.document.update(
-      sensor._source.tenantId,
-      'sensors',
-      sensor._id,
-      { assetId });
-
-    const decoder = this.decoders.get(sensor._source.model);
-
-    const assetMeasures = await decoder.copyToAsset(sensor);
-
-    await this.sdk.document.update(
-      sensor._source.tenantId,
-      'assets',
-      assetId,
-      { measures: assetMeasures });
+    await this.sensorService.linkAsset(sensor, assetId, this.decoders);
   }
 
   /**
@@ -201,28 +127,7 @@ export class SensorController extends CRUDController {
 
     const sensor = await this.getSensor(sensorId);
 
-    if (! sensor._source.assetId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not linked to an asset`);
-    }
-
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'sensors',
-      sensor._id,
-      { assetId: null });
-
-    await this.sdk.document.update(
-      sensor._source.tenantId,
-      'sensors',
-      sensor._id,
-      { assetId: null });
-
-    // @todo only remove the measures coming from the unlinked sensor
-    await this.sdk.document.update(
-      sensor._source.tenantId,
-      'assets',
-      sensor._source.assetId,
-      { measures: null });
+    await this.sensorService.unlink(sensor);
   }
 
   private async getSensor (sensorId: string): Promise<Sensor> {

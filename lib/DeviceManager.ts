@@ -12,7 +12,7 @@ import {
   SensorController,
   EngineController,
 } from './controllers';
-import { PayloadService } from './services';
+import { PayloadService, SensorService } from './services';
 import { Decoder } from './decoders';
 import { sensorsMappings } from './models';
 
@@ -23,6 +23,7 @@ export class DeviceManager extends Plugin {
   private sensorController: SensorController;
   private engineController: EngineController;
   private payloadService: PayloadService;
+  private sensorService: SensorService;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -153,9 +154,11 @@ export class DeviceManager extends Plugin {
 
     this.mergeCustomMappings();
 
+    this.sensorService = new SensorService(this.config, context);
+
     this.assetController = new AssetController(this.config, context);
-    this.sensorController = new SensorController(this.config, context, this.decoders);
     this.engineController = new EngineController(this.config, context);
+    this.sensorController = new SensorController(this.config, context, this.decoders, this.sensorService);
 
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/sensor'] = this.sensorController.definition;

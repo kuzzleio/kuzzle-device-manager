@@ -87,7 +87,6 @@ Feature: Device Manager sensor controller
       | _id | "DummyTemp/attached-ayse-unlinked" |
     Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
       | assetId | null |
-    And The document "tenant-ayse":"sensors":"DummyTemp/attached-ayse-unlinked" does not exists
     And The document "tenant-ayse":"assets":"PERFO/unlinked" content match:
       | measures | null |
 
