@@ -7,7 +7,7 @@ import {
   JSONObject,
 } from 'kuzzle';
 
-import { NativeController } from 'kuzzle/lib/api/controller/base.js'
+import { NativeController } from 'kuzzle/lib/api/controllers/baseController.js'
 
 export class EngineController extends NativeController {
   [key: string]: any;
