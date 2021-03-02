@@ -109,10 +109,10 @@ export class SensorController extends CRUDController {
 
     let bulkData: SensorBulkContent[] = []
 
-    if (request.input.body?.csv) {
+    if (request.input.body && request.input.body.csv) {
       bulkData = this.parseCSVData(request.input.body.csv);
     }
-    else if (request.input.body?.records) {
+    else if (request.input.body && request.input.body.records) {
       bulkData = request.input.body.records;
     }
     else {
