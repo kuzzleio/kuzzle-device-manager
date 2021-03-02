@@ -4,7 +4,24 @@ Feature: Device Manager sensor controller
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
-      | index | "tenant-kuzzle"        |
+      | index | "tenant-kuzzle"      |
+    Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
+      | tenantId | "tenant-kuzzle" |
+    And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
+
+  Scenario: Attach multiple sensor to a tenant using JSON
+    Given an engine on index "tenant-kuzzle"
+    When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
+      | body.records.0.tenant | "tenant-kuzzle"      |
+      | body.records.0.id     | "DummyTemp/detached" |
+    Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
+      | tenantId | "tenant-kuzzle" |
+    And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
+
+  Scenario: Attach multiple sensor to a tenant using CSV
+    Given an engine on index "tenant-kuzzle"
+    When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
+      | body.csv | "tenant,id\\ntenant-kuzzle,DummyTemp\/detached" |
     Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
@@ -13,15 +30,15 @@ Feature: Device Manager sensor controller
     Given an engine on index "tenant-kuzzle"
     When I execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
-      | index | "tenant-kaliop"        |
+      | index | "tenant-kaliop"      |
     Then I should receive an error matching:
       | message | "Tenant \"tenant-kaliop\" does not have a device-manager engine" |
     And I successfully execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
-      | index | "tenant-kuzzle"        |
+      | index | "tenant-kuzzle"      |
     When I execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
-      | index | "tenant-kuzzle"        |
+      | index | "tenant-kuzzle"      |
     Then I should receive an error matching:
       | message | "Sensor \"DummyTemp/detached\" is already attached to a tenant" |
 
@@ -29,7 +46,7 @@ Feature: Device Manager sensor controller
     Given an engine on index "tenant-kuzzle"
     And I successfully execute the action "device-manager/sensor":"attachTenant" with args:
       | _id   | "DummyTemp/detached" |
-      | index | "tenant-kuzzle"        |
+      | index | "tenant-kuzzle"      |
     When I successfully execute the action "device-manager/sensor":"detach" with args:
       | _id | "DummyTemp/detached" |
     Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
@@ -70,7 +87,7 @@ Feature: Device Manager sensor controller
   Scenario: Error when linking sensor to an asset
     When I execute the action "device-manager/sensor":"linkAsset" with args:
       | _id     | "DummyTemp/detached" |
-      | assetId | "PERFO/unlinked"       |
+      | assetId | "PERFO/unlinked"     |
     Then I should receive an error matching:
       | message | "Sensor \"DummyTemp/detached\" is not attached to a tenant" |
     When I execute the action "device-manager/sensor":"linkAsset" with args:

@@ -21,3 +21,13 @@ export type SensorContent = {
     updatedAt?: number | null
   }
 }
+
+export type SensorBulkContent = {
+  tenant: string;
+  id: string;
+}
+
+export type SensorBulkBuildedContent = {
+  tenant: string;
+  id: string[];
+}
