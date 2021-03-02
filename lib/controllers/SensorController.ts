@@ -92,7 +92,7 @@ export class SensorController extends CRUDController {
   /**
    * Attach a sensor to a tenant
    */
-  async attachTenant(request: KuzzleRequest) {
+  async attachTenant (request: KuzzleRequest) {
     const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
@@ -104,7 +104,7 @@ export class SensorController extends CRUDController {
   /**
    * Attach a sensor to a tenant
    */
-  async mAttachTenant(request: KuzzleRequest) {
+  async mAttachTenant (request: KuzzleRequest) {
     console.log(request);
 
     let bulkData: SensorBulkContent[] = []
@@ -129,7 +129,7 @@ export class SensorController extends CRUDController {
   /**
    * Unattach a sensor from it's tenant
    */
-  async detach(request: KuzzleRequest) {
+  async detach (request: KuzzleRequest) {
     const sensorId = this.getId(request);
 
     const sensor = await this.getSensor(sensorId);
@@ -160,7 +160,7 @@ export class SensorController extends CRUDController {
     await this.sensorService.unlink(sensor);
   }
 
-  private async getSensor(sensorId: string): Promise<Sensor> {
+  private async getSensor (sensorId: string): Promise<Sensor> {
     const document: any = await this.sdk.document.get(
       this.config.adminIndex,
       'sensors',
@@ -169,7 +169,7 @@ export class SensorController extends CRUDController {
     return new Sensor(document._source, document._id);
   }
 
-  private async mGetSensor(documents: SensorBulkContent[]): Promise<Sensor[]> {
+  private async mGetSensor (documents: SensorBulkContent[]): Promise<Sensor[]> {
     const sensorIds = documents.map(doc => doc.id)
     const result: any = await this.sdk.document.mGet(
       this.config.adminIndex,
@@ -179,7 +179,7 @@ export class SensorController extends CRUDController {
     return result.successes.map((document: any) => new Sensor(document._source, document._id));
   }
 
-  private parseCSVData(csv: string): SensorBulkContent[] {
+  private parseCSVData (csv: string): SensorBulkContent[] {
     const lines = csv.split('\n');
     const header = lines.shift();
     const results = [];
