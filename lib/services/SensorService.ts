@@ -22,13 +22,13 @@ export class SensorService {
     this.context = context;
   }
 
-  async attachTenant(sensor: Sensor, tenantId: string) {
+  async attachTenant (sensor: Sensor, tenantId: string) {
     if (sensor._source.tenantId) {
       throw new BadRequestError(`Sensor "${sensor._id}" is already attached to a tenant`);
     }
 
     const tenantExists = await this.assertTenantExists(tenantId);
-    if (!tenantExists) {
+    if (! tenantExists) {
       throw new BadRequestError(`Tenant "${tenantId}" does not have a device-manager engine`);
     }
 
@@ -47,7 +47,7 @@ export class SensorService {
       sensor._id);
   }
 
-  async mAttachTenant(sensors: Sensor[], bulkData: SensorBulkContent[]) {
+  async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[]) {
     for (let i = 0; i < sensors.length; i++) {
       const sensor = sensors[i];
       if (sensor._source.tenantId) {
@@ -61,7 +61,7 @@ export class SensorService {
       const document = documents[i];
       const tenantExists = await this.assertTenantExists(document.tenant);
 
-      if (!tenantExists) {
+      if (! tenantExists) {
         throw new BadRequestError(`Tenant "${document.tenant}" does not have a device-manager engine`);
       }
 
@@ -87,8 +87,8 @@ export class SensorService {
     }
   }
 
-  async detach(sensor: Sensor) {
-    if (!sensor._source.tenantId) {
+  async detach (sensor: Sensor) {
+    if (! sensor._source.tenantId) {
       throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
     }
 
@@ -109,8 +109,8 @@ export class SensorService {
   }
 
 
-  async linkAsset(sensor: Sensor, assetId: string, decoders: Map<string, Decoder>) {
-    if (!sensor._source.tenantId) {
+  async linkAsset (sensor: Sensor, assetId: string, decoders: Map<string, Decoder>) {
+    if (! sensor._source.tenantId) {
       throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
     }
 
@@ -119,7 +119,7 @@ export class SensorService {
       'assets',
       assetId);
 
-    if (!assetExists) {
+    if (! assetExists) {
       throw new BadRequestError(`Asset "${assetId}" does not exist`);
     }
 
@@ -146,8 +146,8 @@ export class SensorService {
       { measures: assetMeasures });
   }
 
-  async unlink(sensor: Sensor) {
-    if (!sensor._source.assetId) {
+  async unlink (sensor: Sensor) {
+    if (! sensor._source.assetId) {
       throw new BadRequestError(`Sensor "${sensor._id}" is not linked to an asset`);
     }
 
@@ -171,7 +171,7 @@ export class SensorService {
       { measures: null });
   }
 
-  private async assertTenantExists(tenantId: string) {
+  private async assertTenantExists (tenantId: string) {
     const { result: tenantExists } = await this.sdk.query({
       controller: 'device-manager/engine',
       action: 'exists',
@@ -181,7 +181,7 @@ export class SensorService {
     return tenantExists;
   }
 
-  private buildBulkSensors(bulkData: SensorBulkContent[]): SensorBulkBuildedContent[] {
+  private buildBulkSensors (bulkData: SensorBulkContent[]): SensorBulkBuildedContent[] {
     const documents = []
     for (let i = 0; i < bulkData.length; i++) {
       const line = bulkData[i];
