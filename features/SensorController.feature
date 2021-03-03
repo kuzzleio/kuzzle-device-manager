@@ -9,7 +9,7 @@ Feature: Device Manager sensor controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
 
-  Scenario: Attach multiple sensor to a tenant using JSON
+  Scenario: Attach multiple sensors to a tenant using JSON
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
       | body.records.0.tenant | "tenant-kuzzle"      |
