@@ -59,6 +59,10 @@ export class SensorController extends CRUDController {
           handler: this.detach.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/sensors/:_id/_detach' }]
         },
+        mDetach: {
+          handler: this.mDetach.bind(this),
+          http: [{ verb: 'delete', path: 'device-manager/sensors/_mDetach' }]
+        },
         linkAsset: {
           handler: this.linkAsset.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
@@ -135,6 +139,17 @@ export class SensorController extends CRUDController {
     const sensor = await this.getSensor(sensorId);
 
     await this.sensorService.detach(sensor);
+  }
+  
+  /**
+   * Unattach a sensor from it's tenant
+   */
+  async mDetach (request: KuzzleRequest) {
+    const sensorId = this.getId(request);
+
+    const sensor = await this.getSensor(sensorId);
+
+    await this.sensorService.mDetach(sensor);
   }
 
   /**

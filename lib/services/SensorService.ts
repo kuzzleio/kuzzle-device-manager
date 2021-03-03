@@ -108,6 +108,41 @@ export class SensorService {
       { tenantId: null });
   }
 
+  async mDetach (sensors: Sensor[], bulkData: SensorBulkContent[]) {
+    const documents = this.buildBulkSensors(bulkData);
+    for (let i = 0; i < documents.length; i++) {
+      const document = documents[i];
+
+      const sensorsContent = sensors.filter(sensor => document.id.includes(sensor._id));
+      const kuzDocuments = sensorsContent.map(sensor => {
+        if (! sensor._source.tenantId) {
+          throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
+        }
+
+        if (sensor._source.assetId) {
+          throw new BadRequestError(`Sensor "${sensor._id}" is still linked to an asset`);
+        }
+
+        sensor._source.tenantId = document.tenant;
+        return { _id: sensor._id, body: { tenantId: null } }
+      })
+
+      await this.sdk.document.mDelete(
+        document.tenant,
+        'sensors',
+        document.id,
+      )
+
+      await this.sdk.document.mUpdate(
+        this.config.adminIndex,
+        'sensors',
+        kuzDocuments,
+      )
+    }
+    
+
+  }
+
 
   async linkAsset (sensor: Sensor, assetId: string, decoders: Map<string, Decoder>) {
     if (! sensor._source.tenantId) {
