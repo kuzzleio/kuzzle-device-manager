@@ -75,7 +75,7 @@ export class SensorController extends CRUDController {
     const model = this.getBodyString(request, 'model');
     const reference = this.getBodyString(request, 'reference');
 
-    if (!request.input.resource._id) {
+    if (! request.input.resource._id) {
       const sensorContent: SensorContent = {
         model,
         reference,
