@@ -106,7 +106,7 @@ export class SensorController extends CRUDController {
    */
   async mAttachTenant (request: KuzzleRequest) {
 
-    let bulkData: SensorBulkContent[] = []
+    let bulkData: SensorBulkContent[];
 
     if (request.input.body && request.input.body.csv) {
       bulkData = this.parseCSVData(request.input.body.csv);
