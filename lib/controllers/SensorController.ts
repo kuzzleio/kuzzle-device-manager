@@ -151,7 +151,7 @@ export class SensorController extends CRUDController {
   /**
    * Unlink a sensor from an asset.
    */
-  async unlink(request: KuzzleRequest) {
+  async unlink (request: KuzzleRequest) {
     const sensorId = this.getId(request);
 
     const sensor = await this.getSensor(sensorId);
