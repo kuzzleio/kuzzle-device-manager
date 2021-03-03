@@ -169,7 +169,7 @@ export class SensorController extends CRUDController {
   }
 
   private async mGetSensor (documents: SensorBulkContent[]): Promise<Sensor[]> {
-    const sensorIds = documents.map(doc => doc.id)
+    const sensorIds = documents.map(doc => doc.id);
     const result: any = await this.sdk.document.mGet(
       this.config.adminIndex,
       'sensors',
