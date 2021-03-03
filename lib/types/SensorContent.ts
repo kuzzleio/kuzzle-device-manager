@@ -31,3 +31,8 @@ export type SensorBulkBuildedContent = {
   tenant: string;
   id: string[];
 }
+
+export type SensorMAttachementContent = {
+  errors: JSONObject[]
+  successes: JSONObject[]
+}

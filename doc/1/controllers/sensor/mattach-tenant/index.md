@@ -60,7 +60,8 @@ Body:
 Body properties, must contain at least one of
 
 - `records`: an array of object containing `tenant` and `id`
-- `csv`: a csv syntax compatible `tenant,id`
+- `csv`: a csv syntax compatible containing at least this two headers `tenant,id` with their corresponding values
+- `strict`: a boolean value that indicate if the process should fail at first error
 
 ---
 
@@ -79,6 +80,9 @@ Body properties, must contain at least one of
     "controller": "device-manager/sensor",
     "action": "mAttachTenant",
     "requestId": "<unique request identifier>",
-    "result": {}
+    "result": {
+        "errors": [],
+        "successes": []
+    }
 }
 ```
