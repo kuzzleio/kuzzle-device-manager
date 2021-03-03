@@ -71,7 +71,7 @@ export class SensorController extends CRUDController {
     };
   }
 
-  async create(request: KuzzleRequest) {
+  async create (request: KuzzleRequest) {
     const model = this.getBodyString(request, 'model');
     const reference = this.getBodyString(request, 'reference');
 
