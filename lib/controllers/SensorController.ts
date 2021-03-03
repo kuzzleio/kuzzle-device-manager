@@ -105,7 +105,6 @@ export class SensorController extends CRUDController {
    * Attach a sensor to a tenant
    */
   async mAttachTenant (request: KuzzleRequest) {
-    console.log(request);
 
     let bulkData: SensorBulkContent[] = []
 
