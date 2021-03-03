@@ -7,7 +7,7 @@ description: Attach multiple sensors to multiple tenant index
 
 # mAttachTenant
 
-Attach multiple sensors to multiple tenant.
+Attach multiple sensors to multiple tenants.
 
 The sensor document will be duplicated inside the tenant "sensors" collection.
 
