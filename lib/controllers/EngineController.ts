@@ -54,27 +54,21 @@ export class EngineController extends NativeController {
 
   async create (request: KuzzleRequest) {
     const index = this.getIndex(request);
-    const collections = this.config.collections;
-
-    await this.engineService.create(index);
+    const { collections } = await this.engineService.create(index);
 
     return { index, collections };
   }
 
   async update (request: KuzzleRequest) {
     const index = this.getIndex(request);
-    const collections = this.config.collections;
-
-    await this.engineService.update(index);
+    const { collections } = await this.engineService.update(index);
 
     return { index, collections };
   }
 
   async delete (request: KuzzleRequest) {
     const index = this.getIndex(request);
-    const collections = this.config.collections;
-
-    await this.engineService.delete(index);
+    const { collections } = await this.engineService.delete(index);
 
     return { index, collections };
   }

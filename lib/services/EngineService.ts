@@ -32,10 +32,14 @@ export class EngineService {
 
   async create (index: string) {
     const promises = [];
-    const collections = this.config.collections;
+    const templates = this.config.collections;
+    const collections = [];
 
-    for (const [collection, mappings] of Object.entries(collections)) {
-      promises.push(this.sdk.collection.create(index, collection, { mappings }));
+    for (const [collection, mappings] of Object.entries(templates)) {
+      promises.push(
+        this.sdk.collection.create(index, collection, { mappings })
+          .then(() => { collections.push(collection); })
+      );
     }
 
     await Promise.all(promises);
@@ -46,29 +50,39 @@ export class EngineService {
       { index },
       index,
       { refresh: 'wait_for' })
+
+    return { collections };
   }
 
   async update (index: string) {
     const promises = [];
-    const collections = this.config.collections;
+    const templates = this.config.collections;
+    const collections = [];
 
     await this.hasEngine(index);
 
-    for (const [collection, mappings] of Object.entries(collections)) {
-      promises.push(this.sdk.collection.update(index, collection, { mappings }));
+    for (const [collection, mappings] of Object.entries(templates)) {
+      promises.push(this.sdk.collection.update(index, collection, { mappings })
+        .then(() => { collections.push(collection); })
+      );
     }
 
     await Promise.all(promises);
+
+    return { collections };
   }
 
   async delete (index: string) {
     const promises = [];
-    const collections = Object.keys(this.config.collections);
+    const templates = Object.keys(this.config.collections);
+    const collections = [];
 
     await this.hasEngine(index);
 
-    for (const collection of collections) {
-      promises.push(this.sdk.collection.delete(index, collection));
+    for (const collection of templates) {
+      promises.push(this.sdk.collection.delete(index, collection)
+        .then(() => { collections.push(collection); })
+      );
     }
 
     await Promise.all(promises);
@@ -78,6 +92,8 @@ export class EngineService {
       'engines',
       index,
       { refresh: 'wait_for' });
+
+    return { collections };
   }
 
   async list () {
