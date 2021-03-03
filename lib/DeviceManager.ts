@@ -95,14 +95,19 @@ export class DeviceManager extends Plugin {
 
     this.pipes = {
       'multi-tenancy/tenant:afterCreate': async request => {
-        const tenantIndex = request.result.index;
+        const { index: tenantIndex } = request.result;
 
-        await this.engineService.create(tenantIndex);
+        const { collections } = await this.engineService.create(tenantIndex);
+
+        if (!Array.isArray(request.result.collections)) {
+          request.result.collections = [];
+        }
+        request.result.collections.push(...collections);
 
         return request;
       },
       'multi-tenancy/tenant:afterDelete': async request => {
-        const tenantIndex = request.result.index;
+        const { index: tenantIndex } = request.result;
 
         await this.engineService.delete(tenantIndex);
 
