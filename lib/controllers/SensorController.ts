@@ -125,17 +125,20 @@ export class SensorController extends CRUDController {
    * Unattach a sensor from it's tenant
    */
   async detach (request: KuzzleRequest) {
-    const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
-    const document = { tenant: tenantId, id: sensorId };
+    const document: SensorBulkContent = { id: sensorId };
     const sensors = await this.mGetSensor([document]);
+    console.log('A', sensors);
+    // Request does not take tenant index as an input
+    document.tenant = sensors[0]._source.tenantId;
+    console.log(document);
 
-    await this.sensorService.mDetach(sensors, document, true);
+    await this.sensorService.mDetach(sensors, [document], true);
   }
   
   /**
-   * Unattach a sensor from it's tenant
+   * Unattach multiple sensors from multiple tenants
    */
   async mDetach (request: KuzzleRequest) {
     const { bulkData, isStrict } = await this.mParseRequest(request);

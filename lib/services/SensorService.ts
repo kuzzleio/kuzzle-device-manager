@@ -71,6 +71,19 @@ export class SensorService {
   }
 
   async mDetach (sensors: Sensor[], bulkData: SensorBulkContent[], isStrict: boolean) {
+    const notAttachedSensors = this.mGetNotAttachedSensor(sensors);
+    const linkedAssets = this.mGetLinkedSensors(sensors);
+
+    if (isStrict && notAttachedSensors.length > 0) {
+      const ids = notAttachedSensors.map(sensor => sensor._id).join(',')
+      throw new BadRequestError(`Sensors "${ids}" are not attached to a tenant`);
+    }
+
+    if (isStrict && linkedAssets.length > 0) {
+      const ids = linkedAssets.map(sensor => sensor._id).join(',')
+      throw new BadRequestError(`Sensors "${ids}" are still linked to an asset`);
+    }
+
     const documents = this.buildBulkSensors(bulkData);
     const results = {
       errors: [],
@@ -82,15 +95,6 @@ export class SensorService {
 
       const sensorsContent = sensors.filter(sensor => document.id.includes(sensor._id));
       const kuzDocuments = sensorsContent.map(sensor => {
-        if (isStrict && ! sensor._source.tenantId) {
-          throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
-        }
-
-        if (isStrict && sensor._source.assetId) {
-          throw new BadRequestError(`Sensor "${sensor._id}" is still linked to an asset`);
-        }
-
-        sensor._source.tenantId = document.tenant;
         return { _id: sensor._id, body: { tenantId: null } }
       })
 
@@ -109,8 +113,6 @@ export class SensorService {
       results.successes.push(...deleted.successes, ...updated.successes);
       results.errors.push(...deleted.errors, ...updated.errors);
     }
-    
-
   }
 
 
@@ -203,6 +205,13 @@ export class SensorService {
 
   private mGetAttachedSensor (sensors: Sensor[]) {
     return sensors.filter(sensor => sensor._source.tenantId);
+  }
+  private mGetNotAttachedSensor (sensors: Sensor[]) {
+    return sensors.filter(sensor => !sensor._source.tenantId || sensor._source.tenantId === null);
+  }
+
+  private mGetLinkedSensors (sensors: Sensor[]) {
+    return sensors.filter(sensor => sensor._source.assetId);
   }
 
   private formatSensorsContent (sensors: Sensor[], document: SensorBulkBuildedContent) {

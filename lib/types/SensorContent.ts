@@ -23,7 +23,7 @@ export type SensorContent = {
 }
 
 export type SensorBulkContent = {
-  tenant: string;
+  tenant?: string;
   id: string;
 }
 
