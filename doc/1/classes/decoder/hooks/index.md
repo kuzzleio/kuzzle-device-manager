@@ -9,9 +9,26 @@ description: Decoder abstract class lifecycle hooks
 
 Hooks allow to modify the processing of a payload and its propagation into the associated collections.
 
+## `beforeProcessing`
+
+Lifecycle hook executed before processing the payload but after validation
+
+---
+
+```ts
+async beforeProcessing (payload: JSONObject, request: KuzzleRequest): Promise<void>
+```
+
+<br/>
+
+| Arguments | Type                     | Description                                 |
+|-----------|--------------------------|---------------------------------------------|
+| `payload` | <pre>JSONObject</pre>    | Raw payload received in the API action body |
+| `request` | <pre>KuzzleRequest</pre> | Original request                            |
+
 ## `beforeRegister`
 
-Lifecycle hook triggered before a sensor is registered
+Lifecycle hook executed before a sensor is registered
 
 ---
 
@@ -32,7 +49,7 @@ Returns the enriched sensor document.
 
 ## `beforeUpdate`
 
-Lifecycle hook triggered before a sensor is updated
+Lifecycle hook executed before a sensor is updated
 
 ---
 

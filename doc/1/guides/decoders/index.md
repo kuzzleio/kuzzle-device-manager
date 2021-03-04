@@ -10,6 +10,8 @@ order: 200
 
 Each sensor model can receive a different payload, it is then necessary to decode this payload in order to retrieve the necessary information and put it in the right place in the document of the associated sensor.
 
+![sensors payloads collect and decode schema](./sensors-payload-collect-and-decode.png)
+
 To do this, it is necessary to implement a decoder by implementing the `Decoder` class.
 
 This class must at least implement the `decode` method in order to retrieve at the right place the payload data.

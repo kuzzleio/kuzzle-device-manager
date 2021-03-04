@@ -12,9 +12,9 @@
   },
   "rootDir": "lib/",
   "include": [
-    "index.ts",
     "lib/**/*.ts",
-    "features/**/*.ts"
+    "features/**/*.ts",
+    "index.ts"
   ],
   "exclude": [
     "node_modules"

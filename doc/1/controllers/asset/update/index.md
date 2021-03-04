@@ -43,6 +43,14 @@ Body:
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/asset:update <index> --id <assetId> --body '{ 
+  // asset changes
+}'
+```
+
 ---
 
 ## Arguments

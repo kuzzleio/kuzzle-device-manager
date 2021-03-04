@@ -42,9 +42,6 @@ An asset is uniquely identified by the `type` + `model` + `reference` triplet.
   "metadata": {
     "owner": "Ayse"
   },
-  
-  "tenantId": null,
-  "assetId": null
 }
 ```
 
@@ -57,6 +54,8 @@ By default, for each measurement type the following information are copied in ad
  - `model`: sensor model
  - `reference`: sensor reference
  - `qos`: sensor qos info
+
+![asset data model with sensors measures](./asset-data-model.png)
 
 **Example:** _Content of asset document linked to a sensor with a temperature measure_
 ```js
@@ -77,7 +76,7 @@ By default, for each measurement type the following information are copied in ad
       // Measure content
       "updatedAt": 1610561030361,
       "payloadUuid": "...",
-      "value": 23.3,
+      "degree": 23.3,
     }
   },
 }

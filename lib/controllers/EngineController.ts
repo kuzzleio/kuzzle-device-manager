@@ -6,7 +6,7 @@ import {
   JSONObject,
 } from 'kuzzle';
 
-import { NativeController } from 'kuzzle/lib/api/controller/base.js'
+import { NativeController } from 'kuzzle/lib/api/controllers/baseController.js'
 import { EngineService } from '../services';
 
 export class EngineController extends NativeController {
@@ -42,7 +42,7 @@ export class EngineController extends NativeController {
         },
         list: {
           handler: this.list.bind(this),
-          http: [{ verb: 'get', path: 'device-manager/engine' }],
+          http: [{ verb: 'get', path: 'device-manager/engines' }],
         },
         exists: {
           handler: this.exists.bind(this),

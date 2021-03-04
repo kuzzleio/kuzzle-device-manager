@@ -9,7 +9,6 @@ import {
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
-import { SensorContent } from '../types';
 
 export class SensorController extends CRUDController {
   private decoders: Map<string, Decoder>;
@@ -25,17 +24,9 @@ export class SensorController extends CRUDController {
 
     this.definition = {
       actions: {
-        create: {
-          handler: this.create.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/:index/sensors' }]
-        },
         update: {
           handler: this.update.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
-        },
-        delete: {
-          handler: this.delete.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id' }]
         },
         search: {
           handler: this.search.bind(this),
@@ -46,7 +37,7 @@ export class SensorController extends CRUDController {
         },
         attachTenant: {
           handler: this.attachTenant.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_attach' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_attach' }]
         },
         detach: {
           handler: this.detach.bind(this),
@@ -54,7 +45,7 @@ export class SensorController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_link/:assetId' }]
         },
         unlink: {
           handler: this.unlink.bind(this),
@@ -62,24 +53,6 @@ export class SensorController extends CRUDController {
         },
       }
     };
-  }
-
-  async create (request: KuzzleRequest) {
-    const model = this.getBodyString(request, 'model');
-    const reference = this.getBodyString(request, 'reference');
-
-    if (! request.input.resource._id) {
-      const sensorContent: SensorContent = {
-        model,
-        reference,
-        measures: {}
-      };
-
-      const sensor = new Sensor(sensorContent);
-      request.input.resource._id = sensor._id;
-    }
-
-    return super.create(request);
   }
 
   /**
@@ -167,7 +140,7 @@ export class SensorController extends CRUDController {
       assetId);
 
     if (! assetExists) {
-      throw new BadRequestError(`Asset "${assetId}" does not exist`);
+      throw new BadRequestError(`Asset "${assetId}" does not exists`);
     }
 
     await this.sdk.document.update(
@@ -186,11 +159,19 @@ export class SensorController extends CRUDController {
 
     const assetMeasures = await decoder.copyToAsset(sensor);
 
-    await this.sdk.document.update(
+    const updatedAsset = await this.sdk.document.update(
       sensor._source.tenantId,
       'assets',
       assetId,
-      { measures: assetMeasures });
+      { measures: assetMeasures },
+      { source: true });
+
+    // Historize
+    await this.sdk.document.create(
+      sensor._source.tenantId,
+      'assets-history',
+      updatedAsset._source,
+      `${updatedAsset._id}_${request.id}`);
   }
 
   /**
@@ -211,16 +192,26 @@ export class SensorController extends CRUDController {
       sensor._id,
       { assetId: null });
 
-    await this.sdk.document.delete(
+    await this.sdk.document.update(
       sensor._source.tenantId,
       'sensors',
-      sensor._id);
+      sensor._id,
+      { assetId: null });
 
-    await this.sdk.document.update(
+    // @todo remove only the unlinked sensor measures:
+    // each sensors must declare what kind of measure it's going to copy
+    const updatedAsset = await this.sdk.document.update(
       sensor._source.tenantId,
       'assets',
       sensor._source.assetId,
       { measures: null });
+
+    // Historize
+    await this.sdk.document.create(
+      sensor._source.tenantId,
+      'assets-history',
+      updatedAsset._source,
+      `${updatedAsset._id}_${request.id}`);
   }
 
   private async getSensor (sensorId: string): Promise<Sensor> {
