@@ -82,11 +82,11 @@ export class SensorService {
 
       const sensorsContent = sensors.filter(sensor => document.id.includes(sensor._id));
       const kuzDocuments = sensorsContent.map(sensor => {
-        if (! sensor._source.tenantId) {
+        if (isStrict && ! sensor._source.tenantId) {
           throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
         }
 
-        if (sensor._source.assetId) {
+        if (isStrict && sensor._source.assetId) {
           throw new BadRequestError(`Sensor "${sensor._id}" is still linked to an asset`);
         }
 
