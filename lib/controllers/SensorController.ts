@@ -112,23 +112,8 @@ export class SensorController extends CRUDController {
    * Attach multiple sensors to multiple tenants
    */
   async mAttachTenant (request: KuzzleRequest) {
+    const { bulkData, isStrict } = await this.mParseRequest(request);
 
-    let bulkData: SensorBulkContent[];
-
-    if (request.input.body && request.input.body.csv) {
-      const lines = await csv({ delimiter: 'auto' })
-      .fromString(request.input.body.csv);
-
-      bulkData = lines.map(line => ({ tenant: line.tenant, id: line.id }));
-    }
-    else if (request.input.body && request.input.body.records) {
-      bulkData = request.input.body.records;
-    }
-    else {
-      throw new BadRequestError(`Malformed request missing property csv or records`);
-    }
-
-    const isStrict = request.input.body && request.input.body.strict || false;
     const sensors = await this.mGetSensor(bulkData);
 
     return this.sensorService.mAttachTenant(sensors, bulkData, isStrict);
@@ -140,22 +125,24 @@ export class SensorController extends CRUDController {
    * Unattach a sensor from it's tenant
    */
   async detach (request: KuzzleRequest) {
+    const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
-    const sensor = await this.getSensor(sensorId);
+    const document = { tenant: tenantId, id: sensorId };
+    const sensors = await this.mGetSensor([document]);
 
-    await this.sensorService.detach(sensor);
+    await this.sensorService.mDetach(sensors, document, true);
   }
   
   /**
    * Unattach a sensor from it's tenant
    */
   async mDetach (request: KuzzleRequest) {
-    const sensorId = this.getId(request);
+    const { bulkData, isStrict } = await this.mParseRequest(request);
 
-    const sensor = await this.getSensor(sensorId);
+    const sensors = await this.mGetSensor(bulkData);
 
-    await this.sensorService.mDetach(sensor);
+    await this.sensorService.mDetach(sensors, bulkData, isStrict);
   }
 
   /**
@@ -198,5 +185,27 @@ export class SensorController extends CRUDController {
       sensorIds
     )
     return result.successes.map((document: any) => new Sensor(document._source, document._id));
+  }
+
+  private async mParseRequest (request: KuzzleRequest) {
+    const { body } = request.input;
+    let bulkData: SensorBulkContent[];
+
+    if (body.csv) {
+      const lines = await csv({ delimiter: 'auto' })
+        .fromString(body.csv);
+
+      bulkData = lines.map(line => ({ tenant: line.tenant, id: line.id }));
+    }
+    else if (body.records) {
+      bulkData = body.records;
+    }
+    else {
+      throw new BadRequestError(`Malformed request missing property csv or records`);
+    }
+
+    const isStrict = body.strict || false;
+
+    return { isStrict, bulkData };
   }
 }

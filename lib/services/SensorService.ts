@@ -70,29 +70,13 @@ export class SensorService {
     return results;
   }
 
-  async detach (sensor: Sensor) {
-    if (! sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
-    }
-
-    if (sensor._source.assetId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is still linked to an asset`);
-    }
-
-    await this.sdk.document.delete(
-      sensor._source.tenantId,
-      'sensors',
-      sensor._id);
-
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'sensors',
-      sensor._id,
-      { tenantId: null });
-  }
-
-  async mDetach (sensors: Sensor[], bulkData: SensorBulkContent[]) {
+  async mDetach (sensors: Sensor[], bulkData: SensorBulkContent[], isStrict: boolean) {
     const documents = this.buildBulkSensors(bulkData);
+    const results = {
+      errors: [],
+      successes: [],
+    };
+
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
 
@@ -110,17 +94,20 @@ export class SensorService {
         return { _id: sensor._id, body: { tenantId: null } }
       })
 
-      await this.sdk.document.mDelete(
+      const deleted = await this.sdk.document.mDelete(
         document.tenant,
         'sensors',
         document.id,
       )
 
-      await this.sdk.document.mUpdate(
+      const updated = await this.sdk.document.mUpdate(
         this.config.adminIndex,
         'sensors',
         kuzDocuments,
       )
+
+      results.successes.push(...deleted.successes, ...updated.successes);
+      results.errors.push(...deleted.errors, ...updated.errors);
     }
     
 
