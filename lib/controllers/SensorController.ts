@@ -99,32 +99,17 @@ export class SensorController extends CRUDController {
     const sensorId = this.getId(request);
 
     const document = { tenant: tenantId, id: sensorId };
-    const sensor = await this.mGetSensor([document]);
+    const sensors = await this.mGetSensor([document]);
 
-    await this.sensorService.mAttachTenant(sensor, [document], true);
+    await this.sensorService.mAttachTenant(sensors, [document], true);
   }
 
   /**
    * Attach multiple sensors to multiple tenants
    */
   async mAttachTenant (request: KuzzleRequest) {
+    const { bulkData, isStrict } = await this.mParseRequest(request);
 
-    let bulkData: SensorBulkContent[];
-
-    if (request.input.body && request.input.body.csv) {
-      const lines = await csv({ delimiter: 'auto' })
-      .fromString(request.input.body.csv);
-
-      bulkData = lines.map(line => ({ tenant: line.tenant, id: line.id }));
-    }
-    else if (request.input.body && request.input.body.records) {
-      bulkData = request.input.body.records;
-    }
-    else {
-      throw new BadRequestError(`Malformed request missing property csv or records`);
-    }
-
-    const isStrict = request.input.body && request.input.body.strict || false;
     const sensors = await this.mGetSensor(bulkData);
 
     return this.sensorService.mAttachTenant(sensors, bulkData, isStrict);
@@ -183,5 +168,28 @@ export class SensorController extends CRUDController {
       sensorIds
     )
     return result.successes.map((document: any) => new Sensor(document._source, document._id));
+  }
+
+  private async mParseRequest (request: KuzzleRequest) {
+    const { body } = request.input;
+
+    let bulkData: SensorBulkContent[];
+
+    if (body.csv) {
+      const lines = await csv({ delimiter: 'auto' })
+        .fromString(body.csv);
+
+      bulkData = lines.map(line => ({ tenant: line.tenant, id: line.id }));
+    }
+    else if (body.records) {
+      bulkData = body.records;
+    }
+    else {
+      throw new BadRequestError(`Malformed request missing property csv or records`);
+    }
+
+    const isStrict = body.strict || false;
+
+    return { isStrict, bulkData };
   }
 }
