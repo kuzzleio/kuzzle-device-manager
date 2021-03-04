@@ -23,7 +23,7 @@ export class SensorService {
   }
 
   async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[], isStrict: boolean): Promise<SensorMAttachementContent> {
-    const attachedSensors = this.assertSensorsNotAttached(sensors);
+    const attachedSensors = this.mGetAttachedSensor(sensors);
 
     if (isStrict && attachedSensors.length > 0) {
       const ids = attachedSensors.map(sensor => sensor._id).join(',')
@@ -179,7 +179,7 @@ export class SensorService {
     return documents;
   }
 
-  private assertSensorsNotAttached (sensors: Sensor[]) {
+  private mGetAttachedSensor (sensors: Sensor[]) {
     return sensors.filter(sensor => sensor._source.tenantId);
   }
 
