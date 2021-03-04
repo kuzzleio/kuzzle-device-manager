@@ -7,7 +7,7 @@ import {
 
 import { Sensor } from '../models';
 import { Decoder } from '../decoders';
-import { SensorBulkBuildedContent, SensorBulkContent } from 'lib/types';
+import { SensorBulkBuildedContent, SensorBulkContent, SensorMAttachementContent } from 'lib/types';
 
 export class SensorService {
   private config: JSONObject;
@@ -22,69 +22,52 @@ export class SensorService {
     this.context = context;
   }
 
-  async attachTenant (sensor: Sensor, tenantId: string) {
-    if (sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is already attached to a tenant`);
-    }
+  async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[], isStrict: boolean): Promise<SensorMAttachementContent> {
+    const attachedSensors = this.assertSensorsNotAttached(sensors);
 
-    const tenantExists = await this.assertTenantExists(tenantId);
-    if (! tenantExists) {
-      throw new BadRequestError(`Tenant "${tenantId}" does not have a device-manager engine`);
-    }
-
-    sensor._source.tenantId = tenantId;
-
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'sensors',
-      sensor._id,
-      sensor._source);
-
-    await this.sdk.document.create(
-      tenantId,
-      'sensors',
-      sensor._source,
-      sensor._id);
-  }
-
-  async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[]) {
-    for (let i = 0; i < sensors.length; i++) {
-      const sensor = sensors[i];
-      if (sensor._source.tenantId) {
-        throw new BadRequestError(`Sensor "${sensor._id}" is already attached to a tenant`);
-      }
+    if (isStrict && attachedSensors.length > 0) {
+      const ids = attachedSensors.map(sensor => sensor._id).join(',')
+      throw new BadRequestError(`These sensors "${ids}" are already attached to a tenant`);
     }
 
     const documents = this.buildBulkSensors(bulkData);
+    const results = {
+      errors: [],
+      successes: [],
+    };
 
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
       const tenantExists = await this.assertTenantExists(document.tenant);
 
-      if (! tenantExists) {
+      if (isStrict && ! tenantExists) {
         throw new BadRequestError(`Tenant "${document.tenant}" does not have a device-manager engine`);
       }
+      else if (! isStrict && ! tenantExists) {
+        results.errors.push(`Tenant "${document.tenant}" does not have a device-manager engine`)
+        continue;
+      }
 
+      const kuzDocuments = this.formatSensorsContent(sensors, document);
 
-      const sensorsContent = sensors.filter(sensor => document.id.includes(sensor._id));
-      const kuzDocuments = sensorsContent.map(sensor => {
-        sensor._source.tenantId = document.tenant;
-        return { _id: sensor._id, body: sensor._source }
-      })
-
-
-      await this.sdk.document.mUpdate(
+      const updated = await this.sdk.document.mUpdate(
         this.config.adminIndex,
         'sensors',
         kuzDocuments
       )
 
-      await this.sdk.document.mCreate(
+      const created = await this.sdk.document.mCreate(
         document.tenant,
         'sensors',
         kuzDocuments
       )
+
+      results.successes.push(...created.successes, ...updated.successes);
+      results.errors.push(...created.errors, ...updated.errors);
+
     }
+
+    return results;
   }
 
   async detach (sensor: Sensor) {
@@ -229,6 +212,20 @@ export class SensorService {
       }
     }
     return documents;
+  }
+
+  private assertSensorsNotAttached (sensors: Sensor[]) {
+    return sensors.filter(sensor => sensor._source.tenantId);
+  }
+
+  private formatSensorsContent (sensors: Sensor[], document: SensorBulkBuildedContent) {
+    const sensorsContent = sensors.filter(sensor => document.id.includes(sensor._id));
+    const kuzDocuments = sensorsContent.map(sensor => {
+      sensor._source.tenantId = document.tenant;
+      return { _id: sensor._id, body: sensor._source }
+    });
+
+    return kuzDocuments
   }
 
 }

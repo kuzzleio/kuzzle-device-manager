@@ -9,22 +9,30 @@ Feature: Device Manager sensor controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
 
-  Scenario: Attach multiple sensor to a tenant using JSON
+  Scenario: Attach multiple sensors to a tenant using JSON
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
-      | body.records.0.tenant | "tenant-kuzzle"      |
-      | body.records.0.id     | "DummyTemp/detached" |
+      | body.records.0.tenant | "tenant-kuzzle"                    |
+      | body.records.0.id     | "DummyTemp/detached"               |
+      | body.records.1.tenant | "tenant-kuzzle"                    |
+      | body.records.1.id     | "DummyTemp/attached-ayse-unlinked" |
     Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
       | tenantId | "tenant-kuzzle" |
+    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
+      | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp/attached-ayse-unlinked" exists
 
   Scenario: Attach multiple sensor to a tenant using CSV
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
-      | body.csv | "tenant,id\\ntenant-kuzzle,DummyTemp\/detached" |
+      | body.csv | "tenant,id\\ntenant-kuzzle,DummyTemp\/detached\\ntenant-kuzzle,DummyTemp\/attached-ayse-unlinked," |
     Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
       | tenantId | "tenant-kuzzle" |
+    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
+      | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp/attached-ayse-unlinked" exists
 
   Scenario: Error when assigning a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
@@ -40,7 +48,7 @@ Feature: Device Manager sensor controller
       | _id   | "DummyTemp/detached" |
       | index | "tenant-kuzzle"      |
     Then I should receive an error matching:
-      | message | "Sensor \"DummyTemp/detached\" is already attached to a tenant" |
+      | message | "These sensors \"DummyTemp/detached\" are already attached to a tenant" |
 
   Scenario: Detach sensor from a tenant
     Given an engine on index "tenant-kuzzle"

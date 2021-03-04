@@ -1,3 +1,4 @@
+import csv from 'csvtojson';
 import {
   KuzzleRequest,
   EmbeddedSDK,
@@ -5,6 +6,7 @@ import {
   PluginContext,
   BadRequestError
 } from 'kuzzle';
+
 
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
@@ -75,11 +77,11 @@ export class SensorController extends CRUDController {
     };
   }
 
-  async create(request: KuzzleRequest) {
+  async create (request: KuzzleRequest) {
     const model = this.getBodyString(request, 'model');
     const reference = this.getBodyString(request, 'reference');
 
-    if (!request.input.resource._id) {
+    if (! request.input.resource._id) {
       const sensorContent: SensorContent = {
         model,
         reference,
@@ -100,21 +102,24 @@ export class SensorController extends CRUDController {
     const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
-    const sensor = await this.getSensor(sensorId);
+    const document = { tenant: tenantId, id: sensorId };
+    const sensor = await this.mGetSensor([document]);
 
-    await this.sensorService.attachTenant(sensor, tenantId);
+    await this.sensorService.mAttachTenant(sensor, [document], true);
   }
 
   /**
-   * Attach a sensor to a tenant
+   * Attach multiple sensors to multiple tenants
    */
   async mAttachTenant (request: KuzzleRequest) {
-    console.log(request);
 
-    let bulkData: SensorBulkContent[] = []
+    let bulkData: SensorBulkContent[];
 
     if (request.input.body && request.input.body.csv) {
-      bulkData = this.parseCSVData(request.input.body.csv);
+      const lines = await csv({ delimiter: 'auto' })
+      .fromString(request.input.body.csv);
+
+      bulkData = lines.map(line => ({ tenant: line.tenant, id: line.id }));
     }
     else if (request.input.body && request.input.body.records) {
       bulkData = request.input.body.records;
@@ -123,9 +128,10 @@ export class SensorController extends CRUDController {
       throw new BadRequestError(`Malformed request missing property csv or records`);
     }
 
+    const isStrict = request.input.body && request.input.body.strict || false;
     const sensors = await this.mGetSensor(bulkData);
 
-    await this.sensorService.mAttachTenant(sensors, bulkData);
+    return this.sensorService.mAttachTenant(sensors, bulkData, isStrict);
   }
 
 
@@ -167,7 +173,7 @@ export class SensorController extends CRUDController {
   /**
    * Unlink a sensor from an asset.
    */
-  async unlink(request: KuzzleRequest) {
+  async unlink (request: KuzzleRequest) {
     const sensorId = this.getId(request);
 
     const sensor = await this.getSensor(sensorId);
@@ -185,36 +191,12 @@ export class SensorController extends CRUDController {
   }
 
   private async mGetSensor (documents: SensorBulkContent[]): Promise<Sensor[]> {
-    const sensorIds = documents.map(doc => doc.id)
+    const sensorIds = documents.map(doc => doc.id);
     const result: any = await this.sdk.document.mGet(
       this.config.adminIndex,
       'sensors',
       sensorIds
     )
     return result.successes.map((document: any) => new Sensor(document._source, document._id));
-  }
-
-  private parseCSVData (csv: string): SensorBulkContent[] {
-    const lines = csv.split('\n');
-    const header = lines.shift();
-    const results = [];
-
-    const headers = header.split(',')
-
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].split(',');
-      const result = {};
-
-      for (let j = 0; j < line.length; j++) {
-        const values = line[j];
-        result[headers[j]] = values
-
-        results.push(result);
-      }
-    }
-
-
-    return results;
   }
 }
