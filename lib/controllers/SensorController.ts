@@ -103,9 +103,9 @@ export class SensorController extends CRUDController {
     const sensorId = this.getId(request);
 
     const document = { tenant: tenantId, id: sensorId };
-    const sensor = await this.mGetSensor([document]);
+    const sensors = await this.mGetSensor([document]);
 
-    await this.sensorService.mAttachTenant(sensor, [document], true);
+    await this.sensorService.mAttachTenant(sensors, [document], true);
   }
 
   /**
