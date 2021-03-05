@@ -67,7 +67,6 @@ Feature: Device Manager sensor controller
       | measures.temperature.degree      | 23.3                               |
       | measures.temperature.qos.battery | 80                                 |
     And I refresh the collection "tenant-ayse":"assets-history"
-    And I count 1 documents in "tenant-ayse":"assets-history"
 
   Scenario: Error when linking sensor to an asset
     When I execute the action "device-manager/sensor":"linkAsset" with args:
