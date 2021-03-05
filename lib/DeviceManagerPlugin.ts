@@ -12,7 +12,7 @@ import {
   SensorController,
   EngineController,
 } from './controllers';
-import { EngineService, PayloadService } from './services';
+import { EngineService, PayloadService, SensorService } from './services';
 import { Decoder } from './decoders';
 import { sensorsMappings, assetsMappings } from './models';
 
@@ -25,6 +25,7 @@ export class DeviceManagerPlugin extends Plugin {
 
   private payloadService: PayloadService;
   private engineService: EngineService;
+  private sensorService: SensorService;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -156,10 +157,10 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
-
+    this.sensorService = new SensorService(this.config, context);
     this.assetController = new AssetController(this.config, context);
-    this.sensorController = new SensorController(this.config, context, this.decoders);
     this.engineController = new EngineController(this.config, context, this.engineService);
+    this.sensorController = new SensorController(this.config, context, this.decoders, this.sensorService);
 
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/sensor'] = this.sensorController.definition;
