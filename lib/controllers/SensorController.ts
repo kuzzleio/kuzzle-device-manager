@@ -63,7 +63,7 @@ export class SensorController extends CRUDController {
         },
         mDetach: {
           handler: this.mDetach.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/sensors/_mDetach' }]
+          http: [{ verb: 'put', path: 'device-manager/sensors/_mDetach' }]
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
@@ -129,10 +129,9 @@ export class SensorController extends CRUDController {
 
     const document: SensorBulkContent = { id: sensorId };
     const sensors = await this.mGetSensor([document]);
-    console.log('A', sensors);
+
     // Request does not take tenant index as an input
     document.tenant = sensors[0]._source.tenantId;
-    console.log(document);
 
     await this.sensorService.mDetach(sensors, [document], true);
   }
