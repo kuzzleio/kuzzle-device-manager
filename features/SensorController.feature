@@ -78,7 +78,7 @@ Feature: Device Manager sensor controller
       | _id     | "DummyTemp_attached-ayse-unlinked" |
       | assetId | "PERFO-non-existing"               |
     Then I should receive an error matching:
-      | message | "Asset \"PERFO-non-existing\" does not exists" |
+      | message | "Asset \"PERFO-non-existing\" does not exist" |
 
   Scenario: Unlink sensor from an asset
     Given I successfully execute the action "device-manager/sensor":"linkAsset" with args:
