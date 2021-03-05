@@ -83,18 +83,14 @@ Feature: Device Manager sensor controller
 
   Scenario: Unlink sensor from an asset
     Given I successfully execute the action "device-manager/sensor":"linkAsset" with args:
-      | _id     | "DummyTemp_attached-ayse-unlinked" |
-      | assetId | "PERFO-unlinked"                   |
+      | _id     | "DummyTemp/attached-ayse-unlinked" |
+      | assetId | "PERFO/unlinked"                   |
     When I successfully execute the action "device-manager/sensor":"unlink" with args:
-      | _id | "DummyTemp_attached-ayse-unlinked" |
-    Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
+      | _id | "DummyTemp/attached-ayse-unlinked" |
+    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
       | assetId | null |
-    Then The document "tenant-ayse":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
-      | assetId | null |
-    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
+    And The document "tenant-ayse":"assets":"PERFO/unlinked" content match:
       | measures | null |
-    And I refresh the collection "tenant-ayse":"assets-history"
-    And I count 2 documents in "tenant-ayse":"assets-history"
 
   Scenario: Error when unlinking from an asset
     When I execute the action "device-manager/sensor":"unlink" with args:
