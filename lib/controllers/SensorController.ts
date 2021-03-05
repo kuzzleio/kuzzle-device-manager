@@ -144,7 +144,7 @@ export class SensorController extends CRUDController {
 
     const sensors = await this.mGetSensor(bulkData);
 
-    await this.sensorService.mDetach(sensors, bulkData, isStrict);
+    return this.sensorService.mDetach(sensors, bulkData, isStrict);
   }
 
   /**
