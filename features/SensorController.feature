@@ -82,11 +82,11 @@ Feature: Device Manager sensor controller
 
   Scenario: Unlink sensor from an asset
     Given I successfully execute the action "device-manager/sensor":"linkAsset" with args:
-      | _id     | "DummyTemp/attached-ayse-unlinked" |
+      | _id     | "DummyTemp_attached-ayse-unlinked" |
       | assetId | "PERFO/unlinked"                   |
     When I successfully execute the action "device-manager/sensor":"unlink" with args:
-      | _id | "DummyTemp/attached-ayse-unlinked" |
-    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
+      | _id | "DummyTemp_attached-ayse-unlinked" |
+    Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO/unlinked" content match:
       | measures | null |
