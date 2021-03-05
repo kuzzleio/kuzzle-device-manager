@@ -2,11 +2,18 @@ import {
   KuzzleRequest,
   JSONObject,
   PluginContext,
+  EmbeddedSDK,
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
+import { BaseAsset } from '../models/BaseAsset';
+import { BaseAssetContent } from '../types';
 
 export class AssetController extends CRUDController {
+  get sdk (): EmbeddedSDK {
+    return this.context.accessors.sdk;
+  }
+
   constructor (config: JSONObject, context: PluginContext) {
     super(config, context, 'assets');
 
@@ -35,11 +42,44 @@ export class AssetController extends CRUDController {
     };
   }
 
-  create (request: KuzzleRequest) {
+  async create (request: KuzzleRequest) {
+    const type = this.getBodyString(request, 'type');
+    const model = this.getBodyString(request, 'model');
+    const reference = this.getBodyString(request, 'reference');
+
     if (! request.input.resource._id) {
-      request.input.resource._id = `${request.input.body.model}/${request.input.body.reference}`;
+      const assetContent: BaseAssetContent = {
+        type,
+        model,
+        reference,
+      };
+
+      const asset = new BaseAsset(assetContent);
+      request.input.resource._id = asset._id;
     }
 
-    return super.create(request);
+    const document = await super.create(request);
+
+    // Historize
+    await this.sdk.document.create(
+      request.input.resource.index,
+      'assets-history',
+      document._source,
+      `${document._id}_${request.id}`);
+
+    return document;
+  }
+
+  async update (request: KuzzleRequest) {
+    const document = await super.update(request);
+
+    // Historize
+    await this.sdk.document.create(
+      request.input.resource.index,
+      'assets-history',
+      document._source,
+      `${document._id}_${request.id}`);
+
+    return document;
   }
 }

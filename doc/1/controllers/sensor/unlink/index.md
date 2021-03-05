@@ -16,7 +16,7 @@ Unlinks a sensor from its asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/_:id/_unlink[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/:index/sensors/:_id/_unlink[?refresh=wait_for]
 Method: DELETE
 ```
 
@@ -29,6 +29,12 @@ Method: DELETE
   "action": "unlink",
   "_id": "<sensorId>"
 }
+```
+
+### Kourou
+
+```bash
+kourou device-manager/sensor:unlink <index> --id <sensorId>
 ```
 
 ---
