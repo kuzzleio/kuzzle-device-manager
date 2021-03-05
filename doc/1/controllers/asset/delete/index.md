@@ -33,6 +33,12 @@ Method: DELETE
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/asset:delete <index> --id <assetId>
+```
+
 ---
 
 ## Arguments

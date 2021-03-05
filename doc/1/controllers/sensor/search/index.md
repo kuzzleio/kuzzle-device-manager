@@ -64,11 +64,20 @@ Body:
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/sensor:search <index> --body '{ 
+  query: {
+    // search query    
+  }
+}'
+```
 ---
 
 ## Arguments
 
-- `index`: index name
+- `index`: Tenant index name
 
 ### Optional:
 
