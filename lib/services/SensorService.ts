@@ -10,7 +10,8 @@ import {
   MAttachTenantOptions,
   SensorBulkBuildedContent,
   SensorBulkContent,
-  SensorMAttachementContent
+  SensorMAttachementContent,
+  SensorMRequestContent
 } from 'lib/types';
 
 
@@ -56,19 +57,10 @@ export class SensorService {
 
       const sensorDocuments = this.formatSensorsContent(sensors, document);
 
-      const updated = await this.sdk.document.mUpdate(
-        this.config.adminIndex,
-        'sensors',
-        sensorDocuments)
+      const { errors, successes } = await this.writeToDatabase(sensorDocuments, document);
 
-      const created = await this.sdk.document.mCreate(
-        document.tenantId,
-        'sensors',
-        sensorDocuments)
-
-      results.successes.concat(created.successes, updated.successes);
-      results.errors.concat(created.errors, updated.errors);
-
+      results.successes.concat(successes);
+      results.errors.concat(errors);
     }
 
     return results;
@@ -184,14 +176,56 @@ export class SensorService {
     return documents;
   }
 
-  private formatSensorsContent (sensors: Sensor[], document: SensorBulkBuildedContent) {
+  private formatSensorsContent (sensors: Sensor[], document: SensorBulkBuildedContent): SensorMRequestContent[] {
     const sensorsContent = sensors.filter(sensor => document.sensorIds.includes(sensor._id));
     const sensorsDocuments = sensorsContent.map(sensor => {
       sensor._source.tenantId = document.tenantId;
       return { _id: sensor._id, body: sensor._source }
     });
 
-    return sensorsDocuments
+    return sensorsDocuments;
   }
 
+  private async writeToDatabase (sensorDocuments: SensorMRequestContent[], document: SensorBulkBuildedContent) {
+    const results = {
+      errors: [],
+      successes: [],
+    }
+
+    const write = async (limit: number): Promise<void> => {
+      const sensors = sensorDocuments.splice(0, limit);
+
+      const updated = await this.sdk.document.mUpdate(
+        this.config.adminIndex,
+        'sensors',
+        sensors);
+
+      const created = await this.sdk.document.mCreate(
+        document.tenantId,
+        'sensors',
+        sensors);
+
+        results.successes.concat(created.successes, updated.successes);
+        results.errors.concat(created.errors, updated.errors);
+    }
+
+    let count = 0;
+    const limit = global.kuzzle.config.limits.documentsWriteCount;
+
+    if (sensorDocuments.length > limit) {
+      for (let i = 0; i < sensorDocuments.length; i++) {
+        count++;
+  
+        if (count === limit) {
+          await write(limit);
+          count = 0;
+        }
+      }
+    }
+    else {
+      await write(sensorDocuments.length);
+    }
+
+    return results;
+  }
 }
