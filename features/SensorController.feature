@@ -12,10 +12,10 @@ Feature: Device Manager sensor controller
   Scenario: Attach multiple sensors to a tenant using JSON
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
-      | body.records.0.tenant | "tenant-kuzzle"                    |
-      | body.records.0.id     | "DummyTemp/detached"               |
-      | body.records.1.tenant | "tenant-kuzzle"                    |
-      | body.records.1.id     | "DummyTemp/attached-ayse-unlinked" |
+      | body.records.0.tentId   | "tenant-kuzzle"                    |
+      | body.records.0.sensorId | "DummyTemp/detached"               |
+      | body.records.1.tentId   | "tenant-kuzzle"                    |
+      | body.records.1.sensorId | "DummyTemp/attached-ayse-unlinked" |
     Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
       | tenantId | "tenant-kuzzle" |
     Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
@@ -26,7 +26,7 @@ Feature: Device Manager sensor controller
   Scenario: Attach multiple sensor to a tenant using CSV
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
-      | body.csv | "tenant,id\\ntenant-kuzzle,DummyTemp\/detached\\ntenant-kuzzle,DummyTemp\/attached-ayse-unlinked," |
+      | body.csv | "tenantId,sensorId\\ntenant-kuzzle,DummyTemp\/detached\\ntenant-kuzzle,DummyTemp\/attached-ayse-unlinked," |
     Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
       | tenantId | "tenant-kuzzle" |
     Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:

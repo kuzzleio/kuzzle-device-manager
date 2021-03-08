@@ -23,16 +23,20 @@ export type SensorContent = {
 }
 
 export type SensorBulkContent = {
-  tenant: string;
-  id: string;
+  tenantId: string;
+  sensorId: string;
 }
 
 export type SensorBulkBuildedContent = {
-  tenant: string;
-  id: string[];
+  tenantId: string;
+  sensorIds: string[];
 }
 
 export type SensorMAttachementContent = {
-  errors: JSONObject[]
-  successes: JSONObject[]
+  errors: JSONObject[];
+  successes: JSONObject[];
+}
+
+export type MAttachTenantOptions = {
+  strict: boolean;
 }

@@ -5,10 +5,16 @@ import {
   BadRequestError,
 } from 'kuzzle';
 
+import {
+  MAttachTenantOptions,
+  SensorBulkBuildedContent,
+  SensorBulkContent,
+  SensorMAttachementContent
+} from 'lib/types';
+
+
 import { Sensor } from '../models';
 import { Decoder } from '../decoders';
-import { SensorBulkBuildedContent, SensorBulkContent, SensorMAttachementContent } from 'lib/types';
-
 export class SensorService {
   private config: JSONObject;
   private context: PluginContext;
@@ -22,10 +28,10 @@ export class SensorService {
     this.context = context;
   }
 
-  async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[], isStrict: boolean): Promise<SensorMAttachementContent> {
-    const attachedSensors = this.mGetAttachedSensor(sensors);
+  async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[], { strict } : MAttachTenantOptions): Promise<SensorMAttachementContent> {
+    const attachedSensors = sensors.filter(sensor => sensor._source.tenantId);
 
-    if (isStrict && attachedSensors.length > 0) {
+    if (strict && attachedSensors.length > 0) {
       const ids = attachedSensors.map(sensor => sensor._id).join(',')
       throw new BadRequestError(`These sensors "${ids}" are already attached to a tenant`);
     }
@@ -38,29 +44,27 @@ export class SensorService {
 
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
-      const tenantExists = await this.assertTenantExists(document.tenant);
+      const tenantExists = await this.tenantExists(document.tenantId);
 
-      if (isStrict && ! tenantExists) {
-        throw new BadRequestError(`Tenant "${document.tenant}" does not have a device-manager engine`);
+      if (strict && ! tenantExists) {
+        throw new BadRequestError(`Tenant "${document.tenantId}" does not have a device-manager engine`);
       }
-      else if (! isStrict && ! tenantExists) {
-        results.errors.push(`Tenant "${document.tenant}" does not have a device-manager engine`)
+      else if (! strict && ! tenantExists) {
+        results.errors.push(`Tenant "${document.tenantId}" does not have a device-manager engine`)
         continue;
       }
 
-      const kuzDocuments = this.formatSensorsContent(sensors, document);
+      const sensorDocuments = this.formatSensorsContent(sensors, document);
 
       const updated = await this.sdk.document.mUpdate(
         this.config.adminIndex,
         'sensors',
-        kuzDocuments
-      )
+        sensorDocuments)
 
       const created = await this.sdk.document.mCreate(
-        document.tenant,
+        document.tenantId,
         'sensors',
-        kuzDocuments
-      )
+        sensorDocuments)
 
       results.successes.push(...created.successes, ...updated.successes);
       results.errors.push(...created.errors, ...updated.errors);
@@ -154,7 +158,7 @@ export class SensorService {
       { measures: null });
   }
 
-  private async assertTenantExists (tenantId: string) {
+  private async tenantExists (tenantId: string) {
     const { result: tenantExists } = await this.sdk.query({
       controller: 'device-manager/engine',
       action: 'exists',
@@ -165,28 +169,25 @@ export class SensorService {
   }
 
   private buildBulkSensors (bulkData: SensorBulkContent[]): SensorBulkBuildedContent[] {
-    const documents = []
+    const documents: SensorBulkBuildedContent[] = [];
+
     for (let i = 0; i < bulkData.length; i++) {
       const line = bulkData[i];
-      const document = documents.find(doc => doc.tenant === line.tenant);
+      const document = documents.find(doc => doc.tenantId === line.tenantId);
       if (document) {
-        document.id.push(line.id);
+        document.sensorIds.push(line.sensorId);
       }
       else {
-        documents.push({ tenant: line.tenant, id: [line.id] })
+        documents.push({ tenantId: line.tenantId, sensorIds: [line.sensorId] })
       }
     }
     return documents;
   }
 
-  private mGetAttachedSensor (sensors: Sensor[]) {
-    return sensors.filter(sensor => sensor._source.tenantId);
-  }
-
   private formatSensorsContent (sensors: Sensor[], document: SensorBulkBuildedContent) {
-    const sensorsContent = sensors.filter(sensor => document.id.includes(sensor._id));
+    const sensorsContent = sensors.filter(sensor => document.sensorIds.includes(sensor._id));
     const kuzDocuments = sensorsContent.map(sensor => {
-      sensor._source.tenantId = document.tenant;
+      sensor._source.tenantId = document.tenantId;
       return { _id: sensor._id, body: sensor._source }
     });
 
