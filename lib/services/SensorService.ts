@@ -43,7 +43,6 @@ export class SensorService {
 
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
-      console.log(document);
       const tenantExists = await this.tenantExists(document.tenantId);
 
       if (strict && ! tenantExists) {
@@ -55,8 +54,6 @@ export class SensorService {
       }
 
       const sensorDocuments = this.formatSensorsContent(sensors, document);
-
-      console.log('Before es', sensorDocuments);
 
       const updated = await this.sdk.document.mUpdate(
         this.config.adminIndex,
