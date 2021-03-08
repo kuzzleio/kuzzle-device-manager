@@ -71,7 +71,3 @@ export type SensorMRequestContent = {
   _id: string;
   body: JSONObject;
 }
-
-export type MAttachTenantOptions = {
-  strict: boolean;
-}

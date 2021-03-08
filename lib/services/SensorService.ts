@@ -4,17 +4,15 @@ import {
   EmbeddedSDK,
   BadRequestError,
 } from 'kuzzle';
-import { Decoder } from 'lib/decoders';
 
 import {
-  MAttachTenantOptions,
   SensorBulkBuildedContent,
   SensorBulkContent,
   SensorMAttachementContent,
   SensorMRequestContent
-} from 'lib/types';
+} from '../types';
 
-
+import { Decoder } from '../decoders';
 import { Sensor } from '../models';
 export class SensorService {
   private config: JSONObject;
@@ -29,7 +27,7 @@ export class SensorService {
     this.context = context;
   }
 
-  async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[], { strict } : MAttachTenantOptions): Promise<SensorMAttachementContent> {
+  async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[], { strict }): Promise<SensorMAttachementContent> {
     const attachedSensors = sensors.filter(sensor => sensor._source.tenantId);
 
     if (strict && attachedSensors.length > 0) {
@@ -164,13 +162,14 @@ export class SensorService {
     const documents: SensorBulkBuildedContent[] = [];
 
     for (let i = 0; i < bulkData.length; i++) {
-      const line = bulkData[i];
-      const document = documents.find(doc => doc.tenantId === line.tenantId);
+      const { tenantId, sensorId } = bulkData[i];
+      const document = documents.find(doc => doc.tenantId === tenantId);
+
       if (document) {
-        document.sensorIds.push(line.sensorId);
+        document.sensorIds.push(sensorId);
       }
       else {
-        documents.push({ tenantId: line.tenantId, sensorIds: [line.sensorId] })
+        documents.push({ tenantId, sensorIds: [sensorId] })
       }
     }
     return documents;
@@ -200,13 +199,13 @@ export class SensorService {
         'sensors',
         sensors);
 
-      const created = await this.sdk.document.mCreate(
+      await this.sdk.document.mCreate(
         document.tenantId,
         'sensors',
         sensors);
 
-        results.successes.concat(created.successes, updated.successes);
-        results.errors.concat(created.errors, updated.errors);
+        results.successes.concat(updated.successes);
+        results.errors.concat(updated.errors);
     }
 
     let count = 0;
