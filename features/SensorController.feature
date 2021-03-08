@@ -66,8 +66,6 @@ Feature: Device Manager sensor controller
       | measures.temperature.payloadUuid | "_STRING_"                         |
       | measures.temperature.degree      | 23.3                               |
       | measures.temperature.qos.battery | 80                                 |
-    And I refresh the collection "tenant-ayse":"assets-history"
-    And I count 1 documents in "tenant-ayse":"assets-history"
 
   Scenario: Error when linking sensor to an asset
     When I execute the action "device-manager/sensor":"linkAsset" with args:
@@ -93,8 +91,6 @@ Feature: Device Manager sensor controller
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
       | measures | null |
-    And I refresh the collection "tenant-ayse":"assets-history"
-    And I count 2 documents in "tenant-ayse":"assets-history"
 
   Scenario: Error when unlinking from an asset
     When I execute the action "device-manager/sensor":"unlink" with args:
