@@ -57,7 +57,7 @@ export class SensorService {
 
       const { errors, successes } = await this.writeToDatabase(
         sensorDocuments,
-        async (limit: number): Promise<void> => {
+        async (limit: number): Promise<JSONObject> => {
           const sensors = sensorDocuments.splice(0, limit);
     
           const updated = await this.sdk.document.mUpdate(
@@ -70,8 +70,10 @@ export class SensorService {
             'sensors',
             sensors);
   
-          results.successes.concat(updated.successes);
-          results.errors.concat(updated.errors);
+            return {
+              successes: results.successes.concat(updated.successes),
+              errors: results.errors.concat(updated.errors)
+            }
         });
 
       results.successes.concat(successes);
