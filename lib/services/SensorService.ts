@@ -4,6 +4,7 @@ import {
   EmbeddedSDK,
   BadRequestError,
 } from 'kuzzle';
+import { Decoder } from 'lib/decoders';
 
 import {
   MAttachTenantOptions,
@@ -95,36 +96,42 @@ export class SensorService {
   }
 
 
-  async linkAsset (sensor: Sensor, assetId: string) {
-    if (! sensor._source.tenantId) {
+  async linkAsset (sensor: Sensor, assetId: string, decoders: Map<string, Decoder>) {
+    if (!sensor._source.tenantId) {
       throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
     }
-
+  
     const assetExists = await this.sdk.document.exists(
       sensor._source.tenantId,
       'assets',
       assetId);
-
-    if (! assetExists) {
-      throw new BadRequestError(`Asset "${assetId}" does not exist`);
+  
+    if (!assetExists) {
+      throw new BadRequestError(`Asset "${assetId}" does not exists`);
     }
-
+  
     await this.sdk.document.update(
       this.config.adminIndex,
       'sensors',
       sensor._id,
       { assetId });
-
+  
     await this.sdk.document.update(
       sensor._source.tenantId,
       'sensors',
       sensor._id,
       { assetId });
-
-    if (!assetExists) {
-      throw new BadRequestError(`Asset "${assetId}" does not exists`);
-    }
-  }
+  
+    const decoder = decoders.get(sensor._source.model);
+  
+    const assetMeasures = await decoder.copyToAsset(sensor);
+  
+    await this.sdk.document.update(
+      sensor._source.tenantId,
+      'assets',
+      assetId,
+      { measures: assetMeasures });
+   }
 
   async unlink (sensor: Sensor) {
     if (! sensor._source.assetId) {

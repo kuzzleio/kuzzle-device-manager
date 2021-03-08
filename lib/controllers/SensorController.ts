@@ -111,7 +111,7 @@ export class SensorController extends CRUDController {
 
     const sensor = await this.getSensor(sensorId);
 
-    await this.sensorService.linkAsset(sensor, assetId);
+    await this.sensorService.linkAsset(sensor, assetId, this.decoders);
   }
 
   /**
