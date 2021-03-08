@@ -12,27 +12,27 @@ Feature: Device Manager sensor controller
   Scenario: Attach multiple sensors to a tenant using JSON
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
-      | body.records.0.tentId   | "tenant-kuzzle"                    |
-      | body.records.0.sensorId | "DummyTemp/detached"               |
-      | body.records.1.tentId   | "tenant-kuzzle"                    |
-      | body.records.1.sensorId | "DummyTemp/attached-ayse-unlinked" |
-    Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
+      | body.records.0.tenantId | "tenant-kuzzle"                    |
+      | body.records.0.sensorId | "DummyTemp_detached"               |
+      | body.records.1.tenantId | "tenant-kuzzle"                    |
+      | body.records.1.sensorId | "DummyTemp_attached-ayse-unlinked" |
+    Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
       | tenantId | "tenant-kuzzle" |
-    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
+    Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
       | tenantId | "tenant-kuzzle" |
-    And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
-    And The document "tenant-kuzzle":"sensors":"DummyTemp/attached-ayse-unlinked" exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" exists
 
   Scenario: Attach multiple sensor to a tenant using CSV
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
-      | body.csv | "tenantId,sensorId\\ntenant-kuzzle,DummyTemp\/detached\\ntenant-kuzzle,DummyTemp\/attached-ayse-unlinked," |
-    Then The document "device-manager":"sensors":"DummyTemp/detached" content match:
+      | body.csv | "tenantId,sensorId\\ntenant-kuzzle,DummyTemp_detached\\ntenant-kuzzle,DummyTemp_attached-ayse-unlinked," |
+    Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
       | tenantId | "tenant-kuzzle" |
-    Then The document "device-manager":"sensors":"DummyTemp/attached-ayse-unlinked" content match:
+    Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
       | tenantId | "tenant-kuzzle" |
-    And The document "tenant-kuzzle":"sensors":"DummyTemp/detached" exists
-    And The document "tenant-kuzzle":"sensors":"DummyTemp/attached-ayse-unlinked" exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" exists
 
   Scenario: Error when assigning a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
@@ -48,7 +48,7 @@ Feature: Device Manager sensor controller
       | _id   | "DummyTemp_detached" |
       | index | "tenant-kuzzle"      |
     Then I should receive an error matching:
-      | message | "Sensor \"DummyTemp_detached\" is already attached to a tenant" |
+      | message | "These sensors \"DummyTemp_detached\" are already attached to a tenant" |
 
   Scenario: Detach sensor from a tenant
     Given an engine on index "tenant-kuzzle"

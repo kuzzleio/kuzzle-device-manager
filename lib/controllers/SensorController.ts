@@ -75,18 +75,18 @@ export class SensorController extends CRUDController {
     const document = { tenantId: tenantId, sensorId: sensorId };
     const sensors = await this.mGetSensor([document]);
 
-    await this.sensorService.mAttachTenant(sensors, [document], true);
+    await this.sensorService.mAttachTenant(sensors, [document], { strict: true });
   }
 
   /**
    * Attach multiple sensors to multiple tenants
    */
   async mAttachTenant (request: KuzzleRequest) {
-    const { bulkData, isStrict } = await this.mParseRequest(request);
+    const { bulkData, strict } = await this.mParseRequest(request);
 
     const sensors = await this.mGetSensor(bulkData);
 
-    return this.sensorService.mAttachTenant(sensors, bulkData, isStrict);
+    return this.sensorService.mAttachTenant(sensors, bulkData, { strict });
   }
 
 
@@ -134,8 +134,8 @@ export class SensorController extends CRUDController {
     return new Sensor(document._source, document._id);
   }
 
-  private async mGetSensor (documents: SensorBulkContent[]): Promise<Sensor[]> {
-    const sensorIds = documents.map(doc => doc.tenantId);
+  private async mGetSensor (sensors: SensorBulkContent[]): Promise<Sensor[]> {
+    const sensorIds = sensors.map(doc => doc.sensorId);
     const result: any = await this.sdk.document.mGet(
       this.config.adminIndex,
       'sensors',
@@ -153,7 +153,7 @@ export class SensorController extends CRUDController {
       const lines = await csv({ delimiter: 'auto' })
         .fromString(body.csv);
 
-      bulkData = lines.map(line => ({ tenant: line.tenant, id: line.id }));
+      bulkData = lines.map(line => ({ tenantId: line.tenantId, sensorId: line.sensorId }));
     }
     else if (body.records) {
       bulkData = body.records;
@@ -162,8 +162,8 @@ export class SensorController extends CRUDController {
       throw new BadRequestError(`Malformed request missing property csv or records`);
     }
 
-    const isStrict = body.strict || false;
+    const strict = body.strict || false;
 
-    return { isStrict, bulkData };
+    return { strict, bulkData };
   }
 }

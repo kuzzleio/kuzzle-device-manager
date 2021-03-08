@@ -14,7 +14,6 @@ import {
 
 
 import { Sensor } from '../models';
-import { Decoder } from '../decoders';
 export class SensorService {
   private config: JSONObject;
   private context: PluginContext;
@@ -44,6 +43,7 @@ export class SensorService {
 
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
+      console.log(document);
       const tenantExists = await this.tenantExists(document.tenantId);
 
       if (strict && ! tenantExists) {
@@ -56,6 +56,8 @@ export class SensorService {
 
       const sensorDocuments = this.formatSensorsContent(sensors, document);
 
+      console.log('Before es', sensorDocuments);
+
       const updated = await this.sdk.document.mUpdate(
         this.config.adminIndex,
         'sensors',
@@ -66,8 +68,8 @@ export class SensorService {
         'sensors',
         sensorDocuments)
 
-      results.successes.push(...created.successes, ...updated.successes);
-      results.errors.push(...created.errors, ...updated.errors);
+      results.successes.concat(created.successes, updated.successes);
+      results.errors.concat(created.errors, updated.errors);
 
     }
 
@@ -180,12 +182,12 @@ export class SensorService {
 
   private formatSensorsContent (sensors: Sensor[], document: SensorBulkBuildedContent) {
     const sensorsContent = sensors.filter(sensor => document.sensorIds.includes(sensor._id));
-    const kuzDocuments = sensorsContent.map(sensor => {
+    const sensorsDocuments = sensorsContent.map(sensor => {
       sensor._source.tenantId = document.tenantId;
       return { _id: sensor._id, body: sensor._source }
     });
 
-    return kuzDocuments
+    return sensorsDocuments
   }
 
 }
