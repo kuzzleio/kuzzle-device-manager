@@ -64,6 +64,16 @@ Body:
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/asset:search <index> --body '{ 
+  query: {
+    // search query    
+  }
+}'
+```
+
 ---
 
 ## Arguments

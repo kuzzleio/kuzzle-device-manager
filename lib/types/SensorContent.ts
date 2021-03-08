@@ -3,17 +3,47 @@ import { JSONObject } from 'kuzzle';
 import { SensorMeasures } from './Measure';
 
 export type SensorContent = {
-  reference: string;
-  measures: SensorMeasures;
   /**
-   * This will be auto-filled by Kuzzle
+   * Sensor unique reference for a model
+   */
+  reference: string;
+
+  /**
+   * Sensor measures gathered from a payload
+   */
+  measures?: SensorMeasures;
+
+  /**
+   * Sensor model
+   * (This will be auto-filled by Kuzzle)
    */
   model?: string;
+
+  /**
+   * Sensor additionnal informations gathered from a payload
+   * (e.g. battery, network strength, etc.)
+   */
   qos?: JSONObject;
+
+  /**
+   * Sensor metadata
+   */
   metadata?: JSONObject;
+
+  /**
+   * Linked asset unique identifier
+   */
   assetId?: string;
+
+  /**
+   * Attached tenant ID (index name)
+   */
   tenantId?: string;
 
+  /**
+   * Document metadata
+   * @todo use DocumentMetadata when it's not an interface anymore
+   */
   _kuzzle_info?: {
     author?: string,
     createdAt?: number,
@@ -23,16 +53,21 @@ export type SensorContent = {
 }
 
 export type SensorBulkContent = {
-  tenant?: string;
-  id: string;
+  tenantId?: string;
+  sensorId: string;
 }
 
 export type SensorBulkBuildedContent = {
-  tenant: string;
-  id: string[];
+  tenantId: string;
+  sensorIds: string[];
 }
 
 export type SensorMAttachementContent = {
-  errors: JSONObject[]
-  successes: JSONObject[]
+  errors: JSONObject[];
+  successes: JSONObject[];
+}
+
+export type SensorMRequestContent = {
+  _id: string;
+  body: JSONObject;
 }

@@ -31,6 +31,11 @@ Method: POST
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/engine:create <index>
+```
 ---
 
 ## Response

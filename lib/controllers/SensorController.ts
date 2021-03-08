@@ -11,7 +11,7 @@ import {
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
-import { SensorContent, SensorBulkContent } from '../types';
+import { SensorBulkContent } from '../types';
 import { SensorService } from 'lib/services';
 
 export class SensorController extends CRUDController {
@@ -30,17 +30,9 @@ export class SensorController extends CRUDController {
 
     this.definition = {
       actions: {
-        create: {
-          handler: this.create.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/:index/sensors' }]
-        },
         update: {
           handler: this.update.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
-        },
-        delete: {
-          handler: this.delete.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id' }]
         },
         search: {
           handler: this.search.bind(this),
@@ -51,7 +43,7 @@ export class SensorController extends CRUDController {
         },
         attachTenant: {
           handler: this.attachTenant.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_attach' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_attach' }]
         },
         mAttachTenant: {
           handler: this.mAttachTenant.bind(this),
@@ -67,7 +59,7 @@ export class SensorController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_link/:assetId' }]
         },
         unlink: {
           handler: this.unlink.bind(this),
@@ -77,24 +69,6 @@ export class SensorController extends CRUDController {
     };
   }
 
-  async create (request: KuzzleRequest) {
-    const model = this.getBodyString(request, 'model');
-    const reference = this.getBodyString(request, 'reference');
-
-    if (! request.input.resource._id) {
-      const sensorContent: SensorContent = {
-        model,
-        reference,
-        measures: {}
-      };
-
-      const sensor = new Sensor(sensorContent);
-      request.input.resource._id = sensor._id;
-    }
-
-    return super.create(request);
-  }
-
   /**
    * Attach a sensor to a tenant
    */
@@ -102,21 +76,21 @@ export class SensorController extends CRUDController {
     const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
-    const document = { tenant: tenantId, id: sensorId };
+    const document = { tenantId: tenantId, sensorId: sensorId };
     const sensors = await this.mGetSensor([document]);
 
-    await this.sensorService.mAttachTenant(sensors, [document], true);
+    await this.sensorService.mAttachTenant(sensors, [document], { strict: true });
   }
 
   /**
    * Attach multiple sensors to multiple tenants
    */
   async mAttachTenant (request: KuzzleRequest) {
-    const { bulkData, isStrict } = await this.mParseRequest(request);
+    const { bulkData, strict } = await this.mParseRequest(request);
 
     const sensors = await this.mGetSensor(bulkData);
 
-    return this.sensorService.mAttachTenant(sensors, bulkData, isStrict);
+    return this.sensorService.mAttachTenant(sensors, bulkData, { strict });
   }
 
 
@@ -127,24 +101,24 @@ export class SensorController extends CRUDController {
   async detach (request: KuzzleRequest) {
     const sensorId = this.getId(request);
 
-    const document: SensorBulkContent = { id: sensorId };
+    const document: SensorBulkContent = { sensorId };
     const sensors = await this.mGetSensor([document]);
 
     // Request does not take tenant index as an input
-    document.tenant = sensors[0]._source.tenantId;
+    document.tenantId = sensors[0]._source.tenantId;
 
-    await this.sensorService.mDetach(sensors, [document], true);
+    await this.sensorService.mDetach(sensors, [document], { strict: true });
   }
   
   /**
    * Unattach multiple sensors from multiple tenants
    */
   async mDetach (request: KuzzleRequest) {
-    const { bulkData, isStrict } = await this.mParseRequest(request);
+    const { bulkData, strict } = await this.mParseRequest(request);
 
     const sensors = await this.mGetSensor(bulkData);
 
-    return this.sensorService.mDetach(sensors, bulkData, isStrict);
+    return this.sensorService.mDetach(sensors, bulkData, { strict });
   }
 
   /**
@@ -179,8 +153,8 @@ export class SensorController extends CRUDController {
     return new Sensor(document._source, document._id);
   }
 
-  private async mGetSensor (documents: SensorBulkContent[]): Promise<Sensor[]> {
-    const sensorIds = documents.map(doc => doc.id);
+  private async mGetSensor (sensors: SensorBulkContent[]): Promise<Sensor[]> {
+    const sensorIds = sensors.map(doc => doc.sensorId);
     const result: any = await this.sdk.document.mGet(
       this.config.adminIndex,
       'sensors',
@@ -197,7 +171,7 @@ export class SensorController extends CRUDController {
       const lines = await csv({ delimiter: 'auto' })
         .fromString(body.csv);
 
-      bulkData = lines.map(line => ({ tenant: line.tenant, id: line.id }));
+      bulkData = lines.map(line => ({ tenantId: line.tenantId, sensorId: line.sensorId }));
     }
     else if (body.records) {
       bulkData = body.records;
@@ -206,8 +180,8 @@ export class SensorController extends CRUDController {
       throw new BadRequestError(`Malformed request missing property csv or records`);
     }
 
-    const isStrict = body.strict || false;
+    const strict = body.strict || false;
 
-    return { isStrict, bulkData };
+    return { strict, bulkData };
   }
 }

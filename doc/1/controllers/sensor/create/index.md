@@ -36,18 +36,26 @@ Body:
   "index": "<index>",
   "controller": "device-manager/sensor",
   "action": "create",
-  "_id": "<sensorId>",
   "body": {
     // sensor content
   }
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/sensor:create <index> --body '{ 
+  model: "<sensor model>", 
+  reference: "<sensor reference>" 
+}'
+```
+
 ---
 
 ## Arguments
 
-- `index`: index name
+- `index`: Tenant index name
 
 ### Optional:
 

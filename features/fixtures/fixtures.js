@@ -1,7 +1,7 @@
 module.exports = {
   'device-manager': {
     sensors: [
-      { index: { _id: 'DummyTemp/detached' } },
+      { index: { _id: 'DummyTemp_detached' } },
       {
         reference: 'detached',
         model: 'DummyTemp',
@@ -10,7 +10,7 @@ module.exports = {
         tenantId: null,
         assetId: null
       },
-      { index: { _id: 'DummyTemp/attached-ayse-unlinked' } },
+      { index: { _id: 'DummyTemp_attached-ayse-unlinked' } },
       {
         reference: 'attached-ayse-unlinked',
         model: 'DummyTemp',
@@ -18,7 +18,7 @@ module.exports = {
           temperature: {
             updatedAt: 1610793427950,
             payloadUuid: 'some-uuid',
-            value: 23.3,
+            degree: 23.3,
           }
         },
         qos: {
@@ -31,7 +31,7 @@ module.exports = {
   },
   'tenant-ayse': {
     sensors: [
-      { index: { _id: 'DummyTemp/attached-ayse-unlinked' } },
+      { index: { _id: 'DummyTemp_attached-ayse-unlinked' } },
       {
         reference: 'attached-ayse-unlinked',
         model: 'DummyTemp',
@@ -39,7 +39,7 @@ module.exports = {
           temperature: {
             updatedAt: 1610793427950,
             payloadUuid: 'some-uuid',
-            value: 23.3,
+            degree: 23.3,
           }
         },
         qos: {
@@ -50,7 +50,7 @@ module.exports = {
       },
     ],
     assets: [
-      { index: { _id: 'PERFO/unlinked' } },
+      { index: { _id: 'PERFO-unlinked' } },
       {
         model: 'PERFO',
         reference: 'unlinked',

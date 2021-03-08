@@ -33,11 +33,17 @@ Method: DELETE
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/sensor:delete <index> --id <sensorId>
+```
+
 ---
 
 ## Arguments
 
-- `index`: index name
+- `index`: Tenant index name
 
 ### Optional:
 

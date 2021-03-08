@@ -1,4 +1,4 @@
-export * from './lib/DeviceManager';
+export * from './lib/DeviceManagerPlugin';
 
 export * from './lib/decoders/';
 

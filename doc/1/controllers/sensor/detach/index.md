@@ -16,7 +16,7 @@ Detach a sensor from a tenant.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/sensors/_:id/_detach[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/sensors/:_id/_detach[?refresh=wait_for]
 Method: DELETE
 ```
 
@@ -28,6 +28,12 @@ Method: DELETE
   "action": "detach",
   "_id": "<sensorId>"
 }
+```
+
+### Kourou
+
+```bash
+kourou device-manager/sensor:detach --id <sensorId>
 ```
 
 ---

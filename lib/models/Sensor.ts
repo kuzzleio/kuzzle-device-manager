@@ -6,13 +6,13 @@ export class Sensor {
   _id: string;
   _source: SensorContent;
 
-  constructor (sensorContent: SensorContent, _id?: string) {
-    this._id = _id || `${sensorContent.model}/${sensorContent.reference}`;
+  constructor (content: SensorContent, _id?: string) {
+    this._id = _id || `${content.model}_${content.reference}`;
 
     this._source = {
       qos: {},
       metadata: {},
-      ...sensorContent,
+      ...content,
     };
   }
 
@@ -37,7 +37,7 @@ export const sensorsMappings = {
             updatedAt: { type: 'date' },
             payloadUuid: { type: 'keyword' },
             // temperature
-            value: { type: 'float' },
+            degree: { type: 'float' },
           }
         },
         position: {
@@ -46,10 +46,18 @@ export const sensorsMappings = {
             updatedAt: { type: 'date' },
             payloadUuid: { type: 'keyword' },
             // position
-            latitude: { type: 'float' },
-            longitude: { type: 'float' },
+            point: { type: 'geo_point' },
             altitude: { type: 'float' },
             accuracy: { type: 'integer' },
+          }
+        },
+        movement: {
+          properties: {
+            // common
+            payloadUuid: { type: 'keyword' },
+            updatedAt: { type: 'date' },
+            // movement state
+            moving: { type: 'boolean' },
           }
         },
       }
@@ -65,4 +73,4 @@ export const sensorsMappings = {
     assetId: { type: 'keyword' },
     tenantId: { type: 'keyword' }
   }
-}
+};
