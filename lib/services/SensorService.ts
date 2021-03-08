@@ -55,7 +55,26 @@ export class SensorService {
 
       const sensorDocuments = this.formatSensorsContent(sensors, document);
 
-      const { errors, successes } = await this.writeToDatabase(sensorDocuments, document);
+      const { errors, successes } = await this.writeToDatabase(
+        sensorDocuments,
+        async (limit: number): Promise<JSONObject> => {
+          const sensors = sensorDocuments.splice(0, limit);
+    
+          const updated = await this.sdk.document.mUpdate(
+            this.config.adminIndex,
+            'sensors',
+            sensors);
+    
+          await this.sdk.document.mCreate(
+            document.tenantId,
+            'sensors',
+            sensors);
+  
+            return {
+              successes: results.successes.concat(updated.successes),
+              errors: results.errors.concat(updated.errors)
+            }
+        });
 
       results.successes.concat(successes);
       results.errors.concat(errors);
@@ -185,27 +204,10 @@ export class SensorService {
     return sensorsDocuments;
   }
 
-  private async writeToDatabase (sensorDocuments: SensorMRequestContent[], document: SensorBulkBuildedContent) {
+  private async writeToDatabase (sensorDocuments: SensorMRequestContent[], writer: (limit: number) => Promise<JSONObject>) {
     const results = {
       errors: [],
       successes: [],
-    }
-
-    const write = async (limit: number): Promise<void> => {
-      const sensors = sensorDocuments.splice(0, limit);
-
-      const updated = await this.sdk.document.mUpdate(
-        this.config.adminIndex,
-        'sensors',
-        sensors);
-
-      await this.sdk.document.mCreate(
-        document.tenantId,
-        'sensors',
-        sensors);
-
-        results.successes.concat(updated.successes);
-        results.errors.concat(updated.errors);
     }
 
     let count = 0;
@@ -216,13 +218,17 @@ export class SensorService {
         count++;
   
         if (count === limit) {
-          await write(limit);
           count = 0;
+          const { successes, errors } = await writer(limit);
+          results.successes.push(successes);
+          results.errors.push(errors);
         }
       }
     }
     else {
-      await write(sensorDocuments.length);
+      const { successes, errors } = await writer(sensorDocuments.length);
+      results.successes.push(successes);
+      results.errors.push(errors);
     }
 
     return results;
