@@ -8,7 +8,6 @@ import {
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
-import { SensorContent } from '../types';
 import { SensorService } from 'lib/services';
 
 export class SensorController extends CRUDController {
@@ -27,17 +26,9 @@ export class SensorController extends CRUDController {
 
     this.definition = {
       actions: {
-        create: {
-          handler: this.create.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/:index/sensors' }]
-        },
         update: {
           handler: this.update.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
-        },
-        delete: {
-          handler: this.delete.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id' }]
         },
         search: {
           handler: this.search.bind(this),
@@ -48,7 +39,7 @@ export class SensorController extends CRUDController {
         },
         attachTenant: {
           handler: this.attachTenant.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_attach' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_attach' }]
         },
         detach: {
           handler: this.detach.bind(this),
@@ -56,7 +47,7 @@ export class SensorController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_link/:assetId' }]
         },
         unlink: {
           handler: this.unlink.bind(this),
@@ -64,24 +55,6 @@ export class SensorController extends CRUDController {
         },
       }
     };
-  }
-
-  async create (request: KuzzleRequest) {
-    const model = this.getBodyString(request, 'model');
-    const reference = this.getBodyString(request, 'reference');
-
-    if (! request.input.resource._id) {
-      const sensorContent: SensorContent = {
-        model,
-        reference,
-        measures: {}
-      };
-
-      const sensor = new Sensor(sensorContent);
-      request.input.resource._id = sensor._id;
-    }
-
-    return super.create(request);
   }
 
   /**

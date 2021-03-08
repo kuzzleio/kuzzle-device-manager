@@ -84,7 +84,7 @@ export class SensorService {
    assetId);
 
   if (!assetExists) {
-   throw new BadRequestError(`Asset "${assetId}" does not exist`);
+   throw new BadRequestError(`Asset "${assetId}" does not exists`);
   }
 
   await this.sdk.document.update(
