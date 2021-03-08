@@ -11,7 +11,7 @@ import {
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
 import { Sensor } from '../models';
-import { SensorContent, SensorBulkContent } from '../types';
+import { SensorBulkContent } from '../types';
 import { SensorService } from 'lib/services';
 
 export class SensorController extends CRUDController {
@@ -30,17 +30,9 @@ export class SensorController extends CRUDController {
 
     this.definition = {
       actions: {
-        create: {
-          handler: this.create.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/:index/sensors' }]
-        },
         update: {
           handler: this.update.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
-        },
-        delete: {
-          handler: this.delete.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id' }]
         },
         search: {
           handler: this.search.bind(this),
@@ -51,7 +43,7 @@ export class SensorController extends CRUDController {
         },
         attachTenant: {
           handler: this.attachTenant.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_attach' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_attach' }]
         },
         mAttachTenant: {
           handler: this.mAttachTenant.bind(this),
@@ -63,7 +55,7 @@ export class SensorController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/_:id/_link/:assetId' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_link/:assetId' }]
         },
         unlink: {
           handler: this.unlink.bind(this),
@@ -73,24 +65,6 @@ export class SensorController extends CRUDController {
     };
   }
 
-  async create (request: KuzzleRequest) {
-    const model = this.getBodyString(request, 'model');
-    const reference = this.getBodyString(request, 'reference');
-
-    if (! request.input.resource._id) {
-      const sensorContent: SensorContent = {
-        model,
-        reference,
-        measures: {}
-      };
-
-      const sensor = new Sensor(sensorContent);
-      request.input.resource._id = sensor._id;
-    }
-
-    return super.create(request);
-  }
-
   /**
    * Attach a sensor to a tenant
    */
@@ -98,7 +72,7 @@ export class SensorController extends CRUDController {
     const tenantId = this.getIndex(request);
     const sensorId = this.getId(request);
 
-    const document = { tenant: tenantId, id: sensorId };
+    const document = { tenantId: tenantId, sensorId: sensorId };
     const sensors = await this.mGetSensor([document]);
 
     await this.sensorService.mAttachTenant(sensors, [document], true);
@@ -137,7 +111,7 @@ export class SensorController extends CRUDController {
 
     const sensor = await this.getSensor(sensorId);
 
-    await this.sensorService.linkAsset(sensor, assetId, this.decoders);
+    await this.sensorService.linkAsset(sensor, assetId);
   }
 
   /**
@@ -161,7 +135,7 @@ export class SensorController extends CRUDController {
   }
 
   private async mGetSensor (documents: SensorBulkContent[]): Promise<Sensor[]> {
-    const sensorIds = documents.map(doc => doc.id);
+    const sensorIds = documents.map(doc => doc.tenantId);
     const result: any = await this.sdk.document.mGet(
       this.config.adminIndex,
       'sensors',

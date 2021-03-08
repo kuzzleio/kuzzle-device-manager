@@ -96,7 +96,7 @@ export class SensorService {
   }
 
 
-  async linkAsset (sensor: Sensor, assetId: string, decoders: Map<string, Decoder>) {
+  async linkAsset (sensor: Sensor, assetId: string) {
     if (! sensor._source.tenantId) {
       throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
     }
@@ -122,15 +122,9 @@ export class SensorService {
       sensor._id,
       { assetId });
 
-    const decoder = decoders.get(sensor._source.model);
-
-    const assetMeasures = await decoder.copyToAsset(sensor);
-
-    await this.sdk.document.update(
-      sensor._source.tenantId,
-      'assets',
-      assetId,
-      { measures: assetMeasures });
+    if (!assetExists) {
+      throw new BadRequestError(`Asset "${assetId}" does not exists`);
+    }
   }
 
   async unlink (sensor: Sensor) {

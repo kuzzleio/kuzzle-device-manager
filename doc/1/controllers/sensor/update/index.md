@@ -43,11 +43,19 @@ Body:
 }
 ```
 
+### Kourou
+
+```bash
+kourou device-manager/sensor:update <index> --id <sensorId> --body '{ 
+  // sensor changes
+}'
+```
+
 ---
 
 ## Arguments
 
-- `index`: index name
+- `index`: Tenant index name
 
 ### Optional:
 
