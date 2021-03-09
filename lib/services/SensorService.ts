@@ -57,18 +57,16 @@ export class SensorService {
 
       const { errors, successes } = await this.writeToDatabase(
         sensorDocuments,
-        async (limit: number): Promise<JSONObject> => {
-          const sensors = sensorDocuments.splice(0, limit);
-    
+        async (sensorDocuments: SensorMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'sensors',
-            sensors);
+            sensorDocuments);
     
           await this.sdk.document.mCreate(
             document.tenantId,
             'sensors',
-            sensors);
+            sensorDocuments);
   
             return {
               successes: results.successes.concat(updated.successes),
@@ -204,31 +202,44 @@ export class SensorService {
     return sensorsDocuments;
   }
 
-  private async writeToDatabase (sensorDocuments: SensorMRequestContent[], writer: (limit: number) => Promise<JSONObject>) {
+  private async writeToDatabase (sensorDocuments: SensorMRequestContent[], writer: (sensorDocuments: SensorMRequestContent[]) => Promise<JSONObject>) {
     const results = {
       errors: [],
       successes: [],
     }
 
-    let count = 0;
     const limit = global.kuzzle.config.limits.documentsWriteCount;
 
-    if (sensorDocuments.length > limit) {
-      for (let i = 0; i < sensorDocuments.length; i++) {
-        count++;
-  
-        if (count === limit) {
-          count = 0;
-          const { successes, errors } = await writer(limit);
-          results.successes.push(successes);
-          results.errors.push(errors);
-        }
-      }
-    }
-    else {
-      const { successes, errors } = await writer(sensorDocuments.length);
+    if (sensorDocuments.length <= limit) {
+      const { successes, errors } = await writer(sensorDocuments);
       results.successes.push(successes);
       results.errors.push(errors);
+
+      return results;
+    }
+
+    const writeMany = async (start: number, end: number) => {
+      const sensors = sensorDocuments.slice(start, end);
+      const { successes, errors } = await writer(sensors);
+
+      results.successes.push(successes);
+      results.errors.push(errors);
+    }
+
+    let offset = 0;
+    let offsetLimit = limit;
+    let done = false;
+
+    while (! done) {
+      await writeMany(offset, offsetLimit)
+
+      offset += limit;
+      offsetLimit += limit;
+
+      if (offsetLimit >= sensorDocuments.length) {
+        done = true;
+        await writeMany(offset, sensorDocuments.length);
+      }
     }
 
     return results;
