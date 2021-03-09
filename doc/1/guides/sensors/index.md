@@ -110,6 +110,12 @@ Sensors can be attached to tenant by using the [device-manager/sensor:attach](/k
 
 When attached, the sensor document is copied inside the `sensors` collection of the tenant index.
 
+## Attach to multiple tenant
+
+Multiple differents Sensors can also be attached to multiple defferents tenant by using the [device-manager/sensor:attach](/kuzzle-iot-platform/device-manager/1/controllers/sensor/mattach-tenant) API action.
+
+When attached, all sensors documents are copied inside the `sensors` collections of all differents tenant index.
+
 ## Link to an asset
 
 Sensors can be linked to an asset by using the [device-manager/sensor:link](/kuzzle-iot-platform/device-manager/1/controllers/sensor/link) API action.
