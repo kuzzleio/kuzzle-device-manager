@@ -40,7 +40,7 @@ Body:
 ``` js
 {
     "controller": "device-manager/sensor",
-    "action": "mAttachTenant",
+    "action": "mAttach",
     "body": {
         // Using JSON
         "records" [{
