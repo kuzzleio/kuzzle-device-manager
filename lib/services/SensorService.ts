@@ -118,11 +118,12 @@ export class SensorService {
           this.config.adminIndex,
           'sensors',
           sensorDocuments);
-  
-        await this.sdk.document.mCreate(
-          document.tenantId,
-          'sensors',
-          sensorDocuments);
+          
+          // TODO Make this mDelete query work properly
+          // await this.sdk.document.mDelete(
+          //   sensor._source.tenantId,
+          //   'sensors',
+          //   sensorDocuments.map(sensor => sensor._id));
 
           return {
             successes: results.successes.concat(updated.successes),

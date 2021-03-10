@@ -67,6 +67,39 @@ Feature: Device Manager sensor controller
       | tenantId | null |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" does not exists
 
+  Scenario: Dettach multiple sensors to a tenant using JSON
+    Given an engine on index "tenant-kuzzle"
+    When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
+      | body.records.0.tenantId | "tenant-kuzzle"                    |
+      | body.records.0.sensorId | "DummyTemp_detached"               |
+      | body.records.1.tenantId | "tenant-kuzzle"                    |
+      | body.records.1.sensorId | "DummyTemp_attached-ayse-unlinked" |
+    When I successfully execute the action "device-manager/sensor":"detach" with args:
+      | _id | "DummyTemp_detached" |
+    Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
+      | tenantId | null |
+    When I successfully execute the action "device-manager/sensor":"detach" with args:
+      | _id | "DummyTemp_attached-ayse-unlinked" |
+    Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
+      | tenantId | null |
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" does not exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" does not exists
+  
+  Scenario: Dettach multiple sensors to a tenant using CSV
+    Given an engine on index "tenant-kuzzle"
+    When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
+      | body.csv | "tenantId,sensorId\\ntenant-kuzzle,DummyTemp_detached\\ntenant-kuzzle,DummyTemp_attached-ayse-unlinked," |
+    When I successfully execute the action "device-manager/sensor":"detach" with args:
+      | _id | "DummyTemp_detached" |
+    Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
+      | tenantId | null |
+    When I successfully execute the action "device-manager/sensor":"detach" with args:
+      | _id | "DummyTemp_attached-ayse-unlinked" |
+    Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
+      | tenantId | null |
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" does not exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" does not exists
+
   Scenario: Error when detaching from a tenant
     Given an engine on index "tenant-kuzzle"
     When I execute the action "device-manager/sensor":"detach" with args:
