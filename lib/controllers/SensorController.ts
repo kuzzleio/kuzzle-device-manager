@@ -45,8 +45,8 @@ export class SensorController extends CRUDController {
           handler: this.attachTenant.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_attach' }]
         },
-        mAttachTenant: {
-          handler: this.mAttachTenant.bind(this),
+        mAttach: {
+          handler: this.mAttach.bind(this),
           http: [{ verb: 'put', path: 'device-manager/sensors/_mAttach' }]
         },
         detach: {
@@ -79,18 +79,18 @@ export class SensorController extends CRUDController {
     const document = { tenantId: tenantId, sensorId: sensorId };
     const sensors = await this.mGetSensor([document]);
 
-    await this.sensorService.mAttachTenant(sensors, [document], { strict: true });
+    await this.sensorService.mAttach(sensors, [document], { strict: true });
   }
 
   /**
    * Attach multiple sensors to multiple tenants
    */
-  async mAttachTenant (request: KuzzleRequest) {
+  async mAttach (request: KuzzleRequest) {
     const { bulkData, strict } = await this.mParseRequest(request);
 
     const sensors = await this.mGetSensor(bulkData);
 
-    return this.sensorService.mAttachTenant(sensors, bulkData, { strict });
+    return this.sensorService.mAttach(sensors, bulkData, { strict });
   }
 
 

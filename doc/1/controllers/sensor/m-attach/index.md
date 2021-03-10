@@ -1,7 +1,7 @@
 ---
 code: true
 type: page
-title: mAttachTenant
+title: mAttach
 description: Attach multiple sensors to multiple tenants index
 ---
 
@@ -40,7 +40,7 @@ Body:
 ``` js
 {
     "controller": "device-manager/sensor",
-    "action": "mAttachTenant",
+    "action": "mAttach",
     "body": {
         // Using JSON
         "records" [{
@@ -78,7 +78,7 @@ Body properties, must contain at least one of
     "status": 200,
     "error": null,
     "controller": "device-manager/sensor",
-    "action": "mAttachTenant",
+    "action": "mAttach",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],
