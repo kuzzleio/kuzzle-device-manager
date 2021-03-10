@@ -5,7 +5,7 @@ title: mAttach
 description: Attach multiple sensors to multiple tenants index
 ---
 
-# mAttachTenant
+# mAttach
 
 Attach multiple sensors to multiple tenants.
 
