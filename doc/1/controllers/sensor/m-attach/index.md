@@ -1,7 +1,7 @@
 ---
 code: true
 type: page
-title: mAttachTenant
+title: mAttach
 description: Attach multiple sensors to multiple tenants index
 ---
 
