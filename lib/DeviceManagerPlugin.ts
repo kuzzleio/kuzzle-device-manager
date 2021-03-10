@@ -12,7 +12,7 @@ import {
   SensorController,
   EngineController,
 } from './controllers';
-import { PayloadService, SensorService } from './services';
+import { EngineService, PayloadService, SensorService } from './services';
 import { Decoder } from './decoders';
 import { sensorsMappings, assetsMappings } from './models';
 
@@ -22,7 +22,9 @@ export class DeviceManagerPlugin extends Plugin {
   private assetController: AssetController;
   private sensorController: SensorController;
   private engineController: EngineController;
+
   private payloadService: PayloadService;
+  private engineService: EngineService;
   private sensorService: SensorService;
 
   private get sdk (): EmbeddedSDK {
@@ -94,15 +96,24 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.pipes = {
       'multi-tenancy/tenant:afterCreate': async request => {
-        await this.engineController.create(request);
+        const { index: tenantIndex } = request.result;
+
+        const { collections } = await this.engineService.create(tenantIndex);
+
+        if (!Array.isArray(request.result.collections)) {
+          request.result.collections = [];
+        }
+        request.result.collections.push(...collections);
 
         return request;
       },
       'multi-tenancy/tenant:afterDelete': async request => {
-        await this.engineController.delete(request);
+        const { index: tenantIndex } = request.result;
+
+        await this.engineService.delete(tenantIndex);
 
         return request;
-      },
+      }
     };
 
     this.defaultConfig = {
@@ -144,17 +155,16 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.mergeCustomMappings();
 
+    this.engineService = new EngineService(this.config, context);
+    this.payloadService = new PayloadService(this.config, context);
     this.sensorService = new SensorService(this.config, context);
-
     this.assetController = new AssetController(this.config, context);
-    this.engineController = new EngineController(this.config, context);
+    this.engineController = new EngineController(this.config, context, this.engineService);
     this.sensorController = new SensorController(this.config, context, this.decoders, this.sensorService);
 
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/sensor'] = this.sensorController.definition;
     this.api['device-manager/engine'] = this.engineController.definition;
-
-    this.payloadService = new PayloadService(this.config, context);
 
     await this.initDatabase();
 
