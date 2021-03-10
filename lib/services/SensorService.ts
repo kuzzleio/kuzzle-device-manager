@@ -27,7 +27,7 @@ export class SensorService {
     this.context = context;
   }
 
-  async mAttachTenant (sensors: Sensor[], bulkData: SensorBulkContent[], { strict }): Promise<SensorMAttachementContent> {
+  async mAttach (sensors: Sensor[], bulkData: SensorBulkContent[], { strict }): Promise<SensorMAttachementContent> {
     const attachedSensors = sensors.filter(sensor => sensor._source.tenantId);
 
     if (strict && attachedSensors.length > 0) {

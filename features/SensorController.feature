@@ -11,7 +11,7 @@ Feature: Device Manager sensor controller
 
   Scenario: Attach multiple sensors to a tenant using JSON
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
+    When I successfully execute the action "device-manager/sensor":"mAttach" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
       | body.records.0.sensorId | "DummyTemp_detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
@@ -25,7 +25,7 @@ Feature: Device Manager sensor controller
 
   Scenario: Attach multiple sensor to a tenant using CSV
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
+    When I successfully execute the action "device-manager/sensor":"mAttach" with args:
       | body.csv | "tenantId,sensorId\\ntenant-kuzzle,DummyTemp_detached\\ntenant-kuzzle,DummyTemp_attached-ayse-unlinked," |
     Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
       | tenantId | "tenant-kuzzle" |

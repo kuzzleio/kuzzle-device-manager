@@ -9,7 +9,7 @@ When('I attach multiple sensors while exeding documentsWriteCount limit', async 
 	
 	await this.sdk.query({
 		controller: "device-manager/sensor",
-		action: "mAttachTenant",
+		action: "mAttach",
 		body: {
 			records
 		}
