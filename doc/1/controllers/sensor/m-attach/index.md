@@ -78,7 +78,7 @@ Body properties, must contain at least one of
     "status": 200,
     "error": null,
     "controller": "device-manager/sensor",
-    "action": "mAttachTenant",
+    "action": "mAttach",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],
