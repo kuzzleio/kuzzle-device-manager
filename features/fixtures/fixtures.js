@@ -1,6 +1,9 @@
+const sensors = require('./sensors');
+
 module.exports = {
   'device-manager': {
     sensors: [
+      ...sensors,
       { index: { _id: 'DummyTemp_detached' } },
       {
         reference: 'detached',

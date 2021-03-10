@@ -33,6 +33,12 @@ Feature: Device Manager sensor controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" exists
     And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" exists
+  
+  Scenario: Attach multiple sensor to a tenant while exceeding documentsWriteCount limit 
+    Given an engine on index "tenant-kuzzle"
+    When I attach multiple sensors while exeding documentsWriteCount limit
+    Then All attached sensors have the correct tenantId
+    Then All tenant sensors documents exists
 
   Scenario: Error when assigning a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
@@ -111,6 +117,8 @@ Feature: Device Manager sensor controller
     When I successfully execute the action "device-manager/sensor":"unlink" with args:
       | _id | "DummyTemp_attached-ayse-unlinked" |
     Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
+      | assetId | null |
+    Then The document "tenant-ayse":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
       | measures | null |

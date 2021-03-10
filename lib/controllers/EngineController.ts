@@ -3,14 +3,15 @@ import {
   PluginContext,
   KuzzleRequest,
   EmbeddedSDK,
-  BadRequestError,
   JSONObject,
 } from 'kuzzle';
 
 import { NativeController } from 'kuzzle/lib/api/controllers/baseController.js'
+import { EngineService } from '../services';
 
 export class EngineController extends NativeController {
   [key: string]: any;
+  private engineService: EngineService;
 
   public definition: ControllerDefinition;
 
@@ -18,11 +19,12 @@ export class EngineController extends NativeController {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext) {
+  constructor (config: JSONObject, context: PluginContext, engineService: EngineService) {
     super();
 
     this.config = config;
     this.context = context;
+    this.engineService = engineService;
 
     this.definition = {
       actions: {
@@ -52,95 +54,27 @@ export class EngineController extends NativeController {
 
   async create (request: KuzzleRequest) {
     const index = this.getIndex(request);
-
-    const collections = this.config.collections;
-
-    const promises = [];
-
-    for (const [collection, mappings] of Object.entries(collections)) {
-      promises.push(this.sdk.collection.create(index, collection, { mappings }));
-    }
-
-    await Promise.all(promises);
-
-    await this.sdk.document.create(
-      this.config.adminIndex,
-      'engines',
-      { index },
-      index,
-      { refresh: 'wait_for' })
+    const { collections } = await this.engineService.create(index);
 
     return { index, collections };
   }
 
   async update (request: KuzzleRequest) {
     const index = this.getIndex(request);
-
-    const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engine',
-      action: 'exists',
-      index,
-    });
-
-    if (! tenantExists) {
-      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
-    }
-
-    const collections = this.config.collections;
-
-    const promises = [];
-
-    for (const [collection, mappings] of Object.entries(collections)) {
-      promises.push(this.sdk.collection.update(index, collection, { mappings }));
-    }
-
-    await Promise.all(promises);
+    const { collections } = await this.engineService.update(index);
 
     return { index, collections };
   }
 
   async delete (request: KuzzleRequest) {
     const index = this.getIndex(request);
-
-    const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engine',
-      action: 'exists',
-      index,
-    });
-
-    if (! tenantExists) {
-      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
-    }
-
-    const collections = Object.keys(this.config.collections);
-
-    const promises = [];
-
-    for (const collection of collections) {
-      promises.push(this.sdk.collection.delete(index, collection));
-    }
-
-    await Promise.all(promises);
-
-    await this.sdk.document.delete(
-      this.config.adminIndex,
-      'engines',
-      index,
-      { refresh: 'wait_for' });
+    const { collections } = await this.engineService.delete(index);
 
     return { index, collections };
   }
 
   async list () {
-    const result = await this.sdk.document.search(
-      this.config.adminIndex,
-      'engines',
-      {},
-      { size: 1000 });
-
-    return {
-      engines: result.hits.map(hit => hit._source as any)
-    };
+    return this.engineService.list();
   }
 
   async exists (request: KuzzleRequest) {
