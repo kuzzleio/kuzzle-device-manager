@@ -119,11 +119,12 @@ export class SensorService {
           'sensors',
           sensorDocuments);
           
-          // TODO Make this mDelete query work properly
-          // await this.sdk.document.mDelete(
-          //   sensor._source.tenantId,
-          //   'sensors',
-          //   sensorDocuments.map(sensor => sensor._id));
+          console.log('AAAA', sensorDocuments, document.tenantId);
+
+          await this.sdk.document.mDelete(
+            document.tenantId,
+            'sensors',
+            sensorDocuments.map(sensor => sensor._id));
 
           return {
             successes: results.successes.concat(updated.successes),
