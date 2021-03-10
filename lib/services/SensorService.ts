@@ -118,8 +118,6 @@ export class SensorService {
           this.config.adminIndex,
           'sensors',
           sensorDocuments);
-          
-          console.log('AAAA', sensorDocuments, document.tenantId);
 
           await this.sdk.document.mDelete(
             document.tenantId,
