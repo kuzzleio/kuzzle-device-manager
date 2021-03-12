@@ -1,4 +1,4 @@
-const sensors = require('./sensors');
+const { sensors } = require('./sensors');
 
 module.exports = {
   'device-manager': {

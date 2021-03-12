@@ -118,20 +118,20 @@ The format used can be either __CSV__ in the form of a string in the format `ten
 
 When attached, all sensors documents are copied inside the `sensors` collections of all different tenant index.
 
-## Dettach a sensor from a tenant
+## Detach a sensor from a tenant
 
-Sensors can be dettached to tenant by using the [device-manager/sensor:dettach](/kuzzle-iot-platform/device-manager/1/controllers/sensor/dettach) API action.
+Sensors can be detached to tenant by using the [device-manager/sensor:detach](/kuzzle-iot-platform/device-manager/1/controllers/sensor/detach) API action.
 
-When dettached, the sensor document is deleted from the `sensors` collection of the tenant index.
+When detached, the sensor document is deleted from the `sensors` collection of the tenant index.
 
 the `tenantId` property is set to `null` in the `device-manager` index.
-## Dettach multiple sensors from multiple tenants
+## Detach multiple sensors from multiple tenants
 
-Multiple different Sensors can also be dettached to multiple defferents tenant by using the [device-manager/sensor:mDettach](/kuzzle-iot-platform/device-manager/1/controllers/sensor/mDettach) API action.
+Multiple different Sensors can also be detached to multiple defferents tenant by using the [device-manager/sensor:mDetach](/kuzzle-iot-platform/device-manager/1/controllers/sensor/mDetach) API action.
 
 The format used can be either __CSV__ in the form of a string in the format "tenantId,sensorId,mysensorId" or __JSON__ in the form of an array of objects.
 
-When dettached, all sensors documents are deleted from the `sensors` collections of all different tenant index.
+When detached, all sensors documents are deleted from the `sensors` collections of all different tenant index.
 
 The `tenantId` property is set to `null` for all of them in the `device-manager` index
 

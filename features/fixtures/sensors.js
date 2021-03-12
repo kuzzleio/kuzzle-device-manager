@@ -11,4 +11,6 @@ for (let i = 0; i < 50; i++) {
   });
 }
 
-module.exports = sensors;
+const sensorsTests = sensors.filter(test => test.model);
+
+module.exports = { sensors, sensorsTests };

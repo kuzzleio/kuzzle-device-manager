@@ -33,12 +33,12 @@ Feature: Device Manager sensor controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" exists
     And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" exists
-  
-  Scenario: Attach multiple sensor to a tenant while exceeding documentsWriteCount limit 
+
+  Scenario: Attach multiple sensor to a tenant while exceeding documentsWriteCount limit
     Given an engine on index "tenant-kuzzle"
-    When I attach multiple sensors while exeding documentsWriteCount limit
-    Then All attached sensors have the correct tenantId
-    Then All tenant sensors documents exists
+    When I succesfully execute "device-manager/sensor":"mAttach" while exeding documentsWriteCount limit
+    Then All sensors in "device-manager" "sensors" have the property "tenantId" to "tenant-kuzzle"
+    And All documents "tenant-kuzzle":"sensors"  exists
 
   Scenario: Error when assigning a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
@@ -67,9 +67,9 @@ Feature: Device Manager sensor controller
       | tenantId | null |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" does not exists
 
-  Scenario: Dettach multiple sensors to a tenant using JSON
+  Scenario: Detach multiple sensors to a tenant using JSON
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
+    When I successfully execute the action "device-manager/sensor":"mAttach" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
       | body.records.0.sensorId | "DummyTemp_detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
@@ -84,10 +84,10 @@ Feature: Device Manager sensor controller
       | tenantId | null |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" does not exists
     And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" does not exists
-  
-  Scenario: Dettach multiple sensors to a tenant using CSV
+
+  Scenario: Detach multiple sensors to a tenant using CSV
     Given an engine on index "tenant-kuzzle"
-    When I successfully execute the action "device-manager/sensor":"mAttachTenant" with args:
+    When I successfully execute the action "device-manager/sensor":"mAttach" with args:
       | body.csv | "tenantId,sensorId\\ntenant-kuzzle,DummyTemp_detached\\ntenant-kuzzle,DummyTemp_attached-ayse-unlinked," |
     When I successfully execute the action "device-manager/sensor":"detach" with args:
       | _id | "DummyTemp_detached" |
@@ -99,6 +99,13 @@ Feature: Device Manager sensor controller
       | tenantId | null |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" does not exists
     And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" does not exists
+
+  Scenario: Detach multiple sensor to a tenant while exceeding documentsWriteCount limit
+    Given an engine on index "tenant-kuzzle"
+    When I succesfully execute "device-manager/sensor":"mAttach" while exeding documentsWriteCount limit
+    When I succesfully execute "device-manager/sensor":"mDetach" while exeding documentsWriteCount limit
+    Then All sensors in "device-manager" "sensors" have the property "tenantId" to "null"
+    And All documents "tenant-kuzzle":"sensors" does not exists
 
   Scenario: Error when detaching from a tenant
     Given an engine on index "tenant-kuzzle"
