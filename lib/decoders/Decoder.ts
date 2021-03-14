@@ -6,7 +6,7 @@ import {
 } from 'kuzzle';
 import _ from 'lodash';
 
-import { Sensor } from '../models';
+import { Sensor, BaseAsset } from '../models';
 
 import { AssetMeasures, SensorContent } from '../types';
 
@@ -123,7 +123,11 @@ export abstract class Decoder {
    * @returns Result of the corresponding API action
    */
   async afterRegister (sensor: Sensor, request: KuzzleRequest): Promise<any> {
-    return sensor.serialize();
+    return {
+      tenantId: sensor._source.tenantId,
+      sensor: sensor.serialize(),
+      asset: null,
+    };
   }
 
    /**
@@ -147,8 +151,12 @@ export abstract class Decoder {
    *
    * @returns Result of the corresponding API action
    */
-  async afterUpdate (sensor: Sensor, request: KuzzleRequest): Promise<any> {
-    return sensor.serialize();
+  async afterUpdate (sensor: Sensor, asset: BaseAsset, request: KuzzleRequest): Promise<any> {
+    return {
+      tenantId: sensor._source.tenantId,
+      sensor: sensor.serialize(),
+      asset: asset ? asset.serialize() : null,
+    };
   }
 
   /**

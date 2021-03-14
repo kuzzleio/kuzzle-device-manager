@@ -8,7 +8,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 import { Decoder } from '../decoders';
-import { Sensor } from '../models';
+import { Sensor, BaseAsset } from '../models';
 
 export class PayloadService {
   private config: JSONObject;
@@ -115,11 +115,14 @@ export class PayloadService {
 
     const enrichedSensor = await decoder.beforeUpdate(sensor, request);
 
-    await this.sdk.document.update(
+    const sensorDocument = await this.sdk.document.update(
       this.config.adminIndex,
       'sensors',
       enrichedSensor._id,
-      enrichedSensor._source);
+      enrichedSensor._source,
+      { source: true });
+
+    const updatedSensor = new Sensor(sensorDocument._source as any, sensorDocument._id);
 
     refreshableCollections.push([this.config.adminIndex, 'sensors']);
 
@@ -137,25 +140,21 @@ export class PayloadService {
 
     // Propagate measures into linked asset
     const assetId = previousSensor._source.assetId;
-    if (assetId) {
-      const assetMeasures = await decoder.copyToAsset(enrichedSensor);
+    let updatedAsset = null;
 
-      const updatedAsset = await this.sdk.document.update(
+    if (assetId) {
+      const assetMeasures = await decoder.copyToAsset(updatedSensor);
+
+      const assetDocument = await this.sdk.document.update(
         tenantId,
         'assets',
         assetId,
         { measures: assetMeasures },
         { source: true });
 
-      // Historize
-      await this.sdk.document.create(
-        tenantId,
-        'assets-history',
-        updatedAsset._source,
-        `${updatedAsset._id}_${request.id}`);
+      updatedAsset = new BaseAsset(assetDocument._source as any, assetDocument._id);
 
       refreshableCollections.push([tenantId, 'assets']);
-      refreshableCollections.push([tenantId, 'assets-history']);
     }
 
     if (refresh === 'wait_for') {
@@ -164,6 +163,6 @@ export class PayloadService {
       )));
     }
 
-    return decoder.afterUpdate(enrichedSensor, request);
+    return decoder.afterUpdate(updatedSensor, updatedAsset, request);
   }
 }
