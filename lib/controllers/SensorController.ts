@@ -159,19 +159,11 @@ export class SensorController extends CRUDController {
 
     const assetMeasures = await decoder.copyToAsset(sensor);
 
-    const updatedAsset = await this.sdk.document.update(
+    await this.sdk.document.update(
       sensor._source.tenantId,
       'assets',
       assetId,
-      { measures: assetMeasures },
-      { source: true });
-
-    // Historize
-    await this.sdk.document.create(
-      sensor._source.tenantId,
-      'assets-history',
-      updatedAsset._source,
-      `${updatedAsset._id}_${request.id}`);
+      { measures: assetMeasures });
   }
 
   /**
@@ -205,13 +197,6 @@ export class SensorController extends CRUDController {
       'assets',
       sensor._source.assetId,
       { measures: null });
-
-    // Historize
-    await this.sdk.document.create(
-      sensor._source.tenantId,
-      'assets-history',
-      updatedAsset._source,
-      `${updatedAsset._id}_${request.id}`);
   }
 
   private async getSensor (sensorId: string): Promise<Sensor> {
