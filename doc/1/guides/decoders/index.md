@@ -87,6 +87,13 @@ class KarakoyDecoder extends Decoder {
 }
 ```
 
+## Action results
+
+Each action will return an object containing those 3 properties:
+ - `sensor`: sensor document
+ - `tenantId`: sensor tenant ID (only if the sensor was attached to a tenant)
+ - `asset`: asset document (only if the sensor was linked to an asset)
+
 ## Hooks 
 
 You can then use lifecycle hooks to modify a payload while it's been processed

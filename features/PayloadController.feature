@@ -113,6 +113,10 @@ Feature: Payloads Controller
       | measures.temperature.payloadUuid | "_STRING_"    |
       | measures.temperature.degree      | 42.2          |
       | qos.battery                      | 40            |
+    And I should receive a result matching:
+      | sensor._id | "DummyTemp_attached-ayse-unlinked" |
+      | asset      | null                               |
+      | tenantId   | "tenant-ayse"                      |
 
   Scenario: Propagate sensor measures to asset
     Given I successfully execute the action "device-manager/sensor":"linkAsset" with args:
@@ -136,6 +140,8 @@ Feature: Payloads Controller
       | measures.temperature.payloadUuid | "_STRING_"                         |
       | measures.temperature.degree      | 42.2                               |
       | measures.temperature.qos.battery | 40                                 |
-    And I refresh the collection "tenant-ayse":"assets-history"
-    And I count 2 documents in "tenant-ayse":"assets-history"
+    And I should receive a result matching:
+      | sensor._id | "DummyTemp_attached-ayse-unlinked" |
+      | asset._id  | "PERFO-unlinked"                   |
+      | tenantId   | "tenant-ayse"                      |
 

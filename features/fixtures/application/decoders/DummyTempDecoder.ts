@@ -1,4 +1,4 @@
-import { Decoder, SensorContent, Sensor } from '../../../../index';
+import { Decoder, SensorContent, Sensor, BaseAsset } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
 export class DummyTempDecoder extends Decoder {
@@ -46,10 +46,20 @@ export class DummyTempDecoder extends Decoder {
   }
 
   async afterRegister (sensor: Sensor, request: KuzzleRequest) {
-    return { afterRegister: true };
+    const result = await super.afterRegister(sensor, request);
+
+    return {
+      ...result,
+      afterRegister: true,
+    };
   }
 
-  async afterUpdate (sensor: Sensor, request: KuzzleRequest) {
-    return { afterUpdate: true };
+  async afterUpdate (sensor: Sensor, asset: BaseAsset, request: KuzzleRequest) {
+    const result = await super.afterUpdate(sensor, asset, request);
+
+    return {
+      ...result,
+      afterUpdate: true
+    };
   }
 }

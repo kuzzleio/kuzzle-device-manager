@@ -192,7 +192,7 @@ export class SensorController extends CRUDController {
 
     // @todo remove only the unlinked sensor measures:
     // each sensors must declare what kind of measure it's going to copy
-    const updatedAsset = await this.sdk.document.update(
+    await this.sdk.document.update(
       sensor._source.tenantId,
       'assets',
       sensor._source.assetId,

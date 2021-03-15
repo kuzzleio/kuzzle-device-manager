@@ -83,7 +83,3 @@ By default, for each measurement type the following information are copied in ad
 ```
 
 It is possible to override the [Decoder.copyToAsset](/kuzzle-iot-platform/device-manager/1/classes/decoder/copy-to-asset) method to choose what to copy into the asset.
-
-## Historization
-
-When a new measure is received from a linked sensor, the asset content is historized in the `assets-history` collection of the tenant's index.
