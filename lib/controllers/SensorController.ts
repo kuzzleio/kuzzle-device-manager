@@ -17,10 +17,9 @@ export class SensorController extends CRUDController {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>, sensorService: SensorService) {
+  constructor (config: JSONObject, context: PluginContext, sensorService: SensorService) {
     super(config, context, 'sensors');
 
-    this.decoders = decoders;
 
     this.sensorService = sensorService;
 
@@ -89,7 +88,7 @@ export class SensorController extends CRUDController {
 
     const sensor = await this.getSensor(sensorId);
 
-    await this.sensorService.linkAsset(sensor, assetId, this.decoders);
+    await this.sensorService.linkAsset(sensor, assetId);
   }
 
   /**

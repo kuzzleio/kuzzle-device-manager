@@ -1,24 +1,26 @@
 import {
- JSONObject,
- PluginContext,
- EmbeddedSDK,
- BadRequestError,
+  JSONObject,
+  PluginContext,
+  EmbeddedSDK,
+  BadRequestError,
 } from 'kuzzle';
 
 import { Sensor } from '../models';
-import { Decoder } from '../decoders';
+import { DecoderService } from './DecoderService';
 
 export class SensorService {
  private config: JSONObject;
  private context: PluginContext;
+ private decoderService: DecoderService;
 
  get sdk(): EmbeddedSDK {
   return this.context.accessors.sdk;
  }
 
- constructor (config: JSONObject, context: PluginContext) {
+ constructor (config: JSONObject, context: PluginContext, decoderService: DecoderService) {
   this.config = config;
   this.context = context;
+  this.decoderService = decoderService;
  }
 
  async attachTenant (sensor: Sensor, tenantId: string) {
@@ -73,7 +75,7 @@ export class SensorService {
  }
 
 
- async linkAsset (sensor: Sensor, assetId: string, decoders: Map<string, Decoder>) {
+ async linkAsset (sensor: Sensor, assetId: string) {
   if (!sensor._source.tenantId) {
    throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
   }
@@ -99,7 +101,7 @@ export class SensorService {
    sensor._id,
    { assetId });
 
-  const decoder = decoders.get(sensor._source.model);
+  const decoder = this.decoderService.getModel(sensor._source.model);
 
   const assetMeasures = await decoder.copyToAsset(sensor);
 

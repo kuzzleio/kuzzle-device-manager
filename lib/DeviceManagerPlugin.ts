@@ -12,7 +12,7 @@ import {
   SensorController,
   EngineController,
 } from './controllers';
-import { EngineService, PayloadService, SensorService } from './services';
+import { EngineService, PayloadService, SensorService, DecoderService } from './services';
 import { Decoder } from './decoders';
 import { sensorsMappings, assetsMappings } from './models';
 
@@ -26,6 +26,7 @@ export class DeviceManagerPlugin extends Plugin {
   private payloadService: PayloadService;
   private engineService: EngineService;
   private sensorService: SensorService;
+  private decoderService: DecoderService;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -62,12 +63,6 @@ export class DeviceManagerPlugin extends Plugin {
       metadata: JSONObject;
     },
   }
-
-  /**
-   * List of registered decoders.
-   * Map<model, decoder>
-   */
-  private decoders = new Map<string, Decoder>();
 
   /**
    * Constructor
@@ -144,6 +139,7 @@ export class DeviceManagerPlugin extends Plugin {
         sensors: sensorsMappings,
       }
     };
+    this.decoderService = new DecoderService(this.config);
   }
 
   /**
@@ -157,10 +153,11 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
-    this.sensorService = new SensorService(this.config, context);
+    this.sensorService = new SensorService(this.config, context, this.decoderService);
+
     this.assetController = new AssetController(this.config, context);
     this.engineController = new EngineController(this.config, context, this.engineService);
-    this.sensorController = new SensorController(this.config, context, this.decoders, this.sensorService);
+    this.sensorController = new SensorController(this.config, context, this.sensorService);
 
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/sensor'] = this.sensorController.definition;
@@ -168,7 +165,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     await this.initDatabase();
 
-    for (const decoder of this.decoders.values()) {
+    for (const decoder of this.decoderService.values) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for sensor "${decoder.sensorModel}"`);
     }
   }
@@ -196,7 +193,7 @@ export class DeviceManagerPlugin extends Plugin {
       http: decoder.http,
     };
 
-    this.decoders.set(decoder.sensorModel, decoder);
+    this.decoderService.add(decoder.sensorModel, decoder);
 
     return {
       controller: 'device-manager/payload',
@@ -277,7 +274,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.config.collections['assets-history'] = this.config.collections.assets;
 
     // Merge custom mappings from decoders for payloads collection
-    for (const decoder of this.decoders.values()) {
+    for (const decoder of this.decoderService.values) {
       this.config.adminCollections.payloads.properties.payload.properties = {
         ...this.config.adminCollections.payloads.properties.payload.properties,
         ...decoder.payloadsMappings,
