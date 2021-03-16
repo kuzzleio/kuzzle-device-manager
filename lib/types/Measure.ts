@@ -35,7 +35,7 @@ export interface MovementMeasure extends BaseMeasure {
 
 export type Measure = BaseMeasure;
 
-export type SensorMeasures = {
+export type DeviceMeasures = {
   position?: PositionMeasure;
 
   temperature?: TemperatureMeasure;
@@ -47,22 +47,22 @@ export type SensorMeasures = {
 
 export interface BaseAssetMeasure extends BaseMeasure {
   /**
-   * Sensor ID
+   * Device ID
    */
   id: string;
 
   /**
-   * Sensor model
+   * Device model
    */
   model: string;
 
   /**
-   * Sensor reference
+   * Device reference
    */
   reference: string;
 
   /**
-   * Sensor metadata
+   * Device metadata
    */
   metadata: JSONObject;
 }

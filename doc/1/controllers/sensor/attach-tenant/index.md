@@ -2,14 +2,14 @@
 code: true
 type: page
 title: attachTenant
-description: Attach a sensor to a tenant index
+description: Attach a device to a tenant index
 ---
 
 # attachTenant
 
-Attach a sensor to a tenant.
+Attach a device to a tenant.
 
-The sensor document will be duplicated inside the tenant `sensors` collection.
+The device document will be duplicated inside the tenant `devices` collection.
 
 ---
 
@@ -18,7 +18,7 @@ The sensor document will be duplicated inside the tenant `sensors` collection.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/:_id/_attach[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_attach[?refresh=wait_for]
 Method: PUT
 ```
 
@@ -27,7 +27,7 @@ Method: PUT
 ```js
 {
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "attachTenant",
   "_id": "<sensorId>"
 }
@@ -36,7 +36,7 @@ Method: PUT
 ### Kourou
 
 ```bash
-kourou device-manager/sensor:attachTenant <index> --id <sensorId>
+kourou device-manager/device:attachTenant <index> --id <sensorId>
 ```
 ---
 
@@ -57,7 +57,7 @@ kourou device-manager/sensor:attachTenant <index> --id <sensorId>
   "status": 200,
   "error": null,
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "attachTenant",
   "requestId": "<unique request identifier>",
   "result": {}

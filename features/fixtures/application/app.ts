@@ -10,7 +10,7 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
-deviceManager.mappings.sensors.measures = {
+deviceManager.mappings.devices.measures = {
   humidity: {
     properties: {
       updatedAt: { type: 'date' },
@@ -20,11 +20,11 @@ deviceManager.mappings.sensors.measures = {
   }
 };
 
-deviceManager.mappings.sensors.qos = {
+deviceManager.mappings.devices.qos = {
   battery: { type: 'integer' }
 };
 
-deviceManager.mappings.sensors.metadata = {
+deviceManager.mappings.devices.metadata = {
   group: { type: 'keyword' }
 };
 

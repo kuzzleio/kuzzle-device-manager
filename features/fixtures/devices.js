@@ -1,7 +1,8 @@
-const sensors = [];
+const devices = [];
+
 for (let i = 0; i < 50; i++) {
-  sensors.push({ index: { _id: `DummyTemp_detached-${i}` } });
-  sensors.push({
+  devices.push({ index: { _id: `DummyTemp_detached-${i}` } });
+  devices.push({
     reference: 'detached',
     model: `DummyTemp-${i}`,
     measures: {},
@@ -11,4 +12,4 @@ for (let i = 0; i < 50; i++) {
   });
 }
 
-module.exports = sensors;
+module.exports = devices;

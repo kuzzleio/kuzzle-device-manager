@@ -2,26 +2,26 @@
 code: false
 type: page
 title: Decoders
-description: Use decoders to receive or process various payload 
+description: Use decoders to receive or process various payload
 order: 200
 ---
 
 # Decoders
 
-Each sensor model can receive a different payload, it is then necessary to decode this payload in order to retrieve the necessary information and put it in the right place in the document of the associated sensor.
+Each device model can receive a different payload, it is then necessary to decode this payload in order to retrieve the necessary information and put it in the right place in the document of the associated device.
 
-![sensors payloads collect and decode schema](./sensors-payload-collect-and-decode.png)
+![devices payloads collect and decode schema](./devices-payload-collect-and-decode.png)
 
 To do this, it is necessary to implement a decoder by implementing the `Decoder` class.
 
 This class must at least implement the `decode` method in order to retrieve at the right place the payload data.
 
-A decoder is linked to a sensor model. Its registration triggers the creation of a specific API action to receive payloads from this sensor model. Each payload will be decoded by the decoder provided.
+A decoder is linked to a device model. Its registration triggers the creation of a specific API action to receive payloads from this device model. Each payload will be decoded by the decoder provided.
 
-**Example:** _Decoder for the sensor model "Karakoy"_
+**Example:** _Decoder for the device model "Karakoy"_
 
 ```js
-// "Karakoy" sensor payload
+// "Karakoy" device payload
 {
   deviceEUI: '12345',
   register55: 23.3,
@@ -87,15 +87,15 @@ class KarakoyDecoder extends Decoder {
 }
 ```
 
-## Hooks 
+## Hooks
 
 You can then use lifecycle hooks to modify a payload while it's been processed
 
   - `validate`: Validates the payload format before processing
-  - `beforeRegister`: Enrichment hook executed before registering a sensor
-  - `afterRegister`: Hook executed after registering a sensor
-  - `beforeUpdate`: Enrichment hook executed before updating a sensor
-  - `afterUpdate`: Hook executed after updating a sensor
+  - `beforeRegister`: Enrichment hook executed before registering a device
+  - `afterRegister`: Hook executed after registering a device
+  - `beforeUpdate`: Enrichment hook executed before updating a device
+  - `afterUpdate`: Hook executed after updating a device
 
 See also: [Decoder abstract class](/kuzzle-iot-platform/device-manager/1/classes/decoder).
 
@@ -106,5 +106,5 @@ Every payload received by Kuzzle will be stored in the `payloads` collection of 
 Each document contains the following property:
   - `uuid`: payload unique identifier (also found in measures)
   - `valid`: payload validity
-  - `sensorModel`: sensor model registered for this payload
-  - `payload`: raw payload content 
+  - `sensorModel`: device model registered for this payload
+  - `payload`: raw payload content

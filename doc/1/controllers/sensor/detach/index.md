@@ -2,12 +2,12 @@
 code: true
 type: page
 title: detach
-description: Detach a sensor from a tenant
+description: Detach a device from a tenant
 ---
 
 # detach
 
-Detach a sensor from a tenant.
+Detach a device from a tenant.
 
 ---
 
@@ -16,7 +16,7 @@ Detach a sensor from a tenant.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/sensors/:_id/_detach[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/devices/:_id/_detach[?refresh=wait_for]
 Method: DELETE
 ```
 
@@ -24,7 +24,7 @@ Method: DELETE
 
 ```js
 {
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "detach",
   "_id": "<sensorId>"
 }
@@ -33,7 +33,7 @@ Method: DELETE
 ### Kourou
 
 ```bash
-kourou device-manager/sensor:detach --id <sensorId>
+kourou device-manager/device:detach --id <sensorId>
 ```
 
 ---
@@ -53,7 +53,7 @@ kourou device-manager/sensor:detach --id <sensorId>
   "status": 200,
   "error": null,
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "detach",
   "requestId": "<unique request identifier>",
   "result": {}

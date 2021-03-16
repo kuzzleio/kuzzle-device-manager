@@ -2,12 +2,12 @@
 code: true
 type: page
 title: update
-description: Updates a sensor
+description: Updates a device
 ---
 
 # update
 
-Applies partial changes to a sensor. 
+Applies partial changes to a device.
 
 See also the [document:update](/core/2/api/controllers/document/update) API action.
 
@@ -18,14 +18,14 @@ See also the [document:update](/core/2/api/controllers/document/update) API acti
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/:_id[?refresh=wait_for][&retryOnConflict=<int>][&source]
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id[?refresh=wait_for][&retryOnConflict=<int>][&source]
 Method: PUT
 Body:
 ```
 
 ```js
 {
-  // sensor changes
+  // device changes
 }
 ```
 
@@ -34,11 +34,11 @@ Body:
 ```js
 {
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "update",
   "_id": "<sensorId>",
   "body": {
-    // sensor changes
+    // device changes
   }
 }
 ```
@@ -46,8 +46,8 @@ Body:
 ### Kourou
 
 ```bash
-kourou device-manager/sensor:update <index> --id <sensorId> --body '{ 
-  // sensor changes
+kourou device-manager/device:update <index> --id <sensorId> --body '{
+  // device changes
 }'
 ```
 
@@ -67,24 +67,24 @@ kourou device-manager/sensor:update <index> --id <sensorId> --body '{
 
 ## Body properties
 
-Partial changes to apply to the sensor.
+Partial changes to apply to the device.
 
 ---
 
 ## Response
 
-Returns information about the updated sensor:
+Returns information about the updated device:
 
-- `_id`: sensor unique identifier
-- `_version`: updated sensor version
-- `_source`: contains only changes or the full sensor if `source` is set to `true`
+- `_id`: device unique identifier
+- `_version`: updated device version
+- `_source`: contains only changes or the full device if `source` is set to `true`
 
 ```js
 {
   "status": 200,
   "error": null,
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "update",
   "requestId": "<unique request identifier>",
   "result": {

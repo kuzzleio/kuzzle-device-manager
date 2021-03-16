@@ -1,12 +1,12 @@
 import { JSONObject } from 'kuzzle';
 
-import { SensorContent } from '../types';
+import { DeviceContent } from '../types';
 
-export class Sensor {
+export class Device {
   _id: string;
-  _source: SensorContent;
+  _source: DeviceContent;
 
-  constructor (content: SensorContent, _id?: string) {
+  constructor (content: DeviceContent, _id?: string) {
     this._id = _id || `${content.model}_${content.reference}`;
 
     this._source = {
@@ -24,7 +24,7 @@ export class Sensor {
   }
 }
 
-export const sensorsMappings = {
+export const devicesMappings = {
   dynamic: 'strict',
   properties: {
     reference: { type: 'keyword' },

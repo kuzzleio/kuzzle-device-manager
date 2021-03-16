@@ -1,5 +1,5 @@
 export * from './Measure';
 
-export * from './SensorContent';
+export * from './DeviceContent';
 
 export * from './BaseAssetContent';

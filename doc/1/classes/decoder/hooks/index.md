@@ -28,64 +28,64 @@ async beforeProcessing (payload: JSONObject, request: KuzzleRequest): Promise<vo
 
 ## `beforeRegister`
 
-Lifecycle hook executed before a sensor is registered
+Lifecycle hook executed before a device is registered
 
 ---
 
 ```ts
-async beforeRegister (sensor: Sensor, request: KuzzleRequest): Promise<Sensor>
+async beforeRegister (device: Device, request: KuzzleRequest): Promise<Device>
 ```
 
 <br/>
 
 | Arguments | Type                     | Description                   |
 |-----------|--------------------------|-------------------------------|
-| `sensor`  | <pre>Sensor</pre>        | Sensor before being persisted |
+| `device`  | <pre>Device</pre>        | Device before being persisted |
 | `request` | <pre>KuzzleRequest</pre> | Original request              |
 
 ### Returns
 
-Returns the enriched sensor document.
+Returns the enriched device document.
 
 ## `beforeUpdate`
 
-Lifecycle hook executed before a sensor is updated
+Lifecycle hook executed before a device is updated
 
 ---
 
 ```ts
-async beforeUpdate (sensor: Sensor, request: KuzzleRequest): Promise<Sensor>
+async beforeUpdate (device: Device, request: KuzzleRequest): Promise<Device>
 ```
 
 <br/>
 
 | Arguments | Type                     | Description                 |
 |-----------|--------------------------|-----------------------------|
-| `sensor`  | <pre>Sensor</pre>        | Sensor before being updated |
+| `device`  | <pre>Device</pre>        | Device before being updated |
 | `request` | <pre>KuzzleRequest</pre> | Original request            |
 
 ### Returns
 
-Returns the enriched sensor document.
+Returns the enriched device document.
 
 ## `afterRegister`
 
-Hook executed after registering a sensor.
+Hook executed after registering a device.
 The value returned by this method will be used as the API action result.
 
-By default, the sensor document content is returned.
+By default, the device document content is returned.
 
 ---
 
 ```ts
-async afterRegister (sensor: Sensor, request: KuzzleRequest): Promise<Sensor>
+async afterRegister (device: Device, request: KuzzleRequest): Promise<Device>
 ```
 
 <br/>
 
 | Arguments | Type                     | Description                  |
 |-----------|--------------------------|------------------------------|
-| `sensor`  | <pre>Sensor</pre>        | Sensor after being persisted |
+| `device`  | <pre>Device</pre>        | Device after being persisted |
 | `request` | <pre>KuzzleRequest</pre> | Original request             |
 
 ### Returns
@@ -94,22 +94,22 @@ Result of the corresponding API action.
 
 ## `afterUpdate`
 
-Hook executed after updating a sensor.
+Hook executed after updating a device.
 The value returned by this method will be used as the API action result.
 
-By default, the sensor document content is returned.
+By default, the device document content is returned.
 
 ---
 
 ```ts
-async afterUpdate (sensor: Sensor, request: KuzzleRequest): Promise<Sensor>
+async afterUpdate (device: Device, request: KuzzleRequest): Promise<Device>
 ```
 
 <br/>
 
 | Arguments | Type                     | Description                  |
 |-----------|--------------------------|------------------------------|
-| `sensor`  | <pre>Sensor</pre>        | Sensor after being persisted |
+| `device`  | <pre>Device</pre>        | Device after being persisted |
 | `request` | <pre>KuzzleRequest</pre> | Original request             |
 
 ### Returns

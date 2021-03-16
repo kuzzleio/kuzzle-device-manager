@@ -2,12 +2,12 @@
 code: true
 type: page
 title: unlink
-description: Unlinks a sensor from an asset
+description: Unlinks a device from an asset
 ---
 
 # unlink
 
-Unlinks a sensor from its asset.
+Unlinks a device from its asset.
 
 ---
 
@@ -16,7 +16,7 @@ Unlinks a sensor from its asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/:_id/_unlink[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_unlink[?refresh=wait_for]
 Method: DELETE
 ```
 
@@ -25,7 +25,7 @@ Method: DELETE
 ```js
 {
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "unlink",
   "_id": "<sensorId>"
 }
@@ -34,7 +34,7 @@ Method: DELETE
 ### Kourou
 
 ```bash
-kourou device-manager/sensor:unlink <index> --id <sensorId>
+kourou device-manager/device:unlink <index> --id <sensorId>
 ```
 
 ---
@@ -56,7 +56,7 @@ kourou device-manager/sensor:unlink <index> --id <sensorId>
   "status": 200,
   "error": null,
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "unlink",
   "requestId": "<unique request identifier>",
   "result": {}

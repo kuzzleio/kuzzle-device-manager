@@ -6,25 +6,25 @@ import {
 } from 'kuzzle';
 import _ from 'lodash';
 
-import { Sensor } from '../models';
+import { Device } from '../models';
 
-import { AssetMeasures, SensorContent } from '../types';
+import { AssetMeasures, DeviceContent } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 /**
- * Base class to implement a decoder for a sensor model.
- * The sensor model must be passed to the parent constructor.
+ * Base class to implement a decoder for a device model.
+ * The device model must be passed to the parent constructor.
  * The abstract "decode" method must be implemented.
  */
 export abstract class Decoder {
   private _http?: HttpRoute[];
 
   /**
-   * Sensor model name
+   * Device model name
    */
-  sensorModel: string;
+  deviceModel: string;
 
   /**
    * Custom name for the associated API action in the "payload" controller
@@ -61,10 +61,10 @@ export abstract class Decoder {
   }
 
   /**
-   * @param sensorModel Sensor model for this decoder
+   * @param deviceModel Device model for this decoder
    */
-  constructor (sensorModel: string) {
-    this.sensorModel = sensorModel;
+  constructor (deviceModel: string) {
+    this.deviceModel = deviceModel;
   }
 
   /**
@@ -87,9 +87,9 @@ export abstract class Decoder {
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
-   * @returns Sensor content to save
+   * @returns Device content to save
    */
-  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent>
+  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent>
 
   /**
    * Hook executed before processing the payload but after validation
@@ -102,72 +102,72 @@ export abstract class Decoder {
   }
 
   /**
-   * Enrichment hook executed before registering a sensor
+   * Enrichment hook executed before registering a device
    *
-   * @param sensor Sensor before being persisted
+   * @param device Densor before being persisted
    * @param request Original request
    *
-   * @returns Enriched sensor
+   * @returns Enriched device
    */
-  async beforeRegister (sensor: Sensor, request: KuzzleRequest): Promise<Sensor> {
-    return sensor;
+  async beforeRegister (device: Device, request: KuzzleRequest): Promise<Device> {
+    return device;
   }
 
   /**
-   * Hook executed after registering a sensor.
+   * Hook executed after registering a device.
    * Return value of this method will be returned in the API action result.
    *
-   * @param sensor Sensor after being persisted
+   * @param device Device after being persisted
    * @param request Original request
    *
    * @returns Result of the corresponding API action
    */
-  async afterRegister (sensor: Sensor, request: KuzzleRequest): Promise<any> {
-    return sensor.serialize();
+  async afterRegister (device: Device, request: KuzzleRequest): Promise<any> {
+    return device.serialize();
   }
 
    /**
-   * Enrichment hook executed before updating a sensor
+   * Enrichment hook executed before updating a device
    *
-   * @param sensor Sensor before being updated
+   * @param device Device before being updated
    * @param request Original request
    *
-   * @returns Enriched sensor
+   * @returns Enriched device
    */
-  async beforeUpdate (sensor: Sensor, request: KuzzleRequest): Promise<Sensor> {
-    return sensor;
+  async beforeUpdate (device: Device, request: KuzzleRequest): Promise<Device> {
+    return device;
   }
 
   /**
-   * Hook executed after updating a sensor.
+   * Hook executed after updating a device.
    * Return value of this method will be returned in the API action result.
    *
-   * @param sensor Sensor after being updated
+   * @param device Device after being updated
    * @param request Original request
    *
    * @returns Result of the corresponding API action
    */
-  async afterUpdate (sensor: Sensor, request: KuzzleRequest): Promise<any> {
-    return sensor.serialize();
+  async afterUpdate (device: Device, request: KuzzleRequest): Promise<any> {
+    return device.serialize();
   }
 
   /**
    * Build the "measures" property that will be persisted in the asset document
    *
-   * @param sensor Sensor after being updated
+   * @param device Device after being updated
    *
    * @returns Content of the "measures" property
    */
-  async copyToAsset (sensor: Sensor): Promise<AssetMeasures> {
+  async copyToAsset (device: Device): Promise<AssetMeasures> {
     const measures = {};
 
-    for (const [measureType, measure] of Object.entries(sensor._source.measures)) {
+    for (const [measureType, measure] of Object.entries(device._source.measures)) {
       measures[measureType] = {
-        id: sensor._id,
-        model: sensor._source.model,
-        reference: sensor._source.reference,
+        id: device._id,
+        model: device._source.model,
+        reference: device._source.reference,
         ...measure,
-        qos: sensor._source.qos,
+        qos: device._source.qos,
       };
     }
 

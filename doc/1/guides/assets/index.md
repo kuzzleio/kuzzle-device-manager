@@ -8,9 +8,9 @@ order: 300
 
 # Assets
 
-An asset document represents the physical asset to which one or more sensors can be linked.
+An asset document represents the physical asset to which one or more devices can be linked.
 
-The document contains asset identification information, the latest measurements received by the associated sensors and their metadata.
+The document contains asset identification information, the latest measurements received by the associated devices and their metadata.
 
 An asset is uniquely identified by the `type` + `model` + `reference` triplet.
 
@@ -24,11 +24,11 @@ An asset is uniquely identified by the `type` + `model` + `reference` triplet.
 
   "measures": {
     "position": {
-      "id": "<associated sensor unique identifier>",
-      "model": "<associated sensor model>",
-      "reference": "<associated sensor reference>",
+      "id": "<associated device unique identifier>",
+      "model": "<associated device model>",
+      "reference": "<associated device reference>",
       "metadata": {
-        // associated sensor metadata
+        // associated device metadata
       },
       "updatedAt": "<timestamp of the measure>",
       "payloadUuid": "<identifier of the received payload>",
@@ -45,19 +45,19 @@ An asset is uniquely identified by the `type` + `model` + `reference` triplet.
 }
 ```
 
-## Copy measures from sensors
+## Copy measures from devices
 
-When a sensor is attached to an asset, it will automatically propagate the new measurements it receives into the asset's `measures` property.
+When a device is attached to an asset, it will automatically propagate the new measurements it receives into the asset's `measures` property.
 
 By default, for each measurement type the following information are copied in addition of the measure content:
- - `id`: sensor document unique identifier
- - `model`: sensor model
- - `reference`: sensor reference
- - `qos`: sensor qos info
+ - `id`: device document unique identifier
+ - `model`: device model
+ - `reference`: device reference
+ - `qos`: device qos info
 
-![asset data model with sensors measures](./asset-data-model.png)
+![asset data model with devices measures](./asset-data-model.png)
 
-**Example:** _Content of asset document linked to a sensor with a temperature measure_
+**Example:** _Content of asset document linked to a device with a temperature measure_
 ```js
 {
   "reference": "XYZ-42-AZE",
@@ -72,7 +72,7 @@ By default, for each measurement type the following information are copied in ad
       "qos": {
         "battery": 2.3
       },
-      
+
       // Measure content
       "updatedAt": 1610561030361,
       "payloadUuid": "...",
@@ -86,4 +86,4 @@ It is possible to override the [Decoder.copyToAsset](/kuzzle-iot-platform/device
 
 ## Historization
 
-When a new measure is received from a linked sensor, the asset content is historized in the `assets-history` collection of the tenant's index.
+When a new measure is received from a linked device, the asset content is historized in the `assets-history` collection of the tenant's index.

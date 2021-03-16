@@ -1,14 +1,14 @@
 const { When, Then } = require('cucumber');
 
-When('I attach multiple sensors while exeding documentsWriteCount limit', async function () {
+When('I attach multiple devices while exeding documentsWriteCount limit', async function () {
   const records = [];
   for (let i = 0; i < 50; i++) {
-    records.push({ sensorId: `DummyTemp_detached-${i}`, tenantId: 'tenant-kuzzle' });
+    records.push({ deviceId: `DummyTemp_detached-${i}`, tenantId: 'tenant-kuzzle' });
   }
 
 
   await this.sdk.query({
-    controller: "device-manager/sensor",
+    controller: "device-manager/device",
     action: "mAttach",
     body: {
       records
@@ -16,13 +16,13 @@ When('I attach multiple sensors while exeding documentsWriteCount limit', async 
   });
 });
 
-Then('All attached sensors have the correct tenantId', async function () {
-  const sensorIds = [];
+Then('All attached devices have the correct tenantId', async function () {
+  const deviceIds = [];
   for (let i = 0; i < 50; i++) {
-    sensorIds.push(`DummyTemp_detached-${i}`);
+    deviceIds.push(`DummyTemp_detached-${i}`);
   }
 
-  const { successes, errors } = await this.sdk.document.mGet('device-manager', 'sensors', sensorIds);
+  const { successes, errors } = await this.sdk.document.mGet('device-manager', 'devices', deviceIds);
 
   if (errors.length > 0) {
     throw new Error(errors);
@@ -37,16 +37,15 @@ Then('All attached sensors have the correct tenantId', async function () {
 });
 
 
-Then('All tenant sensors documents exists', async function () {
-  const sensorIds = [];
+Then('All tenant devices documents exists', async function () {
+  const deviceIds = [];
   for (let i = 0; i < 50; i++) {
-    sensorIds.push(`DummyTemp_detached-${i}`);
+    deviceIds.push(`DummyTemp_detached-${i}`);
   }
 
-  const { errors } = await this.sdk.document.mGet('tenant-kuzzle', 'sensors', sensorIds);
+  const { errors } = await this.sdk.document.mGet('tenant-kuzzle', 'devices', deviceIds);
 
   if (errors.length > 0) {
     throw new Error(errors);
   }
 });
-
