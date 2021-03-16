@@ -7,153 +7,150 @@ import {
   BadRequestError
 } from 'kuzzle';
 
-
 import { CRUDController } from './CRUDController';
 import { Decoder } from '../decoders';
-import { Sensor } from '../models';
-import { SensorBulkContent } from '../types';
-import { SensorService } from '../services';
+import { Device } from '../models';
+import { DeviceBulkContent } from '../types';
+import { DeviceService } from '../services';
 
-export class SensorController extends CRUDController {
+export class DeviceController extends CRUDController {
   private decoders: Map<string, Decoder>;
 
   get sdk(): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
-  constructor(config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>, sensorService: SensorService) {
-    super(config, context, 'sensors');
+  constructor(config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>, deviceService: DeviceService) {
+    super(config, context, 'devices');
 
     this.decoders = decoders;
 
-    this.sensorService = sensorService;
+    this.deviceService = deviceService;
 
     this.definition = {
       actions: {
         update: {
           handler: this.update.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id' }]
         },
         search: {
           handler: this.search.bind(this),
           http: [
-            { verb: 'post', path: 'device-manager/:index/sensors/_search' },
-            { verb: 'get', path: 'device-manager/:index/sensors/_search' }
+            { verb: 'post', path: 'device-manager/:index/devices/_search' },
+            { verb: 'get', path: 'device-manager/:index/devices/_search' }
           ]
         },
         attachTenant: {
           handler: this.attachTenant.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_attach' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_attach' }]
         },
         mAttach: {
           handler: this.mAttach.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/sensors/_mAttach' }]
+          http: [{ verb: 'put', path: 'device-manager/devices/_mAttach' }]
         },
         detach: {
           handler: this.detach.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/sensors/:_id/_detach' }]
+          http: [{ verb: 'delete', path: 'device-manager/devices/:_id/_detach' }]
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/sensors/:_id/_link/:assetId' }]
+          http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_link/:assetId' }]
         },
         unlink: {
           handler: this.unlink.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/:index/sensors/:_id/_unlink' }]
+          http: [{ verb: 'delete', path: 'device-manager/:index/devices/:_id/_unlink' }]
         },
       }
     };
   }
 
   /**
-   * Attach a sensor to a tenant
+   * Attach a device to a tenant
    */
   async attachTenant (request: KuzzleRequest) {
     const tenantId = this.getIndex(request);
-    const sensorId = this.getId(request);
+    const deviceId = this.getId(request);
 
-    const document = { tenantId: tenantId, sensorId: sensorId };
-    const sensors = await this.mGetSensor([document]);
+    const document = { tenantId: tenantId, deviceId: deviceId };
+    const devices = await this.mGetDevice([document]);
 
-    await this.sensorService.mAttach(sensors, [document], { strict: true });
+    await this.deviceService.mAttach(devices, [document], { strict: true });
   }
 
   /**
-   * Attach multiple sensors to multiple tenants
+   * Attach multiple devices to multiple tenants
    */
   async mAttach (request: KuzzleRequest) {
     const { bulkData, strict } = await this.mParseRequest(request);
 
-    const sensors = await this.mGetSensor(bulkData);
+    const devices = await this.mGetDevice(bulkData);
 
-    return this.sensorService.mAttach(sensors, bulkData, { strict });
+    return this.deviceService.mAttach(devices, bulkData, { strict });
   }
 
-
-
   /**
-   * Unattach a sensor from it's tenant
+   * Unattach a device from it's tenant
    */
   async detach (request: KuzzleRequest) {
-    const sensorId = this.getId(request);
+    const deviceId = this.getId(request);
 
-    const sensor = await this.getSensor(sensorId);
+    const device = await this.getDevice(deviceId);
 
-    await this.sensorService.detach(sensor);
+    await this.deviceService.detach(device);
   }
 
   /**
-   * Link a sensor to an asset.
+   * Link a device to an asset.
    */
   async linkAsset(request: KuzzleRequest) {
     const assetId = this.getString(request, 'assetId');
-    const sensorId = this.getId(request);
+    const deviceId = this.getId(request);
 
-    const sensor = await this.getSensor(sensorId);
+    const device = await this.getDevice(deviceId);
 
-    await this.sensorService.linkAsset(sensor, assetId, this.decoders);
+    await this.deviceService.linkAsset(device, assetId, this.decoders);
   }
 
   /**
-   * Unlink a sensor from an asset.
+   * Unlink a device from an asset.
    */
   async unlink (request: KuzzleRequest) {
-    const sensorId = this.getId(request);
+    const deviceId = this.getId(request);
 
-    const sensor = await this.getSensor(sensorId);
+    const device = await this.getDevice(deviceId);
 
-    await this.sensorService.unlink(sensor);
+    await this.deviceService.unlink(device);
   }
 
-  private async getSensor (sensorId: string): Promise<Sensor> {
+  private async getDevice (deviceId: string): Promise<Device> {
     const document: any = await this.sdk.document.get(
       this.config.adminIndex,
-      'sensors',
-      sensorId);
+      'devices',
+      deviceId);
 
-    return new Sensor(document._source, document._id);
+    return new Device(document._source, document._id);
   }
 
-  private async mGetSensor (sensors: SensorBulkContent[]): Promise<Sensor[]> {
-    const sensorIds = sensors.map(doc => doc.sensorId);
+  private async mGetDevice (devices: DeviceBulkContent[]): Promise<Device[]> {
+    const deviceIds = devices.map(doc => doc.deviceId);
     const result: any = await this.sdk.document.mGet(
       this.config.adminIndex,
-      'sensors',
-      sensorIds
+      'devices',
+      deviceIds
     )
-    return result.successes.map((document: any) => new Sensor(document._source, document._id));
+    return result.successes.map((document: any) => new Device(document._source, document._id));
   }
 
   private async mParseRequest (request: KuzzleRequest) {
     const { body } = request.input;
 
-    let bulkData: SensorBulkContent[];
+    let bulkData: DeviceBulkContent[];
 
     if (body.csv) {
       const lines = await csv({ delimiter: 'auto' })
         .fromString(body.csv);
 
-      bulkData = lines.map(line => ({ tenantId: line.tenantId, sensorId: line.sensorId }));
+      bulkData = lines.map(line => ({ tenantId: line.tenantId, deviceId: line.deviceId }));
     }
     else if (body.records) {
       bulkData = body.records;

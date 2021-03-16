@@ -1,32 +1,32 @@
 import { JSONObject } from 'kuzzle';
 
-import { SensorMeasures } from './Measure';
+import { DeviceMeasures } from './Measure';
 
-export type SensorContent = {
+export type DeviceContent = {
   /**
-   * Sensor unique reference for a model
+   * Device unique reference for a model
    */
   reference: string;
 
   /**
-   * Sensor measures gathered from a payload
+   * Device measures gathered from a payload
    */
-  measures?: SensorMeasures;
+  measures?: DeviceMeasures;
 
   /**
-   * Sensor model
+   * Device model
    * (This will be auto-filled by Kuzzle)
    */
   model?: string;
 
   /**
-   * Sensor additionnal informations gathered from a payload
+   * Device additionnal informations gathered from a payload
    * (e.g. battery, network strength, etc.)
    */
   qos?: JSONObject;
 
   /**
-   * Sensor metadata
+   * Device metadata
    */
   metadata?: JSONObject;
 
@@ -52,22 +52,22 @@ export type SensorContent = {
   }
 }
 
-export type SensorBulkContent = {
+export type DeviceBulkContent = {
   tenantId: string;
-  sensorId: string;
+  deviceId: string;
 }
 
-export type SensorBulkBuildedContent = {
+export type DeviceBulkBuildedContent = {
   tenantId: string;
-  sensorIds: string[];
+  deviceIds: string[];
 }
 
-export type SensorMAttachementContent = {
+export type DeviceMAttachementContent = {
   errors: JSONObject[];
   successes: JSONObject[];
 }
 
-export type SensorMRequestContent = {
+export type DeviceMRequestContent = {
   _id: string;
   body: JSONObject;
 }

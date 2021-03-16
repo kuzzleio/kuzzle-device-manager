@@ -1,3 +1,3 @@
-export * from './Sensor';
+export * from './Device';
 
 export * from './BaseAsset';

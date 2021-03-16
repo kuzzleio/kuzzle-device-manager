@@ -6,15 +6,16 @@ import {
 } from 'kuzzle';
 
 import {
-  SensorBulkBuildedContent,
-  SensorBulkContent,
-  SensorMAttachementContent,
-  SensorMRequestContent
+  DeviceBulkBuildedContent,
+  DeviceBulkContent,
+  DeviceMAttachementContent,
+  DeviceMRequestContent
 } from '../types';
 
 import { Decoder } from '../decoders';
-import { Sensor } from '../models';
-export class SensorService {
+import { Device } from '../models';
+
+export class DeviceService {
   private config: JSONObject;
   private context: PluginContext;
 
@@ -27,15 +28,15 @@ export class SensorService {
     this.context = context;
   }
 
-  async mAttach (sensors: Sensor[], bulkData: SensorBulkContent[], { strict }): Promise<SensorMAttachementContent> {
-    const attachedSensors = sensors.filter(sensor => sensor._source.tenantId);
+  async mAttach (devices: Device[], bulkData: DeviceBulkContent[], { strict }): Promise<DeviceMAttachementContent> {
+    const attachedDevices = devices.filter(device => device._source.tenantId);
 
-    if (strict && attachedSensors.length > 0) {
-      const ids = attachedSensors.map(sensor => sensor._id).join(',')
-      throw new BadRequestError(`These sensors "${ids}" are already attached to a tenant`);
+    if (strict && attachedDevices.length > 0) {
+      const ids = attachedDevices.map(device => device._id).join(',')
+      throw new BadRequestError(`These devices "${ids}" are already attached to a tenant`);
     }
 
-    const documents = this.buildBulkSensors(bulkData);
+    const documents = this.buildBulkDevices(bulkData);
     const results = {
       errors: [],
       successes: [],
@@ -53,21 +54,21 @@ export class SensorService {
         continue;
       }
 
-      const sensorDocuments = this.formatSensorsContent(sensors, document);
+      const deviceDocuments = this.formatDevicesContent(devices, document);
 
       const { errors, successes } = await this.writeToDatabase(
-        sensorDocuments,
-        async (sensorDocuments: SensorMRequestContent[]): Promise<JSONObject> => {
+        deviceDocuments,
+        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
-            'sensors',
-            sensorDocuments);
-    
+            'devices',
+            deviceDocuments);
+
           await this.sdk.document.mCreate(
             document.tenantId,
-            'sensors',
-            sensorDocuments);
-  
+            'devices',
+            deviceDocuments);
+
             return {
               successes: results.successes.concat(updated.successes),
               errors: results.errors.concat(updated.errors)
@@ -81,87 +82,87 @@ export class SensorService {
     return results;
   }
 
-  async detach (sensor: Sensor) {
-    if (! sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
+  async detach (device: Device) {
+    if (! device._source.tenantId) {
+      throw new BadRequestError(`Device "${device._id}" is not attached to a tenant`);
     }
 
-    if (sensor._source.assetId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is still linked to an asset`);
+    if (device._source.assetId) {
+      throw new BadRequestError(`Device "${device._id}" is still linked to an asset`);
     }
 
     await this.sdk.document.delete(
-      sensor._source.tenantId,
-      'sensors',
-      sensor._id);
+      device._source.tenantId,
+      'devices',
+      device._id);
 
     await this.sdk.document.update(
       this.config.adminIndex,
-      'sensors',
-      sensor._id,
+      'devices',
+      device._id,
       { tenantId: null });
   }
 
 
-  async linkAsset (sensor: Sensor, assetId: string, decoders: Map<string, Decoder>) {
-    if (!sensor._source.tenantId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not attached to a tenant`);
+  async linkAsset (device: Device, assetId: string, decoders: Map<string, Decoder>) {
+    if (!device._source.tenantId) {
+      throw new BadRequestError(`Device "${device._id}" is not attached to a tenant`);
     }
-  
+
     const assetExists = await this.sdk.document.exists(
-      sensor._source.tenantId,
+      device._source.tenantId,
       'assets',
       assetId);
-  
+
     if (!assetExists) {
       throw new BadRequestError(`Asset "${assetId}" does not exists`);
     }
-  
+
     await this.sdk.document.update(
       this.config.adminIndex,
-      'sensors',
-      sensor._id,
+      'devices',
+      device._id,
       { assetId });
-  
+
     await this.sdk.document.update(
-      sensor._source.tenantId,
-      'sensors',
-      sensor._id,
+      device._source.tenantId,
+      'devices',
+      device._id,
       { assetId });
-  
-    const decoder = decoders.get(sensor._source.model);
-  
-    const assetMeasures = await decoder.copyToAsset(sensor);
-  
+
+    const decoder = decoders.get(device._source.model);
+
+    const assetMeasures = await decoder.copyToAsset(device);
+
     await this.sdk.document.update(
-      sensor._source.tenantId,
+      device._source.tenantId,
       'assets',
       assetId,
       { measures: assetMeasures });
    }
 
-  async unlink (sensor: Sensor) {
-    if (! sensor._source.assetId) {
-      throw new BadRequestError(`Sensor "${sensor._id}" is not linked to an asset`);
+  async unlink (device: Device) {
+    if (! device._source.assetId) {
+      throw new BadRequestError(`Device "${device._id}" is not linked to an asset`);
     }
 
     await this.sdk.document.update(
       this.config.adminIndex,
-      'sensors',
-      sensor._id,
+      'devices',
+      device._id,
       { assetId: null });
 
     await this.sdk.document.update(
-      sensor._source.tenantId,
-      'sensors',
-      sensor._id,
+      device._source.tenantId,
+      'devices',
+      device._id,
       { assetId: null });
 
-    // @todo only remove the measures coming from the unlinked sensor
+    // @todo only remove the measures coming from the unlinked device
     await this.sdk.document.update(
-      sensor._source.tenantId,
+      device._source.tenantId,
       'assets',
-      sensor._source.assetId,
+      device._source.assetId,
       { measures: null });
   }
 
@@ -175,34 +176,34 @@ export class SensorService {
     return tenantExists;
   }
 
-  private buildBulkSensors (bulkData: SensorBulkContent[]): SensorBulkBuildedContent[] {
-    const documents: SensorBulkBuildedContent[] = [];
+  private buildBulkDevices (bulkData: DeviceBulkContent[]): DeviceBulkBuildedContent[] {
+    const documents: DeviceBulkBuildedContent[] = [];
 
     for (let i = 0; i < bulkData.length; i++) {
-      const { tenantId, sensorId } = bulkData[i];
+      const { tenantId, deviceId } = bulkData[i];
       const document = documents.find(doc => doc.tenantId === tenantId);
 
       if (document) {
-        document.sensorIds.push(sensorId);
+        document.deviceIds.push(deviceId);
       }
       else {
-        documents.push({ tenantId, sensorIds: [sensorId] })
+        documents.push({ tenantId, deviceIds: [deviceId] })
       }
     }
     return documents;
   }
 
-  private formatSensorsContent (sensors: Sensor[], document: SensorBulkBuildedContent): SensorMRequestContent[] {
-    const sensorsContent = sensors.filter(sensor => document.sensorIds.includes(sensor._id));
-    const sensorsDocuments = sensorsContent.map(sensor => {
-      sensor._source.tenantId = document.tenantId;
-      return { _id: sensor._id, body: sensor._source }
+  private formatDevicesContent (devices: Device[], document: DeviceBulkBuildedContent): DeviceMRequestContent[] {
+    const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
+    const devicesDocuments = devicesContent.map(device => {
+      device._source.tenantId = document.tenantId;
+      return { _id: device._id, body: device._source }
     });
 
-    return sensorsDocuments;
+    return devicesDocuments;
   }
 
-  private async writeToDatabase (sensorDocuments: SensorMRequestContent[], writer: (sensorDocuments: SensorMRequestContent[]) => Promise<JSONObject>) {
+  private async writeToDatabase (deviceDocuments: DeviceMRequestContent[], writer: (deviceDocuments: DeviceMRequestContent[]) => Promise<JSONObject>) {
     const results = {
       errors: [],
       successes: [],
@@ -210,8 +211,8 @@ export class SensorService {
 
     const limit = global.kuzzle.config.limits.documentsWriteCount;
 
-    if (sensorDocuments.length <= limit) {
-      const { successes, errors } = await writer(sensorDocuments);
+    if (deviceDocuments.length <= limit) {
+      const { successes, errors } = await writer(deviceDocuments);
       results.successes.push(successes);
       results.errors.push(errors);
 
@@ -219,8 +220,8 @@ export class SensorService {
     }
 
     const writeMany = async (start: number, end: number) => {
-      const sensors = sensorDocuments.slice(start, end);
-      const { successes, errors } = await writer(sensors);
+      const devices = deviceDocuments.slice(start, end);
+      const { successes, errors } = await writer(devices);
 
       results.successes.push(successes);
       results.errors.push(errors);
@@ -236,9 +237,9 @@ export class SensorService {
       offset += limit;
       offsetLimit += limit;
 
-      if (offsetLimit >= sensorDocuments.length) {
+      if (offsetLimit >= deviceDocuments.length) {
         done = true;
-        await writeMany(offset, sensorDocuments.length);
+        await writeMany(offset, deviceDocuments.length);
       }
     }
 

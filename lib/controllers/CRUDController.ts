@@ -24,7 +24,7 @@ export class CRUDController extends NativeController {
   }
 
   /**
-   * Create an asset or a sensor depending on the collection.
+   * Create an asset or a device depending on the collection.
    *
    * @param request
    */
@@ -42,7 +42,7 @@ export class CRUDController extends NativeController {
   }
 
   /**
-   * Delete an asset or a sensor depending on the collection.
+   * Delete an asset or a device depending on the collection.
    *
    * @param request
    */
@@ -58,7 +58,7 @@ export class CRUDController extends NativeController {
   }
 
   /**
-   * search assets or sensors depending on the collection.
+   * search assets or devices depending on the collection.
    *
    * @param request
    */
@@ -74,7 +74,7 @@ export class CRUDController extends NativeController {
   }
 
   /**
-   * Create an asset or a sensor depending on the collection.
+   * Create an asset or a device depending on the collection.
    *
    * @param request
    */
