@@ -2,14 +2,14 @@
 code: true
 type: page
 title: mAttach
-description: Attach multiple sensors to multiple tenants index
+description: Attach multiple devices to multiple tenants index
 ---
 
 # mAttach
 
-Attach multiple sensors to multiple tenants.
+Attach multiple devices to multiple tenants.
 
-The sensor document will be duplicated inside the tenant "sensors" collection.
+The device document will be duplicated inside the tenant "devices" collection.
 
 ---
 
@@ -18,7 +18,7 @@ The sensor document will be duplicated inside the tenant "sensors" collection.
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/sensors/_mAttach
+URL: http://kuzzle:7512/_/device-manager/devices/_mAttach
 Method: PUT
 Body:
 ```
@@ -39,7 +39,7 @@ Body:
 
 ``` js
 {
-    "controller": "device-manager/sensor",
+    "controller": "device-manager/device",
     "action": "mAttach",
     "body": {
         // Using JSON
@@ -77,7 +77,7 @@ Body properties, must contain at least one of
 {
     "status": 200,
     "error": null,
-    "controller": "device-manager/sensor",
+    "controller": "device-manager/device",
     "action": "mAttach",
     "requestId": "<unique request identifier>",
     "result": {

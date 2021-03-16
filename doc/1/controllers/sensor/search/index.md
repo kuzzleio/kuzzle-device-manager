@@ -2,12 +2,12 @@
 code: true
 type: page
 title: search
-description: Searches for sensors
+description: Searches for devices
 ---
 
 # search
 
-Searches for sensors.
+Searches for devices.
 
 See also [document:search](/core/2/api/controllers/document/search) API action.
 
@@ -18,7 +18,7 @@ See also [document:search](/core/2/api/controllers/document/search) API action.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/_search[?from=<int>][&size=<int>][&scroll=<time to live>][&lang=<query language>]
+URL: http://kuzzle:7512/_/device-manager/:index/devices/_search[?from=<int>][&size=<int>][&scroll=<time to live>][&lang=<query language>]
 Method: POST or GET
 Body:
 ```
@@ -42,7 +42,7 @@ Body:
 ```js
 {
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "search",
   "body": {
     "query": {
@@ -67,9 +67,9 @@ Body:
 ### Kourou
 
 ```bash
-kourou device-manager/sensor:search <index> --body '{ 
+kourou device-manager/device:search <index> --body '{
   query: {
-    // search query    
+    // search query
   }
 }'
 ```
@@ -123,23 +123,23 @@ Returns a paginated search result set, with the following properties:
   "error": null,
   "index": "<index>",
   "action": "search",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "requestId": "<unique request identifier>",
   "result": {
     "scrollId": "<scroll id>",
     "hits": [
       {
-        "_id": "<sensor unique identifier>",
+        "_id": "<device unique identifier>",
         "_score": 1,
         "_source": {
-          // sensor content
+          // device content
         }
       },
       {
-        "_id": "<another sensor unique identifier>",
+        "_id": "<another device unique identifier>",
         "_score": 1,
         "_source": {
-          // sensor content
+          // device content
         }
       }
     ],

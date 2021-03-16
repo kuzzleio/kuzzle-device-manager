@@ -1,6 +1,6 @@
 ---
 code: true
 type: branch
-title: sensor
-description: Kuzzle IoT Platform - Device Manager Sensor Controller
+title: device
+description: Kuzzle IoT Platform - Device Manager Device Controller
 ---

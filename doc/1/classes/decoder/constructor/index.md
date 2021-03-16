@@ -9,7 +9,7 @@ description: Decoder abstract class constructor
 
 Custom decoders must inherit the provided abstract `Decoder` class.
 
-The super constructor must be called with the sensor model name.
+The super constructor must be called with the device model name.
 
 ---
 
@@ -31,7 +31,7 @@ class KarakoyDecoder extends Decoder {
 
   // This method must be implemented
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
-    // ...custom sensor decoding function
+    // ...custom device decoding function
   }
 }
 ```

@@ -1,19 +1,19 @@
 ---
 code: false
 type: page
-title: SensorContent
-description: SensorContent type definition
+title: DeviceContent
+description: DeviceContent type definition
 ---
 
-# SensorContent
+# DeviceContent
 
-The `SensorContent` type represents the `_source` property of a sensor document.
+The `DeviceContent` type represents the `_source` property of a device document.
 
 ```js
-export type SensorContent = {
+export type DeviceContent = {
   reference: string;
   model: string;
-  measures: SensorMeasures;
+  measures: DeviceMeasures;
   metadata?: JSONObject;
   qos?: JSONObject;
   assetId?: string;

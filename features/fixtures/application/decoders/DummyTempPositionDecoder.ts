@@ -1,4 +1,4 @@
-import { Decoder, SensorContent } from '../../../../index';
+import { Decoder, DeviceContent } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
 export class DummyTempPositionDecoder extends Decoder {
@@ -12,8 +12,8 @@ export class DummyTempPositionDecoder extends Decoder {
     }
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
-    const sensorContent: SensorContent = {
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
+    const deviceContent: DeviceContent = {
       reference: payload.deviceEUI,
       measures: {
         temperature: {
@@ -34,6 +34,6 @@ export class DummyTempPositionDecoder extends Decoder {
       }
     };
 
-    return sensorContent;
+    return deviceContent;
   }
 }

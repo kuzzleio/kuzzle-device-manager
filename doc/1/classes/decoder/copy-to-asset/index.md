@@ -9,17 +9,17 @@ description: Decoder abstract class copyToAsset() method
 
 Build the `measures` property that will be persisted in the asset document.
 
-By default this method will copy the measures with sensor and qos information.
+By default this method will copy the measures with device and qos information.
 
 ```ts
-copyToAsset (sensor: Sensor, request: KuzzleRequest): Promise<AssetMeasures>
+copyToAsset (device: Device, request: KuzzleRequest): Promise<AssetMeasures>
 ```
 
 <br/>
 
 | Arguments | Type                     | Description      |
 |-----------|--------------------------|------------------|
-| `sensor`  | <pre>Sensor</pre>        | Sensor document  |
+| `device`  | <pre>Device</pre>        | Device document  |
 | `request` | <pre>KuzzleRequest</pre> | Original request |
 
 ## Returns
@@ -35,16 +35,16 @@ import { Decoder, AssetMeasures } from 'kuzzle-plugin-device-manager';
 
 class KarakoyDecoder extends Decoder {
   // [...]
-  async copyToAsset (sensor: Sensor): Promise<AssetMeasures> {
+  async copyToAsset (device: Device): Promise<AssetMeasures> {
     const measures = {};
 
-    for (const [measureType, measure] of Object.entries(sensor._source.measures)) {
+    for (const [measureType, measure] of Object.entries(device._source.measures)) {
       measures[measureType] = {
-        id: sensor._id,
-        model: sensor._source.model,
-        reference: sensor._source.reference,
+        id: device._id,
+        model: device._source.model,
+        reference: device._source.reference,
         ...measure,
-        qos: sensor._source.qos,
+        qos: device._source.qos,
       };
     }
 
