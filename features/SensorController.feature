@@ -9,6 +9,37 @@ Feature: Device Manager sensor controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" exists
 
+  Scenario: Attach multiple sensors to a tenant using JSON
+    Given an engine on index "tenant-kuzzle"
+    When I successfully execute the action "device-manager/sensor":"mAttach" with args:
+      | body.records.0.tenantId | "tenant-kuzzle"                    |
+      | body.records.0.sensorId | "DummyTemp_detached"               |
+      | body.records.1.tenantId | "tenant-kuzzle"                    |
+      | body.records.1.sensorId | "DummyTemp_attached-ayse-unlinked" |
+    Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
+      | tenantId | "tenant-kuzzle" |
+    Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
+      | tenantId | "tenant-kuzzle" |
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" exists
+
+  Scenario: Attach multiple sensor to a tenant using CSV
+    Given an engine on index "tenant-kuzzle"
+    When I successfully execute the action "device-manager/sensor":"mAttach" with args:
+      | body.csv | "tenantId,sensorId\\ntenant-kuzzle,DummyTemp_detached\\ntenant-kuzzle,DummyTemp_attached-ayse-unlinked," |
+    Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
+      | tenantId | "tenant-kuzzle" |
+    Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
+      | tenantId | "tenant-kuzzle" |
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" exists
+    And The document "tenant-kuzzle":"sensors":"DummyTemp_attached-ayse-unlinked" exists
+  
+  Scenario: Attach multiple sensor to a tenant while exceeding documentsWriteCount limit 
+    Given an engine on index "tenant-kuzzle"
+    When I attach multiple sensors while exeding documentsWriteCount limit
+    Then All attached sensors have the correct tenantId
+    Then All tenant sensors documents exists
+
   Scenario: Error when assigning a sensor to a tenant
     Given an engine on index "tenant-kuzzle"
     When I execute the action "device-manager/sensor":"attachTenant" with args:
@@ -23,7 +54,7 @@ Feature: Device Manager sensor controller
       | _id   | "DummyTemp_detached" |
       | index | "tenant-kuzzle"      |
     Then I should receive an error matching:
-      | message | "Sensor \"DummyTemp_detached\" is already attached to a tenant" |
+      | message | "These sensors \"DummyTemp_detached\" are already attached to a tenant" |
 
   Scenario: Detach sensor from a tenant
     Given an engine on index "tenant-kuzzle"

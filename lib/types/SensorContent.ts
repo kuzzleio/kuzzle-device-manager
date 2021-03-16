@@ -51,3 +51,23 @@ export type SensorContent = {
     updatedAt?: number | null
   }
 }
+
+export type SensorBulkContent = {
+  tenantId: string;
+  sensorId: string;
+}
+
+export type SensorBulkBuildedContent = {
+  tenantId: string;
+  sensorIds: string[];
+}
+
+export type SensorMAttachementContent = {
+  errors: JSONObject[];
+  successes: JSONObject[];
+}
+
+export type SensorMRequestContent = {
+  _id: string;
+  body: JSONObject;
+}

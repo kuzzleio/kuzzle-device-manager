@@ -39,6 +39,7 @@ app.hook.register('request:onError', async (request: KuzzleRequest) => {
 });
 
 app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
+app.config.set('limits.documentsWriteCount', 20);
 
 app.start()
   .then(() => {
