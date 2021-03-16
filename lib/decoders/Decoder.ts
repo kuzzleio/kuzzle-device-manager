@@ -2,7 +2,7 @@ import {
   JSONObject,
   KuzzleRequest,
   HttpRoute,
-  BadRequestError,
+  PreconditionError,
 } from 'kuzzle';
 import _ from 'lodash';
 
@@ -193,7 +193,7 @@ export abstract class Decoder {
   ensureProperties (payload: JSONObject, paths: string[]): void | never {
     for (const path of paths) {
       if (! _.has(payload, path)) {
-        throw new BadRequestError(`Missing property "${path}" in payload`);
+        throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }
   }
