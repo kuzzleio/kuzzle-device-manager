@@ -23,6 +23,10 @@ export class CRUDController extends NativeController {
     this.collection = collection;
   }
 
+  get as () {
+    return (user) => this.context.accessors.sdk.as(user, {checkRights: true});
+  }
+
   /**
    * Create an asset or a sensor depending on the collection.
    *
@@ -33,7 +37,7 @@ export class CRUDController extends NativeController {
     const asset = this.getBody(request);
     const id = request.input.resource._id;
 
-    return this.context.accessors.sdk.document.create(
+    return this.as(request.context.user).document.create(
       index,
       this.collection,
       asset,
@@ -50,7 +54,7 @@ export class CRUDController extends NativeController {
     const index = this.getIndex(request);
     const id = this.getId(request);
 
-    return this.context.accessors.sdk.document.delete(
+    return this.as(request.context.user).document.delete(
       index,
       this.collection,
       id,
@@ -66,7 +70,7 @@ export class CRUDController extends NativeController {
     const index = this.getIndex(request);
     const { searchBody } = this.getSearchParams(request);
 
-    return this.context.accessors.sdk.document.search(
+    return this.as(request.context.user).document.search(
       index,
       this.collection,
       searchBody,
@@ -83,7 +87,7 @@ export class CRUDController extends NativeController {
     const body = this.getBody(request);
     const id = this.getId(request);
 
-    return this.context.accessors.sdk.document.update(
+    return this.as(request.context.user).document.update(
       index,
       this.collection,
       id,
