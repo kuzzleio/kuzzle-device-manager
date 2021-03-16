@@ -24,7 +24,7 @@ export class CRUDController extends NativeController {
   }
 
   get as () {
-    return (user) => this.context.accessors.sdk.as(user, {checkRights: true});
+    return user => this.context.accessors.sdk.as(user, { checkRights: true });
   }
 
   /**
