@@ -8,7 +8,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 import { Decoder } from '../decoders';
-import { Sensor, BaseAsset } from '../models';
+import { Device, BaseAsset } from '../models';
 
 export class PayloadService {
   private config: JSONObject;
@@ -48,7 +48,7 @@ export class PayloadService {
         this.config.adminIndex,
         'payloads',
         {
-          sensorModel: decoder.sensorModel,
+          deviceModel: decoder.deviceModel,
           uuid,
           valid,
           payload,
@@ -56,94 +56,94 @@ export class PayloadService {
         uuid);
     }
 
-    const sensorContent = await decoder.decode(payload, request);
+    const deviceContent = await decoder.decode(payload, request);
 
     // Inject payload uuid
-    for (const measure of Object.values(sensorContent.measures)) {
+    for (const measure of Object.values(deviceContent.measures)) {
       if (! measure.payloadUuid) {
         measure.payloadUuid = uuid;
       }
     }
-    if (! sensorContent.model) {
-      sensorContent.model = decoder.sensorModel;
+    if (! deviceContent.model) {
+      deviceContent.model = decoder.deviceModel;
     }
 
-    const sensor = new Sensor(sensorContent);
+    const device = new Device(deviceContent);
 
     const exists = await this.sdk.document.exists(
       this.config.adminIndex,
-      'sensors',
-      sensor._id);
+      'devices',
+      device._id);
 
     if (exists) {
-      return this.update(sensor, decoder, request, { refresh });
+      return this.update(device, decoder, request, { refresh });
     }
 
-    return this.register(sensor, decoder, request, { refresh });
+    return this.register(device, decoder, request, { refresh });
   }
 
   private async register (
-    sensor: Sensor,
+    device: Device,
     decoder: Decoder,
     request: KuzzleRequest,
     { refresh }
   ) {
-    const enrichedSensor = await decoder.beforeRegister(sensor, request);
+    const enrichedDevice = await decoder.beforeRegister(device, request);
 
     await this.sdk.document.create(
       this.config.adminIndex,
-      'sensors',
-      enrichedSensor._source,
-      enrichedSensor._id,
+      'devices',
+      enrichedDevice._source,
+      enrichedDevice._id,
       { refresh });
 
-    return decoder.afterRegister(enrichedSensor, request);
+    return decoder.afterRegister(enrichedDevice, request);
   }
 
   private async update (
-    sensor: Sensor,
+    device: Device,
     decoder: Decoder,
     request: KuzzleRequest,
     { refresh }
   ) {
     const refreshableCollections = [];
 
-    const previousSensor = await this.sdk.document.get(
+    const previousDevice = await this.sdk.document.get(
       this.config.adminIndex,
-      'sensors',
-      sensor._id);
+      'devices',
+      device._id);
 
-    const enrichedSensor = await decoder.beforeUpdate(sensor, request);
+    const enrichedDevice = await decoder.beforeUpdate(device, request);
 
-    const sensorDocument = await this.sdk.document.update(
+    const deviceDocument = await this.sdk.document.update(
       this.config.adminIndex,
-      'sensors',
-      enrichedSensor._id,
-      enrichedSensor._source,
+      'devices',
+      enrichedDevice._id,
+      enrichedDevice._source,
       { source: true });
 
-    const updatedSensor = new Sensor(sensorDocument._source as any, sensorDocument._id);
+    const updatedDevice = new Device(deviceDocument._source as any, deviceDocument._id);
 
-    refreshableCollections.push([this.config.adminIndex, 'sensors']);
+    refreshableCollections.push([this.config.adminIndex, 'devices']);
 
-    const tenantId = previousSensor._source.tenantId;
-    // Propagate sensor into tenant index
+    const tenantId = previousDevice._source.tenantId;
+    // Propagate device into tenant index
     if (tenantId) {
       await this.sdk.document.update(
         tenantId,
-        'sensors',
-        enrichedSensor._id,
-        enrichedSensor._source);
+        'devices',
+        enrichedDevice._id,
+        enrichedDevice._source);
 
-      refreshableCollections.push([tenantId, 'sensors']);
+      refreshableCollections.push([tenantId, 'devices']);
     }
 
     // Propagate measures into linked asset
-    const assetId = previousSensor._source.assetId;
+    const assetId = previousDevice._source.assetId;
     let updatedAsset = null;
 
     if (assetId) {
-      const assetMeasures = await decoder.copyToAsset(updatedSensor);
+      const assetMeasures = await decoder.copyToAsset(updatedDevice);
 
       const assetDocument = await this.sdk.document.update(
         tenantId,
@@ -163,6 +163,6 @@ export class PayloadService {
       )));
     }
 
-    return decoder.afterUpdate(updatedSensor, updatedAsset, request);
+    return decoder.afterUpdate(updatedDevice, updatedAsset, request);
   }
 }

@@ -2,12 +2,12 @@
 code: true
 type: page
 title: delete
-description: Deletes a sensor
+description: Deletes a device
 ---
 
 # delete
 
-Deletes a sensor.
+Deletes a device.
 
 See also the [document:delete](/core/2/api/controllers/document/delete) API action.
 
@@ -18,7 +18,7 @@ See also the [document:delete](/core/2/api/controllers/document/delete) API acti
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/:_id[?refresh=wait_for][&source]
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id[?refresh=wait_for][&source]
 Method: DELETE
 ```
 
@@ -27,16 +27,16 @@ Method: DELETE
 ```js
 {
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "delete",
-  "_id": "<sensorId>"
+  "_id": "<deviceId>"
 }
 ```
 
 ### Kourou
 
 ```bash
-kourou device-manager/sensor:delete <index> --id <sensorId>
+kourou device-manager/device:delete <index> --id <deviceId>
 ```
 
 ---
@@ -54,21 +54,21 @@ kourou device-manager/sensor:delete <index> --id <sensorId>
 
 ## Response
 
-Returns information about the deleted sensor:
+Returns information about the deleted device:
 
-- `_id`: sensor unique identifier
-- `_source`: deleted sensor source, only if option `source` is set to `true`
+- `_id`: device unique identifier
+- `_source`: deleted device source, only if option `source` is set to `true`
 
 ```js
 {
   "status": 200,
   "error": null,
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "delete",
   "requestId": "<unique request identifier>",
   "result": {
-    "_id": "<sensorId>",
+    "_id": "<deviceId>",
     "_source": "<deleted document>" // If `source` option is set to true
   }
 }

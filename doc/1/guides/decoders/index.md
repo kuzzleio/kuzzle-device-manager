@@ -2,26 +2,26 @@
 code: false
 type: page
 title: Decoders
-description: Use decoders to receive or process various payload 
+description: Use decoders to receive or process various payload
 order: 200
 ---
 
 # Decoders
 
-Each sensor model can receive a different payload, it is then necessary to decode this payload in order to retrieve the necessary information and put it in the right place in the document of the associated sensor.
+Each device model can receive a different payload, it is then necessary to decode this payload in order to retrieve the necessary information and put it in the right place in the document of the associated device.
 
-![sensors payloads collect and decode schema](./sensors-payload-collect-and-decode.png)
+![devices payloads collect and decode schema](./devices-payload-collect-and-decode.png)
 
 To do this, it is necessary to implement a decoder by implementing the `Decoder` class.
 
 This class must at least implement the `decode` method in order to retrieve at the right place the payload data.
 
-A decoder is linked to a sensor model. Its registration triggers the creation of a specific API action to receive payloads from this sensor model. Each payload will be decoded by the decoder provided.
+A decoder is linked to a device model. Its registration triggers the creation of a specific API action to receive payloads from this device model. Each payload will be decoded by the decoder provided.
 
-**Example:** _Decoder for the sensor model "Karakoy"_
+**Example:** _Decoder for the device model "Karakoy"_
 
 ```js
-// "Karakoy" sensor payload
+// "Karakoy" device payload
 {
   deviceEUI: '12345',
   register55: 23.3,
@@ -31,7 +31,7 @@ A decoder is linked to a sensor model. Its registration triggers the creation of
 
 ```js
 import { JSONObject, KuzzleRequest } from 'kuzzle';
-import { Decoder, SensorContent, DeviceManager } from 'kuzzle-plugin-device-manager';
+import { Decoder, DeviceContent, DeviceManager } from 'kuzzle-plugin-device-manager';
 
 const deviceManager = new DeviceManager();
 
@@ -40,8 +40,8 @@ class KarakoyDecoder extends Decoder {
     super("Karakoy");
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
-    const sensorContent: SensorContent = {
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
+    const deviceContent: DeviceContent = {
       reference: payload.deviceEUI,
       measures: {
         temperature: {
@@ -54,7 +54,7 @@ class KarakoyDecoder extends Decoder {
       }
     };
 
-    return sensorContent;
+    return deviceContent;
   }
 }
 
@@ -90,19 +90,19 @@ class KarakoyDecoder extends Decoder {
 ## Action results
 
 Each action will return an object containing those 3 properties:
- - `sensor`: sensor document
- - `tenantId`: sensor tenant ID (only if the sensor was attached to a tenant)
- - `asset`: asset document (only if the sensor was linked to an asset)
+ - `device`: device document
+ - `tenantId`: device tenant ID (only if the device was attached to a tenant)
+ - `asset`: asset document (only if the device was linked to an asset)
 
 ## Hooks 
 
 You can then use lifecycle hooks to modify a payload while it's been processed
 
   - `validate`: Validates the payload format before processing
-  - `beforeRegister`: Enrichment hook executed before registering a sensor
-  - `afterRegister`: Hook executed after registering a sensor
-  - `beforeUpdate`: Enrichment hook executed before updating a sensor
-  - `afterUpdate`: Hook executed after updating a sensor
+  - `beforeRegister`: Enrichment hook executed before registering a device
+  - `afterRegister`: Hook executed after registering a device
+  - `beforeUpdate`: Enrichment hook executed before updating a device
+  - `afterUpdate`: Hook executed after updating a device
 
 See also: [Decoder abstract class](/kuzzle-iot-platform/device-manager/1/classes/decoder).
 
@@ -113,5 +113,5 @@ Every payload received by Kuzzle will be stored in the `payloads` collection of 
 Each document contains the following property:
   - `uuid`: payload unique identifier (also found in measures)
   - `valid`: payload validity
-  - `sensorModel`: sensor model registered for this payload
-  - `payload`: raw payload content 
+  - `deviceModel`: device model registered for this payload
+  - `payload`: raw payload content

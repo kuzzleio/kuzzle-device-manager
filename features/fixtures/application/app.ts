@@ -10,7 +10,7 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
-deviceManager.mappings.sensors.measures = {
+deviceManager.mappings.devices.measures = {
   humidity: {
     properties: {
       updatedAt: { type: 'date' },
@@ -20,11 +20,11 @@ deviceManager.mappings.sensors.measures = {
   }
 };
 
-deviceManager.mappings.sensors.qos = {
+deviceManager.mappings.devices.qos = {
   battery: { type: 'integer' }
 };
 
-deviceManager.mappings.sensors.metadata = {
+deviceManager.mappings.devices.metadata = {
   group: { type: 'keyword' }
 };
 
@@ -39,6 +39,7 @@ app.hook.register('request:onError', async (request: KuzzleRequest) => {
 });
 
 app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
+app.config.set('limits.documentsWriteCount', 20);
 
 app.start()
   .then(() => {

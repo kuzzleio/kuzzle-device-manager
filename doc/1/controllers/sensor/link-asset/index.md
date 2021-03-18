@@ -2,14 +2,14 @@
 code: true
 type: page
 title: linkAsset
-description: Link a sensor to an asset
+description: Link a device to an asset
 ---
 
 # linkAsset
 
-Link a sensor to an asset.
+Link a device to an asset.
 
-The sensor measures will be copied into the asset.
+The device measures will be copied into the asset.
 
 ---
 
@@ -18,7 +18,7 @@ The sensor measures will be copied into the asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/sensors/:_id/_linkAsset/:assetId[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_linkAsset/:assetId[?refresh=wait_for]
 Method: PUT
 ```
 
@@ -27,9 +27,9 @@ Method: PUT
 ```js
 {
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "linkAsset",
-  "_id": "<sensorId>",
+  "_id": "<deviceId>",
   "assetId": "<assetId>"
 }
 ```
@@ -37,7 +37,7 @@ Method: PUT
 ### Kourou
 
 ```bash
-kourou device-manager/sensor:linkAsset <index> --id <sensorId> -a assetId=<assetId>
+kourou device-manager/device:linkAsset <index> --id <deviceId> -a assetId=<assetId>
 ```
 ---
 
@@ -59,7 +59,7 @@ kourou device-manager/sensor:linkAsset <index> --id <sensorId> -a assetId=<asset
   "status": 200,
   "error": null,
   "index": "<index>",
-  "controller": "device-manager/sensor",
+  "controller": "device-manager/device",
   "action": "linkAsset",
   "requestId": "<unique request identifier>",
   "result": {}

@@ -9,46 +9,47 @@ import {
 
 import {
   AssetController,
-  SensorController,
+  DeviceController,
   EngineController,
 } from './controllers';
-import { EngineService, PayloadService, SensorService } from './services';
+
+import { EngineService, PayloadService, DeviceService } from './services';
 import { Decoder } from './decoders';
-import { sensorsMappings, assetsMappings } from './models';
+import { devicesMappings, assetsMappings } from './models';
 
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
 
   private assetController: AssetController;
-  private sensorController: SensorController;
+  private deviceController: DeviceController;
   private engineController: EngineController;
 
   private payloadService: PayloadService;
   private engineService: EngineService;
-  private sensorService: SensorService;
+  private deviceService: DeviceService;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
   /**
-   * Define custom mappings for "sensors" and "assets" colections
+   * Define custom mappings for "devices" and "assets" colections
    */
   public mappings: {
     /**
-     * Define custom mappings for the "sensors" collection.
+     * Define custom mappings for the "devices" collection.
      */
-    sensors: {
+    devices: {
       /**
-       * Define custom mappings for the "sensors.metadata" property
+       * Define custom mappings for the "devices.metadata" property
        */
       metadata: JSONObject;
       /**
-       * Define custom mappings for the "sensors.qos" property
+       * Define custom mappings for the "devices.qos" property
        */
       qos: JSONObject;
       /**
-       * Define custom mappings for the "sensors.measures" property
+       * Define custom mappings for the "devices.measures" property
        */
       measures: JSONObject;
     },
@@ -78,7 +79,7 @@ export class DeviceManagerPlugin extends Plugin {
     });
 
     this.mappings = {
-      sensors: {
+      devices: {
         metadata: {},
         qos: {},
         measures: {},
@@ -125,14 +126,14 @@ export class DeviceManagerPlugin extends Plugin {
             index: { type: 'keyword' },
           }
         },
-        sensors: sensorsMappings,
+        devices: devicesMappings,
         payloads: {
           dynamic: 'false',
           // @todo have API action to clean
           properties: {
             uuid: { type: 'keyword' },
             valid: { type: 'boolean' },
-            sensorModel: { type: 'keyword' },
+            deviceModel: { type: 'keyword' },
             payload: {
               properties: {}
             }
@@ -141,7 +142,7 @@ export class DeviceManagerPlugin extends Plugin {
       },
       collections: {
         assets: assetsMappings,
-        sensors: sensorsMappings,
+        devices: devicesMappings,
       }
     };
   }
@@ -157,38 +158,38 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
-    this.sensorService = new SensorService(this.config, context);
+    this.deviceService = new DeviceService(this.config, context);
     this.assetController = new AssetController(this.config, context);
     this.engineController = new EngineController(this.config, context, this.engineService);
-    this.sensorController = new SensorController(this.config, context, this.decoders, this.sensorService);
+    this.deviceController = new DeviceController(this.config, context, this.decoders, this.deviceService);
 
     this.api['device-manager/asset'] = this.assetController.definition;
-    this.api['device-manager/sensor'] = this.sensorController.definition;
+    this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/engine'] = this.engineController.definition;
 
     await this.initDatabase();
 
     for (const decoder of this.decoders.values()) {
-      this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for sensor "${decoder.sensorModel}"`);
+      this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
     }
   }
 
   /**
-   * Registers a new decoder for a sensor model.
+   * Registers a new decoder for a device model.
    *
    * This will register a new API action:
    *  - controller: `"device-manager/payload"`
-   *  - action: `action` property of the decoder or the sensor model in kebab-case
+   *  - action: `action` property of the decoder or the device model in kebab-case
    *
    * @param decoder Instantiated decoder
    *
    * @returns Corresponding API action requestPayload
    */
   registerDecoder (decoder: Decoder): { controller: string, action: string } {
-    decoder.action = decoder.action || kebabCase(decoder.sensorModel);
+    decoder.action = decoder.action || kebabCase(decoder.deviceModel);
 
     if (this.api['device-manager/payload'].actions[decoder.action]) {
-      throw new PluginImplementationError(`A decoder for "${decoder.sensorModel}" has already been registered.`);
+      throw new PluginImplementationError(`A decoder for "${decoder.deviceModel}" has already been registered.`);
     }
 
     this.api['device-manager/payload'].actions[decoder.action] = {
@@ -196,7 +197,7 @@ export class DeviceManagerPlugin extends Plugin {
       http: decoder.http,
     };
 
-    this.decoders.set(decoder.sensorModel, decoder);
+    this.decoders.set(decoder.deviceModel, decoder);
 
     return {
       controller: 'device-manager/payload',
@@ -229,22 +230,22 @@ export class DeviceManagerPlugin extends Plugin {
   }
 
   private mergeCustomMappings () {
-    // Merge sensors qos custom mappings
-    this.config.collections.sensors.properties.qos.properties = {
-      ...this.config.collections.sensors.properties.qos.properties,
-      ...this.mappings.sensors.qos,
+    // Merge devices qos custom mappings
+    this.config.collections.devices.properties.qos.properties = {
+      ...this.config.collections.devices.properties.qos.properties,
+      ...this.mappings.devices.qos,
     };
 
-    // Merge sensors metadata custom mappings
-    this.config.collections.sensors.properties.metadata.properties = {
-      ...this.config.collections.sensors.properties.metadata.properties,
-      ...this.mappings.sensors.metadata,
+    // Merge devices metadata custom mappings
+    this.config.collections.devices.properties.metadata.properties = {
+      ...this.config.collections.devices.properties.metadata.properties,
+      ...this.mappings.devices.metadata,
     };
 
-    // Merge sensors measures custom mappings
-    this.config.collections.sensors.properties.measures.properties = {
-      ...this.config.collections.sensors.properties.measures.properties,
-      ...this.mappings.sensors.measures,
+    // Merge devices measures custom mappings
+    this.config.collections.devices.properties.measures.properties = {
+      ...this.config.collections.devices.properties.measures.properties,
+      ...this.mappings.devices.measures,
     };
 
     // Merge assets metadata custom mappings
@@ -253,22 +254,22 @@ export class DeviceManagerPlugin extends Plugin {
       ...this.mappings.assets.metadata,
     };
 
-    // Use "sensors" mappings to generate "assets" collection mappings
+    // Use "devices" mappings to generate "assets" collection mappings
     // for the "measures" property
-    const sensorProperties = {
+    const deviceProperties = {
       id: { type: 'keyword' },
       reference: { type: 'keyword' },
       model: { type: 'keyword' },
     };
 
-    for (const [measureType, definition] of Object.entries(this.config.collections.sensors.properties.measures.properties) as any) {
+    for (const [measureType, definition] of Object.entries(this.config.collections.devices.properties.measures.properties) as any) {
       this.config.collections.assets.properties.measures.properties[measureType] = {
         dynamic: 'false',
         properties: {
-          ...sensorProperties,
+          ...deviceProperties,
           ...definition.properties,
           qos: {
-            properties: this.config.collections.sensors.properties.qos.properties
+            properties: this.config.collections.devices.properties.qos.properties
           }
         }
       };

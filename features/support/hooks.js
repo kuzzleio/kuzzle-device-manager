@@ -54,7 +54,7 @@ Before({ timeout: 30 * 1000 }, async function () {
   }
 
   await this.sdk.collection.truncate('device-manager', 'engines');
-  await this.sdk.collection.truncate('device-manager', 'sensors');
+  await this.sdk.collection.truncate('device-manager', 'devices');
 
   if (await this.sdk.index.exists('tenant-ayse')) {
     await this.sdk.index.delete('tenant-ayse');
