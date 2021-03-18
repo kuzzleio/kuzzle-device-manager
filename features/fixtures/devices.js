@@ -12,4 +12,6 @@ for (let i = 0; i < 50; i++) {
   });
 }
 
-module.exports = devices;
+const devicesTests = devices.filter(test => test.model);
+
+module.exports = { devices, devicesTests };

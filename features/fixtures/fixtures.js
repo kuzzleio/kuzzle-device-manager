@@ -1,4 +1,4 @@
-const devices = require('./devices');
+const { devices } = require('./devices');
 
 module.exports = {
   'device-manager': {

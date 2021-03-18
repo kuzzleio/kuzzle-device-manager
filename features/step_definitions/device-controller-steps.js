@@ -1,28 +1,30 @@
 const { When, Then } = require('cucumber');
 
-When('I attach multiple devices while exeding documentsWriteCount limit', async function () {
+const { devicesTests } = require('../fixtures/devices');
+
+When('I succesfully execute {string}:{string} while exeding documentsWriteCount limit', async function (controller, action) {
   const records = [];
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < devicesTests.length; i++) {
     records.push({ deviceId: `DummyTemp_detached-${i}`, tenantId: 'tenant-kuzzle' });
   }
 
 
   await this.sdk.query({
-    controller: "device-manager/device",
-    action: "mAttach",
+    controller,
+    action,
     body: {
       records
     }
   });
 });
 
-Then('All attached devices have the correct tenantId', async function () {
+Then('All devices in {string} {string} have the property {string} to {string}', async function (index, collection, key, value) {
   const deviceIds = [];
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < devicesTests.length; i++) {
     deviceIds.push(`DummyTemp_detached-${i}`);
   }
 
-  const { successes, errors } = await this.sdk.document.mGet('device-manager', 'devices', deviceIds);
+  const { successes, errors } = await this.sdk.document.mGet(index, collection, deviceIds);
 
   if (errors.length > 0) {
     throw new Error(errors);
@@ -30,22 +32,40 @@ Then('All attached devices have the correct tenantId', async function () {
 
   for (let i = 0; i < successes.length; i++) {
     const { _source } = successes[i];
-    if (_source.tenantId !== 'tenant-kuzzle') {
-      throw new Error('tenantId should be tenant-kuzzle but current value is: ', _source.tenantId);
+    const theValue = value === "null" ? null : value;
+
+    if (_source[key] !== theValue) {
+      throw new Error(`tenantId should be ${value} but current value is: ${_source.tenantId}`);
     }
   }
 });
 
-
-Then('All tenant devices documents exists', async function () {
+Then('All {string} devices documents exists', async function (tenant) {
   const deviceIds = [];
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < devicesTests.length; i++) {
     deviceIds.push(`DummyTemp_detached-${i}`);
   }
 
-  const { errors } = await this.sdk.document.mGet('tenant-kuzzle', 'devices', deviceIds);
+  const { errors } = await this.sdk.document.mGet(tenant, 'devices', deviceIds);
 
   if (errors.length > 0) {
     throw new Error(errors);
+  }
+});
+
+Then(/All documents "(.*?)":"(.*?)" (does not)? exists/, async function (index, collection, not) {
+  const deviceIds = [];
+  for (let i = 0; i < devicesTests.length; i++) {
+    deviceIds.push(`DummyTemp_detached-${i}`);
+  }
+
+  const { successes, errors } = await this.sdk.document.mGet(index, collection, deviceIds);
+
+  if (not && successes.length > 0) {
+    throw new Error(`Documents exists, but it shoudn't`);
+  }
+
+  if (!not && errors.length) {
+    throw new Error(`Expected documents to exist`);
   }
 });

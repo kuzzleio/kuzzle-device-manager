@@ -82,25 +82,67 @@ export class DeviceService {
     return results;
   }
 
-  async detach (device: Device) {
-    if (! device._source.tenantId) {
-      throw new BadRequestError(`Device "${device._id}" is not attached to a tenant`);
+  async mDetach (devices: Device[], bulkData: DeviceBulkContent[], { strict }) {
+    const detachedDevices = devices.filter(device => !device._source.tenantId || device._source.tenantId === null);
+
+    if (strict && detachedDevices.length > 0) {
+      const ids = detachedDevices.map(device => device._id).join(',')
+      throw new BadRequestError(`Devices "${ids}" are not attached to a tenant`);
     }
 
-    if (device._source.assetId) {
-      throw new BadRequestError(`Device "${device._id}" is still linked to an asset`);
+    const linkedAssets = devices.filter(device => device._source.assetId);
+
+    if (strict && linkedAssets.length > 0) {
+      const ids = linkedAssets.map(device => device._id).join(',')
+      throw new BadRequestError(`Devices "${ids}" are still linked to an asset`);
     }
 
-    await this.sdk.document.delete(
-      device._source.tenantId,
-      'devices',
-      device._id);
+    const builder = bulkData.map(data => {
+      const { deviceId } = data;
+      const device = devices.find(s => s._id === deviceId);
+      return { tenantId: device._source.tenantId, deviceId }
+    });
 
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'devices',
-      device._id,
-      { tenantId: null });
+    const documents = this.buildBulkDevices(builder);
+
+    const results = {
+      errors: [],
+      successes: [],
+    };
+
+    for (let i = 0; i < documents.length; i++) {
+      const document = documents[i];
+
+      const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
+      const deviceDocuments = devicesContent.map(device => {
+        return { _id: device._id, body: { tenantId: null } }
+      })
+
+      const { errors, successes } = await this.writeToDatabase(
+        deviceDocuments,
+        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+
+        const updated = await this.sdk.document.mUpdate(
+          this.config.adminIndex,
+          'devices',
+          deviceDocuments);
+
+          await this.sdk.document.mDelete(
+            document.tenantId,
+            'devices',
+            deviceDocuments.map(device => device._id));
+
+          return {
+            successes: results.successes.concat(updated.successes),
+            errors: results.errors.concat(updated.errors)
+          }
+      })
+
+      results.successes.concat(successes);
+      results.errors.concat(errors);
+    }
+
+    return results;
   }
 
 

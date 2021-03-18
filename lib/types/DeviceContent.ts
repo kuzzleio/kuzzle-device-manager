@@ -53,7 +53,7 @@ export type DeviceContent = {
 }
 
 export type DeviceBulkContent = {
-  tenantId: string;
+  tenantId?: string;
   deviceId: string;
 }
 

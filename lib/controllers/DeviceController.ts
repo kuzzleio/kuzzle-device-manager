@@ -52,6 +52,10 @@ export class DeviceController extends CRUDController {
           handler: this.detach.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/devices/:_id/_detach' }]
         },
+        mDetach: {
+          handler: this.mDetach.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/devices/_mDetach' }]
+        },
         linkAsset: {
           handler: this.linkAsset.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_link/:assetId' }]
@@ -94,9 +98,21 @@ export class DeviceController extends CRUDController {
   async detach (request: KuzzleRequest) {
     const deviceId = this.getId(request);
 
-    const device = await this.getDevice(deviceId);
+    const document: DeviceBulkContent = { deviceId };
+    const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.detach(device);
+    await this.deviceService.mDetach(devices, [document], { strict: true });
+  }
+  
+  /**
+   * Unattach multiple devices from multiple tenants
+   */
+  async mDetach (request: KuzzleRequest) {
+    const { bulkData, strict } = await this.mParseRequest(request);
+
+    const devices = await this.mGetDevice(bulkData);
+
+    return this.deviceService.mDetach(devices, bulkData, { strict });
   }
 
   /**
@@ -155,8 +171,11 @@ export class DeviceController extends CRUDController {
     else if (body.records) {
       bulkData = body.records;
     }
+    else if (body.deviceIds) {
+      bulkData = body.deviceIds.map((deviceId: string) => ({ deviceId }));
+    }
     else {
-      throw new BadRequestError(`Malformed request missing property csv or records`);
+      throw new BadRequestError(`Malformed request missing property csv, records, deviceIds`);
     }
 
     const strict = body.strict || false;
