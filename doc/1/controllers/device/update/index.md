@@ -36,7 +36,7 @@ Body:
   "index": "<index>",
   "controller": "device-manager/device",
   "action": "update",
-  "_id": "<sensorId>",
+  "_id": "<deviceId>",
   "body": {
     // device changes
   }
@@ -46,7 +46,7 @@ Body:
 ### Kourou
 
 ```bash
-kourou device-manager/device:update <index> --id <sensorId> --body '{
+kourou device-manager/device:update <index> --id <deviceId> --body '{
   // device changes
 }'
 ```
@@ -88,7 +88,7 @@ Returns information about the updated device:
   "action": "update",
   "requestId": "<unique request identifier>",
   "result": {
-    "_id": "<sensorId>",
+    "_id": "<deviceId>",
     "_version": 2,
     "_source": "<partial or entire document>"
   }

@@ -1,13 +1,15 @@
 ---
 code: true
 type: page
-title: detach
-description: Detach a device from a tenant
+title: attachTenant
+description: Attach a device to a tenant index
 ---
 
-# detach
+# attachTenant
 
-Detach a device from a tenant.
+Attach a device to a tenant.
+
+The device document will be duplicated inside the tenant `devices` collection.
 
 ---
 
@@ -16,29 +18,31 @@ Detach a device from a tenant.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/devices/:_id/_detach[?refresh=wait_for]
-Method: DELETE
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_attach[?refresh=wait_for]
+Method: PUT
 ```
 
 ### Other protocols
 
 ```js
 {
+  "index": "<index>",
   "controller": "device-manager/device",
-  "action": "detach",
-  "_id": "<sensorId>"
+  "action": "attachTenant",
+  "_id": "<deviceId>"
 }
 ```
 
 ### Kourou
 
 ```bash
-kourou device-manager/device:detach --id <sensorId>
+kourou device-manager/device:attachTenant <index> --id <deviceId>
 ```
-
 ---
 
 ## Arguments
+
+- `index`: Tenant index name
 
 ### Optional:
 
@@ -54,7 +58,7 @@ kourou device-manager/device:detach --id <sensorId>
   "error": null,
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "detach",
+  "action": "attachTenant",
   "requestId": "<unique request identifier>",
   "result": {}
 }

@@ -29,14 +29,14 @@ Method: DELETE
   "index": "<index>",
   "controller": "device-manager/device",
   "action": "delete",
-  "_id": "<sensorId>"
+  "_id": "<deviceId>"
 }
 ```
 
 ### Kourou
 
 ```bash
-kourou device-manager/device:delete <index> --id <sensorId>
+kourou device-manager/device:delete <index> --id <deviceId>
 ```
 
 ---
@@ -68,7 +68,7 @@ Returns information about the deleted device:
   "action": "delete",
   "requestId": "<unique request identifier>",
   "result": {
-    "_id": "<sensorId>",
+    "_id": "<deviceId>",
     "_source": "<deleted document>" // If `source` option is set to true
   }
 }

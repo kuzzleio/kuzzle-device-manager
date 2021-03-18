@@ -2,11 +2,11 @@ import {
   JSONObject,
   KuzzleRequest,
   HttpRoute,
-  BadRequestError,
+  PreconditionError,
 } from 'kuzzle';
 import _ from 'lodash';
 
-import { Device } from '../models';
+import { Device, BaseAsset } from '../models';
 
 import { AssetMeasures, DeviceContent } from '../types';
 
@@ -123,7 +123,11 @@ export abstract class Decoder {
    * @returns Result of the corresponding API action
    */
   async afterRegister (device: Device, request: KuzzleRequest): Promise<any> {
-    return device.serialize();
+    return {
+      tenantId: device._source.tenantId,
+      device: device.serialize(),
+      asset: null,
+    };
   }
 
    /**
@@ -147,8 +151,12 @@ export abstract class Decoder {
    *
    * @returns Result of the corresponding API action
    */
-  async afterUpdate (device: Device, request: KuzzleRequest): Promise<any> {
-    return device.serialize();
+  async afterUpdate (device: Device, asset: BaseAsset, request: KuzzleRequest): Promise<any> {
+    return {
+      tenantId: device._source.tenantId,
+      device: device.serialize(),
+      asset: asset ? asset.serialize() : null,
+    };
   }
 
   /**
@@ -185,7 +193,7 @@ export abstract class Decoder {
   ensureProperties (payload: JSONObject, paths: string[]): void | never {
     for (const path of paths) {
       if (! _.has(payload, path)) {
-        throw new BadRequestError(`Missing property "${path}" in payload`);
+        throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }
   }

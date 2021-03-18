@@ -275,8 +275,6 @@ export class DeviceManagerPlugin extends Plugin {
       };
     }
 
-    this.config.collections['assets-history'] = this.config.collections.assets;
-
     // Merge custom mappings from decoders for payloads collection
     for (const decoder of this.decoders.values()) {
       this.config.adminCollections.payloads.properties.payload.properties = {

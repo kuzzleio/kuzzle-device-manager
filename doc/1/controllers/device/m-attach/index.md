@@ -28,7 +28,7 @@ Body:
     // Using JSON
     "records" [{
         "tenantId": "tenant-kuzzle",
-        "sensorId": "test-id"
+        "deviceId": "test-id"
     }],
     // Using CSV syntax
     "csv": "tenant,id\ntenant-kuzzle,test-id"
@@ -45,10 +45,10 @@ Body:
         // Using JSON
         "records" [{
             "tenantId": "tenant-kuzzle",
-            "sensorId": "test-id"
+            "deviceId": "test-id"
         }],
         // Using CSV syntax
-        "csv": "tenantId,sensorId\ntenant-kuzzle,test-id",
+        "csv": "tenantId,deviceId\ntenant-kuzzle,test-id",
     }
 }
 ```
@@ -59,8 +59,8 @@ Body:
 
 Body properties, must contain at least one of
 
-- `records`: an array of object containing `tenantId` and `sensorId`
-- `csv`: a csv syntax compatible containing at least this two headers `tenantId,sensorId` with their corresponding values
+- `records`: an array of object containing `tenantId` and `deviceId`
+- `csv`: a csv syntax compatible containing at least this two headers `tenantId,deviceId` with their corresponding values
 - `strict`: a boolean value that indicate if the process should fail at first error
 
 ---

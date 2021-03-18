@@ -9,13 +9,13 @@ description: Decoder abstract class abstract decode() method
 
 This method must be implemented in order to decode the payload.
 
-It has to return a promise resolving to a [SensorContent](/kuzzle-iot-platform/device-manager/1/types/device-content) with the following information:
+It has to return a promise resolving to a [DeviceContent](/kuzzle-iot-platform/device-manager/1/types/device-content) with the following information:
   - `reference`: device identifier
   - `measures`: measures received in the payload
   - `qos`: additional information about device state like battery, etc. (optional)
 
 ```ts
-abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent>
+abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent>
 ```
 
 <br/>
@@ -27,7 +27,7 @@ abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorCon
 
 ## Returns
 
-Returns a promise resolving to a `SensorContent`.
+Returns a promise resolving to a `DeviceContent`.
 
 ## Usage
 
@@ -45,12 +45,12 @@ The following `decode` method could be implemented:
 
 ```js
 import { JSONObject, KuzzleRequest } from 'kuzzle';
-import { Decoder, SensorContent } from 'kuzzle-plugin-device-manager';
+import { Decoder, DeviceContent } from 'kuzzle-plugin-device-manager';
 
 class KarakoyDecoder extends Decoder {
   // [...]
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
-    const sensorContent: SensorContent = {
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
+    const deviceContent: DeviceContent = {
       reference: payload.deviceEUI,
       measures: {
         temperature: {
@@ -63,7 +63,7 @@ class KarakoyDecoder extends Decoder {
       }
     };
 
-    return sensorContent;
+    return deviceContent;
   }
 }
 ```

@@ -31,7 +31,7 @@ A decoder is linked to a device model. Its registration triggers the creation of
 
 ```js
 import { JSONObject, KuzzleRequest } from 'kuzzle';
-import { Decoder, SensorContent, DeviceManager } from 'kuzzle-plugin-device-manager';
+import { Decoder, DeviceContent, DeviceManager } from 'kuzzle-plugin-device-manager';
 
 const deviceManager = new DeviceManager();
 
@@ -40,8 +40,8 @@ class KarakoyDecoder extends Decoder {
     super("Karakoy");
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
-    const sensorContent: SensorContent = {
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
+    const deviceContent: DeviceContent = {
       reference: payload.deviceEUI,
       measures: {
         temperature: {
@@ -54,7 +54,7 @@ class KarakoyDecoder extends Decoder {
       }
     };
 
-    return sensorContent;
+    return deviceContent;
   }
 }
 
@@ -87,7 +87,14 @@ class KarakoyDecoder extends Decoder {
 }
 ```
 
-## Hooks
+## Action results
+
+Each action will return an object containing those 3 properties:
+ - `device`: device document
+ - `tenantId`: device tenant ID (only if the device was attached to a tenant)
+ - `asset`: asset document (only if the device was linked to an asset)
+
+## Hooks 
 
 You can then use lifecycle hooks to modify a payload while it's been processed
 
@@ -106,5 +113,5 @@ Every payload received by Kuzzle will be stored in the `payloads` collection of 
 Each document contains the following property:
   - `uuid`: payload unique identifier (also found in measures)
   - `valid`: payload validity
-  - `sensorModel`: device model registered for this payload
+  - `deviceModel`: device model registered for this payload
   - `payload`: raw payload content

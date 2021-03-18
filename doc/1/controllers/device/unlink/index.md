@@ -1,15 +1,13 @@
 ---
 code: true
 type: page
-title: attachTenant
-description: Attach a device to a tenant index
+title: unlink
+description: Unlinks a device from an asset
 ---
 
-# attachTenant
+# unlink
 
-Attach a device to a tenant.
-
-The device document will be duplicated inside the tenant `devices` collection.
+Unlinks a device from its asset.
 
 ---
 
@@ -18,8 +16,8 @@ The device document will be duplicated inside the tenant `devices` collection.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_attach[?refresh=wait_for]
-Method: PUT
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_unlink[?refresh=wait_for]
+Method: DELETE
 ```
 
 ### Other protocols
@@ -28,16 +26,17 @@ Method: PUT
 {
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "attachTenant",
-  "_id": "<sensorId>"
+  "action": "unlink",
+  "_id": "<deviceId>"
 }
 ```
 
 ### Kourou
 
 ```bash
-kourou device-manager/device:attachTenant <index> --id <sensorId>
+kourou device-manager/device:unlink <index> --id <deviceId>
 ```
+
 ---
 
 ## Arguments
@@ -58,7 +57,7 @@ kourou device-manager/device:attachTenant <index> --id <sensorId>
   "error": null,
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "attachTenant",
+  "action": "unlink",
   "requestId": "<unique request identifier>",
   "result": {}
 }

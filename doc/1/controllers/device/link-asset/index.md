@@ -1,13 +1,15 @@
 ---
 code: true
 type: page
-title: unlink
-description: Unlinks a device from an asset
+title: linkAsset
+description: Link a device to an asset
 ---
 
-# unlink
+# linkAsset
 
-Unlinks a device from its asset.
+Link a device to an asset.
+
+The device measures will be copied into the asset.
 
 ---
 
@@ -16,8 +18,8 @@ Unlinks a device from its asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_unlink[?refresh=wait_for]
-Method: DELETE
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_linkAsset/:assetId[?refresh=wait_for]
+Method: PUT
 ```
 
 ### Other protocols
@@ -26,22 +28,23 @@ Method: DELETE
 {
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "unlink",
-  "_id": "<sensorId>"
+  "action": "linkAsset",
+  "_id": "<deviceId>",
+  "assetId": "<assetId>"
 }
 ```
 
 ### Kourou
 
 ```bash
-kourou device-manager/device:unlink <index> --id <sensorId>
+kourou device-manager/device:linkAsset <index> --id <deviceId> -a assetId=<assetId>
 ```
-
 ---
 
 ## Arguments
 
 - `index`: Tenant index name
+- `assetId`: Asset unique identifier
 
 ### Optional:
 
@@ -57,7 +60,7 @@ kourou device-manager/device:unlink <index> --id <sensorId>
   "error": null,
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "unlink",
+  "action": "linkAsset",
   "requestId": "<unique request identifier>",
   "result": {}
 }

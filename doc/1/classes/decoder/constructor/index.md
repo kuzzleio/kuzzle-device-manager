@@ -30,7 +30,7 @@ class KarakoyDecoder extends Decoder {
   }
 
   // This method must be implemented
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
     // ...custom device decoding function
   }
 }

@@ -5,11 +5,11 @@ title: Measure
 description: Measure type definition
 ---
 
-# Measure, SensorMeasures and AssetMeasures
+# Measure, DeviceMeasures and AssetMeasures
 
 The `Measure` type represents a single device measure.
 
-The `SensorMeasures` type represents measures stored inside a device document.
+The `DeviceMeasures` type represents measures stored inside a device document.
 
 The `AssetMeasures` type represents the measures + device information of a device stored inside an asset document.
 
@@ -26,7 +26,7 @@ export type Measure = {
   accuracy?: number;
 }
 
-export type SensorMeasures = {
+export type DeviceMeasures = {
   [measureType: string]: Measure;
 }
 

@@ -91,7 +91,7 @@ Returns information about the created device:
   "action": "create",
   "requestId": "<unique request identifier>",
   "result": {
-    "_id": "<sensorId>",
+    "_id": "<deviceId>",
     "_version": 2,
     "_source": "<device content>"
   }

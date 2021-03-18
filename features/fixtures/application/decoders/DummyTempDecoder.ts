@@ -1,4 +1,4 @@
-import { Decoder, DeviceContent, Device } from '../../../../index';
+import { Decoder, DeviceContent, Device, BaseAsset } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
 export class DummyTempDecoder extends Decoder {
@@ -46,10 +46,20 @@ export class DummyTempDecoder extends Decoder {
   }
 
   async afterRegister (device: Device, request: KuzzleRequest) {
-    return { afterRegister: true };
+    const result = await super.afterRegister(device, request);
+
+    return {
+      ...result,
+      afterRegister: true,
+    };
   }
 
-  async afterUpdate (device: Device, request: KuzzleRequest) {
-    return { afterUpdate: true };
+  async afterUpdate (device: Device, asset: BaseAsset, request: KuzzleRequest) {
+    const result = await super.afterUpdate(device, asset, request);
+
+    return {
+      ...result,
+      afterUpdate: true
+    };
   }
 }
