@@ -104,9 +104,6 @@ export class SensorController extends CRUDController {
     const document: SensorBulkContent = { sensorId };
     const sensors = await this.mGetSensor([document]);
 
-    // Request does not take tenant index as an input
-    document.tenantId = sensors[0]._source.tenantId;
-
     await this.sensorService.mDetach(sensors, [document], { strict: true });
   }
   
@@ -176,8 +173,11 @@ export class SensorController extends CRUDController {
     else if (body.records) {
       bulkData = body.records;
     }
+    else if (body.sensorIds) {
+      bulkData = body.sensorIds.map((sensorId: string) => ({ sensorId }));
+    }
     else {
-      throw new BadRequestError(`Malformed request missing property csv or records`);
+      throw new BadRequestError(`Malformed request missing property csv, records, sensorIds`);
     }
 
     const strict = body.strict || false;

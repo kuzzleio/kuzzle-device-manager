@@ -74,12 +74,10 @@ Feature: Device Manager sensor controller
       | body.records.0.sensorId | "DummyTemp_detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
       | body.records.1.sensorId | "DummyTemp_attached-ayse-unlinked" |
-    When I successfully execute the action "device-manager/sensor":"detach" with args:
-      | _id | "DummyTemp_detached" |
+    When I successfully execute the action "device-manager/sensor":"mDetach" with args:
+      | body.sensorIds | ["DummyTemp_detached","DummyTemp_attached-ayse-unlinked"] |
     Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
       | tenantId | null |
-    When I successfully execute the action "device-manager/sensor":"detach" with args:
-      | _id | "DummyTemp_attached-ayse-unlinked" |
     Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
       | tenantId | null |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" does not exists
@@ -89,12 +87,10 @@ Feature: Device Manager sensor controller
     Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/sensor":"mAttach" with args:
       | body.csv | "tenantId,sensorId\\ntenant-kuzzle,DummyTemp_detached\\ntenant-kuzzle,DummyTemp_attached-ayse-unlinked," |
-    When I successfully execute the action "device-manager/sensor":"detach" with args:
-      | _id | "DummyTemp_detached" |
+    When I successfully execute the action "device-manager/sensor":"mDetach" with args:
+      | body.csv | "sensorId\\nDummyTemp_detached\\nDummyTemp_attached-ayse-unlinked," |
     Then The document "device-manager":"sensors":"DummyTemp_detached" content match:
       | tenantId | null |
-    When I successfully execute the action "device-manager/sensor":"detach" with args:
-      | _id | "DummyTemp_attached-ayse-unlinked" |
     Then The document "device-manager":"sensors":"DummyTemp_attached-ayse-unlinked" content match:
       | tenantId | null |
     And The document "tenant-kuzzle":"sensors":"DummyTemp_detached" does not exists

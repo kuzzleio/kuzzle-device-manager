@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: detach
+title: mDetach
 description: Detach multiple sensors from multiple tenants
 ---
 
-# detach
+# mDetach
 
 Detach multiple sensors from multiple tenants.
 
@@ -24,12 +24,9 @@ Body:
 ``` js
 {
     // Using JSON
-    "records" [{
-        "tenant": "tenant-kuzzle",
-        "id": "test-id"
-    }],
+    "sensorIds" ["test-id"],
     // Using CSV syntax
-    "csv": "tenant,id\ntenant-kuzzle,test-id"
+    "csv": "sensorIds\ntest-id"
 }
 ```
 
@@ -41,12 +38,9 @@ Body:
     "action": "mAttachTenant",
     "body": {
         // Using JSON
-        "records" [{
-            "tenantId": "tenant-kuzzle",
-            "sensorId": "test-id"
-        }],
+        "sensorIds" ["test-id"],
         // Using CSV syntax
-        "csv": "tenantId,sensorId\ntenant-kuzzle,test-id",
+        "csv": "sensorIds\ntest-id"
     }
 }
 ```
@@ -57,8 +51,8 @@ Body:
 
 Body properties, must contain at least one of
 
-* `records`: an array of object containing `tenantId` and `sensorId`
-* `csv`: a csv syntax compatible containing at least this two headers `tenantId,sensorId` with their corresponding values
+* `sensorIds`: an array of string containing identifiers of a sensor already attached
+* `csv`: a csv syntax compatible containing at least one header `sensorId` with his corresponding values
 * `strict`: a boolean value that indicate if the process should fail at first error
 
 ---

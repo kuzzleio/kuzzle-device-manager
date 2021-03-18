@@ -81,26 +81,36 @@ export class SensorService {
     return results;
   }
 
-  async mDetach (sensors: Sensor[], bulkData: SensorBulkContent[], isStrict: boolean) {
+  async mDetach (sensors: Sensor[], bulkData: SensorBulkContent[], { strict }) {
+    console.log('CCCC', JSON.stringify(sensors));
     const detachedSensors = sensors.filter(sensor => !sensor._source.tenantId || sensor._source.tenantId === null);
 
-    if (isStrict && detachedSensors.length > 0) {
+    if (strict && detachedSensors.length > 0) {
       const ids = detachedSensors.map(sensor => sensor._id).join(',')
       throw new BadRequestError(`Sensors "${ids}" are not attached to a tenant`);
     }
 
     const linkedAssets = sensors.filter(sensor => sensor._source.assetId);
 
-    if (isStrict && linkedAssets.length > 0) {
+    if (strict && linkedAssets.length > 0) {
       const ids = linkedAssets.map(sensor => sensor._id).join(',')
       throw new BadRequestError(`Sensors "${ids}" are still linked to an asset`);
     }
 
-    const documents = this.buildBulkSensors(bulkData);
+    const builder = bulkData.map(data => {
+      const { sensorId } = data;
+      const sensor = sensors.find(s => s._id === sensorId);
+      return { tenantId: sensor._source.tenantId, sensorId }
+    });
+
+    const documents = this.buildBulkSensors(builder);
+
     const results = {
       errors: [],
       successes: [],
     };
+
+    console.log('BBBBB', JSON.stringify(documents));
 
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
@@ -133,6 +143,8 @@ export class SensorService {
       results.successes.concat(successes);
       results.errors.concat(errors);
     }
+
+    return results;
   }
 
 
