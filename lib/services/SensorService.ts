@@ -82,7 +82,6 @@ export class SensorService {
   }
 
   async mDetach (sensors: Sensor[], bulkData: SensorBulkContent[], { strict }) {
-    console.log('CCCC', JSON.stringify(sensors));
     const detachedSensors = sensors.filter(sensor => !sensor._source.tenantId || sensor._source.tenantId === null);
 
     if (strict && detachedSensors.length > 0) {
@@ -109,8 +108,6 @@ export class SensorService {
       errors: [],
       successes: [],
     };
-
-    console.log('BBBBB', JSON.stringify(documents));
 
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
