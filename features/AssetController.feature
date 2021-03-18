@@ -16,5 +16,3 @@ Feature: Device Manager asset controller
       | index | "tenant-kuzzle"         |
       | _id   | "outils_PERFO_asset-01" |
     Then The document "tenant-kuzzle":"assets":"outils_PERFO_asset-01" does not exists
-    And I refresh the collection "tenant-kuzzle":"assets-history"
-    And I count 2 documents in "tenant-kuzzle":"assets-history"

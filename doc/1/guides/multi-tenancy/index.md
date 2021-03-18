@@ -8,7 +8,7 @@ order: 400
 
 # Multi Tenancy
 
-The plugin is designed to work with several tenants, each with their own sensors and assets.
+The plugin is designed to work with several tenants, each with their own devices and assets.
 
 Each tenant has its own index with the required collections.
 
@@ -18,17 +18,17 @@ It is possible to manage its holders with the [device-manager/engine](/kuzzle-io
 When used with the multi-tenant plugin, the collections needed by the device-manager are automatically created when creating a new tenant with the multi-tenant plugin.
 :::
 
-### Sensors
+### Devices
 
-The list of available sensors is stored in the `sensors` collection of the administration index (`device-manager`).
+The list of available devices is stored in the `devices` collection of the administration index (`device-manager`).
 
-When assigning the sensor to a tenant, the `tenantId` property is updated and the sensor is copied to the `sensors` collection of the tenant's index.
+When assigning the device to a tenant, the `tenantId` property is updated and the device is copied to the `devices` collection of the tenant's index.
 
 ### Collections
 
 When a new engine is created on a tenant index, it will create the following collections:
 
-**sensors**
+**devices**
 
 ```js
 {
@@ -97,7 +97,7 @@ When a new engine is created on a tenant index, it will create the following col
 **assets**
 
 ```js
-{  
+{
   "model": {
     "type": "keyword"
   },

@@ -58,28 +58,6 @@ export class AssetController extends CRUDController {
       request.input.resource._id = asset._id;
     }
 
-    const document = await super.create(request);
-
-    // Historize
-    await this.sdk.document.create(
-      request.input.resource.index,
-      'assets-history',
-      document._source,
-      `${document._id}_${request.id}`);
-
-    return document;
-  }
-
-  async update (request: KuzzleRequest) {
-    const document = await super.update(request);
-
-    // Historize
-    await this.sdk.document.create(
-      request.input.resource.index,
-      'assets-history',
-      document._source,
-      `${document._id}_${request.id}`);
-
-    return document;
+    return await super.create(request);
   }
 }

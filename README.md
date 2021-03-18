@@ -1,10 +1,10 @@
 # Device manager
 
-This plugin provides the necessary APIs to manage a fleet of sensors linked to assets.
+This plugin provides the necessary APIs to manage a fleet of devices linked to assets.
 
-It allows to decode the payloads received for the different sensor models of the application.
+It allows to decode the payloads received for the different device models of the application.
 
-It works in a multi-tenant mode where each tenant has its own sensors and assets.
+It works in a multi-tenant mode where each tenant has its own devices and assets.
 
 ## Documentation
 

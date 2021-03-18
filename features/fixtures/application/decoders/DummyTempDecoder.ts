@@ -1,4 +1,4 @@
-import { Decoder, SensorContent, Sensor } from '../../../../index';
+import { Decoder, DeviceContent, Device, BaseAsset } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
 export class DummyTempDecoder extends Decoder {
@@ -16,8 +16,8 @@ export class DummyTempDecoder extends Decoder {
     }
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<SensorContent> {
-    const sensorContent: SensorContent = {
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
+    const deviceContent: DeviceContent = {
       reference: payload.deviceEUI,
       measures: {
         temperature: {
@@ -30,26 +30,36 @@ export class DummyTempDecoder extends Decoder {
       }
     };
 
-    return sensorContent;
+    return deviceContent;
   }
 
-  async beforeRegister (sensor: Sensor, request: KuzzleRequest) {
-    sensor._source.qos.registerEnriched = true;
+  async beforeRegister (device: Device, request: KuzzleRequest) {
+    device._source.qos.registerEnriched = true;
 
-    return sensor;
+    return device;
   }
 
-  async beforeUpdate (sensor: Sensor, request: KuzzleRequest) {
-    sensor._source.qos.updateEnriched = true;
+  async beforeUpdate (device: Device, request: KuzzleRequest) {
+    device._source.qos.updateEnriched = true;
 
-    return sensor;
+    return device;
   }
 
-  async afterRegister (sensor: Sensor, request: KuzzleRequest) {
-    return { afterRegister: true };
+  async afterRegister (device: Device, request: KuzzleRequest) {
+    const result = await super.afterRegister(device, request);
+
+    return {
+      ...result,
+      afterRegister: true,
+    };
   }
 
-  async afterUpdate (sensor: Sensor, request: KuzzleRequest) {
-    return { afterUpdate: true };
+  async afterUpdate (device: Device, asset: BaseAsset, request: KuzzleRequest) {
+    const result = await super.afterUpdate(device, asset, request);
+
+    return {
+      ...result,
+      afterUpdate: true
+    };
   }
 }

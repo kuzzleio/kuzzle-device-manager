@@ -5,13 +5,13 @@ title: Measure
 description: Measure type definition
 ---
 
-# Measure, SensorMeasures and AssetMeasures
+# Measure, DeviceMeasures and AssetMeasures
 
-The `Measure` type represents a single sensor measure.
+The `Measure` type represents a single device measure.
 
-The `SensorMeasures` type represents measures stored inside a sensor document.
+The `DeviceMeasures` type represents measures stored inside a device document.
 
-The `AssetMeasures` type represents the measures + sensor information of a sensor stored inside an asset document.
+The `AssetMeasures` type represents the measures + device information of a device stored inside an asset document.
 
 ```js
 export type Measure = {
@@ -26,13 +26,13 @@ export type Measure = {
   accuracy?: number;
 }
 
-export type SensorMeasures = {
+export type DeviceMeasures = {
   [measureType: string]: Measure;
 }
 
 export type AssetMeasures = {
   [measureType: string]: {
-    // Sensors info
+    // Devices info
     id: string;
     model: string;
     reference: string;
