@@ -60,9 +60,9 @@ export class DeviceController extends CRUDController {
           handler: this.unlink.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/:index/devices/:_id/_unlink' }]
         },
-        clean: {
-          handler: this.clean.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/devices/_clean' }]
+        cleanPayloads: {
+          handler: this.cleanPayloads.bind(this),
+          http: [{ verb: 'delete', path: 'device-manager/devices/_cleanPayloads' }]
         },
       }
     };
@@ -129,7 +129,7 @@ export class DeviceController extends CRUDController {
   /**
    * Clean payload collection for a time period
    */
-  async clean (request: KuzzleRequest) {
+  async cleanPayloads (request: KuzzleRequest) {
     const body = this.getBody(request);
   
     const date = new Date().setDate(new Date().getDate() - body.days || 7);

@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: clean
+title: cleanPayloads
 description: Cleans the payload collection
 ---
 
-# clean
+# cleanPayloads
 
 Cleans payloads according to their age and/or validity and/or to which device model they are affiliated.
 
@@ -16,7 +16,7 @@ Cleans payloads according to their age and/or validity and/or to which device mo
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/devices/_clean
+URL: http://kuzzle:7512/_/device-manager/devices/_cleanPayloads
 Method: DELETE
 ```
 
@@ -25,7 +25,7 @@ Method: DELETE
 ```js
 {
   "controller": "device-manager/device",
-  "action": "clean",
+  "action": "cleanPayloads",
   "body": {
     //
   }
@@ -35,7 +35,7 @@ Method: DELETE
 ### Kourou
 
 ```bash
-kourou device-manager/device:clean '{
+kourou device-manager/device:cleanPayloads '{
   days: <days>,
   valid: true|false,
   deviceModel: "<deviceModel>"

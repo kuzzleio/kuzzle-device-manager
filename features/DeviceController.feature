@@ -152,7 +152,7 @@ Feature: Device Manager device controller
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 2 |
-    And I successfully execute the action "device-manager/device":"clean" with args:
+    And I successfully execute the action "device-manager/device":"cleanPayloads" with args:
       | body.days | 0 |
       | body.valid | true |
       | body.deviceModel | "DummyTemp" |
