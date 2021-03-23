@@ -136,7 +136,7 @@ export class DeviceController extends CRUDController {
     const filter = []
     filter.push({
         range: {
-          "_kuzzle_info.createdAt": {
+          '_kuzzle_info.createdAt': {
             lt: date
           }
         }

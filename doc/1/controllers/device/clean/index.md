@@ -7,7 +7,7 @@ description: Cleans the payload collection
 
 # clean
 
-Cleans the payload collection.
+Cleans payloads according to their age and/or validity and/or to which device model they are affiliated.
 
 ---
 
@@ -16,7 +16,7 @@ Cleans the payload collection.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/devices/_clean_
+URL: http://kuzzle:7512/_/device-manager/devices/_clean
 Method: DELETE
 ```
 
@@ -35,7 +35,11 @@ Method: DELETE
 ### Kourou
 
 ```bash
-kourou device-manager/device:clean '{"days": <days>, "valid": "true|false", "deviceModel": "<deviceModel>"}'
+kourou device-manager/device:clean '{
+  days: <days>,
+  valid: "true|false",
+  deviceModel: "<deviceModel>"
+}'
 ```
 
 ---
@@ -43,9 +47,9 @@ kourou device-manager/device:clean '{"days": <days>, "valid": "true|false", "dev
 ## Arguments
 
 - `days`: Specify on which period of time you want keep payloads (`default: 7`).
-- `valid`: Specify which payloads are to be deleted (`default: true`).
+- `valid`: Specify if valid, invalid or both payload should be deleted (`default: true`).
 - `deviceModel`: deviceModel name.
 
 ## Response
 
-Returns an array with the deleted payloads ids.
+Returns the number of deleted payloads.
