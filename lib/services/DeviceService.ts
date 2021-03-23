@@ -145,6 +145,94 @@ export class DeviceService {
     return results;
   }
 
+  async mLinkAsset (devices: Device[], bulkData: DeviceBulkContent[], decoders: Map<string, Decoder>, { strict }) {
+    const detachedDevices = devices.filter(device => !device._source.tenantId || device._source.tenantId === null);
+
+    if (strict && detachedDevices.length > 0) {
+      const ids = detachedDevices.map(device => device._id).join(',')
+      throw new BadRequestError(`Devices "${ids}" are not attached to a tenant`);
+    }
+
+    const builder = bulkData.map(data => {
+      const { deviceId, assetId } = data;
+      const device = devices.find(s => s._id === deviceId);
+      return { tenantId: device._source.tenantId, deviceId, assetId }
+    });
+
+    const documents = this.buildBulkDevices(builder);
+
+    const results = {
+      errors: [],
+      successes: [],
+    };
+
+    for (let i = 0; i < documents.length; i++) {
+      const document = documents[i];
+      const existingAssets = await this.sdk.document.mGet(
+        document.tenantId,
+        'assets',
+        document.assetIds);
+  
+      if (strict && existingAssets.errors.length > 0) {
+        throw new BadRequestError(`Assets "${existingAssets.errors}" does not exists`);
+      }
+
+      const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
+      const deviceDocuments = [];
+      const assetDocuments = [];
+
+      for (let i = 0; i < devicesContent.length; i++) {
+        const device = devicesContent[i];
+        const decoder = decoders.get(device._source.model);
+        const measures = await decoder.copyToAsset(device);
+        const { assetId } = bulkData.find(data => data.deviceId === device._id)
+
+        deviceDocuments.push({ _id: device._id, body: { assetId } });
+        assetDocuments.push({ _id: assetId, body: { measures } });
+      }
+
+      const updatedDevice = await this.writeToDatabase(
+        deviceDocuments,
+        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+
+          const updated = await this.sdk.document.mUpdate(
+            this.config.adminIndex,
+            'devices',
+            deviceDocuments);
+      
+          await this.sdk.document.mUpdate(
+            document.tenantId,
+            'devices',
+            deviceDocuments);
+
+          return {
+            successes: results.successes.concat(updated.successes),
+            errors: results.errors.concat(updated.errors)
+          }
+      })
+
+      const updatedAssets = await this.writeToDatabase(
+        assetDocuments,
+        async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+
+          const updated = await this.sdk.document.mUpdate(
+            document.tenantId,
+            'assets',
+            assetDocuments);
+
+          return {
+            successes: results.successes.concat(updated.successes),
+            errors: results.errors.concat(updated.errors)
+          }
+        }
+      )
+
+      results.successes.concat(updatedDevice.successes, updatedAssets.successes);
+      results.errors.concat(updatedDevice.errors, updatedDevice.errors);
+    }
+
+    return results;
+  }
 
   async linkAsset (device: Device, assetId: string, decoders: Map<string, Decoder>) {
     if (!device._source.tenantId) {
@@ -220,16 +308,16 @@ export class DeviceService {
 
   private buildBulkDevices (bulkData: DeviceBulkContent[]): DeviceBulkBuildedContent[] {
     const documents: DeviceBulkBuildedContent[] = [];
-
     for (let i = 0; i < bulkData.length; i++) {
-      const { tenantId, deviceId } = bulkData[i];
+      const { tenantId, deviceId, assetId } = bulkData[i];
       const document = documents.find(doc => doc.tenantId === tenantId);
 
       if (document) {
         document.deviceIds.push(deviceId);
+        document.assetIds.push(assetId);
       }
       else {
-        documents.push({ tenantId, deviceIds: [deviceId] })
+        documents.push({ tenantId, deviceIds: [deviceId], assetIds: [assetId] })
       }
     }
     return documents;

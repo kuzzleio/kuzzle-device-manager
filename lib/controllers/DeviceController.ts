@@ -60,6 +60,10 @@ export class DeviceController extends CRUDController {
           handler: this.linkAsset.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_link/:assetId' }]
         },
+        mLinkAsset: {
+          handler: this.mLinkAsset.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/devices/_mLink' }]
+        },
         unlink: {
           handler: this.unlink.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/:index/devices/:_id/_unlink' }]
@@ -118,13 +122,22 @@ export class DeviceController extends CRUDController {
   /**
    * Link a device to an asset.
    */
-  async linkAsset(request: KuzzleRequest) {
+  async linkAsset (request: KuzzleRequest) {
     const assetId = this.getString(request, 'assetId');
     const deviceId = this.getId(request);
 
-    const device = await this.getDevice(deviceId);
+    const document: DeviceBulkContent = { deviceId, assetId };
+    const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.linkAsset(device, assetId, this.decoders);
+    await this.deviceService.mLinkAsset(devices, [document], this.decoders, { strict: true });
+  }
+
+  async mLinkAsset (request: KuzzleRequest) {
+    const { bulkData, strict } = await this.mParseRequest(request);
+
+    const devices = await this.mGetDevice(bulkData);
+
+    return this.deviceService.mLinkAsset(devices, bulkData, this.decoders, { strict });
   }
 
   /**
@@ -166,7 +179,7 @@ export class DeviceController extends CRUDController {
       const lines = await csv({ delimiter: 'auto' })
         .fromString(body.csv);
 
-      bulkData = lines.map(line => ({ tenantId: line.tenantId, deviceId: line.deviceId }));
+      bulkData = lines.map(line => ({ tenantId: line.tenantId, deviceId: line.deviceId, assetId: line.assetId }));
     }
     else if (body.records) {
       bulkData = body.records;
