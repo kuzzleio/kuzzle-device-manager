@@ -37,7 +37,7 @@ Method: DELETE
 ```bash
 kourou device-manager/device:clean '{
   days: <days>,
-  valid: "true|false",
+  valid: true|false,
   deviceModel: "<deviceModel>"
 }'
 ```
