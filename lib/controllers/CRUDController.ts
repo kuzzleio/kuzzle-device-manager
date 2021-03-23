@@ -50,7 +50,7 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  async delete (request: KuzzleRequest) {
+  delete (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const id = this.getId(request);
 

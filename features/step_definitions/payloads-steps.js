@@ -27,3 +27,20 @@ Then(/I (successfully )?receive a "(.*?)" payload with:/, async function (expect
     this.props.error = error;
   }
 });
+
+Then(/I clean the payloads collection with args:/, async function (dataTable) {
+  const body = this.parseObject(dataTable);
+
+  try {
+    const response = await this.sdk.query({
+      controller: 'device-manager/devices',
+      action: clean,
+      body
+    });
+
+    this.props.result = response.result;
+  }
+  catch (error) {
+      throw error;
+  }
+});

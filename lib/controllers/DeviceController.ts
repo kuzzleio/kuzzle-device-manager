@@ -62,7 +62,7 @@ export class DeviceController extends CRUDController {
         },
         clean: {
           handler: this.clean.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/:index/devices/_clean/:_days' }]
+          http: [{ verb: 'delete', path: 'device-manager/devices/_clean' }]
         },
       }
     };
@@ -126,7 +126,6 @@ export class DeviceController extends CRUDController {
     await this.deviceService.unlink(device);
   }
 
-
   /**
    * Clean payload collection for a time period
    */
@@ -141,22 +140,16 @@ export class DeviceController extends CRUDController {
             lt: date
           }
         }
-      }, { term: { valid: body.valid || false } });
+      }, { term: { valid: body.valid || true } });
     
     if (body.deviceModel) {
       filter.push({ term: { deviceModel: body.deviceModel } });
     }
-    const query = {
-      bool: {
-        filter
-      }
-    }
-    
-    return await this.as(request.context.user).document.deleteByQuery(
+
+    return await this.as(request.context.user).bulk.deleteByQuery(
       this.config.adminIndex,
       'payloads',
-      { query }
-      );
+      { query: { bool: { filter } } });
   }
 
   private async getDevice (deviceId: string): Promise<Device> {
