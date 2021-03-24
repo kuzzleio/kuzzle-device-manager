@@ -55,9 +55,9 @@ Body:
 
 ## Body properties
 
-Body properties, must contain at least one of
+Body properties, must contain at least one of the following:
 
-- `records`: an array of object containing `assetId` and `deviceId`
+- `records`: an array of objects, each containing an `assetId` and a `deviceId` properties
 - `csv`: a csv syntax compatible containing at least this two headers `assetId,deviceId` with their corresponding values
 - `strict`: a boolean value that indicate if the process should fail at first error
 
