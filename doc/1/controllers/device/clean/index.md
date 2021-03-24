@@ -46,7 +46,7 @@ kourou device-manager/device:cleanPayloads '{
 
 ## Arguments
 
-- `days`: Specify on which period of time you want keep payloads (`default: 7`).
+- `days`: The maximum age of a payload, in days (`default: 7`).
 - `valid`: Specify if valid, invalid or both payload should be deleted (`default: true`).
 - `deviceModel`: deviceModel name.
 
