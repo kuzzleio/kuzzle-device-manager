@@ -145,7 +145,7 @@ export class DeviceService {
     return results;
   }
 
-  async mLinkAsset (devices: Device[], bulkData: DeviceBulkContent[], decoders: Map<string, Decoder>, { strict }) {
+  async mLink (devices: Device[], bulkData: DeviceBulkContent[], decoders: Map<string, Decoder>, { strict }) {
     const detachedDevices = devices.filter(device => !device._source.tenantId || device._source.tenantId === null);
 
     if (strict && detachedDevices.length > 0) {

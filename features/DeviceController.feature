@@ -135,7 +135,7 @@ Feature: Device Manager device controller
       | measures.temperature.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using JSON
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.records.0.deviceId | "DummyTemp_attached-ayse-unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
     Then The document "device-manager":"devices":"DummyTemp_attached-ayse-unlinked" content match:
@@ -152,7 +152,7 @@ Feature: Device Manager device controller
       | measures.temperature.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp_attached-ayse-unlinked,PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp_attached-ayse-unlinked" content match:
       | assetId | "PERFO-unlinked" |

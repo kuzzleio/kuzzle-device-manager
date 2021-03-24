@@ -60,8 +60,8 @@ export class DeviceController extends CRUDController {
           handler: this.linkAsset.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_link/:assetId' }]
         },
-        mLinkAsset: {
-          handler: this.mLinkAsset.bind(this),
+        mLink: {
+          handler: this.mLink.bind(this),
           http: [{ verb: 'put', path: 'device-manager/devices/_mLink' }]
         },
         unlink: {
@@ -129,15 +129,15 @@ export class DeviceController extends CRUDController {
     const document: DeviceBulkContent = { deviceId, assetId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mLinkAsset(devices, [document], this.decoders, { strict: true });
+    await this.deviceService.mLink(devices, [document], this.decoders, { strict: true });
   }
 
-  async mLinkAsset (request: KuzzleRequest) {
+  async mLink (request: KuzzleRequest) {
     const { bulkData, strict } = await this.mParseRequest(request);
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mLinkAsset(devices, bulkData, this.decoders, { strict });
+    return this.deviceService.mLink(devices, bulkData, this.decoders, { strict });
   }
 
   /**
