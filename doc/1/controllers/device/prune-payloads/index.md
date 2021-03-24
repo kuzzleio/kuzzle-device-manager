@@ -1,13 +1,13 @@
 ---
 code: true
 type: page
-title: cleanPayloads
+title: prunePayloads
 description: Cleans the payload collection
 ---
 
-# cleanPayloads
+# prunePayloads
 
-Cleans payloads according to their age and/or validity and/or to which device model they are affiliated.
+Delete payloads according to their age and/or validity and/or to which device model they are affiliated.
 
 ---
 
@@ -16,7 +16,7 @@ Cleans payloads according to their age and/or validity and/or to which device mo
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/devices/_cleanPayloads
+URL: http://kuzzle:7512/_/device-manager/devices/_prunePayloads
 Method: DELETE
 ```
 
@@ -25,7 +25,7 @@ Method: DELETE
 ```js
 {
   "controller": "device-manager/device",
-  "action": "cleanPayloads",
+  "action": "prunePayloads",
   "body": {
     //
   }
@@ -35,7 +35,7 @@ Method: DELETE
 ### Kourou
 
 ```bash
-kourou device-manager/device:cleanPayloads '{
+kourou device-manager/device:prunePayloads '{
   days: <days>,
   valid: true|false,
   deviceModel: "<deviceModel>"
@@ -47,7 +47,7 @@ kourou device-manager/device:cleanPayloads '{
 ## Arguments
 
 - `days`: The maximum age of a payload, in days (`default: 7`).
-- `valid`: Specify if valid, invalid or both payload should be deleted (`default: true`).
+- `valid`: Specify if valid or invalid payloads should be deleted (`default: true`).
 - `deviceModel`: deviceModel name.
 
 ## Response
