@@ -61,7 +61,7 @@ export class DeviceManagerPlugin extends Plugin {
        * Define custom mappings for the "assets.metadata" property
        */
       metadata: JSONObject;
-    },
+      },
   }
 
   /**
@@ -69,6 +69,12 @@ export class DeviceManagerPlugin extends Plugin {
    * Map<model, decoder>
    */
   private decoders = new Map<string, Decoder>();
+
+  /**
+   * List of custom mappings with tenantGroup as key
+   * Map<tenantGroup, mappings>
+   */
+  private customMappings = new Map<string, Object>();
 
   /**
    * Constructor
@@ -89,9 +95,35 @@ export class DeviceManagerPlugin extends Plugin {
       },
     };
 
+    // Setting a 'shared' key for common mappings
+    this.customMappings.set('shared', this.mappings);
+
     this.api = {
       'device-manager/payload': {
         actions: {}
+      }
+    };
+
+    this.pipes = {
+      'multi-tenancy/tenant:afterCreate': async request => {
+        const { index: tenantIndex } = request.result;
+
+        const { collections } = await this.engineService
+          .create(tenantIndex, this.customMappings.get('water_management'));
+
+        if (!Array.isArray(request.result.collections)) {
+          request.result.collections = [];
+        }
+        request.result.collections.push(...collections);
+
+        return request;
+      },
+      'multi-tenancy/tenant:afterDelete': async request => {
+        const { index: tenantIndex } = request.result;
+
+        await this.engineService.delete(tenantIndex);
+
+        return request;
       }
     };
 
@@ -107,7 +139,6 @@ export class DeviceManagerPlugin extends Plugin {
         devices: devicesMappings,
         payloads: {
           dynamic: 'false',
-          // @todo have API action to clean
           properties: {
             uuid: { type: 'keyword' },
             valid: { type: 'boolean' },
@@ -130,9 +161,13 @@ export class DeviceManagerPlugin extends Plugin {
    */
   async init (config: JSONObject, context: PluginContext) {
     this.config = { ...this.defaultConfig, ...config };
+
     this.context = context;
 
-    this.mergeCustomMappings();
+    // this.mergeCustomMappings();
+
+    // Setting a 'shared' key for common mappings
+    this.customMappings.set('shared', this.config.collections);
 
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
@@ -207,8 +242,35 @@ export class DeviceManagerPlugin extends Plugin {
     );
   }
 
-  private mergeCustomMappings () {
-    // Merge devices qos custom mappings
+  setAssetsMappings (mapping: JSONObject, tenantKind: any = 'shared') {
+    const assets = {
+      properties: {
+        metadata: {
+          properties: { ...mapping }
+        },
+      }
+    }
+    this.customMappings.set(tenantKind, {
+      ...this.customMappings.get(tenantKind),
+      assets,
+      'asset-history': assets
+    });    
+  }
+
+  setDevicesMappings (mapping: JSONObject, tenantKind: any = 'shared') {
+    this.customMappings.set(tenantKind, {
+      ...this.customMappings.get(tenantKind),
+      devices: {
+        properties: {
+          qos: { properties: {...mapping } } 
+        }
+      }
+    });
+  }
+
+  private mergeCustomMappings (tenantKind: any = undefined) {
+
+    // Merge sensors qos custom mappings
     this.config.collections.devices.properties.qos.properties = {
       ...this.config.collections.devices.properties.qos.properties,
       ...this.mappings.devices.qos,
