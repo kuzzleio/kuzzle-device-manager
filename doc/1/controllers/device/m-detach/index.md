@@ -16,7 +16,7 @@ Detach multiple devices from multiple tenants.
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/device-manager/devices/_mDetach[?refresh=wait_for][&strict=true|false]
+URL: http://kuzzle:7512/_/device-manager/device-manager/devices/_mDetach[?refresh=wait_for][&strict]
 Method: PUT
 Body:
 ```
