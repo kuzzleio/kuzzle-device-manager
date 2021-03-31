@@ -7,7 +7,7 @@ description: Cleans the payload collection
 
 # prunePayloads
 
-Delete payloads according to their age and/or validity and/or to which device model they are affiliated.
+Delete payloads according to their age and/or validity and/or to which device model they are affiliated with.
 
 ---
 
