@@ -181,8 +181,7 @@ export class DeviceService {
       const deviceDocuments = [];
       const assetDocuments = [];
 
-      for (let i = 0; i < devicesContent.length; i++) {
-        const device = devicesContent[i];
+      for (const device of devicesContent) {
         const decoder = decoders.get(device._source.model);
         const measures = await decoder.copyToAsset(device);
         const { assetId } = bulkData.find(data => data.deviceId === device._id)
@@ -233,43 +232,6 @@ export class DeviceService {
 
     return results;
   }
-
-  async linkAsset (device: Device, assetId: string, decoders: Map<string, Decoder>) {
-    if (!device._source.tenantId) {
-      throw new BadRequestError(`Device "${device._id}" is not attached to a tenant`);
-    }
-
-    const assetExists = await this.sdk.document.exists(
-      device._source.tenantId,
-      'assets',
-      assetId);
-
-    if (!assetExists) {
-      throw new BadRequestError(`Asset "${assetId}" does not exists`);
-    }
-
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'devices',
-      device._id,
-      { assetId });
-
-    await this.sdk.document.update(
-      device._source.tenantId,
-      'devices',
-      device._id,
-      { assetId });
-
-    const decoder = decoders.get(device._source.model);
-
-    const assetMeasures = await decoder.copyToAsset(device);
-
-    await this.sdk.document.update(
-      device._source.tenantId,
-      'assets',
-      assetId,
-      { measures: assetMeasures });
-   }
 
   async unlink (device: Device) {
     if (! device._source.assetId) {

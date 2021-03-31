@@ -16,7 +16,7 @@ Detach multiple devices from multiple tenants.
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/device-manager/devices/_mDetach[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/device-manager/devices/_mDetach[?refresh=wait_for][&strict=true|false]
 Method: PUT
 Body:
 ```
@@ -53,15 +53,13 @@ Body properties, must contain at least one of
 
 * `sensorIds`: an array of string containing identifiers of a sensor already attached
 * `csv`: a csv syntax compatible containing at least one header `sensorId` with his corresponding values
-* `strict`: a boolean value that indicate if the process should fail at first error
 
 ---
-
-## Arguments
 
 ### Optional:
 
 * `refresh`: if set to `wait_for`, Kuzzle will not respond until the documents are indexed
+* `strict`: a boolean value that indicate if the process should fail at first error
 
 ---
 
