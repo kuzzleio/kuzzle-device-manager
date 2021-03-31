@@ -37,7 +37,7 @@ Method: DELETE
 ```bash
 kourou device-manager/device:prunePayloads '{
   days: <days>,
-  valid: true|false,
+  keepInvalid: true|false,
   deviceModel: "<deviceModel>"
 }'
 ```
@@ -47,7 +47,7 @@ kourou device-manager/device:prunePayloads '{
 ## Arguments
 
 - `days`: The maximum age of a payload, in days (`default: 7`).
-- `valid`: Specify if valid or invalid payloads should be deleted (`default: true`).
+- `keepInvalid`: If set to `true`, invalid payloads will not be deleted.
 - `deviceModel`: deviceModel name.
 
 ## Response

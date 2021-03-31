@@ -154,7 +154,6 @@ Feature: Device Manager device controller
       | total | 2 |
     And I successfully execute the action "device-manager/device":"prunePayloads" with args:
       | body.days | 0 |
-      | body.valid | true |
       | body.deviceModel | "DummyTemp" |
     And I successfully execute the action "collection":"refresh" with args:
       | index      | "device-manager" |

@@ -140,12 +140,15 @@ export class DeviceController extends CRUDController {
             lt: date
           }
         }
-      }, { term: { valid: body.valid || true } });
+      });
     
     if (body.deviceModel) {
       filter.push({ term: { deviceModel: body.deviceModel } });
     }
 
+    if (body.keepInvalid) {
+      filter.push({ term: { valid: true } })
+    }
     return await this.as(request.context.user).bulk.deleteByQuery(
       this.config.adminIndex,
       'payloads',
