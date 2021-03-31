@@ -174,7 +174,7 @@ export class DeviceService {
         document.assetIds);
   
       if (strict && existingAssets.errors.length > 0) {
-        throw new BadRequestError(`Assets "${existingAssets.errors}" does not exists`);
+        throw new NotFoundError(`Assets "${existingAssets.errors}" do not exist`);
       }
 
       const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
