@@ -132,6 +132,9 @@ export class DeviceController extends CRUDController {
     await this.deviceService.mLink(devices, [document], this.decoders, { strict: true });
   }
 
+  /**
+   * Link multiple devices to multiple assets.
+   */
   async mLink (request: KuzzleRequest) {
     const { bulkData, strict } = await this.mParseRequest(request);
 
@@ -159,6 +162,8 @@ export class DeviceController extends CRUDController {
 
     return new Device(document._source, document._id);
   }
+
+
 
   private async mGetDevice (devices: DeviceBulkContent[]): Promise<Device[]> {
     const deviceIds = devices.map(doc => doc.deviceId);
