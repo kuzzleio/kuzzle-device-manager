@@ -197,7 +197,7 @@ export class DeviceController extends CRUDController {
       throw new BadRequestError(`Malformed request missing property csv, records, deviceIds`);
     }
 
-    const strict = args.strict || false;
+    const strict = request.getBoolean('strict');
 
     return { strict, bulkData };
   }
