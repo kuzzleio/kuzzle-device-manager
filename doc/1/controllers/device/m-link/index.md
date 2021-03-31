@@ -16,7 +16,7 @@ Link multiple devices to multiple assets
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/devices/_mLink[?refresh=wait_for][&strict=true|false]
+URL: http://kuzzle:7512/_/device-manager/devices/_mLink[?refresh=wait_for][&strict]
 Method: PUT
 Body:
 ```
