@@ -150,7 +150,7 @@ export class DeviceService {
 
     if (strict && detachedDevices.length > 0) {
       const ids = detachedDevices.map(device => device._id).join(',')
-      throw new BadRequestError(`Devices "${ids}" are not attached to a tenant`);
+      throw new PreconditionError(`Devices "${ids}" are not attached to a tenant`);
     }
 
     const builder = bulkData.map(data => {
