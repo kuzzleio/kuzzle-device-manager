@@ -176,7 +176,6 @@ export class DeviceController extends CRUDController {
   }
 
   private async mParseRequest (request: KuzzleRequest) {
-    console.log(request);
     const { body, args } = request.input;
 
     let bulkData: DeviceBulkContent[];
@@ -197,7 +196,7 @@ export class DeviceController extends CRUDController {
       throw new BadRequestError(`Malformed request missing property csv, records, deviceIds`);
     }
 
-    const strict = request.getBoolean('strict');
+    const strict = args.strict ? args.strict : false;
 
     return { strict, bulkData };
   }

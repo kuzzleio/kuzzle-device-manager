@@ -3,6 +3,8 @@ import {
   PluginContext,
   EmbeddedSDK,
   BadRequestError,
+  NotFoundError,
+  PreconditionError
 } from 'kuzzle';
 
 import {

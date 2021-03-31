@@ -177,7 +177,7 @@ Feature: Device Manager device controller
       | _id     | "DummyTemp_attached-ayse-unlinked" |
       | assetId | "PERFO-non-existing"               |
     Then I should receive an error matching:
-      | message | "Assets \"PERFO-non-existing\" does not exists" |
+      | message | "Assets \"PERFO-non-existing\" do not exist" |
 
   Scenario: Unlink device from an asset
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
