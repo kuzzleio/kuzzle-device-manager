@@ -129,7 +129,6 @@ Feature: Device Manager device controller
     Then I should receive an error matching:
       | message | "Device \"DummyTemp_attached-ayse-unlinked\" is not linked to an asset" |
 
-
   Scenario: Clean payloads collection
     Given I successfully execute the action "collection":"truncate" with args:
       | index      | "device-manager" |
