@@ -143,6 +143,14 @@ When linked, the device measures are copied inside the asset document.
 
 New measures received by the device will be propagated inside the asset document.
 
+## Link Multiple Devices to Multiple Assets
+
+Multiple Devices can be linked at the same time to multiple assets by using the [device-manager/device:mLink](/kuzzle-iot-platform/device-manager/1/controllers/device/m-link) API action.
+
+Once linked, each device's measures are copied inside their corresponding asset document.
+
+New measures received by the device will be propagated inside each assets documents.
+
 ## Metadata
 
 It is possible to attach metadata to the devices within the `metadata` property.

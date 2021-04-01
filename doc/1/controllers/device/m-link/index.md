@@ -1,15 +1,13 @@
 ---
 code: true
 type: page
-title: mAttach
-description: Attach multiple devices to multiple tenants index
+title: mLink
+description: Link multiple devices to multiple assets
 ---
 
-# mAttach
+# mLink
 
-Attach multiple devices to multiple tenants.
-
-The device document will be duplicated inside the tenant "devices" collection.
+Link multiple devices to multiple assets
 
 ---
 
@@ -18,7 +16,7 @@ The device document will be duplicated inside the tenant "devices" collection.
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/devices/_mAttach[?refresh=wait_for][&strict=true|false]
+URL: http://kuzzle:7512/_/device-manager/devices/_mLink[?refresh=wait_for][&strict]
 Method: PUT
 Body:
 ```
@@ -27,11 +25,11 @@ Body:
 {
     // Using JSON
     "records" [{
-        "tenantId": "tenant-kuzzle",
+        "assetId": "myAssetId",
         "deviceId": "test-id"
     }],
     // Using CSV syntax
-    "csv": "tenantId,deviceId\ntenant-kuzzle,test-id"
+    "csv": "assetId, deviceId\nmyAssetId,test-id"
 }
 ```
 
@@ -40,15 +38,15 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mAttach",
+    "action": "mLink",
     "body": {
         // Using JSON
         "records" [{
-            "tenantId": "tenant-kuzzle",
+            "assetId": "myAssetId",
             "deviceId": "test-id"
         }],
         // Using CSV syntax
-        "csv": "tenantId,deviceId\ntenant-kuzzle,test-id",
+        "csv": "assetId,deviceId\nmyAssetId,test-id",
     }
 }
 ```
@@ -57,10 +55,10 @@ Body:
 
 ## Body properties
 
-Body properties, must contain at least one of
+Body properties, must contain at least one of the following:
 
-- `records`: an array of object containing `tenantId` and `deviceId`
-- `csv`: a csv syntax compatible containing at least this two headers `tenantId,deviceId` with their corresponding values
+- `records`: an array of objects, each containing an `assetId` and a `deviceId` properties
+- `csv`: a csv syntax compatible containing at least this two headers `assetId,deviceId` with their corresponding values
 
 ---
 
@@ -78,7 +76,7 @@ Body properties, must contain at least one of
     "status": 200,
     "error": null,
     "controller": "device-manager/device",
-    "action": "mAttach",
+    "action": "mLink",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],
