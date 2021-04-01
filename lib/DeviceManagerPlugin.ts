@@ -95,9 +95,6 @@ export class DeviceManagerPlugin extends Plugin {
       },
     };
 
-    // Setting a 'shared' key for common mappings
-    this.customMappings.set('shared', this.mappings);
-
     this.api = {
       'device-manager/payload': {
         actions: {}
@@ -107,9 +104,9 @@ export class DeviceManagerPlugin extends Plugin {
     this.pipes = {
       'multi-tenancy/tenant:afterCreate': async request => {
         const { index: tenantIndex } = request.result;
-
+        const tenantKind = request.input.args.kind;
         const { collections } = await this.engineService
-          .create(tenantIndex, this.customMappings.get('water_management'));
+          .create(tenantIndex, this.customMappings.get(tenantKind));
 
         if (!Array.isArray(request.result.collections)) {
           request.result.collections = [];
@@ -120,7 +117,9 @@ export class DeviceManagerPlugin extends Plugin {
       },
       'multi-tenancy/tenant:afterDelete': async request => {
         const { index: tenantIndex } = request.result;
-
+        const tenantKind = request.input.args.kind;
+        this.customMappings.delete(tenantKind)
+        
         await this.engineService.delete(tenantIndex);
 
         return request;
@@ -166,7 +165,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     // this.mergeCustomMappings();
 
-    // Setting a 'shared' key for common mappings
+    // Setting a 'shared' key for default mappings
     this.customMappings.set('shared', this.config.collections);
 
     this.engineService = new EngineService(this.config, context);
@@ -245,9 +244,7 @@ export class DeviceManagerPlugin extends Plugin {
   setAssetsMappings (mapping: JSONObject, tenantKind: any = 'shared') {
     const assets = {
       properties: {
-        metadata: {
-          properties: { ...mapping }
-        },
+        ...mapping
       }
     }
     this.customMappings.set(tenantKind, {
@@ -262,7 +259,7 @@ export class DeviceManagerPlugin extends Plugin {
       ...this.customMappings.get(tenantKind),
       devices: {
         properties: {
-          qos: { properties: {...mapping } } 
+          ...mapping
         }
       }
     });

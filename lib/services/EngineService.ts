@@ -30,20 +30,15 @@ export class EngineService {
     }
   }
 
-  async create (index: string, tenantGroup: Object = {}) {
+  async create (index: string, tenantGroup: Object = undefined) {
     const promises = [];
-    // @todo, charger les mappings a partir d'une map qui content les group et les mapping
-    // this.customConfig
-    // ou charger dans this.defaultConfig si pas de tenantKind
-    const templates = this.config.collections;
+    // const templates = this.config.collections;
     const collections = [];
 
-    // a refaire
-    console.log(JSON.stringify(tenantGroup));
     for (const [collection, mappings] of Object.entries(tenantGroup)) {
-      console.log({index});
-      console.log({collection});
-      console.log({mappings});
+      // console.log({index});
+      // console.log({collection});
+      // console.log({mappings});
       promises.push(
         this.sdk.collection.create(index, collection, { mappings })
           .then(() => { collections.push(collection); })
