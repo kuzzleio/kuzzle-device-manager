@@ -32,12 +32,12 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  create (request: KuzzleRequest) {
+  async create (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const asset = this.getBody(request);
     const id = request.input.resource._id;
 
-    return this.as(request.context.user).document.create(
+    return await this.as(request.context.user).document.create(
       index,
       this.collection,
       asset,
@@ -54,7 +54,7 @@ export class CRUDController extends NativeController {
     const index = this.getIndex(request);
     const id = this.getId(request);
 
-    return this.as(request.context.user).document.delete(
+    return await this.as(request.context.user).document.delete(
       index,
       this.collection,
       id,
@@ -66,11 +66,11 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  search (request: KuzzleRequest) {
+  async search (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const { searchBody } = this.getSearchParams(request);
 
-    return this.as(request.context.user).document.search(
+    return await this.as(request.context.user).document.search(
       index,
       this.collection,
       searchBody,
@@ -82,12 +82,12 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  update (request: KuzzleRequest) {
+  async update (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const body = this.getBody(request);
     const id = this.getId(request);
 
-    return this.as(request.context.user).document.update(
+    return await this.as(request.context.user).document.update(
       index,
       this.collection,
       id,
