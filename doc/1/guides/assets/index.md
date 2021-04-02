@@ -82,4 +82,4 @@ By default, for each measurement type the following information are copied in ad
 }
 ```
 
-It is possible to override the [Decoder.copyToAsset](/kuzzle-iot-platform/device-manager/1/classes/decoder/copy-to-asset) method to choose what to copy into the asset.
+It is possible to override the [Decoder.copyToAsset](/official-plugins/device-manager/1/classes/decoder/copy-to-asset) method to choose what to copy into the asset.
