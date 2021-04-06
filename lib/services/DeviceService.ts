@@ -319,7 +319,6 @@ export class DeviceService {
 
     const measure = {};
 
-    console.log('device', device._source.measures);
     for (const [key, value] of Object.entries(device._source.measures)) {
       if (!asset._source.measures[key]) {
         measure[key] = value;

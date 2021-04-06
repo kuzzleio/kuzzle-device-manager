@@ -72,6 +72,10 @@ export class DeviceController extends CRUDController {
           handler: this.mUnlink.bind(this),
           http: [{ verb: 'put', path: 'device-manager/devices/_mUnlink' }]
         },
+        prunePayloads: {
+          handler: this.prunePayloads.bind(this),
+          http: [{ verb: 'delete', path: 'device-manager/devices/_prunePayloads' }]
+        },
       }
     };
   }
@@ -168,6 +172,36 @@ export class DeviceController extends CRUDController {
     const devices = await this.mGetDevice(bulkData);
 
     return this.deviceService.mUnlink(devices, { strict });
+  }
+
+  /**
+   * Clean payload collection for a time period
+   */
+  async prunePayloads (request: KuzzleRequest) {
+    const body = this.getBody(request);
+  
+    const date = new Date().setDate(new Date().getDate() - body.days || 7);
+    const filter = []
+    filter.push({
+        range: {
+          '_kuzzle_info.createdAt': {
+            lt: date
+          }
+        }
+      });
+    
+    if (body.deviceModel) {
+      filter.push({ term: { deviceModel: body.deviceModel } });
+    }
+
+    if (body.keepInvalid) {
+      filter.push({ term: { valid: true } })
+    }
+    
+    return await this.as(request.context.user).bulk.deleteByQuery(
+      this.config.adminIndex,
+      'payloads',
+      { query: { bool: { filter } } });
   }
 
   private async mGetDevice (devices: DeviceBulkContent[]): Promise<Device[]> {
