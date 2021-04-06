@@ -170,9 +170,6 @@ export class DeviceController extends CRUDController {
     return this.deviceService.mUnlink(devices, { strict });
   }
 
-
-
-
   private async mGetDevice (devices: DeviceBulkContent[]): Promise<Device[]> {
     const deviceIds = devices.map(doc => doc.deviceId);
     const result: any = await this.sdk.document.mGet(

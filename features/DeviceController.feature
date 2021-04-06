@@ -190,7 +190,7 @@ Feature: Device Manager device controller
     Then The document "tenant-ayse":"devices":"DummyTemp_attached-ayse-unlinked" content match:
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures | null |
+      | measures | {} |
 
   Scenario: Error when unlinking from an asset
     When I execute the action "device-manager/device":"unlink" with args:
@@ -209,7 +209,7 @@ Feature: Device Manager device controller
     Then The document "tenant-ayse":"devices":"DummyTemp_attached-ayse-unlinked" content match:
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures | null |
+      | measures | {} |
   
   Scenario: Unlink multiple devices from multiple assets using CSV
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
@@ -222,4 +222,4 @@ Feature: Device Manager device controller
     Then The document "tenant-ayse":"devices":"DummyTemp_attached-ayse-unlinked" content match:
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures | null |
+      | measures | {} |

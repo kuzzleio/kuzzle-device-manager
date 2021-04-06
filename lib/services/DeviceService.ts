@@ -264,9 +264,11 @@ export class DeviceService {
       const assetDocuments = [];
 
       for (const device of devicesContent) {
-        // Build Kuzzle mQueries
         deviceDocuments.push({ _id: device._id, body: { assetId: null } });
-        assetDocuments.push({ _id: device._source.assetId, body: { measures: null } });
+
+        const measures = await this.eraseAssetMeasure(document.tenantId, device);
+
+        assetDocuments.push({ _id: device._source.assetId, body: { measures } });
       }
       
       const updatedDevice = await this.writeToDatabase(
@@ -310,6 +312,21 @@ export class DeviceService {
     }
 
     return results;
+  }
+
+  private async eraseAssetMeasure (tenantId: string, device: Device) {
+    const asset = await this.sdk.document.get(tenantId, 'assets', device._source.assetId);
+
+    const measure = {};
+
+    console.log('device', device._source.measures);
+    for (const [key, value] of Object.entries(device._source.measures)) {
+      if (!asset._source.measures[key]) {
+        measure[key] = value;
+      }
+    }
+
+    return measure;
   }
 
   private async tenantExists (tenantId: string) {
