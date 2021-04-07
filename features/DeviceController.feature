@@ -179,19 +179,6 @@ Feature: Device Manager device controller
     Then I should receive an error matching:
       | message | "Assets \"PERFO-non-existing\" do not exist" |
 
-  Scenario: Unlink device from an asset
-    Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp_attached-ayse-unlinked" |
-      | assetId | "PERFO-unlinked"                   |
-    When I successfully execute the action "device-manager/device":"unlink" with args:
-      | _id | "DummyTemp_attached-ayse-unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp_attached-ayse-unlinked" content match:
-      | assetId | null |
-    Then The document "tenant-ayse":"devices":"DummyTemp_attached-ayse-unlinked" content match:
-      | assetId | null |
-    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures | {} |
-
   Scenario: Error when unlinking from an asset
     When I execute the action "device-manager/device":"unlink" with args:
       | _id | "DummyTemp_attached-ayse-unlinked" |
@@ -210,7 +197,7 @@ Feature: Device Manager device controller
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
       | measures | {} |
-  
+
   Scenario: Unlink multiple devices from multiple assets using CSV
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp_attached-ayse-unlinked" |
@@ -223,6 +210,31 @@ Feature: Device Manager device controller
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
       | measures | {} |
+
+  Scenario: Unlink device from an asset
+    And I successfully execute the action "device-manager/device":"attachTenant" with args:
+      | _id   | "DummyTemp_detached" |
+      | index | "tenant-ayse"        |
+    When I successfully execute the action "device-manager/device":"mLink" with args:
+      | body.records.0.deviceId | "DummyTemp_attached-ayse-unlinked" |
+      | body.records.0.assetId  | "PERFO-unlinked"                   |
+      | body.records.1.deviceId | "DummyTemp_detached"               |
+      | body.records.1.assetId  | "PERFO-unlinked"                   |
+    When I successfully execute the action "device-manager/device":"unlink" with args:
+      | _id | "DummyTemp_attached-ayse-unlinked" |
+    Then The document "device-manager":"devices":"DummyTemp_attached-ayse-unlinked" content match:
+      | assetId | null |
+    Then The document "tenant-ayse":"devices":"DummyTemp_attached-ayse-unlinked" content match:
+      | assetId | null |
+    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
+      | measures.position.reference   | "detached"    |
+      | measures.position.payloadUuid | "some-uuid"   |
+      | measures.position.accuracy    | 42            |
+      | measures.position.model       | "_STRING_"    |
+      | measures.position.id          | "_STRING_"    |
+      | measures.position.point.lon   | 3.876716      |
+      | measures.position.point.lat   | 43.610767     |
+      | measures.position.updatedAt   | 1610793427950 |
 
   Scenario: Clean payloads collection
     Given I successfully execute the action "collection":"truncate" with args:
@@ -247,7 +259,7 @@ Feature: Device Manager device controller
     Then I should receive a result matching:
       | total | 2 |
     And I successfully execute the action "device-manager/device":"prunePayloads" with args:
-      | body.days | 0 |
+      | body.days        | 0           |
       | body.deviceModel | "DummyTemp" |
     And I successfully execute the action "collection":"refresh" with args:
       | index      | "device-manager" |

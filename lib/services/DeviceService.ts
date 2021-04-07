@@ -236,6 +236,7 @@ export class DeviceService {
   }
 
   async mUnlink (devices: Device[], { strict }) {
+    console.log('devices', devices);
     const unlinkedDevices = devices.filter(device => !device._source.assetId);
 
     if (strict && unlinkedDevices.length > 0) {
@@ -270,7 +271,7 @@ export class DeviceService {
 
         assetDocuments.push({ _id: device._source.assetId, body: { measures } });
       }
-      
+
       const updatedDevice = await this.writeToDatabase(
         deviceDocuments,
         async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
@@ -294,11 +295,15 @@ export class DeviceService {
       const updatedAssets = await this.writeToDatabase(
         assetDocuments,
         async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+          
+          console.log(JSON.stringify(assetDocuments));
 
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
             assetDocuments);
+
+          console.log(updated);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -315,17 +320,16 @@ export class DeviceService {
   }
 
   private async eraseAssetMeasure (tenantId: string, device: Device) {
-    const asset = await this.sdk.document.get(tenantId, 'assets', device._source.assetId);
+    const { _source: { measures } } = await this.sdk.document.get(tenantId, 'assets', device._source.assetId);
 
-    const measure = {};
 
-    for (const [key, value] of Object.entries(device._source.measures)) {
-      if (!asset._source.measures[key]) {
-        measure[key] = value;
+    for (const [measureName] of Object.entries(device._source.measures)) {
+      if (measures[measureName]) {
+        delete measures[measureName];
       }
     }
 
-    return measure;
+    return measures;
   }
 
   private async tenantExists (tenantId: string) {
