@@ -8,7 +8,17 @@ module.exports = {
       {
         reference: 'detached',
         model: 'DummyTemp',
-        measures: {},
+        measures: {
+          position: {
+            updatedAt: 1610793427950,
+            payloadUuid: 'some-uuid',
+            point: {
+              lat: 43.610767,
+              lon: 3.876716,
+            },
+            accuracy: 42,
+          }
+        },
         metadata: {},
         tenantId: null,
         assetId: null

@@ -18,7 +18,7 @@ The device document will be duplicated inside the tenant "devices" collection.
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/devices/_mAttach
+URL: http://kuzzle:7512/_/device-manager/devices/_mAttach[?refresh=wait_for][&strict]
 Method: PUT
 Body:
 ```
@@ -31,7 +31,7 @@ Body:
         "deviceId": "test-id"
     }],
     // Using CSV syntax
-    "csv": "tenant,id\ntenant-kuzzle,test-id"
+    "csv": "tenantId,deviceId\ntenant-kuzzle,test-id"
 }
 ```
 
@@ -61,13 +61,13 @@ Body properties, must contain at least one of
 
 - `records`: an array of object containing `tenantId` and `deviceId`
 - `csv`: a csv syntax compatible containing at least this two headers `tenantId,deviceId` with their corresponding values
-- `strict`: a boolean value that indicate if the process should fail at first error
 
 ---
 
 ### Optional:
 
 * `refresh`: if set to `wait_for`, Kuzzle will not respond until the documents are indexed
+* `strict`: (boolean) if set, makes the process fail preemptively if at least one link cannot be applied (e.g. devices that aren't attached to a tenant, or because of non-existing assets)
 
 ---
 
