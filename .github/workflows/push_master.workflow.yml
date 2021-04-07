@@ -48,3 +48,53 @@ jobs:
           with:
             node-version: "12"
         - uses: ./.github/actions/functional-test
+
+  documentation-dead-links:
+    name: Dead links
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - uses: actions/setup-node@v1.4.4
+        with:
+          node-version: "12"
+      - uses: ./.github/actions/dead-links
+
+  documentation-production:
+    name: Deployment Doc Prod
+    runs-on: ubuntu-18.04
+    needs: [functional-tests, documentation-dead-links]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12"
+      - uses: ./.github/actions/doc-deploy
+        with:
+          REGION: us-west-2
+          S3_BUCKET: docs.kuzzle.io
+          CLOUDFRONT_ID: E3D6RP0POLCJMM
+          FRAMEWORK_BRANCH: master
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
