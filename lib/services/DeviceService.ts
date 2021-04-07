@@ -236,7 +236,6 @@ export class DeviceService {
   }
 
   async mUnlink (devices: Device[], { strict }) {
-    console.log('devices', devices);
     const unlinkedDevices = devices.filter(device => !device._source.assetId);
 
     if (strict && unlinkedDevices.length > 0) {
@@ -295,15 +294,11 @@ export class DeviceService {
       const updatedAssets = await this.writeToDatabase(
         assetDocuments,
         async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-          
-          console.log(JSON.stringify(assetDocuments));
 
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
             assetDocuments);
-
-          console.log(updated);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -325,7 +320,7 @@ export class DeviceService {
 
     for (const [measureName] of Object.entries(device._source.measures)) {
       if (measures[measureName]) {
-        delete measures[measureName];
+        measures[measureName] = undefined;
       }
     }
 
