@@ -12,7 +12,7 @@ The plugin is designed to work with several tenants, each with their own devices
 
 Each tenant has its own index with the required collections.
 
-It is possible to manage its holders with the [device-manager/engine](/kuzzle-iot-platform/device-manager/1/controllers/engine) controller.
+It is possible to manage its holders with the [device-manager/engine](/official-plugins/device-manager/1/controllers/engine) controller.
 
 ::: info
 When used with the multi-tenant plugin, the collections needed by the device-manager are automatically created when creating a new tenant with the multi-tenant plugin.
