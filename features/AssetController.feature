@@ -16,3 +16,5 @@ Feature: Device Manager asset controller
       | index | "tenant-kuzzle"         |
       | _id   | "outils_PERFO_asset-01" |
     Then The document "tenant-kuzzle":"assets":"outils_PERFO_asset-01" does not exists
+    When I successfully execute the action "device-manager/asset":"search" with args:
+      | index | "tenant-kuzzle"         |

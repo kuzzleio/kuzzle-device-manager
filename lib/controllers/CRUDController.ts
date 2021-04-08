@@ -74,7 +74,7 @@ export class CRUDController extends NativeController {
       index,
       this.collection,
       searchBody,
-      { ...request.input.args });
+      { ...request.input.args, from: searchBody.from, size: searchBody.size });
   }
 
   /**
