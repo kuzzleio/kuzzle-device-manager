@@ -145,7 +145,7 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
       | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached-ayse-unlinked"           |
+      | measures.temperature.reference   | "attached_ayse_unlinked"           |
       | measures.temperature.updatedAt   | 1610793427950                      |
       | measures.temperature.payloadUuid | "_STRING_"                         |
       | measures.temperature.degree      | 23.3                               |
@@ -161,7 +161,7 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
       | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached-ayse-unlinked"           |
+      | measures.temperature.reference   | "attached_ayse_unlinked"           |
       | measures.temperature.updatedAt   | 1610793427950                      |
       | measures.temperature.payloadUuid | "_STRING_"                         |
       | measures.temperature.degree      | 23.3                               |

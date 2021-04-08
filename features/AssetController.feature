@@ -6,7 +6,7 @@ Feature: Device Manager asset controller
       | index          | "tenant-kuzzle" |
       | body.type      | "outils"        |
       | body.model     | "PERFO"         |
-      | body.reference | "asset-01"      |
+      | body.reference | "asset_01"      |
     Then The document "tenant-kuzzle":"assets":"outils-PERFO-asset_01" exists
     When I successfully execute the action "device-manager/asset":"update" with args:
       | index                | "tenant-kuzzle"         |

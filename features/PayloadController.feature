@@ -49,7 +49,7 @@ Feature: Payloads Controller
       | location.lat  | 42.2    |
       | location.lon  | 2.42    |
       | location.accu | 2100    |
-    Then The document "device-manager":"devices":"DummyTempPosition_12345" content match:
+    Then The document "device-manager":"devices":"DummyTempPosition-12345" content match:
       | reference                        | "12345"             |
       | model                            | "DummyTempPosition" |
       | measures.temperature.updatedAt   | "_DATE_NOW_"        |
