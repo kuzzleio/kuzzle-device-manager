@@ -32,12 +32,12 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  async create (request: KuzzleRequest) {
+  create (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const asset = this.getBody(request);
     const id = request.input.resource._id;
 
-    return await this.as(request.context.user).document.create(
+    return this.as(request.context.user).document.create(
       index,
       this.collection,
       asset,
@@ -50,11 +50,11 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  async delete (request: KuzzleRequest) {
+  delete (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const id = this.getId(request);
 
-    return await this.as(request.context.user).document.delete(
+    return this.as(request.context.user).document.delete(
       index,
       this.collection,
       id,
@@ -66,15 +66,21 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  async search (request: KuzzleRequest) {
+  search (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const { searchBody } = this.getSearchParams(request);
 
-    return await this.as(request.context.user).document.search(
-      index,
-      this.collection,
-      searchBody,
-      { ...request.input.args, from: searchBody.from, size: searchBody.size });
+    return this.as(request.context.user).query(
+      {
+        controller: 'document',
+        action: 'search',
+        index,
+        collection: this.collection,
+        body: searchBody,
+        from: searchBody.from,
+        size: searchBody.size
+      }
+    );
   }
 
   /**
@@ -82,17 +88,16 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  async update (request: KuzzleRequest) {
+  update (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const body = this.getBody(request);
     const id = this.getId(request);
 
-    return await this.as(request.context.user).document.update(
+    return this.as(request.context.user).document.update(
       index,
       this.collection,
       id,
       body,
       { ...request.input.args });
   }
-
 }
