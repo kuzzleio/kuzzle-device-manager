@@ -90,7 +90,7 @@ export class DeviceController extends CRUDController {
     const document = { tenantId: tenantId, deviceId: deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mAttach(devices, [document], { strict: true });
+    await this.deviceService.mAttach(devices, [document], { strict: true, options:  { ...request.input.args } });
   }
 
   /**
@@ -101,7 +101,7 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mAttach(devices, bulkData, { strict });
+    return this.deviceService.mAttach(devices, bulkData, { strict, options:  { ...request.input.args } });
   }
 
   /**
@@ -113,7 +113,7 @@ export class DeviceController extends CRUDController {
     const document: DeviceBulkContent = { deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mDetach(devices, [document], { strict: true });
+    await this.deviceService.mDetach(devices, [document], { strict: true, options:  { ...request.input.args } });
   }
   
   /**
@@ -124,7 +124,7 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mDetach(devices, bulkData, { strict });
+    return this.deviceService.mDetach(devices, bulkData, { strict, options:  { ...request.input.args } });
   }
 
   /**
@@ -137,7 +137,7 @@ export class DeviceController extends CRUDController {
     const document: DeviceBulkContent = { deviceId, assetId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mLink(devices, [document], this.decoders, { strict: true });
+    await this.deviceService.mLink(devices, [document], this.decoders, { strict: true, options:  { ...request.input.args } });
   }
 
   /**
@@ -148,7 +148,7 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mLink(devices, bulkData, this.decoders, { strict });
+    return this.deviceService.mLink(devices, bulkData, this.decoders, { strict, options:  { ...request.input.args } });
   }
 
   /**
@@ -160,7 +160,7 @@ export class DeviceController extends CRUDController {
     const document: DeviceBulkContent = { deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mUnlink(devices, { strict: true });
+    await this.deviceService.mUnlink(devices, { strict: true, options:  { ...request.input.args } });
   }
 
   /**
