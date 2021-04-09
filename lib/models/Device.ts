@@ -7,7 +7,7 @@ export class Device {
   _source: DeviceContent;
 
   constructor (content: DeviceContent, _id?: string) {
-    this._id = _id || `${content.model}_${content.reference}`;
+    this._id = _id || `${content.model}-${content.reference}`;
 
     this._source = {
       qos: {},
