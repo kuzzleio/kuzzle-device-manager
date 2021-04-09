@@ -30,7 +30,7 @@ export class DeviceService {
     this.context = context;
   }
 
-  async mAttach (devices: Device[], bulkData: DeviceBulkContent[], { strict }): Promise<DeviceMAttachementContent> {
+  async mAttach (devices: Device[], bulkData: DeviceBulkContent[], { strict, options }): Promise<DeviceMAttachementContent> {
     const attachedDevices = devices.filter(device => device._source.tenantId);
 
     if (strict && attachedDevices.length > 0) {
@@ -69,7 +69,8 @@ export class DeviceService {
           await this.sdk.document.mCreate(
             document.tenantId,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
 
             return {
               successes: results.successes.concat(updated.successes),
@@ -84,7 +85,7 @@ export class DeviceService {
     return results;
   }
 
-  async mDetach (devices: Device[], bulkData: DeviceBulkContent[], { strict }) {
+  async mDetach (devices: Device[], bulkData: DeviceBulkContent[], { strict, options }) {
     const detachedDevices = devices.filter(device => !device._source.tenantId || device._source.tenantId === null);
 
     if (strict && detachedDevices.length > 0) {
@@ -132,7 +133,8 @@ export class DeviceService {
           await this.sdk.document.mDelete(
             document.tenantId,
             'devices',
-            deviceDocuments.map(device => device._id));
+            deviceDocuments.map(device => device._id),
+            options);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -147,7 +149,7 @@ export class DeviceService {
     return results;
   }
 
-  async mLink (devices: Device[], bulkData: DeviceBulkContent[], decoders: Map<string, Decoder>, { strict }) {
+  async mLink (devices: Device[], bulkData: DeviceBulkContent[], decoders: Map<string, Decoder>, { strict, options }) {
     const detachedDevices = devices.filter(device => !device._source.tenantId || device._source.tenantId === null);
 
     if (strict && detachedDevices.length > 0) {
@@ -199,12 +201,14 @@ export class DeviceService {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
       
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -219,7 +223,8 @@ export class DeviceService {
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
-            assetDocuments);
+            assetDocuments,
+            options);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -235,7 +240,7 @@ export class DeviceService {
     return results;
   }
 
-  async mUnlink (devices: Device[], { strict }) {
+  async mUnlink (devices: Device[], { strict, options }) {
     const unlinkedDevices = devices.filter(device => !device._source.assetId);
 
     if (strict && unlinkedDevices.length > 0) {
@@ -278,12 +283,14 @@ export class DeviceService {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
       
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -298,7 +305,8 @@ export class DeviceService {
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
-            assetDocuments);
+            assetDocuments,
+            options);
 
           return {
             successes: results.successes.concat(updated.successes),
