@@ -64,7 +64,8 @@ export class DeviceService {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
 
           await this.sdk.document.mCreate(
             document.tenantId,
@@ -128,7 +129,8 @@ export class DeviceService {
         const updated = await this.sdk.document.mUpdate(
           this.config.adminIndex,
           'devices',
-          deviceDocuments);
+          deviceDocuments,
+          options);
 
           await this.sdk.document.mDelete(
             document.tenantId,
