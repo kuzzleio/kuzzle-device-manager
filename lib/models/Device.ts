@@ -12,14 +12,14 @@ export class Device {
     this._source = {
       qos: {},
       metadata: {},
-      ...content,
+      ...content
     };
   }
 
   serialize (): JSONObject {
     return {
       _id: this._id,
-      _source: this._source,
+      _source: this._source
     };
   }
 }
@@ -30,14 +30,14 @@ export const devicesMappings = {
     reference: {
       type: 'keyword',
       fields: {
-        text: { type: 'text' },
-      },
+        text: { type: 'text' }
+      }
     },
     model: {
       type: 'keyword',
       fields: {
-        text: { type: 'text' },
-      },
+        text: { type: 'text' }
+      }
     },
     measures: {
       properties: {
@@ -48,12 +48,12 @@ export const devicesMappings = {
             payloadUuid: {
               type: 'keyword',
               fields: {
-                text: { type: 'text' },
-              },
+                text: { type: 'text' }
+              }
             },
             // temperature
-            degree: { type: 'float' },
-          },
+            degree: { type: 'float' }
+          }
         },
         position: {
           properties: {
@@ -62,14 +62,14 @@ export const devicesMappings = {
             payloadUuid: {
               type: 'keyword',
               fields: {
-                text: { type: 'text' },
-              },
+                text: { type: 'text' }
+              }
             },
             // position
             point: { type: 'geo_point' },
             altitude: { type: 'float' },
             accuracy: { type: 'integer' },
-          },
+          }
         },
         movement: {
           properties: {
@@ -77,15 +77,15 @@ export const devicesMappings = {
             payloadUuid: {
               type: 'keyword',
               fields: {
-                text: { type: 'text' },
-              },
+                text: { type: 'text' }
+              }
             },
             updatedAt: { type: 'date' },
             // movement state
             moving: { type: 'boolean' },
-          },
-        },
-      },
+          }
+        }
+      }
     },
     qos: {
       dynamic: 'false',
@@ -98,14 +98,14 @@ export const devicesMappings = {
     assetId: {
       type: 'keyword',
       fields: {
-        text: { type: 'text' },
-      },
+        text: { type: 'text' }
+      }
     },
     tenantId: {
       type: 'keyword',
       fields: {
-        text: { type: 'text' },
-      },
-    },
-  },
+        text: { type: 'text' }
+      }
+    }
+  }
 };
