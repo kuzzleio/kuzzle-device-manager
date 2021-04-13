@@ -33,38 +33,6 @@ export class DeviceManagerPlugin extends Plugin {
   }
 
   /**
-   * Define custom mappings for "devices" and "assets" colections
-   */
-  public mappings: {
-    /**
-     * Define custom mappings for the "devices" collection.
-     */
-    devices: {
-      /**
-       * Define custom mappings for the "devices.metadata" property
-       */
-      metadata: JSONObject;
-      /**
-       * Define custom mappings for the "devices.qos" property
-       */
-      qos: JSONObject;
-      /**
-       * Define custom mappings for the "devices.measures" property
-       */
-      measures: JSONObject;
-    },
-    /**
-     * Define custom mappings for the "assets" collection.
-     */
-    assets: {
-      /**
-       * Define custom mappings for the "assets.metadata" property
-       */
-      metadata: JSONObject;
-      },
-  }
-
-  /**
    * List of registered decoders.
    * Map<model, decoder>
    */
@@ -74,7 +42,17 @@ export class DeviceManagerPlugin extends Plugin {
    * List of custom mappings with tenantGroup as key
    * Map<tenantGroup, mappings>
    */
-  private customMappings = new Map<string, Object>();
+  public mappings = new Map<string, JSONObject>();
+
+  public devices = {
+    registerQos: Function(),
+    registerMeasures: Function(),
+    registerMetadata: Function()
+  };
+
+  public assets = {
+    registerMetadata: Function()
+  };
 
   /**
    * Constructor
@@ -84,17 +62,6 @@ export class DeviceManagerPlugin extends Plugin {
       kuzzleVersion: '>=2.10.0 <3'
     });
 
-    this.mappings = {
-      devices: {
-        metadata: {},
-        qos: {},
-        measures: {},
-      },
-      assets: {
-        metadata: {},
-      },
-    };
-
     this.api = {
       'device-manager/payload': {
         actions: {}
@@ -103,10 +70,12 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.pipes = {
       'multi-tenancy/tenant:afterCreate': async request => {
+        console.log('-----------AFTER CREATE-----------');
         const { index: tenantIndex } = request.result;
-        const tenantKind = request.input.args.kind;
+        const tenantGroup = request.input.args.group;
+        console.log({tenantGroup});
         const { collections } = await this.engineService
-          .create(tenantIndex, this.customMappings.get(tenantKind));
+          .create(tenantIndex, this.mappings.get(tenantGroup));
 
         if (!Array.isArray(request.result.collections)) {
           request.result.collections = [];
@@ -117,13 +86,94 @@ export class DeviceManagerPlugin extends Plugin {
       },
       'multi-tenancy/tenant:afterDelete': async request => {
         const { index: tenantIndex } = request.result;
-        const tenantKind = request.input.args.kind;
-        this.customMappings.delete(tenantKind)
+        const tenantGroup = request.input.args.group;
+        this.mappings.delete(tenantGroup)
         
         await this.engineService.delete(tenantIndex);
 
         return request;
       }
+    };
+
+    // Setting a 'shared' key for common mappings
+    this.mappings.set('shared', {
+      assets: assetsMappings,
+      devices: devicesMappings
+    });
+
+    /**
+     * Define custom mappings for "devices" collections
+     */
+    this.devices.registerQos = (mapping: JSONObject, tenantGroup: any = 'shared') => {
+      this.mappings.set(tenantGroup, {
+        ...this.mappings.get(tenantGroup),
+        devices: {
+          dynamic: 'strict',
+          properties: {
+            qos: {
+              properties: {
+                ...mapping
+              }
+            }
+          }
+        }
+      });
+    }
+
+    this.devices.registerMetadata = (mapping: JSONObject, tenantGroup: any = 'shared') => {
+      this.mappings.set(tenantGroup, {
+        ...this.mappings.get(tenantGroup),
+        devices: {
+          dynamic: 'strict',
+          properties: {
+            metadata: {
+              properties: {
+                ...mapping
+              }
+            }
+          }
+        }
+      });
+    }
+
+    this.devices.registerMeasures = (mapping: JSONObject, tenantGroup: any = 'shared') => {
+      this.mappings.set(tenantGroup, {
+        ...this.mappings.get(tenantGroup),
+        devices: {
+          dynamic: 'strict',
+          properties: {
+            measures: {
+              properties: {
+                ...mapping
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * Define custom mappings for "assets" collections
+     */
+    this.assets.registerMetadata = (mapping: JSONObject, tenantGroup: any = 'shared') => {
+      /**
+       * Define custom mappings for the "metadata" property
+       */
+      const assets = {
+        dynamic: 'strict',
+        properties: {
+          metadata: {
+            properties: {
+              ...mapping
+            }
+          }
+        }
+      }
+      this.mappings.set(tenantGroup, {
+        ...this.mappings.get(tenantGroup),
+        assets,
+        'asset-history': assets
+      });    
     };
 
     this.defaultConfig = {
@@ -150,7 +200,7 @@ export class DeviceManagerPlugin extends Plugin {
       },
       collections: {
         assets: assetsMappings,
-        devices: devicesMappings,
+        devices: devicesMappings
       }
     };
   }
@@ -160,13 +210,11 @@ export class DeviceManagerPlugin extends Plugin {
    */
   async init (config: JSONObject, context: PluginContext) {
     this.config = { ...this.defaultConfig, ...config };
-
+    
+    //Store common mappings in the config for EngineService
+    this.config.collections = this.mappings.get('shared');
+    
     this.context = context;
-
-    // this.mergeCustomMappings();
-
-    // Setting a 'shared' key for default mappings
-    this.customMappings.set('shared', this.config.collections);
 
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
@@ -184,6 +232,8 @@ export class DeviceManagerPlugin extends Plugin {
     for (const decoder of this.decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
     }
+
+    console.log(JSON.stringify(this.mappings.get('shared').devices));
   }
 
   /**
@@ -241,85 +291,85 @@ export class DeviceManagerPlugin extends Plugin {
     );
   }
 
-  setAssetsMappings (mapping: JSONObject, tenantKind: any = 'shared') {
-    const assets = {
-      properties: {
-        ...mapping
-      }
-    }
-    this.customMappings.set(tenantKind, {
-      ...this.customMappings.get(tenantKind),
-      assets,
-      'asset-history': assets
-    });    
-  }
+  // setAssetsMappings (mapping: JSONObject, tenantGroup: any = 'shared') {
+  //   const assets = {
+  //     properties: {
+  //       ...mapping
+  //     }
+  //   }
+  //   this.mappings.set(tenantGroup, {
+  //     ...this.mappings.get(tenantGroup),
+  //     assets,
+  //     'asset-history': assets
+  //   });    
+  // }
 
-  setDevicesMappings (mapping: JSONObject, tenantKind: any = 'shared') {
-    this.customMappings.set(tenantKind, {
-      ...this.customMappings.get(tenantKind),
-      devices: {
-        properties: {
-          ...mapping
-        }
-      }
-    });
-  }
+  // setDevicesMappings (mapping: JSONObject, tenantGroup: any = 'shared') {
+  //   this.mappings.set(tenantGroup, {
+  //     ...this.mappings.get(tenantGroup),
+  //     devices: {
+  //       properties: {
+  //         ...mapping
+  //       }
+  //     }
+  //   });
+  // }
 
-  private mergeCustomMappings (tenantKind: any = undefined) {
+  // private mergemappings (tenantGroup: any = undefined) {
 
-    // Merge sensors qos custom mappings
-    this.config.collections.devices.properties.qos.properties = {
-      ...this.config.collections.devices.properties.qos.properties,
-      ...this.mappings.devices.qos,
-    };
+  //   // Merge sensors qos custom mappings
+  //   this.config.collections.devices.properties.qos.properties = {
+  //     ...this.config.collections.devices.properties.qos.properties,
+  //     ...this.mappings.devices.qos,
+  //   };
 
-    // Merge devices metadata custom mappings
-    this.config.collections.devices.properties.metadata.properties = {
-      ...this.config.collections.devices.properties.metadata.properties,
-      ...this.mappings.devices.metadata,
-    };
+  //   // Merge devices metadata custom mappings
+  //   this.config.collections.devices.properties.metadata.properties = {
+  //     ...this.config.collections.devices.properties.metadata.properties,
+  //     ...this.mappings.devices.metadata,
+  //   };
 
-    // Merge devices measures custom mappings
-    this.config.collections.devices.properties.measures.properties = {
-      ...this.config.collections.devices.properties.measures.properties,
-      ...this.mappings.devices.measures,
-    };
+  //   // Merge devices measures custom mappings
+  //   this.config.collections.devices.properties.measures.properties = {
+  //     ...this.config.collections.devices.properties.measures.properties,
+  //     ...this.mappings.devices.measures,
+  //   };
 
-    // Merge assets metadata custom mappings
-    this.config.collections.assets.properties.metadata.properties = {
-      ...this.config.collections.assets.properties.metadata.properties,
-      ...this.mappings.assets.metadata,
-    };
+  //   // Merge assets metadata custom mappings
+  //   this.config.collections.assets.properties.metadata.properties = {
+  //     ...this.config.collections.assets.properties.metadata.properties,
+  //     ...this.mappings.assets.metadata,
+  //   };
 
-    // Use "devices" mappings to generate "assets" collection mappings
-    // for the "measures" property
-    const deviceProperties = {
-      id: { type: 'keyword' },
-      reference: { type: 'keyword' },
-      model: { type: 'keyword' },
-    };
+  //   // Use "devices" mappings to generate "assets" collection mappings
+  //   // for the "measures" property
+  //   const deviceProperties = {
+  //     id: { type: 'keyword' },
+  //     reference: { type: 'keyword' },
+  //     model: { type: 'keyword' },
+  //   };
 
-    for (const [measureType, definition] of Object.entries(this.config.collections.devices.properties.measures.properties) as any) {
-      this.config.collections.assets.properties.measures.properties[measureType] = {
-        dynamic: 'false',
-        properties: {
-          ...deviceProperties,
-          ...definition.properties,
-          qos: {
-            properties: this.config.collections.devices.properties.qos.properties
-          }
-        }
-      };
-    }
+  //   for (const [measureType, definition] of Object.entries(this.config.collections.devices.properties.measures.properties) as any) {
+  //     this.config.collections.assets.properties.measures.properties[measureType] = {
+  //       dynamic: 'false',
+  //       properties: {
+  //         ...deviceProperties,
+  //         ...definition.properties,
+  //         qos: {
+  //           properties: this.config.collections.devices.properties.qos.properties
+  //         }
+  //       }
+  //     };
+  //   }
 
     // Merge custom mappings from decoders for payloads collection
-    for (const decoder of this.decoders.values()) {
-      this.config.adminCollections.payloads.properties.payload.properties = {
-        ...this.config.adminCollections.payloads.properties.payload.properties,
-        ...decoder.payloadsMappings,
-      };
-    }
-  }
+  //   for (const decoder of this.decoders.values()) {
+  //     this.config.adminCollections.payloads.properties.payload.properties = {
+  //       ...this.config.adminCollections.payloads.properties.payload.properties,
+  //       ...decoder.payloadsMappings,
+  //     };
+  //   }
+  // }
 }
 
 function kebabCase (string) {
