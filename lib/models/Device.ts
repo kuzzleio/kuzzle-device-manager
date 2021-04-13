@@ -6,7 +6,7 @@ export class Device {
   _id: string;
   _source: DeviceContent;
 
-  constructor (content: DeviceContent, _id?: string) {
+  constructor(content: DeviceContent, _id?: string) {
     this._id = _id || `${content.model}-${content.reference}`;
 
     this._source = {
@@ -16,10 +16,10 @@ export class Device {
     };
   }
 
-  serialize (): JSONObject {
+  serialize(): JSONObject {
     return {
       _id: this._id,
-      _source: this._source
+      _source: this._source,
     };
   }
 }
@@ -27,50 +27,85 @@ export class Device {
 export const devicesMappings = {
   dynamic: 'strict',
   properties: {
-    reference: { type: 'keyword' },
-    model: { type: 'keyword' },
+    reference: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' },
+      },
+    },
+    model: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' },
+      },
+    },
     measures: {
       properties: {
         temperature: {
           properties: {
             // common
             updatedAt: { type: 'date' },
-            payloadUuid: { type: 'keyword' },
+            payloadUuid: {
+              type: 'keyword',
+              fields: {
+                text: { type: 'text' },
+              },
+            },
             // temperature
             degree: { type: 'float' },
-          }
+          },
         },
         position: {
           properties: {
             // common
             updatedAt: { type: 'date' },
-            payloadUuid: { type: 'keyword' },
+            payloadUuid: {
+              type: 'keyword',
+              fields: {
+                text: { type: 'text' },
+              },
+            },
             // position
             point: { type: 'geo_point' },
             altitude: { type: 'float' },
             accuracy: { type: 'integer' },
-          }
+          },
         },
         movement: {
           properties: {
             // common
-            payloadUuid: { type: 'keyword' },
+            payloadUuid: {
+              type: 'keyword',
+              fields: {
+                text: { type: 'text' },
+              },
+            },
             updatedAt: { type: 'date' },
             // movement state
             moving: { type: 'boolean' },
-          }
+          },
         },
-      }
+      },
     },
     qos: {
       dynamic: 'false',
-      properties: {}
+      properties: {},
     },
     metadata: {
       dynamic: 'false',
-      properties: {}
+      properties: {},
     },
-    assetId: { type: 'keyword' },
-    tenantId: { type: 'keyword' }
-  }
+    assetId: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' },
+      },
+    },
+    tenantId: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' },
+      },
+    },
+  },
 };
