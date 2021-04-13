@@ -59,7 +59,7 @@ export class DeviceManagerPlugin extends Plugin {
    */
   constructor() {
     super({
-      kuzzleVersion: '>=2.10.0 <3'
+      kuzzleVersion: '>=2.11.1 <3'
     });
 
     this.api = {
