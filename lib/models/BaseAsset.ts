@@ -6,13 +6,13 @@ export class BaseAsset {
   _id: string;
   _source: BaseAssetContent;
 
-  constructor(content: BaseAssetContent, _id?: string) {
+  constructor (content: BaseAssetContent, _id?: string) {
     this._id = _id || `${content.type}-${content.model}-${content.reference}`;
 
     this._source = content;
   }
 
-  serialize(): JSONObject {
+  serialize (): JSONObject {
     return {
       _id: this._id,
       _source: this._source,

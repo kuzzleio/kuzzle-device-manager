@@ -6,7 +6,7 @@ export class Device {
   _id: string;
   _source: DeviceContent;
 
-  constructor(content: DeviceContent, _id?: string) {
+  constructor (content: DeviceContent, _id?: string) {
     this._id = _id || `${content.model}-${content.reference}`;
 
     this._source = {
@@ -16,7 +16,7 @@ export class Device {
     };
   }
 
-  serialize(): JSONObject {
+  serialize (): JSONObject {
     return {
       _id: this._id,
       _source: this._source,
