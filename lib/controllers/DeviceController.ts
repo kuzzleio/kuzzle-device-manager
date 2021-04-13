@@ -60,9 +60,21 @@ export class DeviceController extends CRUDController {
           handler: this.linkAsset.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_link/:assetId' }]
         },
+        mLink: {
+          handler: this.mLink.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/devices/_mLink' }]
+        },
         unlink: {
           handler: this.unlink.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/:index/devices/:_id/_unlink' }]
+        },
+        mUnlink: {
+          handler: this.mUnlink.bind(this),
+          http: [{ verb: 'put', path: 'device-manager/devices/_mUnlink' }]
+        },
+        prunePayloads: {
+          handler: this.prunePayloads.bind(this),
+          http: [{ verb: 'delete', path: 'device-manager/devices/_prunePayloads' }]
         },
       }
     };
@@ -78,7 +90,7 @@ export class DeviceController extends CRUDController {
     const document = { tenantId: tenantId, deviceId: deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mAttach(devices, [document], { strict: true });
+    await this.deviceService.mAttach(devices, [document], { strict: true, options:  { ...request.input.args } });
   }
 
   /**
@@ -89,7 +101,7 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mAttach(devices, bulkData, { strict });
+    return this.deviceService.mAttach(devices, bulkData, { strict, options:  { ...request.input.args } });
   }
 
   /**
@@ -101,7 +113,7 @@ export class DeviceController extends CRUDController {
     const document: DeviceBulkContent = { deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mDetach(devices, [document], { strict: true });
+    await this.deviceService.mDetach(devices, [document], { strict: true, options:  { ...request.input.args } });
   }
   
   /**
@@ -112,39 +124,84 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mDetach(devices, bulkData, { strict });
+    return this.deviceService.mDetach(devices, bulkData, { strict, options:  { ...request.input.args } });
   }
 
   /**
    * Link a device to an asset.
    */
-  async linkAsset(request: KuzzleRequest) {
+  async linkAsset (request: KuzzleRequest) {
     const assetId = this.getString(request, 'assetId');
     const deviceId = this.getId(request);
 
-    const device = await this.getDevice(deviceId);
+    const document: DeviceBulkContent = { deviceId, assetId };
+    const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.linkAsset(device, assetId, this.decoders);
+    await this.deviceService.mLink(devices, [document], this.decoders, { strict: true, options:  { ...request.input.args } });
+  }
+
+  /**
+   * Link multiple devices to multiple assets.
+   */
+  async mLink (request: KuzzleRequest) {
+    const { bulkData, strict } = await this.mParseRequest(request);
+
+    const devices = await this.mGetDevice(bulkData);
+
+    return this.deviceService.mLink(devices, bulkData, this.decoders, { strict, options:  { ...request.input.args } });
   }
 
   /**
    * Unlink a device from an asset.
    */
-  async unlink (request: KuzzleRequest) {
+   async unlink (request: KuzzleRequest) {
     const deviceId = this.getId(request);
 
-    const device = await this.getDevice(deviceId);
+    const document: DeviceBulkContent = { deviceId };
+    const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.unlink(device);
+    await this.deviceService.mUnlink(devices, { strict: true, options:  { ...request.input.args } });
   }
 
-  private async getDevice (deviceId: string): Promise<Device> {
-    const document: any = await this.sdk.document.get(
-      this.config.adminIndex,
-      'devices',
-      deviceId);
+  /**
+   * Unlink multiple device from multiple assets.
+   */
+  async mUnlink (request: KuzzleRequest) {
+    const { bulkData, strict } = await this.mParseRequest(request);
 
-    return new Device(document._source, document._id);
+    const devices = await this.mGetDevice(bulkData);
+
+    return this.deviceService.mUnlink(devices, { strict });
+  }
+
+  /**
+   * Clean payload collection for a time period
+   */
+  async prunePayloads (request: KuzzleRequest) {
+    const body = this.getBody(request);
+  
+    const date = new Date().setDate(new Date().getDate() - body.days || 7);
+    const filter = []
+    filter.push({
+        range: {
+          '_kuzzle_info.createdAt': {
+            lt: date
+          }
+        }
+      });
+    
+    if (body.deviceModel) {
+      filter.push({ term: { deviceModel: body.deviceModel } });
+    }
+
+    if (body.keepInvalid) {
+      filter.push({ term: { valid: true } })
+    }
+    
+    return await this.as(request.context.user).bulk.deleteByQuery(
+      this.config.adminIndex,
+      'payloads',
+      { query: { bool: { filter } } });
   }
 
   private async mGetDevice (devices: DeviceBulkContent[]): Promise<Device[]> {
@@ -158,7 +215,7 @@ export class DeviceController extends CRUDController {
   }
 
   private async mParseRequest (request: KuzzleRequest) {
-    const { body } = request.input;
+    const { body, args } = request.input;
 
     let bulkData: DeviceBulkContent[];
 
@@ -166,7 +223,7 @@ export class DeviceController extends CRUDController {
       const lines = await csv({ delimiter: 'auto' })
         .fromString(body.csv);
 
-      bulkData = lines.map(line => ({ tenantId: line.tenantId, deviceId: line.deviceId }));
+      bulkData = lines.map(line => ({ tenantId: line.tenantId, deviceId: line.deviceId, assetId: line.assetId }));
     }
     else if (body.records) {
       bulkData = body.records;
@@ -178,7 +235,7 @@ export class DeviceController extends CRUDController {
       throw new BadRequestError(`Malformed request missing property csv, records, deviceIds`);
     }
 
-    const strict = body.strict || false;
+    const strict = args.strict ? args.strict : false;
 
     return { strict, bulkData };
   }

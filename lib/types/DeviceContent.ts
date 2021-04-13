@@ -55,11 +55,13 @@ export type DeviceContent = {
 export type DeviceBulkContent = {
   tenantId?: string;
   deviceId: string;
+  assetId?: string;
 }
 
 export type DeviceBulkBuildedContent = {
   tenantId: string;
   deviceIds: string[];
+  assetIds: string[];
 }
 
 export type DeviceMAttachementContent = {

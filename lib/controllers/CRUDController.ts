@@ -32,7 +32,7 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  create (request: KuzzleRequest) {
+  async create (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const asset = this.getBody(request);
     const id = request.input.resource._id;
@@ -66,15 +66,20 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  search (request: KuzzleRequest) {
+  async search (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const { searchBody } = this.getSearchParams(request);
 
-    return this.as(request.context.user).document.search(
-      index,
-      this.collection,
-      searchBody,
-      { ...request.input.args });
+    return this.as(request.context.user).query(
+      {
+        controller: 'document',
+        action: 'search',
+        index,
+        collection: this.collection,
+        body: searchBody,
+        ...request.input.args
+      }
+    );
   }
 
   /**
@@ -82,7 +87,7 @@ export class CRUDController extends NativeController {
    *
    * @param request
    */
-  update (request: KuzzleRequest) {
+  async update (request: KuzzleRequest) {
     const index = this.getIndex(request);
     const body = this.getBody(request);
     const id = this.getId(request);
@@ -94,5 +99,4 @@ export class CRUDController extends NativeController {
       body,
       { ...request.input.args });
   }
-
 }
