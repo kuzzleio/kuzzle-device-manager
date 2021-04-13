@@ -172,7 +172,7 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mUnlink(devices, { strict });
+    return this.deviceService.mUnlink(devices, { strict, options:  { ...request.input.args } });
   }
 
   /**
