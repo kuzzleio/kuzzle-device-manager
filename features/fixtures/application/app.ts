@@ -10,27 +10,27 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
-deviceManager.mappings.devices.measures = {
-  humidity: {
-    properties: {
-      updatedAt: { type: 'date' },
-      payloadUuid: { type: 'keyword' },
-      value: { type: 'float' },
-    }
-  }
-};
+// deviceManager.mappings.devices.measures = {
+//   humidity: {
+//     properties: {
+//       updatedAt: { type: 'date' },
+//       payloadUuid: { type: 'keyword' },
+//       value: { type: 'float' },
+//     }
+//   }
+// };
 
-deviceManager.mappings.devices.qos = {
-  battery: { type: 'integer' }
-};
+// deviceManager.mappings.devices.qos = {
+//   battery: { type: 'integer' }
+// };
 
-deviceManager.mappings.devices.metadata = {
-  group: { type: 'keyword' }
-};
+// deviceManager.mappings.devices.metadata = {
+//   group: { type: 'keyword' }
+// };
 
-deviceManager.mappings.assets.metadata = {
-  warranty: { type: 'keyword' }
-};
+// deviceManager.mappings.assets.metadata = {
+//   warranty: { type: 'keyword' }
+// };
 
 app.plugin.use(deviceManager);
 

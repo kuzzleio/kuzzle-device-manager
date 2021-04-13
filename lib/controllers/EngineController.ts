@@ -52,7 +52,9 @@ export class EngineController {
 
   async create (request: KuzzleRequest) {
     const index = request.getIndex();
-    const { collections } = await this.engineService.create(index);
+    const tenantGroup = request.input.args.group;
+    console.log('--------ENGINE CONTROLLER CREATE CALL------');
+    const { collections } = await this.engineService.create(index, tenantGroup);
 
     return { index, collections };
   }

@@ -16,7 +16,6 @@ import {
 import { EngineService, PayloadService, DeviceService } from './services';
 import { Decoder } from './decoders';
 import { devicesMappings, assetsMappings } from './models';
-
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
 
@@ -232,8 +231,6 @@ export class DeviceManagerPlugin extends Plugin {
     for (const decoder of this.decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
     }
-
-    console.log(JSON.stringify(this.mappings.get('shared').devices));
   }
 
   /**
