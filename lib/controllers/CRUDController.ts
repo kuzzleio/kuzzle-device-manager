@@ -5,19 +5,13 @@ import {
   ControllerDefinition,
 } from 'kuzzle';
 
-import { NativeController } from 'kuzzle/lib/api/controllers/baseController.js'
-
-export class CRUDController extends NativeController {
-  [key: string]: any;
-
+export class CRUDController {
   protected context: PluginContext;
   protected config: JSONObject;
   private collection: string;
   public definition: ControllerDefinition;
 
   constructor (config: JSONObject, context: PluginContext, collection: string) {
-    super();
-
     this.config = config;
     this.context = context;
     this.collection = collection;
@@ -33,8 +27,8 @@ export class CRUDController extends NativeController {
    * @param request
    */
   async create (request: KuzzleRequest) {
-    const index = this.getIndex(request);
-    const asset = this.getBody(request);
+    const index = request.getIndex();
+    const asset = request.getBody();
     const id = request.input.resource._id;
 
     return this.as(request.context.user).document.create(
@@ -51,8 +45,8 @@ export class CRUDController extends NativeController {
    * @param request
    */
   async delete (request: KuzzleRequest) {
-    const index = this.getIndex(request);
-    const id = this.getId(request);
+    const index = request.getIndex();
+    const id = request.getId();
 
     return this.as(request.context.user).document.delete(
       index,
@@ -67,8 +61,8 @@ export class CRUDController extends NativeController {
    * @param request
    */
   async search (request: KuzzleRequest) {
-    const index = this.getIndex(request);
-    const { searchBody } = this.getSearchParams(request);
+    const index = request.getIndex();
+    const { searchBody } = request.getSearchParams();
 
     return this.as(request.context.user).query(
       {
@@ -88,9 +82,9 @@ export class CRUDController extends NativeController {
    * @param request
    */
   async update (request: KuzzleRequest) {
-    const index = this.getIndex(request);
-    const body = this.getBody(request);
-    const id = this.getId(request);
+    const index = request.getIndex();
+    const body = request.getBody();
+    const id = request.getId();
 
     return this.as(request.context.user).document.update(
       index,

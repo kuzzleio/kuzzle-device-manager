@@ -15,6 +15,7 @@ import { DeviceService } from '../services';
 
 export class DeviceController extends CRUDController {
   private decoders: Map<string, Decoder>;
+  private deviceService: DeviceService;
 
   get sdk(): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -84,8 +85,8 @@ export class DeviceController extends CRUDController {
    * Attach a device to a tenant
    */
   async attachTenant (request: KuzzleRequest) {
-    const tenantId = this.getIndex(request);
-    const deviceId = this.getId(request);
+    const tenantId = request.getIndex();
+    const deviceId = request.getId();
 
     const document = { tenantId: tenantId, deviceId: deviceId };
     const devices = await this.mGetDevice([document]);
@@ -108,14 +109,14 @@ export class DeviceController extends CRUDController {
    * Unattach a device from it's tenant
    */
   async detach (request: KuzzleRequest) {
-    const deviceId = this.getId(request);
+    const deviceId = request.getId();
 
     const document: DeviceBulkContent = { deviceId };
     const devices = await this.mGetDevice([document]);
 
     await this.deviceService.mDetach(devices, [document], { strict: true, options:  { ...request.input.args } });
   }
-  
+
   /**
    * Unattach multiple devices from multiple tenants
    */
@@ -131,8 +132,8 @@ export class DeviceController extends CRUDController {
    * Link a device to an asset.
    */
   async linkAsset (request: KuzzleRequest) {
-    const assetId = this.getString(request, 'assetId');
-    const deviceId = this.getId(request);
+    const assetId = request.getString('assetId');
+    const deviceId = request.getId();
 
     const document: DeviceBulkContent = { deviceId, assetId };
     const devices = await this.mGetDevice([document]);
@@ -155,7 +156,7 @@ export class DeviceController extends CRUDController {
    * Unlink a device from an asset.
    */
    async unlink (request: KuzzleRequest) {
-    const deviceId = this.getId(request);
+    const deviceId = request.getId();
 
     const document: DeviceBulkContent = { deviceId };
     const devices = await this.mGetDevice([document]);
@@ -178,8 +179,8 @@ export class DeviceController extends CRUDController {
    * Clean payload collection for a time period
    */
   async prunePayloads (request: KuzzleRequest) {
-    const body = this.getBody(request);
-  
+    const body = request.getBody();
+
     const date = new Date().setDate(new Date().getDate() - body.days || 7);
     const filter = []
     filter.push({
@@ -189,7 +190,7 @@ export class DeviceController extends CRUDController {
           }
         }
       });
-    
+
     if (body.deviceModel) {
       filter.push({ term: { deviceModel: body.deviceModel } });
     }
@@ -197,7 +198,7 @@ export class DeviceController extends CRUDController {
     if (body.keepInvalid) {
       filter.push({ term: { valid: true } })
     }
-    
+
     return await this.as(request.context.user).bulk.deleteByQuery(
       this.config.adminIndex,
       'payloads',
@@ -215,7 +216,7 @@ export class DeviceController extends CRUDController {
   }
 
   private async mParseRequest (request: KuzzleRequest) {
-    const { body, args } = request.input;
+    const body = request.input.body;
 
     let bulkData: DeviceBulkContent[];
 
@@ -235,7 +236,7 @@ export class DeviceController extends CRUDController {
       throw new BadRequestError(`Malformed request missing property csv, records, deviceIds`);
     }
 
-    const strict = args.strict ? args.strict : false;
+    const strict = request.getBoolean('strict');
 
     return { strict, bulkData };
   }
