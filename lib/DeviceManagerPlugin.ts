@@ -136,10 +136,10 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
-    this.deviceService = new DeviceService(this.config, context);
+    this.deviceService = new DeviceService(this.config, context, this.decoders);
     this.assetController = new AssetController(this.config, context);
     this.engineController = new EngineController(this.config, context, this.engineService);
-    this.deviceController = new DeviceController(this.config, context, this.decoders, this.deviceService);
+    this.deviceController = new DeviceController(this.config, context, this.deviceService);
 
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;

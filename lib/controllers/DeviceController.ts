@@ -8,23 +8,23 @@ import {
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
-import { Decoder } from '../decoders';
 import { Device } from '../models';
 import { DeviceBulkContent } from '../types';
 import { DeviceService } from '../services';
 
 export class DeviceController extends CRUDController {
-  private decoders: Map<string, Decoder>;
   private deviceService: DeviceService;
 
   get sdk(): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
-  constructor(config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>, deviceService: DeviceService) {
+  constructor(
+    config: JSONObject,
+    context: PluginContext,
+    deviceService: DeviceService
+  ) {
     super(config, context, 'devices');
-
-    this.decoders = decoders;
 
     this.deviceService = deviceService;
 
@@ -91,7 +91,13 @@ export class DeviceController extends CRUDController {
     const document = { tenantId: tenantId, deviceId: deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mAttach(devices, [document], { strict: true, options:  { ...request.input.args } });
+    await this.deviceService.mAttach(
+      devices,
+      [document],
+      {
+        strict: true,
+        options:  { ...request.input.args }
+      });
   }
 
   /**
@@ -102,7 +108,13 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mAttach(devices, bulkData, { strict, options:  { ...request.input.args } });
+    return this.deviceService.mAttach(
+      devices,
+      bulkData,
+      {
+        strict,
+        options:  { ...request.input.args }
+      });
   }
 
   /**
@@ -114,18 +126,30 @@ export class DeviceController extends CRUDController {
     const document: DeviceBulkContent = { deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mDetach(devices, [document], { strict: true, options:  { ...request.input.args } });
+    await this.deviceService.mDetach(
+      devices,
+      [document],
+      {
+        strict: true,
+        options:  { ...request.input.args }
+      });
   }
 
   /**
-   * Unattach multiple devices from multiple tenants
+   * Detach multiple devices from multiple tenants
    */
   async mDetach (request: KuzzleRequest) {
     const { bulkData, strict } = await this.mParseRequest(request);
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mDetach(devices, bulkData, { strict, options:  { ...request.input.args } });
+    return this.deviceService.mDetach(
+      devices,
+      bulkData,
+      {
+        strict,
+        options:  { ...request.input.args }
+      });
   }
 
   /**
@@ -138,7 +162,13 @@ export class DeviceController extends CRUDController {
     const document: DeviceBulkContent = { deviceId, assetId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mLink(devices, [document], this.decoders, { strict: true, options:  { ...request.input.args } });
+    await this.deviceService.mLink(
+      devices,
+      [document],
+      {
+        strict: true,
+        options:  { ...request.input.args }
+      });
   }
 
   /**
@@ -149,7 +179,13 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mLink(devices, bulkData, this.decoders, { strict, options:  { ...request.input.args } });
+    return this.deviceService.mLink(
+      devices,
+      bulkData,
+      {
+        strict,
+        options:  { ...request.input.args }
+      });
   }
 
   /**
@@ -161,7 +197,12 @@ export class DeviceController extends CRUDController {
     const document: DeviceBulkContent = { deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mUnlink(devices, { strict: true, options:  { ...request.input.args } });
+    await this.deviceService.mUnlink(
+      devices,
+      {
+        strict: true,
+        options:  { ...request.input.args }
+      });
   }
 
   /**
@@ -172,7 +213,12 @@ export class DeviceController extends CRUDController {
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mUnlink(devices, { strict, options:  { ...request.input.args } });
+    return this.deviceService.mUnlink(
+      devices,
+      {
+        strict,
+        options: { ...request.input.args }
+      });
   }
 
   /**
@@ -224,7 +270,11 @@ export class DeviceController extends CRUDController {
       const lines = await csv({ delimiter: 'auto' })
         .fromString(body.csv);
 
-      bulkData = lines.map(line => ({ tenantId: line.tenantId, deviceId: line.deviceId, assetId: line.assetId }));
+      bulkData = lines.map(({ tenantId, deviceId, assetId}) => ({
+        tenantId,
+        deviceId,
+        assetId
+      }));
     }
     else if (body.records) {
       bulkData = body.records;

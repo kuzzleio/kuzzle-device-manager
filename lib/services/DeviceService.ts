@@ -21,13 +21,17 @@ export class DeviceService {
   private config: JSONObject;
   private context: PluginContext;
 
+  private decoders: Map<string, Decoder>;
+
   get sdk(): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
-  constructor(config: JSONObject, context: PluginContext) {
+  constructor(config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>) {
     this.config = config;
     this.context = context;
+
+    this.decoders = decoders;
   }
 
   async mAttach (
@@ -164,7 +168,6 @@ export class DeviceService {
   async mLink (
     devices: Device[],
     bulkData: DeviceBulkContent[],
-    decoders: Map<string, Decoder>,
     { strict, options }: { strict?: boolean, options?: JSONObject }
   ) {
     const detachedDevices = devices.filter(device => {
@@ -205,7 +208,7 @@ export class DeviceService {
       const assetDocuments = [];
 
       for (const device of devicesContent) {
-        const decoder = decoders.get(device._source.model);
+        const decoder = this.decoders.get(device._source.model);
         const measures = await decoder.copyToAsset(device);
         const { assetId } = bulkData.find(data => data.deviceId === device._id)
 
