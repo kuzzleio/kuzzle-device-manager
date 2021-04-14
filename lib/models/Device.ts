@@ -12,7 +12,7 @@ export class Device {
     this._source = {
       qos: {},
       metadata: {},
-      ...content,
+      ...content
     };
   }
 
@@ -27,24 +27,44 @@ export class Device {
 export const devicesMappings = {
   dynamic: 'strict',
   properties: {
-    reference: { type: 'keyword' },
-    model: { type: 'keyword' },
+    reference: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
+    model: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
     measures: {
       properties: {
         temperature: {
           properties: {
             // common
             updatedAt: { type: 'date' },
-            payloadUuid: { type: 'keyword' },
+            payloadUuid: {
+              type: 'keyword',
+              fields: {
+                text: { type: 'text' }
+              }
+            },
             // temperature
-            degree: { type: 'float' },
+            degree: { type: 'float' }
           }
         },
         position: {
           properties: {
             // common
             updatedAt: { type: 'date' },
-            payloadUuid: { type: 'keyword' },
+            payloadUuid: {
+              type: 'keyword',
+              fields: {
+                text: { type: 'text' }
+              }
+            },
             // position
             point: { type: 'geo_point' },
             altitude: { type: 'float' },
@@ -54,23 +74,38 @@ export const devicesMappings = {
         movement: {
           properties: {
             // common
-            payloadUuid: { type: 'keyword' },
+            payloadUuid: {
+              type: 'keyword',
+              fields: {
+                text: { type: 'text' }
+              }
+            },
             updatedAt: { type: 'date' },
             // movement state
             moving: { type: 'boolean' },
           }
-        },
+        }
       }
     },
     qos: {
       dynamic: 'false',
-      properties: {}
+      properties: {},
     },
     metadata: {
       dynamic: 'false',
-      properties: {}
+      properties: {},
     },
-    assetId: { type: 'keyword' },
-    tenantId: { type: 'keyword' }
+    assetId: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
+    tenantId: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    }
   }
 };
