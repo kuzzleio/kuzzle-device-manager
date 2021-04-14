@@ -15,7 +15,12 @@ import {
 
 import { EngineService, PayloadService, DeviceService } from './services';
 import { Decoder } from './decoders';
-import { devicesMappings, assetsMappings } from './models';
+import {
+  assetsMappings,
+  devicesMappings,
+  AssetsCustomProperties,
+  DeviceCustomProperties
+} from './models';
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
 
@@ -37,21 +42,11 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private decoders = new Map<string, Decoder>();
 
-  /**
-   * List of custom mappings with tenantGroup as key
-   * Map<tenantGroup, mappings>
-   */
   public mappings = new Map<string, JSONObject>();
 
-  public devices = {
-    registerQos: Function(),
-    registerMeasures: Function(),
-    registerMetadata: Function()
-  };
+  public devices = new DeviceCustomProperties();
 
-  public assets = {
-    registerMetadata: Function()
-  };
+  public assets = new AssetsCustomProperties();
 
   /**
    * Constructor
@@ -65,114 +60,6 @@ export class DeviceManagerPlugin extends Plugin {
       'device-manager/payload': {
         actions: {}
       }
-    };
-
-    this.pipes = {
-      'multi-tenancy/tenant:afterCreate': async request => {
-        console.log('-----------AFTER CREATE-----------');
-        const { index: tenantIndex } = request.result;
-        const tenantGroup = request.input.args.group;
-        console.log({tenantGroup});
-        const { collections } = await this.engineService
-          .create(tenantIndex, this.mappings.get(tenantGroup));
-
-        if (!Array.isArray(request.result.collections)) {
-          request.result.collections = [];
-        }
-        request.result.collections.push(...collections);
-
-        return request;
-      },
-      'multi-tenancy/tenant:afterDelete': async request => {
-        const { index: tenantIndex } = request.result;
-        const tenantGroup = request.input.args.group;
-        this.mappings.delete(tenantGroup)
-        
-        await this.engineService.delete(tenantIndex);
-
-        return request;
-      }
-    };
-
-    // Setting a 'shared' key for common mappings
-    this.mappings.set('shared', {
-      assets: assetsMappings,
-      devices: devicesMappings
-    });
-
-    /**
-     * Define custom mappings for "devices" collections
-     */
-    this.devices.registerQos = (mapping: JSONObject, tenantGroup: any = 'shared') => {
-      this.mappings.set(tenantGroup, {
-        ...this.mappings.get(tenantGroup),
-        devices: {
-          dynamic: 'strict',
-          properties: {
-            qos: {
-              properties: {
-                ...mapping
-              }
-            }
-          }
-        }
-      });
-    }
-
-    this.devices.registerMetadata = (mapping: JSONObject, tenantGroup: any = 'shared') => {
-      this.mappings.set(tenantGroup, {
-        ...this.mappings.get(tenantGroup),
-        devices: {
-          dynamic: 'strict',
-          properties: {
-            metadata: {
-              properties: {
-                ...mapping
-              }
-            }
-          }
-        }
-      });
-    }
-
-    this.devices.registerMeasures = (mapping: JSONObject, tenantGroup: any = 'shared') => {
-      this.mappings.set(tenantGroup, {
-        ...this.mappings.get(tenantGroup),
-        devices: {
-          dynamic: 'strict',
-          properties: {
-            measures: {
-              properties: {
-                ...mapping
-              }
-            }
-          }
-        }
-      });
-    }
-
-    /**
-     * Define custom mappings for "assets" collections
-     */
-    this.assets.registerMetadata = (mapping: JSONObject, tenantGroup: any = 'shared') => {
-      /**
-       * Define custom mappings for the "metadata" property
-       */
-      const assets = {
-        dynamic: 'strict',
-        properties: {
-          metadata: {
-            properties: {
-              ...mapping
-            }
-          }
-        }
-      }
-      this.mappings.set(tenantGroup, {
-        ...this.mappings.get(tenantGroup),
-        assets,
-        'asset-history': assets
-      });    
     };
 
     this.defaultConfig = {
@@ -210,11 +97,16 @@ export class DeviceManagerPlugin extends Plugin {
   async init (config: JSONObject, context: PluginContext) {
     this.config = { ...this.defaultConfig, ...config };
     
-    //Store common mappings in the config for EngineService
-    this.config.collections = this.mappings.get('shared');
-    
     this.context = context;
 
+    this.mappings.set('shared', {
+      assets: assetsMappings,
+      devices: devicesMappings,
+      'asset-history': assetsMappings
+    });
+
+    this.mergeMappings();
+    
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
     this.deviceService = new DeviceService(this.config, context);
@@ -288,85 +180,70 @@ export class DeviceManagerPlugin extends Plugin {
     );
   }
 
-  // setAssetsMappings (mapping: JSONObject, tenantGroup: any = 'shared') {
-  //   const assets = {
-  //     properties: {
-  //       ...mapping
-  //     }
-  //   }
-  //   this.mappings.set(tenantGroup, {
-  //     ...this.mappings.get(tenantGroup),
-  //     assets,
-  //     'asset-history': assets
-  //   });    
-  // }
+  /**
+   * Merge custom properties mappings for 'assets' and 'devices' collection by tenant group
+   */
+  private mergeMappings() {
+    for (const [tenantGroup, property] of this.devices.definitions) {
+      this.mappings.set(tenantGroup, {
+        ...this.mappings.get(tenantGroup),
+        devices: {
+          dynamic: 'strict',
+          properties: {
+            ...devicesMappings.properties,
+            ...property
+          }
+        }
+      });
+    }
 
-  // setDevicesMappings (mapping: JSONObject, tenantGroup: any = 'shared') {
-  //   this.mappings.set(tenantGroup, {
-  //     ...this.mappings.get(tenantGroup),
-  //     devices: {
-  //       properties: {
-  //         ...mapping
-  //       }
-  //     }
-  //   });
-  // }
+    for (const [tenantGroup, property] of this.assets.definitions) {
+      const assets = {
+        dynamic: 'strict',
+        properties: {
+          ...assetsMappings.properties,
+          ...property
+        }
+      }
+      this.mappings.set(tenantGroup, {
+        ...this.mappings.get(tenantGroup),
+        assets,
+        'asset-history': assets
+      });
 
-  // private mergemappings (tenantGroup: any = undefined) {
+      // Use "devices" mappings to generate "assets" collection mappings
+      // for the "measures" property
+      const deviceProperties = {
+        id: { type: 'keyword' },
+        reference: { type: 'keyword' },
+        model: { type: 'keyword' },
+      };
 
-  //   // Merge sensors qos custom mappings
-  //   this.config.collections.devices.properties.qos.properties = {
-  //     ...this.config.collections.devices.properties.qos.properties,
-  //     ...this.mappings.devices.qos,
-  //   };
-
-  //   // Merge devices metadata custom mappings
-  //   this.config.collections.devices.properties.metadata.properties = {
-  //     ...this.config.collections.devices.properties.metadata.properties,
-  //     ...this.mappings.devices.metadata,
-  //   };
-
-  //   // Merge devices measures custom mappings
-  //   this.config.collections.devices.properties.measures.properties = {
-  //     ...this.config.collections.devices.properties.measures.properties,
-  //     ...this.mappings.devices.measures,
-  //   };
-
-  //   // Merge assets metadata custom mappings
-  //   this.config.collections.assets.properties.metadata.properties = {
-  //     ...this.config.collections.assets.properties.metadata.properties,
-  //     ...this.mappings.assets.metadata,
-  //   };
-
-  //   // Use "devices" mappings to generate "assets" collection mappings
-  //   // for the "measures" property
-  //   const deviceProperties = {
-  //     id: { type: 'keyword' },
-  //     reference: { type: 'keyword' },
-  //     model: { type: 'keyword' },
-  //   };
-
-  //   for (const [measureType, definition] of Object.entries(this.config.collections.devices.properties.measures.properties) as any) {
-  //     this.config.collections.assets.properties.measures.properties[measureType] = {
-  //       dynamic: 'false',
-  //       properties: {
-  //         ...deviceProperties,
-  //         ...definition.properties,
-  //         qos: {
-  //           properties: this.config.collections.devices.properties.qos.properties
-  //         }
-  //       }
-  //     };
-  //   }
+      const tenantMappings = this.mappings.get(tenantGroup);
+      for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
+        tenantMappings.assets.properties.measures.properties[measureType] = {
+          dynamic: 'false',
+          properties: {
+            ...deviceProperties,
+            ...definition.properties,
+            qos: {
+              properties: tenantMappings.devices.properties.qos.properties
+            }
+          }
+        };
+      }
+      this.mappings.set(tenantGroup, tenantMappings);
+    }
 
     // Merge custom mappings from decoders for payloads collection
-  //   for (const decoder of this.decoders.values()) {
-  //     this.config.adminCollections.payloads.properties.payload.properties = {
-  //       ...this.config.adminCollections.payloads.properties.payload.properties,
-  //       ...decoder.payloadsMappings,
-  //     };
-  //   }
-  // }
+    for (const decoder of this.decoders.values()) {
+      this.config.adminCollections.payloads.properties.payload.properties = {
+        ...this.config.adminCollections.payloads.properties.payload.properties,
+        ...decoder.payloadsMappings,
+      };
+    }
+    this.config.mappings = this.mappings;
+  }
 }
 
 function kebabCase (string) {

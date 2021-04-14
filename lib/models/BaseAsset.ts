@@ -1,7 +1,6 @@
 import { JSONObject } from 'kuzzle';
 
 import { BaseAssetContent } from '../types';
-
 export class BaseAsset {
   _id: string;
   _source: BaseAssetContent;

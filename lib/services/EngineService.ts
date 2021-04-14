@@ -30,15 +30,11 @@ export class EngineService {
     }
   }
 
-  async create (index: string, tenantGroup: Object = undefined) {
+  async create (index: string, tenantGroup: Object = 'shared') {
     const promises = [];
-    const templates = tenantGroup ? tenantGroup : this.config.collections;
+    const templates = this.config.mappings.get(tenantGroup);
     const collections = [];
     for (const [collection, mappings] of Object.entries(templates)) {
-      console.log('-----------ENGINE CREATE SERVICE----------------');
-      console.log({templatesEngineCreate: index});
-      console.log({templatesEngineCreate: collection});
-      console.log({templatesEngineCreate: mappings});
       promises.push(
         this.sdk.collection.create(index, collection, { mappings })
           .then(() => { collections.push(collection); })
@@ -47,8 +43,6 @@ export class EngineService {
 
     await Promise.all(promises);
 
-    console.log('----CREATE ENGINES DOCUMENT---');
-    console.log({index});
     await this.sdk.document.create(
       this.config.adminIndex,
       'engines',
