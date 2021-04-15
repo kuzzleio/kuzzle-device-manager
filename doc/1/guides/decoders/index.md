@@ -8,15 +8,15 @@ order: 200
 
 # Decoders
 
-Each device model can receive a different payload, it is then necessary to decode this payload in order to retrieve the necessary information and put it in the right place in the document of the associated device.
+Since payload formats can differ among device models, it is necessary to decode each payload in order to retrieve the necessary information store it correctly in the document of the associated device.
 
 ![devices payloads collect and decode schema](./devices-payload-collect-and-decode.png)
 
-To do this, it is necessary to implement a decoder by implementing the `Decoder` class.
+To do this, you can create a decoder by implementing the `Decoder` class.
 
-This class must at least implement the `decode` method in order to retrieve at the right place the payload data.
+This class must at least implement the `decode` method, which contains the logic allowing to process the payload data and format it in a way that suits your business needs.
 
-A decoder is linked to a device model. Its registration triggers the creation of a specific API action to receive payloads from this device model. Each payload will be decoded by the decoder provided.
+Each decoder is linked to its corresponding device model. Its registration triggers the creation of a specific API action to receive payloads from this device model. Each payload will be decoded by the decoder provided for its model.
 
 **Example:** _Decoder for the device model "Karakoy"_
 
