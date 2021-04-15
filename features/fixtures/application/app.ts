@@ -35,12 +35,16 @@ deviceManager.devices.registerQos({
 });
 
 deviceManager.devices.registerQos({
-  durability: { type: 'integer' }
+  durability: { type: 'float' }
 }, 'astronaut');
 
 deviceManager.devices.registerMetadata({
   group: { type: 'keyword' }
 });
+
+deviceManager.devices.registerMetadata({
+  awake: { type: 'boolean' }
+}, 'astronaut');
 
 deviceManager.assets.registerMetadata({
   warranty: { type: 'keyword' }
