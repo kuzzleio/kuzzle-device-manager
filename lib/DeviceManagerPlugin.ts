@@ -222,7 +222,7 @@ export class DeviceManagerPlugin extends Plugin {
       const tenantMappings = this.mappings.get(tenantGroup);
       for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
         tenantMappings.assets.properties.measures.properties[measureType] = {
-          dynamic: 'false',
+          dynamic: 'strict',
           properties: {
             ...deviceProperties,
             ...definition.properties,
