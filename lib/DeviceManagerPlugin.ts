@@ -42,7 +42,7 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private decoders = new Map<string, Decoder>();
 
-  public mappings = new Map<string, JSONObject>();
+  // public mappings = new Map<string, JSONObject>();
 
   public devices = new DeviceCustomProperties();
 
@@ -99,7 +99,8 @@ export class DeviceManagerPlugin extends Plugin {
     
     this.context = context;
 
-    this.mappings.set('shared', {
+    this.config.mappings = new Map<string, JSONObject>();
+    this.config.mappings.set('shared', {
       assets: assetsMappings,
       devices: devicesMappings,
       'asset-history': assetsMappings
@@ -185,8 +186,8 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private mergeMappings() {
     for (const [tenantGroup, property] of this.devices.definitions) {
-      this.mappings.set(tenantGroup, {
-        ...this.mappings.get(tenantGroup),
+      this.config.mappings.set(tenantGroup, {
+        ...this.config.mappings.get(tenantGroup),
         devices: {
           dynamic: 'strict',
           properties: {
@@ -205,8 +206,8 @@ export class DeviceManagerPlugin extends Plugin {
           ...property
         }
       }
-      this.mappings.set(tenantGroup, {
-        ...this.mappings.get(tenantGroup),
+      this.config.mappings.set(tenantGroup, {
+        ...this.config.mappings.get(tenantGroup),
         assets,
         'asset-history': assets
       });
@@ -219,7 +220,7 @@ export class DeviceManagerPlugin extends Plugin {
         model: { type: 'keyword' },
       };
 
-      const tenantMappings = this.mappings.get(tenantGroup);
+      const tenantMappings = this.config.mappings.get(tenantGroup);
       for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
         tenantMappings.assets.properties.measures.properties[measureType] = {
           dynamic: 'strict',
@@ -232,7 +233,7 @@ export class DeviceManagerPlugin extends Plugin {
           }
         };
       }
-      this.mappings.set(tenantGroup, tenantMappings);
+      this.config.mappings.set(tenantGroup, tenantMappings);
     }
 
     // Merge custom mappings from decoders for payloads collection
@@ -242,7 +243,6 @@ export class DeviceManagerPlugin extends Plugin {
         ...decoder.payloadsMappings,
       };
     }
-    this.config.mappings = this.mappings;
   }
 }
 
