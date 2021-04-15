@@ -42,8 +42,6 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private decoders = new Map<string, Decoder>();
 
-  // public mappings = new Map<string, JSONObject>();
-
   public devices = new DeviceCustomProperties();
 
   public assets = new AssetsCustomProperties();
