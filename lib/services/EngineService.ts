@@ -30,7 +30,7 @@ export class EngineService {
     }
   }
 
-  async create (index: string, tenantGroup: Object = 'shared') {
+  async create (index: string, tenantGroup = 'shared') {
     const promises = [];
     const templates = this.config.mappings.get(tenantGroup);
     const collections = [];

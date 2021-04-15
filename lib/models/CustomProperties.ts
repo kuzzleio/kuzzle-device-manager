@@ -23,7 +23,7 @@ export class AssetsCustomProperties {
         }
       }
     });    
-  };
+  }
 }
 
 export class DeviceCustomProperties {
