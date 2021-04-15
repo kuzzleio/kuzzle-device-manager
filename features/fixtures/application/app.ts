@@ -20,9 +20,23 @@ deviceManager.devices.registerMeasures({
   }
 });
 
+deviceManager.devices.registerMeasures({
+  gravity: {
+    properties: {
+      updatedAt: { type: 'date' },
+      payloadUuid: { type: 'keyword' },
+      value: { type: 'float' },
+    }
+  }
+}, 'astronaut');
+
 deviceManager.devices.registerQos({
   battery: { type: 'integer' }
 });
+
+deviceManager.devices.registerQos({
+  durability: { type: 'integer' }
+}, 'astronaut');
 
 deviceManager.devices.registerMetadata({
   group: { type: 'keyword' }
@@ -31,6 +45,10 @@ deviceManager.devices.registerMetadata({
 deviceManager.assets.registerMetadata({
   warranty: { type: 'keyword' }
 });
+
+deviceManager.assets.registerMetadata({
+  stillAlive: { type: 'boolean' }
+}, 'astronaut');
 
 app.plugin.use(deviceManager);
 

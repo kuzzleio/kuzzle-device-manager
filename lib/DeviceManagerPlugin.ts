@@ -182,6 +182,7 @@ export class DeviceManagerPlugin extends Plugin {
    * Merge custom properties mappings for 'assets' and 'devices' collection by tenant group
    */
   private mergeMappings() {
+    // Merge custom 'devices' properties
     for (const [tenantGroup, property] of this.devices.definitions) {
       this.config.mappings.set(tenantGroup, {
         ...this.config.mappings.get(tenantGroup),
@@ -195,24 +196,20 @@ export class DeviceManagerPlugin extends Plugin {
       });
     }
 
+    // Merge custom 'asset' properties
     for (const [tenantGroup, property] of this.assets.definitions) {
-      const collections = { 
-        assets: {
-          dynamic: 'false',
-          properties: {
-            ...assetsMappings.properties,
-            ...property
-          }
+      const assets = {
+        dynamic: 'false',
+        properties: {
+          ...assetsMappings.properties,
+          ...property
         }
       };
 
-      if (tenantGroup !== 'shared') {
-        collections['asset-history'] = collections.assets;
-      }
-
       this.config.mappings.set(tenantGroup, {
         ...this.config.mappings.get(tenantGroup),
-        ...collections,
+        assets,
+        'asset-history': assets
       });
 
       // Use "devices" mappings to generate "assets" collection mappings
@@ -246,6 +243,26 @@ export class DeviceManagerPlugin extends Plugin {
         ...decoder.payloadsMappings,
       };
     }
+
+    // Check for missing collection
+    // temp solution
+    for (const [tenantGroup] of this.config.mappings) {
+      console.log(tenantGroup);
+      if (! this.config.mappings.get(tenantGroup).devices) {
+          this.config.mappings.set(tenantGroup, {
+          ...this.config.mappings.get(tenantGroup),
+          devices: this.config.mappings.get('shared').devices
+        })        
+      }
+      if (! this.config.mappings.get(tenantGroup).assets) {
+        this.config.mappings.set(tenantGroup, {
+          ...this.config.mappings.get(tenantGroup),
+          assets: this.config.mappings.get('shared').assets,
+          'asset-history': this.config.mappings.get('shared').assets
+        })
+      }
+    }
+    console.log(this.config.mappings);
 
     // Merge common custom mappings
     this.config.collections = this.config.mappings.get('shared');
