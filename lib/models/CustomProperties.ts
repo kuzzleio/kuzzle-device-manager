@@ -18,6 +18,7 @@ export class AssetsCustomProperties {
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       metadata: {
+        dynamic: 'false',
         properties: {
           ...mapping
         }
@@ -40,6 +41,7 @@ export class DeviceCustomProperties {
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       qos: {
+        dynamic: 'false',
         properties: {
           ...mapping
         }
@@ -51,6 +53,7 @@ export class DeviceCustomProperties {
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       metadata: {
+        dynamic: 'false',
         properties: {
           ...mapping
         }
@@ -62,6 +65,7 @@ export class DeviceCustomProperties {
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       measures: {
+        dynamic: 'false',
         properties: {
           ...mapping
         }

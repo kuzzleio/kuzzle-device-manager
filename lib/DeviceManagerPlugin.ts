@@ -100,8 +100,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.config.mappings = new Map<string, JSONObject>();
     this.config.mappings.set('shared', {
       assets: assetsMappings,
-      devices: devicesMappings,
-      'asset-history': assetsMappings
+      devices: devicesMappings
     });
 
     this.mergeMappings();
@@ -187,7 +186,7 @@ export class DeviceManagerPlugin extends Plugin {
       this.config.mappings.set(tenantGroup, {
         ...this.config.mappings.get(tenantGroup),
         devices: {
-          dynamic: 'strict',
+          dynamic: 'false',
           properties: {
             ...devicesMappings.properties,
             ...property
@@ -197,17 +196,23 @@ export class DeviceManagerPlugin extends Plugin {
     }
 
     for (const [tenantGroup, property] of this.assets.definitions) {
-      const assets = {
-        dynamic: 'strict',
-        properties: {
-          ...assetsMappings.properties,
-          ...property
+      const collections = { 
+        assets: {
+          dynamic: 'false',
+          properties: {
+            ...assetsMappings.properties,
+            ...property
+          }
         }
+      };
+
+      if (tenantGroup !== 'shared') {
+        collections['asset-history'] = collections.assets;
       }
+
       this.config.mappings.set(tenantGroup, {
         ...this.config.mappings.get(tenantGroup),
-        assets,
-        'asset-history': assets
+        ...collections,
       });
 
       // Use "devices" mappings to generate "assets" collection mappings
@@ -221,7 +226,7 @@ export class DeviceManagerPlugin extends Plugin {
       const tenantMappings = this.config.mappings.get(tenantGroup);
       for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
         tenantMappings.assets.properties.measures.properties[measureType] = {
-          dynamic: 'strict',
+          dynamic: 'false',
           properties: {
             ...deviceProperties,
             ...definition.properties,
@@ -241,6 +246,10 @@ export class DeviceManagerPlugin extends Plugin {
         ...decoder.payloadsMappings,
       };
     }
+
+    // Merge common custom mappings
+    this.config.collections = this.config.mappings.get('shared');
+    this.config.adminCollections.devices = this.config.mappings.get('shared').devices;
   }
 }
 

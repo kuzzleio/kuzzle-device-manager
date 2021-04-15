@@ -55,7 +55,7 @@ export class EngineService {
 
   async update (index: string) {
     const promises = [];
-    const templates = this.config.collections;
+    const templates = this.config.mappings.get('shared');
     const collections = [];
 
     await this.hasEngine(index);
@@ -73,7 +73,7 @@ export class EngineService {
 
   async delete (index: string) {
     const promises = [];
-    const templates = Object.keys(this.config.collections);
+    const templates = Object.keys(this.config.mappings.get('shared'));
     const collections = [];
 
     await this.hasEngine(index);
