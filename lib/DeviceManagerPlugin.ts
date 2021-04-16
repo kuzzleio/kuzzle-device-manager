@@ -208,8 +208,7 @@ export class DeviceManagerPlugin extends Plugin {
 
       this.config.mappings.set(tenantGroup, {
         ...this.config.mappings.get(tenantGroup),
-        assets,
-        'asset-history': assets
+        assets
       });
 
       // Use "devices" mappings to generate "assets" collection mappings
@@ -247,7 +246,6 @@ export class DeviceManagerPlugin extends Plugin {
     // Check for missing collection
     // temp solution
     for (const [tenantGroup] of this.config.mappings) {
-      console.log(tenantGroup);
       if (! this.config.mappings.get(tenantGroup).devices) {
           this.config.mappings.set(tenantGroup, {
           ...this.config.mappings.get(tenantGroup),
@@ -257,12 +255,10 @@ export class DeviceManagerPlugin extends Plugin {
       if (! this.config.mappings.get(tenantGroup).assets) {
         this.config.mappings.set(tenantGroup, {
           ...this.config.mappings.get(tenantGroup),
-          assets: this.config.mappings.get('shared').assets,
-          'asset-history': this.config.mappings.get('shared').assets
+          assets: this.config.mappings.get('shared').assets
         })
       }
     }
-    console.log(this.config.mappings);
 
     // Merge common custom mappings
     this.config.collections = this.config.mappings.get('shared');
