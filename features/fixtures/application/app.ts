@@ -14,7 +14,12 @@ deviceManager.devices.registerMeasures({
   humidity: {
     properties: {
       updatedAt: { type: 'date' },
-      payloadUuid: { type: 'keyword' },
+      payloadUuid: {
+        type: 'keyword',
+        fields: {
+          text: { type: 'text' }
+        }
+      },
       value: { type: 'float' },
     }
   }
@@ -24,7 +29,12 @@ deviceManager.devices.registerMeasures({
   gravity: {
     properties: {
       updatedAt: { type: 'date' },
-      payloadUuid: { type: 'keyword' },
+      payloadUuid: {
+        type: 'keyword',
+        fields: {
+          text: { type: 'text' }
+        }
+      },
       value: { type: 'float' },
     }
   }
@@ -39,7 +49,12 @@ deviceManager.devices.registerQos({
 }, 'astronaut');
 
 deviceManager.devices.registerMetadata({
-  group: { type: 'keyword' }
+  group: {
+    type: 'keyword',
+    fields: {
+    text: { type: 'text' }
+  }
+  }
 });
 
 deviceManager.devices.registerMetadata({
@@ -47,7 +62,12 @@ deviceManager.devices.registerMetadata({
 }, 'astronaut');
 
 deviceManager.assets.registerMetadata({
-  warranty: { type: 'keyword' }
+  warranty: {
+    type: 'keyword',
+    fields: {
+      text: { type: 'text' }
+    }
+  }
 });
 
 deviceManager.assets.registerMetadata({
