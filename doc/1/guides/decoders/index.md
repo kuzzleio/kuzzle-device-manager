@@ -8,7 +8,7 @@ order: 200
 
 # Decoders
 
-Since payload formats can differ among device models, it is necessary to decode each payload in order to retrieve the necessary information store it correctly in the document of the associated device.
+Since payload formats can differ among device models, it is necessary to decode each payload in order to retrieve the necessary information and store it correctly in the document of the associated device.
 
 ![devices payloads collect and decode schema](./devices-payload-collect-and-decode.png)
 
