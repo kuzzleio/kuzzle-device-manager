@@ -52,8 +52,8 @@ deviceManager.devices.registerMetadata({
   group: {
     type: 'keyword',
     fields: {
-    text: { type: 'text' }
-  }
+      text: { type: 'text' }
+    }
   }
 });
 
