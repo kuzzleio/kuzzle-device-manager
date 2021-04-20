@@ -19,7 +19,7 @@ import {
   assetsMappings,
   devicesMappings,
   AssetsCustomProperties,
-  DeviceCustomProperties
+  DevicesCustomProperties
 } from './models';
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
@@ -42,7 +42,7 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private decoders = new Map<string, Decoder>();
 
-  public devices = new DeviceCustomProperties();
+  public devices = new DevicesCustomProperties();
 
   public assets = new AssetsCustomProperties();
 

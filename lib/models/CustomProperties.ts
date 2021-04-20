@@ -11,6 +11,13 @@ export class AssetsCustomProperties {
     this.definitions = new Map<string, JSONObject>();
   }
 
+  /**
+   * Define custom mappings for the "metadata" property
+   * 
+   * @param mapping Mapping definiton of the "metadata" property
+   * @param options Additional options
+   *    - `tenantGroup` Name of the group for which the mapping should apply
+   */
   registerMetadata (mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
     /**
      * Define custom mappings for the "metadata" property
@@ -28,7 +35,7 @@ export class AssetsCustomProperties {
   }
 }
 
-export class DeviceCustomProperties {
+export class DevicesCustomProperties {
 
   /**
    * Define custom mappings for "devices" collection
@@ -100,3 +107,4 @@ export class DeviceCustomProperties {
     });
   }
 }
+
