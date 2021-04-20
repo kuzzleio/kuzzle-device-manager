@@ -44,7 +44,7 @@ A device is uniquely identified by the pair `model` + `reference`.
 
 ## Measures
 
-A device can receive several measurements in the same payload.
+A device can send several measurements in the same payload.
 
 Each measurement must be stored in the key corresponding to its type: `measures.<measureType>`.
 
