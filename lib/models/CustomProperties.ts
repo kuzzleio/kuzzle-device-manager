@@ -3,7 +3,7 @@ import { JSONObject } from 'kuzzle';
 export class AssetsCustomProperties {
 
   /**
-   * Define custom mappings for "assets" collection
+   * Custom mappings for "assets" collection
    */
   public definitions: Map<string, JSONObject>;
 
@@ -19,9 +19,6 @@ export class AssetsCustomProperties {
    *    - `tenantGroup` Name of the group for which the mapping should apply
    */
   registerMetadata (mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
-    /**
-     * Define custom mappings for the "metadata" property
-     */
     const tenantGroup = options.tenantGroup;
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
@@ -38,7 +35,7 @@ export class AssetsCustomProperties {
 export class DevicesCustomProperties {
 
   /**
-   * Define custom mappings for "devices" collection
+   * Custom mappings for "devices" collection
    */
   public definitions: Map<string, JSONObject>;
 
