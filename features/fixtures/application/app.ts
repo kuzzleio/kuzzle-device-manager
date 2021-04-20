@@ -10,7 +10,7 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
-deviceManager.devices.registerMeasures('humidity', {
+deviceManager.devices.registerMeasure('humidity', {
   properties: {
     updatedAt: { type: 'date' },
     payloadUuid: {
@@ -23,7 +23,7 @@ deviceManager.devices.registerMeasures('humidity', {
   }
 });
 
-deviceManager.devices.registerMeasures('gravity', {
+deviceManager.devices.registerMeasure('gravity', {
   properties: {
     updatedAt: { type: 'date' },
     payloadUuid: {

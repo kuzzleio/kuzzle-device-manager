@@ -1,7 +1,7 @@
 ---
 code: true
 type: page
-title: registerMeasures
+title: registerMeasure
 description: Add properties definition to the 'measures' field
 ---
 
@@ -11,7 +11,7 @@ Add properties definition to the `measures` field of the `devices` collection.
 
 
 ```ts
-registerMeasures (measureName: string, mapping: JSONObject, options: JSONObject);
+registerMeasure (measureName: string, mapping: JSONObject, options: JSONObject);
 ```
 
 <br/>
@@ -35,7 +35,7 @@ import { DeviceManagerPlugin } from 'kuzzle-plugin-device-manager';
 
 const deviceManagerPlugin = new DeviceManagerPlugin();
 
-deviceManagerPlugin.devices.registerMeasures(
+deviceManagerPlugin.devices.registerMeasure(
   'temperature',
   {
     dynamic: 'false',
@@ -46,7 +46,7 @@ deviceManagerPlugin.devices.registerMeasures(
   },
   { tenantGroup: 'water_management' });
 
-deviceManagerPlugin.devices.registerMeasures(
+deviceManagerPlugin.devices.registerMeasure(
   'humidity',
   {
     dynamic: 'false',

@@ -91,7 +91,7 @@ export class DevicesCustomProperties {
    * @param options Additional options
    *    - `tenantGroup` Name of the group for which the mapping should apply
    */
-  registerMeasures (measureName: string, mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
+  registerMeasure (measureName: string, mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
     const tenantGroup = options.tenantGroup;
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
