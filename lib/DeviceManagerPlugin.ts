@@ -220,6 +220,7 @@ export class DeviceManagerPlugin extends Plugin {
       };
 
       const tenantMappings = this.config.mappings.get(tenantGroup);
+      
       for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
         tenantMappings.assets.properties.measures.properties[measureType] = {
           dynamic: 'false',

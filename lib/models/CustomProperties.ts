@@ -20,6 +20,7 @@ export class AssetsCustomProperties {
    */
   registerMetadata (mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
     const tenantGroup = options.tenantGroup;
+    
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       metadata: {
@@ -52,6 +53,7 @@ export class DevicesCustomProperties {
    */
   registerQos (mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
     const tenantGroup = options.tenantGroup;
+    
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       qos: {
@@ -72,6 +74,7 @@ export class DevicesCustomProperties {
    */
   registerMetadata (mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
     const tenantGroup = options.tenantGroup;
+    
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       metadata: {
@@ -93,6 +96,7 @@ export class DevicesCustomProperties {
    */
   registerMeasure (measureName: string, mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
     const tenantGroup = options.tenantGroup;
+    
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       measures: {
@@ -104,4 +108,3 @@ export class DevicesCustomProperties {
     });
   }
 }
-
