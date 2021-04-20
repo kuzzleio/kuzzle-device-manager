@@ -10,35 +10,31 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
-deviceManager.devices.registerMeasures({
-  humidity: {
-    properties: {
-      updatedAt: { type: 'date' },
-      payloadUuid: {
-        type: 'keyword',
-        fields: {
-          text: { type: 'text' }
-        }
-      },
-      value: { type: 'float' },
-    }
+deviceManager.devices.registerMeasures('humidity', {
+  properties: {
+    updatedAt: { type: 'date' },
+    payloadUuid: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
+    value: { type: 'float' },
   }
 });
 
-deviceManager.devices.registerMeasures({
-  gravity: {
-    properties: {
-      updatedAt: { type: 'date' },
-      payloadUuid: {
-        type: 'keyword',
-        fields: {
-          text: { type: 'text' }
-        }
-      },
-      value: { type: 'float' },
-    }
+deviceManager.devices.registerMeasures('gravity', {
+  properties: {
+    updatedAt: { type: 'date' },
+    payloadUuid: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
+    value: { type: 'float' },
   }
-}, 'astronaut');
+}, { tenantGroup: 'astronaut' });
 
 deviceManager.devices.registerQos({
   battery: { type: 'integer' }
@@ -46,7 +42,7 @@ deviceManager.devices.registerQos({
 
 deviceManager.devices.registerQos({
   durability: { type: 'float' }
-}, 'astronaut');
+}, { tenantGroup: 'astronaut' });
 
 deviceManager.devices.registerMetadata({
   group: {
@@ -59,7 +55,7 @@ deviceManager.devices.registerMetadata({
 
 deviceManager.devices.registerMetadata({
   awake: { type: 'boolean' }
-}, 'astronaut');
+}, { tenantGroup: 'astronaut' });
 
 deviceManager.assets.registerMetadata({
   warranty: {
@@ -72,7 +68,7 @@ deviceManager.assets.registerMetadata({
 
 deviceManager.assets.registerMetadata({
   stillAlive: { type: 'boolean' }
-}, 'astronaut');
+}, { tenantGroup: 'astronaut' });
 
 app.plugin.use(deviceManager);
 

@@ -244,7 +244,6 @@ export class DeviceManagerPlugin extends Plugin {
     }
 
     // Check for missing collection
-    // temp solution
     for (const [tenantGroup] of this.config.mappings) {
       if (! this.config.mappings.get(tenantGroup).devices) {
           this.config.mappings.set(tenantGroup, {
