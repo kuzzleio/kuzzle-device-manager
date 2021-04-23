@@ -102,9 +102,14 @@ export class DevicesCustomProperties {
    */
   registerMeasure (measureName: string, mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
     const tenantGroup = options.tenantGroup;
-    const measures = this.definitions.get(tenantGroup).measures;
-    const properties = measures ? measures.properties : undefined; 
+    let properties;
 
+    const group = this.definitions.get(tenantGroup);
+    if (group) {
+      properties = group.measures && group.measures.properties 
+        ? group.measures.properties
+        : undefined
+    }
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       measures: {
