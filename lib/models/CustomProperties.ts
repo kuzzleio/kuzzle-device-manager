@@ -7,8 +7,11 @@ export class AssetsCustomProperties {
    */
   public definitions: Map<string, JSONObject>;
 
-  constructor() {
+  constructor(assetsMappings: JSONObject) {
     this.definitions = new Map<string, JSONObject>();
+
+    // Initialize shared assets properties from default mappings
+    this.definitions.set('shared', assetsMappings.properties);
   }
 
   /**
@@ -40,8 +43,11 @@ export class DevicesCustomProperties {
    */
   public definitions: Map<string, JSONObject>;
 
-  constructor() {
+  constructor(deviceMappings: JSONObject) {
     this.definitions = new Map<string, JSONObject>();
+
+    // Initialize shared devices properties from default mappings
+    this.definitions.set('shared', deviceMappings.properties);
   }
 
   /**
@@ -96,12 +102,15 @@ export class DevicesCustomProperties {
    */
   registerMeasure (measureName: string, mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
     const tenantGroup = options.tenantGroup;
-    
+    const measures = this.definitions.get(tenantGroup).measures;
+    const properties = measures ? measures.properties : undefined; 
+
     this.definitions.set(tenantGroup, {
       ...this.definitions.get(tenantGroup),
       measures: {
         dynamic: 'false',
         properties: {
+          ...properties,
           [measureName]: { ...mapping }
         }
       }
