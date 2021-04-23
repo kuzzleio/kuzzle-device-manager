@@ -5,7 +5,7 @@ title: registerMeasure
 description: Add properties definition to the 'measures' field
 ---
 
-# registerMetadata
+# registerMeasure
 
 Add properties definition to the `measures` field of the `devices` collection.
 

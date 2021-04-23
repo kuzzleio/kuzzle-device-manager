@@ -5,7 +5,7 @@ title: registerQos
 description: Add properties definition to the 'qos' field
 ---
 
-# registerMetadata
+# registerQos
 
 Add properties definition to the `qos` field of the `devices` collection.
 
