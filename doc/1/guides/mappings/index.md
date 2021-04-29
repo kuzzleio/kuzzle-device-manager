@@ -66,8 +66,8 @@ deviceManager.assets.registerMetadata({
   warranty: {
     type: 'keyword',                   // Since no tenant group is specified,
     fields: {                          // this mapping will be applied to every
-      text: { type: 'text' }           // tenant 'assets' collection who does not
-    }                                  // their specific definition.
+      text: { type: 'text' }           // tenant by default
+    }
   }
 });
 
