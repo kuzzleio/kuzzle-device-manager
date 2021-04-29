@@ -25,7 +25,7 @@ registerMetadata (mapping: JSONObject, options: JSONObject);
 
 | Properties | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
-| `tenantGroup` | <pre>string</pre> | Name of the group for which the mapping should apply. If unspecified, mappings will apply to every group. |
+| `tenantGroup` | <pre>string</pre> | Name of the group for which the mapping should apply. If unspecified, mappings will apply to every group who does not have specific definition. |
 
 ## Usage
 
