@@ -10,7 +10,7 @@ order: 500
 
 ## "assets" collection
 
-At the startup of your application, the plugin will store default mappings for the `assets` collection which is meant to be loaded when you [create an engine](/kuzzle-iot-platform/device-manager/1/controllers/engine/create):
+At startup of your application, the plugin will store default mappings for the `assets` collection which is meant to be loaded when you [create an engine](/kuzzle-iot-platform/device-manager/1/controllers/engine/create):
 
 ```js
 {
