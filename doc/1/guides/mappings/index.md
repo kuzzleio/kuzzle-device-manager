@@ -173,7 +173,7 @@ Through the plugin, it is possible to add custom properties to:
 - The `measures` field, by using the [registerMeasure method](/kuzzle-iot-platform/device-manager/1/classes/devices-custom-properties/register-measure).
 - The `metadata` field, by using the [registerMetadata method](/kuzzle-iot-platform/device-manager/1/classes/devices-custom-properties/register-metadata).
 
-Those methods allow you to store your custom properties to those fields for a specific tenant, and/or setting some by default.
+Those methods allow you to store custom properties into those fields for a specific tenant, and/or setting some by default.
 
 ### Example
 
