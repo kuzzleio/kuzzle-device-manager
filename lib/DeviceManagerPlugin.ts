@@ -15,8 +15,12 @@ import {
 
 import { EngineService, PayloadService, DeviceService } from './services';
 import { Decoder } from './decoders';
-import { devicesMappings, assetsMappings } from './models';
-
+import {
+  assetsMappings,
+  devicesMappings,
+  AssetsCustomProperties,
+  DevicesCustomProperties
+} from './models';
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
 
@@ -33,42 +37,14 @@ export class DeviceManagerPlugin extends Plugin {
   }
 
   /**
-   * Define custom mappings for "devices" and "assets" colections
-   */
-  public mappings: {
-    /**
-     * Define custom mappings for the "devices" collection.
-     */
-    devices: {
-      /**
-       * Define custom mappings for the "devices.metadata" property
-       */
-      metadata: JSONObject;
-      /**
-       * Define custom mappings for the "devices.qos" property
-       */
-      qos: JSONObject;
-      /**
-       * Define custom mappings for the "devices.measures" property
-       */
-      measures: JSONObject;
-    },
-    /**
-     * Define custom mappings for the "assets" collection.
-     */
-    assets: {
-      /**
-       * Define custom mappings for the "assets.metadata" property
-       */
-      metadata: JSONObject;
-    },
-  }
-
-  /**
    * List of registered decoders.
    * Map<model, decoder>
    */
   private decoders = new Map<string, Decoder>();
+
+  public devices = new DevicesCustomProperties(devicesMappings);
+
+  public assets = new AssetsCustomProperties(assetsMappings);
 
   /**
    * Constructor
@@ -77,17 +53,6 @@ export class DeviceManagerPlugin extends Plugin {
     super({
       kuzzleVersion: '>=2.11.1 <3'
     });
-
-    this.mappings = {
-      devices: {
-        metadata: {},
-        qos: {},
-        measures: {},
-      },
-      assets: {
-        metadata: {},
-      },
-    };
 
     this.api = {
       'device-manager/payload': {
@@ -107,7 +72,6 @@ export class DeviceManagerPlugin extends Plugin {
         devices: devicesMappings,
         payloads: {
           dynamic: 'false',
-          // @todo have API action to clean
           properties: {
             uuid: { type: 'keyword' },
             valid: { type: 'boolean' },
@@ -120,7 +84,7 @@ export class DeviceManagerPlugin extends Plugin {
       },
       collections: {
         assets: assetsMappings,
-        devices: devicesMappings,
+        devices: devicesMappings
       }
     };
   }
@@ -130,10 +94,13 @@ export class DeviceManagerPlugin extends Plugin {
    */
   async init (config: JSONObject, context: PluginContext) {
     this.config = { ...this.defaultConfig, ...config };
+    
     this.context = context;
 
-    this.mergeCustomMappings();
+    this.config.mappings = new Map<string, JSONObject>();
 
+    this.mergeMappings();
+    
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
@@ -207,50 +174,81 @@ export class DeviceManagerPlugin extends Plugin {
     );
   }
 
-  private mergeCustomMappings () {
-    // Merge devices qos custom mappings
-    this.config.collections.devices.properties.qos.properties = {
-      ...this.config.collections.devices.properties.qos.properties,
-      ...this.mappings.devices.qos,
-    };
+  /**
+   * Merge custom properties mappings for 'assets' and 'devices' collection by tenant group
+   */
+  private mergeMappings() {
+    const assetsProperties = this.assets.definitions.get('shared');
+    const devicesProperties = this.devices.definitions.get('shared');
 
-    // Merge devices metadata custom mappings
-    this.config.collections.devices.properties.metadata.properties = {
-      ...this.config.collections.devices.properties.metadata.properties,
-      ...this.mappings.devices.metadata,
-    };
+    // Retrieve each group name which has custom properties definition
+    const tenantGroups = [...new Set(Array.from(this.devices.definitions.keys())
+      .concat(Array.from(this.assets.definitions.keys())))];
 
-    // Merge devices measures custom mappings
-    this.config.collections.devices.properties.measures.properties = {
-      ...this.config.collections.devices.properties.measures.properties,
-      ...this.mappings.devices.measures,
-    };
+    // Init each group with 'devices' and 'assets' shared properties definition
+    for (const tenantGroup of tenantGroups) {
+      this.config.mappings.set(tenantGroup, {
+        assets: {
+          dynamic: 'false',
+          properties: assetsProperties
+        },
+        devices: {
+          dynamic: 'false',
+          properties: devicesProperties
+        }
+      });
+    }
 
-    // Merge assets metadata custom mappings
-    this.config.collections.assets.properties.metadata.properties = {
-      ...this.config.collections.assets.properties.metadata.properties,
-      ...this.mappings.assets.metadata,
-    };
-
-    // Use "devices" mappings to generate "assets" collection mappings
-    // for the "measures" property
-    const deviceProperties = {
-      id: { type: 'keyword' },
-      reference: { type: 'keyword' },
-      model: { type: 'keyword' },
-    };
-
-    for (const [measureType, definition] of Object.entries(this.config.collections.devices.properties.measures.properties) as any) {
-      this.config.collections.assets.properties.measures.properties[measureType] = {
-        dynamic: 'false',
-        properties: {
-          ...deviceProperties,
-          ...definition.properties,
-          qos: {
-            properties: this.config.collections.devices.properties.qos.properties
+    // Merge custom 'devices' properties with shared properties
+    for (const [tenantGroup, customProperties] of this.devices.definitions) {
+      this.config.mappings.set(tenantGroup, {
+        assets: this.config.mappings.get(tenantGroup).assets,
+        devices: {
+          dynamic: 'false',
+          properties: {
+            ...devicesProperties,
+            ...customProperties,
           }
         }
+      });
+    }
+
+    // Merge custom 'assets' properties with shared properties
+    for (const [tenantGroup, customProperties] of this.assets.definitions) {
+      this.config.mappings.set(tenantGroup, {
+        assets: {
+          dynamic: 'false',
+          properties: {
+            ...assetsProperties,
+            ...customProperties
+          }
+        },
+        devices: this.config.mappings.get(tenantGroup).devices,
+      });
+
+      // Use "devices" mappings to generate "assets" collection mappings
+      // for the "measures" property
+      const deviceProperties = {
+        id: { type: 'keyword' },
+        reference: { type: 'keyword' },
+        model: { type: 'keyword' },
       };
+
+      const tenantMappings = this.config.mappings.get(tenantGroup);
+
+      for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
+        tenantMappings.assets.properties.measures.properties[measureType] = {
+          dynamic: 'false',
+          properties: {
+            ...deviceProperties,
+            ...definition.properties,
+            qos: {
+              properties: tenantMappings.devices.properties.qos.properties
+            }
+          }
+        };
+      }
+      this.config.mappings.set(tenantGroup, tenantMappings);
     }
 
     // Merge custom mappings from decoders for payloads collection
@@ -260,6 +258,10 @@ export class DeviceManagerPlugin extends Plugin {
         ...decoder.payloadsMappings,
       };
     }
+
+    // Copy common mappings into the config
+    this.config.collections = this.config.mappings.get('shared');
+    this.config.adminCollections.devices = this.config.mappings.get('shared').devices;
   }
 }
 
