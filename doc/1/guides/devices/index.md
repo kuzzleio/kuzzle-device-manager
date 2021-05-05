@@ -112,7 +112,7 @@ When attached, the device document is copied inside the `devices` collection of 
 
 ## Attach to multiple tenant
 
-Multiple different Devices can also be attached to multiple differents tenant by using the [device-manager/device:mAttach](/kuzzle-iot-platform/device-manager/1/controllers/device/m-attach) API action.
+Multiple different Devices can also be attached to different tenants by using the [device-manager/device:mAttach](/kuzzle-iot-platform/device-manager/1/controllers/device/m-attach) API action.
 
 The format used can be either __CSV__ in the form of a string in the format `tenantId,deviceId\nmytenantId,mydeviceId` or __JSON__ in the form of an array of objects `"records": [{ "tenantId": "mytenantId", "deviceId": "mydeviceId"}]`.
 
