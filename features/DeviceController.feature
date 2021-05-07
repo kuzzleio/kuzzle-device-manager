@@ -200,6 +200,39 @@ Feature: Device Manager device controller
       | measures.temperature.degree      | 23.3                               |
       | measures.temperature.qos.battery | 80                                 |
 
+  Scenario: Link multiple device to multiple assets using JSON
+    When I successfully execute the action "device-manager/device":"mLink" with args:
+      | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
+      | body.records.0.assetId  | "PERFO-unlinked"                   |
+    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | "PERFO-unlinked" |
+    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | "PERFO-unlinked" |
+    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
+      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.model       | "DummyTemp"                        |
+      | measures.temperature.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt   | 1610793427950                      |
+      | measures.temperature.payloadUuid | "_STRING_"                         |
+      | measures.temperature.degree      | 23.3                               |
+      | measures.temperature.qos.battery | 80                                 |
+
+  Scenario: Link multiple device to multiple assets using CSV
+    When I successfully execute the action "device-manager/device":"mLink" with args:
+      | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
+    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | "PERFO-unlinked" |
+    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | "PERFO-unlinked" |
+    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
+      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.model       | "DummyTemp"                        |
+      | measures.temperature.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt   | 1610793427950                      |
+      | measures.temperature.payloadUuid | "_STRING_"                         |
+      | measures.temperature.degree      | 23.3                               |
+      | measures.temperature.qos.battery | 80                                 |
+
   Scenario: Error when linking device to an asset
     When I execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-detached" |
