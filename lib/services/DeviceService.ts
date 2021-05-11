@@ -21,16 +21,24 @@ export class DeviceService {
   private config: JSONObject;
   private context: PluginContext;
 
+  private decoders: Map<string, Decoder>;
+
   get sdk(): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
-  constructor(config: JSONObject, context: PluginContext) {
+  constructor(config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>) {
     this.config = config;
     this.context = context;
+
+    this.decoders = decoders;
   }
 
-  async mAttach (devices: Device[], bulkData: DeviceBulkContent[], { strict }): Promise<DeviceMAttachementContent> {
+  async mAttach (
+    devices: Device[],
+    bulkData: DeviceBulkContent[],
+    { strict, options }: { strict?: boolean, options?: JSONObject }
+  ): Promise<DeviceMAttachementContent> {
     const attachedDevices = devices.filter(device => device._source.tenantId);
 
     if (strict && attachedDevices.length > 0) {
@@ -64,12 +72,14 @@ export class DeviceService {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
 
           await this.sdk.document.mCreate(
             document.tenantId,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
 
             return {
               successes: results.successes.concat(updated.successes),
@@ -84,8 +94,14 @@ export class DeviceService {
     return results;
   }
 
-  async mDetach (devices: Device[], bulkData: DeviceBulkContent[], { strict }) {
-    const detachedDevices = devices.filter(device => !device._source.tenantId || device._source.tenantId === null);
+  async mDetach (
+    devices: Device[],
+    bulkData: DeviceBulkContent[],
+    { strict, options }: { strict?: boolean, options?: JSONObject }
+  ) {
+    const detachedDevices = devices.filter(device => {
+      return ! device._source.tenantId || device._source.tenantId === null
+    });
 
     if (strict && detachedDevices.length > 0) {
       const ids = detachedDevices.map(device => device._id).join(',')
@@ -115,7 +131,7 @@ export class DeviceService {
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
 
-      const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
+      const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
       const deviceDocuments = devicesContent.map(device => {
         return { _id: device._id, body: { tenantId: null } }
       })
@@ -127,12 +143,14 @@ export class DeviceService {
         const updated = await this.sdk.document.mUpdate(
           this.config.adminIndex,
           'devices',
-          deviceDocuments);
+          deviceDocuments,
+          options);
 
           await this.sdk.document.mDelete(
             document.tenantId,
             'devices',
-            deviceDocuments.map(device => device._id));
+            deviceDocuments.map(device => device._id),
+            options);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -147,8 +165,14 @@ export class DeviceService {
     return results;
   }
 
-  async mLink (devices: Device[], bulkData: DeviceBulkContent[], decoders: Map<string, Decoder>, { strict }) {
-    const detachedDevices = devices.filter(device => !device._source.tenantId || device._source.tenantId === null);
+  async mLink (
+    devices: Device[],
+    bulkData: DeviceBulkContent[],
+    { strict, options }: { strict?: boolean, options?: JSONObject }
+  ) {
+    const detachedDevices = devices.filter(device => {
+      return ! device._source.tenantId || device._source.tenantId === null
+    });
 
     if (strict && detachedDevices.length > 0) {
       const ids = detachedDevices.map(device => device._id).join(',')
@@ -174,17 +198,17 @@ export class DeviceService {
         document.tenantId,
         'assets',
         document.assetIds);
-  
+
       if (strict && existingAssets.errors.length > 0) {
         throw new NotFoundError(`Assets "${existingAssets.errors}" do not exist`);
       }
 
-      const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
+      const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
       const deviceDocuments = [];
       const assetDocuments = [];
 
       for (const device of devicesContent) {
-        const decoder = decoders.get(device._source.model);
+        const decoder = this.decoders.get(device._source.model);
         const measures = await decoder.copyToAsset(device);
         const { assetId } = bulkData.find(data => data.deviceId === device._id)
 
@@ -199,12 +223,14 @@ export class DeviceService {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments);
-      
+            deviceDocuments,
+            options);
+
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
-            deviceDocuments);
+            deviceDocuments,
+            options);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -219,7 +245,8 @@ export class DeviceService {
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
-            assetDocuments);
+            assetDocuments,
+            options);
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -235,29 +262,104 @@ export class DeviceService {
     return results;
   }
 
-  async unlink (device: Device) {
-    if (! device._source.assetId) {
-      throw new BadRequestError(`Device "${device._id}" is not linked to an asset`);
+  async mUnlink (
+    devices: Device[],
+    { strict, options }: { strict?: boolean, options?: JSONObject }
+  ) {
+    const unlinkedDevices = devices.filter(device => !device._source.assetId);
+
+    if (strict && unlinkedDevices.length > 0) {
+      const ids = unlinkedDevices.map(d => d._id);
+      throw new BadRequestError(`Devices "${ids}" are not linked to an asset`);
     }
 
-    await this.sdk.document.update(
-      this.config.adminIndex,
-      'devices',
-      device._id,
-      { assetId: null });
 
-    await this.sdk.document.update(
-      device._source.tenantId,
-      'devices',
-      device._id,
-      { assetId: null });
+    const builder = devices.map(device => {
+      const { _id, _source } = device;
+      return { tenantId: _source.tenantId, deviceId: _id, assetId: _source.assetId };
+    });
 
-    // @todo only remove the measures coming from the unlinked device
-    await this.sdk.document.update(
-      device._source.tenantId,
+    const documents = this.buildBulkDevices(builder);
+
+    const results = {
+      errors: [],
+      successes: [],
+    };
+
+    for (let i = 0; i < documents.length; i++) {
+      const document = documents[i];
+
+      const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
+      const deviceDocuments = [];
+      const assetDocuments = [];
+
+      for (const device of devicesContent) {
+        deviceDocuments.push({ _id: device._id, body: { assetId: null } });
+
+        const measures = await this.eraseAssetMeasure(document.tenantId, device);
+
+        assetDocuments.push({ _id: device._source.assetId, body: { measures } });
+      }
+
+      const updatedDevice = await this.writeToDatabase(
+        deviceDocuments,
+        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+          const updated = await this.sdk.document.mUpdate(
+            this.config.adminIndex,
+            'devices',
+            deviceDocuments,
+            options);
+
+          await this.sdk.document.mUpdate(
+            document.tenantId,
+            'devices',
+            deviceDocuments,
+            options);
+
+          return {
+            successes: results.successes.concat(updated.successes),
+            errors: results.errors.concat(updated.errors)
+          }
+      })
+
+      const updatedAssets = await this.writeToDatabase(
+        assetDocuments,
+        async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+
+          const updated = await this.sdk.document.mUpdate(
+            document.tenantId,
+            'assets',
+            assetDocuments,
+            options);
+
+          return {
+            successes: results.successes.concat(updated.successes),
+            errors: results.errors.concat(updated.errors)
+          }
+        }
+      )
+
+      results.successes.concat(updatedDevice.successes, updatedAssets.successes);
+      results.errors.concat(updatedDevice.errors, updatedDevice.errors);
+    }
+
+    return results;
+  }
+
+  private async eraseAssetMeasure (tenantId: string, device: Device) {
+    const { _source: { measures } } = await this.sdk.document.get(
+      tenantId,
       'assets',
-      device._source.assetId,
-      { measures: null });
+      device._source.assetId);
+
+
+    for (const [measureName] of Object.entries(device._source.measures)) {
+      if (measures[measureName]) {
+        measures[measureName] = undefined;
+      }
+    }
+
+    return measures;
   }
 
   private async tenantExists (tenantId: string) {
@@ -287,7 +389,10 @@ export class DeviceService {
     return documents;
   }
 
-  private formatDevicesContent (devices: Device[], document: DeviceBulkBuildedContent): DeviceMRequestContent[] {
+  private formatDevicesContent (
+    devices: Device[],
+    document: DeviceBulkBuildedContent
+  ): DeviceMRequestContent[] {
     const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
     const devicesDocuments = devicesContent.map(device => {
       device._source.tenantId = document.tenantId;
@@ -297,7 +402,10 @@ export class DeviceService {
     return devicesDocuments;
   }
 
-  private async writeToDatabase (deviceDocuments: DeviceMRequestContent[], writer: (deviceDocuments: DeviceMRequestContent[]) => Promise<JSONObject>) {
+  private async writeToDatabase (
+    deviceDocuments: DeviceMRequestContent[],
+    writer: (deviceDocuments: DeviceMRequestContent[]) => Promise<JSONObject>
+  ) {
     const results = {
       errors: [],
       successes: [],
@@ -319,7 +427,7 @@ export class DeviceService {
 
       results.successes.push(successes);
       results.errors.push(errors);
-    }
+    };
 
     let offset = 0;
     let offsetLimit = limit;

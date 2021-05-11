@@ -24,9 +24,9 @@ Body:
 ``` js
 {
     // Using JSON
-    "sensorIds" ["test-id"],
+    "deviceIds" ["test-id"],
     // Using CSV syntax
-    "csv": "sensorId\ntest-id"
+    "csv": "deviceId\ntest-id"
 }
 ```
 
@@ -34,13 +34,13 @@ Body:
 
 ``` js
 {
-    "controller": "device-manager/sensor",
+    "controller": "device-manager/device",
     "action": "mAttachTenant",
     "body": {
         // Using JSON
-        "sensorIds" ["test-id"],
+        "deviceIds" ["test-id"],
         // Using CSV syntax
-        "csv": "sensorId\ntest-id"
+        "csv": "deviceId\ntest-id"
     }
 }
 ```
@@ -51,8 +51,8 @@ Body:
 
 Body properties, must contain at least one of
 
-* `sensorIds`: an array of string containing identifiers of a sensor already attached
-* `csv`: a csv syntax compatible containing at least one header `sensorId` with his corresponding values
+* `deviceIds`: an array of string containing identifiers of a device already attached
+* `csv`: a csv syntax compatible containing at least one header `deviceId` with his corresponding values
 
 ---
 
@@ -70,7 +70,7 @@ Body properties, must contain at least one of
     "status": 200,
     "error": null,
     "index": "<index>",
-    "controller": "device-manager/sensor",
+    "controller": "device-manager/device",
     "action": "mDetach",
     "requestId": "<unique request identifier>",
     "result": {

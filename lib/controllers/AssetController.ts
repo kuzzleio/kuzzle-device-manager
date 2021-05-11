@@ -43,9 +43,9 @@ export class AssetController extends CRUDController {
   }
 
   async create (request: KuzzleRequest) {
-    const type = this.getBodyString(request, 'type');
-    const model = this.getBodyString(request, 'model');
-    const reference = this.getBodyString(request, 'reference');
+    const type = request.getBodyString('type');
+    const model = request.getBodyString('model');
+    const reference = request.getBodyString('reference');
 
     if (! request.input.resource._id) {
       const assetContent: BaseAssetContent = {

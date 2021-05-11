@@ -18,7 +18,7 @@ The device document will be duplicated inside the tenant "devices" collection.
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/devices/_mAttach[?refresh=wait_for][&strict=true|false]
+URL: http://kuzzle:7512/_/device-manager/devices/_mAttach[?refresh=wait_for][&strict]
 Method: PUT
 Body:
 ```
