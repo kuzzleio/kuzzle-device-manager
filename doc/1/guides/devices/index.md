@@ -106,7 +106,7 @@ deviceManager.mappings.devices.measures = {
 
 ## Attach to a tenant
 
-Devices can be attached to tenant by using the [device-manager/device:attach](/kuzzle-iot-platform/device-manager/1/controllers/device/attach) API action.
+Devices can be attached to tenant by using the [device-manager/device:attach](/official-plugins/device-manager/1/controllers/device/attach) API action.
 
 When attached, the device document is copied inside the `devices` collection of the tenant index.
 
@@ -137,7 +137,7 @@ The `tenantId` property is set to `null` for all of them in the `device-manager`
 
 ## Link to an asset
 
-Devices can be linked to an asset by using the [device-manager/device:link](/kuzzle-iot-platform/device-manager/1/controllers/device/link) API action.
+Devices can be linked to an asset by using the [device-manager/device:link](/official-plugins/device-manager/1/controllers/device/link) API action.
 
 When linked, the device measures are copied inside the asset document.
 

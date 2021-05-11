@@ -104,7 +104,7 @@ You can then use lifecycle hooks to modify a payload while it's been processed
   - `beforeUpdate`: Enrichment hook executed before updating a device
   - `afterUpdate`: Hook executed after updating a device
 
-See also: [Decoder abstract class](/kuzzle-iot-platform/device-manager/1/classes/decoder).
+See also: [Decoder abstract class](/official-plugins/device-manager/1/classes/decoder).
 
 ## Saving raw payloads
 

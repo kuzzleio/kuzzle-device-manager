@@ -1,6 +1,6 @@
 {
   "name": "kuzzle-plugin-device-manager",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "author": "",
   "scripts": {
@@ -18,10 +18,10 @@
     "clean": "touch index.ts && npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
     "package:create": "npm run build && npm pack",
     "doc:prepare": "npx kuzdoc framework:install",
-    "doc:dev": "npx kuzdoc repo:dev -d /kuzzle-iot-platform/device-manager/1/ -v 1",
-    "doc:build": "npx kuzdoc repo:build -d /kuzzle-iot-platform/device-manager/1/ -v 1",
-    "doc:upload": "npx kuzdoc repo:deploy -d /kuzzle-iot-platform/device-manager/1/ -v 1",
-    "doc:cloudfront": "npx kuzdoc repo:cloudfront -d /kuzzle-iot-platform/device-manager/1/*",
+    "doc:dev": "npx kuzdoc repo:dev -d /official-plugins/device-manager/1/ -v 1",
+    "doc:build": "npx kuzdoc repo:build -d /official-plugins/device-manager/1/ -v 1",
+    "doc:upload": "npx kuzdoc repo:deploy -d /official-plugins/device-manager/1/ -v 1",
+    "doc:cloudfront": "npx kuzdoc repo:cloudfront -d /official-plugins/device-manager/1/*",
     "doc:deploy": "npm run doc:upload && npm run doc:cloudfront"
   },
   "license": "Apache-2.0",
