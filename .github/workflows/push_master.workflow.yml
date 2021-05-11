@@ -51,7 +51,8 @@ jobs:
   documentation-production:
     name: Deployment Doc Prod
     runs-on: ubuntu-18.04
-    needs: [functional-tests, documentation-dead-links]
+    needs: [functional-tests]
+    # needs: [functional-tests, documentation-dead-links]
     steps:
       - uses: actions/checkout@v2
       - name: Cache node modules
