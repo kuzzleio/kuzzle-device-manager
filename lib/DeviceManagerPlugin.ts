@@ -286,5 +286,5 @@ export class DeviceManagerPlugin extends Plugin {
     }
 
     return request;
-  };
+  }
 }
