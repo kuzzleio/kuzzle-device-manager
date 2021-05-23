@@ -110,11 +110,10 @@ export class EngineService {
   }
 
   async exists (index: string): Promise<boolean> {
-    const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engine',
-      action: 'exists',
-      index,
-    });
+    const tenantExists = await this.sdk.document.exists(
+      this.config.adminIndex,
+      'engines',
+      index);
 
     return tenantExists;
   }
