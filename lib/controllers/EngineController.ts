@@ -53,6 +53,7 @@ export class EngineController {
   async create (request: KuzzleRequest) {
     const index = request.getIndex();
     const tenantGroup = request.getString('group', 'shared');
+
     const { collections } = await this.engineService.create(index, tenantGroup);
 
     return { index, collections };
@@ -60,13 +61,16 @@ export class EngineController {
 
   async update (request: KuzzleRequest) {
     const index = request.getIndex();
-    const { collections } = await this.engineService.update(index);
+    const tenantGroup = request.getString('group', 'shared');
+
+    const { collections } = await this.engineService.update(index, tenantGroup);
 
     return { index, collections };
   }
 
   async delete (request: KuzzleRequest) {
     const index = request.getIndex();
+
     const { collections } = await this.engineService.delete(index);
 
     return { index, collections };
@@ -79,6 +83,8 @@ export class EngineController {
   async exists (request: KuzzleRequest) {
     const index = request.getIndex();
 
-    return this.sdk.document.exists(this.config.adminIndex, 'engines', index);
+    const exists = await this.engineService.exists(index);
+
+    return { exists };
   }
 }
