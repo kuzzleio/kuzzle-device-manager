@@ -1,19 +1,30 @@
 import { JSONObject } from 'kuzzle';
 
-export class AssetsCustomProperties {
-
+export class CustomProperties {
   /**
-   * Custom mappings for "assets" collection
+   * Collection mappings for each tenant group
    */
-  public definitions: Map<string, JSONObject>;
+   public definitions: Map<string, JSONObject>;
 
-  constructor(assetsMappings: JSONObject) {
-    this.definitions = new Map<string, JSONObject>();
+   constructor (defaultMappings: JSONObject) {
+     this.definitions = new Map<string, JSONObject>();
 
-    // Initialize shared assets properties from default mappings
-    this.definitions.set('shared', assetsMappings.properties);
-  }
+     // Initialize shared properties from default mappings
+     this.definitions.set('shared', defaultMappings.properties);
+   }
 
+   mergeMappings (propertyName: string, mappings: JSONObject, tenantGroup: string) {
+    const property = this.definitions.has(tenantGroup)
+      ? this.definitions.get(tenantGroup)[propertyName] || {}
+      : {};
+
+    property.properties = { ...property.properties, ...mappings }
+
+    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), property });
+   }
+}
+
+export class AssetsCustomProperties extends CustomProperties {
   /**
    * Define custom mappings for the "metadata" property
    *
@@ -22,29 +33,11 @@ export class AssetsCustomProperties {
    *    - `tenantGroup` Name of the group for which the mappings should apply
    */
   registerMetadata (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
-    const metadata = this.definitions.has(tenantGroup)
-      ? this.definitions.get(tenantGroup).metadata || {}
-      : {};
-
-    metadata.properties = { ...metadata.properties, ...mappings }
-
-    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), metadata });
+    this.mergeMappings('metadata', mappings, tenantGroup);
   }
 }
 
-export class DevicesCustomProperties {
-  /**
-   * Custom mappings for "devices" collection
-   */
-  public definitions: Map<string, JSONObject>;
-
-  constructor (deviceMappings: JSONObject) {
-    this.definitions = new Map<string, JSONObject>();
-
-    // Initialize shared devices properties from default mappings
-    this.definitions.set('shared', deviceMappings.properties);
-  }
-
+export class DevicesCustomProperties extends CustomProperties {
   /**
    * Define custom mappings for the "qos" property
    *
@@ -53,13 +46,7 @@ export class DevicesCustomProperties {
    *    - `tenantGroup` Name of the group for which the mappings should apply
    */
   registerQos (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
-    const qos = this.definitions.has(tenantGroup)
-      ? this.definitions.get(tenantGroup).qos || {}
-      : {};
-
-    qos.properties = { ...qos.properties, ...mappings }
-
-    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), qos });
+    this.mergeMappings('qos', mappings, tenantGroup);
   }
 
   /**
@@ -70,13 +57,7 @@ export class DevicesCustomProperties {
    *    - `tenantGroup` Name of the group for which the mappings should apply
    */
   registerMetadata (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
-    const metadata = this.definitions.has(tenantGroup)
-      ? this.definitions.get(tenantGroup).metadata || {}
-      : {};
-
-    metadata.properties = { ...metadata.properties, ...mappings }
-
-    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), metadata });
+    this.mergeMappings('metadata', mappings, tenantGroup);
   }
 
   /**
@@ -88,15 +69,6 @@ export class DevicesCustomProperties {
    *    - `tenantGroup` Name of the group for which the mappings should apply
    */
   registerMeasure (measureName: string, mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
-    const measures = this.definitions.has(tenantGroup)
-      ? this.definitions.get(tenantGroup).measures || {}
-      : {};
-
-    measures.properties = {
-      ...measures.properties,
-      [measureName]: { ...mappings }
-    };
-
-    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), measures });
+    this.mergeMappings('measures', { [measureName]: { ...mappings } }, tenantGroup);
   }
 }

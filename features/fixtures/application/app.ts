@@ -36,12 +36,29 @@ deviceManager.devices.registerMeasure('gravity', {
   }
 }, { tenantGroup: 'astronaut' });
 
+deviceManager.devices.registerMeasure('acceleration', {
+  properties: {
+    updatedAt: { type: 'date' },
+    payloadUuid: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
+    acceleration: { type: 'float' },
+  }
+}, { tenantGroup: 'astronaut' });
+
 deviceManager.devices.registerQos({
   battery: { type: 'integer' }
 });
 
 deviceManager.devices.registerQos({
   durability: { type: 'float' }
+}, { tenantGroup: 'astronaut' });
+
+deviceManager.devices.registerQos({
+  signalStrenght: { type: 'float' }
 }, { tenantGroup: 'astronaut' });
 
 deviceManager.devices.registerMetadata({
@@ -73,6 +90,10 @@ deviceManager.assets.registerMetadata({
 
 deviceManager.assets.registerMetadata({
   stillAlive: { type: 'boolean' }
+}, { tenantGroup: 'astronaut' });
+
+deviceManager.assets.registerMetadata({
+  freezing: { type: 'boolean' }
 }, { tenantGroup: 'astronaut' });
 
 app.plugin.use(deviceManager);
