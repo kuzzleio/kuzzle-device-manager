@@ -16,34 +16,29 @@ export class AssetsCustomProperties {
 
   /**
    * Define custom mappings for the "metadata" property
-   * 
-   * @param mapping Mapping definiton of the "metadata" property
+   *
+   * @param mappings Mappings definition of the "metadata" property
    * @param options Additional options
-   *    - `tenantGroup` Name of the group for which the mapping should apply
+   *    - `tenantGroup` Name of the group for which the mappings should apply
    */
-  registerMetadata (mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
-    const tenantGroup = options.tenantGroup;
-    
-    this.definitions.set(tenantGroup, {
-      ...this.definitions.get(tenantGroup),
-      metadata: {
-        dynamic: 'false',
-        properties: {
-          ...mapping
-        }
-      }
-    });    
+  registerMetadata (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
+    const metadata = this.definitions.has(tenantGroup)
+      ? this.definitions.get(tenantGroup).metadata || {}
+      : {};
+
+    metadata.properties = { ...metadata.properties, ...mappings }
+
+    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), metadata });
   }
 }
 
 export class DevicesCustomProperties {
-
   /**
    * Custom mappings for "devices" collection
    */
   public definitions: Map<string, JSONObject>;
 
-  constructor(deviceMappings: JSONObject) {
+  constructor (deviceMappings: JSONObject) {
     this.definitions = new Map<string, JSONObject>();
 
     // Initialize shared devices properties from default mappings
@@ -52,73 +47,56 @@ export class DevicesCustomProperties {
 
   /**
    * Define custom mappings for the "qos" property
-   * 
-   * @param mapping Mapping definiton of the "qos" property
+   *
+   * @param mappings Mappings definition of the "qos" property
    * @param options Additional options
-   *    - `tenantGroup` Name of the group for which the mapping should apply
+   *    - `tenantGroup` Name of the group for which the mappings should apply
    */
-  registerQos (mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
-    const tenantGroup = options.tenantGroup;
-    
-    this.definitions.set(tenantGroup, {
-      ...this.definitions.get(tenantGroup),
-      qos: {
-        dynamic: 'false',
-        properties: {
-          ...mapping
-        }
-      }
-    });
+  registerQos (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
+    const qos = this.definitions.has(tenantGroup)
+      ? this.definitions.get(tenantGroup).qos || {}
+      : {};
+
+    qos.properties = { ...qos.properties, ...mappings }
+
+    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), qos });
   }
 
   /**
    * Define custom mappings for the "metadata" property
-   * 
-   * @param mapping Mapping definiton of the "metadata" property
+   *
+   * @param mappings Mappings definition of the "metadata" property
    * @param options Additional options
-   *    - `tenantGroup` Name of the group for which the mapping should apply
+   *    - `tenantGroup` Name of the group for which the mappings should apply
    */
-  registerMetadata (mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
-    const tenantGroup = options.tenantGroup;
-    
-    this.definitions.set(tenantGroup, {
-      ...this.definitions.get(tenantGroup),
-      metadata: {
-        dynamic: 'false',
-        properties: {
-          ...mapping
-        }
-      }
-    });
+  registerMetadata (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
+    const metadata = this.definitions.has(tenantGroup)
+      ? this.definitions.get(tenantGroup).metadata || {}
+      : {};
+
+    metadata.properties = { ...metadata.properties, ...mappings }
+
+    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), metadata });
   }
 
   /**
    * Define custom mappings for the "measures" property
-   * 
+   *
    * @param measureName Name of the measure property you mean to add (eg. 'temperature')
-   * @param mapping Mapping definiton of the added measure property
+   * @param mappings Mappings definition of the added measure property
    * @param options Additional options
-   *    - `tenantGroup` Name of the group for which the mapping should apply
+   *    - `tenantGroup` Name of the group for which the mappings should apply
    */
-  registerMeasure (measureName: string, mapping: JSONObject, options: JSONObject = { tenantGroup: 'shared' }) {
-    const tenantGroup = options.tenantGroup;
-    let properties;
+  registerMeasure (measureName: string, mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
+    const measures = this.definitions.has(tenantGroup)
+      ? this.definitions.get(tenantGroup).measures || {}
+      : {};
 
-    const group = this.definitions.get(tenantGroup);
-    if (group) {
-      properties = group.measures && group.measures.properties 
-        ? group.measures.properties
-        : undefined
-    }
-    this.definitions.set(tenantGroup, {
-      ...this.definitions.get(tenantGroup),
-      measures: {
-        dynamic: 'false',
-        properties: {
-          ...properties,
-          [measureName]: { ...mapping }
-        }
-      }
-    });
+    measures.properties = {
+      ...measures.properties,
+      [measureName]: { ...mappings }
+    };
+
+    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), measures });
   }
 }

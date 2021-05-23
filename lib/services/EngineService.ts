@@ -3,6 +3,7 @@ import {
   EmbeddedSDK,
   JSONObject,
   BadRequestError,
+  NotFoundError,
 } from 'kuzzle';
 
 export class EngineService {
@@ -18,25 +19,17 @@ export class EngineService {
     this.context = context;
   }
 
-  private async hasEngine (index: string) {
-    const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engine',
-      action: 'exists',
-      index,
-    });
-
-    if (! tenantExists) {
-      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
-    }
-  }
-
   async create (index: string, tenantGroup = 'shared') {
+    if (await this.exists(index)) {
+      throw new BadRequestError(`Tenant "${index}" already have a device-manager engine`);
+    }
+
+    const collections = [];
     const promises = [];
     const templates = this.config.mappings.get(tenantGroup)
       ? this.config.mappings.get(tenantGroup)
       : this.config.mappings.get('shared');
-    
-    const collections = [];
+
     for (const [collection, mappings] of Object.entries(templates)) {
       promises.push(
         this.sdk.collection.create(index, collection, { mappings })
@@ -56,12 +49,16 @@ export class EngineService {
     return { collections };
   }
 
-  async update (index: string) {
-    const promises = [];
-    const templates = this.config.mappings.get('shared');
-    const collections = [];
+  async update (index: string, tenantGroup = 'shared') {
+    if (! await this.exists(index)) {
+      throw new NotFoundError(`Tenant "${index}" does not have a device-manager engine`);
+    }
 
-    await this.hasEngine(index);
+    const collections = [];
+    const promises = [];
+    const templates = this.config.mappings.get(tenantGroup)
+      ? this.config.mappings.get(tenantGroup)
+      : this.config.mappings.get('shared');
 
     for (const [collection, mappings] of Object.entries(templates)) {
       promises.push(this.sdk.collection.update(index, collection, { mappings })
@@ -75,11 +72,13 @@ export class EngineService {
   }
 
   async delete (index: string) {
+    if (! await this.exists(index)) {
+      throw new NotFoundError(`Tenant "${index}" does not have a device-manager engine`);
+    }
+
     const promises = [];
     const templates = Object.keys(this.config.mappings.get('shared'));
     const collections = [];
-
-    await this.hasEngine(index);
 
     for (const collection of templates) {
       promises.push(this.sdk.collection.delete(index, collection)
@@ -108,6 +107,16 @@ export class EngineService {
     return {
       engines: result.hits.map(hit => hit._source as any)
     };
+  }
+
+  async exists (index: string): Promise<boolean> {
+    const { result: tenantExists } = await this.sdk.query({
+      controller: 'device-manager/engine',
+      action: 'exists',
+      index,
+    });
+
+    return tenantExists;
   }
 }
 

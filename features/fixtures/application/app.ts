@@ -57,6 +57,11 @@ deviceManager.devices.registerMetadata({
   awake: { type: 'boolean' }
 }, { tenantGroup: 'astronaut' });
 
+deviceManager.devices.registerMetadata({
+  sleeping: { type: 'boolean' }
+}, { tenantGroup: 'astronaut' });
+
+
 deviceManager.assets.registerMetadata({
   warranty: {
     type: 'keyword',

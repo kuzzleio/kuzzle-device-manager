@@ -23,16 +23,17 @@ Feature: Device Manager Plugin
       | properties.payload.properties.deviceEUI.type | "keyword" |
     When I successfully execute the action "device-manager/engine":"create" with args:
       | index | "tenant-custom" |
-      | group | "astronaut" |
+      | group | "astronaut"     |
     When I successfully execute the action "collection":"getMapping" with args:
       | index      | "tenant-custom" |
-      | collection | "devices"        |
+      | collection | "devices"       |
     Then I should receive a result matching:
-      | properties.metadata.properties.awake.type                     | "boolean" |
-      | properties.qos.properties.durability.type                     | "float"   |
-      | properties.measures.properties.gravity.properties.value.type  | "float"   |
+      | properties.metadata.properties.awake.type                    | "boolean" |
+      | properties.metadata.properties.sleeping.type                 | "boolean" |
+      | properties.qos.properties.durability.type                    | "float"   |
+      | properties.measures.properties.gravity.properties.value.type | "float"   |
     When I successfully execute the action "collection":"getMapping" with args:
       | index      | "tenant-custom" |
-      | collection | "assets"       |
+      | collection | "assets"        |
     Then I should receive a result matching:
-      | properties.metadata.properties.stillAlive.type                    | "boolean" |
+      | properties.metadata.properties.stillAlive.type | "boolean" |

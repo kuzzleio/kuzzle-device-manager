@@ -11,21 +11,21 @@ Add properties definition to the `qos` field of the `devices` collection.
 
 
 ```ts
-registerQos (mapping: JSONObject, options: JSONObject);
+registerQos (mappings: JSONObject, options: JSONObject);
 ```
 
 <br/>
 
 | Arguments | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
-| `mapping` | <pre>JSONObject</pre> | Mapping definiton of the `qos` property |
+| `mappings` | <pre>JSONObject</pre> | Mappings definiton of the `qos` property |
 | `options` | <pre>JSONObject</pre> | Additional options |
 
 ### options
 
 | Properties | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
-| `tenantGroup` | <pre>string</pre> | Name of the group for which the mapping should apply. If unspecified, mappings will apply to every group who does not have specific definition. |
+| `tenantGroup` | <pre>string</pre> | Name of the group for which the mappings should apply. If unspecified, mappings will apply to every group who does not have specific definition. |
 
 ## Usage
 
