@@ -7,6 +7,7 @@ import {
   Mutex,
   KuzzleRequest,
   BadRequestError,
+  Inflector,
 } from 'kuzzle';
 
 import {
@@ -138,7 +139,7 @@ export class DeviceManagerPlugin extends Plugin {
    * @returns Corresponding API action requestPayload
    */
   registerDecoder (decoder: Decoder): { controller: string, action: string } {
-    decoder.action = decoder.action || kebabCase(decoder.deviceModel);
+    decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
 
     if (this.api['device-manager/payload'].actions[decoder.action]) {
       throw new PluginImplementationError(`A decoder for "${decoder.deviceModel}" has already been registered.`);
@@ -286,13 +287,4 @@ export class DeviceManagerPlugin extends Plugin {
 
     return request;
   };
-}
-
-function kebabCase (string) {
-  return string
-    // get all lowercase letters that are near to uppercase ones
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    // replace all spaces and low dash
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase();
 }
