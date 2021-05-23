@@ -119,7 +119,6 @@ export class DeviceManagerPlugin extends Plugin {
       'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeDetach': this.pipeCheckEngine.bind(this),
       'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
     };
 
