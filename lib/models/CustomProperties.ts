@@ -20,7 +20,7 @@ export class CustomProperties {
 
     property.properties = { ...property.properties, ...mappings }
 
-    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), property });
+    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), [propertyName]: property });
    }
 }
 
