@@ -8,7 +8,7 @@ description: Updates a device manager engine on an index
 # update
 
 
-Updates new device manager engine on an index
+Updates a new device manager engine on an index
 
 ---
 

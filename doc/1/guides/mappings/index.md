@@ -65,7 +65,7 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.assets.registerMetadata({
   warranty: {
     type: 'keyword',                   // Since no tenant group is specified,
-    fields: {                          // this mappings will be applied to every
+    fields: {                          // these mappings will be applied to every
       text: { type: 'text' }           // tenant by default
     }
   }
@@ -74,7 +74,7 @@ deviceManager.assets.registerMetadata({
 deviceManager.assets.registerMetadata({
   stillAlive: { type: 'boolean' }
 }, { tenantGroup: 'astronaut' });      // A tenant group is specified : 'astronaut'.
-                                       // This mappings definition for the `metadata` field
+                                       // These are the mappings definition for the `metadata` field
                                        // of the `assets` collection will only be applied for
                                        // the 'astronaut' tenant.
 ```                                    
