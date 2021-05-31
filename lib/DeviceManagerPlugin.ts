@@ -5,6 +5,9 @@ import {
   EmbeddedSDK,
   PluginImplementationError,
   Mutex,
+  KuzzleRequest,
+  BadRequestError,
+  Inflector,
 } from 'kuzzle';
 
 import {
@@ -94,13 +97,13 @@ export class DeviceManagerPlugin extends Plugin {
    */
   async init (config: JSONObject, context: PluginContext) {
     this.config = { ...this.defaultConfig, ...config };
-    
+
     this.context = context;
 
     this.config.mappings = new Map<string, JSONObject>();
 
     this.mergeMappings();
-    
+
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
@@ -111,6 +114,13 @@ export class DeviceManagerPlugin extends Plugin {
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/engine'] = this.engineController.definition;
+
+    this.pipes = {
+      'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
+      'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
+    };
 
     await this.initDatabase();
 
@@ -131,7 +141,7 @@ export class DeviceManagerPlugin extends Plugin {
    * @returns Corresponding API action requestPayload
    */
   registerDecoder (decoder: Decoder): { controller: string, action: string } {
-    decoder.action = decoder.action || kebabCase(decoder.deviceModel);
+    decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
 
     if (this.api['device-manager/payload'].actions[decoder.action]) {
       throw new PluginImplementationError(`A decoder for "${decoder.deviceModel}" has already been registered.`);
@@ -263,13 +273,20 @@ export class DeviceManagerPlugin extends Plugin {
     this.config.collections = this.config.mappings.get('shared');
     this.config.adminCollections.devices = this.config.mappings.get('shared').devices;
   }
-}
 
-function kebabCase (string) {
-  return string
-    // get all lowercase letters that are near to uppercase ones
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    // replace all spaces and low dash
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase();
+  private async pipeCheckEngine (request: KuzzleRequest) {
+    const index = request.getIndex();
+
+    const { result: { exists } } = await this.sdk.query({
+      controller: 'device-manager/engine',
+      action: 'exists',
+      index,
+    });
+
+    if (! exists) {
+      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
+    }
+
+    return request;
+  }
 }

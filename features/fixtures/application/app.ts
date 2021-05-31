@@ -10,6 +10,7 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
+// Register shared properties
 deviceManager.devices.registerMeasure('humidity', {
   properties: {
     updatedAt: { type: 'date' },
@@ -23,6 +24,29 @@ deviceManager.devices.registerMeasure('humidity', {
   }
 });
 
+deviceManager.devices.registerQos({
+  battery: { type: 'integer' }
+});
+
+deviceManager.devices.registerMetadata({
+  group: {
+    type: 'keyword',
+    fields: {
+      text: { type: 'text' }
+    }
+  }
+});
+
+deviceManager.assets.registerMetadata({
+  warranty: {
+    type: 'keyword',
+    fields: {
+      text: { type: 'text' }
+    }
+  }
+});
+
+// Register properties for "astronaut" tenant group
 deviceManager.devices.registerMeasure('gravity', {
   properties: {
     updatedAt: { type: 'date' },
@@ -36,38 +60,44 @@ deviceManager.devices.registerMeasure('gravity', {
   }
 }, { tenantGroup: 'astronaut' });
 
-deviceManager.devices.registerQos({
-  battery: { type: 'integer' }
-});
+deviceManager.devices.registerMeasure('acceleration', {
+  properties: {
+    updatedAt: { type: 'date' },
+    payloadUuid: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
+    acceleration: { type: 'float' },
+  }
+}, { tenantGroup: 'astronaut' });
+
 
 deviceManager.devices.registerQos({
   durability: { type: 'float' }
 }, { tenantGroup: 'astronaut' });
 
-deviceManager.devices.registerMetadata({
-  group: {
-    type: 'keyword',
-    fields: {
-      text: { type: 'text' }
-    }
-  }
-});
+deviceManager.devices.registerQos({
+  signalStrenght: { type: 'float' }
+}, { tenantGroup: 'astronaut' });
+
 
 deviceManager.devices.registerMetadata({
   awake: { type: 'boolean' }
 }, { tenantGroup: 'astronaut' });
 
-deviceManager.assets.registerMetadata({
-  warranty: {
-    type: 'keyword',
-    fields: {
-      text: { type: 'text' }
-    }
-  }
-});
+deviceManager.devices.registerMetadata({
+  sleeping: { type: 'boolean' }
+}, { tenantGroup: 'astronaut' });
+
 
 deviceManager.assets.registerMetadata({
   stillAlive: { type: 'boolean' }
+}, { tenantGroup: 'astronaut' });
+
+deviceManager.assets.registerMetadata({
+  freezing: { type: 'boolean' }
 }, { tenantGroup: 'astronaut' });
 
 app.plugin.use(deviceManager);
