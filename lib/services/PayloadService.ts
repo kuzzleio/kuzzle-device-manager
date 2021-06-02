@@ -120,7 +120,7 @@ export class PayloadService {
       'devices',
       enrichedDevice._id,
       enrichedDevice._source,
-      { source: true });
+      { source: true, retryOnConflict: 10 });
 
     const updatedDevice = new Device(deviceDocument._source as any, deviceDocument._id);
 
@@ -133,7 +133,8 @@ export class PayloadService {
         tenantId,
         'devices',
         enrichedDevice._id,
-        enrichedDevice._source);
+        enrichedDevice._source,
+        { retryOnConflict: 10 });
 
       refreshableCollections.push([tenantId, 'devices']);
     }
@@ -150,7 +151,7 @@ export class PayloadService {
         'assets',
         assetId,
         { measures: assetMeasures },
-        { source: true });
+        { source: true, retryOnConflict: 10 });
 
       updatedAsset = new BaseAsset(assetDocument._source as any, assetDocument._id);
 
