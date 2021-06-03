@@ -6,6 +6,9 @@ runs:
     - name: Install deps
       run: npm ci
       shell: bash
+    - name: Install Kuzdoc (latest minor)
+      run: npm i kuzdoc
+      shell: bash
     - name: Prepare documentation
       run: npm run doc:prepare
       shell: bash
