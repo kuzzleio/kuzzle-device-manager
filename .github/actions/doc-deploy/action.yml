@@ -33,7 +33,8 @@ runs:
     - name: Build documentation
       run: |
         rm -rf doc/framework
-        npm install --production=false
+        npm ci
+        npm install kuzdoc
         npm run doc:prepare
         npm run doc:build
       env:
