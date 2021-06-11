@@ -1,9 +1,9 @@
-name: Push on Master
+name: Push on Dev
 
 on:
   push:
     branches:
-      - master
+      - 1-dev
 
 jobs:
   lint:
@@ -51,11 +51,10 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_KEY }}
       - uses: ./.github/actions/dead-links
 
-  documentation-production:
-    name: Deployment Doc Prod
+  documentation-dev:
+    name: Deployment Doc Dev
     runs-on: ubuntu-18.04
-    needs: [functional-tests]
-    # needs: [functional-tests, documentation-dead-links]
+    needs: [functional-tests, documentation-dead-links]
     steps:
       - uses: actions/checkout@v2
       - name: Cache node modules
@@ -74,9 +73,9 @@ jobs:
           node-version: "12"
       - uses: ./.github/actions/doc-deploy
         with:
+          S3_BUCKET: docs-next.kuzzle.io
+          CLOUDFRONT_ID: E2ZCCEK9GRB49U
           REGION: us-west-2
-          S3_BUCKET: docs.kuzzle.io
-          CLOUDFRONT_ID: E3D6RP0POLCJMM
-          FRAMEWORK_BRANCH: master
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          FRAMEWORK_BRANCH: develop
