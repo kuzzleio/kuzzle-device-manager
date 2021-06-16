@@ -64,7 +64,7 @@ export class CRUDController {
     const index = request.getIndex();
     const { searchBody } = request.getSearchParams();
 
-    return this.as(request.context.user).query(
+    const res = await this.as(request.context.user).query(
       {
         controller: 'document',
         action: 'search',
@@ -74,6 +74,8 @@ export class CRUDController {
         ...request.input.args
       }
     );
+
+    return res.result
   }
 
   /**
