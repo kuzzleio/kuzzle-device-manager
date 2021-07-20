@@ -1,9 +1,9 @@
-name: Push on Master
+name: Push on Dev
 
 on:
   push:
     branches:
-      - master
+      - 1-dev
 
 jobs:
   lint:
@@ -28,7 +28,7 @@ jobs:
       - uses: ./.github/actions/functional-test
 
   doc-deploy:
-    name: Deployment Doc Prod
+    name: Deploy Doc to NEXT
     runs-on: ubuntu-latest
     needs: [doc-snippets, unit-tests]
     steps:
@@ -47,5 +47,5 @@ jobs:
           repo: documentation
           github_token: ${{ secrets.ACCESS_TOKEN_CI }}
           workflow_file_name: child_repo.workflow.yml
-          ref: master
+          ref: develop
           inputs: '{"repo_name": "${{ steps.extract-refs.outputs.repo }}", "branch": "${{ github.head_ref }}", "version": "${{ steps.extract-refs.outputs.version }}"}'

@@ -4,10 +4,10 @@ runs:
   using: "composite"
   steps:
     - name: Install deps
-      run: npm ci
+      run: npm ci --production=false
       shell: bash
     - name: Install Kuzdoc (latest minor)
-      run: npm i kuzdoc
+      run: npm i --save-dev kuzdoc
       shell: bash
     - name: Prepare documentation
       run: npm run doc:prepare
