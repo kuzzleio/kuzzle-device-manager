@@ -10,6 +10,20 @@ const defaultRights = require('../fixtures/rights');
 
 const World = require('./world');
 
+async function resetEngine (sdk, index) {
+  await sdk.query({
+    controller: 'device-manager/engine',
+    action: 'delete',
+    index,
+  }).catch(() => {});
+
+  await sdk.query({
+    controller: 'device-manager/engine',
+    action: 'create',
+    index,
+  });
+}
+
 BeforeAll({ timeout: 30 * 1000 }, async function () {
   const world = new World({});
 
@@ -36,6 +50,11 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
     refresh: 'wait_for'
   });
 
+  await Promise.all([
+    resetEngine(world.sdk, 'tenant-ayse'),
+    resetEngine(world.sdk, 'tenant-kuzzle'),
+  ]);
+
   world.sdk.disconnect();
 });
 
@@ -49,22 +68,15 @@ Before({ timeout: 30 * 1000 }, async function () {
 
   await this.sdk.connect();
 
-  if (await this.sdk.index.exists('tenant-kuzzle')) {
-    await this.sdk.index.delete('tenant-kuzzle');
-  }
+  await Promise.all([
+    truncateCollection(this.sdk, 'device-manager', 'devices'),
 
-  await this.sdk.collection.truncate('device-manager', 'engines');
-  await this.sdk.collection.truncate('device-manager', 'devices');
+    truncateCollection(this.sdk, 'tenant-kuzzle', 'assets'),
+    truncateCollection(this.sdk, 'tenant-kuzzle', 'devices'),
 
-  if (await this.sdk.index.exists('tenant-ayse')) {
-    await this.sdk.index.delete('tenant-ayse');
-  }
-
-  await this.sdk.query({
-    controller: 'device-manager/engine',
-    action: 'create',
-    index: 'tenant-ayse'
-  });
+    truncateCollection(this.sdk, 'tenant-ayse', 'assets'),
+    truncateCollection(this.sdk, 'tenant-ayse', 'devices'),
+  ]);
 
   await this.sdk.query({
     controller: 'admin',
@@ -119,3 +131,13 @@ After({ tags: '@realtime' }, function () {
 
   return Promise.all(promises);
 });
+
+async function truncateCollection (sdk, index, collection) {
+  return sdk.collection.refresh(index, collection)
+    .then(() => sdk.document.deleteByQuery(index, collection, {}, { refresh: 'wait_for' }))
+    .catch(error => {
+      if (! error.message.includes('does not exist')) {
+        throw error;
+      }
+    })
+}

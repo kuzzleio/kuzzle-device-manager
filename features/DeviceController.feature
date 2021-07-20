@@ -1,7 +1,6 @@
 Feature: Device Manager device controller
 
   Scenario: Attach a device to a tenant
-    Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "DummyTemp-detached" |
       | index | "tenant-kuzzle"      |
@@ -10,7 +9,6 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
 
   Scenario: Attach multiple devices to a tenant using JSON
-    Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/device":"mAttach" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
       | body.records.0.deviceId | "DummyTemp-detached"               |
@@ -24,7 +22,6 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant using CSV
-    Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/device":"mAttach" with args:
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
@@ -35,13 +32,11 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant while exceeding documentsWriteCount limit
-    Given an engine on index "tenant-kuzzle"
     When I succesfully execute "device-manager/device":"mAttach" while exeding documentsWriteCount limit
     Then All devices in "device-manager" "devices" have the property "tenantId" to "tenant-kuzzle"
     And All documents "tenant-kuzzle":"devices"  exists
 
   Scenario: Error when assigning a device to a tenant
-    Given an engine on index "tenant-kuzzle"
     When I execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "DummyTemp-detached" |
       | index | "tenant-kaliop"      |
@@ -57,7 +52,6 @@ Feature: Device Manager device controller
       | message | "These devices \"DummyTemp-detached\" are already attached to a tenant" |
 
   Scenario: Detach device from a tenant
-    Given an engine on index "tenant-kuzzle"
     And I successfully execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "DummyTemp-detached" |
       | index | "tenant-kuzzle"      |
@@ -68,7 +62,6 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
 
   Scenario: Detach multiple devices to a tenant using JSON
-    Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/device":"mAttach" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
       | body.records.0.deviceId | "DummyTemp-detached"               |
@@ -84,7 +77,6 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
 
   Scenario: Detach multiple devices to a tenant using CSV
-    Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/device":"mAttach" with args:
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
     When I successfully execute the action "device-manager/device":"mDetach" with args:
@@ -97,14 +89,12 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
 
   Scenario: Detach multiple device to a tenant while exceeding documentsWriteCount limit
-    Given an engine on index "tenant-kuzzle"
     When I succesfully execute "device-manager/device":"mAttach" while exeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mDetach" while exeding documentsWriteCount limit
     Then All devices in "device-manager" "devices" have the property "tenantId" to "null"
     And All documents "tenant-kuzzle":"devices" does not exists
 
   Scenario: Error when detaching from a tenant
-    Given an engine on index "tenant-kuzzle"
     When I execute the action "device-manager/device":"detach" with args:
       | _id | "DummyTemp-detached" |
     Then I should receive an error matching:

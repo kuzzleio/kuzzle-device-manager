@@ -145,3 +145,17 @@ Feature: Payloads Controller
       | asset._id  | "PERFO-unlinked"                   |
       | tenantId   | "tenant-ayse"                      |
 
+  Scenario: Trigger tenant specific events
+    Given I subscribe to "tests":"messages" notifications
+    And I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked" |
+      | assetId | "PERFO-unlinked"                   |
+    When I successfully receive a "dummy-temp" payload with:
+      | deviceEUI    | "attached_ayse_unlinked" |
+      | register55   | 42.2                     |
+      | batteryLevel | 0.4                      |
+    Then I should receive realtime notifications for "tests":"messages" matching:
+      | result._source.device._id          | result._source.asset._id |
+      | "DummyTemp-attached_ayse_unlinked" | "PERFO-unlinked"         |
+
+

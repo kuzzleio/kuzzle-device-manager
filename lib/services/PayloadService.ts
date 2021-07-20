@@ -127,6 +127,7 @@ export class PayloadService {
     refreshableCollections.push([this.config.adminIndex, 'devices']);
 
     const tenantId = previousDevice._source.tenantId;
+    let updatedAsset = null;
     // Propagate device into tenant index
     if (tenantId) {
       await this.sdk.document.update(
@@ -137,25 +138,29 @@ export class PayloadService {
         { retryOnConflict: 10 });
 
       refreshableCollections.push([tenantId, 'devices']);
-    }
 
-    // Propagate measures into linked asset
-    const assetId = previousDevice._source.assetId;
-    let updatedAsset = null;
+      // Propagate measures into linked asset
+      const assetId = previousDevice._source.assetId;
 
-    if (assetId) {
-      const assetMeasures = await decoder.copyToAsset(updatedDevice);
+      if (assetId) {
+        const assetMeasures = await decoder.copyToAsset(updatedDevice);
 
-      const assetDocument = await this.sdk.document.update(
-        tenantId,
-        'assets',
-        assetId,
-        { measures: assetMeasures },
-        { source: true, retryOnConflict: 10 });
+        const assetDocument = await this.sdk.document.update(
+          tenantId,
+          'assets',
+          assetId,
+          { measures: assetMeasures },
+          { source: true, retryOnConflict: 10 });
 
-      updatedAsset = new BaseAsset(assetDocument._source as any, assetDocument._id);
+        updatedAsset = new BaseAsset(assetDocument._source as any, assetDocument._id);
 
-      refreshableCollections.push([tenantId, 'assets']);
+        refreshableCollections.push([tenantId, 'assets']);
+      }
+
+      await global.app.trigger(`tenant:${tenantId}:device:new-payload`, {
+        device: updatedDevice.serialize(),
+        asset: updatedAsset ? updatedAsset.serialize() : null,
+      });
     }
 
     if (refresh === 'wait_for') {
