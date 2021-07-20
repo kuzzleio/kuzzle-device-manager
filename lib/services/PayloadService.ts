@@ -157,10 +157,14 @@ export class PayloadService {
         refreshableCollections.push([tenantId, 'assets']);
       }
 
-      await global.app.trigger(`tenant:${tenantId}:device:new-payload`, {
+      const payload =  {
         device: updatedDevice.serialize(),
         asset: updatedAsset ? updatedAsset.serialize() : null,
-      });
+      };
+      // Workflow events only accept KuzzleRequest as first parameter
+      await global.app.trigger(
+        `tenant:${tenantId}:device:new-payload`,
+        new KuzzleRequest({}, { result: payload }));
     }
 
     if (refresh === 'wait_for') {

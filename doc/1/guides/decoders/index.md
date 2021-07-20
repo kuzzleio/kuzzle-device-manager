@@ -93,12 +93,12 @@ When a new payload is received, if the corresponding device is assigned to a ten
 
 The `<tenant-id>` part will be replaced by the corresponding tenant ID (index name).  
 
-This event payload contains the following properties:
+This event payload contains a `KuzzleRequest` with the following properties:
 
 | name     | type              | description                                           |
 |:---------|:------------------|:------------------------------------------------------|
-| `device` | <pre>Device</pre> | Device document corresponding to the received payload |
-| `asset`  | <pre>Asset</pre>  | Asset document if the device is linked to an asset    |
+| `result.device` | <pre>Device</pre> | Device document corresponding to the received payload |
+| `result.asset`  | <pre>Asset</pre>  | Asset document if the device is linked to an asset    |
 
 ## Action results
 
