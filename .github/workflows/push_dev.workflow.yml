@@ -30,7 +30,7 @@ jobs:
   doc-deploy:
     name: Deploy Doc to NEXT
     runs-on: ubuntu-latest
-    needs: [doc-snippets, unit-tests]
+    needs: [functional-tests]
     steps:
       - uses: actions/checkout@v2
         with:
