@@ -1,7 +1,6 @@
 Feature: Device Manager asset controller
 
   Scenario: Create, update and delete an asset
-    Given an engine on index "tenant-kuzzle"
     When I successfully execute the action "device-manager/asset":"create" with args:
       | index          | "tenant-kuzzle" |
       | body.type      | "outils"        |

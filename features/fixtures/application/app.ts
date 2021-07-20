@@ -107,7 +107,16 @@ app.hook.register('request:onError', async (request: KuzzleRequest) => {
 });
 
 app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
-app.config.set('limits.documentsWriteCount', 20);
+// app.config.set('limits.documentsWriteCount', 20);
+
+/**
+ * Register pipe for scenario used to test the tenant specific event propagation
+ */
+app.pipe.register('tenant:tenant-ayse:device:new-payload', async eventParam => {
+  await app.sdk.realtime.publish('tests', 'messages', eventParam);
+
+  return eventParam;
+});
 
 app.start()
   .then(() => {
