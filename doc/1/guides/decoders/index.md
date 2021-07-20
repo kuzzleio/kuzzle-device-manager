@@ -87,6 +87,19 @@ class KarakoyDecoder extends Decoder {
 }
 ```
 
+### Receive payload: tenant event
+
+When a new payload is received, if the corresponding device is assigned to a tenant then a Tenant Event is triggered: `tenant:<tenant-id>:device:new-payload`
+
+The `<tenant-id>` part will be replaced by the corresponding tenant ID (index name).  
+
+This event payload contains the following properties:
+
+| name     | type              | description                                           |
+|:---------|:------------------|:------------------------------------------------------|
+| `device` | <pre>Device</pre> | Device document corresponding to the received payload |
+| `asset`  | <pre>Asset</pre>  | Asset document if the device is linked to an asset    |
+
 ## Action results
 
 Each action will return an object containing those 3 properties:
