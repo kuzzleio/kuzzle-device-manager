@@ -10,7 +10,7 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
-// Register shared properties
+// Register commons properties
 deviceManager.devices.registerMeasure('humidity', {
   properties: {
     updatedAt: { type: 'date' },

@@ -52,7 +52,7 @@ export class EngineController {
 
   async create (request: KuzzleRequest) {
     const index = request.getIndex();
-    const tenantGroup = request.getString('group', 'shared');
+    const tenantGroup = request.getString('group', 'commons');
 
     const { collections } = await this.engineService.create(index, tenantGroup);
 
@@ -61,7 +61,7 @@ export class EngineController {
 
   async update (request: KuzzleRequest) {
     const index = request.getIndex();
-    const tenantGroup = request.getString('group', 'shared');
+    const tenantGroup = request.getString('group', 'commons');
 
     const { collections } = await this.engineService.update(index, tenantGroup);
 

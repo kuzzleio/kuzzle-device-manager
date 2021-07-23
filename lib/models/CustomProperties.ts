@@ -9,8 +9,8 @@ export class CustomProperties {
    constructor (defaultMappings: JSONObject) {
      this.definitions = new Map<string, JSONObject>();
 
-     // Initialize shared properties from default mappings
-     this.definitions.set('shared', defaultMappings.properties);
+     // Initialize commons properties from default mappings
+     this.definitions.set('commons', defaultMappings.properties);
    }
 
    mergeMappings (propertyName: string, mappings: JSONObject, tenantGroup: string) {
@@ -32,7 +32,7 @@ export class AssetsCustomProperties extends CustomProperties {
    * @param options Additional options
    *    - `tenantGroup` Name of the group for which the mappings should apply
    */
-  registerMetadata (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
+  registerMetadata (mappings: JSONObject, { tenantGroup='commons' }: { tenantGroup?: string } = {}) {
     this.mergeMappings('metadata', mappings, tenantGroup);
   }
 }
@@ -45,7 +45,7 @@ export class DevicesCustomProperties extends CustomProperties {
    * @param options Additional options
    *    - `tenantGroup` Name of the group for which the mappings should apply
    */
-  registerQos (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
+  registerQos (mappings: JSONObject, { tenantGroup='commons' }: { tenantGroup?: string } = {}) {
     this.mergeMappings('qos', mappings, tenantGroup);
   }
 
@@ -56,7 +56,7 @@ export class DevicesCustomProperties extends CustomProperties {
    * @param options Additional options
    *    - `tenantGroup` Name of the group for which the mappings should apply
    */
-  registerMetadata (mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
+  registerMetadata (mappings: JSONObject, { tenantGroup='commons' }: { tenantGroup?: string } = {}) {
     this.mergeMappings('metadata', mappings, tenantGroup);
   }
 
@@ -68,7 +68,7 @@ export class DevicesCustomProperties extends CustomProperties {
    * @param options Additional options
    *    - `tenantGroup` Name of the group for which the mappings should apply
    */
-  registerMeasure (measureName: string, mappings: JSONObject, { tenantGroup='shared' }: { tenantGroup?: string } = {}) {
+  registerMeasure (measureName: string, mappings: JSONObject, { tenantGroup='commons' }: { tenantGroup?: string } = {}) {
     this.mergeMappings('measures', { [measureName]: { ...mappings } }, tenantGroup);
   }
 }

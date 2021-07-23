@@ -188,14 +188,14 @@ export class DeviceManagerPlugin extends Plugin {
    * Merge custom properties mappings for 'assets' and 'devices' collection by tenant group
    */
   private mergeMappings() {
-    const assetsProperties = this.assets.definitions.get('shared');
-    const devicesProperties = this.devices.definitions.get('shared');
+    const assetsProperties = this.assets.definitions.get('commons');
+    const devicesProperties = this.devices.definitions.get('commons');
 
     // Retrieve each group name which has custom properties definition
     const tenantGroups = [...new Set(Array.from(this.devices.definitions.keys())
       .concat(Array.from(this.assets.definitions.keys())))];
 
-    // Init each group with 'devices' and 'assets' shared properties definition
+    // Init each group with 'devices' and 'assets' commons properties definition
     for (const tenantGroup of tenantGroups) {
       this.config.mappings.set(tenantGroup, {
         assets: {
@@ -209,7 +209,7 @@ export class DeviceManagerPlugin extends Plugin {
       });
     }
 
-    // Merge custom 'devices' properties with shared properties
+    // Merge custom 'devices' properties with commons properties
     for (const [tenantGroup, customProperties] of this.devices.definitions) {
       this.config.mappings.set(tenantGroup, {
         assets: this.config.mappings.get(tenantGroup).assets,
@@ -223,7 +223,7 @@ export class DeviceManagerPlugin extends Plugin {
       });
     }
 
-    // Merge custom 'assets' properties with shared properties
+    // Merge custom 'assets' properties with commons properties
     for (const [tenantGroup, customProperties] of this.assets.definitions) {
       this.config.mappings.set(tenantGroup, {
         assets: {
@@ -270,8 +270,8 @@ export class DeviceManagerPlugin extends Plugin {
     }
 
     // Copy common mappings into the config
-    this.config.collections = this.config.mappings.get('shared');
-    this.config.adminCollections.devices = this.config.mappings.get('shared').devices;
+    this.config.collections = this.config.mappings.get('commons');
+    this.config.adminCollections.devices = this.config.mappings.get('commons').devices;
   }
 
   private async pipeCheckEngine (request: KuzzleRequest) {
