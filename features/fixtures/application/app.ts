@@ -58,7 +58,7 @@ deviceManager.devices.registerMeasure('gravity', {
     },
     value: { type: 'float' },
   }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.devices.registerMeasure('acceleration', {
   properties: {
@@ -71,34 +71,34 @@ deviceManager.devices.registerMeasure('acceleration', {
     },
     acceleration: { type: 'float' },
   }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 
 deviceManager.devices.registerQos({
   durability: { type: 'float' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.devices.registerQos({
   signalStrenght: { type: 'float' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 
 deviceManager.devices.registerMetadata({
   awake: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.devices.registerMetadata({
   sleeping: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 
 deviceManager.assets.registerMetadata({
   stillAlive: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.assets.registerMetadata({
   freezing: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 app.plugin.use(deviceManager);
 

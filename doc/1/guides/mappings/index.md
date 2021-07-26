@@ -73,7 +73,7 @@ deviceManager.assets.registerMetadata({
 
 deviceManager.assets.registerMetadata({
   stillAlive: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });      // A tenant group is specified : 'astronaut'.
+}, { group: 'astronaut' });      // A tenant group is specified : 'astronaut'.
                                        // These are the mappings definition for the `metadata` field
                                        // of the `assets` collection will only be applied for
                                        // the 'astronaut' tenant.
@@ -206,7 +206,7 @@ deviceManager.devices.registerMeasure('gravity', {
     },
     value: { type: 'float' },
   }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.devices.registerQos({           // By default, every 'devices' tenant collection
   battery: { type: 'integer' }                // will have the 'battery' property with the provided  
@@ -215,7 +215,7 @@ deviceManager.devices.registerQos({           // By default, every 'devices' ten
 
 deviceManager.devices.registerQos({           // The 'devices' collection of the 'astronaut' tenant
   durability: { type: 'float' }               // will have the 'durability' property with the provided
-}, { tenantGroup: 'astronaut' });             // mappings inside the 'qos' field.
+}, { group: 'astronaut' });             // mappings inside the 'qos' field.
                                               
 deviceManager.devices.registerMetadata({      // By default, every 'devices' tenant collection
   group: {                                    // will have the 'group' property with the provided

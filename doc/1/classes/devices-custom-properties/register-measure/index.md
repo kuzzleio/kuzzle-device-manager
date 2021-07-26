@@ -26,7 +26,7 @@ registerMeasure (measureName: string, mappings: JSONObject, options: JSONObject)
 
 | Properties | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
-| `tenantGroup` | <pre>string</pre> | Name of the group for which the mappings should apply. If unspecified, mappings will apply to every group who does not have specific definition |
+| `group` | <pre>string</pre> | Name of the group for which the mappings should apply. If unspecified, mappings will apply to every group who does not have specific definition |
 
 ## Usage
 
@@ -44,7 +44,7 @@ deviceManagerPlugin.devices.registerMeasure(
       celsius: { type: 'float' }
     }
   },
-  { tenantGroup: 'water_management' });
+  { group: 'water_management' });
 
 deviceManagerPlugin.devices.registerMeasure(
   'humidity',
@@ -58,5 +58,5 @@ deviceManagerPlugin.devices.registerMeasure(
       }
     }
   },
-  { tenantGroup: 'air_quality' });
+  { group: 'air_quality' });
 ```

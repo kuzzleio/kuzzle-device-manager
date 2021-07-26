@@ -13,14 +13,14 @@ export class CustomProperties {
      this.definitions.set('commons', defaultMappings.properties);
    }
 
-   mergeMappings (propertyName: string, mappings: JSONObject, tenantGroup: string) {
-    const property = this.definitions.has(tenantGroup)
-      ? this.definitions.get(tenantGroup)[propertyName] || {}
+   mergeMappings (propertyName: string, mappings: JSONObject, group: string) {
+    const property = this.definitions.has(group)
+      ? this.definitions.get(group)[propertyName] || {}
       : {};
 
     property.properties = { ...property.properties, ...mappings }
 
-    this.definitions.set(tenantGroup, { ...this.definitions.get(tenantGroup), [propertyName]: property });
+    this.definitions.set(group, { ...this.definitions.get(group), [propertyName]: property });
    }
 }
 
@@ -30,10 +30,10 @@ export class AssetsCustomProperties extends CustomProperties {
    *
    * @param mappings Mappings definition of the "metadata" property
    * @param options Additional options
-   *    - `tenantGroup` Name of the group for which the mappings should apply
+   *    - `group` Name of the group for which the mappings should apply
    */
-  registerMetadata (mappings: JSONObject, { tenantGroup='commons' }: { tenantGroup?: string } = {}) {
-    this.mergeMappings('metadata', mappings, tenantGroup);
+  registerMetadata (mappings: JSONObject, { group='commons' }: { group?: string } = {}) {
+    this.mergeMappings('metadata', mappings, group);
   }
 }
 
@@ -43,10 +43,10 @@ export class DevicesCustomProperties extends CustomProperties {
    *
    * @param mappings Mappings definition of the "qos" property
    * @param options Additional options
-   *    - `tenantGroup` Name of the group for which the mappings should apply
+   *    - `group` Name of the group for which the mappings should apply
    */
-  registerQos (mappings: JSONObject, { tenantGroup='commons' }: { tenantGroup?: string } = {}) {
-    this.mergeMappings('qos', mappings, tenantGroup);
+  registerQos (mappings: JSONObject, { group='commons' }: { group?: string } = {}) {
+    this.mergeMappings('qos', mappings, group);
   }
 
   /**
@@ -54,10 +54,10 @@ export class DevicesCustomProperties extends CustomProperties {
    *
    * @param mappings Mappings definition of the "metadata" property
    * @param options Additional options
-   *    - `tenantGroup` Name of the group for which the mappings should apply
+   *    - `group` Name of the group for which the mappings should apply
    */
-  registerMetadata (mappings: JSONObject, { tenantGroup='commons' }: { tenantGroup?: string } = {}) {
-    this.mergeMappings('metadata', mappings, tenantGroup);
+  registerMetadata (mappings: JSONObject, { group='commons' }: { group?: string } = {}) {
+    this.mergeMappings('metadata', mappings, group);
   }
 
   /**
@@ -66,9 +66,9 @@ export class DevicesCustomProperties extends CustomProperties {
    * @param measureName Name of the measure property you mean to add (eg. 'temperature')
    * @param mappings Mappings definition of the added measure property
    * @param options Additional options
-   *    - `tenantGroup` Name of the group for which the mappings should apply
+   *    - `group` Name of the group for which the mappings should apply
    */
-  registerMeasure (measureName: string, mappings: JSONObject, { tenantGroup='commons' }: { tenantGroup?: string } = {}) {
-    this.mergeMappings('measures', { [measureName]: { ...mappings } }, tenantGroup);
+  registerMeasure (measureName: string, mappings: JSONObject, { group='commons' }: { group?: string } = {}) {
+    this.mergeMappings('measures', { [measureName]: { ...mappings } }, group);
   }
 }

@@ -19,15 +19,15 @@ export class EngineService {
     this.context = context;
   }
 
-  async create (index: string, tenantGroup = 'commons') {
+  async create (index: string, group = 'commons') {
     if (await this.exists(index)) {
       throw new BadRequestError(`Tenant "${index}" already have a device-manager engine`);
     }
 
     const collections = [];
     const promises = [];
-    const templates = this.config.mappings.get(tenantGroup)
-      ? this.config.mappings.get(tenantGroup)
+    const templates = this.config.mappings.get(group)
+      ? this.config.mappings.get(group)
       : this.config.mappings.get('commons');
 
     for (const [collection, mappings] of Object.entries(templates)) {
@@ -49,15 +49,15 @@ export class EngineService {
     return { collections };
   }
 
-  async update (index: string, tenantGroup = 'commons') {
+  async update (index: string, group = 'commons') {
     if (! await this.exists(index)) {
       throw new NotFoundError(`Tenant "${index}" does not have a device-manager engine`);
     }
 
     const collections = [];
     const promises = [];
-    const templates = this.config.mappings.get(tenantGroup)
-      ? this.config.mappings.get(tenantGroup)
+    const templates = this.config.mappings.get(group)
+      ? this.config.mappings.get(group)
       : this.config.mappings.get('commons');
 
     for (const [collection, mappings] of Object.entries(templates)) {
