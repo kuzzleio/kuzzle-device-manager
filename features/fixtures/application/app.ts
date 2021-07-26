@@ -58,7 +58,7 @@ deviceManager.devices.registerMeasure('gravity', {
     },
     value: { type: 'float' },
   }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.devices.registerMeasure('acceleration', {
   properties: {
@@ -71,34 +71,34 @@ deviceManager.devices.registerMeasure('acceleration', {
     },
     acceleration: { type: 'float' },
   }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 
 deviceManager.devices.registerQos({
   durability: { type: 'float' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.devices.registerQos({
   signalStrenght: { type: 'float' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 
 deviceManager.devices.registerMetadata({
   awake: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.devices.registerMetadata({
   sleeping: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 
 deviceManager.assets.registerMetadata({
   stillAlive: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.assets.registerMetadata({
   freezing: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 app.plugin.use(deviceManager);
 
@@ -113,7 +113,7 @@ app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
  * Register pipe for scenario used to test the tenant specific event propagation
  */
 app.pipe.register('tenant:tenant-ayse:device:new-payload', async eventParam => {
-  await app.sdk.realtime.publish('tests', 'messages', eventParam);
+  await app.sdk.realtime.publish('tests', 'messages', eventParam.result);
 
   return eventParam;
 });

@@ -25,7 +25,7 @@ registerMetadata (mappings: JSONObject, options: JSONObject);
 
 | Properties | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
-| `tenantGroup` | <pre>string</pre> | Name of the group for which the mappings should apply. If unspecified, mappings will apply to every group who does not have specific definition. |
+| `group` | <pre>string</pre> | Name of the group for which the mappings should apply. If unspecified, mappings will apply to every group who does not have specific definition. |
 
 ## Usage
 
@@ -40,5 +40,5 @@ deviceManagerPlugin.devices.registerMetadata({
     fields: {
       text: { type: 'text' } }
   }
-}, { tenantGroup: 'water_management' });
+}, { group: 'water_management' });
 ```

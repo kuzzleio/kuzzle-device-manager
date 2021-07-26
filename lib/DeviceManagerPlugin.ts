@@ -192,12 +192,12 @@ export class DeviceManagerPlugin extends Plugin {
     const devicesProperties = this.devices.definitions.get('commons');
 
     // Retrieve each group name which has custom properties definition
-    const tenantGroups = [...new Set(Array.from(this.devices.definitions.keys())
+    const groups = [...new Set(Array.from(this.devices.definitions.keys())
       .concat(Array.from(this.assets.definitions.keys())))];
 
     // Init each group with 'devices' and 'assets' commons properties definition
-    for (const tenantGroup of tenantGroups) {
-      this.config.mappings.set(tenantGroup, {
+    for (const group of groups) {
+      this.config.mappings.set(group, {
         assets: {
           dynamic: 'false',
           properties: assetsProperties
@@ -210,9 +210,9 @@ export class DeviceManagerPlugin extends Plugin {
     }
 
     // Merge custom 'devices' properties with commons properties
-    for (const [tenantGroup, customProperties] of this.devices.definitions) {
-      this.config.mappings.set(tenantGroup, {
-        assets: this.config.mappings.get(tenantGroup).assets,
+    for (const [group, customProperties] of this.devices.definitions) {
+      this.config.mappings.set(group, {
+        assets: this.config.mappings.get(group).assets,
         devices: {
           dynamic: 'false',
           properties: {
@@ -224,8 +224,8 @@ export class DeviceManagerPlugin extends Plugin {
     }
 
     // Merge custom 'assets' properties with commons properties
-    for (const [tenantGroup, customProperties] of this.assets.definitions) {
-      this.config.mappings.set(tenantGroup, {
+    for (const [group, customProperties] of this.assets.definitions) {
+      this.config.mappings.set(group, {
         assets: {
           dynamic: 'false',
           properties: {
@@ -233,7 +233,7 @@ export class DeviceManagerPlugin extends Plugin {
             ...customProperties
           }
         },
-        devices: this.config.mappings.get(tenantGroup).devices,
+        devices: this.config.mappings.get(group).devices,
       });
 
       // Use "devices" mappings to generate "assets" collection mappings
@@ -244,7 +244,7 @@ export class DeviceManagerPlugin extends Plugin {
         model: { type: 'keyword' },
       };
 
-      const tenantMappings = this.config.mappings.get(tenantGroup);
+      const tenantMappings = this.config.mappings.get(group);
 
       for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
         tenantMappings.assets.properties.measures.properties[measureType] = {
@@ -258,7 +258,7 @@ export class DeviceManagerPlugin extends Plugin {
           }
         };
       }
-      this.config.mappings.set(tenantGroup, tenantMappings);
+      this.config.mappings.set(group, tenantMappings);
     }
 
     // Merge custom mappings from decoders for payloads collection
