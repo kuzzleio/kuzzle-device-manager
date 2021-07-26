@@ -113,7 +113,7 @@ app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
  * Register pipe for scenario used to test the tenant specific event propagation
  */
 app.pipe.register('tenant:tenant-ayse:device:new-payload', async eventParam => {
-  await app.sdk.realtime.publish('tests', 'messages', eventParam);
+  await app.sdk.realtime.publish('tests', 'messages', eventParam.result);
 
   return eventParam;
 });
