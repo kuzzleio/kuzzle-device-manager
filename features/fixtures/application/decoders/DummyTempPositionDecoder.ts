@@ -10,6 +10,8 @@ export class DummyTempPositionDecoder extends Decoder {
     if (payload.deviceEUI === undefined) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
+
+    return true;
   }
 
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {

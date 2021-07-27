@@ -34,13 +34,21 @@ Feature: Payloads Controller
       | tenantId                         | "_UNDEFINED_" |
       | assetId                          | "_UNDEFINED_" |
 
-  Scenario: Validate a DummyTemp payload
+  Scenario: Reject with error a DummyTemp payload
     When I receive a "dummy-temp" payload with:
       | deviceEUI    | null |
       | register55   | 42.2 |
       | batteryLevel | 0.7  |
     Then I should receive an error matching:
       | message | "Invalid payload: missing \"deviceEUI\"" |
+
+  Scenario: Reject a DummyTemp payload
+    When I receive a "dummy-temp" payload with:
+      | deviceEUI    | "4242" |
+      | invalid      | true   |
+      | register55   | 42.2   |
+      | batteryLevel | 0.7    |
+    Then The document "device-manager":"devices":"DummyTemp-4242" does not exists
 
   Scenario: Receive a payload with 2 measures
     When I successfully receive a "dummy-temp-position" payload with:
