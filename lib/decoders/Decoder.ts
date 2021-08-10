@@ -81,7 +81,7 @@ export abstract class Decoder {
    * @return A boolean indicating if the payload is valid
    */
   async validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
-    return false;
+    return true;
   }
 
   /**
