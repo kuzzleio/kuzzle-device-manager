@@ -36,7 +36,12 @@ export class PayloadService {
     let valid = true;
 
     try {
-      await decoder.validate(payload, request);
+      valid = await decoder.validate(payload, request);
+
+      if (! valid) {
+        return;
+      }
+
       await decoder.beforeProcessing(payload, request);
     }
     catch (error) {

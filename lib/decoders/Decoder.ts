@@ -70,12 +70,18 @@ export abstract class Decoder {
   /**
    * Validate the payload format before processing.
    *
+   * If the method:
+   *   - return true: the payload will be processed (status 200)
+   *   - return false: the payload will be skipped (status 200)
+   *   - throw an error: the payload will be skipped (status 4** or 5**)
+   *
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
-   * @throws BadRequestError if the payload is invalid
+   * @return A boolean indicating if the payload is valid
    */
-  async validate (payload: JSONObject, request: KuzzleRequest): Promise<void> | never {
+  async validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
+    return true;
   }
 
   /**
@@ -98,7 +104,6 @@ export abstract class Decoder {
    * @param request Original request
    */
   async beforeProcessing (payload: JSONObject, request: KuzzleRequest): Promise<void> {
-
   }
 
   /**
