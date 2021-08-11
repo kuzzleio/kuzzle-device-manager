@@ -64,12 +64,17 @@ export class DeviceManagerPlugin extends Plugin {
     };
 
     this.defaultConfig = {
-      adminIndex: 'device-manager',
+      adminIndex: 'administration',
       adminCollections: {
-        engines: {
+        config: {
           dynamic: 'strict',
           properties: {
-            index: { type: 'keyword' },
+            type: { type: 'keyword' },
+            engine: {
+              properties: {
+                index: { type: 'keyword' },
+              }
+            }
           }
         },
         devices: devicesMappings,
@@ -88,7 +93,7 @@ export class DeviceManagerPlugin extends Plugin {
       collections: {
         assets: assetsMappings,
         devices: devicesMappings
-      }
+      },
     };
   }
 

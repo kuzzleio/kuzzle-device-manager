@@ -1,7 +1,7 @@
 const { devices } = require('./devices');
 
 module.exports = {
-  'device-manager': {
+  'administration': {
     devices: [
       ...devices,
       { index: { _id: 'DummyTemp-detached' } },

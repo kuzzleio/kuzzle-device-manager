@@ -5,7 +5,7 @@ Feature: Payloads Controller
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
-    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
+    Then The document "administration":"devices":"DummyTemp-12345" content match:
       | reference                        | "12345"       |
       | model                            | "DummyTemp"   |
       | measures.temperature.updatedAt   | "_DATE_NOW_"  |
@@ -24,7 +24,7 @@ Feature: Payloads Controller
       | deviceEUI    | "12345" |
       | register55   | 42.2    |
       | batteryLevel | 0.7     |
-    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
+    Then The document "administration":"devices":"DummyTemp-12345" content match:
       | reference                        | "12345"       |
       | model                            | "DummyTemp"   |
       | measures.temperature.updatedAt   | "_DATE_NOW_"  |
@@ -48,7 +48,7 @@ Feature: Payloads Controller
       | invalid      | true   |
       | register55   | 42.2   |
       | batteryLevel | 0.7    |
-    Then The document "device-manager":"devices":"DummyTemp-4242" does not exists
+    Then The document "administration":"devices":"DummyTemp-4242" does not exists
 
   Scenario: Receive a payload with 2 measures
     When I successfully receive a "dummy-temp-position" payload with:
@@ -57,7 +57,7 @@ Feature: Payloads Controller
       | location.lat  | 42.2    |
       | location.lon  | 2.42    |
       | location.accu | 2100    |
-    Then The document "device-manager":"devices":"DummyTempPosition-12345" content match:
+    Then The document "administration":"devices":"DummyTempPosition-12345" content match:
       | reference                        | "12345"             |
       | model                            | "DummyTempPosition" |
       | measures.temperature.updatedAt   | "_DATE_NOW_"        |
@@ -77,7 +77,7 @@ Feature: Payloads Controller
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
-    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
+    Then The document "administration":"devices":"DummyTemp-12345" content match:
       | qos.registerEnriched | true          |
       | qos.updateEnriched   | "_UNDEFINED_" |
     # Update
@@ -85,7 +85,7 @@ Feature: Payloads Controller
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
-    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
+    Then The document "administration":"devices":"DummyTemp-12345" content match:
       | qos.registerEnriched | true |
       | qos.updateEnriched   | true |
 
@@ -109,7 +109,7 @@ Feature: Payloads Controller
       | deviceEUI    | "attached_ayse_unlinked" |
       | register55   | 42.2                     |
       | batteryLevel | 0.4                      |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | tenantId                         | "tenant-ayse" |
       | measures.temperature.updatedAt   | "_DATE_NOW_"  |
       | measures.temperature.payloadUuid | "_STRING_"    |
@@ -134,7 +134,7 @@ Feature: Payloads Controller
       | deviceEUI    | "attached_ayse_unlinked" |
       | register55   | 42.2                     |
       | batteryLevel | 0.4                      |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | tenantId | "tenant-ayse"    |
       | assetId  | "PERFO-unlinked" |
     Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:

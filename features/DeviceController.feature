@@ -4,7 +4,7 @@ Feature: Device Manager device controller
     When I successfully execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "DummyTemp-detached" |
       | index | "tenant-kuzzle"      |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+    Then The document "administration":"devices":"DummyTemp-detached" content match:
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
 
@@ -14,9 +14,9 @@ Feature: Device Manager device controller
       | body.records.0.deviceId | "DummyTemp-detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
       | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+    Then The document "administration":"devices":"DummyTemp-detached" content match:
       | tenantId | "tenant-kuzzle" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
@@ -24,16 +24,16 @@ Feature: Device Manager device controller
   Scenario: Attach multiple device to a tenant using CSV
     When I successfully execute the action "device-manager/device":"mAttach" with args:
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+    Then The document "administration":"devices":"DummyTemp-detached" content match:
       | tenantId | "tenant-kuzzle" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant while exceeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mAttach" while exeding documentsWriteCount limit
-    Then All devices in "device-manager" "devices" have the property "tenantId" to "tenant-kuzzle"
+    Then All devices in "administration" "devices" have the property "tenantId" to "tenant-kuzzle"
     And All documents "tenant-kuzzle":"devices"  exists
 
   Scenario: Error when assigning a device to a tenant
@@ -57,7 +57,7 @@ Feature: Device Manager device controller
       | index | "tenant-kuzzle"      |
     When I successfully execute the action "device-manager/device":"detach" with args:
       | _id | "DummyTemp-detached" |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+    Then The document "administration":"devices":"DummyTemp-detached" content match:
       | tenantId | null |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
 
@@ -69,9 +69,9 @@ Feature: Device Manager device controller
       | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
     When I successfully execute the action "device-manager/device":"mDetach" with args:
       | body.deviceIds | ["DummyTemp-detached","DummyTemp-attached_ayse_unlinked"] |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+    Then The document "administration":"devices":"DummyTemp-detached" content match:
       | tenantId | null |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | tenantId | null |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
@@ -81,9 +81,9 @@ Feature: Device Manager device controller
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
     When I successfully execute the action "device-manager/device":"mDetach" with args:
       | body.csv | "deviceId\\nDummyTemp-detached\\nDummyTemp-attached_ayse_unlinked," |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+    Then The document "administration":"devices":"DummyTemp-detached" content match:
       | tenantId | null |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | tenantId | null |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
@@ -91,7 +91,7 @@ Feature: Device Manager device controller
   Scenario: Detach multiple device to a tenant while exceeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mAttach" while exeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mDetach" while exeding documentsWriteCount limit
-    Then All devices in "device-manager" "devices" have the property "tenantId" to "null"
+    Then All devices in "administration" "devices" have the property "tenantId" to "null"
     And All documents "tenant-kuzzle":"devices" does not exists
 
   Scenario: Error when detaching from a tenant
@@ -111,7 +111,7 @@ Feature: Device Manager device controller
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -128,7 +128,7 @@ Feature: Device Manager device controller
     When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -144,7 +144,7 @@ Feature: Device Manager device controller
   Scenario: Link multiple device to multiple assets using CSV
     When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -161,7 +161,7 @@ Feature: Device Manager device controller
     When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -177,7 +177,7 @@ Feature: Device Manager device controller
   Scenario: Link multiple device to multiple assets using CSV
     When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -194,7 +194,7 @@ Feature: Device Manager device controller
     When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -210,7 +210,7 @@ Feature: Device Manager device controller
   Scenario: Link multiple device to multiple assets using CSV
     When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -247,7 +247,7 @@ Feature: Device Manager device controller
       | assetId | "PERFO-unlinked"                   |
     When I successfully execute the action "device-manager/device":"mUnlink" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
@@ -260,7 +260,7 @@ Feature: Device Manager device controller
       | assetId | "PERFO-unlinked"                   |
     When I successfully execute the action "device-manager/device":"mUnlink" with args:
       | body.csv | "deviceId\\nDummyTemp-attached_ayse_unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
@@ -278,7 +278,7 @@ Feature: Device Manager device controller
       | body.records.1.assetId  | "PERFO-unlinked"                   |
     When I successfully execute the action "device-manager/device":"unlink" with args:
       | _id | "DummyTemp-attached_ayse_unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "administration":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
@@ -294,7 +294,7 @@ Feature: Device Manager device controller
 
   Scenario: Clean payloads collection
     Given I successfully execute the action "collection":"truncate" with args:
-      | index      | "device-manager" |
+      | index      | "administration" |
       | collection | "payloads"       |
     Then I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
@@ -307,10 +307,10 @@ Feature: Device Manager device controller
       | location.lon  | 2.42    |
       | location.accu | 2100    |
     And I successfully execute the action "collection":"refresh" with args:
-      | index      | "device-manager" |
+      | index      | "administration" |
       | collection | "payloads"       |
     Then I successfully execute the action "document":"search" with args:
-      | index      | "device-manager" |
+      | index      | "administration" |
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 2 |
@@ -318,10 +318,10 @@ Feature: Device Manager device controller
       | body.days        | 0           |
       | body.deviceModel | "DummyTemp" |
     And I successfully execute the action "collection":"refresh" with args:
-      | index      | "device-manager" |
+      | index      | "administration" |
       | collection | "payloads"       |
     Then I successfully execute the action "document":"search" with args:
-      | index      | "device-manager" |
+      | index      | "administration" |
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 1 |

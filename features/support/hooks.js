@@ -69,7 +69,7 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.connect();
 
   await Promise.all([
-    truncateCollection(this.sdk, 'device-manager', 'devices'),
+    truncateCollection(this.sdk, 'administration', 'devices'),
 
     truncateCollection(this.sdk, 'tenant-kuzzle', 'assets'),
     truncateCollection(this.sdk, 'tenant-kuzzle', 'devices'),

@@ -170,6 +170,10 @@ export class PayloadService {
       await global.app.trigger(
         `tenant:${tenantId}:device:new-payload`,
         new KuzzleRequest({}, { result: payload }));
+
+      await global.app.trigger(
+        `tenant:${tenantId}:payload:new`,
+        new KuzzleRequest({}, { result: payload }));
     }
 
     if (refresh === 'wait_for') {
