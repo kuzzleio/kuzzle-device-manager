@@ -39,7 +39,7 @@ export class PayloadService {
       valid = await decoder.validate(payload, request);
 
       if (! valid) {
-        return;
+        return { valid };
       }
 
       await decoder.beforeProcessing(payload, request);
@@ -108,17 +108,16 @@ export class PayloadService {
   /**
    * Device provisioning strategy.
    *
-   * If autoProvisionning is on, device is automatically register, otherwise
+   * If autoProvisionning is on, device is automatically registered, otherwise
    * we request the admin provisioning catalog to ensure this device is allowed
    * to register.
    *
-   * After registration, we look at the admin provisioning catalog to:
+   * After registration, we look at the admin provisioning catalog entry to:
    *   - attach the device to a tenant
    *   - link the device to an asset of this tenant
    *
-   * Then we look into the tenant provisioning catalog to:
+   * Then we look into the tenant provisioning catalog entry to:
    *   - link the device to an asset of this tenant
-   *
    */
   private async deviceProvisionning (
     device: Device,

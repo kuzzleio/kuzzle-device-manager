@@ -206,6 +206,9 @@ export class DeviceManagerPlugin extends Plugin {
     }
   }
 
+  /**
+   * Initialize the config document if it does not exists
+   */
   private async initializeConfig () {
     const exists = await this.sdk.document.exists(
       this.config.adminIndex,
