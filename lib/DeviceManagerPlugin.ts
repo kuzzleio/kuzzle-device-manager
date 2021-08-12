@@ -22,6 +22,7 @@ import {
   DeviceService,
   AssetsCustomProperties,
   DevicesCustomProperties,
+  MigrationService,
 } from './services';
 import { Decoder } from './decoders';
 import {
@@ -29,6 +30,7 @@ import {
   devicesMappings,
   catalogMappings,
 } from './models';
+
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
 
@@ -39,6 +41,7 @@ export class DeviceManagerPlugin extends Plugin {
   private payloadService: PayloadService;
   private engineService: EngineService;
   private deviceService: DeviceService;
+  private migrationService: MigrationService;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -126,6 +129,8 @@ export class DeviceManagerPlugin extends Plugin {
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
+    this.migrationService = new MigrationService(this.config, context);
+
     this.assetController = new AssetController(this.config, context);
     this.engineController = new EngineController(this.config, context, this.engineService);
     this.deviceController = new DeviceController(this.config, context, this.deviceService);
@@ -143,6 +148,8 @@ export class DeviceManagerPlugin extends Plugin {
     };
 
     await this.initDatabase();
+
+    await this.migrationService.run();
 
     for (const decoder of this.decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
