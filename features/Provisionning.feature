@@ -1,15 +1,15 @@
 Feature: Device Provisionning
 
-  @provisionning
+  @provisioning
   Scenario: Provision device in the catalog
     Given a collection "administration":"config"
-    And I "update" the document "device-manager" with content:
+    And I "update" the document "plugin--device-manager" with content:
       | device-manager.autoProvisionning | false |
-    And I "create" the document "provisionning-1" with content:
+    And I "create" the document "catalog--DummyTemp-12345" with content:
       | type               | "catalog"         |
       | catalog.deviceId   | "DummyTemp-12345" |
       | catalog.authorized | true              |
-    And I "create" the document "provisionning-2" with content:
+    And I "create" the document "catalog--DummyTemp-424242" with content:
       | type               | "catalog"          |
       | catalog.deviceId   | "DummyTemp-424242" |
       | catalog.authorized | false              |
@@ -39,7 +39,7 @@ Feature: Device Provisionning
 
   Scenario: Admin catalog: Assign to tenant and asset
     Given a collection "administration":"config"
-    And I "create" the document "provisionning-1" with content:
+    And I "create" the document "catalog--DummyTemp-12345" with content:
       | type             | "catalog"         |
       | catalog.deviceId | "DummyTemp-12345" |
       | catalog.tenantId | "tenant-ayse"     |
@@ -55,12 +55,12 @@ Feature: Device Provisionning
 
   Scenario: Tenant catalog: Assign to asset
     Given a collection "administration":"config"
-    And I "create" the document "provisionning-1" with content:
+    And I "create" the document "catalog--DummyTemp-12345" with content:
       | type             | "catalog"         |
       | catalog.deviceId | "DummyTemp-12345" |
       | catalog.tenantId | "tenant-ayse"     |
     Given a collection "tenant-ayse":"config"
-    And I "create" the document "provisionning-1" with content:
+    And I "create" the document "catalog--DummyTemp-12345" with content:
       | type             | "catalog"         |
       | catalog.deviceId | "DummyTemp-12345" |
       | catalog.assetId  | "PERFO-unlinked"  |

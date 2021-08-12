@@ -106,17 +106,17 @@ export class PayloadService {
   }
 
   /**
-   * Device provisionning strategy.
+   * Device provisioning strategy.
    *
    * If autoProvisionning is on, device is automatically register, otherwise
-   * we request the admin provisionning catalog to ensure this device is allowed
+   * we request the admin provisioning catalog to ensure this device is allowed
    * to register.
    *
-   * After registration, we look at the admin provisionning catalog to:
+   * After registration, we look at the admin provisioning catalog to:
    *   - attach the device to a tenant
    *   - link the device to an asset of this tenant
    *
-   * Then we look into the tenant provisionning catalog to:
+   * Then we look into the tenant provisioning catalog to:
    *   - link the device to an asset of this tenant
    *
    */
@@ -129,7 +129,7 @@ export class PayloadService {
     const pluginConfigDocument = await this.sdk.document.get(
       this.config.adminIndex,
       'config',
-      'device-manager');
+      'plugin--device-manager');
 
     const autoProvisionning: boolean = pluginConfigDocument._source['device-manager'].autoProvisionning;
 
@@ -186,27 +186,21 @@ export class PayloadService {
   }
 
   /**
-   * Get the an entry from the provisionning catalog in corresponding index
+   * Get the device entry from the provisioning catalog in corresponding index
    */
   private async getCatalogEntry (index: string, deviceId: string): Promise<Catalog | null> {
-    const result = await this.sdk.document.search(
-      index,
-      'config',
-      {
-        query: {
-          and: [
-            { equals: { type: 'catalog' } },
-            { equals: { 'catalog.deviceId': deviceId } },
-          ]
-        }
-      },
-      { lang: 'koncorde', size: 1 });
+    try {
+      const document = await this.sdk.document.get(index, 'config', `catalog--${deviceId}`);
 
-    if (result.total === 0) {
+      return new Catalog(document);
+    }
+    catch (error) {
+      if (error.id !== 'services.storage.not_found') {
+        throw error;
+      }
+
       return null;
     }
-
-    return new Catalog(result.hits[0]);
   }
 
   private async update (

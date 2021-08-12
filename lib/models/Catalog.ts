@@ -16,13 +16,29 @@ export const catalogMappings = {
   },
 };
 
+/**
+ * Provisioning catalog entry
+ */
 export type CatalogContent = {
+  /**
+   * ID of the device
+   * (e.g. "Abeeway-123456")
+   */
   deviceId: string;
 
+  /**
+   * If set to false, the device cannot register
+   */
   authorized: boolean;
 
+  /**
+   * If set, the device will be attached to this tenant
+   */
   tenantId?: string;
 
+  /**
+   * If set, the device will be linked to this asset
+   */
   assetId?: string;
 }
 

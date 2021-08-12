@@ -134,7 +134,7 @@ After({ tags: '@realtime' }, function () {
   return Promise.all(promises);
 });
 
-After({ tags: '@provisionning', timeout: 60 * 1000 }, async function () {
+After({ tags: '@provisioning', timeout: 60 * 1000 }, async function () {
   await this.sdk.document.update('administration', 'config', 'device-manager', {
     'device-manager': {
       autoProvisionning: true,

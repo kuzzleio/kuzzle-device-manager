@@ -9,7 +9,7 @@ import {
 import { catalogMappings } from '../models';
 
 function engineId (index) {
-  return `engine--device-manager--${index}`;
+  return `engine-device-manager--${index}`;
 }
 
 export class EngineService {

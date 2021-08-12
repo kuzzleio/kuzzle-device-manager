@@ -139,6 +139,7 @@ export class DeviceManagerPlugin extends Plugin {
       'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
       'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
+      'document:beforeCreate': this.generateConfigID.bind(this),
     };
 
     await this.initDatabase();
@@ -198,24 +199,28 @@ export class DeviceManagerPlugin extends Plugin {
         ))
       );
 
-      const exists = await this.sdk.document.exists(
-        this.config.adminIndex,
-        'config',
-        'device-manager');
-
-      if (! exists) {
-        await this.sdk.document.create(
-          this.config.adminIndex,
-          'config',
-          {
-            type: 'device-manager',
-            'device-manager': { autoProvisionning: true }
-          },
-          'device-manager');
-      }
+      await this.initializeConfig();
     }
     finally {
       await mutex.unlock();
+    }
+  }
+
+  private async initializeConfig () {
+    const exists = await this.sdk.document.exists(
+      this.config.adminIndex,
+      'config',
+      'plugin--device-manager');
+
+    if (! exists) {
+      await this.sdk.document.create(
+        this.config.adminIndex,
+        'config',
+        {
+          type: 'device-manager',
+          'device-manager': { autoProvisionning: true }
+        },
+        'plugin--device-manager');
     }
   }
 
@@ -321,6 +326,22 @@ export class DeviceManagerPlugin extends Plugin {
     if (! exists) {
       throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
     }
+
+    return request;
+  }
+
+  private async generateConfigID (request: KuzzleRequest) {
+    if (request.getCollection() !== 'config') {
+      return request;
+    }
+
+    const document = request.getBody();
+
+    if (document.type !== 'catalog' || request.getId(({ ifMissing: 'ignore' }))) {
+      return request;
+    }
+
+    request.input.args._id = `catalog--${document.catalog.deviceId}`;
 
     return request;
   }
