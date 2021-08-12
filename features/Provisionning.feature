@@ -13,7 +13,6 @@ Feature: Device Provisionning
       | type               | "catalog"          |
       | catalog.deviceId   | "DummyTemp-424242" |
       | catalog.authorized | false              |
-    And I refresh the collection "administration":"config"
     # Provisionned device
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
@@ -44,7 +43,6 @@ Feature: Device Provisionning
       | catalog.deviceId | "DummyTemp-12345" |
       | catalog.tenantId | "tenant-ayse"     |
       | catalog.assetId  | "PERFO-unlinked"  |
-    And I refresh the collection "administration":"config"
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
@@ -64,8 +62,6 @@ Feature: Device Provisionning
       | type             | "catalog"         |
       | catalog.deviceId | "DummyTemp-12345" |
       | catalog.assetId  | "PERFO-unlinked"  |
-    And I refresh the collection "administration":"config"
-    And I refresh the collection "tenant-ayse":"config"
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
