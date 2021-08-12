@@ -4,7 +4,7 @@ Feature: Device Manager Plugin
   Scenario: Merge custom mappings
     # Check devices custom mappings
     When I successfully execute the action "collection":"getMapping" with args:
-      | index      | "administration" |
+      | index      | "device-manager" |
       | collection | "devices"        |
     Then I should receive a result matching:
       | properties.metadata.properties.group.type                     | "keyword" |
@@ -19,7 +19,7 @@ Feature: Device Manager Plugin
       | properties.measures.properties.humidity.properties.qos.properties.battery.type | "integer" |
       | properties.metadata.properties.warranty.type                                   | "keyword" |
     When I successfully execute the action "collection":"getMapping" with args:
-      | index      | "administration" |
+      | index      | "device-manager" |
       | collection | "payloads"       |
     Then I should receive a result matching:
       | properties.payload.properties.deviceEUI.type | "keyword" |

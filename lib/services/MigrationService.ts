@@ -38,7 +38,7 @@ export class MigrationService {
       for (const { _id, _source } of result.hits) {
         documents.push({
           _id,
-          _source: {
+          body: {
             type: 'engine-device-manager',
             engine: { index: _source.index },
           },

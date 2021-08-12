@@ -69,8 +69,8 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.connect();
 
   await Promise.all([
-    truncateCollection(this.sdk, 'administration', 'devices'),
-    removeCatalogEntries(this.sdk, 'administration'),
+    truncateCollection(this.sdk, 'device-manager', 'devices'),
+    removeCatalogEntries(this.sdk, 'device-manager'),
 
     truncateCollection(this.sdk, 'tenant-kuzzle', 'assets'),
     truncateCollection(this.sdk, 'tenant-kuzzle', 'devices'),
@@ -135,7 +135,7 @@ After({ tags: '@realtime' }, function () {
 });
 
 After({ tags: '@provisioning', timeout: 60 * 1000 }, async function () {
-  await this.sdk.document.update('administration', 'config', 'plugin--device-manager', {
+  await this.sdk.document.update('device-manager', 'config', 'plugin--device-manager', {
     'device-manager': {
       autoProvisionning: true,
     }

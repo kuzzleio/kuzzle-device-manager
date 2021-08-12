@@ -72,7 +72,7 @@ export class DeviceManagerPlugin extends Plugin {
     };
 
     this.defaultConfig = {
-      adminIndex: 'administration',
+      adminIndex: 'device-manager',
       adminCollections: {
         config: {
           dynamic: 'strict',
