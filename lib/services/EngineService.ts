@@ -6,6 +6,8 @@ import {
   NotFoundError,
 } from 'kuzzle';
 
+import { catalogMappings } from '../models';
+
 function engineId (index) {
   return `engine--device-manager--${index}`;
 }
@@ -40,6 +42,16 @@ export class EngineService {
           .then(() => { collections.push(collection); })
       );
     }
+    promises.push(this.sdk.collection.create(index, 'config', {
+      mappings: {
+        dynamic: 'strict',
+        properties: {
+          type: { type: 'keyword' },
+
+          catalog: catalogMappings,
+        }
+      } as any
+    }));
 
     await Promise.all(promises);
 

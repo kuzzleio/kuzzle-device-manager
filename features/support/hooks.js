@@ -70,12 +70,14 @@ Before({ timeout: 30 * 1000 }, async function () {
 
   await Promise.all([
     truncateCollection(this.sdk, 'administration', 'devices'),
+    removeCatalogEntries(this.sdk, 'administration'),
 
     truncateCollection(this.sdk, 'tenant-kuzzle', 'assets'),
     truncateCollection(this.sdk, 'tenant-kuzzle', 'devices'),
 
     truncateCollection(this.sdk, 'tenant-ayse', 'assets'),
     truncateCollection(this.sdk, 'tenant-ayse', 'devices'),
+    removeCatalogEntries(this.sdk, 'tenant-ayse'),
   ]);
 
   await this.sdk.query({
@@ -132,6 +134,14 @@ After({ tags: '@realtime' }, function () {
   return Promise.all(promises);
 });
 
+After({ tags: '@provisionning', timeout: 60 * 1000 }, async function () {
+  await this.sdk.document.update('administration', 'config', 'device-manager', {
+    'device-manager': {
+      autoProvisionning: true,
+    }
+  });
+});
+
 async function truncateCollection (sdk, index, collection) {
   return sdk.collection.refresh(index, collection)
     .then(() => sdk.document.deleteByQuery(index, collection, {}, { refresh: 'wait_for' }))
@@ -140,4 +150,17 @@ async function truncateCollection (sdk, index, collection) {
         throw error;
       }
     })
+}
+
+async function removeCatalogEntries (sdk, index) {
+  return sdk.collection.refresh(index, 'config')
+    .then(() => sdk.document.deleteByQuery(
+      index,
+      'config',
+      {
+        query: {
+          equals: { type: 'catalog' }
+        }
+      },
+      { lang: 'koncorde', refresh: 'wait_for' }));
 }

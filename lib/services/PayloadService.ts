@@ -8,7 +8,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 import { Decoder } from '../decoders';
-import { Device, BaseAsset } from '../models';
+import { Device, BaseAsset, Catalog } from '../models';
 
 export class PayloadService {
   private config: JSONObject;
@@ -81,10 +81,10 @@ export class PayloadService {
       device._id);
 
     if (exists) {
-      return this.update(device, decoder, request, { refresh });
+      return await this.update(device, decoder, request, { refresh });
     }
 
-    return this.register(device, decoder, request, { refresh });
+    return await this.deviceProvisionning(device, decoder, request, { refresh });
   }
 
   private async register (
@@ -103,6 +103,110 @@ export class PayloadService {
       { refresh });
 
     return decoder.afterRegister(enrichedDevice, request);
+  }
+
+  /**
+   * Device provisionning strategy.
+   *
+   * If autoProvisionning is on, device is automatically register, otherwise
+   * we request the admin provisionning catalog to ensure this device is allowed
+   * to register.
+   *
+   * After registration, we look at the admin provisionning catalog to:
+   *   - attach the device to a tenant
+   *   - link the device to an asset of this tenant
+   *
+   * Then we look into the tenant provisionning catalog to:
+   *   - link the device to an asset of this tenant
+   *
+   */
+  private async deviceProvisionning (
+    device: Device,
+    decoder: Decoder,
+    request: KuzzleRequest,
+    { refresh }
+  ) {
+    const pluginConfigDocument = await this.sdk.document.get(
+      this.config.adminIndex,
+      'config',
+      'device-manager');
+
+    const autoProvisionning: boolean = pluginConfigDocument._source['device-manager'].autoProvisionning;
+
+    const catalogEntry = await this.getCatalogEntry(this.config.adminIndex, device._id);
+
+    if (! autoProvisionning && ! catalogEntry) {
+      throw new BadRequestError(`Device ${device._id} is not provisionned.`);
+    }
+
+    if (! autoProvisionning && catalogEntry.content.authorized === false) {
+      throw new BadRequestError(`Device ${device._id} is not allowed for registration.`);
+    }
+
+    const ret = await this.register(device, decoder, request, { refresh });
+
+    // If there is not auto attachment to a tenant then we cannot link asset as well
+    if (! catalogEntry || ! catalogEntry.content.tenantId) {
+      return;
+    }
+
+    await this.sdk.query({
+      controller: 'device-manager/device',
+      action: 'attachTenant',
+      _id: device._id,
+      index: catalogEntry.content.tenantId,
+    });
+
+    if (catalogEntry.content.assetId) {
+      await this.sdk.query({
+        controller: 'device-manager/device',
+        action: 'linkAsset',
+        _id: device._id,
+        assetId: catalogEntry.content.assetId,
+      });
+    }
+
+    const tenantCatalogEntry = await this.getCatalogEntry(
+      catalogEntry.content.tenantId,
+      device._id);
+
+    if ( tenantCatalogEntry
+      && tenantCatalogEntry.content.authorized !== false
+      && tenantCatalogEntry.content.assetId
+    ) {
+      await this.sdk.query({
+        controller: 'device-manager/device',
+        action: 'linkAsset',
+        _id: device._id,
+        assetId: tenantCatalogEntry.content.assetId,
+      });
+    }
+
+    return ret;
+  }
+
+  /**
+   * Get the an entry from the provisionning catalog in corresponding index
+   */
+  private async getCatalogEntry (index: string, deviceId: string): Promise<Catalog | null> {
+    const result = await this.sdk.document.search(
+      index,
+      'config',
+      {
+        query: {
+          and: [
+            { equals: { type: 'catalog' } },
+            { equals: { 'catalog.deviceId': deviceId } },
+          ]
+        }
+      },
+      { lang: 'koncorde', size: 1 });
+
+    if (result.total === 0) {
+      return null;
+    }
+
+    return new Catalog(result.hits[0]);
   }
 
   private async update (

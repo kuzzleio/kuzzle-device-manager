@@ -154,6 +154,7 @@ export class DeviceController extends CRUDController {
 
   /**
    * Link a device to an asset.
+   * @todo there is not restriction according to tenant index?
    */
   async linkAsset (request: KuzzleRequest) {
     const assetId = request.getString('assetId');

@@ -16,13 +16,18 @@ import {
   EngineController,
 } from './controllers';
 
-import { EngineService, PayloadService, DeviceService } from './services';
+import {
+  EngineService,
+  PayloadService,
+  DeviceService,
+  AssetsCustomProperties,
+  DevicesCustomProperties,
+} from './services';
 import { Decoder } from './decoders';
 import {
   assetsMappings,
   devicesMappings,
-  AssetsCustomProperties,
-  DevicesCustomProperties
+  catalogMappings,
 } from './models';
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
@@ -70,9 +75,18 @@ export class DeviceManagerPlugin extends Plugin {
           dynamic: 'strict',
           properties: {
             type: { type: 'keyword' },
+
             engine: {
               properties: {
                 index: { type: 'keyword' },
+              }
+            },
+
+            catalog: catalogMappings,
+
+            'device-manager': {
+              properties: {
+                autoProvisionning: { type: 'boolean' },
               }
             }
           }
@@ -92,7 +106,7 @@ export class DeviceManagerPlugin extends Plugin {
       },
       collections: {
         assets: assetsMappings,
-        devices: devicesMappings
+        devices: devicesMappings,
       },
     };
   }
@@ -177,16 +191,32 @@ export class DeviceManagerPlugin extends Plugin {
       if (! await this.sdk.index.exists(this.config.adminIndex)) {
         await this.sdk.index.create(this.config.adminIndex);
       }
+
+      await Promise.all(Object.entries(this.config.adminCollections)
+        .map(([collection, mappings]) => (
+          this.sdk.collection.create(this.config.adminIndex, collection, { mappings })
+        ))
+      );
+
+      const exists = await this.sdk.document.exists(
+        this.config.adminIndex,
+        'config',
+        'device-manager');
+
+      if (! exists) {
+        await this.sdk.document.create(
+          this.config.adminIndex,
+          'config',
+          {
+            type: 'device-manager',
+            'device-manager': { autoProvisionning: true }
+          },
+          'device-manager');
+      }
     }
     finally {
       await mutex.unlock();
     }
-
-    await Promise.all(Object.entries(this.config.adminCollections)
-      .map(([collection, mappings]) => (
-        this.sdk.collection.create(this.config.adminIndex, collection, { mappings })
-      ))
-    );
   }
 
   /**
