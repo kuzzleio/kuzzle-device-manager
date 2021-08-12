@@ -92,7 +92,7 @@ export class PayloadService {
     decoder: Decoder,
     request: KuzzleRequest,
     { refresh }
-  ) {
+  ): Promise<JSONObject> {
     const enrichedDevice = await decoder.beforeRegister(device, request);
 
     await this.sdk.document.create(
@@ -102,7 +102,7 @@ export class PayloadService {
       enrichedDevice._id,
       { refresh });
 
-    return decoder.afterRegister(enrichedDevice, request);
+    return await decoder.afterRegister(enrichedDevice, request);
   }
 
   /**
@@ -125,7 +125,7 @@ export class PayloadService {
     decoder: Decoder,
     request: KuzzleRequest,
     { refresh }
-  ) {
+  ): Promise<JSONObject> {
     const pluginConfigDocument = await this.sdk.document.get(
       this.config.adminIndex,
       'config',
@@ -147,7 +147,7 @@ export class PayloadService {
 
     // If there is not auto attachment to a tenant then we cannot link asset as well
     if (! catalogEntry || ! catalogEntry.content.tenantId) {
-      return;
+      return ret;
     }
 
     await this.sdk.query({
@@ -260,18 +260,20 @@ export class PayloadService {
         refreshableCollections.push([tenantId, 'assets']);
       }
 
-      const payload =  {
-        device: updatedDevice.serialize(),
-        asset: updatedAsset ? updatedAsset.serialize() : null,
-      };
-      // Workflow events only accept KuzzleRequest as first parameter
-      await global.app.trigger(
-        `tenant:${tenantId}:device:new-payload`,
-        new KuzzleRequest({}, { result: payload }));
+      // Workflows only accept event with a KuzzleRequest as payload
+      const request = new KuzzleRequest({}, {
+        result: {
+          device: updatedDevice.serialize(),
+          asset: updatedAsset ? updatedAsset.serialize() : null,
+        }
+      });
 
-      await global.app.trigger(
-        `tenant:${tenantId}:payload:new`,
-        new KuzzleRequest({}, { result: payload }));
+      /**
+       * @deprecated
+       */
+      await global.app.trigger(`tenant:${tenantId}:device:new-payload`, request);
+
+      await global.app.trigger(`tenant:${tenantId}:payload:new`, request);
     }
 
     if (refresh === 'wait_for') {
