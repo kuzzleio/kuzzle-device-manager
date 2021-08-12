@@ -23,10 +23,14 @@ export class MigrationService {
    * Migrate the engine documents into the new config collection
    */
   private async engineCollection () {
+    if (! await this.sdk.collection.exists(this.config.adminIndex, 'engines')) {
+      return;
+    }
+
     this.context.log.info('Migrate engine documents into the config collection...');
 
     let result = await this.sdk.document.search(
-      'device-manager',
+      this.config.adminIndex,
       'engines',
       {},
       { scroll: '1s', size: 100 });
