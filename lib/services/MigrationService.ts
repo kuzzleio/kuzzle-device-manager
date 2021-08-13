@@ -14,7 +14,7 @@ export class MigrationService {
   }
 
   async run () {
-    global.app.install('auto-version', async () => {
+    global.app.install('device-manager-auto-version', async () => {
       await this.engineCollection();
     });
   }
