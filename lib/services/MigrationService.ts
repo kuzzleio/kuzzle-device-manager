@@ -4,6 +4,8 @@ export class MigrationService {
   private config: JSONObject;
   private context: PluginContext;
 
+  private prefix: string
+
   get sdk () {
     return this.context.accessors.sdk;
   }
@@ -14,7 +16,7 @@ export class MigrationService {
   }
 
   async run () {
-    global.app.install('device-manager-auto-version', async () => {
+    global.app.install(`${this.prefix}-auto-version`, async () => {
       await this.engineCollection();
     });
   }
