@@ -9,8 +9,6 @@ export class DeviceManagerEngine extends AbstractEngine {
     super('device-manager', plugin);
   }
 
-  async init () {}
-
   async onCreate (index: string, group = 'commons') {
     const collections = [];
     const promises = [];
