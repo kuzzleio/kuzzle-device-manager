@@ -1,6 +1,6 @@
 export * from './PayloadService';
 
-export * from './EngineService';
+export * from './DeviceManagerEngine';
 
 export * from './DeviceService';
 
