@@ -16,14 +16,21 @@ import {
   EngineController,
 } from './controllers';
 
-import { EngineService, PayloadService, DeviceService } from './services';
+import {
+  EngineService,
+  PayloadService,
+  DeviceService,
+  AssetsCustomProperties,
+  DevicesCustomProperties,
+  MigrationService,
+} from './services';
 import { Decoder } from './decoders';
 import {
   assetsMappings,
   devicesMappings,
-  AssetsCustomProperties,
-  DevicesCustomProperties
+  catalogMappings,
 } from './models';
+
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
 
@@ -34,6 +41,7 @@ export class DeviceManagerPlugin extends Plugin {
   private payloadService: PayloadService;
   private engineService: EngineService;
   private deviceService: DeviceService;
+  private migrationService: MigrationService;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -66,10 +74,24 @@ export class DeviceManagerPlugin extends Plugin {
     this.defaultConfig = {
       adminIndex: 'device-manager',
       adminCollections: {
-        engines: {
+        config: {
           dynamic: 'strict',
           properties: {
-            index: { type: 'keyword' },
+            type: { type: 'keyword' },
+
+            engine: {
+              properties: {
+                index: { type: 'keyword' },
+              }
+            },
+
+            catalog: catalogMappings,
+
+            'device-manager': {
+              properties: {
+                autoProvisionning: { type: 'boolean' },
+              }
+            }
           }
         },
         devices: devicesMappings,
@@ -87,8 +109,8 @@ export class DeviceManagerPlugin extends Plugin {
       },
       collections: {
         assets: assetsMappings,
-        devices: devicesMappings
-      }
+        devices: devicesMappings,
+      },
     };
   }
 
@@ -107,6 +129,8 @@ export class DeviceManagerPlugin extends Plugin {
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
+    this.migrationService = new MigrationService(this.config, context);
+
     this.assetController = new AssetController(this.config, context);
     this.engineController = new EngineController(this.config, context, this.engineService);
     this.deviceController = new DeviceController(this.config, context, this.deviceService);
@@ -120,9 +144,12 @@ export class DeviceManagerPlugin extends Plugin {
       'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
       'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
+      'document:beforeCreate': this.generateConfigID.bind(this),
     };
 
     await this.initDatabase();
+
+    await this.migrationService.run();
 
     for (const decoder of this.decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
@@ -172,16 +199,39 @@ export class DeviceManagerPlugin extends Plugin {
       if (! await this.sdk.index.exists(this.config.adminIndex)) {
         await this.sdk.index.create(this.config.adminIndex);
       }
+
+      await Promise.all(Object.entries(this.config.adminCollections)
+        .map(([collection, mappings]) => (
+          this.sdk.collection.create(this.config.adminIndex, collection, { mappings })
+        ))
+      );
+
+      await this.initializeConfig();
     }
     finally {
       await mutex.unlock();
     }
+  }
 
-    await Promise.all(Object.entries(this.config.adminCollections)
-      .map(([collection, mappings]) => (
-        this.sdk.collection.create(this.config.adminIndex, collection, { mappings })
-      ))
-    );
+  /**
+   * Initialize the config document if it does not exists
+   */
+  private async initializeConfig () {
+    const exists = await this.sdk.document.exists(
+      this.config.adminIndex,
+      'config',
+      'plugin--device-manager');
+
+    if (! exists) {
+      await this.sdk.document.create(
+        this.config.adminIndex,
+        'config',
+        {
+          type: 'device-manager',
+          'device-manager': { autoProvisionning: true }
+        },
+        'plugin--device-manager');
+    }
   }
 
   /**
@@ -286,6 +336,22 @@ export class DeviceManagerPlugin extends Plugin {
     if (! exists) {
       throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
     }
+
+    return request;
+  }
+
+  private async generateConfigID (request: KuzzleRequest) {
+    if (request.getCollection() !== 'config') {
+      return request;
+    }
+
+    const document = request.getBody();
+
+    if (document.type !== 'catalog' || request.getId(({ ifMissing: 'ignore' }))) {
+      return request;
+    }
+
+    request.input.args._id = `catalog--${document.catalog.deviceId}`;
 
     return request;
   }

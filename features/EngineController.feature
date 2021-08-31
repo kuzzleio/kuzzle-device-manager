@@ -5,10 +5,10 @@ Feature: Engine Controller
     When I successfully execute the action "collection":"list" with args:
       | index | "tenant-kuzzle" |
     Then I should receive a result matching:
-      | collections | [{"name":"assets","type":"stored"},{"name":"devices","type":"stored"}] |
+      | collections | [{"name":"assets","type":"stored"},{"name":"config","type":"stored"},{"name":"devices","type":"stored"}] |
     When I successfully execute the action "device-manager/engine":"delete" with args:
       | index | "tenant-kuzzle" |
     And I successfully execute the action "collection":"list" with args:
       | index | "tenant-kuzzle" |
     Then I should receive a result matching:
-      | collections | [] |
+      | collections | [{"name":"config","type":"stored"}] |

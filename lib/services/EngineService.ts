@@ -6,6 +6,12 @@ import {
   NotFoundError,
 } from 'kuzzle';
 
+import { catalogMappings } from '../models';
+
+function engineId (index) {
+  return `engine-device-manager--${index}`;
+}
+
 export class EngineService {
   private context: PluginContext;
   private config: JSONObject;
@@ -36,14 +42,24 @@ export class EngineService {
           .then(() => { collections.push(collection); })
       );
     }
+    promises.push(this.sdk.collection.create(index, 'config', {
+      mappings: {
+        dynamic: 'strict',
+        properties: {
+          type: { type: 'keyword' },
+
+          catalog: catalogMappings,
+        }
+      } as any
+    }));
 
     await Promise.all(promises);
 
     await this.sdk.document.create(
       this.config.adminIndex,
-      'engines',
-      { index },
-      index,
+      'config',
+      { type: 'engine-device-manager', engine: { index } },
+      engineId(index),
       { refresh: 'wait_for' })
 
     return { collections };
@@ -90,8 +106,8 @@ export class EngineService {
 
     await this.sdk.document.delete(
       this.config.adminIndex,
-      'engines',
-      index,
+      'config',
+      engineId(index),
       { refresh: 'wait_for' });
 
     return { collections };
@@ -100,9 +116,11 @@ export class EngineService {
   async list () {
     const result = await this.sdk.document.search(
       this.config.adminIndex,
-      'engines',
-      {},
-      { size: 1000 });
+      'config',
+      {
+        equals: { type: 'engine-device-manager' },
+      },
+      { size: 1000, lang: 'koncorde' });
 
     return {
       engines: result.hits.map(hit => hit._source as any)
@@ -112,8 +130,8 @@ export class EngineService {
   async exists (index: string): Promise<boolean> {
     const tenantExists = await this.sdk.document.exists(
       this.config.adminIndex,
-      'engines',
-      index);
+      'config',
+      engineId(index));
 
     return tenantExists;
   }

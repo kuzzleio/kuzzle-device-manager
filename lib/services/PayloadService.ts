@@ -8,7 +8,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 import { Decoder } from '../decoders';
-import { Device, BaseAsset } from '../models';
+import { Device, BaseAsset, Catalog } from '../models';
 
 export class PayloadService {
   private config: JSONObject;
@@ -39,7 +39,7 @@ export class PayloadService {
       valid = await decoder.validate(payload, request);
 
       if (! valid) {
-        return;
+        return { valid };
       }
 
       await decoder.beforeProcessing(payload, request);
@@ -81,10 +81,10 @@ export class PayloadService {
       device._id);
 
     if (exists) {
-      return this.update(device, decoder, request, { refresh });
+      return await this.update(device, decoder, request, { refresh });
     }
 
-    return this.register(device, decoder, request, { refresh });
+    return await this.deviceProvisionning(device, decoder, request, { refresh });
   }
 
   private async register (
@@ -92,7 +92,7 @@ export class PayloadService {
     decoder: Decoder,
     request: KuzzleRequest,
     { refresh }
-  ) {
+  ): Promise<JSONObject> {
     const enrichedDevice = await decoder.beforeRegister(device, request);
 
     await this.sdk.document.create(
@@ -102,7 +102,104 @@ export class PayloadService {
       enrichedDevice._id,
       { refresh });
 
-    return decoder.afterRegister(enrichedDevice, request);
+    return await decoder.afterRegister(enrichedDevice, request);
+  }
+
+  /**
+   * Device provisioning strategy.
+   *
+   * If autoProvisionning is on, device is automatically registered, otherwise
+   * we request the admin provisioning catalog to ensure this device is allowed
+   * to register.
+   *
+   * After registration, we look at the admin provisioning catalog entry to:
+   *   - attach the device to a tenant
+   *   - link the device to an asset of this tenant
+   *
+   * Then we look into the tenant provisioning catalog entry to:
+   *   - link the device to an asset of this tenant
+   */
+  private async deviceProvisionning (
+    device: Device,
+    decoder: Decoder,
+    request: KuzzleRequest,
+    { refresh }
+  ): Promise<JSONObject> {
+    const pluginConfigDocument = await this.sdk.document.get(
+      this.config.adminIndex,
+      'config',
+      'plugin--device-manager');
+
+    const autoProvisionning: boolean = pluginConfigDocument._source['device-manager'].autoProvisionning;
+
+    const catalogEntry = await this.getCatalogEntry(this.config.adminIndex, device._id);
+
+    if (! autoProvisionning && ! catalogEntry) {
+      throw new BadRequestError(`Device ${device._id} is not provisionned.`);
+    }
+
+    if (! autoProvisionning && catalogEntry.content.authorized === false) {
+      throw new BadRequestError(`Device ${device._id} is not allowed for registration.`);
+    }
+
+    const ret = await this.register(device, decoder, request, { refresh });
+
+    // If there is not auto attachment to a tenant then we cannot link asset as well
+    if (! catalogEntry || ! catalogEntry.content.tenantId) {
+      return ret;
+    }
+
+    await this.sdk.query({
+      controller: 'device-manager/device',
+      action: 'attachTenant',
+      _id: device._id,
+      index: catalogEntry.content.tenantId,
+    });
+
+    if (catalogEntry.content.assetId) {
+      await this.sdk.query({
+        controller: 'device-manager/device',
+        action: 'linkAsset',
+        _id: device._id,
+        assetId: catalogEntry.content.assetId,
+      });
+    }
+
+    const tenantCatalogEntry = await this.getCatalogEntry(
+      catalogEntry.content.tenantId,
+      device._id);
+
+    if ( tenantCatalogEntry
+      && tenantCatalogEntry.content.authorized !== false
+      && tenantCatalogEntry.content.assetId
+    ) {
+      await this.sdk.query({
+        controller: 'device-manager/device',
+        action: 'linkAsset',
+        _id: device._id,
+        assetId: tenantCatalogEntry.content.assetId,
+      });
+    }
+
+    return ret;
+  }
+
+  /**
+   * Get the device entry from the provisioning catalog in corresponding index
+   */
+  private async getCatalogEntry (index: string, deviceId: string): Promise<Catalog | null> {
+    try {
+      const document = await this.sdk.document.get(index, 'config', `catalog--${deviceId}`);
+
+      return new Catalog(document);
+    }
+    catch (error) {
+      if (error.id !== 'services.storage.not_found') {
+        throw error;
+      }
+
+      return null;
+    }
   }
 
   private async update (
@@ -162,14 +259,20 @@ export class PayloadService {
         refreshableCollections.push([tenantId, 'assets']);
       }
 
-      const payload =  {
-        device: updatedDevice.serialize(),
-        asset: updatedAsset ? updatedAsset.serialize() : null,
-      };
-      // Workflow events only accept KuzzleRequest as first parameter
-      await global.app.trigger(
-        `tenant:${tenantId}:device:new-payload`,
-        new KuzzleRequest({}, { result: payload }));
+      // Workflows only accept event with a KuzzleRequest as payload
+      const request = new KuzzleRequest({}, {
+        result: {
+          device: updatedDevice.serialize(),
+          asset: updatedAsset ? updatedAsset.serialize() : null,
+        }
+      });
+
+      /**
+       * @deprecated
+       */
+      await global.app.trigger(`tenant:${tenantId}:device:new-payload`, request);
+
+      await global.app.trigger(`tenant:${tenantId}:payload:new`, request);
     }
 
     if (refresh === 'wait_for') {
