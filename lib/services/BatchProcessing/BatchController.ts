@@ -37,7 +37,7 @@ export class BatchController extends DocumentController {
   }
 
   async create (index: string, collection: string, content: JSONObject, _id?: string, options?: JSONObject) {
-    const { idx, promise } = this.writer.buffers.create.add(index, collection, content, _id, options);
+    const { idx, promise } = this.writer.addCreate(index, collection, content, _id, options);
 
     const { successes } = await promise.promise;
 
@@ -45,7 +45,7 @@ export class BatchController extends DocumentController {
   }
 
   async replace (index: string, collection: string, _id: string, content: JSONObject, options?: JSONObject) {
-    const { idx, promise } = this.writer.buffers.replace.add(index, collection, content, _id, options);
+    const { idx, promise } = this.writer.addReplace(index, collection, content, _id, options);
 
     const { successes, errors } = await promise.promise;
 
@@ -59,7 +59,7 @@ export class BatchController extends DocumentController {
   }
 
   async createOrReplace (index: string, collection: string, _id: string, content: JSONObject, options?: JSONObject) {
-    const { idx, promise } = this.writer.buffers.createOrReplace.add(index, collection, content, _id, options);
+    const { idx, promise } = this.writer.addCreateOrReplace(index, collection, content, _id, options);
 
     const { successes, errors } = await promise.promise;
 
@@ -73,7 +73,7 @@ export class BatchController extends DocumentController {
   }
 
   async update (index: string, collection: string, _id: string, changes: JSONObject, options?: JSONObject) {
-    const { idx, promise } = this.writer.buffers.update.add(index, collection, changes, _id, options);
+    const { idx, promise } = this.writer.addUpdate(index, collection, changes, _id, options);
 
     const { successes, errors } = await promise.promise;
 
@@ -87,7 +87,7 @@ export class BatchController extends DocumentController {
   }
 
   async get (index: string, collection: string, id: string) {
-    const { promise } = this.writer.buffers.get.add(index, collection, undefined, id);
+    const { promise } = this.writer.addGet(index, collection, undefined, id);
 
     const { successes } = await promise.promise;
 
@@ -101,7 +101,7 @@ export class BatchController extends DocumentController {
   }
 
   async exists (index: string, collection: string, id: string) {
-    const { idx, promise } = this.writer.buffers.exists.add(index, collection, undefined, id);
+    const { idx, promise } = this.writer.addExists(index, collection, undefined, id);
 
     const { successes } = await promise.promise;
 
@@ -109,7 +109,7 @@ export class BatchController extends DocumentController {
   }
 
   async delete (index: string, collection: string, id: string) {
-    const { idx, promise } = this.writer.buffers.delete.add(index, collection, undefined, id);
+    const { idx, promise } = this.writer.addDelete(index, collection, undefined, id);
 
     const { successes, errors } = await promise.promise;
 

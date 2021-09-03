@@ -1,6 +1,6 @@
 import { EmbeddedSDK, JSONObject } from 'kuzzle';
-import { BatchController } from './BatchController';
 
+import { BatchController } from './BatchController';
 import { InstrumentablePromise } from './InstrumentablePromise';
 
 /**
@@ -75,13 +75,8 @@ export class BatchWriter {
   private sdk: EmbeddedSDK;
   private interval: number;
 
-  /**
-   * Document Controller overload
-   */
-  document: BatchController;
-
   // Buffers
-  buffers = {
+  private buffers = {
     create: new BatchBuffer(),
     update: new BatchBuffer(),
     get: new BatchBuffer(),
@@ -90,6 +85,39 @@ export class BatchWriter {
     replace: new BatchBuffer(),
     createOrReplace: new BatchBuffer(),
   };
+
+  /**
+   * Document Controller overload
+   */
+  document: BatchController;
+
+  get addCreate () {
+    return this.buffers.create.add;
+  }
+
+  get addUpdate () {
+    return this.buffers.update.add;
+  }
+
+  get addGet () {
+    return this.buffers.get.add;
+  }
+
+  get addExists () {
+    return this.buffers.exists.add;
+  }
+
+  get addDelete () {
+    return this.buffers.delete.add;
+  }
+
+  get addReplace () {
+    return this.buffers.replace.add;
+  }
+
+  get addCreateOrReplace () {
+    return this.buffers.createOrReplace.add;
+  }
 
   /**
    * @param sdk Connected SDK
