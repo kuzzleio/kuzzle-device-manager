@@ -31,7 +31,6 @@ export class BatchBuffer {
    * @returns An object containing the index of the array of results and a promise resolving to the array of results
    */
   add (index: string, collection: string, body: JSONObject, _id: string = undefined, options?: JSONObject): { idx: number, promise: InstrumentablePromise } {
-    console.log({i: this.indexes, index})
     if (! this.indexes[index]) {
       this.indexes[index] = {};
     }
