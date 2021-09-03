@@ -20,6 +20,21 @@ export class BatchBuffer {
   indexes: IndexBuffer = {};
 
   /**
+   * Return the size of the biggest queue of documents for a collection
+   */
+  get maxSize () {
+    let max = 0;
+
+    for (const [, collectionBuffer] of Object.entries(this.indexes)) {
+      for (const [, { documents }] of Object.entries(collectionBuffer)) {
+        max = documents.length > max ? documents.length : max;
+      }
+    }
+
+    return max;
+  }
+
+  /**
    * Add a document to the buffer of a specific collection
    *
    * @param index Index name
@@ -73,7 +88,20 @@ export class BatchBuffer {
 export class BatchWriter {
   private timer: NodeJS.Timeout;
   private sdk: EmbeddedSDK;
+  /**
+   * Timer interval to execute m* API actions
+   */
   private interval: number;
+
+  /**
+   * Max write buffer size. (Should match "limits.documentsWriteCount")
+   */
+  private maxWriteBufferSize: number;
+
+  /**
+   * Max read buffer size. (Should match "limits.documentsReadCount")
+   */
+  private maxReadBufferSize: number;
 
   // Buffers
   private buffers = {
@@ -92,6 +120,7 @@ export class BatchWriter {
   document: BatchController;
 
   get addCreate () {
+    // @todo implements the send of buffer if approaching the limit
     return this.buffers.create.add;
   }
 
@@ -121,11 +150,18 @@ export class BatchWriter {
 
   /**
    * @param sdk Connected SDK
-   * @param interval Timer interval in ms. Actions will be executed every {interval} ms
+   * @param options.interval Timer interval in ms (50). Actions will be executed every {interval} ms
+   * @param options.maxWriteBufferSize Max write buffer size (200). (Should match "limits.documentsWriteCount")
+   * @param options.maxReadBufferSize Max read buffer size. (Should match "limits.documentsReadCount")
    */
-  constructor (sdk: EmbeddedSDK, interval = 50) {
+  constructor (
+    sdk: EmbeddedSDK,
+    { interval = 50, maxWriteBufferSize = 200, maxReadBufferSize = 200 } = {}
+  ) {
     this.sdk = sdk;
     this.interval = interval;
+    this.maxWriteBufferSize = maxWriteBufferSize;
+    this.maxReadBufferSize = maxReadBufferSize;
 
     this.document = new BatchController(this.sdk, this);
   }
