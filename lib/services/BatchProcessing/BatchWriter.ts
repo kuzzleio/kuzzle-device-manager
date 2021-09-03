@@ -20,21 +20,6 @@ export class BatchBuffer {
   indexes: IndexBuffer = {};
 
   /**
-   * Return the size of the biggest queue of documents for a collection
-   */
-  get maxSize () {
-    let max = 0;
-
-    for (const [, collectionBuffer] of Object.entries(this.indexes)) {
-      for (const [, { documents }] of Object.entries(collectionBuffer)) {
-        max = documents.length > max ? documents.length : max;
-      }
-    }
-
-    return max;
-  }
-
-  /**
    * Add a document to the buffer of a specific collection
    *
    * @param index Index name
@@ -46,6 +31,7 @@ export class BatchBuffer {
    * @returns An object containing the index of the array of results and a promise resolving to the array of results
    */
   add (index: string, collection: string, body: JSONObject, _id: string = undefined, options?: JSONObject): { idx: number, promise: InstrumentablePromise } {
+    console.log({i: this.indexes, index})
     if (! this.indexes[index]) {
       this.indexes[index] = {};
     }
@@ -121,31 +107,31 @@ export class BatchWriter {
 
   get addCreate () {
     // @todo implements the send of buffer if approaching the limit
-    return this.buffers.create.add;
+    return this.buffers.create.add.bind(this.buffers.create);
   }
 
   get addUpdate () {
-    return this.buffers.update.add;
+    return this.buffers.update.add.bind(this.buffers.update);
   }
 
   get addGet () {
-    return this.buffers.get.add;
+    return this.buffers.get.add.bind(this.buffers.get);
   }
 
   get addExists () {
-    return this.buffers.exists.add;
+    return this.buffers.exists.add.bind(this.buffers.exists);
   }
 
   get addDelete () {
-    return this.buffers.delete.add;
+    return this.buffers.delete.add.bind(this.buffers.delete);
   }
 
   get addReplace () {
-    return this.buffers.replace.add;
+    return this.buffers.replace.add.bind(this.buffers.replace);
   }
 
   get addCreateOrReplace () {
-    return this.buffers.createOrReplace.add;
+    return this.buffers.createOrReplace.add.bind(this.buffers.createOrReplace);
   }
 
   /**
