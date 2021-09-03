@@ -7,3 +7,5 @@ export * from './DeviceService';
 export * from './CustomProperties';
 
 export * from './MigrationService';
+
+export * from './BatchProcessor';

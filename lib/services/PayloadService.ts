@@ -4,6 +4,7 @@ import {
   PluginContext,
   EmbeddedSDK,
   BadRequestError,
+  DocumentController,
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,7 +15,7 @@ import { BatchDocumentController } from './BatchProcessor';
 export class PayloadService {
   private config: JSONObject;
   private context: PluginContext;
-  private batchController: BatchDocumentController;
+  private documentController: DocumentController;
 
   get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -23,7 +24,7 @@ export class PayloadService {
   constructor (config: JSONObject, context: PluginContext, batchController: BatchDocumentController) {
     this.config = config;
     this.context = context;
-    this.sdk.document = batchController;
+    this.documentController = batchController;
   }
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
@@ -52,7 +53,7 @@ export class PayloadService {
       throw error;
     }
     finally {
-      await this.sdk.document.create(
+      await this.documentController.create(
         this.config.adminIndex,
         'payloads',
         {
@@ -78,7 +79,7 @@ export class PayloadService {
 
     const device = new Device(deviceContent);
 
-    const exists = await this.sdk.document.exists(
+    const exists = await this.documentController.exists(
       this.config.adminIndex,
       'devices',
       device._id);
@@ -98,7 +99,7 @@ export class PayloadService {
   ): Promise<JSONObject> {
     const enrichedDevice = await decoder.beforeRegister(device, request);
 
-    await this.sdk.document.create(
+    await this.documentController.create(
       this.config.adminIndex,
       'devices',
       enrichedDevice._source,
@@ -128,7 +129,7 @@ export class PayloadService {
     request: KuzzleRequest,
     { refresh }
   ): Promise<JSONObject> {
-    const pluginConfigDocument = await this.sdk.document.get(
+    const pluginConfigDocument = await this.documentController.get(
       this.config.adminIndex,
       'config',
       'plugin--device-manager');
@@ -192,7 +193,7 @@ export class PayloadService {
    */
   private async getCatalogEntry (index: string, deviceId: string): Promise<Catalog | null> {
     try {
-      const document = await this.sdk.document.get(index, 'config', `catalog--${deviceId}`);
+      const document = await this.documentController.get(index, 'config', `catalog--${deviceId}`);
 
       return new Catalog(document);
     }
@@ -213,14 +214,14 @@ export class PayloadService {
   ) {
     const refreshableCollections = [];
 
-    const previousDevice = await this.sdk.document.get(
+    const previousDevice = await this.documentController.get(
       this.config.adminIndex,
       'devices',
       device._id);
 
     const enrichedDevice = await decoder.beforeUpdate(device, request);
 
-    const deviceDocument = await this.sdk.document.update(
+    const deviceDocument = await this.documentController.update(
       this.config.adminIndex,
       'devices',
       enrichedDevice._id,
@@ -235,7 +236,7 @@ export class PayloadService {
     let updatedAsset = null;
     // Propagate device into tenant index
     if (tenantId) {
-      await this.sdk.document.update(
+      await this.documentController.update(
         tenantId,
         'devices',
         enrichedDevice._id,
@@ -250,7 +251,7 @@ export class PayloadService {
       if (assetId) {
         const assetMeasures = await decoder.copyToAsset(updatedDevice);
 
-        const assetDocument = await this.sdk.document.update(
+        const assetDocument = await this.documentController.update(
           tenantId,
           'assets',
           assetId,

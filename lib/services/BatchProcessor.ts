@@ -1,4 +1,4 @@
-import { DocumentController, EmbeddedSDK, JSONObject } from 'kuzzle';
+import { BadRequestError, DocumentController, EmbeddedSDK, JSONObject, NotFoundError } from 'kuzzle';
 
 class AdvancedPromise {
   promise: Promise<any>;
@@ -83,7 +83,13 @@ export class BatchDocumentController extends DocumentController {
   async replace (index: string, collection: string, _id: string, content: JSONObject, options?: JSONObject) {
     const { idx, promise } = this.batchProcessor.buffers.replace.add(index, collection, content, _id, options);
 
-    const { successes } = await promise.promise;
+    const { successes, errors } = await promise.promise;
+
+    const error = errors.find(({ _id: id }) => id === _id);
+
+    if (error) {
+      throw new BadRequestError(`Cannot replace document "${_id}": ${error}`);
+    }
 
     return successes[idx];
   }
@@ -91,7 +97,13 @@ export class BatchDocumentController extends DocumentController {
   async createOrReplace (index: string, collection: string, _id: string, content: JSONObject, options?: JSONObject) {
     const { idx, promise } = this.batchProcessor.buffers.createOrReplace.add(index, collection, content, _id, options);
 
-    const { successes } = await promise.promise;
+    const { successes, errors } = await promise.promise;
+
+    const error = errors.find(({ _id: id }) => id === _id);
+
+    if (error) {
+      throw new BadRequestError(`Cannot create or replace document "${_id}": ${error}`);
+    }
 
     return successes[idx];
   }
@@ -99,17 +111,29 @@ export class BatchDocumentController extends DocumentController {
   async update (index: string, collection: string, _id: string, changes: JSONObject, options?: JSONObject) {
     const { idx, promise } = this.batchProcessor.buffers.update.add(index, collection, changes, _id, options);
 
-    const { successes } = await promise.promise;
+    const { successes, errors } = await promise.promise;
+
+    const error = errors.find(({ _id: id }) => id === _id);
+
+    if (error) {
+      throw new BadRequestError(`Cannot update document "${_id}": ${error}`);
+    }
 
     return successes[idx];
   }
 
   async get (index: string, collection: string, id: string) {
-    const { idx, promise } = this.batchProcessor.buffers.get.add(index, collection, undefined, id);
+    const { promise } = this.batchProcessor.buffers.get.add(index, collection, undefined, id);
 
     const { successes } = await promise.promise;
 
-    return successes[idx];
+    const document = successes.find(({ _id }) => _id === id);
+
+    if (! document) {
+      throw new NotFoundError(`Document ${id} not found`, 'services.storage.not_found');
+    }
+
+    return document;
   }
 
   async exists (index: string, collection: string, id: string) {
@@ -123,7 +147,13 @@ export class BatchDocumentController extends DocumentController {
   async delete (index: string, collection: string, id: string) {
     const { idx, promise } = this.batchProcessor.buffers.delete.add(index, collection, undefined, id);
 
-    const { successes } = await promise.promise;
+    const { successes, errors } = await promise.promise;
+
+    const error = errors.find(({ _id }) => _id === id);
+
+    if (error) {
+      throw new NotFoundError(`Cannot delete document ${id}: ${error}`);
+    }
 
     return successes[idx];
   }
@@ -179,7 +209,7 @@ export class BatchProcessor {
           continue;
         }
 
-        console.log(`CREATE ${index} ${collection} ${documents.length}`)
+        // console.log(`CREATE ${index} ${collection} ${documents.length}`)
 
         promises.push(
           this.sdk.document.mCreate(index, collection, documents, { ...options, strict: true })
@@ -201,10 +231,10 @@ export class BatchProcessor {
           promise.resolve();
           continue;
         }
-        console.log(`UPDATE ${index} ${collection} ${documents.length}`)
+        // console.log(`UPDATE ${index} ${collection} ${documents.length}`)
 
         promises.push(
-          this.sdk.document.mUpdate(index, collection, documents, { ...options, strict: true })
+          this.sdk.document.mUpdate(index, collection, documents, { ...options })
             .then(promise.resolve)
             .catch(promise.reject)
         );
@@ -225,7 +255,7 @@ export class BatchProcessor {
         }
 
         promises.push(
-          this.sdk.document.mReplace(index, collection, documents, { ...options, strict: true })
+          this.sdk.document.mReplace(index, collection, documents, { ...options })
             .then(promise.resolve)
             .catch(promise.reject)
         );
@@ -246,7 +276,7 @@ export class BatchProcessor {
         }
 
         promises.push(
-          this.sdk.document.mCreateOrReplace(index, collection, documents, { ...options, strict: true })
+          this.sdk.document.mCreateOrReplace(index, collection, documents, { ...options })
             .then(promise.resolve)
             .catch(promise.reject)
         );
@@ -267,7 +297,7 @@ export class BatchProcessor {
         }
 
         const ids = documents.map(({ _id }) => _id);
-        console.log(`GET ${index} ${collection} ${ids.length}`)
+        // console.log(`GET ${index} ${collection} ${ids.length}`)
 
         promises.push(
           this.sdk.document.mGet(index, collection, ids)
@@ -291,7 +321,7 @@ export class BatchProcessor {
         }
 
         const ids = documents.map(({ _id }) => _id);
-        console.log(`EXISTS ${index} ${collection} ${ids.length}`)
+        // console.log(`EXISTS ${index} ${collection} ${ids.length}`)
         promises.push(
           this.sdk.document.mGet(index, collection, ids)
             .then(({ successes }) => {
@@ -325,7 +355,7 @@ export class BatchProcessor {
         const ids = documents.map(({ _id }) => _id);
 
         promises.push(
-          this.sdk.document.mDelete(index, collection, ids, { strict: true })
+          this.sdk.document.mDelete(index, collection, ids)
             .then(promise.resolve)
             .catch(promise.reject)
         );
