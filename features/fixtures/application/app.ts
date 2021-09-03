@@ -118,6 +118,8 @@ app.pipe.register('tenant:tenant-ayse:device:new-payload', async eventParam => {
   return eventParam;
 });
 
+app.config.set('limits.documentsWriteCount', 5000);
+
 app.start()
   .then(() => {
     app.log.info('Application started');

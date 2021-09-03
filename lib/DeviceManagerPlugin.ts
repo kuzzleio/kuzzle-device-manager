@@ -30,6 +30,7 @@ import {
   devicesMappings,
   catalogMappings,
 } from './models';
+import { BatchProcessor, BatchDocumentController } from './services/BatchProcessor';
 
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
@@ -42,6 +43,9 @@ export class DeviceManagerPlugin extends Plugin {
   private engineService: EngineService;
   private deviceService: DeviceService;
   private migrationService: MigrationService;
+
+  private batchProcessor: BatchProcessor;
+  private batchController: BatchDocumentController;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -126,8 +130,12 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.mergeMappings();
 
+    this.batchProcessor = new BatchProcessor(this.sdk, 50);
+    this.batchController = new BatchDocumentController(this.sdk, this.batchProcessor);
+    this.batchProcessor.begin();
+
     this.engineService = new EngineService(this.config, context);
-    this.payloadService = new PayloadService(this.config, context);
+    this.payloadService = new PayloadService(this.config, context, this.batchController);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
     this.migrationService = new MigrationService(this.config, context);
 
