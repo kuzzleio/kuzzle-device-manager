@@ -8,4 +8,4 @@ export * from './CustomProperties';
 
 export * from './MigrationService';
 
-export * from './BatchProcessor';
+export * from './BatchProcessing';

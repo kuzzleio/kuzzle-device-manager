@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Decoder } from '../decoders';
 import { Device, BaseAsset, Catalog } from '../models';
-import { BatchDocumentController } from './BatchProcessor';
+import { BatchWriter } from './BatchProcessing/BatchWriter';
 
 export class PayloadService {
   private config: JSONObject;
@@ -21,10 +21,10 @@ export class PayloadService {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext, batchController: BatchDocumentController) {
+  constructor (config: JSONObject, context: PluginContext, batchWriter: BatchWriter) {
     this.config = config;
     this.context = context;
-    this.documentController = batchController;
+    this.documentController = batchWriter.document;
   }
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {

@@ -1,40 +1,36 @@
-import { BadRequestError, DocumentController, EmbeddedSDK, JSONObject, NotFoundError } from 'kuzzle';
+import { EmbeddedSDK, JSONObject } from 'kuzzle';
+import { BatchController } from './BatchController';
 
-class AdvancedPromise {
-  promise: Promise<any>;
-  resolve: (...any) => any;
-  reject: (...any) => any;
-
-  constructor () {
-    this.promise = new Promise((resolve, reject) => {
-      this.resolve = resolve;
-      this.reject = reject;
-    });
-  }
-}
+import { InstrumentablePromise } from './InstrumentablePromise';
 
 /**
- * Map of collection names and document to be written
- */
-type CollectionBuffer = {
-  [collection: string]: {
-    documents: Array<{_id: string, body: JSONObject}>,
-    promise: AdvancedPromise,
-    options: JSONObject,
-  }
-};
-
-/**
- * Map of index names and CollectionBuffer
+ * Map of index and collections with documents, options and associated promise
  */
 type IndexBuffer = {
-  [index: string]: CollectionBuffer
+  [index: string]: {
+    [collection: string]: {
+      documents: Array<{_id: string, body: JSONObject}>,
+      promise: InstrumentablePromise,
+      options: JSONObject,
+    }
+  }
 }
 
-class Buffer {
+export class BatchBuffer {
   indexes: IndexBuffer = {};
 
-  add (index: string, collection: string, body: JSONObject, _id: string = undefined, options?: JSONObject): { idx: number, promise: AdvancedPromise } {
+  /**
+   * Add a document to the buffer of a specific collection
+   *
+   * @param index Index name
+   * @param collection Collection name
+   * @param body Document content
+   * @param _id Document ID
+   * @param options Option object passed to the m* action
+   *
+   * @returns An object containing the index of the array of results and a promise resolving to the array of results
+   */
+  add (index: string, collection: string, body: JSONObject, _id: string = undefined, options?: JSONObject): { idx: number, promise: InstrumentablePromise } {
     if (! this.indexes[index]) {
       this.indexes[index] = {};
     }
@@ -42,7 +38,7 @@ class Buffer {
     if (! this.indexes[index][collection]) {
       this.indexes[index][collection] = {
         documents: [],
-        promise: new AdvancedPromise(),
+        promise: new InstrumentablePromise(),
         options,
       };
     }
@@ -63,129 +59,61 @@ class Buffer {
   }
 }
 
-export class BatchDocumentController extends DocumentController {
-  batchProcessor: BatchProcessor;
-
-  constructor (sdk: EmbeddedSDK, batchProcessor: BatchProcessor) {
-    super(sdk);
-
-    this.batchProcessor = batchProcessor;
-  }
-
-  async create (index: string, collection: string, content: JSONObject, _id?: string, options?: JSONObject) {
-    const { idx, promise } = this.batchProcessor.buffers.create.add(index, collection, content, _id, options);
-
-    const { successes } = await promise.promise;
-
-    return successes[idx];
-  }
-
-  async replace (index: string, collection: string, _id: string, content: JSONObject, options?: JSONObject) {
-    const { idx, promise } = this.batchProcessor.buffers.replace.add(index, collection, content, _id, options);
-
-    const { successes, errors } = await promise.promise;
-
-    const error = errors.find(({ _id: id }) => id === _id);
-
-    if (error) {
-      throw new BadRequestError(`Cannot replace document "${_id}": ${error}`);
-    }
-
-    return successes[idx];
-  }
-
-  async createOrReplace (index: string, collection: string, _id: string, content: JSONObject, options?: JSONObject) {
-    const { idx, promise } = this.batchProcessor.buffers.createOrReplace.add(index, collection, content, _id, options);
-
-    const { successes, errors } = await promise.promise;
-
-    const error = errors.find(({ _id: id }) => id === _id);
-
-    if (error) {
-      throw new BadRequestError(`Cannot create or replace document "${_id}": ${error}`);
-    }
-
-    return successes[idx];
-  }
-
-  async update (index: string, collection: string, _id: string, changes: JSONObject, options?: JSONObject) {
-    const { idx, promise } = this.batchProcessor.buffers.update.add(index, collection, changes, _id, options);
-
-    const { successes, errors } = await promise.promise;
-
-    const error = errors.find(({ _id: id }) => id === _id);
-
-    if (error) {
-      throw new BadRequestError(`Cannot update document "${_id}": ${error}`);
-    }
-
-    return successes[idx];
-  }
-
-  async get (index: string, collection: string, id: string) {
-    const { promise } = this.batchProcessor.buffers.get.add(index, collection, undefined, id);
-
-    const { successes } = await promise.promise;
-
-    const document = successes.find(({ _id }) => _id === id);
-
-    if (! document) {
-      throw new NotFoundError(`Document ${id} not found`, 'services.storage.not_found');
-    }
-
-    return document;
-  }
-
-  async exists (index: string, collection: string, id: string) {
-    const { idx, promise } = this.batchProcessor.buffers.exists.add(index, collection, undefined, id);
-
-    const { successes } = await promise.promise;
-
-    return successes[idx];
-  }
-
-  async delete (index: string, collection: string, id: string) {
-    const { idx, promise } = this.batchProcessor.buffers.delete.add(index, collection, undefined, id);
-
-    const { successes, errors } = await promise.promise;
-
-    const error = errors.find(({ _id }) => _id === id);
-
-    if (error) {
-      throw new NotFoundError(`Cannot delete document ${id}: ${error}`);
-    }
-
-    return successes[idx];
-  }
-}
-
-export class BatchProcessor {
+/**
+ * This class handle buffers for every supported API action of the document controller:
+ *  - create, update, createOrReplace, replace, get, exists, delete
+ *
+ * Each buffer is filled with documents to be write/get/delete into a collection.
+ *
+ * A timer will regularly execute the m* actions with the documents inside the buffers.
+ *
+ * If the interval is too big, buffers may contain too much documents for Kuzzle limits.
+ * (e.g. "limits.documentsWriteCount" is 200 by default)
+ */
+export class BatchWriter {
   private timer: NodeJS.Timeout;
   private sdk: EmbeddedSDK;
   private interval: number;
 
+  /**
+   * Document Controller overload
+   */
+  document: BatchController;
+
   // Buffers
   buffers = {
-    create: new Buffer(),
-    update: new Buffer(),
-    get: new Buffer(),
-    exists: new Buffer(),
-    delete: new Buffer(),
-    replace: new Buffer(),
-    createOrReplace: new Buffer(),
+    create: new BatchBuffer(),
+    update: new BatchBuffer(),
+    get: new BatchBuffer(),
+    exists: new BatchBuffer(),
+    delete: new BatchBuffer(),
+    replace: new BatchBuffer(),
+    createOrReplace: new BatchBuffer(),
   };
 
-  constructor (sdk: EmbeddedSDK, interval: number) {
+  /**
+   * @param sdk Connected SDK
+   * @param interval Timer interval in ms. Actions will be executed every {interval} ms
+   */
+  constructor (sdk: EmbeddedSDK, interval = 50) {
     this.sdk = sdk;
     this.interval = interval;
+
+    this.document = new BatchController(this.sdk, this);
   }
 
+  /**
+   * Execute API actions with documents stored in the buffers.
+   */
   async execute () {
     const buffers: JSONObject = {};
+
+    // make a copy of the buffers
     for (const [name, buffer] of Object.entries(this.buffers)) {
       buffers[name] = buffer;
     }
 
+    // prepare to enqueue documents in buffers
     this.prepareRound();
 
     await Promise.all([
@@ -199,7 +127,36 @@ export class BatchProcessor {
     ])
   }
 
-  private async sendCreateBuffer (buffer: Buffer, options?: { refresh?: 'wait_for' }) {
+  /**
+   * Initialize the buffers and start the timer
+   */
+  begin () {
+    this.prepareRound()
+
+    this.timer = setInterval(async () => {
+      await this.execute();
+    }, this.interval);
+  }
+
+  /**
+   * Execute pending actions from the buffers and stop the timer.
+   */
+  async end () {
+    await this.execute();
+
+    clearInterval(this.timer);
+  }
+
+  /**
+   * Reset all the buffers
+   */
+  private prepareRound () {
+    for (const name of Object.keys(this.buffers)) {
+      this.buffers[name] = new BatchBuffer();
+    }
+  }
+
+  private async sendCreateBuffer (buffer: BatchBuffer, options?: { refresh?: 'wait_for' }) {
     const promises = [];
 
     for (const [index, collectionBuffer] of Object.entries(buffer.indexes)) {
@@ -222,7 +179,7 @@ export class BatchProcessor {
     await Promise.all(promises)
   }
 
-  private async sendUpdateBuffer (buffer: Buffer, options?: { refresh?: 'wait_for' }) {
+  private async sendUpdateBuffer (buffer: BatchBuffer, options?: { refresh?: 'wait_for' }) {
     const promises = [];
 
     for (const [index, collectionBuffer] of Object.entries(buffer.indexes)) {
@@ -244,7 +201,7 @@ export class BatchProcessor {
     await Promise.all(promises)
   }
 
-  private async sendReplaceBuffer (buffer: Buffer, options?: { refresh?: 'wait_for' }) {
+  private async sendReplaceBuffer (buffer: BatchBuffer, options?: { refresh?: 'wait_for' }) {
     const promises = [];
 
     for (const [index, collectionBuffer] of Object.entries(buffer.indexes)) {
@@ -265,7 +222,7 @@ export class BatchProcessor {
     await Promise.all(promises)
   }
 
-  private async sendCreateOrReplaceBuffer (buffer: Buffer, options?: { refresh?: 'wait_for' }) {
+  private async sendCreateOrReplaceBuffer (buffer: BatchBuffer, options?: { refresh?: 'wait_for' }) {
     const promises = [];
 
     for (const [index, collectionBuffer] of Object.entries(buffer.indexes)) {
@@ -286,7 +243,7 @@ export class BatchProcessor {
     await Promise.all(promises)
   }
 
-  private async sendGetBuffer (buffer: Buffer) {
+  private async sendGetBuffer (buffer: BatchBuffer) {
     const promises = [];
 
     for (const [index, collectionBuffer] of Object.entries(buffer.indexes)) {
@@ -310,7 +267,7 @@ export class BatchProcessor {
     await Promise.all(promises)
   }
 
-  private async sendExistsBuffer (buffer: Buffer) {
+  private async sendExistsBuffer (buffer: BatchBuffer) {
     const promises = [];
 
     for (const [index, collectionBuffer] of Object.entries(buffer.indexes)) {
@@ -342,7 +299,7 @@ export class BatchProcessor {
     await Promise.all(promises)
   }
 
-  private async sendDeleteBuffer (buffer: Buffer) {
+  private async sendDeleteBuffer (buffer: BatchBuffer) {
     const promises = [];
 
     for (const [index, collectionBuffer] of Object.entries(buffer.indexes)) {
@@ -363,23 +320,5 @@ export class BatchProcessor {
     }
 
     await Promise.all(promises)
-  }
-
-  private prepareRound () {
-    for (const name of Object.keys(this.buffers)) {
-      this.buffers[name] = new Buffer();
-    }
-  }
-
-  begin () {
-    this.prepareRound()
-
-    this.timer = setInterval(async () => {
-      await this.execute();
-    }, this.interval);
-  }
-
-  end () {
-    clearInterval(this.timer);
   }
 }
