@@ -30,7 +30,7 @@ import {
   devicesMappings,
   catalogMappings,
 } from './models';
-import { BatchWriter, BatchController } from './services';
+import { BatchWriter } from './services';
 
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;

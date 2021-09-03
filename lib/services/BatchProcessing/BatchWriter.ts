@@ -166,7 +166,6 @@ export class BatchWriter {
           continue;
         }
 
-        // console.log(`CREATE ${index} ${collection} ${documents.length}`)
 
         promises.push(
           this.sdk.document.mCreate(index, collection, documents, { ...options, strict: true })
@@ -188,7 +187,6 @@ export class BatchWriter {
           promise.resolve();
           continue;
         }
-        // console.log(`UPDATE ${index} ${collection} ${documents.length}`)
 
         promises.push(
           this.sdk.document.mUpdate(index, collection, documents, { ...options })
@@ -254,7 +252,6 @@ export class BatchWriter {
         }
 
         const ids = documents.map(({ _id }) => _id);
-        // console.log(`GET ${index} ${collection} ${ids.length}`)
 
         promises.push(
           this.sdk.document.mGet(index, collection, ids)
@@ -277,8 +274,7 @@ export class BatchWriter {
           continue;
         }
 
-        const ids = documents.map(({ _id }) => _id);
-        // console.log(`EXISTS ${index} ${collection} ${ids.length}`)
+        const ids = `EXISTS ${index} ${collection} ${ids.length}`)
         promises.push(
           this.sdk.document.mGet(index, collection, ids)
             .then(({ successes }) => {
