@@ -10,27 +10,65 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.registerDecoder(new DummyTempDecoder());
 deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
-deviceManager.mappings.devices.measures = {
-  humidity: {
-    properties: {
-      updatedAt: { type: 'date' },
-      payloadUuid: { type: 'keyword' },
-      value: { type: 'float' },
+deviceManager.devices.registerMeasure('humidity', {
+  properties: {
+    updatedAt: { type: 'date' },
+    payloadUuid: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
+    value: { type: 'float' },
+  }
+});
+
+deviceManager.devices.registerMeasure('gravity', {
+  properties: {
+    updatedAt: { type: 'date' },
+    payloadUuid: {
+      type: 'keyword',
+      fields: {
+        text: { type: 'text' }
+      }
+    },
+    value: { type: 'float' },
+  }
+}, { tenantGroup: 'astronaut' });
+
+deviceManager.devices.registerQos({
+  battery: { type: 'integer' }
+});
+
+deviceManager.devices.registerQos({
+  durability: { type: 'float' }
+}, { tenantGroup: 'astronaut' });
+
+deviceManager.devices.registerMetadata({
+  group: {
+    type: 'keyword',
+    fields: {
+      text: { type: 'text' }
     }
   }
-};
+});
 
-deviceManager.mappings.devices.qos = {
-  battery: { type: 'integer' }
-};
+deviceManager.devices.registerMetadata({
+  awake: { type: 'boolean' }
+}, { tenantGroup: 'astronaut' });
 
-deviceManager.mappings.devices.metadata = {
-  group: { type: 'keyword' }
-};
+deviceManager.assets.registerMetadata({
+  warranty: {
+    type: 'keyword',
+    fields: {
+      text: { type: 'text' }
+    }
+  }
+});
 
-deviceManager.mappings.assets.metadata = {
-  warranty: { type: 'keyword' }
-};
+deviceManager.assets.registerMetadata({
+  stillAlive: { type: 'boolean' }
+}, { tenantGroup: 'astronaut' });
 
 app.plugin.use(deviceManager);
 

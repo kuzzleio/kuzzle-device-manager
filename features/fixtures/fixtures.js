@@ -4,18 +4,28 @@ module.exports = {
   'device-manager': {
     devices: [
       ...devices,
-      { index: { _id: 'DummyTemp_detached' } },
+      { index: { _id: 'DummyTemp-detached' } },
       {
         reference: 'detached',
         model: 'DummyTemp',
-        measures: {},
+        measures: {
+          position: {
+            updatedAt: 1610793427950,
+            payloadUuid: 'some-uuid',
+            point: {
+              lat: 43.610767,
+              lon: 3.876716,
+            },
+            accuracy: 42,
+          }
+        },
         metadata: {},
         tenantId: null,
         assetId: null
       },
-      { index: { _id: 'DummyTemp_attached-ayse-unlinked' } },
+      { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
       {
-        reference: 'attached-ayse-unlinked',
+        reference: 'attached_ayse_unlinked',
         model: 'DummyTemp',
         measures: {
           temperature: {
@@ -34,9 +44,9 @@ module.exports = {
   },
   'tenant-ayse': {
     devices: [
-      { index: { _id: 'DummyTemp_attached-ayse-unlinked' } },
+      { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
       {
-        reference: 'attached-ayse-unlinked',
+        reference: 'attached_ayse_unlinked',
         model: 'DummyTemp',
         measures: {
           temperature: {

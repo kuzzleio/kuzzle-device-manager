@@ -6,12 +6,12 @@ import {
   JSONObject,
 } from 'kuzzle';
 
-import { NativeController } from 'kuzzle/lib/api/controllers/baseController.js'
 import { EngineService } from '../services';
 
-export class EngineController extends NativeController {
-  [key: string]: any;
+export class EngineController {
   private engineService: EngineService;
+  private context: PluginContext;
+  private config: JSONObject;
 
   public definition: ControllerDefinition;
 
@@ -20,8 +20,6 @@ export class EngineController extends NativeController {
   }
 
   constructor (config: JSONObject, context: PluginContext, engineService: EngineService) {
-    super();
-
     this.config = config;
     this.context = context;
     this.engineService = engineService;
@@ -53,21 +51,22 @@ export class EngineController extends NativeController {
   }
 
   async create (request: KuzzleRequest) {
-    const index = this.getIndex(request);
-    const { collections } = await this.engineService.create(index);
+    const index = request.getIndex();
+    const tenantGroup = request.getString('group', 'shared');
+    const { collections } = await this.engineService.create(index, tenantGroup);
 
     return { index, collections };
   }
 
   async update (request: KuzzleRequest) {
-    const index = this.getIndex(request);
+    const index = request.getIndex();
     const { collections } = await this.engineService.update(index);
 
     return { index, collections };
   }
 
   async delete (request: KuzzleRequest) {
-    const index = this.getIndex(request);
+    const index = request.getIndex();
     const { collections } = await this.engineService.delete(index);
 
     return { index, collections };
@@ -78,7 +77,7 @@ export class EngineController extends NativeController {
   }
 
   async exists (request: KuzzleRequest) {
-    const index = this.getIndex(request);
+    const index = request.getIndex();
 
     return this.sdk.document.exists(this.config.adminIndex, 'engines', index);
   }

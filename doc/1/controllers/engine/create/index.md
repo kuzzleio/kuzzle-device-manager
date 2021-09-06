@@ -17,7 +17,7 @@ Creates a new device manager engine on an index
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/engine/:index
+URL: http://kuzzle:7512/_/device-manager/engine/:index/[?group]
 Method: POST
 ```
 
@@ -28,13 +28,14 @@ Method: POST
   "controller": "device-manager/engine",
   "action": "create",
   "index": "tenant-ayse"
+  "group": "tenant-group" //  Optional. Specify the tenant group to apply custom mappings.
 }
 ```
 
 ### Kourou
 
 ```bash
-kourou device-manager/engine:create <index>
+kourou device-manager/engine:create <index> [group]
 ```
 ---
 
