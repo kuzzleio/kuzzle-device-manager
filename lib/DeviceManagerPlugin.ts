@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
   Plugin,
   PluginContext,
@@ -118,7 +119,7 @@ export class DeviceManagerPlugin extends Plugin {
    * Init the plugin
    */
   async init (config: JSONObject, context: PluginContext) {
-    this.config = { ...this.defaultConfig, ...config };
+    this.config = _.merge({}, this.defaultConfig, config);
 
     this.context = context;
 
