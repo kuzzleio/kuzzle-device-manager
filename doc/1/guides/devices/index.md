@@ -127,7 +127,7 @@ When detached, the device document is deleted from the `devices` collection of t
 the `tenantId` property is set to `null` in the `device-manager` index.
 ## Detach multiple devices from multiple tenants
 
-Multiple different Sensors can also be detached from multiple tenants by using the [device-manager/device:mDetach](/kuzzle-iot-platform/device-manager/1/controllers/device/mDetach) API action.
+Multiple different Sensors can also be detached to multiple differents tenant by using the [device-manager/device:mDetach](/kuzzle-iot-platform/device-manager/1/controllers/device/mDetach) API action.
 
 The format used can be either __CSV__ in the form of a string in the format "tenantId, deviceId, myDeviceId" or __JSON__ in the form of an array of objects.
 
