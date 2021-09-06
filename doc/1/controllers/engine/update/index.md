@@ -1,14 +1,14 @@
 ---
 type: page
 code: true
-title: create
-description: Creates a new Device Manager engine on an index
+title: update
+description: Updates a device manager engine on an index
 ---
 
-# create
+# update
 
 
-Creates a new device manager engine on an index
+Updates a new device manager engine on an index
 
 ---
 
@@ -18,7 +18,7 @@ Creates a new device manager engine on an index
 
 ```http
 URL: http://kuzzle:7512/_/device-manager/engine/:index/[?group]
-Method: POST
+Method: PUT
 ```
 
 ### Other protocols
@@ -26,25 +26,24 @@ Method: POST
 ```js
 {
   "controller": "device-manager/engine",
-  "action": "create",
+  "action": "update",
   "index": "tenant-ayse",
 
   // Optional
   "group": "tenant-group"
-
 }
 ```
 
 ### Kourou
 
 ```bash
-kourou device-manager/engine:create <index> -a group=<tenant group>
+kourou device-manager/engine:update <index> -a group=<tenant group>
 ```
 ---
 
 ## Response
 
-Returns an object containing the index name and the list of created collections with their mappings.
+Returns an object containing the index name and the list of updated collections with their mappings.
 
 ```js
 {
@@ -52,7 +51,7 @@ Returns an object containing the index name and the list of created collections 
   "status": 200,
   "error": null,
   "controller": "device-manager/engine",
-  "action": "create",
+  "action": "update",
   "collection": null,
   "index": null,
   "result": { 

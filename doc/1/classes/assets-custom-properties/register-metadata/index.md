@@ -11,21 +11,21 @@ Add properties definition to the `metadata` field of the `assets` collection.
 
 
 ```ts
-registerMetadata (mapping: JSONObject, options: JSONObject);
+registerMetadata (mappings: JSONObject, options: JSONObject);
 ```
 
 <br/>
 
 | Arguments | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
-| `mapping` | <pre>JSONObject</pre> | Mapping definiton of the `metadata` property |
+| `mappings` | <pre>JSONObject</pre> | Mappings definiton of the `metadata` property |
 | `options` | <pre>JSONObject</pre> | Additional options |
 
 ### options
 
 | Properties | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
-| `tenantGroup` | <pre>string</pre> | Name of the group for which the mapping should apply. If unspecified, mappings will apply to every group who does not have specific definition. |
+| `group` | <pre>string</pre> | Name of the group for which the mappings should apply. If unspecified, mappings will apply to every group who does not have specific definition. |
 
 ## Usage
 
@@ -40,5 +40,5 @@ deviceManagerPlugin.assets.registerMetadata({
     fields: {
       text: { type: 'text' } }
   }
-}, { tenantGroup: 'water_management' });
+}, { group: 'water_management' });
 ```

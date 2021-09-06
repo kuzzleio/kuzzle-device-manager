@@ -65,7 +65,7 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.assets.registerMetadata({
   warranty: {
     type: 'keyword',                   // Since no tenant group is specified,
-    fields: {                          // this mapping will be applied to every
+    fields: {                          // these mappings will be applied to every
       text: { type: 'text' }           // tenant by default
     }
   }
@@ -73,8 +73,8 @@ deviceManager.assets.registerMetadata({
 
 deviceManager.assets.registerMetadata({
   stillAlive: { type: 'boolean' }
-}, { tenantGroup: 'astronaut' });      // A tenant group is specified : 'astronaut'.
-                                       // This mapping definition for the `metadata` field
+}, { group: 'astronaut' });      // A tenant group is specified : 'astronaut'.
+                                       // These are the mappings definition for the `metadata` field
                                        // of the `assets` collection will only be applied for
                                        // the 'astronaut' tenant.
 ```                                    
@@ -186,7 +186,7 @@ deviceManager.devices.registerMeasure('humidity', {
   properties: {
     updatedAt: { type: 'date' },               // By default, every 'devices' tenant collection
     payloadUuid: {                             // will have the 'humidity' property with the provided
-      type: 'keyword',                         // mapping inside the 'measures' field.
+      type: 'keyword',                         // mappings inside the 'measures' field.
       fields: {
         text: { type: 'text' }
       }
@@ -199,27 +199,27 @@ deviceManager.devices.registerMeasure('gravity', {
   properties: {
     updatedAt: { type: 'date' },               // The 'devices' collection of the 'astronaut' tenant
     payloadUuid: {                             // will have the 'gravity' property with the provided
-      type: 'keyword',                         // mapping inside the 'measures' field.
+      type: 'keyword',                         // mappings inside the 'measures' field.
       fields: {
         text: { type: 'text' }
       }
     },
     value: { type: 'float' },
   }
-}, { tenantGroup: 'astronaut' });
+}, { group: 'astronaut' });
 
 deviceManager.devices.registerQos({           // By default, every 'devices' tenant collection
   battery: { type: 'integer' }                // will have the 'battery' property with the provided  
-});                                           // mapping inside the 'qod' field.
+});                                           // mappings inside the 'qod' field.
                                               
 
 deviceManager.devices.registerQos({           // The 'devices' collection of the 'astronaut' tenant
   durability: { type: 'float' }               // will have the 'durability' property with the provided
-}, { tenantGroup: 'astronaut' });             // mapping inside the 'qos' field.
+}, { group: 'astronaut' });             // mappings inside the 'qos' field.
                                               
 deviceManager.devices.registerMetadata({      // By default, every 'devices' tenant collection
   group: {                                    // will have the 'group' property with the provided
-    type: 'keyword',                          // mapping inside the 'metadata' field. 
+    type: 'keyword',                          // mappings inside the 'metadata' field. 
     fields: {                                  
       text: { type: 'text' }
     }

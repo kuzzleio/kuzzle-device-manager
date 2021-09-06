@@ -2,5 +2,5 @@
 code: true
 type: branch
 title: DevicesCustomProperties
-description: Kuzzle IoT Platform - DevicesCustomProperties class
+description: Kuzzle IoT - DevicesCustomProperties class
 ---

@@ -11,7 +11,7 @@ Add properties definition to the `measures` field of the `devices` collection.
 
 
 ```ts
-registerMeasure (measureName: string, mapping: JSONObject, options: JSONObject);
+registerMeasure (measureName: string, mappings: JSONObject, options: JSONObject);
 ```
 
 <br/>
@@ -19,14 +19,14 @@ registerMeasure (measureName: string, mapping: JSONObject, options: JSONObject);
 | Arguments | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
 | `measureName` | <pre>string</pre> | Name of the measure you are willing to add to the `measures` field |
-| `mapping` | <pre>JSONObject</pre> | Mapping definiton of the custom measure property |
+| `mappings` | <pre>JSONObject</pre> | Mappings definiton of the custom measure property |
 | `options` | <pre>JSONObject</pre> | Additional options |
 
 ### options
 
 | Properties | Type                  | Description                                 |
 |-----------|-----------------------|---------------------------------------------|
-| `tenantGroup` | <pre>string</pre> | Name of the group for which the mapping should apply. If unspecified, mappings will apply to every group who does not have specific definition |
+| `group` | <pre>string</pre> | Name of the group for which the mappings should apply. If unspecified, mappings will apply to every group who does not have specific definition |
 
 ## Usage
 
@@ -44,7 +44,7 @@ deviceManagerPlugin.devices.registerMeasure(
       celsius: { type: 'float' }
     }
   },
-  { tenantGroup: 'water_management' });
+  { group: 'water_management' });
 
 deviceManagerPlugin.devices.registerMeasure(
   'humidity',
@@ -58,5 +58,5 @@ deviceManagerPlugin.devices.registerMeasure(
       }
     }
   },
-  { tenantGroup: 'air_quality' });
+  { group: 'air_quality' });
 ```

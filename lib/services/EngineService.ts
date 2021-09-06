@@ -3,7 +3,14 @@ import {
   EmbeddedSDK,
   JSONObject,
   BadRequestError,
+  NotFoundError,
 } from 'kuzzle';
+
+import { catalogMappings } from '../models';
+
+function engineId (index) {
+  return `engine-device-manager--${index}`;
+}
 
 export class EngineService {
   private context: PluginContext;
@@ -18,50 +25,56 @@ export class EngineService {
     this.context = context;
   }
 
-  private async hasEngine (index: string) {
-    const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engine',
-      action: 'exists',
-      index,
-    });
-
-    if (! tenantExists) {
-      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
+  async create (index: string, group = 'commons') {
+    if (await this.exists(index)) {
+      throw new BadRequestError(`Tenant "${index}" already have a device-manager engine`);
     }
-  }
 
-  async create (index: string, tenantGroup = 'shared') {
-    const promises = [];
-    const templates = this.config.mappings.get(tenantGroup)
-      ? this.config.mappings.get(tenantGroup)
-      : this.config.mappings.get('shared');
-    
     const collections = [];
+    const promises = [];
+    const templates = this.config.mappings.get(group)
+      ? this.config.mappings.get(group)
+      : this.config.mappings.get('commons');
+
     for (const [collection, mappings] of Object.entries(templates)) {
       promises.push(
         this.sdk.collection.create(index, collection, { mappings })
           .then(() => { collections.push(collection); })
       );
     }
+    promises.push(this.sdk.collection.create(index, 'config', {
+      mappings: {
+        dynamic: 'strict',
+        properties: {
+          type: { type: 'keyword' },
+
+          catalog: catalogMappings,
+        }
+      } as any
+    }));
 
     await Promise.all(promises);
 
     await this.sdk.document.create(
       this.config.adminIndex,
-      'engines',
-      { index },
-      index,
+      'config',
+      { type: 'engine-device-manager', engine: { index } },
+      engineId(index),
       { refresh: 'wait_for' })
 
     return { collections };
   }
 
-  async update (index: string) {
-    const promises = [];
-    const templates = this.config.mappings.get('shared');
-    const collections = [];
+  async update (index: string, group = 'commons') {
+    if (! await this.exists(index)) {
+      throw new NotFoundError(`Tenant "${index}" does not have a device-manager engine`);
+    }
 
-    await this.hasEngine(index);
+    const collections = [];
+    const promises = [];
+    const templates = this.config.mappings.get(group)
+      ? this.config.mappings.get(group)
+      : this.config.mappings.get('commons');
 
     for (const [collection, mappings] of Object.entries(templates)) {
       promises.push(this.sdk.collection.update(index, collection, { mappings })
@@ -75,11 +88,13 @@ export class EngineService {
   }
 
   async delete (index: string) {
-    const promises = [];
-    const templates = Object.keys(this.config.mappings.get('shared'));
-    const collections = [];
+    if (! await this.exists(index)) {
+      throw new NotFoundError(`Tenant "${index}" does not have a device-manager engine`);
+    }
 
-    await this.hasEngine(index);
+    const promises = [];
+    const templates = Object.keys(this.config.mappings.get('commons'));
+    const collections = [];
 
     for (const collection of templates) {
       promises.push(this.sdk.collection.delete(index, collection)
@@ -91,8 +106,8 @@ export class EngineService {
 
     await this.sdk.document.delete(
       this.config.adminIndex,
-      'engines',
-      index,
+      'config',
+      engineId(index),
       { refresh: 'wait_for' });
 
     return { collections };
@@ -101,13 +116,24 @@ export class EngineService {
   async list () {
     const result = await this.sdk.document.search(
       this.config.adminIndex,
-      'engines',
-      {},
-      { size: 1000 });
+      'config',
+      {
+        equals: { type: 'engine-device-manager' },
+      },
+      { size: 1000, lang: 'koncorde' });
 
     return {
       engines: result.hits.map(hit => hit._source as any)
     };
+  }
+
+  async exists (index: string): Promise<boolean> {
+    const tenantExists = await this.sdk.document.exists(
+      this.config.adminIndex,
+      'config',
+      engineId(index));
+
+    return tenantExists;
   }
 }
 

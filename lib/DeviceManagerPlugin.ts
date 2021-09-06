@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
   Plugin,
   PluginContext,
@@ -5,6 +6,9 @@ import {
   EmbeddedSDK,
   PluginImplementationError,
   Mutex,
+  KuzzleRequest,
+  BadRequestError,
+  Inflector,
 } from 'kuzzle';
 
 import {
@@ -13,14 +17,21 @@ import {
   EngineController,
 } from './controllers';
 
-import { EngineService, PayloadService, DeviceService } from './services';
+import {
+  EngineService,
+  PayloadService,
+  DeviceService,
+  AssetsCustomProperties,
+  DevicesCustomProperties,
+  MigrationService,
+} from './services';
 import { Decoder } from './decoders';
 import {
   assetsMappings,
   devicesMappings,
-  AssetsCustomProperties,
-  DevicesCustomProperties
+  catalogMappings,
 } from './models';
+
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
 
@@ -31,6 +42,7 @@ export class DeviceManagerPlugin extends Plugin {
   private payloadService: PayloadService;
   private engineService: EngineService;
   private deviceService: DeviceService;
+  private migrationService: MigrationService;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -63,10 +75,24 @@ export class DeviceManagerPlugin extends Plugin {
     this.defaultConfig = {
       adminIndex: 'device-manager',
       adminCollections: {
-        engines: {
+        config: {
           dynamic: 'strict',
           properties: {
-            index: { type: 'keyword' },
+            type: { type: 'keyword' },
+
+            engine: {
+              properties: {
+                index: { type: 'keyword' },
+              }
+            },
+
+            catalog: catalogMappings,
+
+            'device-manager': {
+              properties: {
+                autoProvisionning: { type: 'boolean' },
+              }
+            }
           }
         },
         devices: devicesMappings,
@@ -84,8 +110,8 @@ export class DeviceManagerPlugin extends Plugin {
       },
       collections: {
         assets: assetsMappings,
-        devices: devicesMappings
-      }
+        devices: devicesMappings,
+      },
     };
   }
 
@@ -93,17 +119,19 @@ export class DeviceManagerPlugin extends Plugin {
    * Init the plugin
    */
   async init (config: JSONObject, context: PluginContext) {
-    this.config = { ...this.defaultConfig, ...config };
-    
+    this.config = _.merge({}, this.defaultConfig, config);
+
     this.context = context;
 
     this.config.mappings = new Map<string, JSONObject>();
 
     this.mergeMappings();
-    
+
     this.engineService = new EngineService(this.config, context);
     this.payloadService = new PayloadService(this.config, context);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
+    this.migrationService = new MigrationService(this.config, context);
+
     this.assetController = new AssetController(this.config, context);
     this.engineController = new EngineController(this.config, context, this.engineService);
     this.deviceController = new DeviceController(this.config, context, this.deviceService);
@@ -112,7 +140,17 @@ export class DeviceManagerPlugin extends Plugin {
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/engine'] = this.engineController.definition;
 
+    this.pipes = {
+      'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
+      'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
+      'document:beforeCreate': this.generateConfigID.bind(this),
+    };
+
     await this.initDatabase();
+
+    await this.migrationService.run();
 
     for (const decoder of this.decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
@@ -131,7 +169,7 @@ export class DeviceManagerPlugin extends Plugin {
    * @returns Corresponding API action requestPayload
    */
   registerDecoder (decoder: Decoder): { controller: string, action: string } {
-    decoder.action = decoder.action || kebabCase(decoder.deviceModel);
+    decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
 
     if (this.api['device-manager/payload'].actions[decoder.action]) {
       throw new PluginImplementationError(`A decoder for "${decoder.deviceModel}" has already been registered.`);
@@ -162,32 +200,55 @@ export class DeviceManagerPlugin extends Plugin {
       if (! await this.sdk.index.exists(this.config.adminIndex)) {
         await this.sdk.index.create(this.config.adminIndex);
       }
+
+      await Promise.all(Object.entries(this.config.adminCollections)
+        .map(([collection, mappings]) => (
+          this.sdk.collection.create(this.config.adminIndex, collection, { mappings })
+        ))
+      );
+
+      await this.initializeConfig();
     }
     finally {
       await mutex.unlock();
     }
+  }
 
-    await Promise.all(Object.entries(this.config.adminCollections)
-      .map(([collection, mappings]) => (
-        this.sdk.collection.create(this.config.adminIndex, collection, { mappings })
-      ))
-    );
+  /**
+   * Initialize the config document if it does not exists
+   */
+  private async initializeConfig () {
+    const exists = await this.sdk.document.exists(
+      this.config.adminIndex,
+      'config',
+      'plugin--device-manager');
+
+    if (! exists) {
+      await this.sdk.document.create(
+        this.config.adminIndex,
+        'config',
+        {
+          type: 'device-manager',
+          'device-manager': { autoProvisionning: true }
+        },
+        'plugin--device-manager');
+    }
   }
 
   /**
    * Merge custom properties mappings for 'assets' and 'devices' collection by tenant group
    */
   private mergeMappings() {
-    const assetsProperties = this.assets.definitions.get('shared');
-    const devicesProperties = this.devices.definitions.get('shared');
+    const assetsProperties = this.assets.definitions.get('commons');
+    const devicesProperties = this.devices.definitions.get('commons');
 
     // Retrieve each group name which has custom properties definition
-    const tenantGroups = [...new Set(Array.from(this.devices.definitions.keys())
+    const groups = [...new Set(Array.from(this.devices.definitions.keys())
       .concat(Array.from(this.assets.definitions.keys())))];
 
-    // Init each group with 'devices' and 'assets' shared properties definition
-    for (const tenantGroup of tenantGroups) {
-      this.config.mappings.set(tenantGroup, {
+    // Init each group with 'devices' and 'assets' commons properties definition
+    for (const group of groups) {
+      this.config.mappings.set(group, {
         assets: {
           dynamic: 'false',
           properties: assetsProperties
@@ -199,10 +260,10 @@ export class DeviceManagerPlugin extends Plugin {
       });
     }
 
-    // Merge custom 'devices' properties with shared properties
-    for (const [tenantGroup, customProperties] of this.devices.definitions) {
-      this.config.mappings.set(tenantGroup, {
-        assets: this.config.mappings.get(tenantGroup).assets,
+    // Merge custom 'devices' properties with commons properties
+    for (const [group, customProperties] of this.devices.definitions) {
+      this.config.mappings.set(group, {
+        assets: this.config.mappings.get(group).assets,
         devices: {
           dynamic: 'false',
           properties: {
@@ -213,9 +274,9 @@ export class DeviceManagerPlugin extends Plugin {
       });
     }
 
-    // Merge custom 'assets' properties with shared properties
-    for (const [tenantGroup, customProperties] of this.assets.definitions) {
-      this.config.mappings.set(tenantGroup, {
+    // Merge custom 'assets' properties with commons properties
+    for (const [group, customProperties] of this.assets.definitions) {
+      this.config.mappings.set(group, {
         assets: {
           dynamic: 'false',
           properties: {
@@ -223,7 +284,7 @@ export class DeviceManagerPlugin extends Plugin {
             ...customProperties
           }
         },
-        devices: this.config.mappings.get(tenantGroup).devices,
+        devices: this.config.mappings.get(group).devices,
       });
 
       // Use "devices" mappings to generate "assets" collection mappings
@@ -234,7 +295,7 @@ export class DeviceManagerPlugin extends Plugin {
         model: { type: 'keyword' },
       };
 
-      const tenantMappings = this.config.mappings.get(tenantGroup);
+      const tenantMappings = this.config.mappings.get(group);
 
       for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
         tenantMappings.assets.properties.measures.properties[measureType] = {
@@ -248,7 +309,7 @@ export class DeviceManagerPlugin extends Plugin {
           }
         };
       }
-      this.config.mappings.set(tenantGroup, tenantMappings);
+      this.config.mappings.set(group, tenantMappings);
     }
 
     // Merge custom mappings from decoders for payloads collection
@@ -260,16 +321,39 @@ export class DeviceManagerPlugin extends Plugin {
     }
 
     // Copy common mappings into the config
-    this.config.collections = this.config.mappings.get('shared');
-    this.config.adminCollections.devices = this.config.mappings.get('shared').devices;
+    this.config.collections = this.config.mappings.get('commons');
+    this.config.adminCollections.devices = this.config.mappings.get('commons').devices;
   }
-}
 
-function kebabCase (string) {
-  return string
-    // get all lowercase letters that are near to uppercase ones
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    // replace all spaces and low dash
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase();
+  private async pipeCheckEngine (request: KuzzleRequest) {
+    const index = request.getIndex();
+
+    const { result: { exists } } = await this.sdk.query({
+      controller: 'device-manager/engine',
+      action: 'exists',
+      index,
+    });
+
+    if (! exists) {
+      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
+    }
+
+    return request;
+  }
+
+  private async generateConfigID (request: KuzzleRequest) {
+    if (request.getCollection() !== 'config') {
+      return request;
+    }
+
+    const document = request.getBody();
+
+    if (document.type !== 'catalog' || request.getId(({ ifMissing: 'ignore' }))) {
+      return request;
+    }
+
+    request.input.args._id = `catalog--${document.catalog.deviceId}`;
+
+    return request;
+  }
 }
