@@ -10,13 +10,15 @@ export class MigrationService {
     return this.context.accessors.sdk;
   }
 
-  constructor (plugin: Plugin) {
+  constructor (pluginName: string, plugin: Plugin) {
     this.config = plugin.config;
     this.context = plugin.context;
+
+    this.prefix = pluginName;
   }
 
   async run () {
-    global.app.install(`${this.prefix}-auto-version`, async () => {
+    global.app.install(`${this.prefix}-O.3.0`, async () => {
       await this.engineCollection();
     });
   }

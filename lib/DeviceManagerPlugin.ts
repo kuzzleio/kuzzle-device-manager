@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
   Plugin,
   PluginContext,
@@ -123,7 +124,7 @@ export class DeviceManagerPlugin extends Plugin {
    * Init the plugin
    */
   async init (config: JSONObject, context: PluginContext) {
-    this.config = { ...this.defaultConfig, ...config };
+    this.config = _.merge({}, this.defaultConfig, config);
 
     this.context = context;
 
@@ -136,7 +137,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.payloadService = new PayloadService(this, this.batchWriter);
     this.deviceService = new DeviceService(this, this.decoders);
-    this.migrationService = new MigrationService(this);
+    this.migrationService = new MigrationService('device-manager', this);
     this.deviceManagerEngine = new DeviceManagerEngine(this);
 
     this.assetController = new AssetController(this);
