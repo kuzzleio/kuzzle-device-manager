@@ -239,7 +239,7 @@ export class PayloadService {
 
     // Propagate device into tenant index
     if (tenantId) {
-      const res = await this.batchController.update(
+      await this.batchController.update(
         tenantId,
         'devices',
         enrichedDevice._id,

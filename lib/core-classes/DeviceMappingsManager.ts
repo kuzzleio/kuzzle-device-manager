@@ -1,6 +1,4 @@
-import _ from 'lodash';
 import { JSONObject, PluginImplementationError } from 'kuzzle';
-import { BaseMeasure } from 'lib/types';
 
 export class DeviceMappingsManager {
   private mappings: JSONObject;

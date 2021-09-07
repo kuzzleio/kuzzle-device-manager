@@ -139,8 +139,6 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.config.mappings = new Map<string, JSONObject>();
 
-    // this.mergeMappings();
-
     this.batchWriter = new BatchWriter(this.sdk, this.config.writerInterval);
     this.batchWriter.begin();
 

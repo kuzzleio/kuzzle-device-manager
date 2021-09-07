@@ -224,13 +224,13 @@ export class DeviceService {
             this.config.adminIndex,
             'devices',
             deviceDocuments,
-            { strict: true, ...options });
+            { strict, ...options });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
             deviceDocuments,
-            { strict: true, ...options });
+            { strict, ...options });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -245,7 +245,7 @@ export class DeviceService {
             document.tenantId,
             'assets',
             assetDocuments,
-            { strict: true, ...options });
+            { strict, ...options });
 
           return {
             successes: results.successes.concat(updated.successes),

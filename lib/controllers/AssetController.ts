@@ -1,9 +1,7 @@
 import {
   KuzzleRequest,
-  JSONObject,
-  PluginContext,
   EmbeddedSDK,
-  Plugin
+  Plugin,
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
