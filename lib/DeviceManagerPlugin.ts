@@ -30,6 +30,7 @@ import {
   devicesMappings,
   catalogMappings,
 } from './models';
+import { BatchWriter } from './services';
 
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
@@ -42,6 +43,8 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
   private migrationService: MigrationService;
+
+  private batchWriter: BatchWriter;
 
   private get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -113,6 +116,7 @@ export class DeviceManagerPlugin extends Plugin {
         assets: assetsMappings,
         devices: devicesMappings,
       },
+      writerInterval: 50
     };
   }
 
@@ -128,10 +132,13 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.mergeMappings();
 
-    this.deviceManagerEngine = new DeviceManagerEngine(this);
-    this.payloadService = new PayloadService(this.config, context);
+    this.batchWriter = new BatchWriter(this.sdk, this.config.writerInterval);
+    this.batchWriter.begin();
+
+    this.payloadService = new PayloadService(this.config, context, this.batchWriter);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
     this.migrationService = new MigrationService(this.config, context);
+    this.deviceManagerEngine = new DeviceManagerEngine(this);
 
     this.assetController = new AssetController(this.config, context);
     this.deviceController = new DeviceController(this.config, context, this.deviceService);
