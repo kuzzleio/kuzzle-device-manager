@@ -9,15 +9,15 @@ import {
   BadRequestError,
   Inflector,
 } from 'kuzzle';
+import { EngineController } from 'kuzzle-plugin-commons';
 
 import {
   AssetController,
   DeviceController,
-  EngineController,
 } from './controllers';
 
 import {
-  EngineService,
+  DeviceManagerEngine,
   PayloadService,
   DeviceService,
   AssetsCustomProperties,
@@ -39,7 +39,7 @@ export class DeviceManagerPlugin extends Plugin {
   private engineController: EngineController;
 
   private payloadService: PayloadService;
-  private engineService: EngineService;
+  private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
   private migrationService: MigrationService;
 
@@ -73,6 +73,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.defaultConfig = {
       adminIndex: 'device-manager',
+      configCollection: 'config',
       adminCollections: {
         config: {
           dynamic: 'strict',
@@ -82,6 +83,7 @@ export class DeviceManagerPlugin extends Plugin {
             engine: {
               properties: {
                 index: { type: 'keyword' },
+                group: { type: 'keyword' },
               }
             },
 
@@ -126,18 +128,17 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.mergeMappings();
 
-    this.engineService = new EngineService(this.config, context);
+    this.deviceManagerEngine = new DeviceManagerEngine(this);
     this.payloadService = new PayloadService(this.config, context);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
     this.migrationService = new MigrationService(this.config, context);
 
     this.assetController = new AssetController(this.config, context);
-    this.engineController = new EngineController(this.config, context, this.engineService);
     this.deviceController = new DeviceController(this.config, context, this.deviceService);
+    this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
 
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
-    this.api['device-manager/engine'] = this.engineController.definition;
 
     this.pipes = {
       'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),

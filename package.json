@@ -27,6 +27,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "csvtojson": "~2.0.10",
+    "kuzzle-plugin-commons": "git+https://github.com/kuzzleio/kuzzle-plugin-commons.git",
     "uuid": "~8.3.2"
   },
   "devDependencies": {
