@@ -2,15 +2,14 @@ import csv from 'csvtojson';
 import {
   KuzzleRequest,
   EmbeddedSDK,
-  JSONObject,
-  PluginContext,
   BadRequestError,
+  Plugin
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
 import { Device } from '../models';
 import { DeviceBulkContent } from '../types';
-import { DeviceService } from '../services';
+import { DeviceService } from '../core-classes';
 
 export class DeviceController extends CRUDController {
   private deviceService: DeviceService;
@@ -19,12 +18,8 @@ export class DeviceController extends CRUDController {
     return this.context.accessors.sdk;
   }
 
-  constructor(
-    config: JSONObject,
-    context: PluginContext,
-    deviceService: DeviceService
-  ) {
-    super(config, context, 'devices');
+  constructor(plugin: Plugin, deviceService: DeviceService) {
+    super(plugin, 'devices');
 
     this.deviceService = deviceService;
 

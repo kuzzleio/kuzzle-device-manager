@@ -4,7 +4,8 @@ import {
   EmbeddedSDK,
   BadRequestError,
   NotFoundError,
-  PreconditionError
+  PreconditionError,
+  Plugin,
 } from 'kuzzle';
 
 import {
@@ -14,7 +15,7 @@ import {
   DeviceMRequestContent
 } from '../types';
 
-import { Decoder } from '../decoders';
+import { Decoder } from './Decoder';
 import { Device } from '../models';
 
 export class DeviceService {
@@ -27,9 +28,9 @@ export class DeviceService {
     return this.context.accessors.sdk;
   }
 
-  constructor(config: JSONObject, context: PluginContext, decoders: Map<string, Decoder>) {
-    this.config = config;
-    this.context = context;
+  constructor(plugin: Plugin, decoders: Map<string, Decoder>) {
+    this.config = plugin.config;
+    this.context = plugin.context;
 
     this.decoders = decoders;
   }

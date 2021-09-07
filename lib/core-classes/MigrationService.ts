@@ -1,4 +1,4 @@
-import { JSONObject, PluginContext } from 'kuzzle';
+import { JSONObject, PluginContext, Plugin } from 'kuzzle';
 
 export class MigrationService {
   private config: JSONObject;
@@ -10,9 +10,9 @@ export class MigrationService {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext) {
-    this.config = config;
-    this.context = context;
+  constructor (plugin: Plugin) {
+    this.config = plugin.config;
+    this.context = plugin.context;
   }
 
   async run () {

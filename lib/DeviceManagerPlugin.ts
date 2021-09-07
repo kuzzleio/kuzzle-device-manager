@@ -15,7 +15,6 @@ import {
   AssetController,
   DeviceController,
 } from './controllers';
-
 import {
   DeviceManagerEngine,
   PayloadService,
@@ -23,14 +22,14 @@ import {
   AssetsCustomProperties,
   DevicesCustomProperties,
   MigrationService,
-} from './services';
-import { Decoder } from './decoders';
+  BatchWriter,
+  Decoder,
+} from './core-classes';
 import {
   assetsMappings,
   devicesMappings,
   catalogMappings,
 } from './models';
-import { BatchWriter } from './services';
 
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
@@ -135,13 +134,13 @@ export class DeviceManagerPlugin extends Plugin {
     this.batchWriter = new BatchWriter(this.sdk, this.config.writerInterval);
     this.batchWriter.begin();
 
-    this.payloadService = new PayloadService(this.config, context, this.batchWriter);
-    this.deviceService = new DeviceService(this.config, context, this.decoders);
-    this.migrationService = new MigrationService(this.config, context);
+    this.payloadService = new PayloadService(this, this.batchWriter);
+    this.deviceService = new DeviceService(this, this.decoders);
+    this.migrationService = new MigrationService(this);
     this.deviceManagerEngine = new DeviceManagerEngine(this);
 
-    this.assetController = new AssetController(this.config, context);
-    this.deviceController = new DeviceController(this.config, context, this.deviceService);
+    this.assetController = new AssetController(this);
+    this.deviceController = new DeviceController(this, this.deviceService);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
 
     this.api['device-manager/asset'] = this.assetController.definition;

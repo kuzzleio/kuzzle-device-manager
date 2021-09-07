@@ -3,6 +3,7 @@ import {
   PluginContext,
   JSONObject,
   ControllerDefinition,
+  Plugin,
 } from 'kuzzle';
 
 export class CRUDController {
@@ -11,9 +12,9 @@ export class CRUDController {
   private collection: string;
   public definition: ControllerDefinition;
 
-  constructor (config: JSONObject, context: PluginContext, collection: string) {
-    this.config = config;
-    this.context = context;
+  constructor (plugin: Plugin, collection: string) {
+    this.config = plugin.config;
+    this.context = plugin.context;
     this.collection = collection;
   }
 

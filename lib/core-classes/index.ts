@@ -9,3 +9,5 @@ export * from './CustomProperties';
 export * from './MigrationService';
 
 export * from './BatchProcessing';
+
+export * from './Decoder';
