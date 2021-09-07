@@ -138,6 +138,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.payloadService = new PayloadService(this.config, context, this.batchWriter);
     this.deviceService = new DeviceService(this.config, context, this.decoders);
     this.migrationService = new MigrationService(this.config, context);
+    this.deviceManagerEngine = new DeviceManagerEngine(this);
 
     this.assetController = new AssetController(this.config, context);
     this.deviceController = new DeviceController(this.config, context, this.deviceService);
