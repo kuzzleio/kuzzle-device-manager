@@ -10,7 +10,14 @@ export class DeviceMappingsManager {
   /**
    * Register custom metadata for devices
    *
-   * @param metadata Device custom metadata
+   * @param metadata Device custom metadata mappings
+   *
+   * @example
+   *
+   * plugin.devices.registerMetadata({
+   *   serial: { type: 'keyword' },
+   * });
+   *
    */
   registerMetadata (metadata) {
     for (const [name, value] of Object.entries(metadata)) {
@@ -21,7 +28,13 @@ export class DeviceMappingsManager {
   /**
    * Register custom QoS for devices
    *
-   * @param qos Device custom QoS
+   * @param qos Device custom QoS mappings
+   *
+   * @example
+   *
+   * plugin.devices.registerQoS({
+   *   battery: { type: 'integer' },
+   * });
    */
   registerQoS (qos: JSONObject) {
     for (const [name, value] of Object.entries(qos)) {
@@ -30,9 +43,15 @@ export class DeviceMappingsManager {
   }
 
   /**
-   * Register custom measure for devices
+   * Register custom measure for devices mappings
    *
    * @param qos Device custom measure
+   *
+   * @example
+   *
+   * plugin.devices.registerMeasure('humidity', {
+   *   value: { type: 'float' },
+   * });
    */
   registerMeasure (name: string, measure: JSONObject) {
     if (this.mappings.properties.measures.properties[name]) {

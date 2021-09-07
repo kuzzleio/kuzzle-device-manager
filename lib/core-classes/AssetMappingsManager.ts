@@ -47,6 +47,14 @@ export class AssetMappingsManager {
    * @param name Asset type name
    * @param metadata Asset type custom metadata
    * @param options.group Only inject this asset type to engine of this group
+   *
+   * @example
+   *
+   * plugin.assets.register('container', {
+   *   size: { type: 'integer' },
+   *   serial: { type: 'keyword' },
+   * });
+   *
    */
   register (
     name: string,
