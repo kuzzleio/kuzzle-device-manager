@@ -12,6 +12,8 @@ import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
 import { BatchController, BatchWriter } from './BatchProcessing';
 
+export type PayloadHandler = (request: KuzzleRequest, decoder: Decoder) => Promise<any>;
+
 export class PayloadService {
   private config: JSONObject;
   private context: PluginContext;

@@ -1,7 +1,7 @@
 export * from './lib/DeviceManagerPlugin';
 
-export * from './lib/decoders/';
+export * from './lib/core-classes/Decoder';
 
-export * from './lib/models/';
+export * from './lib/models';
 
-export * from './lib/types/';
+export * from './lib/types';

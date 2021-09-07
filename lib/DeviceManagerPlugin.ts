@@ -25,6 +25,7 @@ import {
   MigrationService,
   BatchWriter,
   Decoder,
+  PayloadHandler,
 } from './core-classes';
 import {
   assetsMappings,
@@ -65,7 +66,7 @@ export class DeviceManagerPlugin extends Plugin {
    */
   constructor() {
     super({
-      kuzzleVersion: '>=2.11.1 <3'
+      kuzzleVersion: '>=2.14.0 <3'
     });
 
     this.api = {
@@ -171,19 +172,30 @@ export class DeviceManagerPlugin extends Plugin {
    *  - controller: `"device-manager/payload"`
    *  - action: `action` property of the decoder or the device model in kebab-case
    *
+   * If a custom payload handler is given then it will be used to process payloads
+   * instead of the PayloadService.process method.
+   *
    * @param decoder Instantiated decoder
+   * @param options.handler Custom payload handler
    *
    * @returns Corresponding API action requestPayload
    */
-  registerDecoder (decoder: Decoder): { controller: string, action: string } {
+  registerDecoder (
+    decoder: Decoder,
+    { handler }: { handler?: PayloadHandler } = {}
+  ): { controller: string, action: string } {
     decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
 
     if (this.api['device-manager/payload'].actions[decoder.action]) {
       throw new PluginImplementationError(`A decoder for "${decoder.deviceModel}" has already been registered.`);
     }
 
+    const payloadsHandler = handler
+      ? handler
+      : this.payloadService.process.bind(this.payloadService);
+
     this.api['device-manager/payload'].actions[decoder.action] = {
-      handler: request => this.payloadService.process(request, decoder),
+      handler: request => payloadsHandler(request, decoder),
       http: decoder.http,
     };
 
