@@ -2,5 +2,5 @@
 code: true
 type: branch
 title: device
-description: Kuzzle IoT Platform - Device Manager Device Controller
+description: Kuzzle IoT - Device Manager Device Controller
 ---

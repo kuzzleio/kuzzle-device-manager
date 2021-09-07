@@ -13,10 +13,12 @@ export class MigrationService {
   constructor (config: JSONObject, context: PluginContext) {
     this.config = config;
     this.context = context;
+
+    this.prefix = 'device-manager';
   }
 
   async run () {
-    global.app.install(`${this.prefix}-auto-version`, async () => {
+    global.app.install(`${this.prefix}-O.3.0`, async () => {
       await this.engineCollection();
     });
   }
