@@ -142,6 +142,18 @@ After({ tags: '@provisioning', timeout: 60 * 1000 }, async function () {
   });
 });
 
+// cleaning hooks ==============================================================
+
+Before({ tags: '@tenant-custom' }, async function () {
+  try {
+    await this.sdk.query({
+      controller: 'device-manager/engine',
+      action: 'delete',
+      index: 'tenant-custom',
+    })
+  } catch {}
+});
+
 async function truncateCollection (sdk, index, collection) {
   return sdk.collection.refresh(index, collection)
     .then(() => sdk.document.deleteByQuery(index, collection, {}, { refresh: 'wait_for' }))

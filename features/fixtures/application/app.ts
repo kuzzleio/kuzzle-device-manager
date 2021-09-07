@@ -12,20 +12,14 @@ deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
 // Register commons properties
 deviceManager.devices.registerMeasure('humidity', {
-  properties: {
-    updatedAt: { type: 'date' },
-    payloadUuid: {
-      type: 'keyword',
-      fields: {
-        text: { type: 'text' }
-      }
-    },
-    value: { type: 'float' },
-  }
+  value: { type: 'float' },
 });
 
-deviceManager.devices.registerQos({
+deviceManager.devices.registerQoS({
   battery: { type: 'integer' }
+});
+deviceManager.devices.registerQoS({
+  battery2: { type: 'integer' }
 });
 
 deviceManager.devices.registerMetadata({
@@ -36,8 +30,16 @@ deviceManager.devices.registerMetadata({
     }
   }
 });
+deviceManager.devices.registerMetadata({
+  group2: {
+    type: 'keyword',
+    fields: {
+      text: { type: 'text' }
+    }
+  }
+});
 
-deviceManager.assets.registerMetadata({
+deviceManager.assets.register('car', {
   warranty: {
     type: 'keyword',
     fields: {
@@ -46,57 +48,13 @@ deviceManager.assets.registerMetadata({
   }
 });
 
-// Register properties for "astronaut" tenant group
-deviceManager.devices.registerMeasure('gravity', {
-  properties: {
-    updatedAt: { type: 'date' },
-    payloadUuid: {
-      type: 'keyword',
-      fields: {
-        text: { type: 'text' }
-      }
-    },
-    value: { type: 'float' },
-  }
-}, { group: 'astronaut' });
+// Register an asset for the "astronaut" group
 
-deviceManager.devices.registerMeasure('acceleration', {
-  properties: {
-    updatedAt: { type: 'date' },
-    payloadUuid: {
-      type: 'keyword',
-      fields: {
-        text: { type: 'text' }
-      }
-    },
-    acceleration: { type: 'float' },
-  }
-}, { group: 'astronaut' });
-
-
-deviceManager.devices.registerQos({
-  durability: { type: 'float' }
-}, { group: 'astronaut' });
-
-deviceManager.devices.registerQos({
-  signalStrenght: { type: 'float' }
-}, { group: 'astronaut' });
-
-
-deviceManager.devices.registerMetadata({
-  awake: { type: 'boolean' }
-}, { group: 'astronaut' });
-
-deviceManager.devices.registerMetadata({
-  sleeping: { type: 'boolean' }
-}, { group: 'astronaut' });
-
-
-deviceManager.assets.registerMetadata({
+deviceManager.assets.register('rocket', {
   stillAlive: { type: 'boolean' }
 }, { group: 'astronaut' });
 
-deviceManager.assets.registerMetadata({
+deviceManager.assets.register('hevSuit', {
   freezing: { type: 'boolean' }
 }, { group: 'astronaut' });
 
@@ -107,7 +65,6 @@ app.hook.register('request:onError', async (request: KuzzleRequest) => {
 });
 
 app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
-// app.config.set('limits.documentsWriteCount', 20);
 
 /**
  * Register pipe for scenario used to test the tenant specific event propagation

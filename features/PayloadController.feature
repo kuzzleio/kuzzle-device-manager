@@ -104,7 +104,7 @@ Feature: Payloads Controller
     Then I should receive a result matching:
       | afterUpdate | true |
 
-  Scenario: Propagate device to tenant index
+  Scenario: Propagate device measure to tenant index
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "attached_ayse_unlinked" |
       | register55   | 42.2                     |

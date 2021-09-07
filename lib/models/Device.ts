@@ -45,12 +45,8 @@ export const devicesMappings = {
           properties: {
             // common
             updatedAt: { type: 'date' },
-            payloadUuid: {
-              type: 'keyword',
-              fields: {
-                text: { type: 'text' }
-              }
-            },
+            payloadUuid: { type: 'keyword' },
+
             // temperature
             degree: { type: 'float' }
           }
@@ -59,12 +55,8 @@ export const devicesMappings = {
           properties: {
             // common
             updatedAt: { type: 'date' },
-            payloadUuid: {
-              type: 'keyword',
-              fields: {
-                text: { type: 'text' }
-              }
-            },
+            payloadUuid: { type: 'keyword' },
+
             // position
             point: { type: 'geo_point' },
             altitude: { type: 'float' },
@@ -74,13 +66,9 @@ export const devicesMappings = {
         movement: {
           properties: {
             // common
-            payloadUuid: {
-              type: 'keyword',
-              fields: {
-                text: { type: 'text' }
-              }
-            },
             updatedAt: { type: 'date' },
+            payloadUuid: { type: 'keyword' },
+
             // movement state
             moving: { type: 'boolean' },
           }

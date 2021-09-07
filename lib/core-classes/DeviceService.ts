@@ -74,13 +74,13 @@ export class DeviceService {
             this.config.adminIndex,
             'devices',
             deviceDocuments,
-            options);
+            { strict, ...options });
 
           await this.sdk.document.mCreate(
             document.tenantId,
             'devices',
             deviceDocuments,
-            options);
+            { strict, ...options });
 
             return {
               successes: results.successes.concat(updated.successes),
@@ -145,13 +145,13 @@ export class DeviceService {
           this.config.adminIndex,
           'devices',
           deviceDocuments,
-          options);
+          { strict, ...options });
 
           await this.sdk.document.mDelete(
             document.tenantId,
             'devices',
             deviceDocuments.map(device => device._id),
-            options);
+            { strict, ...options });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -220,18 +220,17 @@ export class DeviceService {
       const updatedDevice = await this.writeToDatabase(
         deviceDocuments,
         async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
             deviceDocuments,
-            options);
+            { strict: true, ...options });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
             deviceDocuments,
-            options);
+            { strict: true, ...options });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -242,12 +241,11 @@ export class DeviceService {
       const updatedAssets = await this.writeToDatabase(
         assetDocuments,
         async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
             assetDocuments,
-            options);
+            { strict: true, ...options });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -309,13 +307,13 @@ export class DeviceService {
             this.config.adminIndex,
             'devices',
             deviceDocuments,
-            options);
+            { strict, ...options });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
             deviceDocuments,
-            options);
+            { strict, ...options });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -331,7 +329,7 @@ export class DeviceService {
             document.tenantId,
             'assets',
             assetDocuments,
-            options);
+            { strict, ...options });
 
           return {
             successes: results.successes.concat(updated.successes),
