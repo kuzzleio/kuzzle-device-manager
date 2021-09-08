@@ -110,12 +110,13 @@ export class DeviceManagerPlugin extends Plugin {
         },
         devices: devicesMappings,
         payloads: {
-          dynamic: 'false',
+          dynamic: 'strict',
           properties: {
             uuid: { type: 'keyword' },
             valid: { type: 'boolean' },
             deviceModel: { type: 'keyword' },
             payload: {
+              dynamic: 'false',
               properties: {}
             }
           }
@@ -225,7 +226,7 @@ export class DeviceManagerPlugin extends Plugin {
       await Promise.all([
         this.sdk.collection.create(this.config.adminIndex, 'config', this.config.adminCollections.config),
         this.sdk.collection.create(this.config.adminIndex, 'devices', this.deviceMappings.get()),
-        this.sdk.collection.create(this.config.adminIndex, 'payloads', this.config.adminCollections.payloads),
+        this.sdk.collection.create(this.config.adminIndex, 'payloads', this.getPayloadsMappings()),
       ]);
 
       await this.initializeConfig();
@@ -233,6 +234,25 @@ export class DeviceManagerPlugin extends Plugin {
     finally {
       await mutex.unlock();
     }
+  }
+
+  /**
+   * Merge custom mappings defined in the Decoder into the "payloads" collection
+   * mappings.
+   *
+   * Those custom mappings allow to search raw payloads more efficiently.
+   */
+  private getPayloadsMappings (): JSONObject {
+    const mappings = JSON.parse(JSON.stringify(this.config.adminCollections.payloads));
+
+    for (const decoder of this.decoders.values()) {
+      mappings.properties.payload.properties = {
+        ...mappings.properties.payload.properties,
+        ...decoder.payloadsMappings
+      };
+    }
+
+    return mappings;
   }
 
   /**
