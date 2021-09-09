@@ -217,6 +217,13 @@ export class DeviceManagerPlugin extends Plugin {
 
       await this.initializeConfig();
     }
+    catch (error) {
+      // When nodes are starting at the same time, the index cache synchronization
+      // message is received too late so index.exists returns false
+      if (error.id !== 'services.storage.index_already_exists') {
+        throw error;
+      }
+    }
     finally {
       await mutex.unlock();
     }
