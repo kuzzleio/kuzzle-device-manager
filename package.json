@@ -2,7 +2,7 @@
   "name": "@kuzzleio/plugin-device-manager",
   "version": "0.3.0",
   "description": "",
-  "author": "",
+  "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
     "type": "git",
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
