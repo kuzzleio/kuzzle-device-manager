@@ -17,7 +17,7 @@ npm login --scope=@kuzzleio --registry=https://npm.pkg.github.com
 ```
 Once done, you can install it and add it to your project dependencies:
 ```
-npm install @kuzzleio/plugin-workflows --save 
+npm install @kuzzleio/plugin-device-manager --save 
 ```
 
 ## Documentation
