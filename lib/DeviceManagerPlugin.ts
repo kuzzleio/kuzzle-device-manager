@@ -220,7 +220,17 @@ export class DeviceManagerPlugin extends Plugin {
 
     try {
       if (! await this.sdk.index.exists(this.config.adminIndex)) {
-        await this.sdk.index.create(this.config.adminIndex);
+        // Possible race condition because of index cache propagation.
+        // The index has been created but the node didn't receive the index
+        // cache update message yet, causing index:exists to returns false
+        try {
+          await this.sdk.index.create(this.config.adminIndex);
+        }
+        catch (error) {
+          if (error.id !== 'services.storage.index_already_exists') {
+            throw error;
+          }
+        }
       }
 
       await Promise.all([
