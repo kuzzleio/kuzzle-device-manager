@@ -4,12 +4,15 @@ import {
   PluginContext,
   EmbeddedSDK,
   BadRequestError,
+  Plugin,
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Decoder } from '../decoders';
+import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
 import { BatchController, BatchWriter } from './BatchProcessing';
+
+export type PayloadHandler = (request: KuzzleRequest, decoder: Decoder) => Promise<any>;
 
 export class PayloadService {
   private config: JSONObject;
@@ -20,9 +23,9 @@ export class PayloadService {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext, batchWriter: BatchWriter) {
-    this.config = config;
-    this.context = context;
+  constructor (plugin: Plugin, batchWriter: BatchWriter) {
+    this.config = plugin.config;
+    this.context = plugin.context;
     this.batchController = batchWriter.document;
   }
 
@@ -233,6 +236,7 @@ export class PayloadService {
 
     const tenantId = previousDevice._source.tenantId;
     let updatedAsset = null;
+
     // Propagate device into tenant index
     if (tenantId) {
       await this.batchController.update(

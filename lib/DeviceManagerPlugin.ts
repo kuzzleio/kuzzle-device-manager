@@ -16,22 +16,22 @@ import {
   AssetController,
   DeviceController,
 } from './controllers';
-
 import {
   DeviceManagerEngine,
   PayloadService,
   DeviceService,
-  AssetsCustomProperties,
-  DevicesCustomProperties,
   MigrationService,
-} from './services';
-import { Decoder } from './decoders';
+  BatchWriter,
+  Decoder,
+  PayloadHandler,
+  AssetMappingsManager,
+  DeviceMappingsManager,
+} from './core-classes';
 import {
   assetsMappings,
   devicesMappings,
   catalogMappings,
 } from './models';
-import { BatchWriter } from './services';
 
 export class DeviceManagerPlugin extends Plugin {
   private defaultConfig: JSONObject;
@@ -57,16 +57,24 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private decoders = new Map<string, Decoder>();
 
-  public devices = new DevicesCustomProperties(devicesMappings);
+  private deviceMappings = new DeviceMappingsManager(devicesMappings);
 
-  public assets = new AssetsCustomProperties(assetsMappings);
+  private assetMappings = new AssetMappingsManager(assetsMappings, this.deviceMappings);
+
+  get assets () {
+    return this.assetMappings;
+  }
+
+  get devices () {
+    return this.deviceMappings;
+  }
 
   /**
    * Constructor
    */
   constructor() {
     super({
-      kuzzleVersion: '>=2.11.1 <3'
+      kuzzleVersion: '>=2.14.0 <3'
     });
 
     this.api = {
@@ -102,12 +110,13 @@ export class DeviceManagerPlugin extends Plugin {
         },
         devices: devicesMappings,
         payloads: {
-          dynamic: 'false',
+          dynamic: 'strict',
           properties: {
             uuid: { type: 'keyword' },
             valid: { type: 'boolean' },
             deviceModel: { type: 'keyword' },
             payload: {
+              dynamic: 'false',
               properties: {}
             }
           }
@@ -131,18 +140,16 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.config.mappings = new Map<string, JSONObject>();
 
-    this.mergeMappings();
-
     this.batchWriter = new BatchWriter(this.sdk, this.config.writerInterval);
     this.batchWriter.begin();
 
-    this.payloadService = new PayloadService(this.config, context, this.batchWriter);
-    this.deviceService = new DeviceService(this.config, context, this.decoders);
-    this.migrationService = new MigrationService(this.config, context);
-    this.deviceManagerEngine = new DeviceManagerEngine(this);
+    this.payloadService = new PayloadService(this, this.batchWriter);
+    this.deviceService = new DeviceService(this, this.decoders);
+    this.migrationService = new MigrationService('device-manager', this);
+    this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetMappings, this.deviceMappings);
 
-    this.assetController = new AssetController(this.config, context);
-    this.deviceController = new DeviceController(this.config, context, this.deviceService);
+    this.assetController = new AssetController(this);
+    this.deviceController = new DeviceController(this, this.deviceService);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
 
     this.api['device-manager/asset'] = this.assetController.definition;
@@ -172,11 +179,18 @@ export class DeviceManagerPlugin extends Plugin {
    *  - controller: `"device-manager/payload"`
    *  - action: `action` property of the decoder or the device model in kebab-case
    *
+   * If a custom payload handler is given then it will be used to process payloads
+   * instead of the PayloadService.process method.
+   *
    * @param decoder Instantiated decoder
+   * @param options.handler Custom payload handler
    *
    * @returns Corresponding API action requestPayload
    */
-  registerDecoder (decoder: Decoder): { controller: string, action: string } {
+  registerDecoder (
+    decoder: Decoder,
+    { handler }: { handler?: PayloadHandler } = {}
+  ): { controller: string, action: string } {
     decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
 
     if (this.api['device-manager/payload'].actions[decoder.action]) {
@@ -184,7 +198,7 @@ export class DeviceManagerPlugin extends Plugin {
     }
 
     this.api['device-manager/payload'].actions[decoder.action] = {
-      handler: request => this.payloadService.process(request, decoder),
+      handler: request => handler ? handler(request, decoder) : this.payloadService.process(request, decoder),
       http: decoder.http,
     };
 
@@ -206,14 +220,24 @@ export class DeviceManagerPlugin extends Plugin {
 
     try {
       if (! await this.sdk.index.exists(this.config.adminIndex)) {
-        await this.sdk.index.create(this.config.adminIndex);
+        // Possible race condition because of index cache propagation.
+        // The index has been created but the node didn't receive the index
+        // cache update message yet, causing index:exists to returns false
+        try {
+          await this.sdk.index.create(this.config.adminIndex);
+        }
+        catch (error) {
+          if (error.id !== 'services.storage.index_already_exists') {
+            throw error;
+          }
+        }
       }
 
-      await Promise.all(Object.entries(this.config.adminCollections)
-        .map(([collection, mappings]) => (
-          this.sdk.collection.create(this.config.adminIndex, collection, { mappings })
-        ))
-      );
+      await Promise.all([
+        this.sdk.collection.create(this.config.adminIndex, 'config', this.config.adminCollections.config),
+        this.sdk.collection.create(this.config.adminIndex, 'devices', this.deviceMappings.get()),
+        this.sdk.collection.create(this.config.adminIndex, 'payloads', this.getPayloadsMappings()),
+      ]);
 
       await this.initializeConfig();
     }
@@ -227,6 +251,25 @@ export class DeviceManagerPlugin extends Plugin {
     finally {
       await mutex.unlock();
     }
+  }
+
+  /**
+   * Merge custom mappings defined in the Decoder into the "payloads" collection
+   * mappings.
+   *
+   * Those custom mappings allow to search raw payloads more efficiently.
+   */
+  private getPayloadsMappings (): JSONObject {
+    const mappings = JSON.parse(JSON.stringify(this.config.adminCollections.payloads));
+
+    for (const decoder of this.decoders.values()) {
+      mappings.properties.payload.properties = {
+        ...mappings.properties.payload.properties,
+        ...decoder.payloadsMappings
+      };
+    }
+
+    return mappings;
   }
 
   /**
@@ -248,96 +291,6 @@ export class DeviceManagerPlugin extends Plugin {
         },
         'plugin--device-manager');
     }
-  }
-
-  /**
-   * Merge custom properties mappings for 'assets' and 'devices' collection by tenant group
-   */
-  private mergeMappings() {
-    const assetsProperties = this.assets.definitions.get('commons');
-    const devicesProperties = this.devices.definitions.get('commons');
-
-    // Retrieve each group name which has custom properties definition
-    const groups = [...new Set(Array.from(this.devices.definitions.keys())
-      .concat(Array.from(this.assets.definitions.keys())))];
-
-    // Init each group with 'devices' and 'assets' commons properties definition
-    for (const group of groups) {
-      this.config.mappings.set(group, {
-        assets: {
-          dynamic: 'false',
-          properties: assetsProperties
-        },
-        devices: {
-          dynamic: 'false',
-          properties: devicesProperties
-        }
-      });
-    }
-
-    // Merge custom 'devices' properties with commons properties
-    for (const [group, customProperties] of this.devices.definitions) {
-      this.config.mappings.set(group, {
-        assets: this.config.mappings.get(group).assets,
-        devices: {
-          dynamic: 'false',
-          properties: {
-            ...devicesProperties,
-            ...customProperties,
-          }
-        }
-      });
-    }
-
-    // Merge custom 'assets' properties with commons properties
-    for (const [group, customProperties] of this.assets.definitions) {
-      this.config.mappings.set(group, {
-        assets: {
-          dynamic: 'false',
-          properties: {
-            ...assetsProperties,
-            ...customProperties
-          }
-        },
-        devices: this.config.mappings.get(group).devices,
-      });
-
-      // Use "devices" mappings to generate "assets" collection mappings
-      // for the "measures" property
-      const deviceProperties = {
-        id: { type: 'keyword' },
-        reference: { type: 'keyword' },
-        model: { type: 'keyword' },
-      };
-
-      const tenantMappings = this.config.mappings.get(group);
-
-      for (const [measureType, definition] of Object.entries(tenantMappings.devices.properties.measures.properties) as any) {
-        tenantMappings.assets.properties.measures.properties[measureType] = {
-          dynamic: 'false',
-          properties: {
-            ...deviceProperties,
-            ...definition.properties,
-            qos: {
-              properties: tenantMappings.devices.properties.qos.properties
-            }
-          }
-        };
-      }
-      this.config.mappings.set(group, tenantMappings);
-    }
-
-    // Merge custom mappings from decoders for payloads collection
-    for (const decoder of this.decoders.values()) {
-      this.config.adminCollections.payloads.properties.payload.properties = {
-        ...this.config.adminCollections.payloads.properties.payload.properties,
-        ...decoder.payloadsMappings,
-      };
-    }
-
-    // Copy common mappings into the config
-    this.config.collections = this.config.mappings.get('commons');
-    this.config.adminCollections.devices = this.config.mappings.get('commons').devices;
   }
 
   private async pipeCheckEngine (request: KuzzleRequest) {

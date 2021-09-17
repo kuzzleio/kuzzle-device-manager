@@ -27,15 +27,18 @@ An asset is uniquely identified by the `type` + `model` + `reference` triplet.
       "id": "<associated device unique identifier>",
       "model": "<associated device model>",
       "reference": "<associated device reference>",
-      "metadata": {
-        // associated device metadata
+
+      "qos": {
+        "battery": 2.3
       },
-      "updatedAt": "<timestamp of the measure>",
-      "payloadUuid": "<identifier of the received payload>",
+      
       "latitude": 41.074688,
       "longitude": 28.9800192,
       "accuracy": 42,
-      "altitude": 12
+      "altitude": 12,
+
+      "updatedAt": "<timestamp of the measure>",
+      "payloadUuid": "<identifier of the received payload>",
     }
   },
 
@@ -44,10 +47,9 @@ An asset is uniquely identified by the `type` + `model` + `reference` triplet.
   },
 }
 ```
-
 ## Copy measures from devices
 
-When a device is attached to an asset, it will automatically propagate the new measurements it receives into the asset's `measures` property.
+When a device is linked to an asset, it will automatically propagate the new measurements it receives into the asset's `measures` property.
 
 By default, for each measurement type the following information are copied in addition of the measure content:
  - `id`: device document unique identifier
