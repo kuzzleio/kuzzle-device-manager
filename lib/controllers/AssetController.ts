@@ -1,8 +1,7 @@
 import {
   KuzzleRequest,
-  JSONObject,
-  PluginContext,
   EmbeddedSDK,
+  Plugin,
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
@@ -14,8 +13,8 @@ export class AssetController extends CRUDController {
     return this.context.accessors.sdk;
   }
 
-  constructor (config: JSONObject, context: PluginContext) {
-    super(config, context, 'assets');
+  constructor (plugin: Plugin) {
+    super(plugin, 'assets');
 
     this.definition = {
       actions: {
