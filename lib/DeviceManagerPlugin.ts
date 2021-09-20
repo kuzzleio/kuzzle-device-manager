@@ -272,20 +272,6 @@ export class DeviceManagerPlugin extends Plugin {
           }
         }
       });
-    }
-
-    // Merge custom 'assets' properties with commons properties
-    for (const [group, customProperties] of this.assets.definitions) {
-      this.config.mappings.set(group, {
-        assets: {
-          dynamic: 'false',
-          properties: {
-            ...assetsProperties,
-            ...customProperties
-          }
-        },
-        devices: this.config.mappings.get(group).devices,
-      });
 
       // Use "devices" mappings to generate "assets" collection mappings
       // for the "measures" property
@@ -310,6 +296,20 @@ export class DeviceManagerPlugin extends Plugin {
         };
       }
       this.config.mappings.set(group, tenantMappings);
+    }
+
+    // Merge custom 'assets' properties with commons properties
+    for (const [group, customProperties] of this.assets.definitions) {
+      this.config.mappings.set(group, {
+        assets: {
+          dynamic: 'false',
+          properties: {
+            ...assetsProperties,
+            ...customProperties
+          }
+        },
+        devices: this.config.mappings.get(group).devices,
+      });
     }
 
     // Merge custom mappings from decoders for payloads collection
