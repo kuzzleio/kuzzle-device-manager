@@ -234,7 +234,7 @@ export class DeviceManagerPlugin extends Plugin {
       }
 
       await Promise.all([
-        this.sdk.collection.create(this.config.adminIndex, 'config', this.config.adminCollections.config),
+        this.sdk.collection.create(this.config.adminIndex, this.config.configCollection, this.config.adminCollections.config),
         this.sdk.collection.create(this.config.adminIndex, 'devices', this.deviceMappings.get()),
         this.sdk.collection.create(this.config.adminIndex, 'payloads', this.getPayloadsMappings()),
       ]);
@@ -278,13 +278,13 @@ export class DeviceManagerPlugin extends Plugin {
   private async initializeConfig () {
     const exists = await this.sdk.document.exists(
       this.config.adminIndex,
-      'config',
+      this.config.configCollection,
       'plugin--device-manager');
 
     if (! exists) {
       await this.sdk.document.create(
         this.config.adminIndex,
-        'config',
+        this.config.configCollection,
         {
           type: 'device-manager',
           'device-manager': { autoProvisionning: true }
@@ -310,7 +310,7 @@ export class DeviceManagerPlugin extends Plugin {
   }
 
   private async generateConfigID (request: KuzzleRequest) {
-    if (request.getCollection() !== 'config') {
+    if (request.getCollection() !== this.config.configCollection) {
       return request;
     }
 

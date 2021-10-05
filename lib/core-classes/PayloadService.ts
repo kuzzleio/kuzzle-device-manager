@@ -133,7 +133,7 @@ export class PayloadService {
   ): Promise<JSONObject> {
     const pluginConfigDocument = await this.batchController.get(
       this.config.adminIndex,
-      'config',
+      this.config.configCollection,
       'plugin--device-manager');
 
     const autoProvisionning: boolean = pluginConfigDocument._source['device-manager'].autoProvisionning;
@@ -195,7 +195,10 @@ export class PayloadService {
    */
   private async getCatalogEntry (index: string, deviceId: string): Promise<Catalog | null> {
     try {
-      const document = await this.batchController.get(index, 'config', `catalog--${deviceId}`);
+      const document = await this.batchController.get(
+        index, 
+        this.config.configCollection, 
+        `catalog--${deviceId}`);
 
       return new Catalog(document);
     }

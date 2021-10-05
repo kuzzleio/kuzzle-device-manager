@@ -2,8 +2,8 @@ import { Plugin } from 'kuzzle';
 import { AbstractEngine } from 'kuzzle-plugin-commons';
 
 import { catalogMappings } from '../models';
-import { AssetMappingsManager } from './AssetMappingsManager';
-import { DeviceMappingsManager } from './DeviceMappingsManager';
+import { AssetMappingsManager } from './CustomMappings/AssetMappingsManager';
+import { DeviceMappingsManager } from './CustomMappings/DeviceMappingsManager';
 
 export class DeviceManagerEngine extends AbstractEngine {
   private assetMappings: AssetMappingsManager;
@@ -27,7 +27,7 @@ export class DeviceManagerEngine extends AbstractEngine {
       mappings: this.deviceMappings.get()
     }));
 
-    promises.push(this.sdk.collection.create(index, 'config', {
+    promises.push(this.sdk.collection.create(index, this.config.configCollection, {
       mappings: {
         dynamic: 'strict',
         properties: {
@@ -40,7 +40,7 @@ export class DeviceManagerEngine extends AbstractEngine {
 
     await Promise.all(promises);
 
-    return { collections: ['assets', 'config', 'devices'] };
+    return { collections: ['assets', this.config.configCollection, 'devices'] };
   }
 
   async onUpdate (index: string, group = 'commons') {

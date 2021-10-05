@@ -53,9 +53,13 @@ export class MigrationService {
         });
       }
 
-      await this.sdk.document.mCreate(this.config.adminIndex, 'config', documents, {
-        strict: true,
-      });
+      await this.sdk.document.mCreate(
+        this.config.adminIndex, 
+        this.config.configCollection, 
+        documents, 
+        {
+          strict: true,
+        });
 
       count += documents.length;
 
