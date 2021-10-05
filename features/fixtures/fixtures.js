@@ -40,6 +40,23 @@ module.exports = {
         tenantId: 'tenant-ayse',
         assetId: null
       },
+      { index: { _id: 'DummyTemp-attached_ayse_linked' } },
+      {
+        reference: 'attached_ayse_linked',
+        model: 'DummyTemp',
+        measures: {
+          temperature: {
+            updatedAt: 1610793427950,
+            payloadUuid: 'some-uuid',
+            degree: 42.2,
+          }
+        },
+        qos: {
+          battery: 80
+        },
+        tenantId: 'tenant-ayse',
+        assetId: 'MART-linked'
+      },
     ]
   },
   'tenant-ayse': {
@@ -61,6 +78,23 @@ module.exports = {
         tenantId: 'tenant-ayse',
         assetId: null
       },
+      { index: { _id: 'DummyTemp-attached_ayse_linked' } },
+      {
+        reference: 'attached_ayse_linked',
+        model: 'DummyTemp',
+        measures: {
+          temperature: {
+            updatedAt: 1610793427950,
+            payloadUuid: 'some-uuid',
+            degree: 42.2,
+          }
+        },
+        qos: {
+          battery: 80
+        },
+        tenantId: 'tenant-ayse',
+        assetId: 'MART-linked'
+      },
     ],
     assets: [
       { index: { _id: 'PERFO-unlinked' } },
@@ -68,6 +102,24 @@ module.exports = {
         model: 'PERFO',
         reference: 'unlinked',
         measures: {},
+      },
+      { index: { _id: 'MART-linked' } },
+      {
+        model: 'MART',
+        reference: 'linked',
+        measures: {
+          temperature: {
+            reference: 'attached_ayse_linked',
+            qos: {
+              battery: 40
+            },
+            payloadUuid: 'some-uuid',
+            degree: 42.2,
+            model: 'DummyTemp',
+            id: 'DummyTemp-attached_ayse_linked',
+            updatedAt: 1610793427950
+          }
+        },
       }
     ]
   },

@@ -1,7 +1,8 @@
-import { JSONObject, PluginContext, Plugin } from 'kuzzle';
+import { PluginContext, Plugin } from 'kuzzle';
+import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 
 export class MigrationService {
-  private config: JSONObject;
+  private config: DeviceManagerConfig;
   private context: PluginContext;
 
   private prefix: string
@@ -11,7 +12,7 @@ export class MigrationService {
   }
 
   constructor (pluginName: string, plugin: Plugin) {
-    this.config = plugin.config;
+    this.config = plugin.config as any;
     this.context = plugin.context;
 
     this.prefix = pluginName;
@@ -54,9 +55,9 @@ export class MigrationService {
       }
 
       await this.sdk.document.mCreate(
-        this.config.adminIndex, 
-        this.config.configCollection, 
-        documents, 
+        this.config.adminIndex,
+        this.config.configCollection,
+        documents,
         {
           strict: true,
         });

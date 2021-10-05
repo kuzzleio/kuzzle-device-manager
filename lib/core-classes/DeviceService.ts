@@ -17,9 +17,10 @@ import {
 
 import { Decoder } from './Decoder';
 import { Device } from '../models';
+import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 
 export class DeviceService {
-  private config: JSONObject;
+  private config: DeviceManagerConfig;
   private context: PluginContext;
 
   private decoders: Map<string, Decoder>;
@@ -29,7 +30,7 @@ export class DeviceService {
   }
 
   constructor(plugin: Plugin, decoders: Map<string, Decoder>) {
-    this.config = plugin.config;
+    this.config = plugin.config as any;
     this.context = plugin.context;
 
     this.decoders = decoders;

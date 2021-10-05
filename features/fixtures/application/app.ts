@@ -1,4 +1,5 @@
-import { Backend, KuzzleRequest } from 'kuzzle';
+import { Backend, Kuzzle, KuzzleRequest } from 'kuzzle';
+import { AssetMeasures, BaseAssetContent } from 'lib/types';
 
 import { DeviceManagerPlugin } from '../../../index';
 import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
@@ -58,6 +59,21 @@ deviceManager.assets.register('hevSuit', {
   freezing: { type: 'boolean' }
 }, { group: 'astronaut' });
 
+
+// Register a pipe to enrich a tenant asset
+app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: KuzzleRequest) => {
+  if (request.result.assetId !== 'MART-linked') {
+    return request;
+  }
+
+  request.result.asset.metadata = {
+    enriched: true,
+    assetId: request.result.assetId
+  };
+
+  return request;
+});
+
 app.plugin.use(deviceManager);
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
@@ -66,14 +82,8 @@ app.hook.register('request:onError', async (request: KuzzleRequest) => {
 
 app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
 
-/**
- * Register pipe for scenario used to test the tenant specific event propagation
- */
-app.pipe.register('tenant:tenant-ayse:device:new-payload', async eventParam => {
-  await app.sdk.realtime.publish('tests', 'messages', eventParam.result);
-
-  return eventParam;
-});
+// Reduce writing latency since we won't have significant load
+app.config.set('plugins.device-manager.writerInterval', 1);
 
 app.config.set('limits.documentsWriteCount', 5000);
 

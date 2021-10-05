@@ -1,19 +1,19 @@
 import {
   KuzzleRequest,
   PluginContext,
-  JSONObject,
   ControllerDefinition,
   Plugin,
 } from 'kuzzle';
+import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 
 export class CRUDController {
   protected context: PluginContext;
-  protected config: JSONObject;
+  protected config: DeviceManagerConfig;
   private collection: string;
   public definition: ControllerDefinition;
 
   constructor (plugin: Plugin, collection: string) {
-    this.config = plugin.config;
+    this.config = plugin.config as any;
     this.context = plugin.context;
     this.collection = collection;
   }

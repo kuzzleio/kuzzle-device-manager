@@ -127,43 +127,43 @@ Feature: Payloads Controller
       | tenantId   | "tenant-ayse"                      |
 
   Scenario: Propagate device measures to asset
-    Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "PERFO-unlinked"                   |
     When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "attached_ayse_unlinked" |
-      | register55   | 42.2                     |
-      | batteryLevel | 0.4                      |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | tenantId | "tenant-ayse"    |
-      | assetId  | "PERFO-unlinked" |
-    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | tenantId | "tenant-ayse"    |
-      | assetId  | "PERFO-unlinked" |
-    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
-      | measures.temperature.reference   | "attached_ayse_unlinked"           |
-      | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.updatedAt   | "_DATE_NOW_"                       |
-      | measures.temperature.payloadUuid | "_STRING_"                         |
-      | measures.temperature.degree      | 42.2                               |
-      | measures.temperature.qos.battery | 40                                 |
+      | deviceEUI    | "attached_ayse_linked" |
+      | register55   | 42.2                   |
+      | batteryLevel | 0.4                    |
+    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_linked" content match:
+      | tenantId | "tenant-ayse" |
+      | assetId  | "MART-linked" |
+    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_linked" content match:
+      | tenantId | "tenant-ayse" |
+      | assetId  | "MART-linked" |
+    And The document "tenant-ayse":"assets":"MART-linked" content match:
+      | measures.temperature.id          | "DummyTemp-attached_ayse_linked" |
+      | measures.temperature.reference   | "attached_ayse_linked"           |
+      | measures.temperature.model       | "DummyTemp"                      |
+      | measures.temperature.updatedAt   | "_DATE_NOW_"                     |
+      | measures.temperature.payloadUuid | "_STRING_"                       |
+      | measures.temperature.degree      | 42.2                             |
+      | measures.temperature.qos.battery | 40                               |
+      # Enriched with the event
+      | metadata.enriched                | true                             |
+      | metadata.assetId                 | "MART-linked"                    |
     And I should receive a result matching:
-      | device._id | "DummyTemp-attached_ayse_unlinked" |
-      | asset._id  | "PERFO-unlinked"                   |
-      | tenantId   | "tenant-ayse"                      |
+      | device._id | "DummyTemp-attached_ayse_linked" |
+      | asset._id  | "MART-linked"                    |
+      | tenantId   | "tenant-ayse"                    |
 
-  Scenario: Trigger tenant specific events
-    Given I subscribe to "tests":"messages" notifications
-    And I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "PERFO-unlinked"                   |
+  Scenario: Use event to enrich the asset and historize it
     When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "attached_ayse_unlinked" |
-      | register55   | 42.2                     |
-      | batteryLevel | 0.4                      |
-    Then I should receive realtime notifications for "tests":"messages" matching:
-      | result._source.device._id          | result._source.asset._id |
-      | "DummyTemp-attached_ayse_unlinked" | "PERFO-unlinked"         |
-
-
+      | deviceEUI    | "attached_ayse_linked" |
+      | register55   | 51.1                   |
+      | batteryLevel | 0.42                   |
+    And I refresh the collection "tenant-ayse":"assets-history"
+    And The last document from "tenant-ayse":"assets-history" content match:
+      | assetId                 | "MART-linked"   |
+      | measureTypes            | ["temperature"] |
+      | assetId                 | "MART-linked"   |
+      | asset.model             | "MART"          |
+      | asset.reference         | "linked"        |
+      | asset.metadata.enriched | true            |
+      | asset.metadata.assetId  | "MART-linked"   |

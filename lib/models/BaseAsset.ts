@@ -51,3 +51,14 @@ export const assetsMappings = {
     }
   }
 };
+
+export const assetsHistoryMappings = {
+  dynamic: 'strict',
+  properties: {
+    assetId: { type: 'keyword' },
+    measureTypes: { type: 'keyword' },
+
+    // Will be replaced by the custom asset mappings
+    asset: null,
+  }
+};
