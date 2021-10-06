@@ -180,3 +180,21 @@ Then('I delete the document {string}', async function (id) {
     this.props.collection,
     id);
 });
+
+Then('The last document from {string}:{string} content match:', async function (index, collection, dataTable) {
+  const expectedContent = this.parseObject(dataTable);
+
+  const result = await this.sdk.document.search(
+    index,
+    collection,
+    {
+      sort: { '_kuzzle_info.createdAt': 'desc' }
+    },
+     { size: 1 });
+
+  if (result.hits.length === 0) {
+    throw new Error('No document found');
+  }
+
+  should(result.hits[0]._source).matchObject(expectedContent);
+});

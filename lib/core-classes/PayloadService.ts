@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
   KuzzleRequest,
   JSONObject,
@@ -11,11 +12,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
 import { BatchController, BatchWriter } from './BatchProcessing';
+import { eventPayload } from '../utils';
+import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 
 export type PayloadHandler = (request: KuzzleRequest, decoder: Decoder) => Promise<any>;
 
 export class PayloadService {
-  private config: JSONObject;
+  private config: DeviceManagerConfig;
   private context: PluginContext;
   private batchController: BatchController;
 
@@ -24,7 +27,7 @@ export class PayloadService {
   }
 
   constructor (plugin: Plugin, batchWriter: BatchWriter) {
-    this.config = plugin.config;
+    this.config = plugin.config as any;
     this.context = plugin.context;
     this.batchController = batchWriter.document;
   }
@@ -133,7 +136,7 @@ export class PayloadService {
   ): Promise<JSONObject> {
     const pluginConfigDocument = await this.batchController.get(
       this.config.adminIndex,
-      'config',
+      this.config.configCollection,
       'plugin--device-manager');
 
     const autoProvisionning: boolean = pluginConfigDocument._source['device-manager'].autoProvisionning;
@@ -195,7 +198,10 @@ export class PayloadService {
    */
   private async getCatalogEntry (index: string, deviceId: string): Promise<Catalog | null> {
     try {
-      const document = await this.batchController.get(index, 'config', `catalog--${deviceId}`);
+      const document = await this.batchController.get(
+        index,
+        this.config.configCollection,
+        `catalog--${deviceId}`);
 
       return new Catalog(document);
     }
@@ -235,7 +241,7 @@ export class PayloadService {
     refreshableCollections.push([this.config.adminIndex, 'devices']);
 
     const tenantId = previousDevice._source.tenantId;
-    let updatedAsset = null;
+    let updatedAsset: BaseAsset = null;
 
     // Propagate device into tenant index
     if (tenantId) {
@@ -252,34 +258,16 @@ export class PayloadService {
       const assetId = previousDevice._source.assetId;
 
       if (assetId) {
-        const assetMeasures = await decoder.copyToAsset(updatedDevice);
-
-        const assetDocument = await this.batchController.update(
+        updatedAsset = await this.propagateToAsset(
           tenantId,
-          'assets',
-          assetId,
-          { measures: assetMeasures },
-          { source: true, retryOnConflict: 10 });
+          decoder,
+          updatedDevice,
+          assetId);
 
-        updatedAsset = new BaseAsset(assetDocument._source as any, assetDocument._id);
+        await this.historizeAsset(tenantId, updatedAsset)
 
         refreshableCollections.push([tenantId, 'assets']);
       }
-
-      // Workflows only accept event with a KuzzleRequest as payload
-      const request = new KuzzleRequest({}, {
-        result: {
-          device: updatedDevice.serialize(),
-          asset: updatedAsset ? updatedAsset.serialize() : null,
-        }
-      });
-
-      /**
-       * @deprecated
-       */
-      await global.app.trigger(`tenant:${tenantId}:device:new-payload`, request);
-
-      await global.app.trigger(`tenant:${tenantId}:payload:new`, request);
     }
 
     if (refresh === 'wait_for') {
@@ -289,5 +277,45 @@ export class PayloadService {
     }
 
     return decoder.afterUpdate(updatedDevice, updatedAsset, request);
+  }
+
+  /**
+   * Propagate the measures inside the asset document.
+   */
+  private async propagateToAsset (
+    tenantId: string,
+    decoder: Decoder,
+    updatedDevice: Device,
+    assetId: string
+  ): Promise<BaseAsset> {
+    const measures = await decoder.copyToAsset(updatedDevice);
+
+    const { result } = await global.app.trigger(
+      `tenant:${tenantId}:asset:measures:new`,
+      eventPayload({ asset: { measures }, assetId }));
+
+    const assetDocument = await this.batchController.update(
+      tenantId,
+      'assets',
+      assetId,
+      result.asset,
+      { source: true, retryOnConflict: 10 });
+
+    return new BaseAsset(assetDocument._source as any, assetDocument._id);
+  }
+
+  /**
+   * Creates an history entry for an asset
+   */
+  private async historizeAsset (tenantId: string, asset: BaseAsset) {
+    await this.batchController.create(
+      tenantId,
+      'assets-history',
+      {
+        assetId: asset._id,
+        measureTypes: Object.keys(asset._source.measures),
+        asset: _.omit(asset._source, ['_kuzzle_info']),
+      }
+    )
   }
 }

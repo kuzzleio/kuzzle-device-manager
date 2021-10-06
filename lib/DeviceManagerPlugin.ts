@@ -31,10 +31,52 @@ import {
   assetsMappings,
   devicesMappings,
   catalogMappings,
+  assetsHistoryMappings,
 } from './models';
 
+export type DeviceManagerConfig = {
+  /**
+   * Administration index name
+   */
+  adminIndex: string;
+
+  /**
+   * Config collection name (in admin index)
+   */
+  configCollection: string;
+
+  /**
+   * Administration collections mappings (in admin index)
+   */
+  adminCollections: {
+    config: JSONObject;
+
+    devices: JSONObject;
+
+    payloads: JSONObject;
+  },
+
+  /**
+   * Tenants collections
+   */
+  collections: {
+    assets: JSONObject;
+
+    devices: JSONObject;
+
+    'assets-history': JSONObject;
+  },
+
+  /**
+   * Interval to write documents from the buffer
+   */
+  writerInterval: number;
+}
+
 export class DeviceManagerPlugin extends Plugin {
-  private defaultConfig: JSONObject;
+  public config: DeviceManagerConfig;
+
+  private defaultConfig: DeviceManagerConfig;
 
   private assetController: AssetController;
   private deviceController: DeviceController;
@@ -125,6 +167,7 @@ export class DeviceManagerPlugin extends Plugin {
       collections: {
         assets: assetsMappings,
         devices: devicesMappings,
+        'assets-history': assetsHistoryMappings,
       },
       writerInterval: 50
     };
@@ -138,9 +181,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.context = context;
 
-    this.config.mappings = new Map<string, JSONObject>();
-
-    this.batchWriter = new BatchWriter(this.sdk, this.config.writerInterval);
+    this.batchWriter = new BatchWriter(this.sdk, { interval: this.config.writerInterval });
     this.batchWriter.begin();
 
     this.payloadService = new PayloadService(this, this.batchWriter);
@@ -234,7 +275,7 @@ export class DeviceManagerPlugin extends Plugin {
       }
 
       await Promise.all([
-        this.sdk.collection.create(this.config.adminIndex, 'config', this.config.adminCollections.config),
+        this.sdk.collection.create(this.config.adminIndex, this.config.configCollection, this.config.adminCollections.config),
         this.sdk.collection.create(this.config.adminIndex, 'devices', this.deviceMappings.get()),
         this.sdk.collection.create(this.config.adminIndex, 'payloads', this.getPayloadsMappings()),
       ]);
@@ -278,13 +319,13 @@ export class DeviceManagerPlugin extends Plugin {
   private async initializeConfig () {
     const exists = await this.sdk.document.exists(
       this.config.adminIndex,
-      'config',
+      this.config.configCollection,
       'plugin--device-manager');
 
     if (! exists) {
       await this.sdk.document.create(
         this.config.adminIndex,
-        'config',
+        this.config.configCollection,
         {
           type: 'device-manager',
           'device-manager': { autoProvisionning: true }
@@ -310,7 +351,7 @@ export class DeviceManagerPlugin extends Plugin {
   }
 
   private async generateConfigID (request: KuzzleRequest) {
-    if (request.getCollection() !== 'config') {
+    if (request.getCollection() !== this.config.configCollection) {
       return request;
     }
 
