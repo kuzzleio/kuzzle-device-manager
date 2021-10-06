@@ -10,6 +10,6 @@ export * from './BatchProcessing';
 
 export * from './Decoder';
 
-export * from './AssetMappingsManager';
+export * from './CustomMappings/AssetMappingsManager';
 
-export * from './DeviceMappingsManager';
+export * from './CustomMappings/DeviceMappingsManager';

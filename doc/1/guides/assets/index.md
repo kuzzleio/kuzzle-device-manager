@@ -31,7 +31,7 @@ An asset is uniquely identified by the `type` + `model` + `reference` triplet.
       "qos": {
         "battery": 2.3
       },
-      
+
       "latitude": 41.074688,
       "longitude": 28.9800192,
       "accuracy": 42,
@@ -85,3 +85,27 @@ By default, for each measurement type the following information are copied in ad
 ```
 
 It is possible to override the [Decoder.copyToAsset](/official-plugins/device-manager/1/classes/decoder/copy-to-asset) method to choose what to copy into the asset.
+
+## Historization
+
+Assets are historized in the `assets-history` collection when a new measure is received.
+
+Before historization, the `tenant:<tenant-id>:asset:measure:new` event is emitted. This event allows to enrich the asset before it is historized.
+
+The payload contains the new `measures` and the `assetId`.
+
+The content of `request.result.asset` will be used to update the asset measures and then create the history document.
+
+```js
+app.pipe.register(`tenant:<tenant-id>:asset:measures:new`, async (request: KuzzleRequest) => {
+  const measures: AssetMeasures = request.result.asset.measures;
+  const assetId: string = request.result.assetId;
+
+  request.result.asset.metadata = {
+    enriched: true,
+    assetId: request.result.assetId
+  };
+
+  return request;
+});
+```
