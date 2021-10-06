@@ -1,6 +1,6 @@
 {
   "name": "@kuzzleio/plugin-device-manager",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Manage your IoT devices and assets. Choose a provisionning strategy, receive and decode payload, handle your IoT business logic.",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {

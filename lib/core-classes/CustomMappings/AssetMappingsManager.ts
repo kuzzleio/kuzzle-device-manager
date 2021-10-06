@@ -108,7 +108,7 @@ export class AssetMappingsManager {
       }
     }
 
-    if (group !== 'commons') {
+    if (group !== 'commons' && this.assetByGroup.has(group)) {
       for (const definition of this.assetByGroup.get(group)) {
         mappings.properties.metadata.properties = _.merge(
         {},
