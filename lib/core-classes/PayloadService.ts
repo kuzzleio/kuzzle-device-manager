@@ -290,15 +290,24 @@ export class PayloadService {
   ): Promise<BaseAsset> {
     const measures = await decoder.copyToAsset(updatedDevice);
 
+    const measureTypes = Object.keys(measures);
+
+    const asset = await this.batchController.get(
+      tenantId,
+      'assets',
+      assetId);
+
+    asset._source.measures = _.merge(asset._source.measures, measures);
+
     const { result } = await global.app.trigger(
       `tenant:${tenantId}:asset:measures:new`,
-      eventPayload({ asset: { measures }, assetId }));
+      eventPayload({ asset, measureTypes }));
 
     const assetDocument = await this.batchController.update(
       tenantId,
       'assets',
       assetId,
-      result.asset,
+      result.asset._source,
       { source: true, retryOnConflict: 10 });
 
     return new BaseAsset(assetDocument._source as any, assetDocument._id);
