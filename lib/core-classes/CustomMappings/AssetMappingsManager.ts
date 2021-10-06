@@ -81,10 +81,6 @@ export class AssetMappingsManager {
   }
 
   get (group = 'commons'): JSONObject {
-    if (! this.assetByGroup.has(group)) {
-      throw new PluginImplementationError(`Unknown asset group "${group}".`);
-    }
-
     const mappings = JSON.parse(JSON.stringify(this.baseMappings));
 
     const deviceMappings = this.deviceMappings.get();
