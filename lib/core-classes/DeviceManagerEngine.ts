@@ -1,7 +1,7 @@
 import { Plugin } from 'kuzzle';
 import { AbstractEngine } from 'kuzzle-plugin-commons';
-import { DeviceManagerConfig } from 'lib/DeviceManagerPlugin';
 
+import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 import { catalogMappings } from '../models';
 import { AssetMappingsManager } from './CustomMappings/AssetMappingsManager';
 import { DeviceMappingsManager } from './CustomMappings/DeviceMappingsManager';
