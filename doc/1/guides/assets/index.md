@@ -88,7 +88,7 @@ It is possible to override the [Decoder.copyToAsset](/official-plugins/device-ma
 
 ## Historization
 
-Assets are historized in the `assets-history` collection when a new measure is received.
+Assets are historized in the `asset-history` collection when a new measure is received.
 
 Before historization, the `tenant:<tenant-id>:asset:measure:new` event is emitted.
 

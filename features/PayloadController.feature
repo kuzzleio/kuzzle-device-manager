@@ -158,8 +158,8 @@ Feature: Payloads Controller
       | deviceEUI    | "attached_ayse_linked" |
       | register55   | 51.1                   |
       | batteryLevel | 0.42                   |
-    And I refresh the collection "tenant-ayse":"assets-history"
-    And The last document from "tenant-ayse":"assets-history" content match:
+    And I refresh the collection "tenant-ayse":"asset-history"
+    And The last document from "tenant-ayse":"asset-history" content match:
       | assetId                     | "MART-linked"   |
       | measureTypes                | ["temperature"] |
       | assetId                     | "MART-linked"   |

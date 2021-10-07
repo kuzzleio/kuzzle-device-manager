@@ -26,7 +26,7 @@ export class DeviceManagerEngine extends AbstractEngine {
       mappings: this.assetMappings.get(group)
     }));
 
-    promises.push(this.sdk.collection.create(index, 'assets-history', {
+    promises.push(this.sdk.collection.create(index, 'asset-history', {
       mappings: this.getAssetsHistoryMappings(group)
     }));
 
@@ -47,7 +47,7 @@ export class DeviceManagerEngine extends AbstractEngine {
 
     await Promise.all(promises);
 
-    return { collections: ['assets', 'assets-history', this.config.configCollection, 'devices'] };
+    return { collections: ['assets', 'asset-history', this.config.configCollection, 'devices'] };
   }
 
   async onUpdate (index: string, group = 'commons') {
@@ -57,7 +57,7 @@ export class DeviceManagerEngine extends AbstractEngine {
       mappings: this.assetMappings.get(group)
     }));
 
-    promises.push(this.sdk.collection.create(index, 'assets-history', {
+    promises.push(this.sdk.collection.create(index, 'asset-history', {
       mappings: this.getAssetsHistoryMappings(group)
     }));
 
@@ -67,23 +67,23 @@ export class DeviceManagerEngine extends AbstractEngine {
 
     await Promise.all(promises);
 
-    return { collections: ['assets', 'assets-history', 'devices'] };
+    return { collections: ['assets', 'asset-history', 'devices'] };
   }
 
   async onDelete (index: string) {
     const promises = [];
 
     promises.push(this.sdk.collection.delete(index, 'assets'));
-    promises.push(this.sdk.collection.delete(index, 'assets-history'));
+    promises.push(this.sdk.collection.delete(index, 'asset-history'));
     promises.push(this.sdk.collection.delete(index, 'devices'));
 
     await Promise.all(promises);
 
-    return { collections: ['assets', 'assets-history', 'devices'] };
+    return { collections: ['assets', 'asset-history', 'devices'] };
   }
 
   private getAssetsHistoryMappings (group: string) {
-    const mappings = JSON.parse(JSON.stringify(this.config.collections['assets-history']));
+    const mappings = JSON.parse(JSON.stringify(this.config.collections['asset-history']));
 
     mappings.properties.asset = this.assetMappings.get(group);
 

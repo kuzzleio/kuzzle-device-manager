@@ -319,7 +319,7 @@ export class PayloadService {
   private async historizeAsset (tenantId: string, asset: BaseAsset) {
     await this.batchController.create(
       tenantId,
-      'assets-history',
+      'asset-history',
       {
         assetId: asset._id,
         measureTypes: Object.keys(asset._source.measures),
