@@ -89,17 +89,18 @@ It is possible to define custom measurement types by declaring them when initial
 
 ```js
 import { DeviceManagerPlugin } from '@kuzzleio/plugin-device-manager';
+import { JSONObject } from 'kuzzle-sdk';
+
 
 const deviceManager = new DeviceManagerPlugin();
 
-// Declare a new "humidity" measure
-deviceManager.devices.registerMeasure('humidity', {
-  properties: {
-    updatedAt: { type: 'date' },
-    payloadUuid: { type: 'keyword' },
-    value: { type: 'float' },
-  }
-})
+const mappings: JSONObject = {
+  updatedAt: { type: 'date' },
+  payloadUuid: { type: 'keyword' },
+  value: { type: 'float' }
+} 
+
+deviceManager.devices.registerMeasure('humidity', mappings)
 ```
 
 ## Attach to a tenant
