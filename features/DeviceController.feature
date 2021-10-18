@@ -116,13 +116,13 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
-      | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached_ayse_unlinked"           |
-      | measures.temperature.updatedAt   | 1610793427950                      |
-      | measures.temperature.payloadUuid | "_STRING_"                         |
-      | measures.temperature.degree      | 23.3                               |
-      | measures.temperature.qos.battery | 80                                 |
+      | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.origin.model       | "DummyTemp"                        |
+      | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt          | 1610793427950                      |
+      | measures.temperature.payloadUuid        | "_STRING_"                         |
+      | measures.temperature.degree             | 23.3                               |
+      | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using JSON
     When I successfully execute the action "device-manager/device":"mLink" with args:
@@ -133,13 +133,13 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
-      | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached_ayse_unlinked"           |
-      | measures.temperature.updatedAt   | 1610793427950                      |
-      | measures.temperature.payloadUuid | "_STRING_"                         |
-      | measures.temperature.degree      | 23.3                               |
-      | measures.temperature.qos.battery | 80                                 |
+      | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.origin.model       | "DummyTemp"                        |
+      | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt          | 1610793427950                      |
+      | measures.temperature.payloadUuid        | "_STRING_"                         |
+      | measures.temperature.degree             | 23.3                               |
+      | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
     When I successfully execute the action "device-manager/device":"mLink" with args:
@@ -149,13 +149,13 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
-      | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached_ayse_unlinked"           |
-      | measures.temperature.updatedAt   | 1610793427950                      |
-      | measures.temperature.payloadUuid | "_STRING_"                         |
-      | measures.temperature.degree      | 23.3                               |
-      | measures.temperature.qos.battery | 80                                 |
+      | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.origin.model       | "DummyTemp"                        |
+      | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt          | 1610793427950                      |
+      | measures.temperature.payloadUuid        | "_STRING_"                         |
+      | measures.temperature.degree             | 23.3                               |
+      | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using JSON
     When I successfully execute the action "device-manager/device":"mLink" with args:
@@ -166,13 +166,13 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
-      | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached_ayse_unlinked"           |
-      | measures.temperature.updatedAt   | 1610793427950                      |
-      | measures.temperature.payloadUuid | "_STRING_"                         |
-      | measures.temperature.degree      | 23.3                               |
-      | measures.temperature.qos.battery | 80                                 |
+      | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.origin.model       | "DummyTemp"                        |
+      | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt          | 1610793427950                      |
+      | measures.temperature.payloadUuid        | "_STRING_"                         |
+      | measures.temperature.degree             | 23.3                               |
+      | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
     When I successfully execute the action "device-manager/device":"mLink" with args:
@@ -182,13 +182,13 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
-      | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached_ayse_unlinked"           |
-      | measures.temperature.updatedAt   | 1610793427950                      |
-      | measures.temperature.payloadUuid | "_STRING_"                         |
-      | measures.temperature.degree      | 23.3                               |
-      | measures.temperature.qos.battery | 80                                 |
+      | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.origin.model       | "DummyTemp"                        |
+      | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt          | 1610793427950                      |
+      | measures.temperature.payloadUuid        | "_STRING_"                         |
+      | measures.temperature.degree             | 23.3                               |
+      | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using JSON
     When I successfully execute the action "device-manager/device":"mLink" with args:
@@ -199,13 +199,13 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
-      | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached_ayse_unlinked"           |
-      | measures.temperature.updatedAt   | 1610793427950                      |
-      | measures.temperature.payloadUuid | "_STRING_"                         |
-      | measures.temperature.degree      | 23.3                               |
-      | measures.temperature.qos.battery | 80                                 |
+      | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.origin.model       | "DummyTemp"                        |
+      | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt          | 1610793427950                      |
+      | measures.temperature.payloadUuid        | "_STRING_"                         |
+      | measures.temperature.degree             | 23.3                               |
+      | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
     When I successfully execute the action "device-manager/device":"mLink" with args:
@@ -215,13 +215,13 @@ Feature: Device Manager device controller
     And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_unlinked" |
-      | measures.temperature.model       | "DummyTemp"                        |
-      | measures.temperature.reference   | "attached_ayse_unlinked"           |
-      | measures.temperature.updatedAt   | 1610793427950                      |
-      | measures.temperature.payloadUuid | "_STRING_"                         |
-      | measures.temperature.degree      | 23.3                               |
-      | measures.temperature.qos.battery | 80                                 |
+      | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
+      | measures.temperature.origin.model       | "DummyTemp"                        |
+      | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
+      | measures.temperature.updatedAt          | 1610793427950                      |
+      | measures.temperature.payloadUuid        | "_STRING_"                         |
+      | measures.temperature.degree             | 23.3                               |
+      | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Error when linking device to an asset
     When I execute the action "device-manager/device":"linkAsset" with args:
@@ -283,14 +283,14 @@ Feature: Device Manager device controller
     Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.position.reference   | "detached"    |
-      | measures.position.payloadUuid | "some-uuid"   |
-      | measures.position.accuracy    | 42            |
-      | measures.position.model       | "_STRING_"    |
-      | measures.position.id          | "_STRING_"    |
-      | measures.position.point.lon   | 3.876716      |
-      | measures.position.point.lat   | 43.610767     |
-      | measures.position.updatedAt   | 1610793427950 |
+      | measures.position.origin.reference | "detached"    |
+      | measures.position.payloadUuid      | "some-uuid"   |
+      | measures.position.accuracy         | 42            |
+      | measures.position.origin.model     | "_STRING_"    |
+      | measures.position.origin.id        | "_STRING_"    |
+      | measures.position.point.lon        | 3.876716      |
+      | measures.position.point.lat        | 43.610767     |
+      | measures.position.updatedAt        | 1610793427950 |
 
   Scenario: Clean payloads collection
     Given I successfully execute the action "collection":"truncate" with args:

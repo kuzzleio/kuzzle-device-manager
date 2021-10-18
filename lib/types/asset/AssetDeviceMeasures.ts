@@ -18,7 +18,8 @@ type AssetDeviceMeasuresBuilder<Type> = {
  *       reference: '12345',
  *       qos: {
  *         battery: 87
- *       }
+ *       },
+ *       payloadUuid: 'some-uuid'
  *     },
  *     updatedAt: 1634310003305,
  *     degree: 27.6,

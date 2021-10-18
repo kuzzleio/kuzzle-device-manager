@@ -109,15 +109,17 @@ module.exports = {
         reference: 'linked',
         measures: {
           temperature: {
-            reference: 'attached_ayse_linked',
-            qos: {
-              battery: 40
+            origin: {
+              reference: 'attached_ayse_linked',
+              qos: {
+                battery: 40
+              },
+              model: 'DummyTemp',
+              id: 'DummyTemp-attached_ayse_linked',
+              payloadUuid: 'some-uuid',
             },
-            payloadUuid: 'some-uuid',
             degree: 42.2,
-            model: 'DummyTemp',
-            id: 'DummyTemp-attached_ayse_linked',
-            updatedAt: 1610793427950
+            updatedAt: 1610793427950,
           }
         },
       }

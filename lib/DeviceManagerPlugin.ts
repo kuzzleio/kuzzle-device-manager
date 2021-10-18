@@ -186,6 +186,10 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.context = context;
 
+    this.devices.registerMeasure('temperature', temperatureMeasureMappings);
+    this.devices.registerMeasure('position', positionMeasureMappings);
+    this.devices.registerMeasure('movement', movementMeasureMappings);
+
     this.batchWriter = new BatchWriter(this.sdk, { interval: this.config.writerInterval });
     this.batchWriter.begin();
 
@@ -212,10 +216,6 @@ export class DeviceManagerPlugin extends Plugin {
     await this.initDatabase();
 
     await this.migrationService.run();
-
-    this.devices.registerMeasure('temperature', temperatureMeasureMappings);
-    this.devices.registerMeasure('position', positionMeasureMappings);
-    this.devices.registerMeasure('movement', movementMeasureMappings);
 
     for (const decoder of this.decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);

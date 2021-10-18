@@ -13,9 +13,4 @@ export interface BaseMeasure {
    * (This is auto-filled by Kuzzle)
    */
   payloadUuid?: string;
-
-  /**
-   * Measure value
-   */
-  value: any;
 }
