@@ -8,16 +8,31 @@ import {
   Plugin,
 } from 'kuzzle';
 
-import {
-  DeviceBulkBuildedContent,
-  DeviceBulkContent,
-  DeviceMAttachementContent,
-  DeviceMRequestContent
-} from '../types';
-
 import { Decoder } from './Decoder';
 import { Device } from '../models';
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
+
+export type DeviceBulkContent = {
+  tenantId?: string;
+  deviceId: string;
+  assetId?: string;
+}
+
+export type DeviceBulkBuildedContent = {
+  tenantId: string;
+  deviceIds: string[];
+  assetIds: string[];
+}
+
+export type DeviceMAttachementContent = {
+  errors: JSONObject[];
+  successes: JSONObject[];
+}
+
+export type DeviceMRequestContent = {
+  _id: string;
+  body: JSONObject;
+}
 
 export class DeviceService {
   private config: DeviceManagerConfig;

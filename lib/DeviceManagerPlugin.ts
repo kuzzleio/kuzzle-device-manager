@@ -33,6 +33,11 @@ import {
   catalogMappings,
   assetsHistoryMappings,
 } from './models';
+import {
+  movementMeasureMappings,
+  positionMeasureMappings,
+  temperatureMeasureMappings,
+} from './measures';
 
 export type DeviceManagerConfig = {
   /**
@@ -207,6 +212,10 @@ export class DeviceManagerPlugin extends Plugin {
     await this.initDatabase();
 
     await this.migrationService.run();
+
+    this.devices.registerMeasure('temperature', temperatureMeasureMappings);
+    this.devices.registerMeasure('position', positionMeasureMappings);
+    this.devices.registerMeasure('movement', movementMeasureMappings);
 
     for (const decoder of this.decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);

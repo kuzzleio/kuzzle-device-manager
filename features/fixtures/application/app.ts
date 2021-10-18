@@ -1,5 +1,4 @@
-import { Backend, Kuzzle, KuzzleRequest } from 'kuzzle';
-import { AssetMeasures, BaseAssetContent } from 'lib/types';
+import { Backend, KuzzleRequest } from 'kuzzle';
 
 import { DeviceManagerPlugin } from '../../../index';
 import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
