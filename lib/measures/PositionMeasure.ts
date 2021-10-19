@@ -30,6 +30,6 @@ export interface DevicePositionMeasures {
 export const positionMeasureMappings = {
   // position
   point: { type: 'geo_point' },
-  altitude: { type: 'integer' },
-  accuracy: { type: 'integer' },
+  altitude: { type: 'float' },
+  accuracy: { type: 'float' },
 };
