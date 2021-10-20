@@ -11,6 +11,8 @@ Attach a device to a tenant.
 
 The device document will be duplicated inside the tenant `devices` collection.
 
+If the device does not exists, process will throw a NotFoundError.
+
 ---
 
 ## Query Syntax
