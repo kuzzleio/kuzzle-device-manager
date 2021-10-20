@@ -218,7 +218,7 @@ export class DeviceService {
         const decoder = this.decoders.get(device._source.model);
         const measures = await decoder.copyToAsset(device);
         const { assetId } = bulkData.find(({ deviceId }) => deviceId === device._id)
-        console.log('assets', assets.successes)
+
         const asset = assets.successes.find(a => a._id === assetId);
         this.assertNotDuplicateMeasure(device, asset);
 
