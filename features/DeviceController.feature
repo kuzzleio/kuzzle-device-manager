@@ -325,3 +325,9 @@ Feature: Device Manager device controller
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 1 |
+
+  Scenario: List all registered decoders
+    When When I successfully execute the action "device-manager/device":"listDecoders"
+    Then I should receive a result matching:
+      | size     | 2                                  |
+      | decoders | ["DummyTemp", "DummyTempPosition"] |

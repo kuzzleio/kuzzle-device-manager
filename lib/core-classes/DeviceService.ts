@@ -36,6 +36,13 @@ export class DeviceService {
     this.decoders = decoders;
   }
 
+  async listDecoders() {
+    return {
+      size: this.decoders.size,
+      decoders: Array.from(this.decoders.keys())
+    };
+  }
+
   async mAttach (
     devices: Device[],
     bulkData: DeviceBulkContent[],
