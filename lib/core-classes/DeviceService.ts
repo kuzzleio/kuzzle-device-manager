@@ -6,7 +6,10 @@ import {
   NotFoundError,
   PreconditionError,
   Plugin,
+  Document
 } from 'kuzzle';
+
+import difference from 'lodash/difference'
 
 import {
   DeviceBulkBuildedContent,
@@ -196,23 +199,28 @@ export class DeviceService {
 
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
-      const existingAssets = await this.sdk.document.mGet(
+      const assets = await this.sdk.document.mGet(
         document.tenantId,
         'assets',
         document.assetIds);
 
-      if (strict && existingAssets.errors.length > 0) {
-        throw new NotFoundError(`Assets "${existingAssets.errors}" do not exist`);
+      if (strict && assets.errors.length > 0) {
+        throw new NotFoundError(`Assets "${assets.errors}" do not exist`);
       }
 
       const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
       const deviceDocuments = [];
       const assetDocuments = [];
 
+
+
       for (const device of devicesContent) {
         const decoder = this.decoders.get(device._source.model);
         const measures = await decoder.copyToAsset(device);
-        const { assetId } = bulkData.find(data => data.deviceId === device._id)
+        const { assetId } = bulkData.find(({ deviceId }) => deviceId === device._id)
+        console.log('assets', assets.successes)
+        const asset = assets.successes.find(a => a._id === assetId);
+        this.assertNotDuplicateMeasure(device, asset);
 
         deviceDocuments.push({ _id: device._id, body: { assetId } });
         assetDocuments.push({ _id: assetId, body: { measures } });
@@ -360,6 +368,21 @@ export class DeviceService {
     }
 
     return measures;
+  }
+
+  private assertNotDuplicateMeasure(device: Device, asset: Document) {
+    const deviceKeys = Object.keys(device._source.measures);
+    const assetKeys = Object.keys(asset._source.measures);
+
+    const diff = difference(deviceKeys, assetKeys);
+
+    if (diff.length === 0) {
+      throw new BadRequestError(
+        `Device ${device._id} is mesuring a value that is already mesured by another Device for the Asset ${asset._id}`
+        )
+    }
+
+    return true;
   }
 
   private async tenantExists (tenantId: string) {

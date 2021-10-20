@@ -124,6 +124,16 @@ Feature: Device Manager device controller
       | measures.temperature.degree      | 23.3                               |
       | measures.temperature.qos.battery | 80                                 |
 
+  Scenario: Link device to an asset with already registered device recording the same measure
+    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked" |
+      | assetId | "PERFO-unlinked"                   |
+    And I execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked" |
+      | assetId | "PERFO-unlinked"                   |
+    Then I should receive an error matching:
+      | message | "Device DummyTemp-attached_ayse_unlinked is mesuring a value that is already mesured by another Device for the Asset PERFO-unlinked" |
+
   Scenario: Link multiple device to multiple assets using JSON
     When I successfully execute the action "device-manager/device":"mLink" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
