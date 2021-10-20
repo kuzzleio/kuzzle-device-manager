@@ -67,7 +67,7 @@ export class BatchController extends DocumentController {
     const error = errors.find(({ _id: id }) => id === _id);
 
     if (error) {
-      throw new BadRequestError(`Cannot replace document "${index}":"${collection}":"${_id}": ${error}`);
+      throw new BadRequestError(`Cannot replace document "${index}":"${collection}":"${_id}": ${error.reason}`);
     }
 
     return successes[idx];
@@ -81,7 +81,7 @@ export class BatchController extends DocumentController {
     const error = errors.find(({ document }) => document._id === _id);
 
     if (error) {
-      throw new BadRequestError(`Cannot create or replace document "${index}":"${collection}":"${_id}": ${error}`);
+      throw new BadRequestError(`Cannot create or replace document "${index}":"${collection}":"${_id}": ${error.reason}`);
     }
 
     return successes[idx];
@@ -95,7 +95,7 @@ export class BatchController extends DocumentController {
     const error = errors.find(({ _id: id }) => id === _id);
 
     if (error) {
-      throw new BadRequestError(`Cannot update document "${index}":"${collection}":"${_id}": ${error}`);
+      throw new BadRequestError(`Cannot update document "${index}":"${collection}":"${_id}": ${error.reason}`);
     }
 
     return successes[idx];
@@ -131,7 +131,7 @@ export class BatchController extends DocumentController {
     const error = errors.find(({ _id }) => _id === id);
 
     if (error) {
-      throw new NotFoundError(`Cannot delete document "${index}":"${collection}":"${id}" : ${error}`);
+      throw new NotFoundError(`Cannot delete document "${index}":"${collection}":"${id}" : ${error.reason}`);
     }
 
     return successes[idx];
