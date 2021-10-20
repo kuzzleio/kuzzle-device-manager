@@ -31,9 +31,9 @@ Each decoder is linked to its corresponding device model. Its registration trigg
 
 ```js
 import { JSONObject, KuzzleRequest } from 'kuzzle';
-import { Decoder, DeviceContent, DeviceManager } from 'kuzzle-plugin-device-manager';
+import { Decoder, DeviceContent, DeviceManagerPlugin } from '@kuzzleio/plugin-device-manager';
 
-const deviceManager = new DeviceManager();
+const deviceManager = new DeviceManagerPlugin();
 
 class KarakoyDecoder extends Decoder {
   constructor () {
@@ -46,7 +46,7 @@ class KarakoyDecoder extends Decoder {
       measures: {
         temperature: {
           updatedAt: Date.now(),
-          value: payload.register55,
+          degree: payload.register55,
         }
       },
       qos: {

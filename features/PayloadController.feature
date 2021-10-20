@@ -147,7 +147,7 @@ Feature: Payloads Controller
       | measures.temperature.origin.qos.battery | 40                               |
       # Enriched with the event
       | metadata.enriched                       | true                             |
-      | metadata.assetId                        | "MART-linked"                    |
+      | metadata.measureTypes                   | ["temperature"]                  |
     And I should receive a result matching:
       | device._id | "DummyTemp-attached_ayse_linked" |
       | asset._id  | "MART-linked"                    |
@@ -158,12 +158,12 @@ Feature: Payloads Controller
       | deviceEUI    | "attached_ayse_linked" |
       | register55   | 51.1                   |
       | batteryLevel | 0.42                   |
-    And I refresh the collection "tenant-ayse":"assets-history"
-    And The last document from "tenant-ayse":"assets-history" content match:
-      | assetId                 | "MART-linked"   |
-      | measureTypes            | ["temperature"] |
-      | assetId                 | "MART-linked"   |
-      | asset.model             | "MART"          |
-      | asset.reference         | "linked"        |
-      | asset.metadata.enriched | true            |
-      | asset.metadata.assetId  | "MART-linked"   |
+    And I refresh the collection "tenant-ayse":"asset-history"
+    And The last document from "tenant-ayse":"asset-history" content match:
+      | assetId                     | "MART-linked"   |
+      | measureTypes                | ["temperature"] |
+      | assetId                     | "MART-linked"   |
+      | asset.model                 | "MART"          |
+      | asset.reference             | "linked"        |
+      | asset.metadata.enriched     | true            |
+      | asset.metadata.measureTypes | ["temperature"] |

@@ -69,7 +69,7 @@ export type DeviceManagerConfig = {
 
     devices: JSONObject;
 
-    'assets-history': JSONObject;
+    'asset-history': JSONObject;
   },
 
   /**
@@ -172,7 +172,7 @@ export class DeviceManagerPlugin extends Plugin {
       collections: {
         assets: assetsMappings,
         devices: devicesMappings,
-        'assets-history': assetsHistoryMappings,
+        'asset-history': assetsHistoryMappings,
       },
       writerInterval: 50
     };

@@ -88,20 +88,19 @@ The plugin provides the following measurement types:
 It is possible to define custom measurement types by declaring them when initializing the plugin:
 
 ```js
-import { DeviceManager } from 'kuzzle-plugin-device-manager';
+import { DeviceManagerPlugin } from '@kuzzleio/plugin-device-manager';
+import { JSONObject } from 'kuzzle-sdk';
 
-const deviceManager = new DeviceManager();
 
-// Declare a new "humidity" measure
-deviceManager.mappings.devices.measures = {
-  humidity: {
-    properties: {
-      updatedAt: { type: 'date' },
-      payloadUuid: { type: 'keyword' },
-      value: { type: 'float' },
-    }
-  }
-};
+const deviceManager = new DeviceManagerPlugin();
+
+const mappings: JSONObject = {
+  updatedAt: { type: 'date' },
+  payloadUuid: { type: 'keyword' },
+  value: { type: 'float' }
+} 
+
+deviceManager.devices.registerMeasure('humidity', mappings)
 ```
 
 ## Attach to a tenant

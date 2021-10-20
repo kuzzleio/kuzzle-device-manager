@@ -61,13 +61,13 @@ deviceManager.assets.register('hevSuit', {
 
 // Register a pipe to enrich a tenant asset
 app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: KuzzleRequest) => {
-  if (request.result.assetId !== 'MART-linked') {
+  if (request.result.asset._id !== 'MART-linked') {
     return request;
   }
 
-  request.result.asset.metadata = {
+  request.result.asset._source.metadata = {
     enriched: true,
-    assetId: request.result.assetId
+    measureTypes: request.result.measureTypes
   };
 
   return request;
