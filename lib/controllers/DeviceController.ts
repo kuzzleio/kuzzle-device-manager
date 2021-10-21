@@ -72,20 +72,9 @@ export class DeviceController extends CRUDController {
         prunePayloads: {
           handler: this.prunePayloads.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/devices/_prunePayloads' }]
-        },
-        listDecoders: {
-          handler: this.listDecoders.bind(this),
-          http: [{ verb: 'get', path: 'device-manager/devices/_listDecoders' }]
         }
       }
     };
-  }
-
-  /**
-   * List all available decoders
-   */
-  async listDecoders () {
-    return this.deviceService.listDecoders();
   }
 
   /**

@@ -15,6 +15,7 @@ import { EngineController } from 'kuzzle-plugin-commons';
 import {
   AssetController,
   DeviceController,
+  DecodersController
 } from './controllers';
 import {
   DeviceManagerEngine,
@@ -26,6 +27,7 @@ import {
   PayloadHandler,
   AssetMappingsManager,
   DeviceMappingsManager,
+  DecodersService
 } from './core-classes';
 import {
   assetsMappings,
@@ -81,10 +83,12 @@ export class DeviceManagerPlugin extends Plugin {
   private assetController: AssetController;
   private deviceController: DeviceController;
   private engineController: EngineController;
+  private decodersController: DecodersController;
 
   private payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
+  private decodersService: DecodersService;
   private migrationService: MigrationService;
 
   private batchWriter: BatchWriter;
@@ -186,15 +190,18 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.payloadService = new PayloadService(this, this.batchWriter);
     this.deviceService = new DeviceService(this, this.decoders);
+    this.decodersService = new DecodersService(this, this.decoders);
     this.migrationService = new MigrationService('device-manager', this);
     this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetMappings, this.deviceMappings);
 
     this.assetController = new AssetController(this);
     this.deviceController = new DeviceController(this, this.deviceService);
+    this.decodersController = new DecodersController(this, this.decodersService);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
 
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
+    this.api['device-manager/decoders'] = this.decodersController.definition;
 
     this.pipes = {
       'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
