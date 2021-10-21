@@ -9,8 +9,6 @@ import {
   Document
 } from 'kuzzle';
 
-import difference from 'lodash/difference'
-
 import {
   DeviceBulkBuildedContent,
   DeviceBulkContent,
@@ -373,16 +371,13 @@ export class DeviceService {
   private assertNotDuplicateMeasure(device: Device, asset: Document) {
     const deviceKeys = Object.keys(device._source.measures);
     const assetKeys = Object.keys(asset._source.measures);
+    const hasKey = deviceKeys.find(e => assetKeys.includes(e));
 
-    const diff = difference(deviceKeys, assetKeys);
-
-    if (diff.length === 0) {
+    if (hasKey) {
       throw new BadRequestError(
         `Device ${device._id} is mesuring a value that is already mesured by another Device for the Asset ${asset._id}`
         )
     }
-
-    return true;
   }
 
   private async tenantExists (tenantId: string) {
