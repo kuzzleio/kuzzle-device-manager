@@ -218,6 +218,11 @@ export class DeviceService {
         const { assetId } = bulkData.find(({ deviceId }) => deviceId === device._id)
 
         const asset = assets.successes.find(a => a._id === assetId);
+
+        if (!asset) {
+          throw new NotFoundError(`Asset ${assetId} was not found`);
+        }
+
         this.assertNotDuplicateMeasure(device, asset);
 
         deviceDocuments.push({ _id: device._id, body: { assetId } });
