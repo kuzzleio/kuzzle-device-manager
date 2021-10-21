@@ -24,7 +24,14 @@ export class DecodersService {
     return {
       decoders: Array
         .from(this.decoders.keys())
-        .map(decoder => this.decoders.get(decoder))
+        .map(decoder => {
+          const { deviceModel, deviceMeasures } = this.decoders.get(decoder)
+
+          return {
+            deviceModel,
+            deviceMeasures
+          }
+        })
     };
   }
 }

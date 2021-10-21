@@ -4,7 +4,8 @@ import {
   HttpRoute,
   PreconditionError,
 } from 'kuzzle';
-import _ from 'lodash';
+
+import has from 'lodash/has';
 
 import { Device, BaseAsset } from '../models';
 
@@ -25,6 +26,11 @@ export abstract class Decoder {
    * Device model name
    */
   deviceModel: string;
+
+  /**
+   * Device measure type
+   */
+  deviceMeasures: string[];
 
   /**
    * Custom name for the associated API action in the "payload" controller
@@ -63,8 +69,9 @@ export abstract class Decoder {
   /**
    * @param deviceModel Device model for this decoder
    */
-  constructor (deviceModel: string) {
+  constructor (deviceModel: string, deviceMeasures: string[]) {
     this.deviceModel = deviceModel;
+    this.deviceMeasures = deviceMeasures;
   }
 
   /**
@@ -197,7 +204,7 @@ export abstract class Decoder {
    */
   ensureProperties (payload: JSONObject, paths: string[]): void | never {
     for (const path of paths) {
-      if (! _.has(payload, path)) {
+      if (! has(payload, path)) {
         throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }

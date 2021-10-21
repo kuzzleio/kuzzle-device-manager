@@ -37,7 +37,7 @@ const deviceManager = new DeviceManagerPlugin();
 
 class KarakoyDecoder extends Decoder {
   constructor () {
-    super("Karakoy");
+    super("Karakoy", ["temperature"]);
   }
 
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
@@ -74,7 +74,7 @@ You can specify a custom API action and custom HTTP routes by defining the `acti
 ```js
 class KarakoyDecoder extends Decoder {
   constructor () {
-    super("Karakoy");
+    super("Karakoy", ["temperature"]);
 
     // Generated API action: "device-manager/payload:karakoy-v1"
     this.action = 'karakoy-v1';
