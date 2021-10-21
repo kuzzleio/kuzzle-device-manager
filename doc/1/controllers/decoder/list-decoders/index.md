@@ -43,24 +43,26 @@ kourou device-manager/decoders:list
   "action": "list",
   "controller": "device-manager/decoders",
   "error": null,
-  "node": "knode-abrasive-manatee-50960",
-  "requestId": "ea8fcab2-dfb2-44d5-880d-cbe1d69696b6",
-  "result": [
-    {
-      "payloadsMappings": {
-        "deviceEUI": {
-          "type": "keyword"
-        }
+  "node": "knode-common-carpenter-91992",
+  "requestId": "94ea97c3-18af-4a7e-a848-3760b9761c98",
+  "result": {
+    "decoders": [
+      {
+        "payloadsMappings": {
+          "deviceEUI": {
+            "type": "keyword"
+          }
+        },
+        "deviceModel": "DummyTemp",
+        "action": "dummy-temp"
       },
-      "deviceModel": "DummyTemp",
-      "action": "dummy-temp"
-    },
-    {
-      "payloadsMappings": {},
-      "deviceModel": "DummyTempPosition",
-      "action": "dummy-temp-position"
-    }
-  ],
+      {
+        "payloadsMappings": {},
+        "deviceModel": "DummyTempPosition",
+        "action": "dummy-temp-position"
+      }
+    ]
+  },
   "status": 200,
   "volatile": null
 }

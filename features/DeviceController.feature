@@ -8,7 +8,7 @@ Feature: Device Manager device controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
 
-  Scenario: Attech a non-existing device to a tenant should throw an error
+  Scenario: Attach a non-existing device to a tenant should throw an error
     When I execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "Not-existing-device" |
       | index | "tenant-kuzzle"       |
@@ -332,9 +332,3 @@ Feature: Device Manager device controller
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 1 |
-
-  Scenario: List all registered decoders
-    When When I successfully execute the action "device-manager/device":"listDecoders"
-    Then I should receive a result matching:
-      | size     | 2                                  |
-      | decoders | ["DummyTemp", "DummyTempPosition"] |

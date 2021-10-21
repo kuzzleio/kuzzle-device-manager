@@ -21,8 +21,10 @@ export class DecodersService {
   }
 
   async list() {
-    return Array
-      .from(this.decoders.keys())
-      .map(decoder => this.decoders.get(decoder));
+    return {
+      decoders: Array
+        .from(this.decoders.keys())
+        .map(decoder => this.decoders.get(decoder))
+    };
   }
 }
