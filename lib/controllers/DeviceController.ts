@@ -3,7 +3,8 @@ import {
   KuzzleRequest,
   EmbeddedSDK,
   BadRequestError,
-  Plugin
+  Plugin,
+  NotFoundError
 } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
@@ -267,6 +268,12 @@ export class DeviceController extends CRUDController {
       'devices',
       deviceIds
     )
+
+    if (result.errors.length > 0) {
+      const ids = result.errors.join(',');
+      throw(new NotFoundError(`Device(s) "${ids}" not found`));
+    }
+
     return result.successes.map((document: any) => new Device(document._source, document._id));
   }
 

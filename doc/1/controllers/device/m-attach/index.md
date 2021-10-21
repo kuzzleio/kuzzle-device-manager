@@ -11,6 +11,8 @@ Attach multiple devices to multiple tenants.
 
 The device document will be duplicated inside the tenant "devices" collection.
 
+If a device does not exists on the list, process will throw a NotFoundError
+
 ---
 
 ## Query Syntax
