@@ -1,4 +1,4 @@
-import { EmbeddedSDK, JSONObject } from 'kuzzle';
+import { Kuzzle as KuzzleSDK, JSONObject } from 'kuzzle';
 
 import { BatchController } from './BatchController';
 import { InstrumentablePromise } from './InstrumentablePromise';
@@ -72,7 +72,7 @@ export class BatchBuffer {
  */
 export class BatchWriter {
   private timer: NodeJS.Timeout;
-  private sdk: EmbeddedSDK;
+  private sdk: KuzzleSDK;
   /**
    * Timer interval to execute m* API actions
    */
@@ -140,7 +140,7 @@ export class BatchWriter {
    * @param options.maxReadBufferSize Max read buffer size. (Should match "limits.documentsReadCount")
    */
   constructor (
-    sdk: EmbeddedSDK,
+    sdk: KuzzleSDK,
     { interval = 50, maxWriteBufferSize = 200, maxReadBufferSize = 200 } = {}
   ) {
     this.sdk = sdk;
@@ -216,7 +216,7 @@ export class BatchWriter {
         }
 
         promises.push(
-          this.sdk.document.mCreate(index, collection, documents, { ...options, strict: true })
+          this.sdk.document.mCreate(index, collection, documents, { ...options })
             .then(promise.resolve)
             .catch(promise.reject)
         );
