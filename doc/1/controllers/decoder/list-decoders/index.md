@@ -5,7 +5,7 @@ title: list
 description: List available registered decoders
 ---
 
-# linkAsset
+# List
 
 List available registered decoders.
 
@@ -43,23 +43,22 @@ kourou device-manager/decoders:list
   "action": "list",
   "controller": "device-manager/decoders",
   "error": null,
-  "node": "knode-common-carpenter-91992",
-  "requestId": "94ea97c3-18af-4a7e-a848-3760b9761c98",
+  "node": "knode-nine-hydra-22631",
+  "requestId": "d888a8e1-2f80-4849-99d0-86ea70fe91e4",
   "result": {
     "decoders": [
       {
-        "payloadsMappings": {
-          "deviceEUI": {
-            "type": "keyword"
-          }
-        },
         "deviceModel": "DummyTemp",
-        "action": "dummy-temp"
+        "deviceMeasures": [
+          "temperature"
+        ]
       },
       {
-        "payloadsMappings": {},
         "deviceModel": "DummyTempPosition",
-        "action": "dummy-temp-position"
+        "deviceMeasures": [
+          "temperature",
+          "position"
+        ]
       }
     ]
   },

@@ -32,9 +32,9 @@ export class DecodersController extends CRUDController {
    * List all available decoders
    */
   async list () {
-    const decoders = this.decodersService.list();
+    const decoders = await this.decodersService.list();
 
-    return decoders;
+    return { decoders };
   }
 
 }

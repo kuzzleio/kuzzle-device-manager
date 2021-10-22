@@ -9,7 +9,7 @@ import has from 'lodash/has';
 
 import { Device, BaseAsset } from '../models';
 
-import { AssetMeasures, DeviceContent } from '../types';
+import { AssetMeasures, DeviceContent, DecoderConstructor } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
@@ -28,7 +28,7 @@ export abstract class Decoder {
   deviceModel: string;
 
   /**
-   * Device measure type
+   * Array of device measure type
    */
   deviceMeasures: string[];
 
@@ -208,6 +208,21 @@ export abstract class Decoder {
         throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }
+  }
+
+  static serialize(decoders: Map<string, Decoder>): DecoderConstructor[] {
+    const decoderList = Array
+    .from(decoders.keys())
+    .map(decoder => {
+      const { deviceModel, deviceMeasures } = decoders.get(decoder)
+
+      return {
+        deviceModel,
+        deviceMeasures
+      }
+    });
+
+    return decoderList;
   }
 }
 
