@@ -126,17 +126,15 @@ Feature: Payloads Controller
       | asset      | null                               |
       | tenantId   | "tenant-ayse"                      |
 
-  Scenario: Propagate device measures to asset
+  Scenario: Propagate device measures to asset with enrichment
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "attached_ayse_linked" |
       | register55   | 42.2                   |
       | batteryLevel | 0.4                    |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_linked" content match:
-      | tenantId | "tenant-ayse" |
-      | assetId  | "MART-linked" |
-    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_linked" content match:
-      | tenantId | "tenant-ayse" |
-      | assetId  | "MART-linked" |
+    Then I should receive a result matching:
+      | device._id | "DummyTemp-attached_ayse_linked" |
+      | asset._id  | "MART-linked"                    |
+      | tenantId   | "tenant-ayse"                    |
     And The document "tenant-ayse":"assets":"MART-linked" content match:
       | measures.temperature.id          | "DummyTemp-attached_ayse_linked" |
       | measures.temperature.reference   | "attached_ayse_linked"           |
@@ -148,16 +146,6 @@ Feature: Payloads Controller
       # Enriched with the event
       | metadata.enriched                | true                             |
       | metadata.measureTypes            | ["temperature"]                  |
-    And I should receive a result matching:
-      | device._id | "DummyTemp-attached_ayse_linked" |
-      | asset._id  | "MART-linked"                    |
-      | tenantId   | "tenant-ayse"                    |
-
-  Scenario: Use event to enrich the asset and historize it
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "attached_ayse_linked" |
-      | register55   | 51.1                   |
-      | batteryLevel | 0.42                   |
     And I refresh the collection "tenant-ayse":"asset-history"
     And The last document from "tenant-ayse":"asset-history" content match:
       | assetId                     | "MART-linked"   |
@@ -167,3 +155,12 @@ Feature: Payloads Controller
       | asset.reference             | "linked"        |
       | asset.metadata.enriched     | true            |
       | asset.metadata.measureTypes | ["temperature"] |
+
+  Scenario: Prevent historization
+    When I successfully receive a "dummy-temp" payload with:
+      | deviceEUI    | "attached_ayse_linked" |
+      | register55   | 42.2                   |
+      | batteryLevel | 0.4                    |
+      | historize    | false                  |
+    And I refresh the collection "tenant-ayse":"asset-history"
+    Then I count 0 documents in "tenant-ayse":"asset-history"

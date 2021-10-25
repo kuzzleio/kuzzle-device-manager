@@ -1,4 +1,5 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
+import { TemperatureMeasure } from 'lib/types';
 
 import { DeviceManagerPlugin } from '../../../index';
 import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
@@ -16,8 +17,10 @@ deviceManager.devices.registerMeasure('humidity', {
 });
 
 deviceManager.devices.registerQoS({
-  battery: { type: 'integer' }
+  battery: { type: 'integer' },
+  historize: { type: 'boolean' },
 });
+
 deviceManager.devices.registerQoS({
   battery2: { type: 'integer' }
 });
@@ -73,7 +76,23 @@ app.pipe.register(`tenant:tenant-ayse:asset:propagation:before`, async (request:
   return request;
 });
 
-app.plugin.use(deviceManager);new
+// Register a pipe to disable historization
+app.pipe.register(`tenant:tenant-ayse:asset:historization:before`, async (request: KuzzleRequest) => {
+  if (request.result.asset._id !== 'MART-linked') {
+    return request;
+  }
+
+  const temperature = request.result.asset._source.measures.temperature;
+
+  if (temperature && temperature.qos.historize === false) {
+    request.result.historize = false;
+  }
+
+  return request;
+});
+
+
+app.plugin.use(deviceManager);
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
   app.log.error(request.error);

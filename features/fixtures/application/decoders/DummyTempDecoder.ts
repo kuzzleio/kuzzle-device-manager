@@ -32,7 +32,8 @@ export class DummyTempDecoder extends Decoder {
         }
       },
       qos: {
-        battery: payload.batteryLevel * 100
+        battery: payload.batteryLevel * 100,
+        historize: payload.historize,
       }
     };
 
