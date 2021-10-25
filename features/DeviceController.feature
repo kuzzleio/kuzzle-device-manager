@@ -139,7 +139,7 @@ Feature: Device Manager device controller
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "TIKO-unlinked"                   |
     Then I should receive an error matching:
-      | message | "Device DummyTemp-attached_ayse_unlinked is Already linked to an asset PERFO-unlinked you need to detach it first" |
+      | message | "Device \"DummyTemp-attached_ayse_unlinked\" is already linked to the asset \"PERFO-unlinked\" you need to detach it first." |
 
   Scenario: Link device to an asset with already registered device recording the same measure
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
