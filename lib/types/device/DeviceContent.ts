@@ -1,6 +1,6 @@
 import { JSONObject } from 'kuzzle';
 
-import { DeviceMeasures } from './Measure';
+import { DeviceMeasures } from './DeviceMeasures';
 
 export type DeviceContent = {
   /**
@@ -50,26 +50,4 @@ export type DeviceContent = {
     updater?: string | null,
     updatedAt?: number | null
   }
-}
-
-export type DeviceBulkContent = {
-  tenantId?: string;
-  deviceId: string;
-  assetId?: string;
-}
-
-export type DeviceBulkBuildedContent = {
-  tenantId: string;
-  deviceIds: string[];
-  assetIds: string[];
-}
-
-export type DeviceMAttachementContent = {
-  errors: JSONObject[];
-  successes: JSONObject[];
-}
-
-export type DeviceMRequestContent = {
-  _id: string;
-  body: JSONObject;
 }

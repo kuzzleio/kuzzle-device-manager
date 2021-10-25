@@ -1,5 +1,4 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
-import { TemperatureMeasure } from 'lib/types';
 
 import { DeviceManagerPlugin } from '../../../index';
 import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
