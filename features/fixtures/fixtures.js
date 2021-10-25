@@ -103,6 +103,12 @@ module.exports = {
         reference: 'unlinked',
         measures: {},
       },
+      { index: { _id: 'TIKO-unlinked' } },
+      {
+        model: 'TIKO',
+        reference: 'unlinked',
+        measures: {},
+      },
       { index: { _id: 'MART-linked' } },
       {
         model: 'MART',
