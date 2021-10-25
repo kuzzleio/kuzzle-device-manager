@@ -300,7 +300,7 @@ export class PayloadService {
     asset._source.measures = _.merge(asset._source.measures, measures);
 
     const { result } = await global.app.trigger(
-      `tenant:${tenantId}:asset:measures:new`,
+      `tenant:${tenantId}:asset:propagation:before`,
       eventPayload({ asset, measureTypes }));
 
     const assetDocument = await this.batchController.update(
@@ -317,6 +317,17 @@ export class PayloadService {
    * Creates an history entry for an asset
    */
   private async historizeAsset (tenantId: string, asset: BaseAsset) {
+    const measureTypes = Object.keys(asset._source.measures);
+
+    const { result } = await global.app.trigger(
+      `tenant:${tenantId}:asset:historization:before`,
+      eventPayload({ asset, measureTypes, historize: true }));
+
+    if (result.historize === false) {
+      this.context.log.debug(`[${tenantId}] Historization skipped for asset "${asset._id}"`);
+      return;
+    }
+
     await this.batchController.create(
       tenantId,
       'asset-history',
@@ -325,6 +336,6 @@ export class PayloadService {
         measureTypes: Object.keys(asset._source.measures),
         asset: _.omit(asset._source, ['_kuzzle_info']),
       }
-    )
+    );
   }
 }

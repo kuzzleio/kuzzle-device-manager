@@ -60,7 +60,7 @@ deviceManager.assets.register('hevSuit', {
 
 
 // Register a pipe to enrich a tenant asset
-app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: KuzzleRequest) => {
+app.pipe.register(`tenant:tenant-ayse:asset:propagation:before`, async (request: KuzzleRequest) => {
   if (request.result.asset._id !== 'MART-linked') {
     return request;
   }
@@ -73,7 +73,7 @@ app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: Kuzzl
   return request;
 });
 
-app.plugin.use(deviceManager);
+app.plugin.use(deviceManager);new
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
   app.log.error(request.error);
