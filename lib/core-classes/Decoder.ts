@@ -8,7 +8,7 @@ import _ from 'lodash';
 
 import { Device, BaseAsset } from '../models';
 
-import { AssetMeasures, DeviceContent } from '../types';
+import { AssetDeviceMeasures, DeviceContent } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
@@ -171,16 +171,18 @@ export abstract class Decoder {
    *
    * @returns Content of the "measures" property
    */
-  async copyToAsset (device: Device): Promise<AssetMeasures> {
-    const measures = {};
+  async copyToAsset (device: Device): Promise<AssetDeviceMeasures> {
+    const measures: AssetDeviceMeasures = {};
 
     for (const [measureType, measure] of Object.entries(device._source.measures)) {
       measures[measureType] = {
-        id: device._id,
-        model: device._source.model,
-        reference: device._source.reference,
+        origin: {
+          id: device._id,
+          model: device._source.model,
+          reference: device._source.reference,
+          qos: device._source.qos,
+        },
         ...measure,
-        qos: device._source.qos,
       };
     }
 

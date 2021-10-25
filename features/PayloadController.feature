@@ -138,16 +138,16 @@ Feature: Payloads Controller
       | tenantId | "tenant-ayse" |
       | assetId  | "MART-linked" |
     And The document "tenant-ayse":"assets":"MART-linked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_linked" |
-      | measures.temperature.reference   | "attached_ayse_linked"           |
-      | measures.temperature.model       | "DummyTemp"                      |
-      | measures.temperature.updatedAt   | "_DATE_NOW_"                     |
-      | measures.temperature.payloadUuid | "_STRING_"                       |
-      | measures.temperature.degree      | 42.2                             |
-      | measures.temperature.qos.battery | 40                               |
+      | measures.temperature.origin.id          | "DummyTemp-attached_ayse_linked" |
+      | measures.temperature.origin.reference   | "attached_ayse_linked"           |
+      | measures.temperature.origin.model       | "DummyTemp"                      |
+      | measures.temperature.updatedAt          | "_DATE_NOW_"                     |
+      | measures.temperature.payloadUuid        | "_STRING_"                       |
+      | measures.temperature.degree             | 42.2                             |
+      | measures.temperature.origin.qos.battery | 40                               |
       # Enriched with the event
-      | metadata.enriched                | true                             |
-      | metadata.measureTypes            | ["temperature"]                  |
+      | metadata.enriched                       | true                             |
+      | metadata.measureTypes                   | ["temperature"]                  |
     And I should receive a result matching:
       | device._id | "DummyTemp-attached_ayse_linked" |
       | asset._id  | "MART-linked"                    |
