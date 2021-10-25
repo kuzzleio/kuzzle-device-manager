@@ -8,6 +8,13 @@ Feature: Device Manager device controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
 
+  Scenario: Attech a non-existing device to a tenant should throw an error
+    When I execute the action "device-manager/device":"attachTenant" with args:
+      | _id   | "Not-existing-device" |
+      | index | "tenant-kuzzle"       |
+    Then I should receive an error matching:
+      | message | "Device(s) \"Not-existing-device\" not found" |
+
   Scenario: Attach multiple devices to a tenant using JSON
     When I successfully execute the action "device-manager/device":"mAttach" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
