@@ -9,7 +9,7 @@ import {
 
 import { CRUDController } from './CRUDController';
 import { Device } from '../models';
-import { DeviceBulkContent } from '../types';
+import { DeviceBulkContent } from '../core-classes';
 import { DeviceService } from '../core-classes';
 
 export class DeviceController extends CRUDController {
