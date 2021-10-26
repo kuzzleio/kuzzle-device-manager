@@ -6,18 +6,34 @@ import {
   NotFoundError,
   PreconditionError,
   Plugin,
+  Document
 } from 'kuzzle';
-
-import {
-  DeviceBulkBuildedContent,
-  DeviceBulkContent,
-  DeviceMAttachementContent,
-  DeviceMRequestContent
-} from '../types';
 
 import { Decoder } from './Decoder';
 import { Device } from '../models';
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
+
+export type DeviceBulkContent = {
+  tenantId?: string;
+  deviceId: string;
+  assetId?: string;
+}
+
+export type DeviceBulkBuildedContent = {
+  tenantId: string;
+  deviceIds: string[];
+  assetIds: string[];
+}
+
+export type DeviceMAttachementContent = {
+  errors: JSONObject[];
+  successes: JSONObject[];
+}
+
+export type DeviceMRequestContent = {
+  _id: string;
+  body: JSONObject;
+}
 
 export class DeviceService {
   private config: DeviceManagerConfig;
@@ -196,23 +212,34 @@ export class DeviceService {
 
     for (let i = 0; i < documents.length; i++) {
       const document = documents[i];
-      const existingAssets = await this.sdk.document.mGet(
+      const assets = await this.sdk.document.mGet(
         document.tenantId,
         'assets',
         document.assetIds);
 
-      if (strict && existingAssets.errors.length > 0) {
-        throw new NotFoundError(`Assets "${existingAssets.errors}" do not exist`);
+      if (strict && assets.errors.length > 0) {
+        throw new NotFoundError(`Assets "${assets.errors}" do not exist`);
       }
 
       const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
       const deviceDocuments = [];
       const assetDocuments = [];
 
+
+
       for (const device of devicesContent) {
         const decoder = this.decoders.get(device._source.model);
         const measures = await decoder.copyToAsset(device);
-        const { assetId } = bulkData.find(data => data.deviceId === device._id)
+        const { assetId } = bulkData.find(({ deviceId }) => deviceId === device._id)
+
+        const asset = assets.successes.find(a => a._id === assetId);
+
+        if (!asset) {
+          throw new NotFoundError(`Asset ${assetId} was not found`);
+        }
+
+        this.assertNotDuplicateMeasure(device, asset);
+        this.assertDeviceNotLinkedToMultipleAssets(device);
 
         deviceDocuments.push({ _id: device._id, body: { assetId } });
         assetDocuments.push({ _id: assetId, body: { measures } });
@@ -360,6 +387,26 @@ export class DeviceService {
     }
 
     return measures;
+  }
+
+  private assertDeviceNotLinkedToMultipleAssets(device: Device) {
+    if (device._source.assetId) {
+      throw new BadRequestError(
+        `Device "${device._id}" is already linked to the asset "${device._source.assetId}" you need to detach it first.`
+      )
+    }
+  }
+
+  private assertNotDuplicateMeasure(device: Device, asset: Document) {
+    const deviceKeys = Object.keys(device._source.measures);
+    const assetKeys = Object.keys(asset._source.measures);
+    const hasKey = deviceKeys.find(e => assetKeys.includes(e));
+
+    if (hasKey) {
+      throw new BadRequestError(
+        `Device ${device._id} is mesuring a value that is already mesured by another Device for the Asset ${asset._id}`
+        )
+    }
   }
 
   private async tenantExists (tenantId: string) {

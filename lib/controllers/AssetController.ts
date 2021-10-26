@@ -6,7 +6,7 @@ import {
 
 import { CRUDController } from './CRUDController';
 import { BaseAsset } from '../models/BaseAsset';
-import { BaseAssetContent } from '../types';
+import { AssetContentBase } from '../types';
 
 export class AssetController extends CRUDController {
   get sdk (): EmbeddedSDK {
@@ -47,7 +47,7 @@ export class AssetController extends CRUDController {
     const reference = request.getBodyString('reference');
 
     if (! request.input.resource._id) {
-      const assetContent: BaseAssetContent = {
+      const assetContent: AssetContentBase = {
         type,
         model,
         reference,

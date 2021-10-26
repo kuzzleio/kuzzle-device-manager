@@ -2,7 +2,7 @@ import { PluginContext, EmbeddedSDK, Plugin } from "kuzzle";
 
 import { Decoder } from "./Decoder";
 import { DeviceManagerConfig } from "../DeviceManagerPlugin";
-import { DecoderConstructor } from '../types/DecodersContent';
+import { DecoderContent } from '../types/decoders/DecodersContent';
 
 export class DecodersService {
   private config: DeviceManagerConfig;
@@ -21,8 +21,11 @@ export class DecodersService {
     this.decoders = decoders;
   }
 
-  async list(): Promise<DecoderConstructor[]> {
-    const decoders = Decoder.serialize(this.decoders);
+  async list(): Promise<DecoderContent[]> {
+    const decoders = Array
+      .from(this.decoders.keys())
+      .map(key => this.decoders.get(key))
+      .map(decoder => decoder.serialize())
 
     return decoders;
   }

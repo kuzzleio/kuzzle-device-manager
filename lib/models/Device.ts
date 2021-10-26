@@ -41,38 +41,7 @@ export const devicesMappings = {
     },
     measures: {
       properties: {
-        temperature: {
-          properties: {
-            // common
-            updatedAt: { type: 'date' },
-            payloadUuid: { type: 'keyword' },
-
-            // temperature
-            degree: { type: 'float' }
-          }
-        },
-        position: {
-          properties: {
-            // common
-            updatedAt: { type: 'date' },
-            payloadUuid: { type: 'keyword' },
-
-            // position
-            point: { type: 'geo_point' },
-            altitude: { type: 'float' },
-            accuracy: { type: 'integer' },
-          }
-        },
-        movement: {
-          properties: {
-            // common
-            updatedAt: { type: 'date' },
-            payloadUuid: { type: 'keyword' },
-
-            // movement state
-            moving: { type: 'boolean' },
-          }
-        }
+        // measures mappings will be injected by the plugin
       }
     },
     qos: {

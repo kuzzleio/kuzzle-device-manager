@@ -1,4 +1,4 @@
-export interface DecoderConstructor {
+export interface DecoderContent {
   deviceModel: string
   deviceMeasures: string[]
 }

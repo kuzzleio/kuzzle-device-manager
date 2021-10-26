@@ -35,6 +35,11 @@ import {
   catalogMappings,
   assetsHistoryMappings,
 } from './models';
+import {
+  movementMeasureMappings,
+  positionMeasureMappings,
+  temperatureMeasureMappings,
+} from './measures';
 
 export type DeviceManagerConfig = {
   /**
@@ -184,6 +189,10 @@ export class DeviceManagerPlugin extends Plugin {
     this.config = _.merge({}, this.defaultConfig, config);
 
     this.context = context;
+
+    this.devices.registerMeasure('temperature', temperatureMeasureMappings);
+    this.devices.registerMeasure('position', positionMeasureMappings);
+    this.devices.registerMeasure('movement', movementMeasureMappings);
 
     this.batchWriter = new BatchWriter(this.sdk, { interval: this.config.writerInterval });
     this.batchWriter.begin();
