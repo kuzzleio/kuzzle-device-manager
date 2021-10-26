@@ -8,7 +8,7 @@ Feature: Device Manager device controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
 
-  Scenario: Attech a non-existing device to a tenant should throw an error
+  Scenario: Attach a non-existing device to a tenant should throw an error
     When I execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "Not-existing-device" |
       | index | "tenant-kuzzle"       |
@@ -130,6 +130,16 @@ Feature: Device Manager device controller
       | measures.temperature.payloadUuid        | "_STRING_"                         |
       | measures.temperature.degree             | 23.3                               |
       | measures.temperature.origin.qos.battery | 80                                 |
+
+    Scenario: Link the same device to another asset should fail
+    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked" |
+      | assetId | "PERFO-unlinked"                   |
+    And I execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked" |
+      | assetId | "TIKO-unlinked"                   |
+    Then I should receive an error matching:
+      | message | "Device \"DummyTemp-attached_ayse_unlinked\" is already linked to the asset \"PERFO-unlinked\" you need to detach it first." |
 
   Scenario: Link device to an asset with already registered device recording the same measure
     When I successfully execute the action "device-manager/device":"linkAsset" with args:

@@ -239,6 +239,7 @@ export class DeviceService {
         }
 
         this.assertNotDuplicateMeasure(device, asset);
+        this.assertDeviceNotLinkedToMultipleAssets(device);
 
         deviceDocuments.push({ _id: device._id, body: { assetId } });
         assetDocuments.push({ _id: assetId, body: { measures } });
@@ -386,6 +387,14 @@ export class DeviceService {
     }
 
     return measures;
+  }
+
+  private assertDeviceNotLinkedToMultipleAssets(device: Device) {
+    if (device._source.assetId) {
+      throw new BadRequestError(
+        `Device "${device._id}" is already linked to the asset "${device._source.assetId}" you need to detach it first.`
+      )
+    }
   }
 
   private assertNotDuplicateMeasure(device: Device, asset: Document) {
