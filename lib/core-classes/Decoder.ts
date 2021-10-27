@@ -68,6 +68,7 @@ export abstract class Decoder {
 
   /**
    * @param deviceModel Device model for this decoder
+   * @param deviceMeasures Devices measure types for this decoder
    */
   constructor (deviceModel: string, deviceMeasures: string[]) {
     this.deviceModel = deviceModel;

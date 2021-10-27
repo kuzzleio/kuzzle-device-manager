@@ -23,8 +23,7 @@ export class DecodersService {
 
   async list(): Promise<DecoderContent[]> {
     const decoders = Array
-      .from(this.decoders.keys())
-      .map(key => this.decoders.get(key))
+      .from(this.decoders.values())
       .map(decoder => decoder.serialize())
 
     return decoders;
