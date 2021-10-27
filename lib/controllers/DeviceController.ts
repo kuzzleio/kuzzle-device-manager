@@ -72,7 +72,7 @@ export class DeviceController extends CRUDController {
         prunePayloads: {
           handler: this.prunePayloads.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/devices/_prunePayloads' }]
-        },
+        }
       }
     };
   }

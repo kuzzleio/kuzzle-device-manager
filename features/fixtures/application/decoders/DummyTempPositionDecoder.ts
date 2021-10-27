@@ -3,7 +3,7 @@ import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
 export class DummyTempPositionDecoder extends Decoder {
   constructor () {
-    super('DummyTempPosition');
+    super('DummyTempPosition', ["temperature", "position"]);
   }
 
   async validate (payload: JSONObject, request: KuzzleRequest) {

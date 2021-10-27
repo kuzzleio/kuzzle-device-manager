@@ -3,7 +3,7 @@ import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
 export class DummyTempDecoder extends Decoder {
   constructor () {
-    super('DummyTemp');
+    super('DummyTemp', ["temperature"]);
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }
