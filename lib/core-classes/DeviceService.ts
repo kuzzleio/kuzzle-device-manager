@@ -25,7 +25,7 @@ export type DeviceBulkBuildedContent = {
   assetIds: string[];
 }
 
-export type DeviceMAttachementContent = {
+export type DevicemAttachTenantementContent = {
   errors: JSONObject[];
   successes: JSONObject[];
 }
@@ -52,11 +52,11 @@ export class DeviceService {
     this.decoders = decoders;
   }
 
-  async mAttach (
+  async mAttachTenant (
     devices: Device[],
     bulkData: DeviceBulkContent[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
-  ): Promise<DeviceMAttachementContent> {
+  ): Promise<DevicemAttachTenantementContent> {
     const attachedDevices = devices.filter(device => device._source.tenantId);
 
     if (strict && attachedDevices.length > 0) {

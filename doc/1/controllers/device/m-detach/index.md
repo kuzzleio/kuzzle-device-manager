@@ -35,7 +35,7 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mAttachTenant",
+    "action": "mDetach",
     "body": {
         // Using JSON
         "deviceIds" ["test-id"],

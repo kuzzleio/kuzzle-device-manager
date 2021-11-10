@@ -41,8 +41,8 @@ export class DeviceController extends CRUDController {
           handler: this.attachTenant.bind(this),
           http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_attach' }]
         },
-        mAttach: {
-          handler: this.mAttach.bind(this),
+        mAttachTenant: {
+          handler: this.mAttachTenant.bind(this),
           http: [{ verb: 'put', path: 'device-manager/devices/_mAttach' }]
         },
         detach: {
@@ -87,7 +87,7 @@ export class DeviceController extends CRUDController {
     const document = { tenantId: tenantId, deviceId: deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mAttach(
+    await this.deviceService.mAttachTenant(
       devices,
       [document],
       {
@@ -99,12 +99,12 @@ export class DeviceController extends CRUDController {
   /**
    * Attach multiple devices to multiple tenants
    */
-  async mAttach (request: KuzzleRequest) {
+  async mAttachTenant (request: KuzzleRequest) {
     const { bulkData, strict } = await this.mParseRequest(request);
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mAttach(
+    return this.deviceService.mAttachTenant(
       devices,
       bulkData,
       {

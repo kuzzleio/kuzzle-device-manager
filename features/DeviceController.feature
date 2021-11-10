@@ -16,7 +16,7 @@ Feature: Device Manager device controller
       | message | "Device(s) \"Not-existing-device\" not found" |
 
   Scenario: Attach multiple devices to a tenant using JSON
-    When I successfully execute the action "device-manager/device":"mAttach" with args:
+    When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
       | body.records.0.deviceId | "DummyTemp-detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
@@ -29,7 +29,7 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant using CSV
-    When I successfully execute the action "device-manager/device":"mAttach" with args:
+    When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | tenantId | "tenant-kuzzle" |
@@ -39,7 +39,7 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant while exceeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mAttach" while exeding documentsWriteCount limit
+    When I succesfully execute "device-manager/device":"mAttachTenant" while exeding documentsWriteCount limit
     Then All devices in "device-manager" "devices" have the property "tenantId" to "tenant-kuzzle"
     And All documents "tenant-kuzzle":"devices"  exists
 
@@ -69,7 +69,7 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
 
   Scenario: Detach multiple devices to a tenant using JSON
-    When I successfully execute the action "device-manager/device":"mAttach" with args:
+    When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
       | body.records.0.deviceId | "DummyTemp-detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
@@ -84,7 +84,7 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
 
   Scenario: Detach multiple devices to a tenant using CSV
-    When I successfully execute the action "device-manager/device":"mAttach" with args:
+    When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
     When I successfully execute the action "device-manager/device":"mDetach" with args:
       | body.csv | "deviceId\\nDummyTemp-detached\\nDummyTemp-attached_ayse_unlinked," |
@@ -96,7 +96,7 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
 
   Scenario: Detach multiple device to a tenant while exceeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mAttach" while exeding documentsWriteCount limit
+    When I succesfully execute "device-manager/device":"mAttachTenant" while exeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mDetach" while exeding documentsWriteCount limit
     Then All devices in "device-manager" "devices" have the property "tenantId" to "null"
     And All documents "tenant-kuzzle":"devices" does not exists
