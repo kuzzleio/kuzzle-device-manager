@@ -45,8 +45,8 @@ export class DeviceController extends CRUDController {
           handler: this.mAttachTenant.bind(this),
           http: [{ verb: 'put', path: 'device-manager/devices/_mAttach' }]
         },
-        detach: {
-          handler: this.detach.bind(this),
+        detachTenant: {
+          handler: this.detachTenant.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/devices/:_id/_detach' }]
         },
         mDetach: {
@@ -116,7 +116,7 @@ export class DeviceController extends CRUDController {
   /**
    * Unattach a device from it's tenant
    */
-  async detach (request: KuzzleRequest) {
+  async detachTenant (request: KuzzleRequest) {
     const deviceId = request.getId();
 
     const document: DeviceBulkContent = { deviceId };

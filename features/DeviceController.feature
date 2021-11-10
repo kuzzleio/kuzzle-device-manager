@@ -62,7 +62,7 @@ Feature: Device Manager device controller
     And I successfully execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "DummyTemp-detached" |
       | index | "tenant-kuzzle"      |
-    When I successfully execute the action "device-manager/device":"detach" with args:
+    When I successfully execute the action "device-manager/device":"detachTenant" with args:
       | _id | "DummyTemp-detached" |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | tenantId | null |
@@ -102,14 +102,14 @@ Feature: Device Manager device controller
     And All documents "tenant-kuzzle":"devices" does not exists
 
   Scenario: Error when detaching from a tenant
-    When I execute the action "device-manager/device":"detach" with args:
+    When I execute the action "device-manager/device":"detachTenant" with args:
       | _id | "DummyTemp-detached" |
     Then I should receive an error matching:
       | message | "Devices \"DummyTemp-detached\" are not attached to a tenant" |
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
-    When I execute the action "device-manager/device":"detach" with args:
+    When I execute the action "device-manager/device":"detachTenant" with args:
       | _id | "DummyTemp-attached_ayse_unlinked" |
     Then I should receive an error matching:
       | message | "Devices \"DummyTemp-attached_ayse_unlinked\" are still linked to an asset" |

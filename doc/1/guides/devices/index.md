@@ -117,9 +117,9 @@ The format used can be either __CSV__ in the form of a string in the format `ten
 
 When attached, all devices documents are copied inside the `devices` collections of all different tenant index.
 
-## Detach a device from a tenant
+## DetachTenant a device from a tenant
 
-Sensors can be detached to tenant by using the [device-manager/device:detach](/kuzzle-iot-platform/device-manager/1/controllers/device/detach) API action.
+Sensors can be detached to tenant by using the [device-manager/device:detachTenant](/kuzzle-iot-platform/device-manager/1/controllers/device/detachTenant) API action.
 
 When detached, the device document is deleted from the `devices` collection of the tenant index.
 
