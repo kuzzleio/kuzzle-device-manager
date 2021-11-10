@@ -289,7 +289,7 @@ export class DeviceService {
     return results;
   }
 
-  async mUnlink (
+  async mUnlinkAsset (
     devices: Device[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
   ) {

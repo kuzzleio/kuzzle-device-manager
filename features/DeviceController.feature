@@ -263,7 +263,7 @@ Feature: Device Manager device controller
       | message | "Assets \"PERFO-non-existing\" do not exist" |
 
   Scenario: Error when unlinking from an asset
-    When I execute the action "device-manager/device":"unlink" with args:
+    When I execute the action "device-manager/device":"unlinkAsset" with args:
       | _id | "DummyTemp-attached_ayse_unlinked" |
     Then I should receive an error matching:
       | message | "Devices \"DummyTemp-attached_ayse_unlinked\" are not linked to an asset" |
@@ -272,7 +272,7 @@ Feature: Device Manager device controller
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
-    When I successfully execute the action "device-manager/device":"mUnlink" with args:
+    When I successfully execute the action "device-manager/device":"mUnlinkAsset" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
@@ -285,7 +285,7 @@ Feature: Device Manager device controller
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
-    When I successfully execute the action "device-manager/device":"mUnlink" with args:
+    When I successfully execute the action "device-manager/device":"mUnlinkAsset" with args:
       | body.csv | "deviceId\\nDummyTemp-attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
@@ -303,7 +303,7 @@ Feature: Device Manager device controller
       | body.records.0.assetId  | "PERFO-unlinked"                   |
       | body.records.1.deviceId | "DummyTemp-detached"               |
       | body.records.1.assetId  | "PERFO-unlinked"                   |
-    When I successfully execute the action "device-manager/device":"unlink" with args:
+    When I successfully execute the action "device-manager/device":"unlinkAsset" with args:
       | _id | "DummyTemp-attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |

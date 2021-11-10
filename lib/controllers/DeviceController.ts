@@ -61,12 +61,12 @@ export class DeviceController extends CRUDController {
           handler: this.mLinkAsset.bind(this),
           http: [{ verb: 'put', path: 'device-manager/devices/_mLink' }]
         },
-        unlink: {
-          handler: this.unlink.bind(this),
+        unlinkAsset: {
+          handler: this.unlinkAsset.bind(this),
           http: [{ verb: 'delete', path: 'device-manager/:index/devices/:_id/_unlink' }]
         },
-        mUnlink: {
-          handler: this.mUnlink.bind(this),
+        mUnlinkAsset: {
+          handler: this.mUnlinkAsset.bind(this),
           http: [{ verb: 'put', path: 'device-manager/devices/_mUnlink' }]
         },
         prunePayloads: {
@@ -186,15 +186,15 @@ export class DeviceController extends CRUDController {
   }
 
   /**
-   * Unlink a device from an asset.
+   * UnlinkAsset a device from an asset.
    */
-   async unlink (request: KuzzleRequest) {
+   async unlinkAsset (request: KuzzleRequest) {
     const deviceId = request.getId();
 
     const document: DeviceBulkContent = { deviceId };
     const devices = await this.mGetDevice([document]);
 
-    await this.deviceService.mUnlink(
+    await this.deviceService.mUnlinkAsset(
       devices,
       {
         strict: true,
@@ -203,14 +203,14 @@ export class DeviceController extends CRUDController {
   }
 
   /**
-   * Unlink multiple device from multiple assets.
+   * UnlinkAsset multiple device from multiple assets.
    */
-  async mUnlink (request: KuzzleRequest) {
+  async mUnlinkAsset (request: KuzzleRequest) {
     const { bulkData, strict } = await this.mParseRequest(request);
 
     const devices = await this.mGetDevice(bulkData);
 
-    return this.deviceService.mUnlink(
+    return this.deviceService.mUnlinkAsset(
       devices,
       {
         strict,

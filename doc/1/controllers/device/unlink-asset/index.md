@@ -1,13 +1,13 @@
 ---
 code: true
 type: page
-title: unlink
-description: Unlinks a device from an asset
+title: unlinkAsset
+description: UnlinkAssets a device from an asset
 ---
 
-# unlink
+# unlinkAsset
 
-Unlinks a device from its asset.
+UnlinkAssets a device from its asset.
 
 ---
 
@@ -26,7 +26,7 @@ Method: DELETE
 {
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "unlink",
+  "action": "unlinkAsset",
   "_id": "<deviceId>"
 }
 ```
@@ -34,7 +34,7 @@ Method: DELETE
 ### Kourou
 
 ```bash
-kourou device-manager/device:unlink <index> --id <deviceId>
+kourou device-manager/device:unlinkAsset <index> --id <deviceId>
 ```
 
 ---
@@ -57,7 +57,7 @@ kourou device-manager/device:unlink <index> --id <deviceId>
   "error": null,
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "unlink",
+  "action": "unlinkAsset",
   "requestId": "<unique request identifier>",
   "result": {}
 }

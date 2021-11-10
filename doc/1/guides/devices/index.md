@@ -153,13 +153,13 @@ New measures received by the device will be propagated inside each assets docume
 
 ## unlink from an asset
 
-Devices can be unlinked from an asset by using the [device-manager/device:unlink](/kuzzle-iot-platform/device-manager/1/controllers/device/unlink) API action.
+Devices can be unlinked from an asset by using the [device-manager/device:unlinkAsset](/kuzzle-iot-platform/device-manager/1/controllers/device/unlink-asset) API action.
 
 When unlinked, the device measures are erased inside the asset document.
 
 ## unlink Multiple Devices to Multiple Assets
 
-Multiple Devices can be unlinked at the same time from multiple assets by using the [device-manager/device:mUnlink](/kuzzle-iot-platform/device-manager/1/controllers/device/m-unlink) API action.
+Multiple Devices can be unlinked at the same time from multiple assets by using the [device-manager/device:mUnlinkAsset](/kuzzle-iot-platform/device-manager/1/controllers/device/m-unlink-asset) API action.
 
 Once unlinked, each device's measures are erased inside their corresponding asset document.
 

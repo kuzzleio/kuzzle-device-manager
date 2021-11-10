@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: mUnlink
+title: mUnlinkAsset
 description: Unlink multiple devices from multiple assets
 ---
 
-# mUnlink
+# mUnlinkAsset
 
 Unlink multiple devices from multiple assets
 
@@ -37,7 +37,7 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mUnlink",
+    "action": "mUnlinkAsset",
     "body": {
         // Using JSON
         "records" [{
@@ -74,7 +74,7 @@ Body properties, must contain at least one of the following:
     "status": 200,
     "error": null,
     "controller": "device-manager/device",
-    "action": "mUnlink",
+    "action": "mUnlinkAsset",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],
