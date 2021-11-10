@@ -74,7 +74,7 @@ Feature: Device Manager device controller
       | body.records.0.deviceId | "DummyTemp-detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
       | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
-    When I successfully execute the action "device-manager/device":"mDetach" with args:
+    When I successfully execute the action "device-manager/device":"mDetachTenant" with args:
       | body.deviceIds | ["DummyTemp-detached","DummyTemp-attached_ayse_unlinked"] |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | tenantId | null |
@@ -86,7 +86,7 @@ Feature: Device Manager device controller
   Scenario: Detach multiple devices to a tenant using CSV
     When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
-    When I successfully execute the action "device-manager/device":"mDetach" with args:
+    When I successfully execute the action "device-manager/device":"mDetachTenant" with args:
       | body.csv | "deviceId\\nDummyTemp-detached\\nDummyTemp-attached_ayse_unlinked," |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | tenantId | null |
@@ -97,7 +97,7 @@ Feature: Device Manager device controller
 
   Scenario: Detach multiple device to a tenant while exceeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mAttachTenant" while exeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mDetach" while exeding documentsWriteCount limit
+    When I succesfully execute "device-manager/device":"mDetachTenant" while exeding documentsWriteCount limit
     Then All devices in "device-manager" "devices" have the property "tenantId" to "null"
     And All documents "tenant-kuzzle":"devices" does not exists
 
