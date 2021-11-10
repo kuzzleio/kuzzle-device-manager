@@ -112,7 +112,7 @@ export class DeviceService {
     return results;
   }
 
-  async mDetachtenant (
+  async mDetachTenant (
     devices: Device[],
     bulkData: DeviceBulkContent[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
