@@ -139,7 +139,6 @@ export class PayloadService {
       this.config.configCollection,
       'plugin--device-manager');
 
-    console.log('pluginConfigDocument', pluginConfigDocument);
     const autoProvisioningStrategy: boolean = pluginConfigDocument._source['device-manager'].provisioningStrategy === 'auto';
 
     const catalogEntry = await this.getCatalogEntry(this.config.adminIndex, device._id);
