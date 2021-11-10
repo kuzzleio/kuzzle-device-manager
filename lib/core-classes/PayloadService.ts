@@ -117,7 +117,7 @@ export class PayloadService {
   /**
    * Device provisioning strategy.
    *
-   * If autoProvisionning is on, device is automatically registered, otherwise
+   * If provisioningStrategy is on auto, device is automatically registered, otherwise
    * we request the admin provisioning catalog to ensure this device is allowed
    * to register.
    *
@@ -139,15 +139,16 @@ export class PayloadService {
       this.config.configCollection,
       'plugin--device-manager');
 
-    const autoProvisionning: boolean = pluginConfigDocument._source['device-manager'].autoProvisionning;
+    console.log('pluginConfigDocument', pluginConfigDocument);
+    const autoProvisioningStrategy: boolean = pluginConfigDocument._source['device-manager'].provisioningStrategy === 'auto';
 
     const catalogEntry = await this.getCatalogEntry(this.config.adminIndex, device._id);
 
-    if (! autoProvisionning && ! catalogEntry) {
+    if (! autoProvisioningStrategy && ! catalogEntry) {
       throw new BadRequestError(`Device ${device._id} is not provisionned.`);
     }
 
-    if (! autoProvisionning && catalogEntry.content.authorized === false) {
+    if (! autoProvisioningStrategy && catalogEntry.content.authorized === false) {
       throw new BadRequestError(`Device ${device._id} is not allowed for registration.`);
     }
 
