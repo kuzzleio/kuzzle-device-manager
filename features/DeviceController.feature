@@ -152,7 +152,7 @@ Feature: Device Manager device controller
       | message | "Device DummyTemp-attached_ayse_unlinked is mesuring a value that is already mesured by another Device for the Asset PERFO-unlinked" |
 
   Scenario: Link multiple device to multiple assets using JSON
-    When I successfully execute the action "device-manager/device":"mLink" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -169,7 +169,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
-    When I successfully execute the action "device-manager/device":"mLink" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -185,7 +185,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using JSON
-    When I successfully execute the action "device-manager/device":"mLink" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -202,7 +202,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
-    When I successfully execute the action "device-manager/device":"mLink" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -218,7 +218,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using JSON
-    When I successfully execute the action "device-manager/device":"mLink" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -235,7 +235,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
-    When I successfully execute the action "device-manager/device":"mLink" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -298,7 +298,7 @@ Feature: Device Manager device controller
     And I successfully execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "DummyTemp-detached" |
       | index | "tenant-ayse"        |
-    When I successfully execute the action "device-manager/device":"mLink" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
       | body.records.1.deviceId | "DummyTemp-detached"               |

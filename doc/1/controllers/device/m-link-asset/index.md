@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: mLink
+title: mLinkAsset
 description: Link multiple devices to multiple assets
 ---
 
-# mLink
+# mLinkAsset
 
 Link multiple devices to multiple assets
 
@@ -38,7 +38,7 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mLink",
+    "action": "mLinkAsset",
     "body": {
         // Using JSON
         "records" [{
@@ -76,7 +76,7 @@ Body properties, must contain at least one of the following:
     "status": 200,
     "error": null,
     "controller": "device-manager/device",
-    "action": "mLink",
+    "action": "mLinkAsset",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],

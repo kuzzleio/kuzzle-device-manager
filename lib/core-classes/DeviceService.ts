@@ -183,7 +183,7 @@ export class DeviceService {
     return results;
   }
 
-  async mLink (
+  async mLinkAsset (
     devices: Device[],
     bulkData: DeviceBulkContent[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
