@@ -117,7 +117,7 @@ export class PayloadService {
   /**
    * Device provisioning strategy.
    *
-   * If provisioningStrategy is on auto, device is automatically registered, otherwise
+   * If provisioningStrategy is "auto," device is automatically registered, otherwise
    * we request the admin provisioning catalog to ensure this device is allowed
    * to register.
    *
