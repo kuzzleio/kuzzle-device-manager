@@ -131,13 +131,13 @@ Feature: Device Manager device controller
       | measures.temperature.degree             | 23.3                               |
       | measures.temperature.origin.qos.battery | 80                                 |
 
-    Scenario: Link the same device to another asset should fail
+  Scenario: Link the same device to another asset should fail
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
     And I execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "TIKO-unlinked"                   |
+      | assetId | "TIKO-unlinked"                    |
     Then I should receive an error matching:
       | message | "Device \"DummyTemp-attached_ayse_unlinked\" is already linked to the asset \"PERFO-unlinked\" you need to detach it first." |
 
@@ -352,3 +352,12 @@ Feature: Device Manager device controller
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 1 |
+
+  Scenario: Import devices using csv
+    Given I successfully execute the action "device-manager/device":"importDevices" with args:
+      | body.csv | "qos.battery,measures.temperature.degree,tenantId,assetID\\n80,23.3, null, null" |
+    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | qos.battery                 | 80   |
+      | measures.temperature.degree | 23.3 |
+      | tenatId                     | null |
+      | assetID                     | null |
