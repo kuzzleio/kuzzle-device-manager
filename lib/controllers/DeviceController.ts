@@ -203,7 +203,7 @@ export class DeviceController extends CRUDController {
   }
 
   /**
-   * UnlinkAsset multiple device from multiple assets.
+   * Unlink multiple device from multiple assets.
    */
   async mUnlinkAsset (request: KuzzleRequest) {
     const { bulkData, strict } = await this.mParseRequest(request);
