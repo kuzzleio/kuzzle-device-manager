@@ -221,7 +221,6 @@ export class DeviceManagerPlugin extends Plugin {
     await this.migrationService.run();
 
     this.decodersService.registerPayloadController(this.api, this.payloadService);
-    this.decodersService.printDecoders();
   }
 
   /**
