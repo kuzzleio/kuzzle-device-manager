@@ -1,16 +1,17 @@
 import { PayloadService } from './PayloadService';
-import { PluginContext, EmbeddedSDK, Plugin } from "kuzzle";
+import { PluginContext, EmbeddedSDK, Plugin, PluginApiDefinition } from "kuzzle";
 
 import { Decoder } from "./Decoder";
 import { DeviceManagerConfig } from "../DeviceManagerPlugin";
 import { DecoderContent } from '../types/decoders/DecodersContent';
+import { PayloadHandler } from 'index';
 
 export class DecodersService {
   private config: DeviceManagerConfig;
   private context: PluginContext;
 
   private _decoders: Map<string, Decoder>;
-  private handlers: any[];
+  private handlers: { decoder: Decoder, handler: PayloadHandler }[];
 
   get sdk(): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -20,14 +21,14 @@ export class DecodersService {
     return this._decoders;
   }
 
-  constructor(plugin: Plugin, decoders: any[]) {
+  constructor(plugin: Plugin, decoders: { decoder: Decoder, handler: PayloadHandler }[]) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-
     this.handlers = decoders
     this._decoders = new Map();
-
-    for (const { decoder } of decoders) {
+    
+    
+    for (const { decoder } of this.handlers) {
       this.register(decoder);
     }
 
@@ -52,7 +53,7 @@ export class DecodersService {
     this.decoders.set(decoder.deviceModel, decoder);
   }
 
-  registerPayloadController(api, payloadService: PayloadService) {
+  registerPayloadController(api: PluginApiDefinition, payloadService: PayloadService) {
     for (const { decoder, handler } of this.handlers) {
       api['device-manager/payload'].actions[decoder.action] = {
         handler: request => handler ? handler(request, decoder) : payloadService.process(request, decoder),

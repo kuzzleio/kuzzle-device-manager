@@ -102,7 +102,7 @@ export class DeviceManagerPlugin extends Plugin {
     return this.context.accessors.sdk;
   }
 
-  private decoders = [];
+  private decoders: { decoder: Decoder, handler: PayloadHandler }[] = [];
 
   private deviceMappings = new DeviceMappingsManager(devicesMappings);
 
