@@ -7,7 +7,7 @@ description: Detach a device from a tenant
 
 # detachTenant
 
-DetachTenant a device from a tenant.
+Detach a device from a tenant.
 
 ---
 
