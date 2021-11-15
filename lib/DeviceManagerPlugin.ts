@@ -154,7 +154,7 @@ export class DeviceManagerPlugin extends Plugin {
 
             'device-manager': {
               properties: {
-                autoProvisionning: { type: 'boolean' },
+                provisioningStrategy: { type: 'keyword' },
               }
             }
           }
@@ -344,7 +344,7 @@ export class DeviceManagerPlugin extends Plugin {
         this.config.configCollection,
         {
           type: 'device-manager',
-          'device-manager': { autoProvisionning: true }
+          'device-manager': { provisioningStrategy: 'auto' }
         },
         'plugin--device-manager');
     }
