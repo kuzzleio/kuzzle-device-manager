@@ -2,7 +2,7 @@
 code: true
 type: page
 title: unlinkAsset
-description: UnlinkAssets a device from an asset
+description: Unlink a device from an asset
 ---
 
 # unlinkAsset
