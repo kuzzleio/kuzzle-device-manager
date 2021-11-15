@@ -10,7 +10,6 @@ import {
 } from 'kuzzle';
 
 import { v4 as uuidv4 } from 'uuid';
-import omit from 'lodash/omit'
 
 import { Decoder } from './Decoder';
 import { Device } from '../models';

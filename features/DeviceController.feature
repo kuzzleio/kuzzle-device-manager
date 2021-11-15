@@ -355,9 +355,7 @@ Feature: Device Manager device controller
 
   Scenario: Import devices using csv
     Given I successfully execute the action "device-manager/device":"importDevices" with args:
-      | body.csv | "qos.battery,measures.temperature.degree,tenantId,assetID\\n80,23.3, null, null" |
+      | body.csv | "qos.battery,measures.temperature.degree\\n80,23.3" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | qos.battery                 | 80   |
       | measures.temperature.degree | 23.3 |
-      | tenatId                     | null |
-      | assetID                     | null |
