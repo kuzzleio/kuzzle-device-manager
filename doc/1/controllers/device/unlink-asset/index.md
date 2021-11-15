@@ -7,7 +7,7 @@ description: UnlinkAssets a device from an asset
 
 # unlinkAsset
 
-UnlinkAssets a device from its asset.
+Unlink a device from its asset.
 
 ---
 
