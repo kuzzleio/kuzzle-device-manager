@@ -111,7 +111,7 @@ When attached, the device document is copied inside the `devices` collection of 
 
 ## Attach to multiple tenant
 
-Multiple different Devices can also be attached to different tenants by using the [device-manager/device:mAttachTenant](/kuzzle-iot-platform/device-manager/1/controllers/device/m-attach) API action.
+Multiple different Devices can also be attached to different tenants by using the [device-manager/device:mAttachTenants](/kuzzle-iot-platform/device-manager/1/controllers/device/m-attach) API action.
 
 The format used can be either __CSV__ in the form of a string in the format `tenantId,deviceId\nmytenantId,mydeviceId` or __JSON__ in the form of an array of objects `"records": [{ "tenantId": "mytenantId", "deviceId": "mydeviceId"}]`.
 
@@ -126,7 +126,7 @@ When detached, the device document is deleted from the `devices` collection of t
 the `tenantId` property is set to `null` in the `device-manager` index.
 ## Detach multiple devices from multiple tenants
 
-Multiple different Sensors can also be detached to multiple differents tenant by using the [device-manager/device:mDetachTenant](/kuzzle-iot-platform/device-manager/1/controllers/device/mDetachTenant) API action.
+Multiple different Sensors can also be detached to multiple differents tenant by using the [device-manager/device:mDetachTenants](/kuzzle-iot-platform/device-manager/1/controllers/device/mDetachTenants) API action.
 
 The format used can be either __CSV__ in the form of a string in the format "tenantId, deviceId, myDeviceId" or __JSON__ in the form of an array of objects.
 
@@ -144,7 +144,7 @@ New measures received by the device will be propagated inside the asset document
 
 ## Link Multiple Devices to Multiple Assets
 
-Multiple Devices can be linked at the same time to multiple assets by using the [device-manager/device:mLinkAsset](/kuzzle-iot-platform/device-manager/1/controllers/device/m-link) API action.
+Multiple Devices can be linked at the same time to multiple assets by using the [device-manager/device:mLinkAssets](/kuzzle-iot-platform/device-manager/1/controllers/device/m-link) API action.
 
 Once linked, each device's measures are copied inside their corresponding asset document.
 
@@ -159,7 +159,7 @@ When unlinked, the device measures are erased inside the asset document.
 
 ## unlink Multiple Devices to Multiple Assets
 
-Multiple Devices can be unlinked at the same time from multiple assets by using the [device-manager/device:mUnlinkAsset](/kuzzle-iot-platform/device-manager/1/controllers/device/m-unlink-asset) API action.
+Multiple Devices can be unlinked at the same time from multiple assets by using the [device-manager/device:mUnlinkAssets](/kuzzle-iot-platform/device-manager/1/controllers/device/m-unlink-asset) API action.
 
 Once unlinked, each device's measures are erased inside their corresponding asset document.
 

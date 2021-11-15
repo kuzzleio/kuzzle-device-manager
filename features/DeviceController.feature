@@ -16,7 +16,7 @@ Feature: Device Manager device controller
       | message | "Device(s) \"Not-existing-device\" not found" |
 
   Scenario: Attach multiple devices to a tenant using JSON
-    When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
+    When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
       | body.records.0.deviceId | "DummyTemp-detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
@@ -29,7 +29,7 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant using CSV
-    When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
+    When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | tenantId | "tenant-kuzzle" |
@@ -39,7 +39,7 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant while exceeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mAttachTenant" while exeding documentsWriteCount limit
+    When I succesfully execute "device-manager/device":"mAttachTenants" while exeding documentsWriteCount limit
     Then All devices in "device-manager" "devices" have the property "tenantId" to "tenant-kuzzle"
     And All documents "tenant-kuzzle":"devices"  exists
 
@@ -69,12 +69,12 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
 
   Scenario: Detach multiple devices to a tenant using JSON
-    When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
+    When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
       | body.records.0.tenantId | "tenant-kuzzle"                    |
       | body.records.0.deviceId | "DummyTemp-detached"               |
       | body.records.1.tenantId | "tenant-kuzzle"                    |
       | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
-    When I successfully execute the action "device-manager/device":"mDetachTenant" with args:
+    When I successfully execute the action "device-manager/device":"mDetachTenants" with args:
       | body.deviceIds | ["DummyTemp-detached","DummyTemp-attached_ayse_unlinked"] |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | tenantId | null |
@@ -84,9 +84,9 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
 
   Scenario: Detach multiple devices to a tenant using CSV
-    When I successfully execute the action "device-manager/device":"mAttachTenant" with args:
+    When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
       | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
-    When I successfully execute the action "device-manager/device":"mDetachTenant" with args:
+    When I successfully execute the action "device-manager/device":"mDetachTenants" with args:
       | body.csv | "deviceId\\nDummyTemp-detached\\nDummyTemp-attached_ayse_unlinked," |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | tenantId | null |
@@ -96,8 +96,8 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
 
   Scenario: Detach multiple device to a tenant while exceeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mAttachTenant" while exeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mDetachTenant" while exeding documentsWriteCount limit
+    When I succesfully execute "device-manager/device":"mAttachTenants" while exeding documentsWriteCount limit
+    When I succesfully execute "device-manager/device":"mDetachTenants" while exeding documentsWriteCount limit
     Then All devices in "device-manager" "devices" have the property "tenantId" to "null"
     And All documents "tenant-kuzzle":"devices" does not exists
 
@@ -152,7 +152,7 @@ Feature: Device Manager device controller
       | message | "Device DummyTemp-attached_ayse_unlinked is mesuring a value that is already mesured by another Device for the Asset PERFO-unlinked" |
 
   Scenario: Link multiple device to multiple assets using JSON
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -169,7 +169,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -185,7 +185,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using JSON
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -202,7 +202,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -218,7 +218,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using JSON
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -235,7 +235,7 @@ Feature: Device Manager device controller
       | measures.temperature.origin.qos.battery | 80                                 |
 
   Scenario: Link multiple device to multiple assets using CSV
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "PERFO-unlinked" |
@@ -272,7 +272,7 @@ Feature: Device Manager device controller
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
-    When I successfully execute the action "device-manager/device":"mUnlinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mUnlinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
@@ -285,7 +285,7 @@ Feature: Device Manager device controller
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
-    When I successfully execute the action "device-manager/device":"mUnlinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mUnlinkAssets" with args:
       | body.csv | "deviceId\\nDummyTemp-attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
@@ -298,7 +298,7 @@ Feature: Device Manager device controller
     And I successfully execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "DummyTemp-detached" |
       | index | "tenant-ayse"        |
-    When I successfully execute the action "device-manager/device":"mLinkAsset" with args:
+    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.0.assetId  | "PERFO-unlinked"                   |
       | body.records.1.deviceId | "DummyTemp-detached"               |

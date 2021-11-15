@@ -1,13 +1,13 @@
 ---
 code: true
 type: page
-title: mUnlinkAsset
-description: Unlink multiple devices from multiple assets
+title: mLinkAssets
+description: Link multiple devices to multiple assets
 ---
 
-# mUnlinkAsset
+# mLinkAssets
 
-Unlink multiple devices from multiple assets
+Link multiple devices to multiple assets
 
 ---
 
@@ -16,7 +16,7 @@ Unlink multiple devices from multiple assets
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/devices/_mUnlink[?refresh=wait_for][&strict]
+URL: http://kuzzle:7512/_/device-manager/devices/_mLink[?refresh=wait_for][&strict]
 Method: PUT
 Body:
 ```
@@ -25,10 +25,11 @@ Body:
 {
     // Using JSON
     "records" [{
+        "assetId": "myAssetId",
         "deviceId": "test-id"
     }],
     // Using CSV syntax
-    "csv": " deviceId\ntest-id"
+    "csv": "assetId, deviceId\nmyAssetId,test-id"
 }
 ```
 
@@ -37,14 +38,15 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mUnlinkAsset",
+    "action": "mLinkAssets",
     "body": {
         // Using JSON
         "records" [{
+            "assetId": "myAssetId",
             "deviceId": "test-id"
         }],
         // Using CSV syntax
-        "csv": "deviceId\ntest-id",
+        "csv": "assetId,deviceId\nmyAssetId,test-id",
     }
 }
 ```
@@ -55,15 +57,15 @@ Body:
 
 Body properties, must contain at least one of the following:
 
-- `records`: an array of objects, each containing a `deviceId` properties
-- `csv`: a csv syntax compatible containing at least this header `deviceId` with his corresponding values
+- `records`: an array of objects, each containing an `assetId` and a `deviceId` properties
+- `csv`: a csv syntax compatible containing at least this two headers `assetId,deviceId` with their corresponding values
 
 ---
 
 ### Optional:
 
 * `refresh`: if set to `wait_for`, Kuzzle will not respond until the documents are indexed
-* `strict`: (boolean) if set, makes the process fail preemptively if at least one Unlink cannot be applied (e.g. devices that aren't attached to a tenant, or because of non-existing assets)
+* `strict`: (boolean) if set, makes the process fail preemptively if at least one link cannot be applied (e.g. devices that aren't attached to a tenant, or because of non-existing assets)
 
 ---
 
@@ -74,7 +76,7 @@ Body properties, must contain at least one of the following:
     "status": 200,
     "error": null,
     "controller": "device-manager/device",
-    "action": "mUnlinkAsset",
+    "action": "mLinkAssets",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],
