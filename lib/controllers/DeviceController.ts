@@ -186,7 +186,7 @@ export class DeviceController extends CRUDController {
   }
 
   /**
-   * UnlinkAsset a device from an asset.
+   * Unlink a device from an asset.
    */
    async unlinkAsset (request: KuzzleRequest) {
     const deviceId = request.getId();
