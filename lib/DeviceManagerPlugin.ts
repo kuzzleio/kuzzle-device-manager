@@ -308,7 +308,7 @@ export class DeviceManagerPlugin extends Plugin {
   private getPayloadsMappings (): JSONObject {
     const mappings = JSON.parse(JSON.stringify(this.config.adminCollections.payloads));
 
-    for (const decoder of this.decoders.values()) {
+    for (const decoder of this.decodersService.decoders.values()) {
       mappings.properties.payload.properties = {
         ...mappings.properties.payload.properties,
         ...decoder.payloadsMappings

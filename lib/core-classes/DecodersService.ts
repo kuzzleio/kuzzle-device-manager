@@ -1,3 +1,4 @@
+import { PayloadService } from './PayloadService';
 import { PluginContext, EmbeddedSDK, Plugin } from "kuzzle";
 
 import { Decoder } from "./Decoder";
@@ -51,7 +52,7 @@ export class DecodersService {
     this.decoders.set(decoder.deviceModel, decoder);
   }
 
-  registerPayloadController(api, payloadService) {
+  registerPayloadController(api, payloadService: PayloadService) {
     for (const { decoder, handler } of this.handlers) {
       api['device-manager/payload'].actions[decoder.action] = {
         handler: request => handler ? handler(request, decoder) : payloadService.process(request, decoder),
