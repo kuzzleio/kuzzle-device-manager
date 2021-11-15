@@ -102,11 +102,7 @@ export class DeviceManagerPlugin extends Plugin {
     return this.context.accessors.sdk;
   }
 
-  /**
-   * List of registered decoders.
-   * Map<model, decoder>
-   */
-  private decoders = new Map<string, Decoder>();
+  private decoders = [];
 
   private deviceMappings = new DeviceMappingsManager(devicesMappings);
 
@@ -198,8 +194,8 @@ export class DeviceManagerPlugin extends Plugin {
     this.batchWriter.begin();
 
     this.payloadService = new PayloadService(this, this.batchWriter);
-    this.deviceService = new DeviceService(this, this.decoders);
     this.decodersService = new DecodersService(this, this.decoders);
+    this.deviceService = new DeviceService(this, this.decodersService.decoders);
     this.migrationService = new MigrationService('device-manager', this);
     this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetMappings, this.deviceMappings);
 
@@ -224,9 +220,8 @@ export class DeviceManagerPlugin extends Plugin {
 
     await this.migrationService.run();
 
-    for (const decoder of this.decoders.values()) {
-      this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
-    }
+    this.decodersService.registerPayloadController(this.api, this.payloadService);
+    this.decodersService.printDecoders();
   }
 
   /**
@@ -254,12 +249,7 @@ export class DeviceManagerPlugin extends Plugin {
       throw new PluginImplementationError(`A decoder for "${decoder.deviceModel}" has already been registered.`);
     }
 
-    this.api['device-manager/payload'].actions[decoder.action] = {
-      handler: request => handler ? handler(request, decoder) : this.payloadService.process(request, decoder),
-      http: decoder.http,
-    };
-
-    this.decoders.set(decoder.deviceModel, decoder);
+    this.decoders.push({ decoder, handler });
 
     return {
       controller: 'device-manager/payload',
