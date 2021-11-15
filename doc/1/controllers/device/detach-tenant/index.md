@@ -1,13 +1,13 @@
 ---
 code: true
 type: page
-title: unlink
-description: Unlinks a device from an asset
+title: detachTenant
+description: Detach a device from a tenant
 ---
 
-# unlink
+# detachTenant
 
-Unlinks a device from its asset.
+Detach a device from a tenant.
 
 ---
 
@@ -16,7 +16,7 @@ Unlinks a device from its asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_unlink[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/devices/:_id/_detach[?refresh=wait_for]
 Method: DELETE
 ```
 
@@ -24,9 +24,8 @@ Method: DELETE
 
 ```js
 {
-  "index": "<index>",
   "controller": "device-manager/device",
-  "action": "unlink",
+  "action": "detachTenant",
   "_id": "<deviceId>"
 }
 ```
@@ -34,14 +33,12 @@ Method: DELETE
 ### Kourou
 
 ```bash
-kourou device-manager/device:unlink <index> --id <deviceId>
+kourou device-manager/device:detachTenant --id <deviceId>
 ```
 
 ---
 
 ## Arguments
-
-- `index`: Tenant index name
 
 ### Optional:
 
@@ -57,7 +54,7 @@ kourou device-manager/device:unlink <index> --id <deviceId>
   "error": null,
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "unlink",
+  "action": "detachTenant",
   "requestId": "<unique request identifier>",
   "result": {}
 }

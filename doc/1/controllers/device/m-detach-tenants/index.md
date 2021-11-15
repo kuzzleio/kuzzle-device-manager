@@ -1,13 +1,13 @@
 ---
 code: true
 type: page
-title: mLink
-description: Link multiple devices to multiple assets
+title: mDetachTenants
+description: Detach multiple devices from multiple tenants
 ---
 
-# mLink
+# mDetachTenants
 
-Link multiple devices to multiple assets
+Detach multiple devices from multiple tenants.
 
 ---
 
@@ -16,7 +16,7 @@ Link multiple devices to multiple assets
 ### HTTP
 
 ``` http
-URL: http://kuzzle:7512/_/device-manager/devices/_mLink[?refresh=wait_for][&strict]
+URL: http://kuzzle:7512/_/device-manager/device-manager/devices/_mDetach[?refresh=wait_for][&strict]
 Method: PUT
 Body:
 ```
@@ -24,12 +24,9 @@ Body:
 ``` js
 {
     // Using JSON
-    "records" [{
-        "assetId": "myAssetId",
-        "deviceId": "test-id"
-    }],
+    "deviceIds" ["test-id"],
     // Using CSV syntax
-    "csv": "assetId, deviceId\nmyAssetId,test-id"
+    "csv": "deviceId\ntest-id"
 }
 ```
 
@@ -38,15 +35,12 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mLink",
+    "action": "mDetachTenants",
     "body": {
         // Using JSON
-        "records" [{
-            "assetId": "myAssetId",
-            "deviceId": "test-id"
-        }],
+        "deviceIds" ["test-id"],
         // Using CSV syntax
-        "csv": "assetId,deviceId\nmyAssetId,test-id",
+        "csv": "deviceId\ntest-id"
     }
 }
 ```
@@ -55,10 +49,10 @@ Body:
 
 ## Body properties
 
-Body properties, must contain at least one of the following:
+Body properties, must contain at least one of
 
-- `records`: an array of objects, each containing an `assetId` and a `deviceId` properties
-- `csv`: a csv syntax compatible containing at least this two headers `assetId,deviceId` with their corresponding values
+* `deviceIds`: an array of string containing identifiers of a device already attached
+* `csv`: a csv syntax compatible containing at least one header `deviceId` with his corresponding values
 
 ---
 
@@ -75,8 +69,9 @@ Body properties, must contain at least one of the following:
 {
     "status": 200,
     "error": null,
+    "index": "<index>",
     "controller": "device-manager/device",
-    "action": "mLink",
+    "action": "mDetachTenants",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],
