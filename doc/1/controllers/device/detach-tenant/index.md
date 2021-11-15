@@ -2,7 +2,7 @@
 code: true
 type: page
 title: detachTenant
-description: DetachTenant a device from a tenant
+description: Detach a device from a tenant
 ---
 
 # detachTenant
