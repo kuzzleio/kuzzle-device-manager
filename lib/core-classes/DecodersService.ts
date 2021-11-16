@@ -43,7 +43,7 @@ export class DecodersService {
     return decoders;
   }
 
-  printDecoders() {
+  private printDecoders() {
     for (const decoder of this._decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
     }
