@@ -210,9 +210,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/decoders'] = this.decodersController.definition;
-    
-    console.log(this.api);
-    
+
     this.pipes = {
       'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),

@@ -43,7 +43,7 @@ export class DecodersService {
     return decoders;
   }
 
-  private printDecoders() {
+  private printDecoders(): void {
     for (const decoder of this._decoders.values()) {
       this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
     }
@@ -53,7 +53,7 @@ export class DecodersService {
     this.decoders.set(decoder.deviceModel, decoder);
   }
 
-  getPayloadController(payloadService: PayloadService) {
+  getPayloadController(payloadService: PayloadService): { actions : { [key: string]: PayloadHandler } } {
     const controllers = { actions: {} };
     for (const { decoder, handler } of this.handlers) {
       controllers.actions[decoder.action] = {
