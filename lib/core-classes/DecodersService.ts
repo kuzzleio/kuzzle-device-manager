@@ -1,10 +1,10 @@
-import { PayloadService } from './PayloadService';
-import { PluginContext, EmbeddedSDK, Plugin, PluginApiDefinition, HttpRoutes } from "kuzzle";
+import { PluginContext, EmbeddedSDK, Plugin } from "kuzzle";
 
 import { Decoder } from "./Decoder";
-import { DeviceManagerConfig } from "../DeviceManagerPlugin";
 import { DecoderContent } from '../types/decoders/DecodersContent';
+import { DeviceManagerConfig } from "../DeviceManagerPlugin";
 import { PayloadHandler } from 'index';
+import { PayloadService } from './PayloadService';
 
 export class DecodersService {
   private config: DeviceManagerConfig;
