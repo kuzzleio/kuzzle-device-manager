@@ -375,19 +375,15 @@ export class DeviceService {
     return results;
   }
 
-  async importDevices(devices: any,
+  async importDevices(devices: JSONObject,
     { strict, options }: { strict?: boolean, options?: JSONObject }) {
       const results = {
         errors: [],
         successes: [],
       };
 
-    console.log(devices)
-
     const deviceDocuments = devices
-      .map(device => ({ _id: device._id || uuidv4(), body: device }))
-
-    console.log(deviceDocuments);
+      .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: device }))
 
     const createdDevices = await this.writeToDatabase(
       deviceDocuments,
@@ -398,8 +394,6 @@ export class DeviceService {
           'devices',
           result,
           { strict, ...options });
-
-        console.log(JSON.stringify(created));
 
         return {
           success: results.successes.concat(created.successes, createdDevices.successes),
