@@ -385,7 +385,7 @@ export class DeviceService {
     const deviceDocuments = devices
       .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: device }))
 
-    const createdDevices = await this.writeToDatabase(
+    await this.writeToDatabase(
       deviceDocuments,
       async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
         
@@ -396,8 +396,8 @@ export class DeviceService {
           { strict, ...options });
 
         return {
-          success: results.successes.concat(created.successes, createdDevices.successes),
-          errors: results.errors.concat(created.errors, createdDevices.errors)
+          success: results.successes.concat(created.successes),
+          errors: results.errors.concat(created.errors)
         }
       });
 
