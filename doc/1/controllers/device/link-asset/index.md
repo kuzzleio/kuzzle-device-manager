@@ -65,3 +65,21 @@ kourou device-manager/device:linkAsset <index> --id <deviceId> -a assetId=<asset
   "result": {}
 }
 ```
+
+## Events
+
+Two events when this action is called, allowing to modify the device before it is linked to the asset:
+
+```js
+app.pipe.register('device-manager:device:link-asset:before', data => {
+  app.log.debug('before link-asset trigered');
+
+  return data;
+})
+
+app.pipe.register('device-manager:device:link-asset:after', data => {
+  app.log.debug('after link-asset trigered');
+
+  return data;
+})
+```

@@ -73,6 +73,18 @@ app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: Kuzzl
   return request;
 });
 
+app.pipe.register('device-manager:device:link-asset:before', data => {
+  app.log.debug('before link-asset trigered');
+
+  return data;
+})
+
+app.pipe.register('device-manager:device:link-asset:after', data => {
+  app.log.debug('after link-asset trigered');
+
+  return data;
+})
+
 app.plugin.use(deviceManager);
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
