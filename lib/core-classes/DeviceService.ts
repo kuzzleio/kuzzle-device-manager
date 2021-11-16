@@ -188,7 +188,16 @@ export class DeviceService {
     bulkData: DeviceBulkContent[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
   ) {
-    const detachedDevices = devices.filter(device => {
+
+    const beforeResponse = await global.app.trigger(
+      'device-manager:device:link-asset:before',
+      { devices, bulkData }
+    );
+
+    const _devices: Device[] = beforeResponse.devices;
+    const _bulkData: DeviceBulkContent[] = beforeResponse.bulkData;
+
+    const detachedDevices = _devices.filter(device => {
       return ! device._source.tenantId || device._source.tenantId === null
     });
 
@@ -197,9 +206,9 @@ export class DeviceService {
       throw new PreconditionError(`Devices "${ids}" are not attached to a tenant`);
     }
 
-    const builder = bulkData.map(data => {
+    const builder = _bulkData.map(data => {
       const { deviceId, assetId } = data;
-      const device = devices.find(s => s._id === deviceId);
+      const device = _devices.find(s => s._id === deviceId);
       return { tenantId: device._source.tenantId, deviceId, assetId }
     });
 
@@ -221,7 +230,7 @@ export class DeviceService {
         throw new NotFoundError(`Assets "${assets.errors}" do not exist`);
       }
 
-      const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
+      const devicesContent = _devices.filter(({ _id }) => document.deviceIds.includes(_id));
       const deviceDocuments = [];
       const assetDocuments = [];
 
@@ -230,7 +239,7 @@ export class DeviceService {
       for (const device of devicesContent) {
         const decoder = this.decoders.get(device._source.model);
         const measures = await decoder.copyToAsset(device);
-        const { assetId } = bulkData.find(({ deviceId }) => deviceId === device._id)
+        const { assetId } = _bulkData.find(({ deviceId }) => deviceId === device._id)
 
         const asset = assets.successes.find(a => a._id === assetId);
 
@@ -285,6 +294,11 @@ export class DeviceService {
       results.successes.concat(updatedDevice.successes, updatedAssets.successes);
       results.errors.concat(updatedDevice.errors, updatedDevice.errors);
     }
+
+    await global.app.trigger(
+      'device-manager:device:link-asset:after',
+      { devices, bulkData }
+    );
 
     return results;
   }
