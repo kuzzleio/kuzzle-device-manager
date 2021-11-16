@@ -1,4 +1,4 @@
-import { PluginContext, EmbeddedSDK, Plugin } from "kuzzle";
+import { PluginContext, EmbeddedSDK, Plugin, ControllerDefinition } from "kuzzle";
 
 import { Decoder } from "./Decoder";
 import { DecoderContent } from '../types/decoders/DecodersContent';
@@ -53,7 +53,7 @@ export class DecodersService {
     this.decoders.set(decoder.deviceModel, decoder);
   }
 
-  getPayloadController(payloadService: PayloadService): { actions : { [key: string]: PayloadHandler } } {
+  getPayloadController(payloadService: PayloadService): ControllerDefinition {
     const controllers = { actions: {} };
     for (const { decoder, handler } of this.handlers) {
       controllers.actions[decoder.action] = {
