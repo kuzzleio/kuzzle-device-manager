@@ -297,7 +297,7 @@ export class DeviceService {
 
     await global.app.trigger(
       'device-manager:device:link-asset:after',
-      { devices, bulkData }
+      { devices: _devices, bulkData: _bulkData }
     );
 
     return results;
