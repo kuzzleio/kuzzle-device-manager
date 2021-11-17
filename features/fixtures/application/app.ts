@@ -73,16 +73,16 @@ app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: Kuzzl
   return request;
 });
 
-app.pipe.register('device-manager:device:link-asset:before', async data => {
+app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
   app.log.debug('before link-asset trigered');
 
-  return data;
+  return { device, asset };
 })
 
-app.pipe.register('device-manager:device:link-asset:after', async data => {
+app.pipe.register('device-manager:device:link-asset:after', async ({ device, asset }) => {
   app.log.debug('after link-asset trigered');
 
-  return data;
+  return { device, asset };
 })
 
 app.plugin.use(deviceManager);

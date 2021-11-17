@@ -189,15 +189,7 @@ export class DeviceService {
     { strict, options }: { strict?: boolean, options?: JSONObject }
   ) {
 
-    const beforeResponse = await global.app.trigger(
-      'device-manager:device:link-asset:before',
-      { devices, bulkData }
-    );
-
-    const _devices: Device[] = beforeResponse.devices;
-    const _bulkData: DeviceBulkContent[] = beforeResponse.bulkData;
-
-    const detachedDevices = _devices.filter(device => {
+    const detachedDevices = devices.filter(device => {
       return ! device._source.tenantId || device._source.tenantId === null
     });
 
@@ -206,9 +198,9 @@ export class DeviceService {
       throw new PreconditionError(`Devices "${ids}" are not attached to a tenant`);
     }
 
-    const builder = _bulkData.map(data => {
+    const builder = bulkData.map(data => {
       const { deviceId, assetId } = data;
-      const device = _devices.find(s => s._id === deviceId);
+      const device = devices.find(s => s._id === deviceId);
       return { tenantId: device._source.tenantId, deviceId, assetId }
     });
 
@@ -230,7 +222,7 @@ export class DeviceService {
         throw new NotFoundError(`Assets "${assets.errors}" do not exist`);
       }
 
-      const devicesContent = _devices.filter(({ _id }) => document.deviceIds.includes(_id));
+      const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
       const deviceDocuments = [];
       const assetDocuments = [];
 
@@ -239,7 +231,7 @@ export class DeviceService {
       for (const device of devicesContent) {
         const decoder = this.decoders.get(device._source.model);
         const measures = await decoder.copyToAsset(device);
-        const { assetId } = _bulkData.find(({ deviceId }) => deviceId === device._id)
+        const { assetId } = bulkData.find(({ deviceId }) => deviceId === device._id)
 
         const asset = assets.successes.find(a => a._id === assetId);
 
@@ -250,8 +242,16 @@ export class DeviceService {
         this.assertNotDuplicateMeasure(device, asset);
         this.assertDeviceNotLinkedToMultipleAssets(device);
 
-        deviceDocuments.push({ _id: device._id, body: { assetId } });
-        assetDocuments.push({ _id: assetId, body: { measures } });
+        const doc_device = { _id: device._id, body: { assetId } };
+        const doc_asset = { _id: asset._id, body: { measures } };
+
+        const response = await global.app.trigger(
+          'device-manager:device:link-asset:before',
+          { device: doc_device, asset: doc_asset }
+        );
+
+        deviceDocuments.push(response.device);
+        assetDocuments.push(response.asset);
       }
 
       const updatedDevice = await this.writeToDatabase(
@@ -288,17 +288,22 @@ export class DeviceService {
             successes: results.successes.concat(updated.successes),
             errors: results.errors.concat(updated.errors)
           }
-        }
-      )
+        })
+      
 
       results.successes.concat(updatedDevice.successes, updatedAssets.successes);
       results.errors.concat(updatedDevice.errors, updatedDevice.errors);
+
+      for (const device of updatedDevice.successes) {
+        const asset = updatedAssets.successes.find(asset => asset._id === device._source.assetId);
+
+        global.app.trigger('device-manager:device:link-asset:after', {
+          device,
+          asset
+        });
+      }
     }
 
-    await global.app.trigger(
-      'device-manager:device:link-asset:after',
-      { devices: _devices, bulkData: _bulkData }
-    );
 
     return results;
   }
@@ -341,6 +346,8 @@ export class DeviceService {
 
         assetDocuments.push({ _id: device._source.assetId, body: { measures } });
       }
+
+      
 
       const updatedDevice = await this.writeToDatabase(
         deviceDocuments,
@@ -476,8 +483,8 @@ export class DeviceService {
 
     if (deviceDocuments.length <= limit) {
       const { successes, errors } = await writer(deviceDocuments);
-      results.successes.push(successes);
-      results.errors.push(errors);
+      results.successes.push(...successes);
+      results.errors.push(...errors);
 
       return results;
     }
@@ -486,8 +493,8 @@ export class DeviceService {
       const devices = deviceDocuments.slice(start, end);
       const { successes, errors } = await writer(devices);
 
-      results.successes.push(successes);
-      results.errors.push(errors);
+      results.successes.push(...successes);
+      results.errors.push(...errors);
     };
 
     let offset = 0;

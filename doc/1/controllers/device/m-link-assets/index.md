@@ -84,3 +84,20 @@ Body properties, must contain at least one of the following:
     }
 }
 ```
+## Events
+
+Two events when this action is called, allowing to modify the device before it is linked to the asset:
+
+```js
+app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
+  app.log.debug('before link-asset trigered');
+
+  return { device, asset };
+})
+
+app.pipe.register('device-manager:device:link-asset:after', async ({ device, asset }) => {
+  app.log.debug('after link-asset trigered');
+
+  return { device, asset };
+})
+```
