@@ -204,9 +204,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.decodersController = new DecodersController(this, this.decodersService);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
 
-    const payloadControllers = this.decodersService.getPayloadController(this.payloadService);
-
-    this.api['device-manager/payload'] = payloadControllers;
+    this.api['device-manager/payload'] = this.decodersService.buildPayloadController(this.payloadService);
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/decoders'] = this.decodersController.definition;
