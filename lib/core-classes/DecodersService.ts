@@ -48,7 +48,7 @@ export class DecodersService {
   }
 
   buildPayloadController(payloadService: PayloadService): ControllerDefinition {
-    const controllers = { actions: {} };
+    const controllers: ControllerDefinition = { actions: {} };
     for (const { decoder, handler } of this.handlers) {
       controllers.actions[decoder.action] = {
         handler: request => handler ? handler(request, decoder) : payloadService.process(request, decoder),
