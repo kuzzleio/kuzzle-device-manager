@@ -419,8 +419,8 @@ export class DeviceService {
           { strict, ...options });
 
         return {
-          success: results.successes.push(...created.successes),
-          errors: results.errors.push(...created.errors)
+          successes: results.successes.concat(created.successes),
+          errors: results.errors.concat(created.errors)
         }
       });
 
