@@ -2,7 +2,7 @@
 code: true
 type: page
 title: importDevices
-description: Link a device to an asset
+description: Import devices from a csv file
 ---
 
 # importDevices
@@ -27,7 +27,7 @@ Method: POST
   "controller": "device-manager/device",
   "action": "importDevices",
   "body": {
-    "csv": "qos.battery,measures.temperature.degree\\n80,23.3"
+    "csv": "_id,reference,model\\nDummyTemp-imported,detached,DummyTemp_imported"
   }
 }
 ```
@@ -35,7 +35,7 @@ Method: POST
 ### Kourou
 
 ```bash
-kourou device-manager/device:importDevices --body '{ "csv": "qos.battery,measures.temperature.degree\\n80,23.3" }'
+kourou device-manager/device:importDevices --body '{ "csv": "_id,reference,model\\nDummyTemp-imported,detached,DummyTemp_imported" }'
 ```
 ---
 

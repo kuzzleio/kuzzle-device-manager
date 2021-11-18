@@ -10,6 +10,7 @@ import {
 } from 'kuzzle';
 
 import { v4 as uuidv4 } from 'uuid';
+import omit from 'lodash/omit';
 
 import { Decoder } from './Decoder';
 import { Device } from '../models';
@@ -375,7 +376,8 @@ export class DeviceService {
     return results;
   }
 
-  async importDevices(devices: JSONObject,
+  async importDevices(
+    devices: JSONObject,
     { strict, options }: { strict?: boolean, options?: JSONObject }) {
       const results = {
         errors: [],
@@ -383,7 +385,7 @@ export class DeviceService {
       };
 
     const deviceDocuments = devices
-      .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: device }))
+      .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: omit(device, ['_id']) }))
 
     await this.writeToDatabase(
       deviceDocuments,
@@ -396,8 +398,8 @@ export class DeviceService {
           { strict, ...options });
 
         return {
-          success: results.successes.concat(created.successes),
-          errors: results.errors.concat(created.errors)
+          success: results.successes.push(...created.successes),
+          errors: results.errors.push(...created.errors)
         }
       });
 

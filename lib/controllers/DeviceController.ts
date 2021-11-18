@@ -253,21 +253,17 @@ export class DeviceController extends CRUDController {
   }
 
   async importDevices (request: KuzzleRequest) {
-    const body = request.getBody();
+    const content = request.getBodyString('csv');
 
-    if (body.csv) {
-      const devices = await csv({ delimiter: 'auto' })
-        .fromString(body.csv);
+    const devices = await csv({ delimiter: 'auto' })
+      .fromString(content);
 
-      this.deviceService.importDevices(
-        devices,
-        {
-          strict: true,
-          options: { ...request.input.args }
-        });
-    } else {
-      throw new BadRequestError('Body does not have a csv property')
-    }
+    this.deviceService.importDevices(
+      devices,
+      {
+        strict: true,
+        options: { ...request.input.args }
+      });
   }
 
 
