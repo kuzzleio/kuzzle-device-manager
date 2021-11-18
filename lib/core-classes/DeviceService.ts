@@ -9,6 +9,9 @@ import {
   Document
 } from 'kuzzle';
 
+import { v4 as uuidv4 } from 'uuid';
+import omit from 'lodash/omit';
+
 import { Decoder } from './Decoder';
 import { Device } from '../models';
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
@@ -86,17 +89,17 @@ export class DeviceService {
 
       const { errors, successes } = await this.writeToDatabase(
         deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           await this.sdk.document.mCreate(
             document.tenantId,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
             return {
@@ -156,18 +159,18 @@ export class DeviceService {
 
       const { errors, successes } = await this.writeToDatabase(
         deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
 
         const updated = await this.sdk.document.mUpdate(
           this.config.adminIndex,
           'devices',
-          deviceDocuments,
+          result,
           { strict, ...options });
 
           await this.sdk.document.mDelete(
             document.tenantId,
             'devices',
-            deviceDocuments.map(device => device._id),
+            result.map(device => device._id),
             { strict, ...options });
 
           return {
@@ -247,17 +250,17 @@ export class DeviceService {
 
       const updatedDevice = await this.writeToDatabase(
         deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           return {
@@ -268,11 +271,11 @@ export class DeviceService {
 
       const updatedAssets = await this.writeToDatabase(
         assetDocuments,
-        async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
-            assetDocuments,
+            result,
             { strict, ...options });
 
           return {
@@ -330,17 +333,17 @@ export class DeviceService {
 
       const updatedDevice = await this.writeToDatabase(
         deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           return {
@@ -351,12 +354,12 @@ export class DeviceService {
 
       const updatedAssets = await this.writeToDatabase(
         assetDocuments,
-        async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
 
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
-            assetDocuments,
+            result,
             { strict, ...options });
 
           return {
@@ -369,6 +372,36 @@ export class DeviceService {
       results.successes.concat(updatedDevice.successes, updatedAssets.successes);
       results.errors.concat(updatedDevice.errors, updatedDevice.errors);
     }
+
+    return results;
+  }
+
+  async importDevices(
+    devices: JSONObject,
+    { strict, options }: { strict?: boolean, options?: JSONObject }) {
+      const results = {
+        errors: [],
+        successes: [],
+      };
+
+    const deviceDocuments = devices
+      .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: omit(device, ['_id']) }))
+
+    await this.writeToDatabase(
+      deviceDocuments,
+      async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
+        
+        const created = await this.sdk.document.mCreate(
+          'device-manager',
+          'devices',
+          result,
+          { strict, ...options });
+
+        return {
+          success: results.successes.push(...created.successes),
+          errors: results.errors.push(...created.errors)
+        }
+      });
 
     return results;
   }
