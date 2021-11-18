@@ -359,3 +359,13 @@ Feature: Device Manager device controller
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 1 |
+
+  Scenario: Import devices using csv
+    Given I successfully execute the action "device-manager/device":"importDevices" with args:
+      | body.csv | "_id,reference,model\\nDummyTemp-imported,detached,DummyTemp_imported" |
+    Then I successfully execute the action "collection":"refresh" with args:
+      | index      | "device-manager" |
+      | collection | "devices"        |
+    Then The document "device-manager":"devices":"DummyTemp-imported" content match:
+      | reference | "detached"           |
+      | model     | "DummyTemp_imported" |
