@@ -7,6 +7,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-18.04
     steps:
+      - uses: ./.github/actions/remove-libs
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
@@ -24,6 +25,7 @@ jobs:
     runs-on: ubuntu-18.04
     needs: [lint]
     steps:
+      - uses: ./.github/actions/remove-libs
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
