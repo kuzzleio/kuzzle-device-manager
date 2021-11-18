@@ -131,13 +131,29 @@ Feature: Device Manager device controller
       | measures.temperature.degree             | 23.3                               |
       | measures.temperature.origin.qos.battery | 80                                 |
 
-    Scenario: Link the same device to another asset should fail
+  Scenario: Link device to an asset and enriching the asset with before and after events
+    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked" |
+      | assetId | "PERFO-unlinked"                   |
+    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | "PERFO-unlinked" |
+    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | "PERFO-unlinked" |
+    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
+      | metadata.enrichedByBeforeLinkAsset | true |
+    And I successfully execute the action "collection":"refresh" with args:
+      | index      | "tenant-ayse" |
+      | collection | "assets"      |
+    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
+      | metadata.enrichedByAfterLinkAsset | true |
+
+  Scenario: Link the same device to another asset should fail
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
     And I execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "TIKO-unlinked"                   |
+      | assetId | "TIKO-unlinked"                    |
     Then I should receive an error matching:
       | message | "Device \"DummyTemp-attached_ayse_unlinked\" is already linked to the asset \"PERFO-unlinked\" you need to detach it first." |
 
