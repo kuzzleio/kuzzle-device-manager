@@ -131,21 +131,12 @@ Feature: Device Manager device controller
       | measures.temperature.degree             | 23.3                               |
       | measures.temperature.origin.qos.battery | 80                                 |
 
-  Scenario: Link device to an asset and enriching the asset with before and after events
+  Scenario: Link device to an asset and enriching the asset with before event
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-unlinked"                   |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | assetId | "PERFO-unlinked" |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | assetId | "PERFO-unlinked" |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
       | metadata.enrichedByBeforeLinkAsset | true |
-    And I successfully execute the action "collection":"refresh" with args:
-      | index      | "tenant-ayse" |
-      | collection | "assets"      |
-    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | metadata.enrichedByAfterLinkAsset | true |
 
   Scenario: Link the same device to another asset should fail
     When I successfully execute the action "device-manager/device":"linkAsset" with args:

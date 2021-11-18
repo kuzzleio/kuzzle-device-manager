@@ -89,8 +89,12 @@ Body properties, must contain at least one of the following:
 Two events when this action is called, allowing to modify the device before it is linked to the asset:
 
 ```js
+import set from 'lodash/set';
+
 app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
   app.log.debug('before link-asset trigered');
+
+  set(asset, 'body.metadata.enrichedByBeforeLinkAsset', true);
 
   return { device, asset };
 })

@@ -85,17 +85,6 @@ app.pipe.register('device-manager:device:link-asset:before', async ({ device, as
 app.pipe.register('device-manager:device:link-asset:after', async ({ device, asset }) => {
   app.log.debug('after link-asset trigered');
 
-  app.sdk.query({
-    controller: 'device-manager/assets',
-    action: 'update',
-    _id: asset._id,
-    body: {
-      metadata: {
-        enrichedByAfterLinkAsset: true
-      }
-    }
-  })
-
   return { device, asset };
 })
 
