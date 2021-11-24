@@ -23,25 +23,25 @@ export class CRUDController {
   }
 
   /**
-   * Create an asset or a device depending on the collection.
+   * Create an document or a device depending on the collection.
    *
    * @param request
    */
   async create (request: KuzzleRequest) {
     const index = request.getIndex();
-    const asset = request.getBody();
-    const id = request.input.resource._id;
+    const document = request.getBody();
+    const id = request.input.args._id;
 
     return this.as(request.context.user).document.create(
       index,
       this.collection,
-      asset,
+      document,
       id,
       { ...request.input.args });
   }
 
   /**
-   * Delete an asset or a device depending on the collection.
+   * Delete an document or a device depending on the collection.
    *
    * @param request
    */
@@ -57,7 +57,7 @@ export class CRUDController {
   }
 
   /**
-   * search assets or devices depending on the collection.
+   * search documents or devices depending on the collection.
    *
    * @param request
    */
@@ -80,7 +80,7 @@ export class CRUDController {
   }
 
   /**
-   * Create an asset or a device depending on the collection.
+   * Create a document or a device depending on the collection.
    *
    * @param request
    */
