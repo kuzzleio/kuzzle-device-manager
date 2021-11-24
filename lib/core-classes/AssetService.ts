@@ -20,6 +20,7 @@ export class AssetService {
   }
 
   async importAssets(
+    index: string,
     assets: JSONObject,
     { strict, options }: { strict?: boolean; options?: JSONObject }
   ) {
@@ -36,8 +37,10 @@ export class AssetService {
     await writeToDatabase(
       assetDocuments,
       async (result: mRequest[]): Promise<JSONObject> => {
+        console.log(result);
+
         const created = await this.sdk.document.mCreate(
-          "device-manager",
+          index,
           "assets",
           result,
           { strict, ...options }

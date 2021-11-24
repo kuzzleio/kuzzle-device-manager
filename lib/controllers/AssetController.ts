@@ -73,12 +73,14 @@ export class AssetController extends CRUDController {
   }
 
   async importAssets (request: KuzzleRequest) {
+    const index = request.getIndex();
     const content = request.getBodyString('csv');
 
     const assets = await csv({ delimiter: 'auto' })
       .fromString(content);
 
     this.assetService.importAssets(
+      index,
       assets,
       {
         strict: true,
