@@ -56,7 +56,7 @@ kourou device-manager/asset:importAssets --body '{ "csv": "_id,reference,model\n
   "status": 200,
   "error": null,
   "index": "<index>",
-  "controller": "device-manager/device",
+  "controller": "device-manager/asset",
   "action": "importAssets",
   "requestId": "<unique request identifier>",
   "result": {}
