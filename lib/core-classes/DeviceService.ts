@@ -406,6 +406,68 @@ export class DeviceService {
     return results;
   }
 
+  async importCatalog (
+    catalog: JSONObject[],
+    { strict, options }: { strict?: boolean, options?: JSONObject }) {
+      const results = {
+        errors: [],
+        successes: [],
+      };
+
+      const pluginConfigDocument = await this.sdk.document.get(
+        this.config.adminIndex,
+        this.config.configCollection,
+        'plugin--device-manager');
+
+      const catalogStrategy: boolean = pluginConfigDocument._source['device-manager'].provisioningStrategy === 'catalog';
+
+      if (! catalogStrategy) {
+        throw new BadRequestError('Provisioning strategy is not set to catalog, you canot import device to the catalog');
+      }
+
+      const withoutIds = catalog.filter(content => !content.deviceId);
+
+      if (withoutIds.length > 0) {
+        throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);
+      }
+
+      const catalogDocuments = catalog
+        .map((catalogContent: JSONObject) => ({
+          _id: `catalog--${catalogContent.deviceId}`,
+          body: {
+            type: 'catalog',
+            catalog: catalogContent
+          }
+        }));
+
+      await this.writeToDatabase(
+        catalogDocuments,
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
+
+
+          let created = { successes: [], errors: [] };
+          try {
+            created = await this.sdk.document.mCreate(
+              this.config.adminIndex,
+              this.config.configCollection,
+              result,
+              { strict, ...options });
+  
+          } catch (error) {
+            console.error(error);
+            throw error;
+          }
+          
+
+          return {
+            success: results.successes.push(...created.successes),
+            errors: results.errors.push(...created.errors)
+          }
+        });
+
+     return results
+  }
+
   private async eraseAssetMeasure (tenantId: string, device: Device) {
     const { _source: { measures } } = await this.sdk.document.get(
       tenantId,

@@ -76,6 +76,10 @@ export class DeviceController extends CRUDController {
         importDevices: {
           handler: this.importDevices.bind(this),
           http: [{ verb: 'post', path: 'device-manager/devices/_import' }]
+        },
+        importCatalog: {
+          handler: this.importCatalog.bind(this),
+          http: [{ verb: 'post', path: 'device-manager/devices/_catalog' }]
         }
       }
     };
@@ -260,6 +264,20 @@ export class DeviceController extends CRUDController {
 
     this.deviceService.importDevices(
       devices,
+      {
+        strict: true,
+        options: { ...request.input.args }
+      });
+  }
+
+  async importCatalog (request: KuzzleRequest) {
+    const content = request.getBodyString('csv');
+
+    const catalog = await csv({ delimiter: 'auto' })
+      .fromString(content);
+
+    this.deviceService.importCatalog(
+      catalog,
       {
         strict: true,
         options: { ...request.input.args }

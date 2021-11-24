@@ -362,3 +362,17 @@ Feature: Device Manager device controller
     Then The document "device-manager":"devices":"DummyTemp-imported" content match:
       | reference | "detached"           |
       | model     | "DummyTemp_imported" |
+
+  Scenario: Import devices catalog using csv
+    Given a collection "device-manager":"config"
+    And I "update" the document "plugin--device-manager" with content:
+      | device-manager.provisioningStrategy | "catalog" |
+    And I successfully execute the action "device-manager/device":"importCatalog" with args:
+      | body.csv | "deviceId,authorized,type\\nDummyTemp-imported,false,catalog" |
+    Then I successfully execute the action "collection":"refresh" with args:
+      | index      | "device-manager" |
+      | collection | "config"         |
+    Then The document "device-manager":"config":"catalog--DummyTemp-imported" content match:
+      | type               | "catalog"            |
+      | catalog.authorized | false                |
+      | catalog.deviceId   | "DummyTemp-imported" |
