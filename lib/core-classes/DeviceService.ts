@@ -436,7 +436,10 @@ export class DeviceService {
           _id: `catalog--${catalogContent.deviceId}`,
           body: {
             type: 'catalog',
-            catalog: catalogContent
+            catalog: {
+              deviceId: catalogContent.deviceId,
+              authorized: catalogContent.authorized === 'false' ? false : true,
+            }
           }
         }));
 
@@ -444,20 +447,12 @@ export class DeviceService {
         catalogDocuments,
         async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
 
+          const created = await this.sdk.document.mCreate(
+            this.config.adminIndex,
+            this.config.configCollection,
+            result,
+            { strict, ...options });
 
-          let created = { successes: [], errors: [] };
-          try {
-            created = await this.sdk.document.mCreate(
-              this.config.adminIndex,
-              this.config.configCollection,
-              result,
-              { strict, ...options });
-  
-          } catch (error) {
-            console.error(error);
-            throw error;
-          }
-          
 
           return {
             success: results.successes.push(...created.successes),

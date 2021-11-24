@@ -368,7 +368,7 @@ Feature: Device Manager device controller
     And I "update" the document "plugin--device-manager" with content:
       | device-manager.provisioningStrategy | "catalog" |
     And I successfully execute the action "device-manager/device":"importCatalog" with args:
-      | body.csv | "deviceId,authorized,type\\nDummyTemp-imported,false,catalog" |
+      | body.csv | "deviceId,authorized\\nDummyTemp-imported,false" |
     Then I successfully execute the action "collection":"refresh" with args:
       | index      | "device-manager" |
       | collection | "config"         |
@@ -376,3 +376,5 @@ Feature: Device Manager device controller
       | type               | "catalog"            |
       | catalog.authorized | false                |
       | catalog.deviceId   | "DummyTemp-imported" |
+    And I "update" the document "plugin--device-manager" with content:
+      | device-manager.provisioningStrategy | "auto" |
