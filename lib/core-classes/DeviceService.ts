@@ -414,17 +414,6 @@ export class DeviceService {
         successes: [],
       };
 
-      const pluginConfigDocument = await this.sdk.document.get(
-        this.config.adminIndex,
-        this.config.configCollection,
-        'plugin--device-manager');
-
-      const catalogStrategy: boolean = pluginConfigDocument._source['device-manager'].provisioningStrategy === 'catalog';
-
-      if (! catalogStrategy) {
-        throw new BadRequestError('Provisioning strategy is not set to catalog, you canot import device to the catalog');
-      }
-
       const withoutIds = catalog.filter(content => !content.deviceId);
 
       if (withoutIds.length > 0) {

@@ -262,7 +262,7 @@ export class DeviceController extends CRUDController {
     const devices = await csv({ delimiter: 'auto' })
       .fromString(content);
 
-    this.deviceService.importDevices(
+    return await this.deviceService.importDevices(
       devices,
       {
         strict: true,
