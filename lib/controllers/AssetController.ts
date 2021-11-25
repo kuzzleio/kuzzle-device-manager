@@ -79,12 +79,14 @@ export class AssetController extends CRUDController {
     const assets = await csv({ delimiter: 'auto' })
       .fromString(content);
 
-    this.assetService.importAssets(
+    const results = await this.assetService.importAssets(
       index,
       assets,
       {
         strict: true,
         options: { ...request.input.args }
       });
+
+    return results;
   }
 }
