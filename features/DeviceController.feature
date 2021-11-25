@@ -131,6 +131,13 @@ Feature: Device Manager device controller
       | measures.temperature.degree             | 23.3                               |
       | measures.temperature.origin.qos.battery | 80                                 |
 
+  Scenario: Link device to an asset and enriching the asset with before event
+    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked" |
+      | assetId | "PERFO-unlinked"                   |
+    And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
+      | metadata.enrichedByBeforeLinkAsset | true |
+
   Scenario: Link the same device to another asset should fail
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
