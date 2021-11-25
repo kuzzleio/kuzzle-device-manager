@@ -250,7 +250,7 @@ export class DeviceController extends CRUDController {
       filter.push({ term: { valid: true } })
     }
 
-    return await this.as(request.context.user).bulk.deleteByQuery(
+    return this.as(request.context.user).bulk.deleteByQuery(
       this.config.adminIndex,
       'payloads',
       { query: { bool: { filter } } });
@@ -262,7 +262,7 @@ export class DeviceController extends CRUDController {
     const devices = await csv({ delimiter: 'auto' })
       .fromString(content);
 
-    return await this.deviceService.importDevices(
+    return this.deviceService.importDevices(
       devices,
       {
         strict: true,
@@ -276,7 +276,7 @@ export class DeviceController extends CRUDController {
     const catalog = await csv({ delimiter: 'auto' })
       .fromString(content);
 
-    this.deviceService.importCatalog(
+    return this.deviceService.importCatalog(
       catalog,
       {
         strict: true,
