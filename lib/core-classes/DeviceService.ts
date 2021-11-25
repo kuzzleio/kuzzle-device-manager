@@ -291,7 +291,7 @@ export class DeviceService {
             successes: results.successes.concat(updated.successes),
             errors: results.errors.concat(updated.errors)
           }
-        })
+        });
       
 
       results.successes.concat(updatedDevice.successes, updatedAssets.successes);
