@@ -408,7 +408,7 @@ export class DeviceService {
 
   async importCatalog (
     catalog: JSONObject[],
-    { strict, options }: { strict?: boolean, options?: JSONObject }) {
+    { strict, options }: { strict?: boolean, options?: JSONObject }): Promise<JSONObject> {
       const results = {
         errors: [],
         successes: [],
@@ -449,7 +449,7 @@ export class DeviceService {
           }
         });
 
-     return results
+     return results;
   }
 
   private async eraseAssetMeasure (tenantId: string, device: Device) {
