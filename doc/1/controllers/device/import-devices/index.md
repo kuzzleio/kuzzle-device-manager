@@ -27,7 +27,7 @@ Method: POST
   "controller": "device-manager/device",
   "action": "importDevices",
   "body": {
-    "csv": "_id,reference,model\\nDummyTemp-imported,detached,DummyTemp_imported"
+    "csv": "_id,reference,model\nDummyTemp-imported,detached,DummyTemp_imported"
   }
 }
 ```
@@ -35,13 +35,13 @@ Method: POST
 ### Kourou
 
 ```bash
-kourou device-manager/device:importDevices --body '{ "csv": "_id,reference,model\\nDummyTemp-imported,detached,DummyTemp_imported" }'
+kourou device-manager/device:importDevices --body '{ "csv": "_id,reference,model\nDummyTemp-imported,detached,DummyTemp_imported" }'
 ```
 ---
 
 ## Body properties
 
-- `csv`: a csv syntax compatible containing at least this two headers `tenantId,deviceId` with their corresponding values
+- `csv`: a csv syntax compatible containing at least this three headers `_id,reference,model` with their corresponding values
 
 ### Optional:
 
