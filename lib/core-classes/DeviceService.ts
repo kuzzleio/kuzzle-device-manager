@@ -421,6 +421,55 @@ export class DeviceService {
     return results;
   }
 
+  async importCatalog (
+    catalog: JSONObject[],
+    { strict, options }: { strict?: boolean, options?: JSONObject }): Promise<JSONObject> {
+      const results = {
+        errors: [],
+        successes: [],
+      };
+
+      const withoutIds = catalog.filter(content => !content.deviceId);
+
+      if (withoutIds.length > 0) {
+        throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);
+      }
+
+      const catalogDocuments = catalog
+        .map((catalogContent: JSONObject) => ({
+          _id: `catalog--${catalogContent.deviceId}`,
+          body: {
+            type: 'catalog',
+            catalog: {
+              deviceId: catalogContent.deviceId,
+              authorized: catalogContent.authorized === 'false' ? false : true,
+            }
+          }
+        }));
+
+      console.log(catalogDocuments);
+      await this.writeToDatabase(
+        catalogDocuments,
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
+
+          console.log('result', result);
+          const created = await this.sdk.document.mCreate(
+            this.config.adminIndex,
+            this.config.configCollection,
+            result,
+            { strict, ...options });
+
+            console.log('created', created);
+
+          return {
+            successes: results.successes.concat(created.successes),
+            errors: results.errors.concat(created.errors)
+          }
+        });
+
+     return results;
+  }
+
   private async eraseAssetMeasure (tenantId: string, device: Device) {
     const { _source: { measures } } = await this.sdk.document.get(
       tenantId,
