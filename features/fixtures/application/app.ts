@@ -1,3 +1,4 @@
+import set from 'lodash/set'; 
 import { Backend, KuzzleRequest } from 'kuzzle';
 
 import { DeviceManagerPlugin } from '../../../index';
@@ -72,6 +73,20 @@ app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: Kuzzl
 
   return request;
 });
+
+app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
+  app.log.debug('before link-asset trigered');
+
+  set(asset, 'body.metadata.enrichedByBeforeLinkAsset', true);
+
+  return { device, asset };
+})
+
+app.pipe.register('device-manager:device:link-asset:after', async ({ device, asset }) => {
+  app.log.debug('after link-asset trigered');
+
+  return { device, asset };
+})
 
 app.plugin.use(deviceManager);
 
