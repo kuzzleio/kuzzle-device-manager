@@ -453,20 +453,23 @@ export class DeviceService {
           }
         }));
 
+      console.log(catalogDocuments);
       await this.writeToDatabase(
         catalogDocuments,
         async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
 
+          console.log('result', result);
           const created = await this.sdk.document.mCreate(
             this.config.adminIndex,
             this.config.configCollection,
             result,
             { strict, ...options });
 
+            console.log('created', created);
 
           return {
-            successes: results.successes.push(...created.successes),
-            errors: results.errors.push(...created.errors)
+            successes: results.successes.concat(created.successes),
+            errors: results.errors.concat(created.errors)
           }
         });
 
