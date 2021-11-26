@@ -465,7 +465,7 @@ export class DeviceService {
 
 
           return {
-            success: results.successes.push(...created.successes),
+            successes: results.successes.push(...created.successes),
             errors: results.errors.push(...created.errors)
           }
         });
