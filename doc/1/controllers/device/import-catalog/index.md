@@ -7,7 +7,7 @@ description: Provisioning of the device catalog via csv import
 
 # importCatalog
 
-Provisioning of the device catalog via csv import
+Creates entries in the provisioning catalog via CSV import
 
 ---
 
