@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { PluginContext, EmbeddedSDK, Plugin, JSONObject } from 'kuzzle';
 
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
-import { mRequest, writeToDatabase } from '../utils/writeMany';
+import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 
 export class AssetService {
   private config: DeviceManagerConfig;
@@ -36,7 +36,7 @@ export class AssetService {
 
     await writeToDatabase(
       assetDocuments,
-      async (result: mRequest[]): Promise<JSONObject> => {
+      async (result: mRequest[]): Promise<mResponse> => {
 
         const created = await this.sdk.document.mCreate(
           index,

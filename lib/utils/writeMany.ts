@@ -5,9 +5,14 @@ export type mRequest = {
   body: JSONObject;
 }
 
+export type mResponse = {
+  successes: JSONObject[];
+  errors: JSONObject[];
+}
+
 export async function writeToDatabase (
   documents: mRequest[],
-  writer: (documents: mRequest[]) => Promise<JSONObject>
+  writer: (documents: mRequest[]) => Promise<mResponse>
 ) {
   const results = {
     errors: [],
