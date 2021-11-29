@@ -37,7 +37,6 @@ export class AssetService {
     await writeToDatabase(
       assetDocuments,
       async (result: mRequest[]): Promise<JSONObject> => {
-        console.log(result);
 
         const created = await this.sdk.document.mCreate(
           index,
@@ -47,8 +46,8 @@ export class AssetService {
         );
 
         return {
-          success: results.successes.push(...created.successes),
-          errors: results.errors.push(...created.errors),
+          successes: results.successes.concat(created.successes),
+          errors: results.errors.concat(created.errors),
         };
       }
     );
