@@ -18,8 +18,8 @@ export async function writeToDatabase (
 
   if (documents.length <= limit) {
     const { successes, errors } = await writer(documents);
-    results.successes.push(...successes);
-    results.errors.push(...errors);
+    results.successes.concat(successes);
+    results.errors.concat(errors);
 
     return results;
   }
@@ -28,8 +28,8 @@ export async function writeToDatabase (
     const devices = documents.slice(start, end);
     const { successes, errors } = await writer(devices);
 
-    results.successes.push(successes);
-    results.errors.push(errors);
+    results.successes.concat(successes);
+    results.errors.concat(errors);
   };
 
   let offset = 0;
