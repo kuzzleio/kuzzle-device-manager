@@ -5,7 +5,7 @@ Feature: Device Provisionning
     Given a collection "device-manager":"config"
     And I "update" the document "plugin--device-manager" with content:
       | device-manager.autoProvisionning | false |
-    And I "create" the document "catalog--DummyTemp-12345" with content:
+    And I "create" the document "custom-catalog-id-12345" with content:
       | type               | "catalog"         |
       | catalog.deviceId   | "DummyTemp-12345" |
       | catalog.authorized | true              |
@@ -13,6 +13,7 @@ Feature: Device Provisionning
       | type               | "catalog"          |
       | catalog.deviceId   | "DummyTemp-424242" |
       | catalog.authorized | false              |
+    And I refresh the collection "device-manager":"config"
     # Provisionned device
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
