@@ -4,8 +4,8 @@ Feature: Device Provisionning
   Scenario: Provision device in the catalog
     Given a collection "device-manager":"config"
     And I "update" the document "plugin--device-manager" with content:
-      | device-manager.autoProvisionning | false |
-    And I "create" the document "custom-catalog-id-12345" with content:
+      | device-manager.provisioningStrategy | "catalog" |
+    And I "create" the document "catalog--DummyTemp-12345" with content:
       | type               | "catalog"         |
       | catalog.deviceId   | "DummyTemp-12345" |
       | catalog.authorized | true              |

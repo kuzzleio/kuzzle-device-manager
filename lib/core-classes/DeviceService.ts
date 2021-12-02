@@ -9,6 +9,9 @@ import {
   Document
 } from 'kuzzle';
 
+import { v4 as uuidv4 } from 'uuid';
+import omit from 'lodash/omit';
+
 import { Decoder } from './Decoder';
 import { Device } from '../models';
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
@@ -25,7 +28,7 @@ export type DeviceBulkBuildedContent = {
   assetIds: string[];
 }
 
-export type DeviceMAttachementContent = {
+export type DeviceMAttachTenantContent = {
   errors: JSONObject[];
   successes: JSONObject[];
 }
@@ -52,11 +55,11 @@ export class DeviceService {
     this.decoders = decoders;
   }
 
-  async mAttach (
+  async mAttachTenants (
     devices: Device[],
     bulkData: DeviceBulkContent[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
-  ): Promise<DeviceMAttachementContent> {
+  ): Promise<DeviceMAttachTenantContent> {
     const attachedDevices = devices.filter(device => device._source.tenantId);
 
     if (strict && attachedDevices.length > 0) {
@@ -86,17 +89,17 @@ export class DeviceService {
 
       const { errors, successes } = await this.writeToDatabase(
         deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           await this.sdk.document.mCreate(
             document.tenantId,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
             return {
@@ -112,7 +115,7 @@ export class DeviceService {
     return results;
   }
 
-  async mDetach (
+  async mDetachTenants (
     devices: Device[],
     bulkData: DeviceBulkContent[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
@@ -156,18 +159,18 @@ export class DeviceService {
 
       const { errors, successes } = await this.writeToDatabase(
         deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
 
         const updated = await this.sdk.document.mUpdate(
           this.config.adminIndex,
           'devices',
-          deviceDocuments,
+          result,
           { strict, ...options });
 
           await this.sdk.document.mDelete(
             document.tenantId,
             'devices',
-            deviceDocuments.map(device => device._id),
+            result.map(device => device._id),
             { strict, ...options });
 
           return {
@@ -183,11 +186,12 @@ export class DeviceService {
     return results;
   }
 
-  async mLink (
+  async mLinkAssets (
     devices: Device[],
     bulkData: DeviceBulkContent[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
   ) {
+
     const detachedDevices = devices.filter(device => {
       return ! device._source.tenantId || device._source.tenantId === null
     });
@@ -241,23 +245,31 @@ export class DeviceService {
         this.assertNotDuplicateMeasure(device, asset);
         this.assertDeviceNotLinkedToMultipleAssets(device);
 
-        deviceDocuments.push({ _id: device._id, body: { assetId } });
-        assetDocuments.push({ _id: assetId, body: { measures } });
+        const doc_device = { _id: device._id, body: { assetId } };
+        const doc_asset = { _id: asset._id, body: { measures } };
+
+        const response = await global.app.trigger(
+          'device-manager:device:link-asset:before',
+          { device: doc_device, asset: doc_asset }
+        );
+
+        deviceDocuments.push(response.device);
+        assetDocuments.push(response.asset);
       }
 
       const updatedDevice = await this.writeToDatabase(
         deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           return {
@@ -268,28 +280,38 @@ export class DeviceService {
 
       const updatedAssets = await this.writeToDatabase(
         assetDocuments,
-        async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
-            assetDocuments,
+            result,
             { strict, ...options });
 
           return {
             successes: results.successes.concat(updated.successes),
             errors: results.errors.concat(updated.errors)
           }
-        }
-      )
+        });
+      
 
       results.successes.concat(updatedDevice.successes, updatedAssets.successes);
       results.errors.concat(updatedDevice.errors, updatedDevice.errors);
+
+      for (const device of updatedDevice.successes) {
+        const asset = updatedAssets.successes.find(asset => asset._id === device._source.assetId);
+
+        global.app.trigger('device-manager:device:link-asset:after', {
+          device,
+          asset
+        });
+      }
     }
+
 
     return results;
   }
 
-  async mUnlink (
+  async mUnlinkAssets (
     devices: Device[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
   ) {
@@ -328,19 +350,21 @@ export class DeviceService {
         assetDocuments.push({ _id: device._source.assetId, body: { measures } });
       }
 
+      
+
       const updatedDevice = await this.writeToDatabase(
         deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
-            deviceDocuments,
+            result,
             { strict, ...options });
 
           return {
@@ -351,12 +375,12 @@ export class DeviceService {
 
       const updatedAssets = await this.writeToDatabase(
         assetDocuments,
-        async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
 
           const updated = await this.sdk.document.mUpdate(
             document.tenantId,
             'assets',
-            assetDocuments,
+            result,
             { strict, ...options });
 
           return {
@@ -371,6 +395,85 @@ export class DeviceService {
     }
 
     return results;
+  }
+
+  async importDevices(
+    devices: JSONObject,
+    { strict, options }: { strict?: boolean, options?: JSONObject }) {
+      const results = {
+        errors: [],
+        successes: [],
+      };
+
+    const deviceDocuments = devices
+      .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: omit(device, ['_id']) }))
+
+    await this.writeToDatabase(
+      deviceDocuments,
+      async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
+        
+        const created = await this.sdk.document.mCreate(
+          'device-manager',
+          'devices',
+          result,
+          { strict, ...options });
+
+        return {
+          successes: results.successes.concat(created.successes),
+          errors: results.errors.concat(created.errors)
+        }
+      });
+
+    return results;
+  }
+
+  async importCatalog (
+    catalog: JSONObject[],
+    { strict, options }: { strict?: boolean, options?: JSONObject }): Promise<JSONObject> {
+      const results = {
+        errors: [],
+        successes: [],
+      };
+
+      const withoutIds = catalog.filter(content => !content.deviceId);
+
+      if (withoutIds.length > 0) {
+        throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);
+      }
+
+      const catalogDocuments = catalog
+        .map((catalogContent: JSONObject) => ({
+          _id: `catalog--${catalogContent.deviceId}`,
+          body: {
+            type: 'catalog',
+            catalog: {
+              deviceId: catalogContent.deviceId,
+              authorized: catalogContent.authorized === 'false' ? false : true,
+            }
+          }
+        }));
+
+      console.log(catalogDocuments);
+      await this.writeToDatabase(
+        catalogDocuments,
+        async (result: DeviceMRequestContent[]): Promise<JSONObject> => {
+
+          console.log('result', result);
+          const created = await this.sdk.document.mCreate(
+            this.config.adminIndex,
+            this.config.configCollection,
+            result,
+            { strict, ...options });
+
+            console.log('created', created);
+
+          return {
+            successes: results.successes.concat(created.successes),
+            errors: results.errors.concat(created.errors)
+          }
+        });
+
+     return results;
   }
 
   private async eraseAssetMeasure (tenantId: string, device: Device) {
@@ -462,8 +565,8 @@ export class DeviceService {
 
     if (deviceDocuments.length <= limit) {
       const { successes, errors } = await writer(deviceDocuments);
-      results.successes.push(successes);
-      results.errors.push(errors);
+      results.successes.push(...successes);
+      results.errors.push(...errors);
 
       return results;
     }
@@ -472,8 +575,8 @@ export class DeviceService {
       const devices = deviceDocuments.slice(start, end);
       const { successes, errors } = await writer(devices);
 
-      results.successes.push(successes);
-      results.errors.push(errors);
+      results.successes.push(...successes);
+      results.errors.push(...errors);
     };
 
     let offset = 0;

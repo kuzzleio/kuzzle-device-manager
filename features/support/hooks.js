@@ -139,7 +139,7 @@ After({ tags: '@realtime' }, function () {
 After({ tags: '@provisioning', timeout: 60 * 1000 }, async function () {
   await this.sdk.document.update('device-manager', 'config', 'plugin--device-manager', {
     'device-manager': {
-      autoProvisionning: true,
+      provisioningStrategy: 'auto',
     }
   });
 });

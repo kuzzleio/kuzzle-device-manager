@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: mAttach
+title: mAttachTenants
 description: Attach multiple devices to multiple tenants index
 ---
 
-# mAttach
+# mAttachTenants
 
 Attach multiple devices to multiple tenants.
 
@@ -42,7 +42,7 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mAttach",
+    "action": "mAttachTenants",
     "body": {
         // Using JSON
         "records" [{
@@ -80,7 +80,7 @@ Body properties, must contain at least one of
     "status": 200,
     "error": null,
     "controller": "device-manager/device",
-    "action": "mAttach",
+    "action": "mAttachTenants",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],

@@ -102,11 +102,7 @@ export class DeviceManagerPlugin extends Plugin {
     return this.context.accessors.sdk;
   }
 
-  /**
-   * List of registered decoders.
-   * Map<model, decoder>
-   */
-  private decoders = new Map<string, Decoder>();
+  private decoders: { decoder: Decoder, handler: PayloadHandler }[] = [];
 
   private deviceMappings = new DeviceMappingsManager(devicesMappings);
 
@@ -154,7 +150,7 @@ export class DeviceManagerPlugin extends Plugin {
 
             'device-manager': {
               properties: {
-                autoProvisionning: { type: 'boolean' },
+                provisioningStrategy: { type: 'keyword' },
               }
             }
           }
@@ -198,8 +194,8 @@ export class DeviceManagerPlugin extends Plugin {
     this.batchWriter.begin();
 
     this.payloadService = new PayloadService(this, this.batchWriter);
-    this.deviceService = new DeviceService(this, this.decoders);
     this.decodersService = new DecodersService(this, this.decoders);
+    this.deviceService = new DeviceService(this, this.decodersService.decoders);
     this.migrationService = new MigrationService('device-manager', this);
     this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetMappings, this.deviceMappings);
 
@@ -208,6 +204,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.decodersController = new DecodersController(this, this.decodersService);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
 
+    this.api['device-manager/payload'] = this.decodersService.buildPayloadController(this.payloadService);
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/decoders'] = this.decodersController.definition;
@@ -223,10 +220,6 @@ export class DeviceManagerPlugin extends Plugin {
     await this.initDatabase();
 
     await this.migrationService.run();
-
-    for (const decoder of this.decoders.values()) {
-      this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
-    }
   }
 
   /**
@@ -254,12 +247,7 @@ export class DeviceManagerPlugin extends Plugin {
       throw new PluginImplementationError(`A decoder for "${decoder.deviceModel}" has already been registered.`);
     }
 
-    this.api['device-manager/payload'].actions[decoder.action] = {
-      handler: request => handler ? handler(request, decoder) : this.payloadService.process(request, decoder),
-      http: decoder.http,
-    };
-
-    this.decoders.set(decoder.deviceModel, decoder);
+    this.decoders.push({ decoder, handler });
 
     return {
       controller: 'device-manager/payload',
@@ -319,7 +307,7 @@ export class DeviceManagerPlugin extends Plugin {
   private getPayloadsMappings (): JSONObject {
     const mappings = JSON.parse(JSON.stringify(this.config.adminCollections.payloads));
 
-    for (const decoder of this.decoders.values()) {
+    for (const decoder of this.decodersService.decoders.values()) {
       mappings.properties.payload.properties = {
         ...mappings.properties.payload.properties,
         ...decoder.payloadsMappings
@@ -344,7 +332,7 @@ export class DeviceManagerPlugin extends Plugin {
         this.config.configCollection,
         {
           type: 'device-manager',
-          'device-manager': { autoProvisionning: true }
+          'device-manager': { provisioningStrategy: 'auto' }
         },
         'plugin--device-manager');
     }
