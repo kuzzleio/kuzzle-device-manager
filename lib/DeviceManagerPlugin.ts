@@ -87,8 +87,8 @@ export class DeviceManagerPlugin extends Plugin {
 
   private assetController: AssetController;
   private deviceController: DeviceController;
-  private engineController: EngineController;
   private decodersController: DecodersController;
+  private engineController: EngineController<DeviceManagerPlugin>;
 
   private payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;

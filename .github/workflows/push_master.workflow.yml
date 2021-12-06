@@ -65,13 +65,10 @@ jobs:
           ref: master
           inputs: '{"repo_name": "${{ steps.extract-refs.outputs.repo }}", "branch": "${{ steps.extract-refs.outputs.branch }}", "version": "${{ steps.extract-refs.outputs.version }}"}'
 
-  publish-github-npm:
-    name: Deploy package to the Github NPM registry
-    runs-on: ubuntu-latest
+  npm-deploy:
+    name: Publish Package to NPM.js
+    runs-on: ubuntu-18.04
     needs: [functional-tests]
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
@@ -80,14 +77,26 @@ jobs:
           name: id_rsa
           known_hosts: unnecessary
       - uses: actions/checkout@v2
-      - uses: ./.github/actions/remove-libs
-      - uses: actions/setup-node@v2
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
         with:
-          node-version: '12.x'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@kuzzleio'
-      - run: npm ci
+          path: |
+            ~/.cache/pip
+            ~/.npm
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm install
       - run: npm run build
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

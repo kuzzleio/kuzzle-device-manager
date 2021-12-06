@@ -1,19 +1,23 @@
 import { Plugin } from 'kuzzle';
 import { AbstractEngine } from 'kuzzle-plugin-commons';
 
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
+import { DeviceManagerConfig, DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { catalogMappings } from '../models';
 import { AssetMappingsManager } from './CustomMappings/AssetMappingsManager';
 import { DeviceMappingsManager } from './CustomMappings/DeviceMappingsManager';
 
-export class DeviceManagerEngine extends AbstractEngine {
+export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfig;
 
   private assetMappings: AssetMappingsManager;
   private deviceMappings: DeviceMappingsManager;
 
   constructor (plugin: Plugin, assetMappings: AssetMappingsManager, deviceMappings: DeviceMappingsManager) {
-    super('device-manager', plugin);
+    super(
+      'device-manager',
+      plugin,
+      plugin.config.adminIndex,
+      plugin.config.configCollection);
 
     this.assetMappings = assetMappings;
     this.deviceMappings = deviceMappings;
