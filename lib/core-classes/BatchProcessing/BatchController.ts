@@ -64,7 +64,7 @@ export class BatchController extends DocumentController {
 
     const { successes, errors } = await promise.promise;
 
-    const error = errors.find(({ _id: id }) => id === _id);
+    const error = errors.find(({ document }) => document._id === _id);
 
     if (error) {
       throw new BadRequestError(`Cannot replace document "${index}":"${collection}":"${_id}": ${error.reason}`);
