@@ -90,14 +90,14 @@ It is possible to override the [Decoder.copyToAsset](/official-plugins/device-ma
 
 Assets are historized in the `asset-history` collection when a new measure is received.
 
-Before historization, the `tenant:<tenant-id>:asset:measure:new` event is emitted.
+Before historization, the `engine:<engine-index>:asset:measure:new` event is emitted.
 
 The payload contain the asset updated content and the types of the new added measures.
 
 At the end of the processing, the asset will be updated and historized with the content of the `request.result.asset._source`.
 
 ```js
-app.pipe.register(`tenant:<tenant-id>:asset:measures:new`, async (request: KuzzleRequest) => {
+app.pipe.register(`engine:<engine-index>:asset:measures:new`, async (request: KuzzleRequest) => {
   const asset = request.result.asset;
   const measureTypes = request.result.measureTypes;
 

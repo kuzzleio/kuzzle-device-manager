@@ -300,7 +300,7 @@ export class PayloadService {
     asset._source.measures = _.merge(asset._source.measures, measures);
 
     const { result } = await global.app.trigger(
-      `tenant:${tenantId}:asset:measures:new`,
+      `engine:${tenantId}:asset:measures:new`,
       eventPayload({ asset, measureTypes }));
 
     const assetDocument = await this.batchController.update(
