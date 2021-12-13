@@ -38,25 +38,39 @@ export class BatchController extends DocumentController {
     this.writer = writer;
   }
 
+  protected extractErrorById(id: string, errors: any[]) {
+    return errors.find(({ document }) => document._id === id);
+  }
+
+  protected extractErrorByContent(content: JSONObject, errors: any[]) {
+    return errors.find(e => {
+      const responseDoc = stringify(_.omit(e.document._source, ['_kuzzle_info']));
+      const originDoc = stringify(content);
+
+      return responseDoc === originDoc;
+    });
+  }
+
   async create (index: string, collection: string, content: JSONObject, _id?: string, options?: JSONObject) {
-    const { idx, promise } = this.writer.addCreate(index, collection, content, _id, options);
+    try {
+      const { idx, promise } = this.writer.addCreate(index, collection, content, _id, options);
+      const { successes, errors } = await promise.promise;
 
-    const { successes, errors } = await promise.promise;
+      if (errors.length > 0) {
+        const error = this.extractErrorByContent(content, errors)
+        if (error) {
+          throw new BadRequestError(`Cannot create document in "${index}":"${collection}" : ${error.reason}`);
+        }
+      }
 
-    if (errors.length > 0) {
-      const error = errors.find(e => {
-        const responseDoc = stringify(_.omit(e.document._source, ['_kuzzle_info']));
-        const originDoc = stringify(content);
-
-        return responseDoc === originDoc;
-      });
+      return successes[idx];
+    } catch (exception) {
+      const error = this.extractErrorByContent(content, exception.errors)
 
       if (error) {
         throw new BadRequestError(`Cannot create document in "${index}":"${collection}" : ${error.reason}`);
       }
     }
-
-    return successes[idx];
   }
 
   async replace (index: string, collection: string, _id: string, content: JSONObject, options?: JSONObject) {
@@ -64,7 +78,7 @@ export class BatchController extends DocumentController {
 
     const { successes, errors } = await promise.promise;
 
-    const error = errors.find(({ document }) => document._id === _id);
+    const error = this.extractErrorById(_id, errors);
 
     if (error) {
       throw new BadRequestError(`Cannot replace document "${index}":"${collection}":"${_id}": ${error.reason}`);
@@ -78,7 +92,7 @@ export class BatchController extends DocumentController {
 
     const { successes, errors } = await promise.promise;
 
-    const error = errors.find(({ document }) => document._id === _id);
+    const error = this.extractErrorById(_id, errors);
 
     if (error) {
       throw new BadRequestError(`Cannot create or replace document "${index}":"${collection}":"${_id}": ${error.reason}`);
@@ -92,7 +106,7 @@ export class BatchController extends DocumentController {
 
     const { successes, errors } = await promise.promise;
 
-    const error = errors.find(({ document }) => document._id === _id);
+    const error = this.extractErrorById(_id, errors);
 
     if (error) {
       throw new BadRequestError(`Cannot update document "${index}":"${collection}":"${_id}": ${error.reason}`);
