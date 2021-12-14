@@ -7,7 +7,7 @@ description: Import asset using csv
 
 # importAssets
 
-Import asset using csv
+Import assets using csv
 
 ---
 
