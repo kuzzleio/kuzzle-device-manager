@@ -2,7 +2,7 @@
 code: true
 type: page
 title: importAssets
-description: Import asset using csv
+description: Import assets using csv
 ---
 
 # importAssets
