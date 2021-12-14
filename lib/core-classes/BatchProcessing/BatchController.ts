@@ -1,7 +1,9 @@
+import _ from 'lodash';
+import stringify from 'json-stable-stringify';
 import {
   BadRequestError,
   DocumentController,
-  EmbeddedSDK,
+  Kuzzle as KuzzleSDK,
   JSONObject,
   NotFoundError
 } from 'kuzzle';
@@ -30,18 +32,47 @@ import { BatchWriter } from './BatchWriter';
 export class BatchController extends DocumentController {
   writer: BatchWriter;
 
-  constructor (sdk: EmbeddedSDK, writer: BatchWriter) {
+  constructor (sdk: KuzzleSDK, writer: BatchWriter) {
     super(sdk);
 
     this.writer = writer;
   }
 
+  protected extractErrorById(id: string, errors: any[]) {
+    return errors.find(({ document }) => document._id === id);
+  }
+
+  protected extractErrorByContent(content: JSONObject, errors: any[]) {
+    return errors.find(e => {
+      const responseDoc = stringify(_.omit(e.document._source, ['_kuzzle_info']));
+      const originDoc = stringify(content);
+
+      return responseDoc === originDoc;
+    });
+  }
+
   async create (index: string, collection: string, content: JSONObject, _id?: string, options?: JSONObject) {
-    const { idx, promise } = this.writer.addCreate(index, collection, content, _id, options);
+    try {
+      const { idx, promise } = this.writer.addCreate(index, collection, content, _id, options);
+      const { successes, errors } = await promise.promise;
 
-    const { successes } = await promise.promise;
+      if (errors.length > 0) {
+        const error = this.extractErrorByContent(content, errors)
 
-    return successes[idx];
+        if (error) {
+          throw new BadRequestError(`Cannot create document in "${index}":"${collection}" : ${error.reason}`);
+        }
+      }
+
+      return successes[idx];
+    }
+    catch (exception) {
+      const error = this.extractErrorByContent(content, exception.errors)
+
+      if (error) {
+        throw new BadRequestError(`Cannot create document in "${index}":"${collection}" : ${error.reason}`);
+      }
+    }
   }
 
   async replace (index: string, collection: string, _id: string, content: JSONObject, options?: JSONObject) {
@@ -49,10 +80,10 @@ export class BatchController extends DocumentController {
 
     const { successes, errors } = await promise.promise;
 
-    const error = errors.find(({ _id: id }) => id === _id);
+    const error = this.extractErrorById(_id, errors);
 
     if (error) {
-      throw new BadRequestError(`Cannot replace document "${_id}": ${error}`);
+      throw new BadRequestError(`Cannot replace document "${index}":"${collection}":"${_id}": ${error.reason}`);
     }
 
     return successes[idx];
@@ -63,10 +94,10 @@ export class BatchController extends DocumentController {
 
     const { successes, errors } = await promise.promise;
 
-    const error = errors.find(({ document }) => document._id === _id);
+    const error = this.extractErrorById(_id, errors);
 
     if (error) {
-      throw new BadRequestError(`Cannot create or replace document "${_id}": ${error}`);
+      throw new BadRequestError(`Cannot create or replace document "${index}":"${collection}":"${_id}": ${error.reason}`);
     }
 
     return successes[idx];
@@ -77,10 +108,10 @@ export class BatchController extends DocumentController {
 
     const { successes, errors } = await promise.promise;
 
-    const error = errors.find(({ _id: id }) => id === _id);
+    const error = this.extractErrorById(_id, errors);
 
     if (error) {
-      throw new BadRequestError(`Cannot update document "${_id}": ${error}`);
+      throw new BadRequestError(`Cannot update document "${index}":"${collection}":"${_id}": ${error.reason}`);
     }
 
     return successes[idx];
@@ -94,7 +125,7 @@ export class BatchController extends DocumentController {
     const document = successes.find(({ _id }) => _id === id);
 
     if (! document) {
-      throw new NotFoundError(`Document ${id} not found`, 'services.storage.not_found');
+      throw new NotFoundError(`Document "${index}":"${collection}":"${id}" not found`, 'services.storage.not_found');
     }
 
     return document;
@@ -116,7 +147,7 @@ export class BatchController extends DocumentController {
     const error = errors.find(({ _id }) => _id === id);
 
     if (error) {
-      throw new NotFoundError(`Cannot delete document ${id}: ${error}`);
+      throw new NotFoundError(`Cannot delete document "${index}":"${collection}":"${id}" : ${error.reason}`);
     }
 
     return successes[idx];
