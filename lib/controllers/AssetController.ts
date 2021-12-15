@@ -47,7 +47,7 @@ export class AssetController extends CRUDController {
         },
         importAssets: {
           handler: this.importAssets.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/assets/_import' }]
+          http: [{ verb: 'post', path: 'device-manager/:index/assets/_import' }]
         }
       },
     };

@@ -30,7 +30,7 @@ export class CRUDController {
   async create (request: KuzzleRequest) {
     const index = request.getIndex();
     const document = request.getBody();
-    const id = request.input.args._id;
+    const id = request.getId();
 
     return this.as(request.context.user).document.create(
       index,

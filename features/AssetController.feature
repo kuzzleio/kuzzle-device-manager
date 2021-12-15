@@ -19,10 +19,10 @@ Feature: Device Manager asset controller
   Scenario: Import assets using csv
     When I successfully execute the action "device-manager/asset":"importAssets" with args:
       | index    | "tenant-kuzzle"                                       |
-      | body.csv | "_id,reference,model\\nPERFO-imported,imported,PERFO" |
+      | body.csv | "reference,model,type\\nimported,PERFO,outils" |
     Then I successfully execute the action "collection":"refresh" with args:
       | index      | "tenant-kuzzle" |
       | collection | "assets"         |
-    Then The document "tenant-kuzzle":"assets":"PERFO-imported" content match:
+    Then The document "tenant-kuzzle":"assets":"outils-PERFO-imported" content match:
       | reference | "imported" |
       | model     | "PERFO"    |

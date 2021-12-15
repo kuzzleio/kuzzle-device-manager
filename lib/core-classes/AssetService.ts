@@ -1,10 +1,11 @@
 import omit from 'lodash/omit';
-import { v4 as uuidv4 } from 'uuid';
 
 import { PluginContext, EmbeddedSDK, Plugin, JSONObject } from 'kuzzle';
 
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
+import { BaseAsset } from '../models/BaseAsset';
+import { AssetContentBase } from '../types';
 
 export class AssetService {
   private config: DeviceManagerConfig;
@@ -29,10 +30,14 @@ export class AssetService {
       successes: [],
     };
 
-    const assetDocuments = assets.map((device: JSONObject) => ({
-      _id: device._id || uuidv4(),
-      body: omit(device, ['_id']),
-    }));
+    const assetDocuments = assets.map((asset: AssetContentBase) => {
+      const _asset = new BaseAsset(asset);
+      
+      return {
+        _id: _asset._id,
+        body: omit(asset, ['_id']),
+      }
+    })
 
     await writeToDatabase(
       assetDocuments,
