@@ -2,12 +2,12 @@
 code: true
 type: page
 title: importAssets
-description: Import asset using csv
+description: Import assets using csv
 ---
 
 # importAssets
 
-Import asset using csv
+Import assets using csv
 
 ---
 
@@ -35,7 +35,7 @@ Method: POST
 ### Kourou
 
 ```bash
-kourou device-manager/asset:importAssets --body '{ "csv": "_id,reference,model\nPERFO-imported,imported,PERFO" }'
+kourou device-manager/asset:importAssets --body '{ "csv": require("fs").readFileSync("/absolute/path/assets.csv", "utf8") }'
 ```
 ---
 
