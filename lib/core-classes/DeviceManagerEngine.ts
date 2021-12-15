@@ -1,4 +1,4 @@
-import { Plugin } from 'kuzzle';
+import { EmbeddedSDK, Plugin, PluginContext } from 'kuzzle';
 import { AbstractEngine } from 'kuzzle-plugin-commons';
 
 import { DeviceManagerConfig, DeviceManagerPlugin } from '../DeviceManagerPlugin';
@@ -19,6 +19,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       plugin.config.adminIndex,
       plugin.config.configCollection);
 
+    this.context = plugin.context;
     this.assetMappings = assetMappings;
     this.deviceMappings = deviceMappings;
   }

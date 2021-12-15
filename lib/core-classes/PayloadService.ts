@@ -151,44 +151,60 @@ export class PayloadService {
       throw new BadRequestError(`Device ${device._id} is not allowed for registration.`);
     }
 
-    const ret = await this.register(device, decoder, request, { refresh });
+    const hasContent = catalogEntry && catalogEntry.content && catalogEntry.content.tenantId;
+    const tenantCatalogEntry = hasContent ? await this.getCatalogEntry(catalogEntry.content.tenantId, device._id) : undefined;
+
+    const response = await global.app.trigger('device-manager:device:provisioning:before', {
+      device,
+      adminCatalog: catalogEntry,
+      tenantCatalog: tenantCatalogEntry,
+    });
+
+    const enrichedDevice = response.device ? response.device : device;
+    const adminCatalog = response.adminCatalog ? response.adminCatalog : catalogEntry;
+    const tenantCatalog = response.tenantCatalog ? response.tenantCatalog : tenantCatalogEntry;
+
+    const ret = await this.register(response.device, decoder, request, { refresh });
 
     // If there is not auto attachment to a tenant then we cannot link asset as well
-    if (! catalogEntry || ! catalogEntry.content.tenantId) {
+    if (! hasContent) {
       return ret;
     }
 
     await this.sdk.query({
       controller: 'device-manager/device',
       action: 'attachTenant',
-      _id: device._id,
-      index: catalogEntry.content.tenantId,
+      _id: enrichedDevice._id,
+      index: adminCatalog.content.tenantId,
     });
 
-    if (catalogEntry.content.assetId) {
+    if (adminCatalog.content.assetId) {
       await this.sdk.query({
         controller: 'device-manager/device',
         action: 'linkAsset',
-        _id: device._id,
-        assetId: catalogEntry.content.assetId,
+        _id: enrichedDevice._id,
+        assetId: adminCatalog.content.assetId,
       });
     }
 
-    const tenantCatalogEntry = await this.getCatalogEntry(
-      catalogEntry.content.tenantId,
-      device._id);
 
-    if ( tenantCatalogEntry
-      && tenantCatalogEntry.content.authorized !== false
-      && tenantCatalogEntry.content.assetId
+    if ( tenantCatalog
+      && tenantCatalog.content.authorized !== false
+      && tenantCatalog.content.assetId
     ) {
       await this.sdk.query({
         controller: 'device-manager/device',
         action: 'linkAsset',
-        _id: device._id,
-        assetId: tenantCatalogEntry.content.assetId,
+        _id: enrichedDevice._id,
+        assetId: tenantCatalog.content.assetId,
       });
     }
+
+    await global.app.trigger('device-manager:device:provisioning:after', {
+      device,
+      adminCatalog,
+      tenantCatalog,
+    });
 
     return ret;
   }
