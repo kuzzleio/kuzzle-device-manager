@@ -88,6 +88,20 @@ app.pipe.register('device-manager:device:link-asset:after', async ({ device, ass
   return { device, asset };
 })
 
+app.pipe.register('device-manager:device:attach-tenant:before', async ({ index, device }) => {
+  app.log.debug('before attach-tenant trigered');
+
+  set(device, 'body.metadata.enrichedByBeforeAttachTenant', true);
+
+  return { index, device };
+})
+
+app.pipe.register('device-manager:device:attach-tenant:after', async ({ index, device }) => {
+  app.log.debug('after attach-tenant trigered');
+
+  return { index, device };
+})
+
 app.plugin.use(deviceManager);
 
 app.hook.register('request:onError', async (request: KuzzleRequest) => {
