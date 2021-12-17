@@ -94,3 +94,24 @@ Returns information about the updated device:
   }
 }
 ```
+
+## Events
+
+Two events can be registered before/after the update of a device:
+
+```js
+app.pipe.register('device-manager:device:update:before', async ({ device, updates }) => {
+  app.log.debug('before device update triggered');
+
+  set(updates, 'metadata.enrichedByBeforeUpdateDevice', true);
+
+  return { device, updates }
+})
+
+app.pipe.register('device-manager:device:update:after', async ({ device, updates }) => {
+  app.log.debug('after device update triggered');
+
+
+  return { device, updates }
+})
+```
