@@ -74,8 +74,23 @@ app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: Kuzzl
   return request;
 });
 
+app.pipe.register('device-manager:device:update:before', async ({ device, updates }) => {
+  app.log.debug('before device update triggered');
+
+  set(updates, 'metadata.enrichedByBeforeUpdateDevice', true);
+
+  return { device, updates }
+})
+
+app.pipe.register('device-manager:device:update:after', async ({ device, updates }) => {
+  app.log.debug('after device update triggered');
+
+
+  return { device, updates }
+})
+
 app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
-  app.log.debug('before link-asset trigered');
+  app.log.debug('before link-asset triggered');
 
   set(asset, 'body.metadata.enrichedByBeforeLinkAsset', true);
 
@@ -83,7 +98,7 @@ app.pipe.register('device-manager:device:link-asset:before', async ({ device, as
 })
 
 app.pipe.register('device-manager:device:link-asset:after', async ({ device, asset }) => {
-  app.log.debug('after link-asset trigered');
+  app.log.debug('after link-asset triggered');
 
   return { device, asset };
 })

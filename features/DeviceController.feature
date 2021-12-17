@@ -8,6 +8,35 @@ Feature: Device Manager device controller
       | tenantId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
 
+  Scenario: Update a device
+    When I successfully execute the action "device-manager/device":"attachTenant" with args:
+      | _id   | "DummyTemp-detached" |
+      | index | "tenant-kuzzle"      |
+    When I successfully execute the action "device-manager/device":"update" with args:
+      | _id                          | "DummyTemp-detached" |
+      | index                        | "tenant-kuzzle"      |
+      | body.metadata.updatedByTests | true                 |
+    Then I successfully execute the action "collection":"refresh" with args:
+      | index      | "tenant-kuzzle" |
+      | collection | "devices"       |
+    Then The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
+      | metadata.updatedByTests | true |
+
+  Scenario: Update a device with before update events
+    When I successfully execute the action "device-manager/device":"attachTenant" with args:
+      | _id   | "DummyTemp-detached" |
+      | index | "tenant-kuzzle"      |
+    When I successfully execute the action "device-manager/device":"update" with args:
+      | _id                          | "DummyTemp-detached" |
+      | index                        | "tenant-kuzzle"      |
+      | body.metadata.updatedByTests | true                 |
+    Then I successfully execute the action "collection":"refresh" with args:
+      | index      | "tenant-kuzzle" |
+      | collection | "devices"       |
+    Then The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
+      | metadata.enrichedByBeforeUpdateDevice | true |
+
+
   Scenario: Attach a non-existing device to a tenant should throw an error
     When I execute the action "device-manager/device":"attachTenant" with args:
       | _id   | "Not-existing-device" |

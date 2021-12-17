@@ -92,7 +92,7 @@ Two events when this action is called, allowing to modify the device before it i
 import set from 'lodash/set';
 
 app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
-  app.log.debug('before link-asset trigered');
+  app.log.debug('before link-asset triggered');
 
   set(asset, 'body.metadata.enrichedByBeforeLinkAsset', true);
 
@@ -100,7 +100,7 @@ app.pipe.register('device-manager:device:link-asset:before', async ({ device, as
 })
 
 app.pipe.register('device-manager:device:link-asset:after', async ({ device, asset }) => {
-  app.log.debug('after link-asset trigered');
+  app.log.debug('after link-asset triggered');
 
   return { device, asset };
 })
