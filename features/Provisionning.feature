@@ -5,7 +5,7 @@ Feature: Device Provisionning
     Given a collection "device-manager":"config"
     And I "update" the document "plugin--device-manager" with content:
       | device-manager.provisioningStrategy | "catalog" |
-    And I "create" the document "catalog--DummyTemp-12345" with content:
+    And I "create" the document "custom-catalog-id" with content:
       | type               | "catalog"         |
       | catalog.deviceId   | "DummyTemp-12345" |
       | catalog.authorized | true              |
