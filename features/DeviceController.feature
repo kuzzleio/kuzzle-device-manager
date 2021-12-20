@@ -24,6 +24,9 @@ Feature: Device Manager device controller
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
     And The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
       | metadata.enrichedByBeforeAttachTenant | true |
+    And I refresh the collection "tenant-kuzzle":"devices"
+    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
+      | metadata.enrichedByAfterAttachTenant | true |
 
   Scenario: Attach multiple devices to a tenant using JSON
     When I successfully execute the action "device-manager/device":"mAttachTenants" with args:

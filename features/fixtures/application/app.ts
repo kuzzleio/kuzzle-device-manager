@@ -99,6 +99,19 @@ app.pipe.register('device-manager:device:attach-tenant:before', async ({ index, 
 app.pipe.register('device-manager:device:attach-tenant:after', async ({ index, device }) => {
   app.log.debug('after attach-tenant trigered');
 
+  if (device.body.metadata.enrichedByBeforeAttachTenant) {
+    set(device, 'body.metadata.enrichedByAfterAttachTenant', true);
+
+
+    await app.sdk.document.update(
+      device.body.tenantId,
+      'devices',
+      device._id,
+      device.body
+    )
+  
+  }
+
   return { index, device };
 })
 

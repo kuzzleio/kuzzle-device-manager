@@ -93,9 +93,8 @@ export class DeviceService {
           'device-manager:device:attach-tenant:before',
           { index: document.tenantId, device: deviceDocument }
         );
-        
-        const deviceData = response && response.device ? response.device : deviceDocument;
-        enrichedDocuments.push(deviceData);
+
+        enrichedDocuments.push(response.device);
       }
 
       const { errors, successes } = await this.writeToDatabase(
@@ -124,7 +123,7 @@ export class DeviceService {
 
       for (const deviceDocument of enrichedDocuments) {
         await global.app.trigger(
-          'device-manager:device:attach-tenant:before',
+          'device-manager:device:attach-tenant:after',
           { index: document.tenantId, device: deviceDocument }
         );
       }
