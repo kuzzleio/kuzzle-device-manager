@@ -27,7 +27,8 @@ import {
   PayloadHandler,
   AssetMappingsManager,
   DeviceMappingsManager,
-  DecodersService
+  DecodersService,
+  AssetService
 } from './core-classes';
 import {
   assetsMappings,
@@ -90,6 +91,7 @@ export class DeviceManagerPlugin extends Plugin {
   private decodersController: DecodersController;
   private engineController: EngineController<DeviceManagerPlugin>;
 
+  private assetService: AssetService;
   private payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
@@ -193,13 +195,14 @@ export class DeviceManagerPlugin extends Plugin {
     this.batchWriter = new BatchWriter(this.sdk, { interval: this.config.writerInterval });
     this.batchWriter.begin();
 
+    this.assetService = new AssetService(this);
     this.payloadService = new PayloadService(this, this.batchWriter);
     this.decodersService = new DecodersService(this, this.decoders);
     this.deviceService = new DeviceService(this, this.decodersService.decoders);
     this.migrationService = new MigrationService('device-manager', this);
     this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetMappings, this.deviceMappings);
 
-    this.assetController = new AssetController(this);
+    this.assetController = new AssetController(this, this.assetService);
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersService);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);

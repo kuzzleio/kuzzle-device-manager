@@ -12,6 +12,8 @@ export * from './Decoder';
 
 export * from './DecodersService';
 
+export * from './AssetService';
+
 export * from './CustomMappings/AssetMappingsManager';
 
 export * from './CustomMappings/DeviceMappingsManager';
