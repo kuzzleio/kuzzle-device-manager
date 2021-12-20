@@ -96,7 +96,7 @@ app.pipe.register('device-manager:device:update:after', async ({ device, updates
       'devices',
       device._id,
       updates,
-    )
+    );
   }
 
 
