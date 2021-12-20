@@ -35,6 +35,9 @@ Feature: Device Manager device controller
       | collection | "devices"       |
     Then The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
       | metadata.enrichedByBeforeUpdateDevice | true |
+    And I refresh the collection "tenant-kuzzle":"devices"
+    Then The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
+      | metadata.enrichedByAfterUpdateDevice | true |
 
 
   Scenario: Attach a non-existing device to a tenant should throw an error

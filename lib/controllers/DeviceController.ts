@@ -88,22 +88,21 @@ export class DeviceController extends CRUDController {
   async update (request: KuzzleRequest) {
     const deviceId = request.getId();
     const body = request.getBody();
-    const device = await this.mGetDevice([{ deviceId }]);
+    const devices = await this.mGetDevice([{ deviceId }]);
 
     const response = await global.app.trigger(
       'device-manager:device:update:before', {
-      device: device[0],
+      device: devices[0],
       updates: body,
     });
 
     request.input.body = response.updates;
     const result = await super.update(request);
 
-
     await global.app.trigger(
       'device-manager:device:update:after', {
-      device: result,
-      updates: response.updates,
+      device: devices[0],
+      updates: result._source,
     });
 
     return result;
