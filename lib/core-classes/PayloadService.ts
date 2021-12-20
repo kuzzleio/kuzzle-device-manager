@@ -210,6 +210,18 @@ export class PayloadService {
         throw error;
       }
 
+      const result = await this.sdk.document.search(
+        index,
+        this.config.configCollection,
+        {
+          query: { equals: { 'catalog.deviceId': deviceId } },
+        },
+        { size: 1, lang: 'koncorde' });
+
+      if (result.total !== 0) {
+        return new Catalog(result.hits[0]);
+      }
+
       return null;
     }
   }
