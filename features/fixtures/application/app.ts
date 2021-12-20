@@ -86,6 +86,19 @@ app.pipe.register('device-manager:device:provisioning:before', async ({ device, 
 app.pipe.register('device-manager:device:provisioning:after', async ({ device, adminCatalog, tenantCatalog }) => {
   app.log.debug('after provisioning trigered');
 
+  if (device._source.metadata.enrichedByBeforeProvisioning) {
+    set(device, '_source.metadata.enrichedByAfterProvisioning', true);
+
+    const response = await app.sdk.document.update(
+      'device-manager',
+      'devices',
+      device._id,
+      device._source,
+    );
+
+    console.log('device response', response);
+  }
+
   return { device, adminCatalog, tenantCatalog };
 })
 

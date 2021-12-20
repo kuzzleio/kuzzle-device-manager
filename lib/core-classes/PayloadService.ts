@@ -165,9 +165,16 @@ export class PayloadService {
     const tenantCatalog = response.tenantCatalog;
 
     const ret = await this.register(response.device, decoder, request, { refresh });
-
+    
     // If there is not auto attachment to a tenant then we cannot link asset as well
     if (! tenantIdExists) {
+      // Trigger event even if there is not tenantId in the catalog
+      await global.app.trigger('device-manager:device:provisioning:after', {
+        device,
+        adminCatalog,
+        tenantCatalog,
+      });
+
       return ret;
     }
 
@@ -200,6 +207,7 @@ export class PayloadService {
       });
     }
 
+    // Trigger event when there is a tenantId in the catalog
     await global.app.trigger('device-manager:device:provisioning:after', {
       device,
       adminCatalog,
