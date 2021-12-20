@@ -151,8 +151,8 @@ export class PayloadService {
       throw new BadRequestError(`Device ${device._id} is not allowed for registration.`);
     }
 
-    const hasContent = catalogEntry && catalogEntry.content && catalogEntry.content.tenantId;
-    const tenantCatalogEntry = hasContent ? await this.getCatalogEntry(catalogEntry.content.tenantId, device._id) : undefined;
+    const tenantIdExists = catalogEntry && catalogEntry.content && catalogEntry.content.tenantId;
+    const tenantCatalogEntry = tenantIdExists ? await this.getCatalogEntry(catalogEntry.content.tenantId, device._id) : undefined;
 
     const response = await global.app.trigger('device-manager:device:provisioning:before', {
       device,
@@ -160,14 +160,14 @@ export class PayloadService {
       tenantCatalog: tenantCatalogEntry,
     });
 
-    const enrichedDevice = response.device ? response.device : device;
-    const adminCatalog = response.adminCatalog ? response.adminCatalog : catalogEntry;
-    const tenantCatalog = response.tenantCatalog ? response.tenantCatalog : tenantCatalogEntry;
+    const enrichedDevice = response.device;
+    const adminCatalog = response.adminCatalog;
+    const tenantCatalog = response.tenantCatalog;
 
     const ret = await this.register(response.device, decoder, request, { refresh });
 
     // If there is not auto attachment to a tenant then we cannot link asset as well
-    if (! hasContent) {
+    if (! tenantIdExists) {
       return ret;
     }
 
