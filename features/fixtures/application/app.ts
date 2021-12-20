@@ -89,8 +89,6 @@ app.pipe.register('device-manager:device:update:after', async ({ device, updates
   if (updates.metadata.enrichedByBeforeUpdateDevice) {
     set(updates, 'metadata.enrichedByAfterUpdateDevice', true);
 
-    console.log('device,updates', device, updates);
-
     app.sdk.document.update(
       device._source.tenantId,
       'devices',
