@@ -53,6 +53,33 @@ export class AssetController extends CRUDController {
     };
   }
 
+  async update (request: KuzzleRequest) {
+    const id = request.getId();
+    const index = request.getIndex();
+    const body = request.getBody();
+    const asset = await this.sdk.document.get(
+      index,
+      this.collection,
+      id
+    );
+
+    const response = await global.app.trigger(
+      'device-manager:asset:update:before', {
+      asset,
+      updates: body,
+    });
+
+    request.input.body = response.updates;
+    const result = await super.update(request);
+
+    await global.app.trigger('device-manager:asset:update:after', {
+      asset,
+      updates: result._source,
+    });
+
+    return result;
+  }
+
   async create (request: KuzzleRequest) {
     const type = request.getBodyString('type');
     const model = request.getBodyString('model');

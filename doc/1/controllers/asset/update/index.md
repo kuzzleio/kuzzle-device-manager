@@ -94,3 +94,35 @@ Returns information about the updated asset:
   }
 }
 ```
+
+## Events
+
+Two events are triggered by this action, that can be used as follow:
+
+```js
+app.pipe.register('device-manager:asset:update:before', async ({ asset, updates }) => {
+  app.log.debug('before asset update triggered');
+
+  set(updates, 'metadata.enrichedByBeforeAssetUpdate', true);
+
+  return { asset, updates };
+})
+
+app.pipe.register('device-manager:asset:update:after', async ({ asset, updates }) => {
+  app.log.debug('after asset update triggered');
+
+  if (updates.metadata.enrichedByBeforeAssetUpdate) {
+    set(updates, 'metadata.enrichedByAfterAssetUpdate', true);
+
+    await app.sdk.document.update(
+      updates.metadata.index,
+      'assets',
+      asset._id,
+      updates,
+    )
+  }
+
+  return { asset, updates };
+})
+
+```
