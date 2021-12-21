@@ -79,7 +79,7 @@ app.pipe.register('device-manager:device:update:before', async ({ device, update
 
   set(updates, 'metadata.enrichedByBeforeUpdateDevice', true);
 
-  return { device, updates }
+  return { device, updates };
 })
 
 app.pipe.register('device-manager:device:update:after', async ({ device, updates }) => {
@@ -89,7 +89,7 @@ app.pipe.register('device-manager:device:update:after', async ({ device, updates
   if (updates.metadata.enrichedByBeforeUpdateDevice) {
     set(updates, 'metadata.enrichedByAfterUpdateDevice', true);
 
-    app.sdk.document.update(
+    await app.sdk.document.update(
       device._source.tenantId,
       'devices',
       device._id,
@@ -98,7 +98,7 @@ app.pipe.register('device-manager:device:update:after', async ({ device, updates
   }
 
 
-  return { device, updates }
+  return { device, updates };
 })
 
 app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
