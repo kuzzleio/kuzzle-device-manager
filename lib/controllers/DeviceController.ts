@@ -99,8 +99,7 @@ export class DeviceController extends CRUDController {
     request.input.body = response.updates;
     const result = await super.update(request);
 
-    await global.app.trigger(
-      'device-manager:device:update:after', {
+    await global.app.trigger('device-manager:device:update:after', {
       device: devices[0],
       updates: result._source,
     });
