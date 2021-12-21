@@ -1,4 +1,4 @@
-import { EmbeddedSDK, Plugin, PluginContext } from 'kuzzle';
+import { Plugin } from 'kuzzle';
 import { AbstractEngine } from 'kuzzle-plugin-commons';
 
 import { DeviceManagerConfig, DeviceManagerPlugin } from '../DeviceManagerPlugin';

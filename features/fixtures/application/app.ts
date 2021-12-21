@@ -95,8 +95,6 @@ app.pipe.register('device-manager:device:provisioning:after', async ({ device, a
       device._id,
       device._source,
     );
-
-    console.log('device response', response);
   }
 
   return { device, adminCatalog, tenantCatalog };
