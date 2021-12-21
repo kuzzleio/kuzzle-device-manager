@@ -72,8 +72,7 @@ export class AssetController extends CRUDController {
     request.input.body = response.updates;
     const result = await super.update(request);
 
-    await global.app.trigger(
-      'device-manager:asset:update:after', {
+    await global.app.trigger('device-manager:asset:update:after', {
       asset,
       updates: result._source,
     });
