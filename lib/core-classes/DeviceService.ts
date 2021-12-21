@@ -85,9 +85,10 @@ export class DeviceService {
       const enrichedDocuments = [];
 
       for (const deviceDocument of deviceDocuments) {
-        const response = await global.app.trigger(
-          'device-manager:device:attach-tenant:before',
-          { index: document.tenantId, device: deviceDocument }
+        const response = await global.app.trigger('device-manager:device:attach-tenant:before', {
+            index: document.tenantId,
+            device: deviceDocument
+          }
         );
 
         enrichedDocuments.push(response.device);
@@ -118,10 +119,10 @@ export class DeviceService {
       results.errors.concat(errors);
 
       for (const deviceDocument of enrichedDocuments) {
-        await global.app.trigger(
-          'device-manager:device:attach-tenant:after',
-          { index: document.tenantId, device: deviceDocument }
-        );
+        await global.app.trigger('device-manager:device:attach-tenant:after', {
+          index: document.tenantId,
+          device: deviceDocument
+        });
       }
     }
 
