@@ -19,6 +19,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       plugin.config.adminIndex,
       plugin.config.configCollection);
 
+    this.context = plugin.context;
     this.assetMappings = assetMappings;
     this.deviceMappings = deviceMappings;
   }

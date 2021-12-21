@@ -87,3 +87,23 @@ A provisioning catalog entry can also contain a `assetId` property so the device
 }
 ```
 
+## Events
+
+Two events when the provisioning happen, allowing to modify the device/admin catalog and/or the tenant catalog before and after it is provisioned:
+
+```js
+app.pipe.register('device-manager:device:provisioning:before', async ({ device, adminCatalog, tenantCatalog }) => {
+  app.log.debug('before provisioning trigered');
+
+  set(device, '_source.metadata.enrichedByBeforeProvisioning', true);
+
+  return { device, adminCatalog, tenantCatalog };
+})
+
+
+app.pipe.register('device-manager:device:provisioning:after', async ({ device, adminCatalog, tenantCatalog }) => {
+  app.log.debug('after provisioning trigered');
+
+  return { device, adminCatalog, tenantCatalog };
+})
+```

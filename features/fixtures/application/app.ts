@@ -74,6 +74,32 @@ app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: Kuzzl
   return request;
 });
 
+app.pipe.register('device-manager:device:provisioning:before', async ({ device, adminCatalog, tenantCatalog }) => {
+  app.log.debug('before provisioning trigered');
+
+  set(device, '_source.metadata.enrichedByBeforeProvisioning', true);
+
+  return { device, adminCatalog, tenantCatalog };
+})
+
+
+app.pipe.register('device-manager:device:provisioning:after', async ({ device, adminCatalog, tenantCatalog }) => {
+  app.log.debug('after provisioning trigered');
+
+  if (device._source.metadata.enrichedByBeforeProvisioning) {
+    set(device, '_source.metadata.enrichedByAfterProvisioning', true);
+
+    const response = await app.sdk.document.update(
+      'device-manager',
+      'devices',
+      device._id,
+      device._source,
+    );
+  }
+
+  return { device, adminCatalog, tenantCatalog };
+})
+
 app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
   app.log.debug('before link-asset trigered');
 

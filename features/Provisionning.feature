@@ -20,6 +20,12 @@ Feature: Device Provisionning
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
     Then The document "device-manager":"devices":"DummyTemp-12345" exists
+    # Enriching document with events
+    And The document "device-manager":"devices":"DummyTemp-12345" content match:
+      | metadata.enrichedByBeforeProvisioning | true |
+    And I refresh the collection "device-manager":"devices"
+    And The document "device-manager":"devices":"DummyTemp-12345" content match:
+      | metadata.enrichedByAfterProvisioning | true |
     # Provisionned device but not authorized
     When I receive a "dummy-temp" payload with:
       | deviceEUI    | "424242" |
