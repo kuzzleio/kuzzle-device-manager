@@ -5,7 +5,7 @@ Feature: Device Provisionning
     Given a collection "device-manager":"config"
     And I "update" the document "plugin--device-manager" with content:
       | device-manager.provisioningStrategy | "catalog" |
-    And I "create" the document "catalog--DummyTemp-12345" with content:
+    And I "create" the document "custom-catalog-id" with content:
       | type               | "catalog"         |
       | catalog.deviceId   | "DummyTemp-12345" |
       | catalog.authorized | true              |
@@ -13,12 +13,19 @@ Feature: Device Provisionning
       | type               | "catalog"          |
       | catalog.deviceId   | "DummyTemp-424242" |
       | catalog.authorized | false              |
+    And I refresh the collection "device-manager":"config"
     # Provisionned device
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
     Then The document "device-manager":"devices":"DummyTemp-12345" exists
+    # Enriching document with events
+    And The document "device-manager":"devices":"DummyTemp-12345" content match:
+      | metadata.enrichedByBeforeProvisioning | true |
+    And I refresh the collection "device-manager":"devices"
+    And The document "device-manager":"devices":"DummyTemp-12345" content match:
+      | metadata.enrichedByAfterProvisioning | true |
     # Provisionned device but not authorized
     When I receive a "dummy-temp" payload with:
       | deviceEUI    | "424242" |

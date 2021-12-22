@@ -18,7 +18,7 @@ This can be changed by modifying the plugin config document in the `config` coll
 
 ::: info
 The document ID is `plugin--device-manager`.
-::: 
+:::
 
 ```js
 {
@@ -31,10 +31,14 @@ The document ID is `plugin--device-manager`.
 
 ## Provisioning Catalog
 
-Administrator can create catalog entries to allows devices to register.  
+Administrator can create catalog entries to allows devices to register.
 
-Those entries must be created in the `config` collection of the administration index.  
-Each entry must contain at least the `deviceId` property (e.g. `Abeeway-12345`).  
+Those entries must be created in the `config` collection of the administration index.
+Each entry must contain at least the `deviceId` property (e.g. `Abeeway-12345`).
+
+::: info
+When created from the API, document ID will be set to `catalog--<device ID>` but it's not mandatory. Using this format when creating catalog entries only allows to boost performances of the provisioning.
+:::
 
 ```js
 {
@@ -83,3 +87,23 @@ A provisioning catalog entry can also contain a `assetId` property so the device
 }
 ```
 
+## Events
+
+Two events when the provisioning happen, allowing to modify the device/admin catalog and/or the tenant catalog before and after it is provisioned:
+
+```js
+app.pipe.register('device-manager:device:provisioning:before', async ({ device, adminCatalog, tenantCatalog }) => {
+  app.log.debug('before provisioning trigered');
+
+  set(device, '_source.metadata.enrichedByBeforeProvisioning', true);
+
+  return { device, adminCatalog, tenantCatalog };
+})
+
+
+app.pipe.register('device-manager:device:provisioning:after', async ({ device, adminCatalog, tenantCatalog }) => {
+  app.log.debug('after provisioning trigered');
+
+  return { device, adminCatalog, tenantCatalog };
+})
+```
