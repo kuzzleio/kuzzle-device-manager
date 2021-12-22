@@ -74,6 +74,32 @@ app.pipe.register(`tenant:tenant-ayse:asset:measures:new`, async (request: Kuzzl
   return request;
 });
 
+app.pipe.register('device-manager:device:provisioning:before', async ({ device, adminCatalog, tenantCatalog }) => {
+  app.log.debug('before provisioning trigered');
+
+  set(device, '_source.metadata.enrichedByBeforeProvisioning', true);
+
+  return { device, adminCatalog, tenantCatalog };
+})
+
+
+app.pipe.register('device-manager:device:provisioning:after', async ({ device, adminCatalog, tenantCatalog }) => {
+  app.log.debug('after provisioning trigered');
+
+  if (device._source.metadata.enrichedByBeforeProvisioning) {
+    set(device, '_source.metadata.enrichedByAfterProvisioning', true);
+
+    await app.sdk.document.update(
+      'device-manager',
+      'devices',
+      device._id,
+      device._source,
+    );
+  }
+
+  return { device, adminCatalog, tenantCatalog };
+})
+
 app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
   app.log.debug('before link-asset trigered');
 
@@ -112,6 +138,31 @@ app.pipe.register('device-manager:device:attach-tenant:after', async ({ index, d
   }
 
   return { index, device };
+});
+
+app.pipe.register('device-manager:asset:update:before', async ({ asset, updates }) => {
+  app.log.debug('before asset update triggered');
+
+  set(updates, 'metadata.enrichedByBeforeAssetUpdate', true);
+
+  return { asset, updates };
+})
+
+app.pipe.register('device-manager:asset:update:after', async ({ asset, updates }) => {
+  app.log.debug('after asset update triggered');
+
+  if (updates.metadata.enrichedByBeforeAssetUpdate) {
+    set(updates, 'metadata.enrichedByAfterAssetUpdate', true);
+
+    await app.sdk.document.update(
+      updates.metadata.index,
+      'assets',
+      asset._id,
+      updates,
+    )
+  }
+
+  return { asset, updates };
 })
 
 app.plugin.use(deviceManager);

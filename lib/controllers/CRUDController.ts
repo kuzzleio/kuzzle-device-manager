@@ -9,8 +9,10 @@ import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 export class CRUDController {
   protected context: PluginContext;
   protected config: DeviceManagerConfig;
-  private collection: string;
+  protected collection: string;
   public definition: ControllerDefinition;
+
+
 
   constructor (plugin: Plugin, collection: string) {
     this.config = plugin.config as any;

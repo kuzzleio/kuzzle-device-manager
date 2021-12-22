@@ -475,7 +475,6 @@ export class DeviceService {
             result,
             { strict, ...options });
 
-
           return {
             successes: results.successes.concat(created.successes),
             errors: results.errors.concat(created.errors)
