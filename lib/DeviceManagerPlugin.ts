@@ -344,15 +344,18 @@ export class DeviceManagerPlugin extends Plugin {
   private async pipeCheckEngine (request: KuzzleRequest) {
     const index = request.getIndex();
 
-    const { result: { exists } } = await this.sdk.query({
-      controller: 'device-manager/engine',
-      action: 'exists',
-      index,
-    });
-
-    if (! exists) {
-      throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
+    if (index !== this.config.adminIndex) {
+      const { result: { exists } } = await this.sdk.query({
+        controller: 'device-manager/engine',
+        action: 'exists',
+        index,
+      });
+  
+      if (! exists) {
+        throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
+      }
     }
+
 
     return request;
   }

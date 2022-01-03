@@ -85,6 +85,27 @@ export class DeviceController extends CRUDController {
     };
   }
 
+  async update (request: KuzzleRequest) {
+    const deviceId = request.getId();
+    const body = request.getBody();
+    const devices = await this.mGetDevice([{ deviceId }]);
+
+    const response = await global.app.trigger('device-manager:device:update:before', {
+      device: devices[0],
+      updates: body,
+    });
+
+    request.input.body = response.updates;
+    const result = await super.update(request);
+
+    await global.app.trigger('device-manager:device:update:after', {
+      device: devices[0],
+      updates: result._source,
+    });
+
+    return result;
+  }
+
   /**
    * Attach a device to a tenant
    */
