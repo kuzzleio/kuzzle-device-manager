@@ -65,3 +65,23 @@ kourou device-manager/device:attachTenant <index> --id <deviceId>
   "result": {}
 }
 ```
+
+## Events
+
+Two events when this action is called, allowing to modify the device before it is attached to tenant:
+
+```js
+app.pipe.register('device-manager:device:attach-tenant:before', async ({ index, device }) => {
+  app.log.debug('before attach-tenant trigered');
+
+  set(device, 'body.metadata.enrichedByBeforeAttachTenant', true);
+
+  return { index, device };
+})
+
+app.pipe.register('device-manager:device:attach-tenant:after', async ({ index, device }) => {
+  app.log.debug('after attach-tenant trigered');
+
+  return { index, device };
+})
+```

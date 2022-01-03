@@ -89,7 +89,7 @@ app.pipe.register('device-manager:device:provisioning:after', async ({ device, a
   if (device._source.metadata.enrichedByBeforeProvisioning) {
     set(device, '_source.metadata.enrichedByAfterProvisioning', true);
 
-    const response = await app.sdk.document.update(
+    await app.sdk.document.update(
       'device-manager',
       'devices',
       device._id,
@@ -113,6 +113,32 @@ app.pipe.register('device-manager:device:link-asset:after', async ({ device, ass
 
   return { device, asset };
 })
+
+app.pipe.register('device-manager:device:attach-tenant:before', async ({ index, device }) => {
+  app.log.debug('before attach-tenant trigered');
+
+  set(device, 'body.metadata.enrichedByBeforeAttachTenant', true);
+
+  return { index, device };
+})
+
+app.pipe.register('device-manager:device:attach-tenant:after', async ({ index, device }) => {
+  app.log.debug('after attach-tenant trigered');
+
+  if (device.body.metadata.enrichedByBeforeAttachTenant) {
+    set(device, 'body.metadata.enrichedByAfterAttachTenant', true);
+
+    await app.sdk.document.update(
+      device.body.tenantId,
+      'devices',
+      device._id,
+      device.body
+    );
+  
+  }
+
+  return { index, device };
+});
 
 app.pipe.register('device-manager:asset:update:before', async ({ asset, updates }) => {
   app.log.debug('before asset update triggered');

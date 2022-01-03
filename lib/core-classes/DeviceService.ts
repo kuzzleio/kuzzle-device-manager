@@ -82,9 +82,20 @@ export class DeviceService {
       }
 
       const deviceDocuments = this.formatDevicesContent(devices, document);
+      const enrichedDocuments = [];
+
+      for (const deviceDocument of deviceDocuments) {
+        const response = await global.app.trigger('device-manager:device:attach-tenant:before', {
+            index: document.tenantId,
+            device: deviceDocument
+          }
+        );
+
+        enrichedDocuments.push(response.device);
+      }
 
       const { errors, successes } = await writeToDatabase(
-        deviceDocuments,
+        enrichedDocuments,
         async (result: mRequest[]): Promise<mResponse> => {
           const updated = await this.sdk.document.mUpdate(
             this.config.adminIndex,
@@ -106,6 +117,13 @@ export class DeviceService {
 
       results.successes.concat(successes);
       results.errors.concat(errors);
+
+      for (const deviceDocument of enrichedDocuments) {
+        await global.app.trigger('device-manager:device:attach-tenant:after', {
+          index: document.tenantId,
+          device: deviceDocument
+        });
+      }
     }
 
     return results;

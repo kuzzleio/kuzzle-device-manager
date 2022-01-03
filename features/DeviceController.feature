@@ -14,6 +14,19 @@ Feature: Device Manager device controller
       | index | "tenant-kuzzle"       |
     Then I should receive an error matching:
       | message | "Device(s) \"Not-existing-device\" not found" |
+  
+  Scenario: Attach a device to a tenant and enrich it with event
+    When I successfully execute the action "device-manager/device":"attachTenant" with args:
+      | _id   | "DummyTemp-detached" |
+      | index | "tenant-kuzzle"      |
+    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+      | tenantId | "tenant-kuzzle" |
+    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
+    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
+      | metadata.enrichedByBeforeAttachTenant | true |
+    And I refresh the collection "tenant-kuzzle":"devices"
+    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
+      | metadata.enrichedByAfterAttachTenant | true |
 
   Scenario: Attach multiple devices to a tenant using JSON
     When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
