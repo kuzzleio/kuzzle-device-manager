@@ -218,6 +218,13 @@ export class DeviceManagerPlugin extends Plugin {
       'document:beforeCreate': this.generateConfigID.bind(this),
     };
 
+    this.hooks = {
+      'kuzzle:state:live': async () => {
+        await this.decodersService.createDefaultRights();
+        this.context.log.info('Default rights for controller payload registered.')
+      }
+    };
+
     await this.initDatabase();
 
     await this.migrationService.run();
@@ -348,7 +355,7 @@ export class DeviceManagerPlugin extends Plugin {
         action: 'exists',
         index,
       });
-  
+
       if (! exists) {
         throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
       }
