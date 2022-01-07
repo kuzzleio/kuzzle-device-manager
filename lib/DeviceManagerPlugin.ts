@@ -84,8 +84,6 @@ export type DeviceManagerConfig = {
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfig;
 
-  private defaultConfig: DeviceManagerConfig;
-
   private assetController: AssetController;
   private deviceController: DeviceController;
   private decodersController: DecodersController;
@@ -132,7 +130,7 @@ export class DeviceManagerPlugin extends Plugin {
       }
     };
 
-    this.defaultConfig = {
+    this.config = {
       adminIndex: 'device-manager',
       configCollection: 'config',
       adminCollections: {
@@ -184,7 +182,7 @@ export class DeviceManagerPlugin extends Plugin {
    * Init the plugin
    */
   async init (config: JSONObject, context: PluginContext) {
-    this.config = _.merge({}, this.defaultConfig, config);
+    this.config = _.merge({}, this.config, config);
 
     this.context = context;
 
