@@ -65,6 +65,12 @@ export class DecodersService {
     return controllers;
   }
 
+  /**
+   * Creates default roles, profiles and users associated to the generated actions
+   * in the Payload controller.
+   *
+   * This method never returns a rejected promise.
+   */
   async createDefaultRights () {
     try {
       await this.createDefaultRoles();

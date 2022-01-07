@@ -221,7 +221,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.hooks = {
       'kuzzle:state:live': async () => {
         await this.decodersService.createDefaultRights();
-        this.context.log.info('Default rights for controller payload registered.')
+        this.context.log.info('Default rights for payload controller has been registered.')
       }
     };
 
