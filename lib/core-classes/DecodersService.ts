@@ -1,8 +1,8 @@
-import { PluginContext, EmbeddedSDK, Plugin, ControllerDefinition } from "kuzzle";
+import { PluginContext, EmbeddedSDK, Plugin, ControllerDefinition } from 'kuzzle';
 
-import { Decoder } from "./Decoder";
-import { DecoderContent } from '../types/decoders/DecodersContent';
-import { DeviceManagerConfig } from "../DeviceManagerPlugin";
+import { Decoder } from './Decoder';
+import { DecoderContent } from '../types/DecoderContent';
+import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 import { PayloadHandler } from 'index';
 import { PayloadService } from './PayloadService';
 
@@ -26,8 +26,8 @@ export class DecodersService {
     this.context = plugin.context;
     this.handlers = decoders
     this._decoders = new Map();
-    
-    
+
+
     for (const { decoder } of this.handlers) {
       this.register(decoder);
     }

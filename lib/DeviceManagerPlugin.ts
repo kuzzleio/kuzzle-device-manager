@@ -21,14 +21,14 @@ import {
   DeviceManagerEngine,
   PayloadService,
   DeviceService,
-  MigrationService,
   BatchWriter,
   Decoder,
   PayloadHandler,
   AssetMappingsManager,
   DeviceMappingsManager,
   DecodersService,
-  AssetService
+  AssetService,
+  MeasuresRegister,
 } from './core-classes';
 import {
   assetsMappings,
@@ -37,9 +37,10 @@ import {
   assetsHistoryMappings,
 } from './models';
 import {
-  movementMeasureMappings,
-  positionMeasureMappings,
-  temperatureMeasureMappings,
+  humidityMeasure,
+  movementMeasure,
+  positionMeasure,
+  temperatureMeasure,
 } from './measures';
 
 export type DeviceManagerConfig = {
@@ -96,7 +97,6 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
   private decodersService: DecodersService;
-  private migrationService: MigrationService;
 
   private batchWriter: BatchWriter;
 
@@ -106,9 +106,11 @@ export class DeviceManagerPlugin extends Plugin {
 
   private decoders: { decoder: Decoder, handler: PayloadHandler }[] = [];
 
-  private deviceMappings = new DeviceMappingsManager(devicesMappings);
+  private measureRegister = new MeasuresRegister();
 
-  private assetMappings = new AssetMappingsManager(assetsMappings, this.deviceMappings);
+  private deviceMappings = new DeviceMappingsManager(this.measureRegister);
+
+  private assetMappings = new AssetMappingsManager(this.measureRegister);
 
   get assets () {
     return this.assetMappings;
@@ -118,12 +120,16 @@ export class DeviceManagerPlugin extends Plugin {
     return this.deviceMappings;
   }
 
+  get measures () {
+    return this.measureRegister;
+  }
+
   /**
    * Constructor
    */
   constructor() {
     super({
-      kuzzleVersion: '>=2.14.0 <3'
+      kuzzleVersion: '>=2.16.8 <3'
     });
 
     this.api = {
@@ -188,19 +194,19 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.context = context;
 
-    this.devices.registerMeasure('temperature', temperatureMeasureMappings);
-    this.devices.registerMeasure('position', positionMeasureMappings);
-    this.devices.registerMeasure('movement', movementMeasureMappings);
+    this.measures.register('temperature', temperatureMeasure);
+    this.measures.register('position', positionMeasure);
+    this.measures.register('movement', movementMeasure);
+    this.measures.register('humidity', humidityMeasure);
 
     this.batchWriter = new BatchWriter(this.sdk, { interval: this.config.writerInterval });
     this.batchWriter.begin();
 
     this.assetService = new AssetService(this);
-    this.payloadService = new PayloadService(this, this.batchWriter);
+    this.payloadService = new PayloadService(this, this.batchWriter, this.measureRegister);
     this.decodersService = new DecodersService(this, this.decoders);
-    this.deviceService = new DeviceService(this, this.decodersService.decoders);
-    this.migrationService = new MigrationService('device-manager', this);
-    this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetMappings, this.deviceMappings);
+    this.deviceService = new DeviceService(this);
+    this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetMappings, this.deviceMappings, this.measureRegister);
 
     this.assetController = new AssetController(this, this.assetService);
     this.deviceController = new DeviceController(this, this.deviceService);
@@ -221,8 +227,6 @@ export class DeviceManagerPlugin extends Plugin {
     };
 
     await this.initDatabase();
-
-    await this.migrationService.run();
   }
 
   /**
@@ -350,7 +354,7 @@ export class DeviceManagerPlugin extends Plugin {
         action: 'exists',
         index,
       });
-  
+
       if (! exists) {
         throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
       }

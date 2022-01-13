@@ -9,12 +9,12 @@ import {
 
 import { CRUDController } from './CRUDController';
 import { BaseAsset } from '../models/BaseAsset';
-import { AssetContentBase } from '../types';
+import { BaseAssetContent } from '../types';
 import { AssetService } from '../core-classes';
 
 export class AssetController extends CRUDController {
   private assetService: AssetService;
-  
+
   get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
@@ -86,7 +86,7 @@ export class AssetController extends CRUDController {
     const reference = request.getBodyString('reference');
 
     if (! request.input.args._id) {
-      const assetContent: AssetContentBase = {
+      const assetContent: BaseAssetContent = {
         type,
         model,
         reference,

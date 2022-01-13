@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import { JSONObject, PluginImplementationError } from 'kuzzle';
-import { DeviceMappingsManager } from './DeviceMappingsManager';
+
+import { MeasuresRegister } from '../MeasuresRegister';
+import { assetsMappings } from '../../models';
 
 type AssetDefinition = {
   /** Asset name */
@@ -26,14 +28,14 @@ type AssetDefinition = {
 
 export class AssetMappingsManager {
   private baseMappings: JSONObject;
-  private deviceMappings: DeviceMappingsManager;
+  private measuresRegister: MeasuresRegister;
 
   private assetByName = new Map<string, AssetDefinition>();
   private assetByGroup = new Map<string, AssetDefinition[]>();
 
-  constructor (baseMappings: JSONObject, deviceMappings: DeviceMappingsManager) {
-    this.baseMappings = baseMappings;
-    this.deviceMappings = deviceMappings;
+  constructor (measuresRegister: MeasuresRegister) {
+    this.baseMappings = JSON.parse(JSON.stringify(assetsMappings));;
+    this.measuresRegister = measuresRegister;
 
     this.assetByGroup.set('commons', []);
   }
@@ -83,21 +85,9 @@ export class AssetMappingsManager {
   get (group = 'commons'): JSONObject {
     const mappings = JSON.parse(JSON.stringify(this.baseMappings));
 
-    const deviceMappings = this.deviceMappings.get();
-
     mappings.properties.measures.dynamic = 'false';
 
-    for (const [name, measure] of Object.entries(deviceMappings.properties.measures.properties) as any) {
-      mappings.properties.measures.properties[name] = {
-        properties: {
-          id: { type: 'keyword' },
-          model: { type: 'keyword' },
-          reference: { type: 'keyword' },
-          qos: deviceMappings.properties.qos,
-          ...measure.properties,
-        }
-      };
-    }
+    mappings.properties.measures = this.measuresRegister.getMappings();
 
     if (this.assetByGroup.has('commons')) {
       for (const definition of this.assetByGroup.get('commons')) {

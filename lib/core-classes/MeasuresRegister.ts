@@ -1,0 +1,55 @@
+import { JSONObject, PluginImplementationError } from 'kuzzle';
+
+import { MeasureDefinition, measuresMappings } from '../types';
+
+export class MeasuresRegister {
+  private mappings: JSONObject;
+
+  /**
+   * Registered measures
+   *
+   * Map<type, MeasureDefinition>
+   */
+  private measures = new Map<string, MeasureDefinition>();
+
+  constructor () {
+    this.mappings = JSON.parse(JSON.stringify(measuresMappings));
+  }
+
+  /**
+   * Register custom measure mappings
+   *
+   * @example
+   *
+   * plugin.measure.register({
+   *   humidity: { type: 'float' },
+   * });
+   */
+  register (type: string, measure: MeasureDefinition) {
+    if (this.measures.has(type)) {
+      throw new PluginImplementationError(`Measure "${type}" already exists.`);
+    }
+
+    for (const [field, definition] of Object.entries(measure.mappings)) {
+      if (this.mappings.properties.values.properties[field]) {
+        throw new PluginImplementationError(`Field "${type}" already exists in measures mappings.`);
+      }
+
+      this.mappings.properties.values.properties[field] = definition;
+    }
+
+    this.measures.set(type, measure);
+  }
+
+  get (type: string): MeasureDefinition {
+    if (! this.measures.has(type)) {
+      throw new PluginImplementationError(`Measure "${type}" does not exists.`);
+    }
+
+    return this.measures.get(type);
+  }
+
+  getMappings (): JSONObject {
+    return this.mappings;
+  }
+}

@@ -1,35 +1,25 @@
-import { BaseMeasure } from './BaseMeasure';
+import { Measure, MeasureDefinition } from '../types';
 
-/**
- * Represents a position measure
- */
-export interface PositionMeasure extends BaseMeasure {
-  /**
-   * GPS coordinates
-   */
-  point: {
-    lat: number;
-    lon: number;
-  };
-
-  /**
-   * Altitude in meters
-   */
-  altitude?: number;
-
-  /**
-   * Measure precision in meters
-   */
-  accuracy?: number;
+export interface PositionMeasure extends Measure {
+  values: {
+    position: {
+      lat: number;
+      lon: number;
+    };
+    altitude?: number;
+    accuracy?: number;
+  }
 }
 
-export interface DevicePositionMeasures {
-  position?: PositionMeasure
-}
-
-export const positionMeasureMappings = {
-  // position
-  point: { type: 'geo_point' },
-  altitude: { type: 'float' },
-  accuracy: { type: 'float' },
+export const positionMeasure: MeasureDefinition = {
+  unit: {
+    name: 'GPS',
+    sign: null,
+    type: 'geo_point',
+  },
+  mappings: {
+    position: { type: 'geo_point' },
+    altitude: { type: 'float' },
+    accuracy: { type: 'float' },
+  },
 };

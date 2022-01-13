@@ -1,16 +1,16 @@
-import { BaseMeasure } from './BaseMeasure';
+import { Measure, MeasureDefinition } from '../types';
 
-/**
- * Represent a movement measure
- */
-export interface MovementMeasure extends BaseMeasure {
-  moving: boolean;
+export interface MovementMeasure extends Measure {
+  values: {
+    movement: number;
+  }
 }
 
-export interface DeviceMovementMeasures {
-  movement?: MovementMeasure;
-}
-
-export const movementMeasureMappings = {
-  moving: { type: 'boolean' },
+export const movementMeasure: MeasureDefinition = {
+  unit: {
+    name: 'Moving',
+    sign: null,
+    type: 'boolean',
+  },
+  mappings: { movement: { type: 'boolean' } },
 };

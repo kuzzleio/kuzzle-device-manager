@@ -3,14 +3,16 @@ import { JSONObject } from 'kuzzle';
 import { DeviceContent } from '../types';
 
 export class Device {
-  _id: string;
-  _source: DeviceContent;
+  static id (model: string, reference: string) {
+    return `${model}.${reference}`;
+  }
+  public _id: string;
+  public _source: DeviceContent;
 
   constructor (content: DeviceContent, _id?: string) {
-    this._id = _id || `${content.model}-${content.reference}`;
+    this._id = _id || Device.id(content.model, content.reference);
 
     this._source = {
-      qos: {},
       metadata: {},
       ...content
     };
@@ -30,23 +32,19 @@ export const devicesMappings = {
     reference: {
       type: 'keyword',
       fields: {
-        text: { type: 'text' }
+        text: { type: 'text' },
       }
     },
     model: {
       type: 'keyword',
       fields: {
-        text: { type: 'text' }
+        text: { type: 'text' },
       }
     },
     measures: {
       properties: {
         // measures mappings will be injected by the plugin
       }
-    },
-    qos: {
-      dynamic: 'false',
-      properties: {},
     },
     metadata: {
       dynamic: 'false',
@@ -58,7 +56,7 @@ export const devicesMappings = {
         text: { type: 'text' }
       }
     },
-    tenantId: {
+    engineId: {
       type: 'keyword',
       fields: {
         text: { type: 'text' }

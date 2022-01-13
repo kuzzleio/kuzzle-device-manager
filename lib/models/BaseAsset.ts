@@ -1,11 +1,11 @@
 import { JSONObject } from 'kuzzle';
 
-import { AssetContentBase } from '../types';
+import { BaseAssetContent } from '../types';
 export class BaseAsset {
   _id: string;
-  _source: AssetContentBase;
+  _source: BaseAssetContent;
 
-  constructor (content: AssetContentBase, _id?: string) {
+  constructor (content: BaseAssetContent, _id?: string) {
     this._id = _id || `${content.type}-${content.model}-${content.reference}`;
 
     this._source = content;

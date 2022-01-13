@@ -5,14 +5,21 @@ import { DeviceManagerConfig, DeviceManagerPlugin } from '../DeviceManagerPlugin
 import { catalogMappings } from '../models';
 import { AssetMappingsManager } from './CustomMappings/AssetMappingsManager';
 import { DeviceMappingsManager } from './CustomMappings/DeviceMappingsManager';
+import { MeasuresRegister } from './MeasuresRegister';
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfig;
 
   private assetMappings: AssetMappingsManager;
   private deviceMappings: DeviceMappingsManager;
+  private measuresRegister: MeasuresRegister;
 
-  constructor (plugin: Plugin, assetMappings: AssetMappingsManager, deviceMappings: DeviceMappingsManager) {
+  constructor (
+    plugin: Plugin,
+    assetMappings: AssetMappingsManager,
+    deviceMappings: DeviceMappingsManager,
+    measuresRegister: MeasuresRegister,
+  ) {
     super(
       'device-manager',
       plugin,
@@ -22,6 +29,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     this.context = plugin.context;
     this.assetMappings = assetMappings;
     this.deviceMappings = deviceMappings;
+    this.measuresRegister = measuresRegister;
   }
 
   async onCreate (index: string, group = 'commons') {
@@ -31,12 +39,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       mappings: this.assetMappings.get(group)
     }));
 
-    promises.push(this.sdk.collection.create(index, 'asset-history', {
-      mappings: this.getAssetsHistoryMappings(group)
-    }));
-
     promises.push(this.sdk.collection.create(index, 'devices', {
       mappings: this.deviceMappings.get()
+    }));
+
+    promises.push(this.sdk.collection.create(index, 'measures', {
+      mappings: this.measuresRegister.getMappings()
     }));
 
     promises.push(this.sdk.collection.create(index, this.config.configCollection, {
@@ -52,7 +60,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     await Promise.all(promises);
 
-    return { collections: ['assets', 'asset-history', this.config.configCollection, 'devices'] };
+    return { collections: ['assets', this.config.configCollection, 'devices', 'measures'] };
   }
 
   async onUpdate (index: string, group = 'commons') {
@@ -62,36 +70,28 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       mappings: this.assetMappings.get(group)
     }));
 
-    promises.push(this.sdk.collection.create(index, 'asset-history', {
-      mappings: this.getAssetsHistoryMappings(group)
-    }));
-
     promises.push(this.sdk.collection.create(index, 'devices', {
       mappings: this.deviceMappings.get()
     }));
 
+    promises.push(this.sdk.collection.create(index, 'measures', {
+      mappings: this.measuresRegister.getMappings()
+    }));
+
     await Promise.all(promises);
 
-    return { collections: ['assets', 'asset-history', 'devices'] };
+    return { collections: ['assets', 'devices', 'measures'] };
   }
 
   async onDelete (index: string) {
     const promises = [];
 
     promises.push(this.sdk.collection.delete(index, 'assets'));
-    promises.push(this.sdk.collection.delete(index, 'asset-history'));
     promises.push(this.sdk.collection.delete(index, 'devices'));
+    promises.push(this.sdk.collection.delete(index, 'measures'));
 
     await Promise.all(promises);
 
-    return { collections: ['assets', 'asset-history', 'devices'] };
-  }
-
-  private getAssetsHistoryMappings (group: string) {
-    const mappings = JSON.parse(JSON.stringify(this.config.collections['asset-history']));
-
-    mappings.properties.asset = this.assetMappings.get(group);
-
-    return mappings;
+    return { collections: ['assets', 'devices', 'measures'] };
   }
 }

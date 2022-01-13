@@ -1,5 +1,6 @@
-import { Decoder, DeviceContent } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+
+import { Decoder, PositionMeasure, TemperatureMeasure , DecodedPayload } from '../../../../index';
 
 export class DummyTempPositionDecoder extends Decoder {
   constructor () {
@@ -14,28 +15,33 @@ export class DummyTempPositionDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
-    const deviceContent: DeviceContent = {
-      reference: payload.deviceEUI,
-      measures: {
-        temperature: {
-          updatedAt: Date.now(),
-          degree: payload.register55,
-        },
-        position: {
-          updatedAt: Date.now(),
-          point: {
-            lat: payload.location.lat,
-            lon: payload.location.lon,
-          },
-          accuracy: payload.location.accu,
-        }
-      },
-      qos: {
-        battery: payload.batteryLevel * 100
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
+    const temperature: TemperatureMeasure = {
+      measuredAt: Date.now(),
+      values: {
+        temperature: payload.register55,
       }
     };
 
-    return deviceContent;
+    const position: PositionMeasure = {
+      measuredAt: Date.now(),
+      values: {
+        position: {
+          lat: payload.location.lat,
+          lon: payload.location.lon,
+        },
+        accuracy: payload.location.accu,
+      }
+    };
+
+    const decodedPayload: DecodedPayload = {
+      reference: payload.deviceEUI,
+      measures: {
+        temperature,
+        position,
+      },
+    };
+
+    return decodedPayload;
   }
 }
