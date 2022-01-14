@@ -22,7 +22,7 @@ export class DecodersController extends CRUDController {
       actions: {
         list: {
           handler: this.list.bind(this),
-          http: [{ verb: 'get', path: 'device-manager/decoders' }]
+          http: [{ path: 'device-manager/decoders', verb: 'get' }]
         }
       }
     };

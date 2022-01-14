@@ -29,17 +29,17 @@ export class Device {
 export const devicesMappings = {
   dynamic: 'strict',
   properties: {
-    reference: {
-      type: 'keyword',
+    assetId: {
       fields: {
-        text: { type: 'text' },
-      }
+        text: { type: 'text' }
+      },
+      type: 'keyword'
     },
-    model: {
-      type: 'keyword',
+    engineId: {
       fields: {
-        text: { type: 'text' },
-      }
+        text: { type: 'text' }
+      },
+      type: 'keyword'
     },
     measures: {
       properties: {
@@ -50,17 +50,17 @@ export const devicesMappings = {
       dynamic: 'false',
       properties: {},
     },
-    assetId: {
-      type: 'keyword',
+    model: {
       fields: {
-        text: { type: 'text' }
-      }
+        text: { type: 'text' },
+      },
+      type: 'keyword'
     },
-    engineId: {
-      type: 'keyword',
+    reference: {
       fields: {
-        text: { type: 'text' }
-      }
+        text: { type: 'text' },
+      },
+      type: 'keyword'
     }
   }
 };

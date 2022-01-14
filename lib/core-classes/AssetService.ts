@@ -36,8 +36,8 @@ export class AssetService {
       return {
         _id: _asset._id,
         body: _.omit(asset, ['_id']),
-      }
-    })
+      };
+    });
 
     await writeToDatabase(
       assetDocuments,
@@ -51,8 +51,8 @@ export class AssetService {
         );
 
         return {
-          successes: results.successes.concat(created.successes),
           errors: results.errors.concat(created.errors),
+          successes: results.successes.concat(created.successes),
         };
       }
     );

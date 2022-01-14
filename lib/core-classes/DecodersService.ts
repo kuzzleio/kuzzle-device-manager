@@ -24,7 +24,7 @@ export class DecodersService {
   constructor(plugin: Plugin, decoders: { decoder: Decoder, handler: PayloadHandler }[]) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-    this.handlers = decoders
+    this.handlers = decoders;
     this._decoders = new Map();
 
 
@@ -38,7 +38,7 @@ export class DecodersService {
   async list(): Promise<DecoderContent[]> {
     const decoders = Array
       .from(this._decoders.values())
-      .map(decoder => decoder.serialize())
+      .map(decoder => decoder.serialize());
 
     return decoders;
   }

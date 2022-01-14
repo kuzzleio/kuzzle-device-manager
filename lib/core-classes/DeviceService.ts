@@ -7,7 +7,6 @@ import {
   PreconditionError,
   Plugin,
   Document,
-  KuzzleDocument
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
@@ -15,7 +14,6 @@ import _ from 'lodash';
 import { Device } from '../models';
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
-import { BaseAssetContent, ContextualizedMeasure } from 'lib/types';
 
 export type DeviceBulkContent = {
   engineId?: string;
@@ -55,7 +53,7 @@ export class DeviceService {
     const attachedDevices = devices.filter(device => device._source.engineId);
 
     if (strict && attachedDevices.length > 0) {
-      const ids = attachedDevices.map(device => device._id).join(',')
+      const ids = attachedDevices.map(device => device._id).join(',');
       throw new BadRequestError(`These devices "${ids}" are already attached to a tenant`);
     }
 
@@ -73,7 +71,7 @@ export class DeviceService {
         throw new BadRequestError(`Tenant "${document.engineId}" does not have a device-manager engine`);
       }
       else if (! strict && ! tenantExists) {
-        results.errors.push(`Tenant "${document.engineId}" does not have a device-manager engine`)
+        results.errors.push(`Tenant "${document.engineId}" does not have a device-manager engine`);
         continue;
       }
 
@@ -84,8 +82,8 @@ export class DeviceService {
         const response = await global.app.trigger(
           'device-manager:device:attach-tenant:before',
           {
-            index: document.engineId,
             device: deviceDocument,
+            index: document.engineId,
           });
 
         enrichedDocuments.push(response.device);
@@ -106,10 +104,10 @@ export class DeviceService {
             result,
             { strict, ...options });
 
-            return {
-              successes: results.successes.concat(updated.successes),
-              errors: results.errors.concat(updated.errors)
-            }
+          return {
+            errors: results.errors.concat(updated.errors),
+            successes: results.successes.concat(updated.successes)
+          };
         });
 
       results.successes.concat(successes);
@@ -117,8 +115,8 @@ export class DeviceService {
 
       for (const deviceDocument of enrichedDocuments) {
         await global.app.trigger('device-manager:device:attach-tenant:after', {
-          index: document.engineId,
-          device: deviceDocument
+          device: deviceDocument,
+          index: document.engineId
         });
       }
     }
@@ -132,25 +130,25 @@ export class DeviceService {
     { strict, options }: { strict?: boolean, options?: JSONObject }
   ) {
     const detachedDevices = devices.filter(device => {
-      return ! device._source.engineId || device._source.engineId === null
+      return ! device._source.engineId || device._source.engineId === null;
     });
 
     if (strict && detachedDevices.length > 0) {
-      const ids = detachedDevices.map(device => device._id).join(',')
+      const ids = detachedDevices.map(device => device._id).join(',');
       throw new BadRequestError(`Devices "${ids}" are not attached to a tenant`);
     }
 
     const linkedAssets = devices.filter(device => device._source.assetId);
 
     if (strict && linkedAssets.length > 0) {
-      const ids = linkedAssets.map(device => device._id).join(',')
+      const ids = linkedAssets.map(device => device._id).join(',');
       throw new BadRequestError(`Devices "${ids}" are still linked to an asset`);
     }
 
     const builder = bulkData.map(data => {
       const { deviceId } = data;
       const device = devices.find(s => s._id === deviceId);
-      return { engineId: device._source.engineId, deviceId }
+      return { deviceId, engineId: device._source.engineId };
     });
 
     const documents = this.buildBulkDevices(builder);
@@ -165,18 +163,18 @@ export class DeviceService {
 
       const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
       const deviceDocuments = devicesContent.map(device => {
-        return { _id: device._id, body: { engineId: null } }
-      })
+        return { _id: device._id, body: { engineId: null } };
+      });
 
       const { errors, successes } = await writeToDatabase(
         deviceDocuments,
         async (result: mRequest[]): Promise<mResponse> => {
 
-        const updated = await this.sdk.document.mUpdate(
-          this.config.adminIndex,
-          'devices',
-          result,
-          { strict, ...options });
+          const updated = await this.sdk.document.mUpdate(
+            this.config.adminIndex,
+            'devices',
+            result,
+            { strict, ...options });
 
           await this.sdk.document.mDelete(
             document.engineId,
@@ -185,10 +183,10 @@ export class DeviceService {
             { strict, ...options });
 
           return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
-      })
+            errors: results.errors.concat(updated.errors),
+            successes: results.successes.concat(updated.successes)
+          };
+        });
 
       results.successes.concat(successes);
       results.errors.concat(errors);
@@ -204,18 +202,18 @@ export class DeviceService {
   ) {
 
     const detachedDevices = devices.filter(device => {
-      return ! device._source.engineId || device._source.engineId === null
+      return ! device._source.engineId || device._source.engineId === null;
     });
 
     if (strict && detachedDevices.length > 0) {
-      const ids = detachedDevices.map(device => device._id).join(',')
+      const ids = detachedDevices.map(device => device._id).join(',');
       throw new PreconditionError(`Devices "${ids}" are not attached to a tenant`);
     }
 
     const builder = bulkData.map(data => {
       const { deviceId, assetId } = data;
       const device = devices.find(s => s._id === deviceId);
-      return { engineId: device._source.engineId, deviceId, assetId }
+      return { assetId, deviceId, engineId: device._source.engineId };
     });
 
     const documents = this.buildBulkDevices(builder);
@@ -242,7 +240,7 @@ export class DeviceService {
 
       for (const device of devicesContent) {
         const measures = device._source.measures;
-        const { assetId } = bulkData.find(({ deviceId }) => deviceId === device._id)
+        const { assetId } = bulkData.find(({ deviceId }) => deviceId === device._id);
 
         const asset = assets.successes.find(a => a._id === assetId);
 
@@ -265,7 +263,7 @@ export class DeviceService {
 
         const response = await global.app.trigger(
           'device-manager:device:link-asset:before',
-          { device: doc_device, asset: doc_asset }
+          { asset: doc_asset, device: doc_device }
         );
 
         deviceDocuments.push(response.device);
@@ -288,10 +286,10 @@ export class DeviceService {
             { strict, ...options });
 
           return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
-      })
+            errors: results.errors.concat(updated.errors),
+            successes: results.successes.concat(updated.successes)
+          };
+        });
 
       const updatedAssets = await writeToDatabase(
         assetDocuments,
@@ -303,9 +301,9 @@ export class DeviceService {
             { strict, ...options });
 
           return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
+            errors: results.errors.concat(updated.errors),
+            successes: results.successes.concat(updated.successes)
+          };
         });
 
 
@@ -313,11 +311,11 @@ export class DeviceService {
       results.errors.concat(updatedDevice.errors, updatedDevice.errors);
 
       for (const device of updatedDevice.successes) {
-        const asset = updatedAssets.successes.find(asset => asset._id === device._source.assetId);
+        const asset = updatedAssets.successes.find(({ _id }) => _id === device._source.assetId);
 
-        global.app.trigger('device-manager:device:link-asset:after', {
-          device,
-          asset
+        await global.app.trigger('device-manager:device:link-asset:after', {
+          asset,
+          device
         });
       }
     }
@@ -339,7 +337,7 @@ export class DeviceService {
 
     const builder = devices.map(device => {
       const { _id, _source } = device;
-      return { engineId: _source.engineId, deviceId: _id, assetId: _source.assetId };
+      return { assetId: _source.assetId, deviceId: _id, engineId: _source.engineId };
     });
 
     const documents = this.buildBulkDevices(builder);
@@ -362,9 +360,8 @@ export class DeviceService {
         document.assetIds);
 
       for (const asset of assets) {
-        throw new Error('Not working for now, need benchmarks');
-
         assetDocuments.push({ _id: asset._id, body: { measures: asset._source.measures } });
+        throw new Error('Not working for now, need benchmarks');
       }
 
       for (const device of devicesContent) {
@@ -387,10 +384,10 @@ export class DeviceService {
             { strict, ...options });
 
           return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
-      })
+            errors: results.errors.concat(updated.errors),
+            successes: results.successes.concat(updated.successes)
+          };
+        });
 
       const updatedAssets = await writeToDatabase(
         assetDocuments,
@@ -403,11 +400,11 @@ export class DeviceService {
             { strict, ...options });
 
           return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
+            errors: results.errors.concat(updated.errors),
+            successes: results.successes.concat(updated.successes)
+          };
         }
-      )
+      );
 
       results.successes.concat(updatedDevice.successes, updatedAssets.successes);
       results.errors.concat(updatedDevice.errors, updatedDevice.errors);
@@ -419,13 +416,13 @@ export class DeviceService {
   async importDevices(
     devices: JSONObject,
     { strict, options }: { strict?: boolean, options?: JSONObject }) {
-      const results = {
-        errors: [],
-        successes: [],
-      };
+    const results = {
+      errors: [],
+      successes: [],
+    };
 
     const deviceDocuments = devices
-      .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: _.omit(device, ['_id']) }))
+      .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: _.omit(device, ['_id']) }));
 
     await writeToDatabase(
       deviceDocuments,
@@ -438,9 +435,9 @@ export class DeviceService {
           { strict, ...options });
 
         return {
-          successes: results.successes.concat(created.successes),
-          errors: results.errors.concat(created.errors)
-        }
+          errors: results.errors.concat(created.errors),
+          successes: results.successes.concat(created.successes)
+        };
       });
 
     return results;
@@ -449,52 +446,52 @@ export class DeviceService {
   async importCatalog (
     catalog: JSONObject[],
     { strict, options }: { strict?: boolean, options?: JSONObject }): Promise<mResponse> {
-      const results = {
-        errors: [],
-        successes: [],
-      };
+    const results = {
+      errors: [],
+      successes: [],
+    };
 
-      const withoutIds = catalog.filter(content => !content.deviceId);
+    const withoutIds = catalog.filter(content => !content.deviceId);
 
-      if (withoutIds.length > 0) {
-        throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);
-      }
+    if (withoutIds.length > 0) {
+      throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);
+    }
 
-      const catalogDocuments = catalog
-        .map((catalogContent: JSONObject) => ({
-          _id: `catalog--${catalogContent.deviceId}`,
-          body: {
-            type: 'catalog',
-            catalog: {
-              deviceId: catalogContent.deviceId,
-              authorized: catalogContent.authorized === 'false' ? false : true,
-            }
-          }
-        }));
+    const catalogDocuments = catalog
+      .map((catalogContent: JSONObject) => ({
+        _id: `catalog--${catalogContent.deviceId}`,
+        body: {
+          catalog: {
+            authorized: catalogContent.authorized === 'false' ? false : true,
+            deviceId: catalogContent.deviceId,
+          },
+          type: 'catalog'
+        }
+      }));
 
-      await writeToDatabase(
-        catalogDocuments,
-        async (result: mRequest[]): Promise<mResponse> => {
-          const created = await this.sdk.document.mCreate(
-            this.config.adminIndex,
-            this.config.configCollection,
-            result,
-            { strict, ...options });
+    await writeToDatabase(
+      catalogDocuments,
+      async (result: mRequest[]): Promise<mResponse> => {
+        const created = await this.sdk.document.mCreate(
+          this.config.adminIndex,
+          this.config.configCollection,
+          result,
+          { strict, ...options });
 
-          return {
-            successes: results.successes.concat(created.successes),
-            errors: results.errors.concat(created.errors)
-          }
-        });
+        return {
+          errors: results.errors.concat(created.errors),
+          successes: results.successes.concat(created.successes)
+        };
+      });
 
-     return results;
+    return results;
   }
 
   private assertDeviceNotLinkedToMultipleAssets(device: Device) {
     if (device._source.assetId) {
       throw new BadRequestError(
         `Device "${device._id}" is already linked to the asset "${device._source.assetId}" you need to detach it first.`
-      )
+      );
     }
   }
 
@@ -504,14 +501,14 @@ export class DeviceService {
     const hasKey = deviceKeys.find(e => assetKeys.includes(e));
 
     if (hasKey) {
-      throw new BadRequestError(`Device "${device._id}" is mesuring a value that is already mesured by another device for the asset "${asset._id}"`)
+      throw new BadRequestError(`Device "${device._id}" is mesuring a value that is already mesured by another device for the asset "${asset._id}"`);
     }
   }
 
   private async tenantExists (engineId: string) {
     const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engine',
       action: 'exists',
+      controller: 'device-manager/engine',
       index: engineId,
     });
 
@@ -530,7 +527,7 @@ export class DeviceService {
         document.assetIds.push(assetId);
       }
       else {
-        documents.push({ engineId, deviceIds: [deviceId], assetIds: [assetId] })
+        documents.push({ assetIds: [assetId], deviceIds: [deviceId], engineId });
       }
     }
     return documents;
@@ -543,7 +540,7 @@ export class DeviceService {
     const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
     const devicesDocuments = devicesContent.map(device => {
       device._source.engineId = document.engineId;
-      return { _id: device._id, body: device._source }
+      return { _id: device._id, body: device._source };
     });
 
     return devicesDocuments;

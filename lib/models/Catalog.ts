@@ -6,13 +6,13 @@ export const catalogMappings = {
   dynamic: 'strict',
 
   properties: {
-    deviceId: { type: 'keyword' },
+    assetId: { type: 'keyword' },
 
     authorized: { type: 'boolean' },
 
-    tenantId: { type: 'keyword' },
+    deviceId: { type: 'keyword' },
 
-    assetId: { type: 'keyword' },
+    tenantId: { type: 'keyword' },
   },
 };
 
@@ -45,23 +45,23 @@ export type CatalogContent = {
 /**
  * Catalog configuration document
  */
- export class Catalog extends ConfigDocument<CatalogContent> {
+export class Catalog extends ConfigDocument<CatalogContent> {
   /**
    * Can be build either:
    *   - with a raw config document (_id and _source properties)
    *   - with a rule definition
    */
   constructor (document: CatalogContent | { _id: string, _source: JSONObject }) {
-    if (document['_id'] || document['_source']) {
-      super(document as any)
+    if (document._id || document._source) {
+      super(document as any);
     }
     else {
       super({
         _source: {
-          type: 'catalog',
-          catalog: document as CatalogContent
+          catalog: document as CatalogContent,
+          type: 'catalog'
         }
-      })
+      });
     }
   }
 }

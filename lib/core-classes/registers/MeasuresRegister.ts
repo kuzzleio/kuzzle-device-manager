@@ -1,6 +1,6 @@
 import { JSONObject, PluginImplementationError } from 'kuzzle';
 
-import { MeasureDefinition, measuresMappings } from '../types';
+import { MeasureDefinition, measuresMappings } from '../../types';
 
 export class MeasuresRegister {
   private mappings: JSONObject;
@@ -17,13 +17,18 @@ export class MeasuresRegister {
   }
 
   /**
-   * Register custom measure mappings
+   * Register custom measure definition
    *
-   * @example
-   *
-   * plugin.measure.register({
-   *   humidity: { type: 'float' },
+   * ```js
+   * plugin.measure.register('humidity', {
+   *   unit: {
+   *     name: 'Humidity',
+   *     sign: '%',
+   *     type: 'number',
+   *   },
+   *   mappings: { humidity: { type: 'float' } },
    * });
+   * ```
    */
   register (type: string, measure: MeasureDefinition) {
     if (this.measures.has(type)) {

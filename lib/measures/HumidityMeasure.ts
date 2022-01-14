@@ -7,10 +7,10 @@ export interface HumidityMeasure extends Measure {
 }
 
 export const humidityMeasure: MeasureDefinition = {
+  mappings: { humidity: { type: 'float' } },
   unit: {
     name: 'Humidity',
     sign: '%',
     type: 'number',
   },
-  mappings: { humidity: { type: 'float' } },
 };

@@ -13,7 +13,6 @@ export class CRUDController {
   public definition: ControllerDefinition;
 
 
-
   constructor (plugin: Plugin, collection: string) {
     this.config = plugin.config as any;
     this.context = plugin.context;
@@ -69,16 +68,16 @@ export class CRUDController {
 
     const res = await this.as(request.context.user).query(
       {
-        controller: 'document',
         action: 'search',
-        index,
-        collection: this.collection,
         body: searchBody,
+        collection: this.collection,
+        controller: 'document',
+        index,
         ...request.input.args
       }
     );
 
-    return res.result
+    return res.result;
   }
 
   /**

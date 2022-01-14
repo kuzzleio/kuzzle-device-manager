@@ -7,10 +7,10 @@ export interface TemperatureMeasure extends Measure {
 }
 
 export const temperatureMeasure: MeasureDefinition = {
+  mappings: { temperature: { type: 'float' } },
   unit: {
     name: 'Degree',
     sign: '°',
     type: 'number',
   },
-  mappings: { temperature: { type: 'float' } },
 };

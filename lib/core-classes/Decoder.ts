@@ -27,12 +27,12 @@ export abstract class Decoder {
   /**
    * Array of device measure type
    */
-   public deviceMeasures: string[];
+  public deviceMeasures: string[];
 
   /**
    * Custom name for the associated API action in the "payload" controller
    */
-   public action?: string;
+  public action?: string;
 
   /**
    * Custom mappings for the payload collection.
@@ -48,7 +48,7 @@ export abstract class Decoder {
    *   }
    * }
    */
-   public payloadsMappings?: JSONObject = {};
+  public payloadsMappings?: JSONObject = {};
 
   /**
    * Define custom HTTP routes
@@ -61,7 +61,7 @@ export abstract class Decoder {
 
   get http (): HttpRoute[] {
     if (! this._http) {
-      this._http = [{ verb: 'post', path: `device-manager/payload/${this.action}` }];
+      this._http = [{ path: `device-manager/payload/${this.action}`, verb: 'post' }];
     }
 
     return this._http;
@@ -124,9 +124,9 @@ export abstract class Decoder {
 
   serialize (): DecoderContent {
     return {
-      deviceModel: this.deviceModel,
-      deviceMeasures: this.deviceMeasures
-    }
+      deviceMeasures: this.deviceMeasures,
+      deviceModel: this.deviceModel
+    };
   }
 }
 

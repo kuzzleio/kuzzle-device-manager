@@ -26,61 +26,61 @@ export class DeviceController extends CRUDController {
 
     this.definition = {
       actions: {
-        update: {
-          handler: this.update.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id' }]
+        attachTenant: {
+          handler: this.attachTenant.bind(this),
+          http: [{ path: 'device-manager/:index/devices/:_id/_attach', verb: 'put' }]
+        },
+        detachTenant: {
+          handler: this.detachTenant.bind(this),
+          http: [{ path: 'device-manager/devices/:_id/_detach', verb: 'delete' }]
+        },
+        importCatalog: {
+          handler: this.importCatalog.bind(this),
+          http: [{ path: 'device-manager/devices/_catalog', verb: 'post' }]
+        },
+        importDevices: {
+          handler: this.importDevices.bind(this),
+          http: [{ path: 'device-manager/devices/_import', verb: 'post' }]
+        },
+        linkAsset: {
+          handler: this.linkAsset.bind(this),
+          http: [{ path: 'device-manager/:index/devices/:_id/_link/:assetId', verb: 'put' }]
+        },
+        mAttachTenants: {
+          handler: this.mAttachTenants.bind(this),
+          http: [{ path: 'device-manager/devices/_mAttach', verb: 'put' }]
+        },
+        mDetachTenants: {
+          handler: this.mDetachTenants.bind(this),
+          http: [{ path: 'device-manager/devices/_mDetach', verb: 'put' }]
+        },
+        mLinkAssets: {
+          handler: this.mLinkAssets.bind(this),
+          http: [{ path: 'device-manager/devices/_mLink', verb: 'put' }]
+        },
+        mUnlinkAssets: {
+          handler: this.mUnlinkAssets.bind(this),
+          http: [{ path: 'device-manager/devices/_mUnlink', verb: 'put' }]
+        },
+        prunePayloads: {
+          handler: this.prunePayloads.bind(this),
+          http: [{ path: 'device-manager/devices/_prunePayloads', verb: 'delete' }]
         },
         search: {
           handler: this.search.bind(this),
           http: [
-            { verb: 'post', path: 'device-manager/:index/devices/_search' },
-            { verb: 'get', path: 'device-manager/:index/devices/_search' }
+            { path: 'device-manager/:index/devices/_search', verb: 'post' },
+            { path: 'device-manager/:index/devices/_search', verb: 'get' }
           ]
-        },
-        attachTenant: {
-          handler: this.attachTenant.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_attach' }]
-        },
-        mAttachTenants: {
-          handler: this.mAttachTenants.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/devices/_mAttach' }]
-        },
-        detachTenant: {
-          handler: this.detachTenant.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/devices/:_id/_detach' }]
-        },
-        mDetachTenants: {
-          handler: this.mDetachTenants.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/devices/_mDetach' }]
-        },
-        linkAsset: {
-          handler: this.linkAsset.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/:index/devices/:_id/_link/:assetId' }]
-        },
-        mLinkAssets: {
-          handler: this.mLinkAssets.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/devices/_mLink' }]
         },
         unlinkAsset: {
           handler: this.unlinkAsset.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/:index/devices/:_id/_unlink' }]
+          http: [{ path: 'device-manager/:index/devices/:_id/_unlink', verb: 'delete' }]
         },
-        mUnlinkAssets: {
-          handler: this.mUnlinkAssets.bind(this),
-          http: [{ verb: 'put', path: 'device-manager/devices/_mUnlink' }]
+        update: {
+          handler: this.update.bind(this),
+          http: [{ path: 'device-manager/:index/devices/:_id', verb: 'put' }]
         },
-        prunePayloads: {
-          handler: this.prunePayloads.bind(this),
-          http: [{ verb: 'delete', path: 'device-manager/devices/_prunePayloads' }]
-        },
-        importDevices: {
-          handler: this.importDevices.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/devices/_import' }]
-        },
-        importCatalog: {
-          handler: this.importCatalog.bind(this),
-          http: [{ verb: 'post', path: 'device-manager/devices/_catalog' }]
-        }
       }
     };
   }
@@ -113,15 +113,15 @@ export class DeviceController extends CRUDController {
     const tenantId = request.getIndex();
     const deviceId = request.getId();
 
-    const document = { tenantId: tenantId, deviceId: deviceId };
+    const document = { deviceId: deviceId, tenantId: tenantId };
     const devices = await this.mGetDevice([document]);
 
     await this.deviceService.mAttachTenants(
       devices,
       [document],
       {
-        strict: true,
-        options:  { ...request.input.args }
+        options:  { ...request.input.args },
+        strict: true
       });
   }
 
@@ -137,8 +137,8 @@ export class DeviceController extends CRUDController {
       devices,
       bulkData,
       {
-        strict,
-        options:  { ...request.input.args }
+        options:  { ...request.input.args },
+        strict
       });
   }
 
@@ -155,8 +155,8 @@ export class DeviceController extends CRUDController {
       devices,
       [document],
       {
-        strict: true,
-        options:  { ...request.input.args }
+        options:  { ...request.input.args },
+        strict: true
       });
   }
 
@@ -172,8 +172,8 @@ export class DeviceController extends CRUDController {
       devices,
       bulkData,
       {
-        strict,
-        options:  { ...request.input.args }
+        options:  { ...request.input.args },
+        strict
       });
   }
 
@@ -185,15 +185,15 @@ export class DeviceController extends CRUDController {
     const assetId = request.getString('assetId');
     const deviceId = request.getId();
 
-    const document: DeviceBulkContent = { deviceId, assetId };
+    const document: DeviceBulkContent = { assetId, deviceId };
     const devices = await this.mGetDevice([document]);
 
     await this.deviceService.mLinkAssets(
       devices,
       [document],
       {
-        strict: true,
-        options:  { ...request.input.args }
+        options:  { ...request.input.args },
+        strict: true
       });
   }
 
@@ -209,15 +209,15 @@ export class DeviceController extends CRUDController {
       devices,
       bulkData,
       {
-        strict,
-        options:  { ...request.input.args }
+        options:  { ...request.input.args },
+        strict
       });
   }
 
   /**
    * Unlink a device from an asset.
    */
-   async unlinkAsset (request: KuzzleRequest) {
+  async unlinkAsset (request: KuzzleRequest) {
     const deviceId = request.getId();
 
     const document: DeviceBulkContent = { deviceId };
@@ -226,8 +226,8 @@ export class DeviceController extends CRUDController {
     await this.deviceService.mUnlinkAssets(
       devices,
       {
-        strict: true,
-        options:  { ...request.input.args }
+        options:  { ...request.input.args },
+        strict: true
       });
   }
 
@@ -242,8 +242,8 @@ export class DeviceController extends CRUDController {
     return this.deviceService.mUnlinkAssets(
       devices,
       {
-        strict,
-        options: { ...request.input.args }
+        options: { ...request.input.args },
+        strict
       });
   }
 
@@ -254,21 +254,21 @@ export class DeviceController extends CRUDController {
     const body = request.getBody();
 
     const date = new Date().setDate(new Date().getDate() - body.days || 7);
-    const filter = []
+    const filter = [];
     filter.push({
-        range: {
-          '_kuzzle_info.createdAt': {
-            lt: date
-          }
+      range: {
+        '_kuzzle_info.createdAt': {
+          lt: date
         }
-      });
+      }
+    });
 
     if (body.deviceModel) {
       filter.push({ term: { deviceModel: body.deviceModel } });
     }
 
     if (body.keepInvalid) {
-      filter.push({ term: { valid: true } })
+      filter.push({ term: { valid: true } });
     }
 
     return this.as(request.context.user).bulk.deleteByQuery(
@@ -286,8 +286,8 @@ export class DeviceController extends CRUDController {
     return this.deviceService.importDevices(
       devices,
       {
-        strict: true,
-        options: { ...request.input.args }
+        options: { ...request.input.args },
+        strict: true
       });
   }
 
@@ -300,11 +300,10 @@ export class DeviceController extends CRUDController {
     return this.deviceService.importCatalog(
       catalog,
       {
-        strict: true,
-        options: { ...request.input.args }
+        options: { ...request.input.args },
+        strict: true
       });
   }
-
 
 
   private async mGetDevice (devices: DeviceBulkContent[]): Promise<Device[]> {
@@ -313,7 +312,7 @@ export class DeviceController extends CRUDController {
       this.config.adminIndex,
       'devices',
       deviceIds
-    )
+    );
 
     if (result.errors.length > 0) {
       const ids = result.errors.join(',');
@@ -333,9 +332,9 @@ export class DeviceController extends CRUDController {
         .fromString(body.csv);
 
       bulkData = lines.map(({ tenantId, deviceId, assetId}) => ({
-        tenantId,
+        assetId,
         deviceId,
-        assetId
+        tenantId
       }));
     }
     else if (body.records) {
@@ -345,11 +344,11 @@ export class DeviceController extends CRUDController {
       bulkData = body.deviceIds.map((deviceId: string) => ({ deviceId }));
     }
     else {
-      throw new BadRequestError(`Malformed request missing property csv, records, deviceIds`);
+      throw new BadRequestError('Malformed request missing property csv, records, deviceIds');
     }
 
     const strict = request.getBoolean('strict');
 
-    return { strict, bulkData };
+    return { bulkData, strict };
   }
 }

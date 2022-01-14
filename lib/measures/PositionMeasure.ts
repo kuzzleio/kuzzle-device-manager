@@ -12,14 +12,14 @@ export interface PositionMeasure extends Measure {
 }
 
 export const positionMeasure: MeasureDefinition = {
+  mappings: {
+    accuracy: { type: 'float' },
+    altitude: { type: 'float' },
+    position: { type: 'geo_point' },
+  },
   unit: {
     name: 'GPS',
     sign: null,
     type: 'geo_point',
-  },
-  mappings: {
-    position: { type: 'geo_point' },
-    altitude: { type: 'float' },
-    accuracy: { type: 'float' },
   },
 };

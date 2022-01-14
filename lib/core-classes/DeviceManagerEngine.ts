@@ -3,21 +3,21 @@ import { AbstractEngine } from 'kuzzle-plugin-commons';
 
 import { DeviceManagerConfig, DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { catalogMappings } from '../models';
-import { AssetMappingsManager } from './CustomMappings/AssetMappingsManager';
-import { DeviceMappingsManager } from './CustomMappings/DeviceMappingsManager';
-import { MeasuresRegister } from './MeasuresRegister';
+import { AssetsRegister } from './registers/AssetsRegister';
+import { DevicesRegister } from './registers/DevicesRegister';
+import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfig;
 
-  private assetMappings: AssetMappingsManager;
-  private deviceMappings: DeviceMappingsManager;
+  private assetsRegister: AssetsRegister;
+  private devicesRegister: DevicesRegister;
   private measuresRegister: MeasuresRegister;
 
   constructor (
     plugin: Plugin,
-    assetMappings: AssetMappingsManager,
-    deviceMappings: DeviceMappingsManager,
+    assetsRegister: AssetsRegister,
+    devicesRegister: DevicesRegister,
     measuresRegister: MeasuresRegister,
   ) {
     super(
@@ -27,8 +27,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       plugin.config.configCollection);
 
     this.context = plugin.context;
-    this.assetMappings = assetMappings;
-    this.deviceMappings = deviceMappings;
+    this.assetsRegister = assetsRegister;
+    this.devicesRegister = devicesRegister;
     this.measuresRegister = measuresRegister;
   }
 
@@ -36,11 +36,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const promises = [];
 
     promises.push(this.sdk.collection.create(index, 'assets', {
-      mappings: this.assetMappings.get(group)
+      mappings: this.assetsRegister.getMappings(group)
     }));
 
     promises.push(this.sdk.collection.create(index, 'devices', {
-      mappings: this.deviceMappings.get()
+      mappings: this.devicesRegister.getMappings()
     }));
 
     promises.push(this.sdk.collection.create(index, 'measures', {
@@ -51,9 +51,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       mappings: {
         dynamic: 'strict',
         properties: {
-          type: { type: 'keyword' },
-
           catalog: catalogMappings,
+
+          type: { type: 'keyword' },
         }
       } as any
     }));
@@ -67,11 +67,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const promises = [];
 
     promises.push(this.sdk.collection.create(index, 'assets', {
-      mappings: this.assetMappings.get(group)
+      mappings: this.assetsRegister.getMappings(group)
     }));
 
     promises.push(this.sdk.collection.create(index, 'devices', {
-      mappings: this.deviceMappings.get()
+      mappings: this.devicesRegister.getMappings()
     }));
 
     promises.push(this.sdk.collection.create(index, 'measures', {

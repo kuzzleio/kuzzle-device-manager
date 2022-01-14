@@ -12,8 +12,8 @@ export * from './DecodersService';
 
 export * from './AssetService';
 
-export * from './CustomMappings/AssetMappingsManager';
+export * from './registers/AssetsRegister';
 
-export * from './CustomMappings/DeviceMappingsManager';
+export * from './registers/DevicesRegister';
 
-export * from './MeasuresRegister';
+export * from './registers/MeasuresRegister';

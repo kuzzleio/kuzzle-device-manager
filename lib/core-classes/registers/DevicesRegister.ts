@@ -1,11 +1,11 @@
-import { JSONObject } from 'kuzzle';
-
-import { MeasuresRegister } from '../MeasuresRegister';
+import { JSONObject, PluginImplementationError } from 'kuzzle';
 import { devicesMappings } from '../../models';
 
-export class DeviceMappingsManager {
-  private measuresRegister: MeasuresRegister;
+import { MeasuresRegister } from './MeasuresRegister';
+
+export class DevicesRegister {
   private mappings: JSONObject;
+  private measuresRegister: MeasuresRegister;
 
   constructor (measuresRegister: MeasuresRegister) {
     this.mappings = JSON.parse(JSON.stringify(devicesMappings));
@@ -17,20 +17,23 @@ export class DeviceMappingsManager {
    *
    * @param metadata Device custom metadata mappings
    *
-   * @example
-   *
+   * ```js
    * plugin.devices.registerMetadata({
    *   serial: { type: 'keyword' },
    * });
-   *
+   * ```
    */
   registerMetadata (metadata: JSONObject) {
     for (const [name, value] of Object.entries(metadata)) {
+      if (this.mappings.properties.metadata.properties[name]) {
+        throw new PluginImplementationError(`Device metadata "${name}" already exists`);
+      }
+
       this.mappings.properties.metadata.properties[name] = value;
     }
   }
 
-  get (): JSONObject {
+  getMappings (): JSONObject {
     const mappings = JSON.parse(JSON.stringify(this.mappings));
 
     mappings.properties.measures = this.measuresRegister.getMappings();

@@ -1,9 +1,7 @@
 import _ from 'lodash';
 import {
   KuzzleRequest,
-  JSONObject,
   PluginContext,
-  EmbeddedSDK,
   BadRequestError,
   Plugin,
 } from 'kuzzle';
@@ -12,10 +10,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
 import { BatchController, BatchWriter } from './BatchProcessing';
-import { eventPayload } from '../utils';
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
-import { ContextualizedMeasure, DeviceContent } from 'lib/types';
-import { MeasuresRegister } from './MeasuresRegister';
+import { ContextualizedMeasure, DeviceContent } from '../types';
+import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export type PayloadHandler = (request: KuzzleRequest, decoder: Decoder) => Promise<any>;
 
@@ -25,7 +22,7 @@ export class PayloadService {
   private batchController: BatchController;
   private measuresRegister: MeasuresRegister;
 
-  get sdk (): EmbeddedSDK {
+  get sdk () {
     return this.context.accessors.sdk;
   }
 
@@ -69,9 +66,9 @@ export class PayloadService {
         'payloads',
         {
           deviceModel: decoder.deviceModel,
+          payload,
           uuid,
           valid,
-          payload,
         },
         uuid);
     }
@@ -84,17 +81,17 @@ export class PayloadService {
 
     for (const [type, measure] of Object.entries(decodedPayload.measures)) {
       newMeasures.push({
-        type,
-        values: measure.values,
         measuredAt: measure.measuredAt,
-        unit: this.measuresRegister.get(type).unit,
         origin: {
           id: deviceId,
-          type: 'device',
           model: decoder.deviceModel,
-          reference: decodedPayload.reference,
           payloadUuids: [uuid],
-        }
+          reference: decodedPayload.reference,
+          type: 'device',
+        },
+        type,
+        unit: this.measuresRegister.get(type).unit,
+        values: measure.values
       });
     }
 
@@ -114,9 +111,9 @@ export class PayloadService {
       }
 
       const deviceContent: DeviceContent = {
-        reference: decodedPayload.reference,
-        model: decoder.deviceModel,
         measures: newMeasures,
+        model: decoder.deviceModel,
+        reference: decodedPayload.reference,
       };
 
       return await this.deviceProvisionning(deviceId, deviceContent, { refresh });
@@ -137,9 +134,9 @@ export class PayloadService {
     const device = new Device(deviceDoc._source);
 
     return {
-      engineId: device._source.engineId,
-      device: device.serialize(),
       asset: null,
+      device: device.serialize(),
+      engineId: device._source.engineId,
     };
   }
 
@@ -189,8 +186,8 @@ export class PayloadService {
     const { adminCatalog, tenantCatalog } = await global.app.trigger(
       'device-manager:device:provisioning:before',
       {
-        deviceId,
         adminCatalog: catalogEntry,
+        deviceId,
         tenantCatalog: tenantCatalogEntry,
       });
 
@@ -200,8 +197,8 @@ export class PayloadService {
     if (! deviceContent.engineId) {
       // Trigger event even if there is not tenantId in the catalog
       await global.app.trigger('device-manager:device:provisioning:after', {
-        deviceId,
         adminCatalog,
+        deviceId,
         tenantCatalog,
       });
 
@@ -209,18 +206,18 @@ export class PayloadService {
     }
 
     await this.sdk.query({
-      controller: 'device-manager/device',
-      action: 'attachTenant',
       _id: deviceId,
+      action: 'attachTenant',
+      controller: 'device-manager/device',
       index: adminCatalog.content.tenantId,
     });
 
     if (adminCatalog.content.assetId) {
       await this.sdk.query({
-        controller: 'device-manager/device',
-        action: 'linkAsset',
         _id: deviceId,
+        action: 'linkAsset',
         assetId: adminCatalog.content.assetId,
+        controller: 'device-manager/device',
       });
     }
 
@@ -230,17 +227,17 @@ export class PayloadService {
       && tenantCatalog.content.assetId
     ) {
       await this.sdk.query({
-        controller: 'device-manager/device',
-        action: 'linkAsset',
         _id: deviceId,
+        action: 'linkAsset',
         assetId: tenantCatalog.content.assetId,
+        controller: 'device-manager/device',
       });
     }
 
     // Trigger event when there is a tenantId in the catalog
     await global.app.trigger('device-manager:device:provisioning:after', {
-      deviceId,
       adminCatalog,
+      deviceId,
       tenantCatalog,
     });
 
@@ -270,7 +267,7 @@ export class PayloadService {
         {
           query: { equals: { 'catalog.deviceId': deviceId } },
         },
-        { size: 1, lang: 'koncorde' });
+        { lang: 'koncorde', size: 1 });
 
       if (result.total !== 0) {
         return new Catalog(result.hits[0]);
@@ -303,6 +300,8 @@ export class PayloadService {
         updatedDevice._source,
         { retryOnConflict: 10 });
 
+      await this.historizeMeasures(engineId, newMeasures);
+
       refreshableCollections.push([engineId, 'devices']);
 
       // Propagate measures into linked asset
@@ -322,9 +321,9 @@ export class PayloadService {
     }
 
     return {
-      engineId,
-      device: device.serialize(),
       asset: updatedAsset ? updatedAsset.serialize() : null,
+      device: device.serialize(),
+      engineId,
     };
   }
 
@@ -358,9 +357,18 @@ export class PayloadService {
       'devices',
       result.device._id,
       result.device._source,
-      { source: true, retryOnConflict: 10 });
+      { retryOnConflict: 10, source: true });
 
     return new Device(deviceDocument._source);
+  }
+
+  /**
+   * Save measures in engine "measures" collection
+   */
+  private async historizeMeasures (engineId: string, measures: ContextualizedMeasure[]) {
+    await Promise.all(measures.map(measure => {
+      return this.batchController.create(engineId, 'measures', measure);
+    }));
   }
 
   /**
@@ -373,8 +381,6 @@ export class PayloadService {
   ): Promise<BaseAsset> {
     // dup array reference
     const measures = newMeasures.map(m => m);
-
-    const newMeasureTypes = measures.map(m => m.type);
 
     const asset = await this.batchController.get(
       engineId,
@@ -401,7 +407,7 @@ export class PayloadService {
       'assets',
       assetId,
       result.asset._source,
-      { source: true, retryOnConflict: 10 });
+      { retryOnConflict: 10, source: true });
 
     return new BaseAsset(assetDocument._source as any, assetDocument._id);
   }

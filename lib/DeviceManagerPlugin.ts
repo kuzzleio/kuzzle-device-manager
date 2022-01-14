@@ -3,7 +3,6 @@ import {
   Plugin,
   PluginContext,
   JSONObject,
-  EmbeddedSDK,
   PluginImplementationError,
   Mutex,
   KuzzleRequest,
@@ -24,17 +23,15 @@ import {
   BatchWriter,
   Decoder,
   PayloadHandler,
-  AssetMappingsManager,
-  DeviceMappingsManager,
+  AssetsRegister,
+  DevicesRegister,
   DecodersService,
   AssetService,
   MeasuresRegister,
 } from './core-classes';
 import {
-  assetsMappings,
   devicesMappings,
   catalogMappings,
-  assetsHistoryMappings,
 } from './models';
 import {
   humidityMeasure,
@@ -66,17 +63,6 @@ export type DeviceManagerConfig = {
   },
 
   /**
-   * Tenants collections
-   */
-  collections: {
-    assets: JSONObject;
-
-    devices: JSONObject;
-
-    'asset-history': JSONObject;
-  },
-
-  /**
    * Interval to write documents from the buffer
    */
   writerInterval: number;
@@ -100,33 +86,28 @@ export class DeviceManagerPlugin extends Plugin {
 
   private batchWriter: BatchWriter;
 
-  private get sdk (): EmbeddedSDK {
+  private decoders: Array<{ decoder: Decoder, handler: PayloadHandler }> = [];
+
+  private measuresRegister = new MeasuresRegister();
+  private devicesRegister = new DevicesRegister(this.measuresRegister);
+  private assetsRegister = new AssetsRegister(this.measuresRegister);
+
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  private decoders: { decoder: Decoder, handler: PayloadHandler }[] = [];
-
-  private measureRegister = new MeasuresRegister();
-
-  private deviceMappings = new DeviceMappingsManager(this.measureRegister);
-
-  private assetMappings = new AssetMappingsManager(this.measureRegister);
-
   get assets () {
-    return this.assetMappings;
+    return this.assetsRegister;
   }
 
   get devices () {
-    return this.deviceMappings;
+    return this.devicesRegister;
   }
 
   get measures () {
-    return this.measureRegister;
+    return this.measuresRegister;
   }
 
-  /**
-   * Constructor
-   */
   constructor() {
     super({
       kuzzleVersion: '>=2.16.8 <3'
@@ -139,49 +120,44 @@ export class DeviceManagerPlugin extends Plugin {
     };
 
     this.defaultConfig = {
-      adminIndex: 'device-manager',
-      configCollection: 'config',
       adminCollections: {
         config: {
           dynamic: 'strict',
           properties: {
-            type: { type: 'keyword' },
-
-            engine: {
-              properties: {
-                index: { type: 'keyword' },
-                group: { type: 'keyword' },
-              }
-            },
-
             catalog: catalogMappings,
 
             'device-manager': {
               properties: {
                 provisioningStrategy: { type: 'keyword' },
               }
-            }
+            },
+
+            engine: {
+              properties: {
+                group: { type: 'keyword' },
+                index: { type: 'keyword' },
+              }
+            },
+
+            type: { type: 'keyword' }
           }
         },
         devices: devicesMappings,
         payloads: {
           dynamic: 'strict',
           properties: {
-            uuid: { type: 'keyword' },
-            valid: { type: 'boolean' },
             deviceModel: { type: 'keyword' },
             payload: {
               dynamic: 'false',
               properties: {}
-            }
+            },
+            uuid: { type: 'keyword' },
+            valid: { type: 'boolean' }
           }
         }
       },
-      collections: {
-        assets: assetsMappings,
-        devices: devicesMappings,
-        'asset-history': assetsHistoryMappings,
-      },
+      adminIndex: 'device-manager',
+      configCollection: 'config',
       writerInterval: 50
     };
   }
@@ -203,10 +179,10 @@ export class DeviceManagerPlugin extends Plugin {
     this.batchWriter.begin();
 
     this.assetService = new AssetService(this);
-    this.payloadService = new PayloadService(this, this.batchWriter, this.measureRegister);
+    this.payloadService = new PayloadService(this, this.batchWriter, this.measuresRegister);
     this.decodersService = new DecodersService(this, this.decoders);
     this.deviceService = new DeviceService(this);
-    this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetMappings, this.deviceMappings, this.measureRegister);
+    this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetsRegister, this.devicesRegister, this.measuresRegister);
 
     this.assetController = new AssetController(this, this.assetService);
     this.deviceController = new DeviceController(this, this.deviceService);
@@ -219,10 +195,10 @@ export class DeviceManagerPlugin extends Plugin {
     this.api['device-manager/decoders'] = this.decodersController.definition;
 
     this.pipes = {
-      'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
       'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
       'document:beforeCreate': this.generateConfigID.bind(this),
     };
 
@@ -257,8 +233,8 @@ export class DeviceManagerPlugin extends Plugin {
     this.decoders.push({ decoder, handler });
 
     return {
-      controller: 'device-manager/payload',
       action: decoder.action,
+      controller: 'device-manager/payload',
     };
   }
 
@@ -287,7 +263,7 @@ export class DeviceManagerPlugin extends Plugin {
 
       await Promise.all([
         this.sdk.collection.create(this.config.adminIndex, this.config.configCollection, this.config.adminCollections.config),
-        this.sdk.collection.create(this.config.adminIndex, 'devices', this.deviceMappings.get()),
+        this.sdk.collection.create(this.config.adminIndex, 'devices', this.devicesRegister.getMappings()),
         this.sdk.collection.create(this.config.adminIndex, 'payloads', this.getPayloadsMappings()),
       ]);
 
@@ -338,8 +314,8 @@ export class DeviceManagerPlugin extends Plugin {
         this.config.adminIndex,
         this.config.configCollection,
         {
-          type: 'device-manager',
-          'device-manager': { provisioningStrategy: 'auto' }
+          'device-manager': { provisioningStrategy: 'auto' },
+          type: 'device-manager'
         },
         'plugin--device-manager');
     }
@@ -350,8 +326,8 @@ export class DeviceManagerPlugin extends Plugin {
 
     if (index !== this.config.adminIndex) {
       const { result: { exists } } = await this.sdk.query({
-        controller: 'device-manager/engine',
         action: 'exists',
+        controller: 'device-manager/engine',
         index,
       });
 

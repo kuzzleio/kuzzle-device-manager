@@ -7,10 +7,10 @@ export interface MovementMeasure extends Measure {
 }
 
 export const movementMeasure: MeasureDefinition = {
+  mappings: { movement: { type: 'boolean' } },
   unit: {
     name: 'Moving',
     sign: null,
     type: 'boolean',
   },
-  mappings: { movement: { type: 'boolean' } },
 };
