@@ -1,6 +1,6 @@
 import { JSONObject } from 'kuzzle';
 
-import { ContextualizedMeasure } from './measures/ContextualizedMeasure';
+import { ContextualMeasure } from './measures/ContextualMeasure';
 
 /**
  * Asset document
@@ -12,7 +12,7 @@ export interface BaseAssetContent {
 
   reference: string;
 
-  measures?: ContextualizedMeasure[],
+  measures?: ContextualMeasure[],
 
   metadata?: JSONObject,
 }

@@ -11,7 +11,7 @@ import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
 import { BatchController, BatchWriter } from './BatchProcessing';
 import { DeviceManagerConfig } from '../DeviceManagerPlugin';
-import { ContextualizedMeasure, DeviceContent } from '../types';
+import { ContextualMeasure, DeviceContent } from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class PayloadService {
@@ -73,7 +73,7 @@ export class PayloadService {
 
     const decodedPayload = await decoder.decode(payload, request);
 
-    const newMeasures: ContextualizedMeasure[] = [];
+    const newMeasures: ContextualMeasure[] = [];
 
     const deviceId = Device.id(decoder.deviceModel, decodedPayload.reference);
 
@@ -287,7 +287,7 @@ export class PayloadService {
    */
   private async update (
     device: Device,
-    newMeasures: ContextualizedMeasure[],
+    newMeasures: ContextualMeasure[],
     { refresh },
   ) {
     const refreshableCollections = [];
@@ -342,7 +342,7 @@ export class PayloadService {
    */
   private async updateDevice (
     device: Device,
-    newMeasures: ContextualizedMeasure[],
+    newMeasures: ContextualMeasure[],
   ): Promise<Device> {
     // dup array reference
     const measures = newMeasures.map(m => m);
@@ -373,7 +373,7 @@ export class PayloadService {
   /**
    * Save measures in engine "measures" collection
    */
-  private async historizeMeasures (engineId: string, measures: ContextualizedMeasure[]) {
+  private async historizeMeasures (engineId: string, measures: ContextualMeasure[]) {
     await Promise.all(measures.map(measure => {
       return this.batchController.create(engineId, 'measures', measure);
     }));
@@ -384,7 +384,7 @@ export class PayloadService {
    */
   private async propagateToAsset (
     engineId: string,
-    newMeasures: ContextualizedMeasure[],
+    newMeasures: ContextualMeasure[],
     assetId: string
   ): Promise<BaseAsset> {
     // dup array reference

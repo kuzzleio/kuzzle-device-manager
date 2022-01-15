@@ -1,6 +1,6 @@
 import { JSONObject } from 'kuzzle';
 
-import { ContextualizedMeasure } from './measures/ContextualizedMeasure';
+import { ContextualMeasure } from './measures/ContextualMeasure';
 
 export type DeviceContent = {
   /**
@@ -17,7 +17,7 @@ export type DeviceContent = {
   /**
    *
    */
-  measures?: ContextualizedMeasure[];
+  measures?: ContextualMeasure[];
 
   /**
    * Device metadata
