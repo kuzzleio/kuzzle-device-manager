@@ -7,7 +7,6 @@ import {
   Mutex,
   KuzzleRequest,
   BadRequestError,
-  Inflector,
 } from 'kuzzle';
 import { EngineController } from 'kuzzle-plugin-commons';
 
@@ -21,19 +20,18 @@ import {
   PayloadService,
   DeviceService,
   BatchWriter,
-  Decoder,
-  PayloadHandler,
   AssetsRegister,
   DevicesRegister,
-  DecodersService,
   AssetService,
   MeasuresRegister,
+  DecodersRegister,
 } from './core-classes';
 import {
   devicesMappings,
   catalogMappings,
 } from './models';
 import {
+  batteryMeasure,
   humidityMeasure,
   movementMeasure,
   positionMeasure,
@@ -71,8 +69,6 @@ export type DeviceManagerConfig = {
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfig;
 
-  private defaultConfig: DeviceManagerConfig;
-
   private assetController: AssetController;
   private deviceController: DeviceController;
   private decodersController: DecodersController;
@@ -82,12 +78,10 @@ export class DeviceManagerPlugin extends Plugin {
   private payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
-  private decodersService: DecodersService;
 
   private batchWriter: BatchWriter;
 
-  private decoders: Array<{ decoder: Decoder, handler: PayloadHandler }> = [];
-
+  private decodersRegister = new DecodersRegister();
   private measuresRegister = new MeasuresRegister();
   private devicesRegister = new DevicesRegister(this.measuresRegister);
   private assetsRegister = new AssetsRegister(this.measuresRegister);
@@ -96,16 +90,42 @@ export class DeviceManagerPlugin extends Plugin {
     return this.context.accessors.sdk;
   }
 
+  /**
+   * Manager assets customization.
+   *
+   * @method register
+   */
   get assets () {
     return this.assetsRegister;
   }
 
+  /**
+   * Manage devices customization.
+   *
+   * @method registerMetadata
+   */
   get devices () {
     return this.devicesRegister;
   }
 
+  /**
+   * Manage measures customization.
+   *
+   * @method register
+   * @method get
+   */
   get measures () {
     return this.measuresRegister;
+  }
+
+  /**
+   * Manage decoders customization.
+   *
+   * @method register
+   * @method list
+   */
+  get decoders () {
+    return this.decodersRegister;
   }
 
   constructor() {
@@ -119,7 +139,7 @@ export class DeviceManagerPlugin extends Plugin {
       }
     };
 
-    this.defaultConfig = {
+    this.config = {
       adminCollections: {
         config: {
           dynamic: 'strict',
@@ -166,7 +186,7 @@ export class DeviceManagerPlugin extends Plugin {
    * Init the plugin
    */
   async init (config: JSONObject, context: PluginContext) {
-    this.config = _.merge({}, this.defaultConfig, config);
+    this.config = _.merge({}, this.config, config);
 
     this.context = context;
 
@@ -174,22 +194,22 @@ export class DeviceManagerPlugin extends Plugin {
     this.measures.register('position', positionMeasure);
     this.measures.register('movement', movementMeasure);
     this.measures.register('humidity', humidityMeasure);
+    this.measures.register('battery', batteryMeasure);
 
     this.batchWriter = new BatchWriter(this.sdk, { interval: this.config.writerInterval });
     this.batchWriter.begin();
 
     this.assetService = new AssetService(this);
     this.payloadService = new PayloadService(this, this.batchWriter, this.measuresRegister);
-    this.decodersService = new DecodersService(this, this.decoders);
     this.deviceService = new DeviceService(this);
     this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetsRegister, this.devicesRegister, this.measuresRegister);
 
     this.assetController = new AssetController(this, this.assetService);
     this.deviceController = new DeviceController(this, this.deviceService);
-    this.decodersController = new DecodersController(this, this.decodersService);
+    this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
 
-    this.api['device-manager/payload'] = this.decodersService.buildPayloadController(this.payloadService);
+    this.api['device-manager/payload'] = this.decodersRegister.getPayloadController(this.payloadService);
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/decoders'] = this.decodersController.definition;
@@ -202,40 +222,11 @@ export class DeviceManagerPlugin extends Plugin {
       'document:beforeCreate': this.generateConfigID.bind(this),
     };
 
-    await this.initDatabase();
-  }
-
-  /**
-   * Registers a new decoder for a device model.
-   *
-   * This will register a new API action:
-   *  - controller: `"device-manager/payload"`
-   *  - action: `action` property of the decoder or the device model in kebab-case
-   *
-   * If a custom payload handler is given then it will be used to process payloads
-   * instead of the PayloadService.process method.
-   *
-   * @param decoder Instantiated decoder
-   * @param options.handler Custom payload handler
-   *
-   * @returns Corresponding API action requestPayload
-   */
-  registerDecoder (
-    decoder: Decoder,
-    { handler }: { handler?: PayloadHandler } = {}
-  ): { controller: string, action: string } {
-    decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
-
-    if (this.api['device-manager/payload'].actions[decoder.action]) {
-      throw new PluginImplementationError(`A decoder for "${decoder.deviceModel}" has already been registered.`);
+    for (const decoder of this.decodersRegister.decoders) {
+      this.context.log.info(`Decoder for "${decoder.deviceModel}" registered`);
     }
 
-    this.decoders.push({ decoder, handler });
-
-    return {
-      action: decoder.action,
-      controller: 'device-manager/payload',
-    };
+    await this.initDatabase();
   }
 
   /**
@@ -262,9 +253,18 @@ export class DeviceManagerPlugin extends Plugin {
       }
 
       await Promise.all([
-        this.sdk.collection.create(this.config.adminIndex, this.config.configCollection, this.config.adminCollections.config),
-        this.sdk.collection.create(this.config.adminIndex, 'devices', this.devicesRegister.getMappings()),
-        this.sdk.collection.create(this.config.adminIndex, 'payloads', this.getPayloadsMappings()),
+        this.sdk.collection.create(this.config.adminIndex, this.config.configCollection, this.config.adminCollections.config)
+          .catch(error => {
+            throw new PluginImplementationError(`Cannot create admin "config" collection: ${error}`);
+          }),
+        this.sdk.collection.create(this.config.adminIndex, 'devices', this.devicesRegister.getMappings())
+          .catch(error => {
+            throw new PluginImplementationError(`Cannot create admin "devices" collection: ${error}`);
+          }),
+        this.sdk.collection.create(this.config.adminIndex, 'payloads', this.getPayloadsMappings())
+          .catch(error => {
+            throw new PluginImplementationError(`Cannot create admin "payloads" collection: ${error}`);
+          }),
       ]);
 
       await this.initializeConfig();
@@ -290,7 +290,7 @@ export class DeviceManagerPlugin extends Plugin {
   private getPayloadsMappings (): JSONObject {
     const mappings = JSON.parse(JSON.stringify(this.config.adminCollections.payloads));
 
-    for (const decoder of this.decodersService.decoders.values()) {
+    for (const decoder of this.decodersRegister.decoders) {
       mappings.properties.payload.properties = {
         ...mappings.properties.payload.properties,
         ...decoder.payloadsMappings

@@ -5,7 +5,7 @@ const { devicesTests } = require('../fixtures/devices');
 When('I succesfully execute {string}:{string} while exeding documentsWriteCount limit', async function (controller, action) {
   const records = [];
   for (let i = 0; i < devicesTests.length; i++) {
-    records.push({ deviceId: `DummyTemp-detached-${i}`, tenantId: 'tenant-kuzzle' });
+    records.push({ deviceId: `DummyTemp.detached-${i}`, tenantId: 'tenant-kuzzle' });
   }
 
 
@@ -21,7 +21,7 @@ When('I succesfully execute {string}:{string} while exeding documentsWriteCount 
 Then('All devices in {string} {string} have the property {string} to {string}', async function (index, collection, key, value) {
   const deviceIds = [];
   for (let i = 0; i < devicesTests.length; i++) {
-    deviceIds.push(`DummyTemp-detached-${i}`);
+    deviceIds.push(`DummyTemp.detached-${i}`);
   }
 
   const { successes, errors } = await this.sdk.document.mGet(index, collection, deviceIds);
@@ -43,7 +43,7 @@ Then('All devices in {string} {string} have the property {string} to {string}', 
 Then('All {string} devices documents exists', async function (tenant) {
   const deviceIds = [];
   for (let i = 0; i < devicesTests.length; i++) {
-    deviceIds.push(`DummyTemp-detached-${i}`);
+    deviceIds.push(`DummyTemp.detached-${i}`);
   }
 
   const { errors } = await this.sdk.document.mGet(tenant, 'devices', deviceIds);
@@ -56,7 +56,7 @@ Then('All {string} devices documents exists', async function (tenant) {
 Then(/All documents "(.*?)":"(.*?)" (does not)? exists/, async function (index, collection, not) {
   const deviceIds = [];
   for (let i = 0; i < devicesTests.length; i++) {
-    deviceIds.push(`DummyTemp-detached-${i}`);
+    deviceIds.push(`DummyTemp.detached-${i}`);
   }
 
   const { successes, errors } = await this.sdk.document.mGet(index, collection, deviceIds);

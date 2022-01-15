@@ -1,22 +1,19 @@
-import {
-  EmbeddedSDK,
-  Plugin,
-} from 'kuzzle';
+import { Plugin } from 'kuzzle';
 
 import { CRUDController } from './CRUDController';
-import { DecodersService } from '../core-classes';
+import { DecodersRegister } from '../core-classes';
 
 export class DecodersController extends CRUDController {
-  private decodersService: DecodersService;
+  private decodersRegister: DecodersRegister;
 
-  get sdk(): EmbeddedSDK {
+  get sdk () {
     return this.context.accessors.sdk;
   }
 
-  constructor(plugin: Plugin, decodersService: DecodersService) {
+  constructor (plugin: Plugin, decodersRegister: DecodersRegister) {
     super(plugin, 'decoders');
 
-    this.decodersService = decodersService;
+    this.decodersRegister = decodersRegister;
 
     this.definition = {
       actions: {
@@ -32,7 +29,7 @@ export class DecodersController extends CRUDController {
    * List all available decoders
    */
   async list () {
-    const decoders = await this.decodersService.list();
+    const decoders = await this.decodersRegister.list();
 
     return { decoders };
   }

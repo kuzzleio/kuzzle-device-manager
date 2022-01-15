@@ -8,8 +8,6 @@ export * from './BatchProcessing';
 
 export * from './Decoder';
 
-export * from './DecodersService';
-
 export * from './AssetService';
 
 export * from './registers/AssetsRegister';
@@ -17,3 +15,5 @@ export * from './registers/AssetsRegister';
 export * from './registers/DevicesRegister';
 
 export * from './registers/MeasuresRegister';
+
+export * from './registers/DecodersRegister';

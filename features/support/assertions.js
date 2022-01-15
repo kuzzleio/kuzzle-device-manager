@@ -22,7 +22,10 @@ should.Assertion.add(
         should(objectValue).be.Object();
       }
       else if (expectedValue === '_UNDEFINED_') {
-        should(objectValue).be.undefined();
+        should(objectValue).be.Undefined();
+      }
+      else if (expectedValue === '_NULL_') {
+        should(objectValue).be.Null();
       }
       else if (expectedValue === '_DATE_NOW_') {
         should(objectValue).be.approximately(Date.now(), 1000);

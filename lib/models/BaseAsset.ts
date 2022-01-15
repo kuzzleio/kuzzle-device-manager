@@ -1,12 +1,13 @@
 import { JSONObject } from 'kuzzle';
 
 import { BaseAssetContent } from '../types';
+
 export class BaseAsset {
-  _id: string;
-  _source: BaseAssetContent;
+  public _id: string;
+  public _source: BaseAssetContent;
 
   constructor (content: BaseAssetContent, _id?: string) {
-    this._id = _id || `${content.type}-${content.model}-${content.reference}`;
+    this._id = _id || `${content.type}.${content.model}.${content.reference}`;
 
     this._source = content;
   }
@@ -57,10 +58,10 @@ export const assetsHistoryMappings = {
   properties: {
     // Will be replaced by the custom asset mappings
     asset: null,
-    
+
     assetId: { type: 'keyword' },
 
-    
+
     measureTypes: { type: 'keyword' },
   }
 };

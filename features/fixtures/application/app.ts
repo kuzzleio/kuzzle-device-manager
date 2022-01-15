@@ -8,8 +8,8 @@ const app = new Backend('kuzzle');
 
 const deviceManager = new DeviceManagerPlugin();
 
-deviceManager.registerDecoder(new DummyTempDecoder());
-deviceManager.registerDecoder(new DummyTempPositionDecoder());
+deviceManager.decoders.register(new DummyTempDecoder());
+deviceManager.decoders.register(new DummyTempPositionDecoder());
 
 deviceManager.devices.registerMetadata({
   group: {

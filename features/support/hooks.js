@@ -73,11 +73,11 @@ Before({ timeout: 30 * 1000 }, async function () {
     removeCatalogEntries(this.sdk, 'device-manager'),
 
     truncateCollection(this.sdk, 'tenant-kuzzle', 'assets'),
-    truncateCollection(this.sdk, 'tenant-kuzzle', 'asset-history'),
+    truncateCollection(this.sdk, 'tenant-kuzzle', 'measures'),
     truncateCollection(this.sdk, 'tenant-kuzzle', 'devices'),
 
     truncateCollection(this.sdk, 'tenant-ayse', 'assets'),
-    truncateCollection(this.sdk, 'tenant-ayse', 'asset-history'),
+    truncateCollection(this.sdk, 'tenant-ayse', 'measures'),
     truncateCollection(this.sdk, 'tenant-ayse', 'devices'),
     removeCatalogEntries(this.sdk, 'tenant-ayse'),
   ]);

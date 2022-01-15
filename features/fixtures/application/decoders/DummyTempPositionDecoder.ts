@@ -1,6 +1,12 @@
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
-import { Decoder, PositionMeasure, TemperatureMeasure , DecodedPayload } from '../../../../index';
+import {
+  Decoder,
+  BatteryMeasure,
+  PositionMeasure,
+  TemperatureMeasure,
+  DecodedPayload,
+} from '../../../../index';
 
 export class DummyTempPositionDecoder extends Decoder {
   constructor () {
@@ -34,11 +40,19 @@ export class DummyTempPositionDecoder extends Decoder {
       }
     };
 
+    const battery: BatteryMeasure = {
+      measuredAt: Date.now(),
+      values: {
+        battery: payload.batteryLevel * 100,
+      }
+    };
+
     const decodedPayload: DecodedPayload = {
       reference: payload.deviceEUI,
       measures: {
         temperature,
         position,
+        battery,
       },
     };
 

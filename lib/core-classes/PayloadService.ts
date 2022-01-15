@@ -14,8 +14,6 @@ import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 import { ContextualizedMeasure, DeviceContent } from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 
-export type PayloadHandler = (request: KuzzleRequest, decoder: Decoder) => Promise<any>;
-
 export class PayloadService {
   private config: DeviceManagerConfig;
   private context: PluginContext;
@@ -106,7 +104,7 @@ export class PayloadService {
       return await this.update(device, newMeasures, { refresh });
     }
     catch (error) {
-      if (error.id !== 'service.storage.not_found') {
+      if (error.id !== 'services.storage.not_found') {
         throw error;
       }
 
@@ -122,6 +120,7 @@ export class PayloadService {
 
   /**
    * Register a new device by creating the document in admin index
+   * @todo add before/afterRegister events
    */
   private async register (deviceId: string, deviceContent: DeviceContent, { refresh }) {
     const deviceDoc = await this.batchController.create(
@@ -277,6 +276,15 @@ export class PayloadService {
     }
   }
 
+  /**
+   * Updates the device with the new measures:
+   *  - in admin index
+   *  - in engine index
+   *  - in linked asset
+   *  - historize measures in engine index
+   *
+   * @todo add before/afterUpdate events
+   */
   private async update (
     device: Device,
     newMeasures: ContextualizedMeasure[],
@@ -293,14 +301,14 @@ export class PayloadService {
 
     // Propagate device into tenant index
     if (engineId) {
+      await this.historizeMeasures(engineId, newMeasures);
+
       await this.batchController.update(
         engineId,
         'devices',
         updatedDevice._id,
         updatedDevice._source,
         { retryOnConflict: 10 });
-
-      await this.historizeMeasures(engineId, newMeasures);
 
       refreshableCollections.push([engineId, 'devices']);
 

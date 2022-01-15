@@ -5,3 +5,5 @@ export * from './PositionMeasure';
 export * from './TemperatureMeasure';
 
 export * from './HumidityMeasure';
+
+export * from './BatteryMeasure';

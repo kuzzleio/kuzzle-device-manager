@@ -200,7 +200,7 @@ export class DeviceService {
     bulkData: DeviceBulkContent[],
     { strict, options }: { strict?: boolean, options?: JSONObject }
   ) {
-
+    // @todo add "name" property when linking asset
     const detachedDevices = devices.filter(device => {
       return ! device._source.engineId || device._source.engineId === null;
     });

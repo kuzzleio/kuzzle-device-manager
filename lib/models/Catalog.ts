@@ -52,7 +52,8 @@ export class Catalog extends ConfigDocument<CatalogContent> {
    *   - with a rule definition
    */
   constructor (document: CatalogContent | { _id: string, _source: JSONObject }) {
-    if (document._id || document._source) {
+    // eslint-disable-next-line dot-notation
+    if (document['_id'] || document['_source']) {
       super(document as any);
     }
     else {

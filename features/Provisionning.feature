@@ -49,14 +49,14 @@ Feature: Device Provisionning
       | type             | "catalog"         |
       | catalog.deviceId | "DummyTemp-12345" |
       | catalog.tenantId | "tenant-ayse"     |
-      | catalog.assetId  | "PERFO-unlinked"  |
+      | catalog.assetId  | "tools.PERFO.unlinked"  |
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
     Then The document "tenant-ayse":"devices":"DummyTemp-12345" exists
     And The document "tenant-ayse":"devices":"DummyTemp-12345" content match:
-      | assetId | "PERFO-unlinked" |
+      | assetId | "tools.PERFO.unlinked" |
 
   Scenario: Tenant catalog: Assign to asset
     Given a collection "device-manager":"config"
@@ -68,10 +68,10 @@ Feature: Device Provisionning
     And I "create" the document "catalog--DummyTemp-12345" with content:
       | type             | "catalog"         |
       | catalog.deviceId | "DummyTemp-12345" |
-      | catalog.assetId  | "PERFO-unlinked"  |
+      | catalog.assetId  | "tools.PERFO.unlinked"  |
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
     Then The document "tenant-ayse":"devices":"DummyTemp-12345" content match:
-      | assetId | "PERFO-unlinked" |
+      | assetId | "tools.PERFO.unlinked" |
