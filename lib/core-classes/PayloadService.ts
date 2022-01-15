@@ -104,6 +104,7 @@ export class PayloadService {
       return await this.update(device, newMeasures, { refresh });
     }
     catch (error) {
+      // @todo is this working with the batchController?
       if (error.id !== 'services.storage.not_found') {
         throw error;
       }
