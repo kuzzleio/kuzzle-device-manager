@@ -268,7 +268,7 @@ export class DeviceManagerPlugin extends Plugin {
           await this.sdk.index.create(this.config.adminIndex);
         }
         catch (error) {
-          if (error.id !== 'services.storage.index_already_exists') {
+          if (! error.message.includes('already exists')) {
             throw error;
           }
         }
