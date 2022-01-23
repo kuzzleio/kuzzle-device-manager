@@ -4,11 +4,11 @@ import {
   ControllerDefinition,
   Plugin,
 } from 'kuzzle';
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
+import { DeviceManagerConfiguration } from '../DeviceManagerPlugin';
 
 export class CRUDController {
   protected context: PluginContext;
-  protected config: DeviceManagerConfig;
+  protected config: DeviceManagerConfiguration;
   protected collection: string;
   public definition: ControllerDefinition;
 

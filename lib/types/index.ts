@@ -11,3 +11,5 @@ export * from './measures/MeasureDefinition';
 export * from './DecoderContent';
 
 export * from './DecodedPayload';
+
+export * from './DeviceManagerConfiguration';

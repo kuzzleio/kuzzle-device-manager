@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
 import { Device } from '../models';
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
+import { DeviceManagerConfiguration } from '../DeviceManagerPlugin';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 
 export type DeviceBulkContent = {
@@ -33,7 +33,7 @@ export type DeviceMAttachTenantContent = {
 }
 
 export class DeviceService {
-  private config: DeviceManagerConfig;
+  private config: DeviceManagerConfiguration;
   private context: PluginContext;
 
   get sdk(): EmbeddedSDK {

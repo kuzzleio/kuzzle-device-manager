@@ -10,12 +10,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
 import { BatchController, BatchWriter } from './BatchProcessing';
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
+import { DeviceManagerConfiguration } from '../DeviceManagerPlugin';
 import { ContextualMeasure, DeviceContent } from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class PayloadService {
-  private config: DeviceManagerConfig;
+  private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batchController: BatchController;
   private measuresRegister: MeasuresRegister;

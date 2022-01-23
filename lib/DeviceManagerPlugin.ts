@@ -8,7 +8,7 @@ import {
   KuzzleRequest,
   BadRequestError,
 } from 'kuzzle';
-import { EngineController } from 'kuzzle-plugin-commons';
+import { ConfigManager, EngineController } from 'kuzzle-plugin-commons';
 
 import {
   AssetController,
@@ -27,8 +27,6 @@ import {
   DecodersRegister,
 } from './core-classes';
 import {
-  devicesMappings,
-  catalogMappings,
 } from './models';
 import {
   batteryMeasure,
@@ -37,37 +35,14 @@ import {
   positionMeasure,
   temperatureMeasure,
 } from './measures';
-
-export type DeviceManagerConfig = {
-  /**
-   * Administration index name
-   */
-  adminIndex: string;
-
-  /**
-   * Config collection name (in admin index)
-   */
-  configCollection: string;
-
-  /**
-   * Administration collections mappings (in admin index)
-   */
-  adminCollections: {
-    config: JSONObject;
-
-    devices: JSONObject;
-
-    payloads: JSONObject;
-  },
-
-  /**
-   * Interval to write documents from the buffer
-   */
-  writerInterval: number;
-}
-
+import {
+  payloadsMappings,
+  devicesMappings,
+  catalogMappings,
+} from './mappings';
+import { DeviceManagerConfiguration } from './types';
 export class DeviceManagerPlugin extends Plugin {
-  public config: DeviceManagerConfig;
+  public config: DeviceManagerConfiguration;
 
   private assetController: AssetController;
   private deviceController: DeviceController;
@@ -85,6 +60,9 @@ export class DeviceManagerPlugin extends Plugin {
   private measuresRegister = new MeasuresRegister();
   private devicesRegister = new DevicesRegister(this.measuresRegister);
   private assetsRegister = new AssetsRegister(this.measuresRegister);
+
+  private adminConfigManager: ConfigManager;
+  private engineConfigManager: ConfigManager;
 
   private get sdk () {
     return this.context.accessors.sdk;
@@ -140,45 +118,28 @@ export class DeviceManagerPlugin extends Plugin {
     };
 
     this.config = {
+      adminIndex: 'device-manager',
       adminCollections: {
         config: {
-          dynamic: 'strict',
-          properties: {
-            catalog: catalogMappings,
-
-            'device-manager': {
-              properties: {
-                provisioningStrategy: { type: 'keyword' },
-              }
-            },
-
-            engine: {
-              properties: {
-                group: { type: 'keyword' },
-                index: { type: 'keyword' },
-              }
-            },
-
-            type: { type: 'keyword' }
-          }
+          name: 'config',
+          mappings: {
+            dynamic: 'strict',
+            properties: {}
+          },
+          settings: {},
         },
-        devices: devicesMappings,
+        devices: {
+          name: 'devices',
+          mappings: devicesMappings,
+          settings: {},
+        },
         payloads: {
-          dynamic: 'strict',
-          properties: {
-            deviceModel: { type: 'keyword' },
-            payload: {
-              dynamic: 'false',
-              properties: {}
-            },
-            uuid: { type: 'keyword' },
-            valid: { type: 'boolean' }
-          }
+          name: 'payloads',
+          mappings: payloadsMappings,
+          settings: {},
         }
       },
-      adminIndex: 'device-manager',
-      configCollection: 'config',
-      writerInterval: 50
+      writerInterval: 10
     };
   }
 
@@ -189,6 +150,24 @@ export class DeviceManagerPlugin extends Plugin {
     this.config = _.merge({}, this.config, config);
 
     this.context = context;
+
+    this.adminConfigManager = new ConfigManager(this, {
+      mappings: this.config.adminCollections.config.mappings,
+      settings: this.config.adminCollections.config.settings,
+    });
+    this.adminConfigManager.register('catalog', catalogMappings);
+    this.adminConfigManager.register('device-manager', {
+      properties: {
+        provisioningStrategy: { type: 'keyword' },
+      }
+    });
+    this.adminConfigManager.register('engine', {
+      properties: {
+        index: { type: 'keyword' },
+        group: { type: 'keyword' },
+        name: { type: 'keyword' },
+      }
+    });
 
     this.measures.register('temperature', temperatureMeasure);
     this.measures.register('position', positionMeasure);
@@ -202,7 +181,13 @@ export class DeviceManagerPlugin extends Plugin {
     this.assetService = new AssetService(this);
     this.payloadService = new PayloadService(this, this.batchWriter, this.measuresRegister);
     this.deviceService = new DeviceService(this);
-    this.deviceManagerEngine = new DeviceManagerEngine(this, this.assetsRegister, this.devicesRegister, this.measuresRegister);
+    this.deviceManagerEngine = new DeviceManagerEngine(
+      this,
+      this.assetsRegister,
+      this.devicesRegister,
+      this.measuresRegister,
+      this.adminConfigManager,
+      this.engineConfigManager);
 
     this.assetController = new AssetController(this, this.assetService);
     this.deviceController = new DeviceController(this, this.deviceService);
@@ -219,7 +204,7 @@ export class DeviceManagerPlugin extends Plugin {
       'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
-      'document:beforeCreate': this.generateConfigID.bind(this),
+      'generic:document:beforeWrite': [],
     };
 
     for (const decoder of this.decodersRegister.decoders) {
@@ -253,7 +238,7 @@ export class DeviceManagerPlugin extends Plugin {
       }
 
       await Promise.all([
-        this.sdk.collection.create(this.config.adminIndex, this.config.configCollection, this.config.adminCollections.config)
+        this.adminConfigManager.createCollection(this.config.adminIndex)
           .catch(error => {
             throw new PluginImplementationError(`Cannot create admin "config" collection: ${error}`);
           }),
@@ -299,13 +284,13 @@ export class DeviceManagerPlugin extends Plugin {
   private async initializeConfig () {
     const exists = await this.sdk.document.exists(
       this.config.adminIndex,
-      this.config.configCollection,
+      this.adminConfigManager.collection,
       'plugin--device-manager');
 
     if (! exists) {
       await this.sdk.document.create(
         this.config.adminIndex,
-        this.config.configCollection,
+        this.adminConfigManager.collection,
         {
           'device-manager': { provisioningStrategy: 'auto' },
           type: 'device-manager'
@@ -328,23 +313,6 @@ export class DeviceManagerPlugin extends Plugin {
         throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
       }
     }
-
-
-    return request;
-  }
-
-  private async generateConfigID (request: KuzzleRequest) {
-    if (request.getCollection() !== this.config.configCollection) {
-      return request;
-    }
-
-    const document = request.getBody();
-
-    if (document.type !== 'catalog' || request.getId(({ ifMissing: 'ignore' }))) {
-      return request;
-    }
-
-    request.input.args._id = `catalog--${document.catalog.deviceId}`;
 
     return request;
   }

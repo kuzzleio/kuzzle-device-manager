@@ -1,14 +1,15 @@
 import { Plugin } from 'kuzzle';
-import { AbstractEngine } from 'kuzzle-plugin-commons';
+import { AbstractEngine, ConfigManager } from 'kuzzle-plugin-commons';
 
-import { DeviceManagerConfig, DeviceManagerPlugin } from '../DeviceManagerPlugin';
-import { catalogMappings } from '../models';
+import { DeviceManagerConfiguration } from '../types';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import { catalogMappings } from '../mappings';
 import { AssetsRegister } from './registers/AssetsRegister';
 import { DevicesRegister } from './registers/DevicesRegister';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
-  public config: DeviceManagerConfig;
+  public config: DeviceManagerConfiguration;
 
   private assetsRegister: AssetsRegister;
   private devicesRegister: DevicesRegister;
@@ -19,12 +20,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     assetsRegister: AssetsRegister,
     devicesRegister: DevicesRegister,
     measuresRegister: MeasuresRegister,
+    adminConfigManager: ConfigManager,
+    engineConfigManager: ConfigManager,
   ) {
     super(
       'device-manager',
       plugin,
       plugin.config.adminIndex,
-      plugin.config.configCollection);
+      adminConfigManager,
+      engineConfigManager);
 
     this.context = plugin.context;
     this.assetsRegister = assetsRegister;
@@ -47,20 +51,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       mappings: this.measuresRegister.getMappings()
     }));
 
-    promises.push(this.sdk.collection.create(index, this.config.configCollection, {
-      mappings: {
-        dynamic: 'strict',
-        properties: {
-          catalog: catalogMappings,
-
-          type: { type: 'keyword' },
-        }
-      } as any
-    }));
+    promises.push(this.engineConfigManager.createCollection(index));
 
     await Promise.all(promises);
 
-    return { collections: ['assets', this.config.configCollection, 'devices', 'measures'] };
+    return { collections: ['assets', this.engineConfigManager.collection, 'devices', 'measures'] };
   }
 
   async onUpdate (index: string, group = 'commons') {

@@ -2,13 +2,13 @@ import _ from 'lodash';
 
 import { PluginContext, EmbeddedSDK, Plugin, JSONObject } from 'kuzzle';
 
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
+import { DeviceManagerConfiguration } from '../DeviceManagerPlugin';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';
 import { BaseAssetContent } from '../types';
 
 export class AssetService {
-  private config: DeviceManagerConfig;
+  private config: DeviceManagerConfiguration;
   private context: PluginContext;
 
   get sdk(): EmbeddedSDK {
