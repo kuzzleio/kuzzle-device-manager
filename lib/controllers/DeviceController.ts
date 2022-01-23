@@ -1,4 +1,5 @@
 import csv from 'csvtojson';
+import { CRUDController } from 'kuzzle-plugin-commons';
 import {
   KuzzleRequest,
   EmbeddedSDK,
@@ -7,7 +8,6 @@ import {
   NotFoundError
 } from 'kuzzle';
 
-import { CRUDController } from './CRUDController';
 import { Device } from '../models';
 import { DeviceBulkContent } from '../core-classes';
 import { DeviceService } from '../core-classes';
