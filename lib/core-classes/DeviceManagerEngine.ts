@@ -3,7 +3,6 @@ import { AbstractEngine, ConfigManager } from 'kuzzle-plugin-commons';
 
 import { DeviceManagerConfiguration } from '../types';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
-import { catalogMappings } from '../mappings';
 import { AssetsRegister } from './registers/AssetsRegister';
 import { DevicesRegister } from './registers/DevicesRegister';
 import { MeasuresRegister } from './registers/MeasuresRegister';

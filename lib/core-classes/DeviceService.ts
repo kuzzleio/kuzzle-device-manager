@@ -1,7 +1,6 @@
 import {
   JSONObject,
   PluginContext,
-  EmbeddedSDK,
   BadRequestError,
   NotFoundError,
   PreconditionError,
@@ -12,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
 import { Device } from '../models';
-import { DeviceManagerConfiguration } from '../DeviceManagerPlugin';
+import { DeviceManagerConfiguration } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 
 export type DeviceBulkContent = {
@@ -36,7 +35,7 @@ export class DeviceService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
 
-  get sdk(): EmbeddedSDK {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
@@ -474,7 +473,7 @@ export class DeviceService {
       async (result: mRequest[]): Promise<mResponse> => {
         const created = await this.sdk.document.mCreate(
           this.config.adminIndex,
-          this.config.configCollection,
+          this.config.adminCollections.config.name,
           result,
           { strict, ...options });
 

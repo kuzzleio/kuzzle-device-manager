@@ -1,6 +1,6 @@
 import { JSONObject, PluginImplementationError } from 'kuzzle';
-import { devicesMappings } from '../../models';
 
+import { devicesMappings } from '../../mappings';
 import { MeasuresRegister } from './MeasuresRegister';
 
 export class DevicesRegister {

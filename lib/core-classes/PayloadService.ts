@@ -10,8 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
 import { BatchController, BatchWriter } from './BatchProcessing';
-import { DeviceManagerConfiguration } from '../DeviceManagerPlugin';
-import { ContextualMeasure, DeviceContent } from '../types';
+import { ContextualMeasure, DeviceContent, DeviceManagerConfiguration } from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class PayloadService {
@@ -20,7 +19,7 @@ export class PayloadService {
   private batchController: BatchController;
   private measuresRegister: MeasuresRegister;
 
-  get sdk () {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
@@ -161,7 +160,7 @@ export class PayloadService {
   ) {
     const pluginConfig = await this.batchController.get(
       this.config.adminIndex,
-      this.config.configCollection,
+      this.config.adminCollections.config.name,
       'plugin--device-manager');
 
     const autoProvisioning
@@ -251,7 +250,7 @@ export class PayloadService {
     try {
       const document = await this.batchController.get(
         index,
-        this.config.configCollection,
+        this.config.adminCollections.config.name,
         `catalog--${deviceId}`);
 
       return new Catalog(document);
@@ -263,7 +262,7 @@ export class PayloadService {
 
       const result = await this.sdk.document.search(
         index,
-        this.config.configCollection,
+        this.config.adminCollections.config.name,
         {
           query: { equals: { 'catalog.deviceId': deviceId } },
         },

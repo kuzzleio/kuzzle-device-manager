@@ -41,6 +41,7 @@ import {
   catalogMappings,
 } from './mappings';
 import { DeviceManagerConfiguration } from './types';
+
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
 
@@ -117,6 +118,7 @@ export class DeviceManagerPlugin extends Plugin {
       }
     };
 
+    // eslint-disable sort-keys
     this.config = {
       adminIndex: 'device-manager',
       adminCollections: {
@@ -141,6 +143,7 @@ export class DeviceManagerPlugin extends Plugin {
       },
       writerInterval: 10
     };
+    // eslint-enable sort-keys
   }
 
   /**
@@ -150,6 +153,14 @@ export class DeviceManagerPlugin extends Plugin {
     this.config = _.merge({}, this.config, config);
 
     this.context = context;
+
+    this.pipes = {
+      'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
+      'generic:document:beforeWrite': [],
+    };
 
     this.adminConfigManager = new ConfigManager(this, {
       mappings: this.config.adminCollections.config.mappings,
@@ -198,14 +209,6 @@ export class DeviceManagerPlugin extends Plugin {
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/decoders'] = this.decodersController.definition;
-
-    this.pipes = {
-      'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
-      'generic:document:beforeWrite': [],
-    };
 
     for (const decoder of this.decodersRegister.decoders) {
       this.context.log.info(`Decoder for "${decoder.deviceModel}" registered`);
@@ -266,7 +269,7 @@ export class DeviceManagerPlugin extends Plugin {
    * Those custom mappings allow to search raw payloads more efficiently.
    */
   private getPayloadsMappings (): JSONObject {
-    const mappings = JSON.parse(JSON.stringify(this.config.adminCollections.payloads));
+    const { mappings } = JSON.parse(JSON.stringify(this.config.adminCollections.payloads));
 
     for (const decoder of this.decodersRegister.decoders) {
       mappings.properties.payload.properties = {
