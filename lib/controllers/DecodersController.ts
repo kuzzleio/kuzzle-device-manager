@@ -1,25 +1,26 @@
-import { Plugin } from 'kuzzle';
+import { ControllerDefinition, PluginContext } from 'kuzzle';
 
-import { CRUDController } from './CRUDController';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { DecodersRegister } from '../core-classes';
+import { DeviceManagerConfiguration } from '../types';
 
-export class DecodersController extends CRUDController {
+export class DecodersController {
+  private context: PluginContext;
+  private config: DeviceManagerConfiguration;
   private decodersRegister: DecodersRegister;
 
-  get sdk () {
-    return this.context.accessors.sdk;
-  }
+  public definition: ControllerDefinition;
 
-  constructor (plugin: Plugin, decodersRegister: DecodersRegister) {
-    super(plugin, 'decoders');
-
+  constructor (plugin: DeviceManagerPlugin, decodersRegister: DecodersRegister) {
+    this.context = plugin.context;
+    this.config = plugin.config;
     this.decodersRegister = decodersRegister;
 
     this.definition = {
       actions: {
         list: {
           handler: this.list.bind(this),
-          http: [{ path: 'device-manager/decoders', verb: 'get' }]
+          http: [{ path: 'device-manager/decoders', verb: 'get' }],
         }
       }
     };
@@ -33,5 +34,4 @@ export class DecodersController extends CRUDController {
 
     return { decoders };
   }
-
 }

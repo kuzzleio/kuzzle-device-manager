@@ -2,7 +2,6 @@ import csv from 'csvtojson';
 import { CRUDController } from 'kuzzle-plugin-commons';
 import {
   KuzzleRequest,
-  EmbeddedSDK,
   Plugin,
 } from 'kuzzle';
 
@@ -13,7 +12,7 @@ import { AssetService } from '../core-classes';
 export class AssetController extends CRUDController {
   private assetService: AssetService;
 
-  get sdk (): EmbeddedSDK {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 

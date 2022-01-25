@@ -2,7 +2,6 @@ import csv from 'csvtojson';
 import { CRUDController } from 'kuzzle-plugin-commons';
 import {
   KuzzleRequest,
-  EmbeddedSDK,
   BadRequestError,
   Plugin,
   NotFoundError
@@ -15,7 +14,7 @@ import { DeviceService } from '../core-classes';
 export class DeviceController extends CRUDController {
   private deviceService: DeviceService;
 
-  get sdk(): EmbeddedSDK {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
