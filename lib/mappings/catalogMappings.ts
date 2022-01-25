@@ -8,6 +8,6 @@ export const catalogMappings = {
 
     deviceId: { type: 'keyword' },
 
-    tenantId: { type: 'keyword' },
+    engineId: { type: 'keyword' },
   },
 };

@@ -103,7 +103,6 @@ export class PayloadService {
       return await this.update(device, newMeasures, { refresh });
     }
     catch (error) {
-      // @todo is this working with the batchController?
       if (error.id !== 'services.storage.not_found') {
         throw error;
       }
@@ -114,7 +113,7 @@ export class PayloadService {
         reference: decodedPayload.reference,
       };
 
-      return await this.deviceProvisionning(deviceId, deviceContent, { refresh });
+      return await this.deviceProvisioning(deviceId, deviceContent, { refresh });
     }
   }
 
@@ -153,7 +152,7 @@ export class PayloadService {
    * Then we look into the tenant provisioning catalog entry to:
    *   - link the device to an asset of this tenant
    */
-  private async deviceProvisionning (
+  private async deviceProvisioning (
     deviceId: string,
     deviceContent: DeviceContent,
     { refresh }
@@ -176,10 +175,10 @@ export class PayloadService {
       throw new BadRequestError(`Device "${deviceId}" is not allowed for registration.`);
     }
 
-    deviceContent.engineId = _.get(catalogEntry, 'content.engineId');
+    const engineId = _.get(catalogEntry, 'content.engineId');
 
-    const tenantCatalogEntry = deviceContent.engineId
-      ? await this.getCatalogEntry(deviceContent.engineId, deviceId)
+    const tenantCatalogEntry = engineId
+      ? await this.getCatalogEntry(engineId, deviceId)
       : undefined;
 
     const { adminCatalog, tenantCatalog } = await global.app.trigger(
@@ -190,25 +189,28 @@ export class PayloadService {
         tenantCatalog: tenantCatalogEntry,
       });
 
-    const ret = await this.register(deviceId, deviceContent, { refresh });
+    const { asset, device } = await this.register(
+      deviceId,
+      deviceContent,
+      { refresh });
 
     // If there is not auto attachment to a tenant then we cannot link asset as well
-    if (! deviceContent.engineId) {
-      // Trigger event even if there is not tenantId in the catalog
+    if (! engineId) {
+      // Trigger event even if there is not engineId in the catalog
       await global.app.trigger('device-manager:device:provisioning:after', {
         adminCatalog,
-        deviceId,
+        device,
         tenantCatalog,
       });
 
-      return ret;
+      return { asset, device, engineId };
     }
 
     await this.sdk.query({
       _id: deviceId,
       action: 'attachTenant',
       controller: 'device-manager/device',
-      index: adminCatalog.content.tenantId,
+      index: engineId,
     });
 
     if (adminCatalog.content.assetId) {
@@ -233,14 +235,14 @@ export class PayloadService {
       });
     }
 
-    // Trigger event when there is a tenantId in the catalog
+    // Trigger event when there is a engineId in the catalog
     await global.app.trigger('device-manager:device:provisioning:after', {
       adminCatalog,
       deviceId,
       tenantCatalog,
     });
 
-    return ret;
+    return { asset, device, engineId };
   }
 
   /**
@@ -394,6 +396,10 @@ export class PayloadService {
       engineId,
       'assets',
       assetId);
+
+    if (! _.isArray(asset._source.measures)) {
+      throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
+    }
 
     // Keep previous measures that were not updated
     // array are updated in place so we need to keep previous elements

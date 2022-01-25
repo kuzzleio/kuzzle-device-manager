@@ -27,7 +27,7 @@ Method: POST
   "controller": "device-manager/device",
   "action": "importDevices",
   "body": {
-    "csv": "_id,reference,model\nDummyTemp-imported,detached,DummyTemp_imported"
+    "csv": "_id,reference,model\nDummyTemp.imported,detached,DummyTemp_imported"
   }
 }
 ```
@@ -35,7 +35,7 @@ Method: POST
 ### Kourou
 
 ```bash
-kourou device-manager/device:importDevices --body '{ "csv": "_id,reference,model\nDummyTemp-imported,detached,DummyTemp_imported" }'
+kourou device-manager/device:importDevices --body '{ "csv": "_id,reference,model\nDummyTemp.imported,detached,DummyTemp_imported" }'
 ```
 ---
 

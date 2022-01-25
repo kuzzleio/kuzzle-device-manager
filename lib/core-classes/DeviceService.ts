@@ -250,6 +250,10 @@ export class DeviceService {
         this.assertNotDuplicateMeasure(device, asset);
         this.assertDeviceNotLinkedToMultipleAssets(device);
 
+        if (! _.isArray(asset._source.measures)) {
+          throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
+        }
+
         // Keep previous measures of different types
         for (const previousMeasure of asset._source.measures) {
           if (! measures.find(m => m.type === previousMeasure.type)) {

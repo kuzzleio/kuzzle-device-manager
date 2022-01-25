@@ -80,6 +80,8 @@ Before({ timeout: 30 * 1000 }, async function () {
     truncateCollection(this.sdk, 'tenant-ayse', 'measures'),
     truncateCollection(this.sdk, 'tenant-ayse', 'devices'),
     removeCatalogEntries(this.sdk, 'tenant-ayse'),
+
+    truncateCollection(this.sdk, 'tests', 'events'),
   ]);
 
   await this.sdk.query({

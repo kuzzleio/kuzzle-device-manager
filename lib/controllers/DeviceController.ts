@@ -109,10 +109,10 @@ export class DeviceController extends CRUDController {
    * Attach a device to a tenant
    */
   async attachTenant (request: KuzzleRequest) {
-    const tenantId = request.getIndex();
+    const engineId = request.getIndex();
     const deviceId = request.getId();
 
-    const document = { deviceId: deviceId, tenantId: tenantId };
+    const document = { deviceId: deviceId, engineId: engineId };
     const devices = await this.mGetDevice([document]);
 
     await this.deviceService.mAttachTenants(
@@ -330,10 +330,10 @@ export class DeviceController extends CRUDController {
       const lines = await csv({ delimiter: 'auto' })
         .fromString(body.csv);
 
-      bulkData = lines.map(({ tenantId, deviceId, assetId}) => ({
+      bulkData = lines.map(({ engineId, deviceId, assetId}) => ({
         assetId,
         deviceId,
-        tenantId
+        engineId
       }));
     }
     else if (body.records) {

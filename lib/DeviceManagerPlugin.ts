@@ -141,6 +141,16 @@ export class DeviceManagerPlugin extends Plugin {
           settings: {},
         }
       },
+      engineCollections: {
+        config: {
+          name: 'config',
+          mappings: {
+            dynamic: 'strict',
+            properties: {}
+          },
+          settings: {}
+        }
+      },
       writerInterval: 10
     };
     // eslint-enable sort-keys
@@ -179,6 +189,12 @@ export class DeviceManagerPlugin extends Plugin {
         name: { type: 'keyword' },
       }
     });
+
+    this.engineConfigManager = new ConfigManager(this, {
+      mappings: this.config.engineCollections.config.mappings,
+      settings: this.config.engineCollections.config.settings,
+    });
+    this.engineConfigManager.register('catalog', catalogMappings);
 
     this.measures.register('temperature', temperatureMeasure);
     this.measures.register('position', positionMeasure);

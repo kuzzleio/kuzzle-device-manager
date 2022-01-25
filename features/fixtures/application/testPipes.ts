@@ -1,7 +1,20 @@
 import _ from 'lodash';
 import { Backend } from 'kuzzle';
 
+function checkEventWithDocument (app: Backend, event: string) {
+  app.pipe.register(event, async payload => {
+    app.log.debug(`Event "${event}" triggered`);
+
+    await app.sdk.document.create('tests', 'events', payload, event);
+
+    return payload;
+  });
+}
+
 export function registerTestPipes (app: Backend) {
+  checkEventWithDocument(app, 'device-manager:device:provisioning:before');
+  checkEventWithDocument(app, 'device-manager:device:provisioning:after');
+
   // Used in PayloadController.feature
   app.pipe.register('engine:tenant-ayse:asset:measures:new',
     async ({ asset, measures }) => {
@@ -58,30 +71,6 @@ export function registerTestPipes (app: Backend) {
 
     return { device, updates };
   });
-
-  app.pipe.register('device-manager:device:provisioning:before',
-    async ({ deviceId, adminCatalog, engineCatalog }) => {
-
-      return { deviceId, adminCatalog, engineCatalog };
-    });
-
-
-  // app.pipe.register('device-manager:device:provisioning:after', async ({ device, adminCatalog, engineCatalog }) => {
-  //   app.log.debug('after provisioning trigered');
-
-  //   if (device._source.metadata.enrichedByBeforeProvisioning) {
-  //     _.set(device, '_source.metadata.enrichedByAfterProvisioning', true);
-
-  //     await app.sdk.document.update(
-  //       'device-manager',
-  //       'devices',
-  //       device._id,
-  //       device._source,
-  //     );
-  //   }
-
-  //   return { device, adminCatalog, engineCatalog };
-  // });
 
   app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
     app.log.debug('before link-asset triggered');

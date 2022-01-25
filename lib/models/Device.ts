@@ -18,7 +18,7 @@ export class Device {
     };
   }
 
-  serialize (): JSONObject {
+  serialize (): { _id: string, _source: DeviceContent } {
     return {
       _id: this._id,
       _source: this._source

@@ -27,7 +27,7 @@ Method: POST
   "controller": "device-manager/device",
   "action": "importCatalog",
   "body": {
-    "csv": "deviceId,authorized\nDummyTemp-imported,false"
+    "csv": "deviceId,authorized\nDummyTemp.imported,false"
   }
 }
 ```
@@ -35,7 +35,7 @@ Method: POST
 ### Kourou
 
 ```bash
-kourou device-manager/device:importCatalog --body '{ "csv": "deviceId,authorized\nDummyTemp-imported,false" }'
+kourou device-manager/device:importCatalog --body '{ "csv": "deviceId,authorized\nDummyTemp.imported,false" }'
 ```
 ---
 

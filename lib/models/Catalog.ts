@@ -20,7 +20,7 @@ export type CatalogContent = {
   /**
    * If set, the device will be attached to this tenant
    */
-  tenantId?: string;
+  engineId?: string;
 
   /**
    * If set, the device will be linked to this asset

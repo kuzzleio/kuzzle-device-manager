@@ -5,7 +5,7 @@ Feature: Device Manager device controller
       | _id   | "DummyTemp.detached" |
       | index | "tenant-kuzzle"      |
     Then The document "device-manager":"devices":"DummyTemp.detached" content match:
-      | tenantId | "tenant-kuzzle" |
+      | engineId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp.detached" exists
 
   Scenario: Update a device
@@ -51,7 +51,7 @@ Feature: Device Manager device controller
       | _id   | "DummyTemp.detached" |
       | index | "tenant-kuzzle"      |
     Then The document "device-manager":"devices":"DummyTemp.detached" content match:
-      | tenantId | "tenant-kuzzle" |
+      | engineId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp.detached" exists
     And The document "tenant-kuzzle":"devices":"DummyTemp.detached" content match:
       | metadata.enrichedByBeforeAttachTenant | true |
@@ -61,30 +61,30 @@ Feature: Device Manager device controller
 
   Scenario: Attach multiple devices to a tenant using JSON
     When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
-      | body.records.0.tenantId | "tenant-kuzzle"                    |
+      | body.records.0.engineId | "tenant-kuzzle"                    |
       | body.records.0.deviceId | "DummyTemp.detached"               |
-      | body.records.1.tenantId | "tenant-kuzzle"                    |
+      | body.records.1.engineId | "tenant-kuzzle"                    |
       | body.records.1.deviceId | "DummyTemp.attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp.detached" content match:
-      | tenantId | "tenant-kuzzle" |
+      | engineId | "tenant-kuzzle" |
     Then The document "device-manager":"devices":"DummyTemp.attached_ayse_unlinked" content match:
-      | tenantId | "tenant-kuzzle" |
+      | engineId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp.detached" exists
     And The document "tenant-kuzzle":"devices":"DummyTemp.attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant using CSV
     When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
-      | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp.detached\\ntenant-kuzzle,DummyTemp.attached_ayse_unlinked," |
+      | body.csv | "engineId,deviceId\\ntenant-kuzzle,DummyTemp.detached\\ntenant-kuzzle,DummyTemp.attached_ayse_unlinked," |
     Then The document "device-manager":"devices":"DummyTemp.detached" content match:
-      | tenantId | "tenant-kuzzle" |
+      | engineId | "tenant-kuzzle" |
     Then The document "device-manager":"devices":"DummyTemp.attached_ayse_unlinked" content match:
-      | tenantId | "tenant-kuzzle" |
+      | engineId | "tenant-kuzzle" |
     And The document "tenant-kuzzle":"devices":"DummyTemp.detached" exists
     And The document "tenant-kuzzle":"devices":"DummyTemp.attached_ayse_unlinked" exists
 
   Scenario: Attach multiple device to a tenant while exceeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mAttachTenants" while exeding documentsWriteCount limit
-    Then All devices in "device-manager" "devices" have the property "tenantId" to "tenant-kuzzle"
+    Then All devices in "device-manager" "devices" have the property "engineId" to "tenant-kuzzle"
     And All documents "tenant-kuzzle":"devices"  exists
 
   Scenario: Error when assigning a device to a tenant
@@ -109,40 +109,40 @@ Feature: Device Manager device controller
     When I successfully execute the action "device-manager/device":"detachTenant" with args:
       | _id | "DummyTemp.detached" |
     Then The document "device-manager":"devices":"DummyTemp.detached" content match:
-      | tenantId | null |
+      | engineId | null |
     And The document "tenant-kuzzle":"devices":"DummyTemp.detached" does not exists
 
   Scenario: Detach multiple devices to a tenant using JSON
     When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
-      | body.records.0.tenantId | "tenant-kuzzle"                    |
+      | body.records.0.engineId | "tenant-kuzzle"                    |
       | body.records.0.deviceId | "DummyTemp.detached"               |
-      | body.records.1.tenantId | "tenant-kuzzle"                    |
+      | body.records.1.engineId | "tenant-kuzzle"                    |
       | body.records.1.deviceId | "DummyTemp.attached_ayse_unlinked" |
     When I successfully execute the action "device-manager/device":"mDetachTenants" with args:
       | body.deviceIds | ["DummyTemp.detached","DummyTemp.attached_ayse_unlinked"] |
     Then The document "device-manager":"devices":"DummyTemp.detached" content match:
-      | tenantId | null |
+      | engineId | null |
     Then The document "device-manager":"devices":"DummyTemp.attached_ayse_unlinked" content match:
-      | tenantId | null |
+      | engineId | null |
     And The document "tenant-kuzzle":"devices":"DummyTemp.detached" does not exists
     And The document "tenant-kuzzle":"devices":"DummyTemp.attached_ayse_unlinked" does not exists
 
   Scenario: Detach multiple devices to a tenant using CSV
     When I successfully execute the action "device-manager/device":"mAttachTenants" with args:
-      | body.csv | "tenantId,deviceId\\ntenant-kuzzle,DummyTemp.detached\\ntenant-kuzzle,DummyTemp.attached_ayse_unlinked," |
+      | body.csv | "engineId,deviceId\\ntenant-kuzzle,DummyTemp.detached\\ntenant-kuzzle,DummyTemp.attached_ayse_unlinked," |
     When I successfully execute the action "device-manager/device":"mDetachTenants" with args:
       | body.csv | "deviceId\\nDummyTemp.detached\\nDummyTemp.attached_ayse_unlinked," |
     Then The document "device-manager":"devices":"DummyTemp.detached" content match:
-      | tenantId | null |
+      | engineId | null |
     Then The document "device-manager":"devices":"DummyTemp.attached_ayse_unlinked" content match:
-      | tenantId | null |
+      | engineId | null |
     And The document "tenant-kuzzle":"devices":"DummyTemp.detached" does not exists
     And The document "tenant-kuzzle":"devices":"DummyTemp.attached_ayse_unlinked" does not exists
 
   Scenario: Detach multiple device to a tenant while exceeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mAttachTenants" while exeding documentsWriteCount limit
     When I succesfully execute "device-manager/device":"mDetachTenants" while exeding documentsWriteCount limit
-    Then All devices in "device-manager" "devices" have the property "tenantId" to "null"
+    Then All devices in "device-manager" "devices" have the property "engineId" to "null"
     And All documents "tenant-kuzzle":"devices" does not exists
 
   Scenario: Error when detaching from a tenant
@@ -406,11 +406,11 @@ Feature: Device Manager device controller
 
   Scenario: Import devices using csv
     Given I successfully execute the action "device-manager/device":"importDevices" with args:
-      | body.csv | "_id,reference,model\\nDummyTemp-imported,detached,DummyTemp_imported" |
+      | body.csv | "_id,reference,model\\nDummyTemp.imported,detached,DummyTemp_imported" |
     Then I successfully execute the action "collection":"refresh" with args:
       | index      | "device-manager" |
       | collection | "devices"        |
-    Then The document "device-manager":"devices":"DummyTemp-imported" content match:
+    Then The document "device-manager":"devices":"DummyTemp.imported" content match:
       | reference | "detached"           |
       | model     | "DummyTemp_imported" |
 
@@ -419,13 +419,13 @@ Feature: Device Manager device controller
     And I "update" the document "plugin--device-manager" with content:
       | device-manager.provisioningStrategy | "catalog" |
     And I successfully execute the action "device-manager/device":"importCatalog" with args:
-      | body.csv | "deviceId,authorized\\nDummyTemp-imported,false" |
+      | body.csv | "deviceId,authorized\\nDummyTemp.imported,false" |
     Then I successfully execute the action "collection":"refresh" with args:
       | index      | "device-manager" |
       | collection | "config"         |
-    Then The document "device-manager":"config":"catalog--DummyTemp-imported" content match:
+    Then The document "device-manager":"config":"catalog--DummyTemp.imported" content match:
       | type               | "catalog"            |
       | catalog.authorized | false                |
-      | catalog.deviceId   | "DummyTemp-imported" |
+      | catalog.deviceId   | "DummyTemp.imported" |
     And I "update" the document "plugin--device-manager" with content:
       | device-manager.provisioningStrategy | "auto" |

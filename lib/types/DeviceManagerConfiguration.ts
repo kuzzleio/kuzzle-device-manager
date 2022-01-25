@@ -29,6 +29,14 @@ export type DeviceManagerConfiguration = {
     };
   },
 
+  engineCollections: {
+    config: {
+      name: string,
+      mappings: JSONObject,
+      settings: JSONObject,
+    };
+  },
+
   /**
    * Interval to write documents from the buffer
    */

@@ -157,14 +157,14 @@ module.exports = {
         type: 'tools',
         model: 'PERFO',
         reference: 'unlinked',
-        measures: {},
+        measures: [],
       },
       { index: { _id: 'tools.SCREW.unlinked' } },
       {
         type: 'tools',
         model: 'SCREW',
         reference: 'unlinked',
-        measures: {},
+        measures: [],
       },
       { index: { _id: 'tools.MART.linked' } },
       {
