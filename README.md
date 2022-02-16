@@ -17,7 +17,7 @@ npm install kuzzle-device-manager
 
 ### Online
 
-Open [https://docs.kuzzle.io/kuzzle-iot-platform/device-manager/1](https://docs.kuzzle.io/kuzzle-iot-platform/device-manager/1)
+Open [https://docs.kuzzle.io/official-plugins/device-manager/1/guides/devices/](https://docs.kuzzle.io/official-plugins/device-manager/1/guides/devices/)
 
 ### Locally
 
