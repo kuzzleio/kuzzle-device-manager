@@ -18,7 +18,7 @@ export function registerTestPipes (app: Backend) {
   // Used in PayloadController.feature
   app.pipe.register('engine:tenant-ayse:asset:measures:new',
     async ({ asset, measures }) => {
-        if (asset._id !== 'tools.MART.linked') {
+        if (asset._id !== 'tools-MART-linked') {
           return { asset, measures };
         }
 
@@ -33,7 +33,7 @@ export function registerTestPipes (app: Backend) {
   // Used in PayloadController.feature
   app.pipe.register('engine:tenant-ayse:device:measures:new',
     async ({ device, measures }) => {
-      if (device._id !== 'DummyTemp.attached_ayse_unlinked') {
+      if (device._id !== 'DummyTemp-attached_ayse_unlinked') {
         return { device, measures };
       }
 
@@ -86,30 +86,29 @@ export function registerTestPipes (app: Backend) {
     return { device, asset };
   });
 
-  app.pipe.register('device-manager:device:attach-engine:before', async ({ index, device }) => {
+  app.pipe.register('device-manager:device:attach-engine:before', async ({ engineId, device }) => {
     app.log.debug('before attach-engine trigered');
 
     _.set(device, 'body.metadata.enrichedByBeforeAttachengine', true);
 
-    return { index, device };
+    return { engineId, device };
   });
 
-  app.pipe.register('device-manager:device:attach-engine:after', async ({ index, device }) => {
+  app.pipe.register('device-manager:device:attach-engine:after', async ({ engineId, device }) => {
     app.log.debug('after attach-engine trigered');
 
     if (device.body.metadata.enrichedByBeforeAttachengine) {
       _.set(device, 'body.metadata.enrichedByAfterAttachengine', true);
 
       await app.sdk.document.update(
-        device.body.engineId,
+        device._source.engineId,
         'devices',
         device._id,
-        device.body
+        device._source
       );
-
     }
 
-    return { index, device };
+    return { engineId, device };
   });
 
   app.pipe.register('device-manager:asset:update:before', async ({ asset, updates }) => {

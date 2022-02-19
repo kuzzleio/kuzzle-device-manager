@@ -25,12 +25,12 @@ export class DeviceController extends CRUDController {
 
     this.definition = {
       actions: {
-        attachTenant: {
-          handler: this.attachTenant.bind(this),
+        attachEngine: {
+          handler: this.attachEngine.bind(this),
           http: [{ path: 'device-manager/:index/devices/:_id/_attach', verb: 'put' }]
         },
-        detachTenant: {
-          handler: this.detachTenant.bind(this),
+        detachEngine: {
+          handler: this.detachEngine.bind(this),
           http: [{ path: 'device-manager/devices/:_id/_detach', verb: 'delete' }]
         },
         importCatalog: {
@@ -45,12 +45,12 @@ export class DeviceController extends CRUDController {
           handler: this.linkAsset.bind(this),
           http: [{ path: 'device-manager/:index/devices/:_id/_link/:assetId', verb: 'put' }]
         },
-        mAttachTenants: {
-          handler: this.mAttachTenants.bind(this),
+        mAttachEngines: {
+          handler: this.mAttachEngines.bind(this),
           http: [{ path: 'device-manager/devices/_mAttach', verb: 'put' }]
         },
-        mDetachTenants: {
-          handler: this.mDetachTenants.bind(this),
+        mDetachEngines: {
+          handler: this.mDetachEngines.bind(this),
           http: [{ path: 'device-manager/devices/_mDetach', verb: 'put' }]
         },
         mLinkAssets: {
@@ -84,133 +84,82 @@ export class DeviceController extends CRUDController {
     };
   }
 
-  async update (request: KuzzleRequest) {
-    const deviceId = request.getId();
-    const body = request.getBody();
-    const devices = await this.mGetDevice([{ deviceId }]);
-
-    const response = await global.app.trigger('device-manager:device:update:before', {
-      device: devices[0],
-      updates: body,
-    });
-
-    request.input.body = response.updates;
-    const result = await super.update(request);
-
-    await global.app.trigger('device-manager:device:update:after', {
-      device: devices[0],
-      updates: result._source,
-    });
-
-    return result;
-  }
-
   /**
    * Attach a device to a tenant
    */
-  async attachTenant (request: KuzzleRequest) {
+  async attachEngine (request: KuzzleRequest) {
     const engineId = request.getIndex();
     const deviceId = request.getId();
 
-    const document = { deviceId: deviceId, engineId: engineId };
-    const devices = await this.mGetDevice([document]);
-
-    await this.deviceService.mAttachTenants(
-      devices,
-      [document],
-      {
-        options:  { ...request.input.args },
-        strict: true
-      });
+    await this.deviceService.attachEngine(engineId, deviceId, request.input.args);
   }
 
   /**
    * Attach multiple devices to multiple tenants
    */
-  async mAttachTenants (request: KuzzleRequest) {
-    const { bulkData, strict } = await this.mParseRequest(request);
+  async mAttachEngines (request: KuzzleRequest) {
+    const { bulkData } = await this.mParseRequest(request);
 
-    const devices = await this.mGetDevice(bulkData);
+    const promises = [];
 
-    return this.deviceService.mAttachTenants(
-      devices,
-      bulkData,
-      {
-        options:  { ...request.input.args },
-        strict
-      });
+    for (const { engineId, deviceId } of bulkData) {
+      promises.push(
+        this.deviceService.attachEngine(engineId, deviceId, request.input.args));
+    }
+
+    return await Promise.all(promises);
   }
 
   /**
    * Unattach a device from it's tenant
    */
-  async detachTenant (request: KuzzleRequest) {
+  async detachEngine (request: KuzzleRequest) {
     const deviceId = request.getId();
 
-    const document: DeviceBulkContent = { deviceId };
-    const devices = await this.mGetDevice([document]);
-
-    await this.deviceService.mDetachTenants(
-      devices,
-      [document],
-      {
-        options:  { ...request.input.args },
-        strict: true
-      });
+    await this.deviceService.detachEngine(deviceId, request.input.args);
   }
 
   /**
    * Detach multiple devices from multiple tenants
    */
-  async mDetachTenants (request: KuzzleRequest) {
-    const { bulkData, strict } = await this.mParseRequest(request);
+  async mDetachEngines (request: KuzzleRequest) {
+    const { bulkData } = await this.mParseRequest(request);
 
-    const devices = await this.mGetDevice(bulkData);
+    const promises = [];
 
-    return this.deviceService.mDetachTenants(
-      devices,
-      bulkData,
-      {
-        options:  { ...request.input.args },
-        strict
-      });
+    for (const { deviceId } of bulkData) {
+      promises.push(
+        this.deviceService.detachEngine(deviceId, request.input.args));
+    }
+
+    return await Promise.all(promises);
   }
 
   /**
    * Link a device to an asset.
-   * @todo there is not restriction according to tenant index?
+   * @todo there is no restriction according to tenant index?
    */
   async linkAsset (request: KuzzleRequest) {
     const assetId = request.getString('assetId');
     const deviceId = request.getId();
 
-    const document: DeviceBulkContent = { assetId, deviceId };
-    const devices = await this.mGetDevice([document]);
-
-    await this.deviceService.mLinkAssets(
-      devices,
-      [document],
-      {
-        options:  { ...request.input.args },
-        strict: true
-      });
+    await this.deviceService.linkAsset(deviceId, assetId, request.input.args);
   }
 
   /**
    * Link multiple devices to multiple assets.
    */
   async mLinkAssets (request: KuzzleRequest) {
-    const { bulkData, strict } = await this.mParseRequest(request);
+    const { bulkData } = await this.mParseRequest(request);
 
-    const devices = await this.mGetDevice(bulkData);
+    const promises = [];
 
-    return this.deviceService.mLinkAssets(
-      devices,
-      bulkData,
-      {
-        options:  { ...request.input.args },
-        strict
-      });
+    for (const { deviceId, assetId } of bulkData) {
+      promises.push(
+        this.deviceService.linkAsset(deviceId, assetId, request.input.args));
+    }
+
+    return await Promise.all(promises);
   }
 
   /**
@@ -219,31 +168,23 @@ export class DeviceController extends CRUDController {
   async unlinkAsset (request: KuzzleRequest) {
     const deviceId = request.getId();
 
-    const document: DeviceBulkContent = { deviceId };
-    const devices = await this.mGetDevice([document]);
-
-    await this.deviceService.mUnlinkAssets(
-      devices,
-      {
-        options:  { ...request.input.args },
-        strict: true
-      });
+    await this.deviceService.unlinkAsset(deviceId, request.input.args);
   }
 
   /**
    * Unlink multiple device from multiple assets.
    */
   async mUnlinkAssets (request: KuzzleRequest) {
-    const { bulkData, strict } = await this.mParseRequest(request);
+    const { bulkData } = await this.mParseRequest(request);
 
-    const devices = await this.mGetDevice(bulkData);
+    const promises = [];
 
-    return this.deviceService.mUnlinkAssets(
-      devices,
-      {
-        options: { ...request.input.args },
-        strict
-      });
+    for (const { deviceId } of bulkData) {
+      promises.push(
+        this.deviceService.unlinkAsset(deviceId, request.input.args));
+    }
+
+    return await Promise.all(promises);
   }
 
   /**
@@ -279,8 +220,7 @@ export class DeviceController extends CRUDController {
   async importDevices (request: KuzzleRequest) {
     const content = request.getBodyString('csv');
 
-    const devices = await csv({ delimiter: 'auto' })
-      .fromString(content);
+    const devices = await csv({ delimiter: 'auto' }).fromString(content);
 
     return this.deviceService.importDevices(
       devices,
@@ -293,8 +233,7 @@ export class DeviceController extends CRUDController {
   async importCatalog (request: KuzzleRequest) {
     const content = request.getBodyString('csv');
 
-    const catalog = await csv({ delimiter: 'auto' })
-      .fromString(content);
+    const catalog = await csv({ delimiter: 'auto' }).fromString(content);
 
     return this.deviceService.importCatalog(
       catalog,
@@ -327,8 +266,7 @@ export class DeviceController extends CRUDController {
     let bulkData: DeviceBulkContent[];
 
     if (body.csv) {
-      const lines = await csv({ delimiter: 'auto' })
-        .fromString(body.csv);
+      const lines = await csv({ delimiter: 'auto' }).fromString(body.csv);
 
       bulkData = lines.map(({ engineId, deviceId, assetId}) => ({
         assetId,

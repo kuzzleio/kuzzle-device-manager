@@ -6,16 +6,16 @@ Feature: Device Manager asset controller
       | body.type      | "outils"        |
       | body.model     | "PERFO"         |
       | body.reference | "asset_01"      |
-    Then The document "tenant-kuzzle":"assets":"outils.PERFO.asset_01" exists
+    Then The document "tenant-kuzzle":"assets":"outils-PERFO-asset_01" exists
     When I successfully execute the action "device-manager/asset":"update" with args:
       | index                | "tenant-kuzzle"         |
-      | _id                  | "outils.PERFO.asset_01" |
+      | _id                  | "outils-PERFO-asset_01" |
       | body.metadata.foobar | 42                      |
       | body.metadata.index  | "tenant-kuzzle"         |
     And I successfully execute the action "device-manager/asset":"delete" with args:
       | index | "tenant-kuzzle"         |
-      | _id   | "outils.PERFO.asset_01" |
-    Then The document "tenant-kuzzle":"assets":"outils.PERFO.asset_01" does not exists
+      | _id   | "outils-PERFO-asset_01" |
+    Then The document "tenant-kuzzle":"assets":"outils-PERFO-asset_01" does not exists
 
   Scenario: Create, update and modify with events before/after
     When I successfully execute the action "device-manager/asset":"create" with args:
@@ -23,15 +23,15 @@ Feature: Device Manager asset controller
       | body.type      | "outils"        |
       | body.model     | "PERFO"         |
       | body.reference | "asset_01"      |
-    Then The document "tenant-kuzzle":"assets":"outils.PERFO.asset_01" exists
+    Then The document "tenant-kuzzle":"assets":"outils-PERFO-asset_01" exists
     When I successfully execute the action "device-manager/asset":"update" with args:
       | index                | "tenant-kuzzle"         |
-      | _id                  | "outils.PERFO.asset_01" |
+      | _id                  | "outils-PERFO-asset_01" |
       | body.metadata.foobar | 42                      |
       | body.metadata.index  | "tenant-kuzzle"         |
-    And The document "tenant-kuzzle":"assets":"outils.PERFO.asset_01" content match:
+    And The document "tenant-kuzzle":"assets":"outils-PERFO-asset_01" content match:
       | metadata.enrichedByBeforeAssetUpdate | true |
-    And The document "tenant-kuzzle":"assets":"outils.PERFO.asset_01" content match:
+    And The document "tenant-kuzzle":"assets":"outils-PERFO-asset_01" content match:
       | metadata.enrichedByAfterAssetUpdate | true |
 
   Scenario: Import assets using csv
@@ -41,6 +41,6 @@ Feature: Device Manager asset controller
     Then I successfully execute the action "collection":"refresh" with args:
       | index      | "tenant-kuzzle" |
       | collection | "assets"        |
-    Then The document "tenant-kuzzle":"assets":"outils.PERFO.imported" content match:
+    Then The document "tenant-kuzzle":"assets":"outils-PERFO-imported" content match:
       | reference | "imported" |
       | model     | "PERFO"    |

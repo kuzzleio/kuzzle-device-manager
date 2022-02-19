@@ -4,8 +4,9 @@ import { DeviceContent } from '../types';
 
 export class Device {
   static id (model: string, reference: string) {
-    return `${model}.${reference}`;
+    return `${model}-${reference}`;
   }
+
   public _id: string;
   public _source: DeviceContent;
 

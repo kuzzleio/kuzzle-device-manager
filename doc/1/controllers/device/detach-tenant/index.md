@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: detachTenant
+title: detachEngine
 description: Detach a device from a tenant
 ---
 
-# detachTenant
+# detachEngine
 
 Detach a device from a tenant.
 
@@ -25,7 +25,7 @@ Method: DELETE
 ```js
 {
   "controller": "device-manager/device",
-  "action": "detachTenant",
+  "action": "detachEngine",
   "_id": "<deviceId>"
 }
 ```
@@ -33,7 +33,7 @@ Method: DELETE
 ### Kourou
 
 ```bash
-kourou device-manager/device:detachTenant --id <deviceId>
+kourou device-manager/device:detachEngine --id <deviceId>
 ```
 
 ---
@@ -54,7 +54,7 @@ kourou device-manager/device:detachTenant --id <deviceId>
   "error": null,
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "detachTenant",
+  "action": "detachEngine",
   "requestId": "<unique request identifier>",
   "result": {}
 }

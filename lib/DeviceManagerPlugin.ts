@@ -166,7 +166,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.pipes = {
       'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeattachEngine': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
       'generic:document:beforeWrite': [],

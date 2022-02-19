@@ -128,6 +128,7 @@ export class PayloadService {
       deviceContent,
       deviceId,
       { refresh });
+    console.log('CREATED ')
 
     const device = new Device(deviceDoc._source);
 
@@ -208,7 +209,7 @@ export class PayloadService {
 
     await this.sdk.query({
       _id: deviceId,
-      action: 'attachTenant',
+      action: 'attachEngine',
       controller: 'device-manager/device',
       index: engineId,
     });

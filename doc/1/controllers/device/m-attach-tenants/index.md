@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: mAttachTenants
+title: mAttachEngines
 description: Attach multiple devices to multiple tenants index
 ---
 
-# mAttachTenants
+# mAttachEngines
 
 Attach multiple devices to multiple tenants.
 
@@ -42,7 +42,7 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mAttachTenants",
+    "action": "mAttachEngines",
     "body": {
         // Using JSON
         "records" [{
@@ -80,7 +80,7 @@ Body properties, must contain at least one of
     "status": 200,
     "error": null,
     "controller": "device-manager/device",
-    "action": "mAttachTenants",
+    "action": "mAttachEngines",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],
@@ -97,7 +97,7 @@ Two events when this action is called, allowing to modify the device before it i
 app.pipe.register('device-manager:device:attach-tenant:before', async ({ index, device }) => {
   app.log.debug('before attach-tenant trigered');
 
-  set(device, 'body.metadata.enrichedByBeforeAttachTenant', true);
+  set(device, 'body.metadata.enrichedByBeforeattachEngine', true);
 
   return { index, device };
 })

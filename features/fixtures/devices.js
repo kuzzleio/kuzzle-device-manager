@@ -1,7 +1,7 @@
 const devices = [];
 
 for (let i = 0; i < 50; i++) {
-  devices.push({ index: { _id: `DummyTemp.detached-${i}` } });
+  devices.push({ index: { _id: `DummyTemp-detached-${i}` } });
   devices.push({
     reference: `detached-${i}`,
     model: 'DummyTemp',

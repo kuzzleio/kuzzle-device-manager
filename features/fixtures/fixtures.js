@@ -17,7 +17,7 @@ const dummyTempAttachedAyseUnLinked = {
       },
       measuredAt: 1610793427950,
       origin: {
-        id: 'DummyTemp.attached_ayse_unlinked',
+        id: 'DummyTemp-attached_ayse_unlinked',
         type: 'device',
         model: 'DummyTemp',
         reference: 'attached_ayse_unlinked',
@@ -37,7 +37,7 @@ const dummyTempAttachedAyseUnLinked = {
       },
       measuredAt: 1610793427950,
       origin: {
-        id: 'DummyTemp.attached_ayse_unlinked',
+        id: 'DummyTemp-attached_ayse_unlinked',
         type: 'device',
         model: 'DummyTemp',
         reference: 'attached_ayse_unlinked',
@@ -63,7 +63,7 @@ const measuresAttachedAyseLinked = [
     },
     measuredAt: 1610793427950,
     origin: {
-      id: 'DummyTemp.attached_ayse_linked',
+      id: 'DummyTemp-attached_ayse_linked',
       type: 'device',
       model: 'DummyTemp',
       reference: 'attached_ayse_linked',
@@ -83,7 +83,7 @@ const measuresAttachedAyseLinked = [
     },
     measuredAt: 1610793427950,
     origin: {
-      id: 'DummyTemp.attached_ayse_linked',
+      id: 'DummyTemp-attached_ayse_linked',
       type: 'device',
       model: 'DummyTemp',
       reference: 'attached_ayse_linked',
@@ -97,14 +97,14 @@ const dummyTempAttachedAyseLinked = {
   model: 'DummyTemp',
   measures: measuresAttachedAyseLinked,
   engineId: 'tenant-ayse',
-  assetId: 'tools.MART.linked'
+  assetId: 'tools-MART-linked'
 };
 
 module.exports = {
   'device-manager': {
     devices: [
       // ...devices,
-      { index: { _id: 'DummyTemp.detached' } },
+      { index: { _id: 'DummyTemp-detached' } },
       {
         reference: 'detached',
         model: 'DummyTemp',
@@ -126,7 +126,7 @@ module.exports = {
             },
             measuredAt: 1610793427950,
             origin: {
-              id: 'DummyTemp.detached',
+              id: 'DummyTemp-detached',
               type: 'device',
               model: 'DummyTemp',
               reference: 'detached',
@@ -138,35 +138,35 @@ module.exports = {
         engineId: null,
         assetId: null
       },
-      { index: { _id: 'DummyTemp.attached_ayse_unlinked' } },
+      { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
       dummyTempAttachedAyseUnLinked,
-      { index: { _id: 'DummyTemp.attached_ayse_linked' } },
+      { index: { _id: 'DummyTemp-attached_ayse_linked' } },
       dummyTempAttachedAyseLinked,
     ]
   },
   'tenant-ayse': {
     devices: [
-      { index: { _id: 'DummyTemp.attached_ayse_unlinked' } },
+      { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
       dummyTempAttachedAyseUnLinked,
-      { index: { _id: 'DummyTemp.attached_ayse_linked' } },
+      { index: { _id: 'DummyTemp-attached_ayse_linked' } },
       dummyTempAttachedAyseLinked,
     ],
     assets: [
-      { index: { _id: 'tools.PERFO.unlinked' } },
+      { index: { _id: 'tools-PERFO-unlinked' } },
       {
         type: 'tools',
         model: 'PERFO',
         reference: 'unlinked',
         measures: [],
       },
-      { index: { _id: 'tools.SCREW.unlinked' } },
+      { index: { _id: 'tools-SCREW-unlinked' } },
       {
         type: 'tools',
         model: 'SCREW',
         reference: 'unlinked',
         measures: [],
       },
-      { index: { _id: 'tools.MART.linked' } },
+      { index: { _id: 'tools-MART-linked' } },
       {
         type: 'tools',
         model: 'MART',

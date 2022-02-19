@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: attachTenant
+title: attachEngine
 description: Attach a device to a tenant index
 ---
 
-# attachTenant
+# attachEngine
 
 Attach a device to a tenant.
 
@@ -30,7 +30,7 @@ Method: PUT
 {
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "attachTenant",
+  "action": "attachEngine",
   "_id": "<deviceId>"
 }
 ```
@@ -38,7 +38,7 @@ Method: PUT
 ### Kourou
 
 ```bash
-kourou device-manager/device:attachTenant <index> --id <deviceId>
+kourou device-manager/device:attachEngine <index> --id <deviceId>
 ```
 ---
 
@@ -60,7 +60,7 @@ kourou device-manager/device:attachTenant <index> --id <deviceId>
   "error": null,
   "index": "<index>",
   "controller": "device-manager/device",
-  "action": "attachTenant",
+  "action": "attachEngine",
   "requestId": "<unique request identifier>",
   "result": {}
 }
@@ -74,7 +74,7 @@ Two events when this action is called, allowing to modify the device before it i
 app.pipe.register('device-manager:device:attach-tenant:before', async ({ index, device }) => {
   app.log.debug('before attach-tenant trigered');
 
-  set(device, 'body.metadata.enrichedByBeforeAttachTenant', true);
+  set(device, 'body.metadata.enrichedByBeforeattachEngine', true);
 
   return { index, device };
 })

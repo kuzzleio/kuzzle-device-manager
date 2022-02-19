@@ -5,13 +5,13 @@ Feature: Payloads Controller
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
-    Then The document "device-manager":"devices":"DummyTemp.12345" content match:
+    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
       | reference                      | "12345"           |
       | model                          | "DummyTemp"       |
       | measures[0].type               | "temperature"     |
       | measures[0].measuredAt         | "_DATE_NOW_"      |
       | measures[0].values.temperature | 23.3              |
-      | measures[0].origin.id          | "DummyTemp.12345" |
+      | measures[0].origin.id          | "DummyTemp-12345" |
       | measures[0].origin.model       | "DummyTemp"       |
       | measures[0].origin.reference   | "12345"           |
       | measures[0].origin.type        | "device"          |
@@ -21,7 +21,7 @@ Feature: Payloads Controller
       | measures[1].type               | "battery"         |
       | measures[1].measuredAt         | "_DATE_NOW_"      |
       | measures[1].values.battery     | 80                |
-      | measures[1].origin.id          | "DummyTemp.12345" |
+      | measures[1].origin.id          | "DummyTemp-12345" |
       | measures[1].origin.model       | "DummyTemp"       |
       | measures[1].origin.reference   | "12345"           |
       | measures[1].origin.type        | "device"          |
@@ -40,7 +40,7 @@ Feature: Payloads Controller
       | deviceEUI    | "12345" |
       | register55   | 42.2    |
       | batteryLevel | 0.7     |
-    Then The document "device-manager":"devices":"DummyTemp.12345" content match:
+    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
       | reference                      | "12345"       |
       | model                          | "DummyTemp"   |
       | measures[0].values.temperature | 42.2          |
@@ -64,7 +64,7 @@ Feature: Payloads Controller
       | batteryLevel | 0.7    |
     Then I should receive a result matching:
       | valid | false |
-    And The document "device-manager":"devices":"DummyTemp.4242" does not exists
+    And The document "device-manager":"devices":"DummyTemp-4242" does not exists
 
   Scenario: Receive a payload with 3 measures
     When I successfully receive a "dummy-temp-position" payload with:
@@ -73,13 +73,13 @@ Feature: Payloads Controller
       | location.lat  | 42.2    |
       | location.lon  | 2.42    |
       | location.accu | 2100    |
-    Then The document "device-manager":"devices":"DummyTempPosition.12345" content match:
+    Then The document "device-manager":"devices":"DummyTempPosition-12345" content match:
       | reference                       | "12345"                   |
       | model                           | "DummyTempPosition"       |
       | measures[0].type                | "temperature"             |
       | measures[0].measuredAt          | "_DATE_NOW_"              |
       | measures[0].values.temperature  | 23.3                      |
-      | measures[0].origin.id           | "DummyTempPosition.12345" |
+      | measures[0].origin.id           | "DummyTempPosition-12345" |
       | measures[0].origin.model        | "DummyTempPosition"       |
       | measures[0].origin.reference    | "12345"                   |
       | measures[0].origin.type         | "device"                  |
@@ -91,7 +91,7 @@ Feature: Payloads Controller
       | measures[1].values.position.lat | 42.2                      |
       | measures[1].values.position.lon | 2.42                      |
       | measures[1].values.accuracy     | 2100                      |
-      | measures[1].origin.id           | "DummyTempPosition.12345" |
+      | measures[1].origin.id           | "DummyTempPosition-12345" |
       | measures[1].origin.model        | "DummyTempPosition"       |
       | measures[1].origin.reference    | "12345"                   |
       | measures[1].origin.type         | "device"                  |
@@ -101,7 +101,7 @@ Feature: Payloads Controller
       | measures[2].type                | "battery"                 |
       | measures[2].measuredAt          | "_DATE_NOW_"              |
       | measures[2].values.battery      | 80                        |
-      | measures[2].origin.id           | "DummyTempPosition.12345" |
+      | measures[2].origin.id           | "DummyTempPosition-12345" |
       | measures[2].origin.model        | "DummyTempPosition"       |
       | measures[2].origin.reference    | "12345"                   |
       | measures[2].origin.type         | "device"                  |
@@ -116,14 +116,14 @@ Feature: Payloads Controller
       | deviceEUI    | "attached_ayse_unlinked" |
       | register55   | 42.2                     |
       | batteryLevel | 0.4                      |
-    Then The document "device-manager":"devices":"DummyTemp.attached_ayse_unlinked" content match:
+    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | engineId                       | "tenant-ayse"              |
       | measures[0].values.temperature | 42.2                       |
       | measures[1].values.battery     | 40                         |
       # Enriched with the event "engine:tenant-ayse:device:measures:new"
       | metadata.enriched              | true                       |
       | metadata.measureTypes          | ["temperature", "battery"] |
-    And The document "tenant-ayse":"devices":"DummyTemp.attached_ayse_unlinked" content match:
+    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | engineId                       | "tenant-ayse"              |
       | measures[0].values.temperature | 42.2                       |
       | measures[1].values.battery     | 40                         |
@@ -131,7 +131,7 @@ Feature: Payloads Controller
       | metadata.enriched              | true                       |
       | metadata.measureTypes          | ["temperature", "battery"] |
     And I should receive a result matching:
-      | device._id | "DummyTemp.attached_ayse_unlinked" |
+      | device._id | "DummyTemp-attached_ayse_unlinked" |
       | asset      | null                               |
       | engineId   | "tenant-ayse"                      |
 
@@ -140,17 +140,17 @@ Feature: Payloads Controller
       | deviceEUI    | "attached_ayse_linked" |
       | register55   | 42.2                   |
       | batteryLevel | 0.4                    |
-    Then The document "device-manager":"devices":"DummyTemp.attached_ayse_linked" content match:
+    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_linked" content match:
       | engineId | "tenant-ayse"       |
-      | assetId  | "tools.MART.linked" |
-    Then The document "tenant-ayse":"devices":"DummyTemp.attached_ayse_linked" content match:
+      | assetId  | "tools-MART-linked" |
+    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_linked" content match:
       | engineId | "tenant-ayse"       |
-      | assetId  | "tools.MART.linked" |
-    And The document "tenant-ayse":"assets":"tools.MART.linked" content match:
+      | assetId  | "tools-MART-linked" |
+    And The document "tenant-ayse":"assets":"tools-MART-linked" content match:
       | measures[0].type               | "temperature"                    |
       | measures[0].measuredAt         | "_DATE_NOW_"                     |
       | measures[0].values.temperature | 42.2                             |
-      | measures[0].origin.id          | "DummyTemp.attached_ayse_linked" |
+      | measures[0].origin.id          | "DummyTemp-attached_ayse_linked" |
       | measures[0].origin.model       | "DummyTemp"                      |
       | measures[0].origin.reference   | "attached_ayse_linked"           |
       | measures[0].origin.type        | "device"                         |
@@ -160,7 +160,7 @@ Feature: Payloads Controller
       | measures[1].type               | "battery"                        |
       | measures[1].measuredAt         | "_DATE_NOW_"                     |
       | measures[1].values.battery     | 40                               |
-      | measures[1].origin.id          | "DummyTemp.attached_ayse_linked" |
+      | measures[1].origin.id          | "DummyTemp-attached_ayse_linked" |
       | measures[1].origin.model       | "DummyTemp"                      |
       | measures[1].origin.reference   | "attached_ayse_linked"           |
       | measures[1].origin.type        | "device"                         |
@@ -171,8 +171,8 @@ Feature: Payloads Controller
       | metadata.enriched              | true                             |
       | metadata.measureTypes          | ["temperature", "battery"]       |
     And I should receive a result matching:
-      | device._id | "DummyTemp.attached_ayse_linked" |
-      | asset._id  | "tools.MART.linked"              |
+      | device._id | "DummyTemp-attached_ayse_linked" |
+      | asset._id  | "tools-MART-linked"              |
       | engineId   | "tenant-ayse"                    |
 
   Scenario: Historize the measures
