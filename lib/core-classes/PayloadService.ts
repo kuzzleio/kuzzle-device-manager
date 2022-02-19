@@ -128,7 +128,6 @@ export class PayloadService {
       deviceContent,
       deviceId,
       { refresh });
-    console.log('CREATED ')
 
     const device = new Device(deviceDoc._source);
 

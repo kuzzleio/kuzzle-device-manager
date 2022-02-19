@@ -191,7 +191,7 @@ export class DeviceService {
       { asset, device },
     );
 
-    return { device, asset };
+    return { asset, device };
   }
 
   async unlinkAsset (deviceId: string, { options }: { options?: JSONObject }) {
@@ -248,7 +248,7 @@ export class DeviceService {
       { asset, device },
     );
 
-    return { device, asset };
+    return { asset, device };
   }
 
   async importDevices(

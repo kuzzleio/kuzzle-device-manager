@@ -1,5 +1,3 @@
-import { JSONObject } from 'kuzzle';
-
 import { DeviceContent } from '../types';
 
 export class Device {

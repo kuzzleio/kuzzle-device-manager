@@ -118,7 +118,7 @@ export class DeviceManagerPlugin extends Plugin {
       }
     };
 
-    // eslint-disable sort-keys
+    /* eslint-disable sort-keys */
     this.config = {
       adminIndex: 'device-manager',
       adminCollections: {
@@ -153,7 +153,7 @@ export class DeviceManagerPlugin extends Plugin {
       },
       writerInterval: 10
     };
-    // eslint-enable sort-keys
+    /* eslint-enable sort-keys */
   }
 
   /**
@@ -164,13 +164,15 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.context = context;
 
+    /* eslint-disable sort-keys */
     this.pipes = {
       'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeattachEngine': this.pipeCheckEngine.bind(this),
+      'device-manager/device:beforeAttachEngine': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
       'generic:document:beforeWrite': [],
     };
+    /* eslint-enable sort-keys */
 
     this.adminConfigManager = new ConfigManager(this, {
       mappings: this.config.adminCollections.config.mappings,
@@ -184,8 +186,8 @@ export class DeviceManagerPlugin extends Plugin {
     });
     this.adminConfigManager.register('engine', {
       properties: {
-        index: { type: 'keyword' },
         group: { type: 'keyword' },
+        index: { type: 'keyword' },
         name: { type: 'keyword' },
       }
     });
