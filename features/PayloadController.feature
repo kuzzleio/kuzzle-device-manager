@@ -117,23 +117,23 @@ Feature: Payloads Controller
       | register55   | 42.2                     |
       | batteryLevel | 0.4                      |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | engineId                       | "tenant-ayse"              |
+      | engineId                       | "engine-ayse"              |
       | measures[0].values.temperature | 42.2                       |
       | measures[1].values.battery     | 40                         |
-      # Enriched with the event "engine:tenant-ayse:device:measures:new"
+      # Enriched with the event "engine:engine-ayse:device:measures:new"
       | metadata.enriched              | true                       |
       | metadata.measureTypes          | ["temperature", "battery"] |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | engineId                       | "tenant-ayse"              |
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | engineId                       | "engine-ayse"              |
       | measures[0].values.temperature | 42.2                       |
       | measures[1].values.battery     | 40                         |
-      # Enriched with the event "engine:tenant-ayse:device:measures:new"
+      # Enriched with the event "engine:engine-ayse:device:measures:new"
       | metadata.enriched              | true                       |
       | metadata.measureTypes          | ["temperature", "battery"] |
     And I should receive a result matching:
       | device._id | "DummyTemp-attached_ayse_unlinked" |
       | asset      | null                               |
-      | engineId   | "tenant-ayse"                      |
+      | engineId   | "engine-ayse"                      |
 
   Scenario: Propagate device measures to asset
     When I successfully receive a "dummy-temp" payload with:
@@ -141,12 +141,12 @@ Feature: Payloads Controller
       | register55   | 42.2                   |
       | batteryLevel | 0.4                    |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_linked" content match:
-      | engineId | "tenant-ayse"       |
+      | engineId | "engine-ayse"       |
       | assetId  | "tools-MART-linked" |
-    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_linked" content match:
-      | engineId | "tenant-ayse"       |
+    Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_linked" content match:
+      | engineId | "engine-ayse"       |
       | assetId  | "tools-MART-linked" |
-    And The document "tenant-ayse":"assets":"tools-MART-linked" content match:
+    And The document "engine-ayse":"assets":"tools-MART-linked" content match:
       | measures[0].type               | "temperature"                    |
       | measures[0].measuredAt         | "_DATE_NOW_"                     |
       | measures[0].values.temperature | 42.2                             |
@@ -167,22 +167,22 @@ Feature: Payloads Controller
       | measures[1].unit.name          | "Volt"                           |
       | measures[1].unit.sign          | "v"                              |
       | measures[1].unit.type          | "number"                         |
-      # Enriched with the event "engine:tenant-ayse:asset:measures:new"
+      # Enriched with the event "engine:engine-ayse:asset:measures:new"
       | metadata.enriched              | true                             |
       | metadata.measureTypes          | ["temperature", "battery"]       |
     And I should receive a result matching:
       | device._id | "DummyTemp-attached_ayse_linked" |
       | asset._id  | "tools-MART-linked"              |
-      | engineId   | "tenant-ayse"                    |
+      | engineId   | "engine-ayse"                    |
 
   Scenario: Historize the measures
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "attached_ayse_unlinked" |
       | register55   | 42.2                     |
       | batteryLevel | 0.4                      |
-    And I refresh the collection "tenant-ayse":"measures"
+    And I refresh the collection "engine-ayse":"measures"
     Then When I successfully execute the action "document":"search" with args:
-      | index      | "tenant-ayse" |
+      | index      | "engine-ayse" |
       | collection | "measures"    |
     And I should receive a "hits" array of objects matching:
       | _source.type  |

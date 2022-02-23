@@ -50,14 +50,14 @@ Feature: Device Provisioning
     And I "create" the document "catalog--DummyTemp-12345" with content:
       | type             | "catalog"              |
       | catalog.deviceId | "DummyTemp-12345"      |
-      | catalog.engineId | "tenant-ayse"          |
+      | catalog.engineId | "engine-ayse"          |
       | catalog.assetId  | "tools-PERFO-unlinked" |
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
-    Then The document "tenant-ayse":"devices":"DummyTemp-12345" exists
-    And The document "tenant-ayse":"devices":"DummyTemp-12345" content match:
+    Then The document "engine-ayse":"devices":"DummyTemp-12345" exists
+    And The document "engine-ayse":"devices":"DummyTemp-12345" content match:
       | assetId | "tools-PERFO-unlinked" |
 
   Scenario: Tenant catalog: Assign to asset
@@ -65,8 +65,8 @@ Feature: Device Provisioning
     And I "create" the document "catalog--DummyTemp-12345" with content:
       | type             | "catalog"         |
       | catalog.deviceId | "DummyTemp-12345" |
-      | catalog.engineId | "tenant-ayse"     |
-    Given a collection "tenant-ayse":"config"
+      | catalog.engineId | "engine-ayse"     |
+    Given a collection "engine-ayse":"config"
     And I "create" the document "catalog--DummyTemp-12345" with content:
       | type             | "catalog"              |
       | catalog.deviceId | "DummyTemp-12345"      |
@@ -75,5 +75,5 @@ Feature: Device Provisioning
       | deviceEUI    | "12345" |
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
-    Then The document "tenant-ayse":"devices":"DummyTemp-12345" content match:
+    Then The document "engine-ayse":"devices":"DummyTemp-12345" content match:
       | assetId | "tools-PERFO-unlinked" |

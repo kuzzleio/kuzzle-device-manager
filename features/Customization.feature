@@ -20,7 +20,7 @@ Feature: Customization
       | properties.measures.properties.values.properties.movement.type    | "boolean"   |
     # Check assets custom mappings
     When I successfully execute the action "collection":"getMapping" with args:
-      | index      | "tenant-ayse" |
+      | index      | "engine-ayse" |
       | collection | "assets"      |
     Then I should receive a result matching:
       | properties.measures.properties.values.properties.humidity.type    | "float"     |

@@ -49,9 +49,9 @@ Returns an object with an `engines` property containing the engines list.
   "action": "list",
   "collection": null,
   "index": null,
-  "result": { 
+  "result": {
     "engines": [
-      { "index": "tenant-ayse" },
+      { "index": "engine-ayse" },
       { "index": "tenant-kadikoy" },
     ]
   }

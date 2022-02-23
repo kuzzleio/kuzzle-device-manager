@@ -26,7 +26,7 @@ Method: DELETE
 {
   "controller": "device-manager/engine",
   "action": "delete",
-  "index": "tenant-ayse",
+  "index": "engine-ayse",
 }
 ```
 

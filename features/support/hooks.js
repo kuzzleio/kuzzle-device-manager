@@ -51,8 +51,8 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
   });
 
   await Promise.all([
-    resetEngine(world.sdk, 'tenant-ayse'),
-    resetEngine(world.sdk, 'tenant-kuzzle'),
+    resetEngine(world.sdk, 'engine-ayse'),
+    resetEngine(world.sdk, 'engine-kuzzle'),
   ]);
 
   world.sdk.disconnect();
@@ -72,14 +72,14 @@ Before({ timeout: 30 * 1000 }, async function () {
     truncateCollection(this.sdk, 'device-manager', 'devices'),
     removeCatalogEntries(this.sdk, 'device-manager'),
 
-    truncateCollection(this.sdk, 'tenant-kuzzle', 'assets'),
-    truncateCollection(this.sdk, 'tenant-kuzzle', 'measures'),
-    truncateCollection(this.sdk, 'tenant-kuzzle', 'devices'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'assets'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'measures'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'devices'),
 
-    truncateCollection(this.sdk, 'tenant-ayse', 'assets'),
-    truncateCollection(this.sdk, 'tenant-ayse', 'measures'),
-    truncateCollection(this.sdk, 'tenant-ayse', 'devices'),
-    removeCatalogEntries(this.sdk, 'tenant-ayse'),
+    truncateCollection(this.sdk, 'engine-ayse', 'assets'),
+    truncateCollection(this.sdk, 'engine-ayse', 'measures'),
+    truncateCollection(this.sdk, 'engine-ayse', 'devices'),
+    removeCatalogEntries(this.sdk, 'engine-ayse'),
 
     truncateCollection(this.sdk, 'tests', 'events'),
   ]);

@@ -5,7 +5,7 @@ function checkEventWithDocument (app: Backend, event: string) {
   app.pipe.register(event, async payload => {
     app.log.debug(`Event "${event}" triggered`);
 
-    await app.sdk.document.create('tests', 'events', payload, event);
+    await app.sdk.document.createOrReplace('tests', 'events', event, payload);
 
     return payload;
   });
@@ -14,9 +14,11 @@ function checkEventWithDocument (app: Backend, event: string) {
 export function registerTestPipes (app: Backend) {
   checkEventWithDocument(app, 'device-manager:device:provisioning:before');
   checkEventWithDocument(app, 'device-manager:device:provisioning:after');
+  checkEventWithDocument(app, 'device-manager:device:attach-engine:before');
+  checkEventWithDocument(app, 'device-manager:device:attach-engine:after');
 
   // Used in PayloadController.feature
-  app.pipe.register('engine:tenant-ayse:asset:measures:new',
+  app.pipe.register('engine:engine-ayse:asset:measures:new',
     async ({ asset, measures }) => {
         if (asset._id !== 'tools-MART-linked') {
           return { asset, measures };
@@ -31,7 +33,7 @@ export function registerTestPipes (app: Backend) {
       });
 
   // Used in PayloadController.feature
-  app.pipe.register('engine:tenant-ayse:device:measures:new',
+  app.pipe.register('engine:engine-ayse:device:measures:new',
     async ({ device, measures }) => {
       if (device._id !== 'DummyTemp-attached_ayse_unlinked') {
         return { device, measures };
@@ -109,30 +111,5 @@ export function registerTestPipes (app: Backend) {
     }
 
     return { engineId, device };
-  });
-
-  app.pipe.register('device-manager:asset:update:before', async ({ asset, updates }) => {
-    app.log.debug('before asset update triggered');
-
-    _.set(updates, 'metadata.enrichedByBeforeAssetUpdate', true);
-
-    return { asset, updates };
-  });
-
-  app.pipe.register('device-manager:asset:update:after', async ({ asset, updates }) => {
-    app.log.debug('after asset update triggered');
-
-    if (updates.metadata.enrichedByBeforeAssetUpdate) {
-      _.set(updates, 'metadata.enrichedByAfterAssetUpdate', true);
-
-      await app.sdk.document.update(
-        updates.metadata.index,
-        'assets',
-        asset._id,
-        updates,
-      )
-    }
-
-    return { asset, updates };
   });
 }

@@ -4,10 +4,8 @@ import {
   KuzzleRequest,
   BadRequestError,
   Plugin,
-  NotFoundError
 } from 'kuzzle';
 
-import { Device } from '../models';
 import { DeviceBulkContent } from '../core-classes';
 import { DeviceService } from '../core-classes';
 
@@ -241,23 +239,6 @@ export class DeviceController extends CRUDController {
         options: { ...request.input.args },
         strict: true
       });
-  }
-
-
-  private async mGetDevice (devices: DeviceBulkContent[]): Promise<Device[]> {
-    const deviceIds = devices.map(doc => doc.deviceId);
-    const result: any = await this.sdk.document.mGet(
-      this.config.adminIndex,
-      'devices',
-      deviceIds
-    );
-
-    if (result.errors.length > 0) {
-      const ids = result.errors.join(',');
-      throw(new NotFoundError(`Device(s) "${ids}" not found`));
-    }
-
-    return result.successes.map((document: any) => new Device(document._source, document._id));
   }
 
   private async mParseRequest (request: KuzzleRequest) {

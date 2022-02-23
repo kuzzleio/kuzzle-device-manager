@@ -45,7 +45,7 @@ const dummyTempAttachedAyseUnLinked = {
       }
     }
   ],
-  engineId: 'tenant-ayse',
+  engineId: 'engine-ayse',
   assetId: null
 };
 
@@ -96,7 +96,7 @@ const dummyTempAttachedAyseLinked = {
   reference: 'attached_ayse_linked',
   model: 'DummyTemp',
   measures: measuresAttachedAyseLinked,
-  engineId: 'tenant-ayse',
+  engineId: 'engine-ayse',
   assetId: 'tools-MART-linked'
 };
 
@@ -144,7 +144,7 @@ module.exports = {
       dummyTempAttachedAyseLinked,
     ]
   },
-  'tenant-ayse': {
+  'engine-ayse': {
     devices: [
       { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
       dummyTempAttachedAyseUnLinked,

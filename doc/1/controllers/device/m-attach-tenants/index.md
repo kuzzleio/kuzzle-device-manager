@@ -29,11 +29,11 @@ Body:
 {
     // Using JSON
     "records" [{
-        "tenantId": "tenant-kuzzle",
+        "tenantId": "engine-kuzzle",
         "deviceId": "test-id"
     }],
     // Using CSV syntax
-    "csv": "tenantId,deviceId\ntenant-kuzzle,test-id"
+    "csv": "tenantId,deviceId\nengine-kuzzle,test-id"
 }
 ```
 
@@ -46,11 +46,11 @@ Body:
     "body": {
         // Using JSON
         "records" [{
-            "tenantId": "tenant-kuzzle",
+            "tenantId": "engine-kuzzle",
             "deviceId": "test-id"
         }],
         // Using CSV syntax
-        "csv": "tenantId,deviceId\ntenant-kuzzle,test-id",
+        "csv": "tenantId,deviceId\nengine-kuzzle,test-id",
     }
 }
 ```

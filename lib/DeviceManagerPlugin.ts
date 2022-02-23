@@ -329,7 +329,7 @@ export class DeviceManagerPlugin extends Plugin {
         controller: 'device-manager/engine',
         index,
       });
-
+      console.log(request.input)
       if (! exists) {
         throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
       }

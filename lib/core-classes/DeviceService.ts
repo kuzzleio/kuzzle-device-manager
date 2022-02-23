@@ -9,7 +9,7 @@ import _ from 'lodash';
 
 import { BaseAsset, Device } from '../models';
 import { BaseAssetContent, DeviceContent, DeviceManagerConfiguration } from '../types';
-import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
+import { mRequest, mResponse, writeToDatabase } from '../utils/';
 
 export type DeviceBulkContent = {
   engineId?: string;
@@ -27,16 +27,17 @@ export class DeviceService {
   constructor(plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+
   }
 
   async attachEngine (
     engineId: string,
     deviceId: string,
-    { options }: { options?: JSONObject },
+    { strict, options }: { strict?: boolean, options?: JSONObject },
   ) {
     const device = await this.getDevice(deviceId);
 
-    if (device._source.engineId) {
+    if (strict && device._source.engineId) {
       throw new BadRequestError(`Device "${device._id}" is already attached to an engine.`);
     }
 
@@ -61,11 +62,11 @@ export class DeviceService {
         { engineId: response.device._source.engineId },
         options),
 
-      this.sdk.document.create(
+      this.sdk.document.createOrReplace(
         response.device._source.engineId,
         'devices',
-        response.device._source,
         response.device._id,
+        response.device._source,
         options),
     ]);
 
@@ -77,12 +78,12 @@ export class DeviceService {
     return device;
   }
 
-  async detachEngine (deviceId: string, { options }: { options?: JSONObject }) {
+  async detachEngine (deviceId: string, { strict, options }: { strict?: boolean, options?: JSONObject }) {
     const device = await this.getDevice(deviceId);
 
     const engineId = device._source.engineId;
 
-    if (! engineId) {
+    if (strict && ! engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
 
@@ -125,7 +126,7 @@ export class DeviceService {
    *
    * @todo measures names should be provided
    */
-  async linkAsset (deviceId: string, assetId: string, { options }: { options?: JSONObject }) {
+  async linkAsset (deviceId: string, assetId: string, { strict, options }: { strict?: boolean, options?: JSONObject }) {
     const device = await this.getDevice(deviceId);
 
     const engineId = device._source.engineId;
@@ -194,7 +195,7 @@ export class DeviceService {
     return { asset, device };
   }
 
-  async unlinkAsset (deviceId: string, { options }: { options?: JSONObject }) {
+  async unlinkAsset (deviceId: string, { strict, options }: { strict?: boolean, options?: JSONObject }) {
     const device = await this.getDevice(deviceId);
 
     const engineId = device._source.engineId;

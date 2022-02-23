@@ -5,7 +5,7 @@ const { devicesTests } = require('../fixtures/devices');
 When('I succesfully execute {string}:{string} while exeding documentsWriteCount limit', async function (controller, action) {
   const records = [];
   for (let i = 0; i < devicesTests.length; i++) {
-    records.push({ deviceId: `DummyTemp-detached-${i}`, engineId: 'tenant-kuzzle' });
+    records.push({ deviceId: `DummyTemp-detached-${i}`, engineId: 'engine-kuzzle' });
   }
 
 

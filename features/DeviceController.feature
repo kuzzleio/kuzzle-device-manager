@@ -1,172 +1,148 @@
 Feature: Device Manager device controller
 
-  Scenario: Attach a device to a tenant
-    When I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "tenant-kuzzle"      |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
-      | engineId | "tenant-kuzzle" |
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
+  # Scenario: Attach a device to an engine
+  #   When I successfully execute the action "device-manager/device":"attachEngine" with args:
+  #     | _id   | "DummyTemp-detached" |
+  #     | index | "engine-kuzzle"      |
+  #   Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+  #     | engineId | "engine-kuzzle" |
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-detached" exists
 
-  Scenario: Update a device
-    When I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "tenant-kuzzle"      |
-    When I successfully execute the action "device-manager/device":"update" with args:
-      | _id                          | "DummyTemp-detached" |
-      | index                        | "tenant-kuzzle"      |
-      | body.metadata.updatedByTests | true                 |
-    Then I successfully execute the action "collection":"refresh" with args:
-      | index      | "tenant-kuzzle" |
-      | collection | "devices"       |
-    Then The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
-      | metadata.updatedByTests | true |
+  # Scenario: Update a device
+  #   When I successfully execute the action "device-manager/device":"attachEngine" with args:
+  #     | _id   | "DummyTemp-detached" |
+  #     | index | "engine-kuzzle"      |
+  #   When I successfully execute the action "device-manager/device":"update" with args:
+  #     | _id                          | "DummyTemp-detached" |
+  #     | index                        | "engine-kuzzle"      |
+  #     | body.metadata.updatedByTests | true                 |
+  #   Then I successfully execute the action "collection":"refresh" with args:
+  #     | index      | "engine-kuzzle" |
+  #     | collection | "devices"       |
+  #   Then The document "engine-kuzzle":"devices":"DummyTemp-detached" content match:
+  #     | metadata.updatedByTests | true |
 
-  Scenario: Update a device with before update events
-    When I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "tenant-kuzzle"      |
-    When I successfully execute the action "device-manager/device":"update" with args:
-      | _id                          | "DummyTemp-detached" |
-      | index                        | "tenant-kuzzle"      |
-      | body.metadata.updatedByTests | true                 |
-    Then I successfully execute the action "collection":"refresh" with args:
-      | index      | "tenant-kuzzle" |
-      | collection | "devices"       |
-    Then The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
-      | metadata.enrichedByBeforeUpdateDevice | true |
-    Then The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
-      | metadata.enrichedByAfterUpdateDevice | true |
+  # Scenario: Attach a non-existing device to an engine should throw an error
+  #   When I execute the action "device-manager/device":"attachEngine" with args:
+  #     | _id   | "Not-existing-device" |
+  #     | index | "engine-kuzzle"       |
+  #   Then I should receive an error matching:
+  #     | id | "services.storage.not_found" |
 
+  # Scenario: Attach a device to an engine and enrich it with event
+  #   When I successfully execute the action "device-manager/device":"attachEngine" with args:
+  #     | _id   | "DummyTemp-detached" |
+  #     | index | "engine-kuzzle"      |
+  #   Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+  #     | engineId | "engine-kuzzle" |
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-detached" exists
+  #   # Events
+  #   And The document "tests":"events":"device-manager:device:attach-engine:before" content match:
+  #     | device._id | "DummyTemp-detached" |
+  #     | engineId   | "engine-kuzzle"      |
+  #   And The document "tests":"events":"device-manager:device:attach-engine:after" content match:
+  #     | device._id | "DummyTemp-detached" |
+  #     | engineId   | "engine-kuzzle"      |
 
-  Scenario: Attach a non-existing device to a tenant should throw an error
-    When I execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "Not-existing-device" |
-      | index | "tenant-kuzzle"       |
-    Then I should receive an error matching:
-      | message | "Device(s) \"Not-existing-device\" not found" |
+  # Scenario: Attach multiple device to an engine using JSON
+  #   When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
+  #     | body.records.0.engineId | "engine-kuzzle"                    |
+  #     | body.records.0.deviceId | "DummyTemp-detached"               |
+  #     | body.records.1.engineId | "engine-kuzzle"                    |
+  #     | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
+  #   Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+  #     | engineId | "engine-kuzzle" |
+  #   Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+  #     | engineId | "engine-kuzzle" |
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-detached" exists
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
-  Scenario: Attach a device to a tenant and enrich it with event
-    When I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "tenant-kuzzle"      |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
-      | engineId | "tenant-kuzzle" |
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
-      | metadata.enrichedByBeforeattachEngine | true |
-    And I refresh the collection "tenant-kuzzle":"devices"
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" content match:
-      | metadata.enrichedByAfterattachEngine | true |
+  # Scenario: Attach multiple device to an engine using CSV
+  #   When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
+  #     | body.csv | "engineId,deviceId\\nengine-kuzzle,DummyTemp-detached\\nengine-kuzzle,DummyTemp-attached_ayse_unlinked," |
+  #   Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+  #     | engineId | "engine-kuzzle" |
+  #   Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+  #     | engineId | "engine-kuzzle" |
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-detached" exists
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
 
-  Scenario: Attach multiple devices to a tenant using JSON
-    When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
-      | body.records.0.engineId | "tenant-kuzzle"                    |
-      | body.records.0.deviceId | "DummyTemp-detached"               |
-      | body.records.1.engineId | "tenant-kuzzle"                    |
-      | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
-      | engineId | "tenant-kuzzle" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | engineId | "tenant-kuzzle" |
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
-    And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
+  # Scenario: Error when assigning a device to an engine
+  #   When I execute the action "device-manager/device":"attachEngine" with args:
+  #     | _id   | "DummyTemp-detached" |
+  #     | index | "engine-kaliop"      |
+  #   Then I should receive an error matching:
+  #     | message | "Tenant \"engine-kaliop\" does not have a device-manager engine" |
+  #   And I successfully execute the action "device-manager/device":"attachEngine" with args:
+  #     | _id   | "DummyTemp-detached" |
+  #     | index | "engine-kuzzle"      |
+  #   When I execute the action "device-manager/device":"attachEngine" with args:
+  #     | _id    | "DummyTemp-detached" |
+  #     | index  | "engine-kuzzle"      |
+  #     | strict | true                 |
+  #   Then I should receive an error matching:
+  #     | message | "Device \"DummyTemp-detached\" is already attached to an engine." |
 
-  Scenario: Attach multiple device to a tenant using CSV
-    When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
-      | body.csv | "engineId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
-      | engineId | "tenant-kuzzle" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | engineId | "tenant-kuzzle" |
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" exists
-    And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" exists
+  # Scenario: Detach device from an engine
+  #   And I successfully execute the action "device-manager/device":"attachEngine" with args:
+  #     | _id   | "DummyTemp-detached" |
+  #     | index | "engine-kuzzle"      |
+  #   When I successfully execute the action "device-manager/device":"detachEngine" with args:
+  #     | _id | "DummyTemp-detached" |
+  #   Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+  #     | engineId | null |
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-detached" does not exists
 
-  Scenario: Attach multiple device to a tenant while exceeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mAttachEngines" while exeding documentsWriteCount limit
-    Then All devices in "device-manager" "devices" have the property "engineId" to "tenant-kuzzle"
-    And All documents "tenant-kuzzle":"devices"  exists
+  # Scenario: Detach multiple device to an engine using JSON
+  #   When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
+  #     | body.records.0.engineId | "engine-kuzzle"                    |
+  #     | body.records.0.deviceId | "DummyTemp-detached"               |
+  #     | body.records.1.engineId | "engine-kuzzle"                    |
+  #     | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
+  #   When I successfully execute the action "device-manager/device":"mDetachEngines" with args:
+  #     | body.deviceIds | ["DummyTemp-detached","DummyTemp-attached_ayse_unlinked"] |
+  #   Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+  #     | engineId | null |
+  #   Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+  #     | engineId | null |
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-detached" does not exists
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
 
-  Scenario: Error when assigning a device to a tenant
-    When I execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "tenant-kaliop"      |
-    Then I should receive an error matching:
-      | message | "Tenant \"tenant-kaliop\" does not have a device-manager engine" |
-    And I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "tenant-kuzzle"      |
-    When I execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "tenant-kuzzle"      |
-    Then I should receive an error matching:
-      | message | "These devices \"DummyTemp-detached\" are already attached to a tenant" |
+  # Scenario: Detach multiple device to an engine using CSV
+  #   When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
+  #     | body.csv | "engineId,deviceId\\nengine-kuzzle,DummyTemp-detached\\nengine-kuzzle,DummyTemp-attached_ayse_unlinked," |
+  #   When I successfully execute the action "device-manager/device":"mDetachEngines" with args:
+  #     | body.csv | "deviceId\\nDummyTemp-detached\\nDummyTemp-attached_ayse_unlinked," |
+  #   Then The document "device-manager":"devices":"DummyTemp-detached" content match:
+  #     | engineId | null |
+  #   Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+  #     | engineId | null |
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-detached" does not exists
+  #   And The document "engine-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
 
-  Scenario: Detach device from a tenant
-    And I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "tenant-kuzzle"      |
-    When I successfully execute the action "device-manager/device":"detachEngine" with args:
-      | _id | "DummyTemp-detached" |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
-      | engineId | null |
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
-
-  Scenario: Detach multiple devices to a tenant using JSON
-    When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
-      | body.records.0.engineId | "tenant-kuzzle"                    |
-      | body.records.0.deviceId | "DummyTemp-detached"               |
-      | body.records.1.engineId | "tenant-kuzzle"                    |
-      | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
-    When I successfully execute the action "device-manager/device":"mDetachEngines" with args:
-      | body.deviceIds | ["DummyTemp-detached","DummyTemp-attached_ayse_unlinked"] |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
-      | engineId | null |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | engineId | null |
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
-    And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
-
-  Scenario: Detach multiple devices to a tenant using CSV
-    When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
-      | body.csv | "engineId,deviceId\\ntenant-kuzzle,DummyTemp-detached\\ntenant-kuzzle,DummyTemp-attached_ayse_unlinked," |
-    When I successfully execute the action "device-manager/device":"mDetachEngines" with args:
-      | body.csv | "deviceId\\nDummyTemp-detached\\nDummyTemp-attached_ayse_unlinked," |
-    Then The document "device-manager":"devices":"DummyTemp-detached" content match:
-      | engineId | null |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | engineId | null |
-    And The document "tenant-kuzzle":"devices":"DummyTemp-detached" does not exists
-    And The document "tenant-kuzzle":"devices":"DummyTemp-attached_ayse_unlinked" does not exists
-
-  Scenario: Detach multiple device to a tenant while exceeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mAttachEngines" while exeding documentsWriteCount limit
-    When I succesfully execute "device-manager/device":"mDetachEngines" while exeding documentsWriteCount limit
-    Then All devices in "device-manager" "devices" have the property "engineId" to "null"
-    And All documents "tenant-kuzzle":"devices" does not exists
-
-  Scenario: Error when detaching from a tenant
-    When I execute the action "device-manager/device":"detachEngine" with args:
-      | _id | "DummyTemp-detached" |
-    Then I should receive an error matching:
-      | message | "Devices \"DummyTemp-detached\" are not attached to a tenant" |
-    Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"                   |
-    When I execute the action "device-manager/device":"detachEngine" with args:
-      | _id | "DummyTemp-attached_ayse_unlinked" |
-    Then I should receive an error matching:
-      | message | "Devices \"DummyTemp-attached_ayse_unlinked\" are still linked to an asset" |
+  # Scenario: Error when detaching from an engine
+  #   When I execute the action "device-manager/device":"detachEngine" with args:
+  #     | _id    | "DummyTemp-detached" |
+  #     | strict | true                 |
+  #   Then I should receive an error matching:
+  #     | message | "Device \"DummyTemp-detached\" is not attached to an engine." |
+  #   Given I successfully execute the action "device-manager/device":"linkAsset" with args:
+  #     | _id     | "DummyTemp-attached_ayse_unlinked" |
+  #     | assetId | "tools-PERFO-unlinked"             |
+  #   When I execute the action "device-manager/device":"detachEngine" with args:
+  #     | _id | "DummyTemp-attached_ayse_unlinked" |
+  #   Then I should receive an error matching:
+  #     | message | "Device \"DummyTemp-attached_ayse_unlinked\" is still linked to an asset." |
 
   Scenario: Link device to an asset
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"                   |
+      | assetId | "tools-PERFO-unlinked"             |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.origin.model       | "DummyTemp"                        |
       | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
@@ -178,39 +154,39 @@ Feature: Device Manager device controller
   Scenario: Link device to an asset and enriching the asset with before event
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"                   |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+      | assetId | "tools-PERFO-unlinked"             |
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | metadata.enrichedByBeforeLinkAsset | true |
 
   Scenario: Link the same device to another asset should fail
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"                   |
+      | assetId | "tools-PERFO-unlinked"             |
     And I execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-SCREW-unlinked"                    |
+      | assetId | "tools-SCREW-unlinked"             |
     Then I should receive an error matching:
       | message | "Device \"DummyTemp-attached_ayse_unlinked\" is already linked to the asset \"tools-PERFO-unlinked\" you need to detach it first." |
 
   Scenario: Link device to an asset with already registered device recording the same measure
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"                   |
+      | assetId | "tools-PERFO-unlinked"             |
     And I execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"                   |
+      | assetId | "tools-PERFO-unlinked"             |
     Then I should receive an error matching:
       | message | "Device DummyTemp-attached_ayse_unlinked is mesuring a value that is already mesured by another Device for the Asset tools-PERFO-unlinked" |
 
   Scenario: Link multiple device to multiple assets using JSON
     When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
-      | body.records.0.assetId  | "tools-PERFO-unlinked"                   |
+      | body.records.0.assetId  | "tools-PERFO-unlinked"             |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.origin.model       | "DummyTemp"                        |
       | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
@@ -224,9 +200,9 @@ Feature: Device Manager device controller
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,tools-PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.origin.model       | "DummyTemp"                        |
       | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
@@ -238,12 +214,12 @@ Feature: Device Manager device controller
   Scenario: Link multiple device to multiple assets using JSON
     When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
-      | body.records.0.assetId  | "tools-PERFO-unlinked"                   |
+      | body.records.0.assetId  | "tools-PERFO-unlinked"             |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.origin.model       | "DummyTemp"                        |
       | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
@@ -257,9 +233,9 @@ Feature: Device Manager device controller
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,tools-PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.origin.model       | "DummyTemp"                        |
       | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
@@ -271,12 +247,12 @@ Feature: Device Manager device controller
   Scenario: Link multiple device to multiple assets using JSON
     When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
-      | body.records.0.assetId  | "tools-PERFO-unlinked"                   |
+      | body.records.0.assetId  | "tools-PERFO-unlinked"             |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.origin.model       | "DummyTemp"                        |
       | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
@@ -290,9 +266,9 @@ Feature: Device Manager device controller
       | body.csv | "deviceId,assetId\\nDummyTemp-attached_ayse_unlinked,tools-PERFO-unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures.temperature.origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures.temperature.origin.model       | "DummyTemp"                        |
       | measures.temperature.origin.reference   | "attached_ayse_unlinked"           |
@@ -303,10 +279,10 @@ Feature: Device Manager device controller
 
   Scenario: Error when linking device to an asset
     When I execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp-detached" |
-      | assetId | "tools-PERFO-unlinked"     |
+      | _id     | "DummyTemp-detached"   |
+      | assetId | "tools-PERFO-unlinked" |
     Then I should receive an error matching:
-      | message | "Devices \"DummyTemp-detached\" are not attached to a tenant" |
+      | message | "Device \"DummyTemp-detached\" is not attached to an engine." |
     When I execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "PERFO-non-existing"               |
@@ -317,50 +293,50 @@ Feature: Device Manager device controller
     When I execute the action "device-manager/device":"unlinkAsset" with args:
       | _id | "DummyTemp-attached_ayse_unlinked" |
     Then I should receive an error matching:
-      | message | "Devices \"DummyTemp-attached_ayse_unlinked\" are not linked to an asset" |
+      | message | "Device \"DummyTemp-attached_ayse_unlinked\" is not linked to an asset." |
 
-  Scenario: Unlink multiple devices from multiple assets using JSON
+  Scenario: Unlink multiple device from multiple assets using JSON
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"                   |
+      | assetId | "tools-PERFO-unlinked"             |
     When I successfully execute the action "device-manager/device":"mUnlinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
-    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures | {} |
 
-  Scenario: Unlink multiple devices from multiple assets using CSV
+  Scenario: Unlink multiple device from multiple assets using CSV
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"                   |
+      | assetId | "tools-PERFO-unlinked"             |
     When I successfully execute the action "device-manager/device":"mUnlinkAssets" with args:
       | body.csv | "deviceId\\nDummyTemp-attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
-    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures | {} |
 
   Scenario: Unlink device from an asset
     And I successfully execute the action "device-manager/device":"attachEngine" with args:
       | _id   | "DummyTemp-detached" |
-      | index | "tenant-ayse"        |
+      | index | "engine-ayse"        |
     When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
-      | body.records.0.assetId  | "tools-PERFO-unlinked"                   |
+      | body.records.0.assetId  | "tools-PERFO-unlinked"             |
       | body.records.1.deviceId | "DummyTemp-detached"               |
-      | body.records.1.assetId  | "tools-PERFO-unlinked"                   |
+      | body.records.1.assetId  | "tools-PERFO-unlinked"             |
     When I successfully execute the action "device-manager/device":"unlinkAsset" with args:
       | _id | "DummyTemp-attached_ayse_unlinked" |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
-    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
-    And The document "tenant-ayse":"assets":"tools-PERFO-unlinked" content match:
+    And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures.position.origin.reference | "detached"    |
       | measures.position.payloadUuid      | "some-uuid"   |
       | measures.position.accuracy         | 42            |
@@ -404,7 +380,7 @@ Feature: Device Manager device controller
     Then I should receive a result matching:
       | total | 1 |
 
-  Scenario: Import devices using csv
+  Scenario: Import device using csv
     Given I successfully execute the action "device-manager/device":"importDevices" with args:
       | body.csv | "_id,reference,model\\nDummyTemp-imported,detached,DummyTemp_imported" |
     Then I successfully execute the action "collection":"refresh" with args:
@@ -414,7 +390,7 @@ Feature: Device Manager device controller
       | reference | "detached"           |
       | model     | "DummyTemp_imported" |
 
-  Scenario: Import devices catalog using csv
+  Scenario: Import device catalog using csv
     Given a collection "device-manager":"config"
     And I "update" the document "plugin--device-manager" with content:
       | device-manager.provisioningStrategy | "catalog" |
