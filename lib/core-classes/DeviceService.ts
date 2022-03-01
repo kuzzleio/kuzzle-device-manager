@@ -75,13 +75,13 @@ export class DeviceService {
             this.config.adminIndex,
             'devices',
             deviceDocuments,
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
           await this.sdk.document.mCreate(
             document.tenantId,
             'devices',
             deviceDocuments,
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
             return {
               successes: results.successes.concat(updated.successes),
@@ -146,13 +146,13 @@ export class DeviceService {
           this.config.adminIndex,
           'devices',
           deviceDocuments,
-          { strict, ...options });
+          { strict, refresh: options.refresh });
 
           await this.sdk.document.mDelete(
             document.tenantId,
             'devices',
             deviceDocuments.map(device => device._id),
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -225,13 +225,13 @@ export class DeviceService {
             this.config.adminIndex,
             'devices',
             deviceDocuments,
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
             deviceDocuments,
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -246,7 +246,7 @@ export class DeviceService {
             document.tenantId,
             'assets',
             assetDocuments,
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -308,13 +308,13 @@ export class DeviceService {
             this.config.adminIndex,
             'devices',
             deviceDocuments,
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
           await this.sdk.document.mUpdate(
             document.tenantId,
             'devices',
             deviceDocuments,
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
           return {
             successes: results.successes.concat(updated.successes),
@@ -330,7 +330,7 @@ export class DeviceService {
             document.tenantId,
             'assets',
             assetDocuments,
-            { strict, ...options });
+            { strict, refresh: options.refresh });
 
           return {
             successes: results.successes.concat(updated.successes),
