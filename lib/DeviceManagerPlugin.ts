@@ -84,8 +84,6 @@ export type DeviceManagerConfig = {
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfig;
 
-  private defaultConfig: DeviceManagerConfig;
-
   private assetController: AssetController;
   private deviceController: DeviceController;
   private decodersController: DecodersController;
@@ -132,7 +130,7 @@ export class DeviceManagerPlugin extends Plugin {
       }
     };
 
-    this.defaultConfig = {
+    this.config = {
       adminIndex: 'device-manager',
       configCollection: 'config',
       adminCollections: {
@@ -184,7 +182,7 @@ export class DeviceManagerPlugin extends Plugin {
    * Init the plugin
    */
   async init (config: JSONObject, context: PluginContext) {
-    this.config = _.merge({}, this.defaultConfig, config);
+    this.config = _.merge({}, this.config, config);
 
     this.context = context;
 
@@ -218,6 +216,13 @@ export class DeviceManagerPlugin extends Plugin {
       'device-manager/device:beforeAttachTenant': this.pipeCheckEngine.bind(this),
       'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
       'document:beforeCreate': this.generateConfigID.bind(this),
+    };
+
+    this.hooks = {
+      'kuzzle:state:live': async () => {
+        await this.decodersService.createDefaultRights();
+        this.context.log.info('Default rights for payload controller has been registered.')
+      }
     };
 
     await this.initDatabase();
@@ -350,7 +355,7 @@ export class DeviceManagerPlugin extends Plugin {
         action: 'exists',
         index,
       });
-  
+
       if (! exists) {
         throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
       }
