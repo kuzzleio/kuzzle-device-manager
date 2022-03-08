@@ -17,7 +17,7 @@ Feature: Device Manager asset controller
       | _id   | "outils-PERFO-asset_01" |
     Then The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" does not exists
 
-  Scenario: Create, update and modify with events before/after
+  Scenario: Create, update and modify asset with events before/after
     When I successfully execute the action "device-manager/asset":"create" with args:
       | index          | "engine-kuzzle" |
       | body.type      | "outils"        |

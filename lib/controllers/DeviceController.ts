@@ -150,14 +150,10 @@ export class DeviceController extends CRUDController {
   async mLinkAssets (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
 
-    const promises = [];
-
     for (const { deviceId, assetId } of bulkData) {
-      promises.push(
-        this.deviceService.linkAsset(deviceId, assetId, request.input.args));
+      // Cannot be done in parallel because we need to copy previous measures
+      await this.deviceService.linkAsset(deviceId, assetId, request.input.args);
     }
-
-    return await Promise.all(promises);
   }
 
   /**
@@ -175,14 +171,10 @@ export class DeviceController extends CRUDController {
   async mUnlinkAssets (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
 
-    const promises = [];
-
     for (const { deviceId } of bulkData) {
-      promises.push(
-        this.deviceService.unlinkAsset(deviceId, request.input.args));
+      // Cannot be done in parallel because we need to keep previous measures
+      await this.deviceService.unlinkAsset(deviceId, request.input.args);
     }
-
-    return await Promise.all(promises);
   }
 
   /**

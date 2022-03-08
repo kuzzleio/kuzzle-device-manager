@@ -131,7 +131,7 @@ export class DeviceService {
 
     const engineId = device._source.engineId;
 
-    if (! engineId) {
+    if (strict && ! engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
 
@@ -188,7 +188,7 @@ export class DeviceService {
     ]);
 
     await global.app.trigger(
-      'device-manager:device:link-asset:before',
+      'device-manager:device:link-asset:after',
       { asset, device },
     );
 
@@ -200,7 +200,7 @@ export class DeviceService {
 
     const engineId = device._source.engineId;
 
-    if (! engineId) {
+    if (strict && ! engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
 
