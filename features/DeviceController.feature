@@ -136,14 +136,16 @@ Feature: Device Manager device controller
 
   Scenario: Link device to an asset
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"             |
+      | _id                            | "DummyTemp-attached_ayse_unlinked" |
+      | assetId                        | "tools-PERFO-unlinked"             |
+      | body.measuresNames.temperature | "External temperature"             |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
     And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | "tools-PERFO-unlinked" |
     And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures[0].type               | "temperature"                      |
+      | measures[0].name               | "External temperature"             |
       | measures[0].measuredAt         | 1610793427950                      |
       | measures[0].values.temperature | 23.3                               |
       | measures[0].origin.id          | "DummyTemp-attached_ayse_unlinked" |
@@ -154,6 +156,7 @@ Feature: Device Manager device controller
       | measures[0].unit.sign          | "°"                                |
       | measures[0].unit.type          | "number"                           |
       | measures[1].type               | "battery"                          |
+      | measures[1].name               | "battery"                          |
       | measures[1].measuredAt         | 1610793427950                      |
       | measures[1].values.battery     | 80                                 |
       | measures[1].origin.id          | "DummyTemp-attached_ayse_unlinked" |
@@ -359,8 +362,16 @@ Feature: Device Manager device controller
       | device-manager.provisioningStrategy | "auto" |
 
   Scenario: Error when linking a device with same type of measure
-
-  Scenario: Event before and after update device
+    Given I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked" |
+      | assetId | "tools-PERFO-unlinked"             |
+    When I execute the action "device-manager/device":"linkAsset" with args:
+      | _id     | "DummyTemp-attached_ayse_unlinked_2" |
+      | assetId | "tools-PERFO-unlinked"               |
+    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked_2" content match:
+      | assetId | null |
+    Then I should receive an error matching:
+      | message | "Duplicate measure name \"temperature\"" |
 
   Scenario: Link multiple devices to an asset and then unlink one of them
     And I successfully execute the action "device-manager/device":"attachEngine" with args:

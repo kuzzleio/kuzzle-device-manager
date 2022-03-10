@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
 import { BaseAsset, Device } from '../models';
-import { BaseAssetContent, DeviceContent, DeviceManagerConfiguration } from '../types';
+import { BaseAssetContent, ContextualMeasure, DeviceContent, DeviceManagerConfiguration } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 
 export type DeviceBulkContent = {
@@ -16,6 +16,39 @@ export type DeviceBulkContent = {
   deviceId: string;
   assetId?: string;
 }
+
+/**
+ * Represents a request to link a device to an asset
+ *
+ * @example
+ * {
+ *   deviceId: 'Abeeway-4263232',
+ *   assetId: 'container-xlarger-HSZJSZ',
+ *   measuresNames: {
+ *     temperature: 'External temperature',
+ *     position: 'Lora Position'
+ *   }
+ * }
+ */
+export type LinkRequest = {
+  deviceId: string;
+
+  assetId: string;
+
+  /**
+   * List of measures names when linked to the asset.
+   * Default measure name is measure type.
+   */
+  measuresNames?: {
+    [measureType: string]: string;
+  }
+}
+
+export type AttachRequest = {
+  engineId: string;
+  deviceId: string;
+}
+
 export class DeviceService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
@@ -27,31 +60,29 @@ export class DeviceService {
   constructor(plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-
   }
 
   async attachEngine (
-    engineId: string,
-    deviceId: string,
-    { strict, options }: { strict?: boolean, options?: JSONObject },
-  ) {
-    const device = await this.getDevice(deviceId);
+    attachRequest: AttachRequest,
+    { strict, refresh }: { strict?: boolean, refresh?: any },
+  ): Promise<Device> {
+    const device = await this.getDevice(attachRequest.deviceId);
 
     if (strict && device._source.engineId) {
       throw new BadRequestError(`Device "${device._id}" is already attached to an engine.`);
     }
 
-    if (! await this.tenantExists(engineId)) {
-      throw new BadRequestError(`Engine "${engineId}" does not exists.`);
+    if (! await this.tenantExists(attachRequest.engineId)) {
+      throw new BadRequestError(`Engine "${attachRequest.engineId}" does not exists.`);
     }
 
-    device._source.engineId = engineId;
+    device._source.engineId = attachRequest.engineId;
 
     const response = await global.app.trigger(
       'device-manager:device:attach-engine:before',
       {
         device,
-        engineId,
+        engineId: attachRequest.engineId,
       });
 
     await Promise.all([
@@ -60,25 +91,28 @@ export class DeviceService {
         'devices',
         response.device._id,
         { engineId: response.device._source.engineId },
-        options),
+        { refresh }),
 
       this.sdk.document.createOrReplace(
         response.device._source.engineId,
         'devices',
         response.device._id,
         response.device._source,
-        options),
+        { refresh }),
     ]);
 
     await global.app.trigger('device-manager:device:attach-engine:after', {
       device,
-      engineId,
+      engineId: attachRequest.engineId,
     });
 
     return device;
   }
 
-  async detachEngine (deviceId: string, { strict, options }: { strict?: boolean, options?: JSONObject }) {
+  async detachEngine (
+    deviceId: string,
+    { strict, refresh }: { strict?: boolean, refresh?: any }
+  ): Promise<Device> {
     const device = await this.getDevice(deviceId);
 
     const engineId = device._source.engineId;
@@ -104,13 +138,13 @@ export class DeviceService {
         'devices',
         device._id,
         { engineId: null },
-        options),
+        { refresh }),
 
       this.sdk.document.delete(
         response.engineId,
         'devices',
         device._id,
-        options),
+        { refresh }),
     ]);
 
     await global.app.trigger('device-manager:device:detach-engine:after', {
@@ -124,14 +158,17 @@ export class DeviceService {
   /**
    * Link a device to an asset and copy device measures into the asset.
    *
-   * @todo measures names should be provided
+   * Each measures will be given a distinct name when copied into the asset
    */
-  async linkAsset (deviceId: string, assetId: string, { strict, options }: { strict?: boolean, options?: JSONObject }) {
-    const device = await this.getDevice(deviceId);
+  async linkAsset (
+    linkRequest: LinkRequest,
+    { strict, refresh }: { strict?: boolean, refresh?: any }
+  ): Promise<{ asset: BaseAsset, device: Device }> {
+    const device = await this.getDevice(linkRequest.deviceId);
 
     const engineId = device._source.engineId;
 
-    if (strict && ! engineId) {
+    if (! engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
 
@@ -139,25 +176,36 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is already linked to an asset.`);
     }
 
-    const asset = await this.getAsset(assetId, engineId);
+    const asset = await this.getAsset(linkRequest.assetId, engineId);
 
     if (! _.isArray(asset._source.measures)) {
-      throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
+      throw new BadRequestError(`Asset "${linkRequest.assetId}" measures property is not an array.`);
     }
 
-    // Copy device measures
-    const measures = device._source.measures.map(m => m);
+    // Copy device measures and assign measures names
+    const measures: ContextualMeasure[] = device._source.measures.map(measure => {
+      const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
 
+      return { ...measure, name };
+    });
+
+    const newMeasuresNames = measures.map(m => m.name);
+    const duplicateMeasure = asset._source.measures.find(m => newMeasuresNames.includes(m.name));
+    if (duplicateMeasure) {
+      throw new BadRequestError(`Duplicate measure name "${duplicateMeasure.name}"`);
+    }
+
+    // console.dir({measures, pref: asset._source.measures}, { depth:10})
     // Keep previous asset measures of different types
     // @todo this should be done by measure name and not type
     for (const previousMeasure of asset._source.measures) {
-      if (! measures.find(m => m.type === previousMeasure.type)) {
+      if (! measures.find(m => m.name === previousMeasure.name)) {
         measures.push(previousMeasure);
       }
     }
 
     asset._source.measures = measures;
-    device._source.assetId = assetId;
+    device._source.assetId = linkRequest.assetId;
 
     const response = await global.app.trigger(
       'device-manager:device:link-asset:before',
@@ -170,21 +218,21 @@ export class DeviceService {
         'devices',
         device._id,
         { assetId: response.device._source.assetId },
-        options),
+        { refresh }),
 
       this.sdk.document.update(
         engineId,
         'devices',
         device._id,
         { assetId: response.device._source.assetId },
-        options),
+        { refresh }),
 
       this.sdk.document.update(
         engineId,
         'assets',
         asset._id,
         { measures: response.asset._source.measures },
-        options),
+        { refresh }),
     ]);
 
     await global.app.trigger(
@@ -195,7 +243,10 @@ export class DeviceService {
     return { asset, device };
   }
 
-  async unlinkAsset (deviceId: string, { strict, options }: { strict?: boolean, options?: JSONObject }) {
+  async unlinkAsset (
+    deviceId: string,
+    { strict, refresh }: { strict?: boolean, refresh?: any }
+  ): Promise<{ asset: BaseAsset, device: Device }> {
     const device = await this.getDevice(deviceId);
 
     const engineId = device._source.engineId;
@@ -227,21 +278,21 @@ export class DeviceService {
         'devices',
         device._id,
         { assetId: null },
-        options),
+        { refresh }),
 
       this.sdk.document.update(
         engineId,
         'devices',
         device._id,
         { assetId: null },
-        options),
+        { refresh }),
 
       this.sdk.document.update(
         engineId,
         'assets',
         asset._id,
         { measures: response.asset._source.measures },
-        options),
+        { refresh }),
     ]);
 
     await global.app.trigger(
@@ -254,7 +305,7 @@ export class DeviceService {
 
   async importDevices(
     devices: JSONObject,
-    { strict, options }: { strict?: boolean, options?: JSONObject }) {
+    { strict, refresh }: { strict?: boolean, refresh?: any }) {
     const results = {
       errors: [],
       successes: [],
@@ -271,7 +322,7 @@ export class DeviceService {
           'device-manager',
           'devices',
           result,
-          { strict, ...options });
+          { strict, refresh });
 
         return {
           errors: results.errors.concat(created.errors),
@@ -284,7 +335,7 @@ export class DeviceService {
 
   async importCatalog (
     catalog: JSONObject[],
-    { strict, options }: { strict?: boolean, options?: JSONObject }): Promise<mResponse> {
+    { strict, refresh }: { strict?: boolean, refresh?: any }): Promise<mResponse> {
     const results = {
       errors: [],
       successes: [],
@@ -315,7 +366,7 @@ export class DeviceService {
           this.config.adminIndex,
           this.config.adminCollections.config.name,
           result,
-          { strict, ...options });
+          { strict, refresh });
 
         return {
           errors: results.errors.concat(created.errors),

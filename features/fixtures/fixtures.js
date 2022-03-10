@@ -6,7 +6,6 @@ const dummyTempAttachedAyseUnLinked = {
   measures: [
     {
       type: 'temperature',
-      name: 'temperature',
       unit: {
         name: 'Degree',
         sign: '°',
@@ -26,7 +25,6 @@ const dummyTempAttachedAyseUnLinked = {
     },
     {
       type: 'battery',
-      name: 'battery',
       unit: {
         name: 'Volt',
         sign: 'v',
@@ -41,6 +39,53 @@ const dummyTempAttachedAyseUnLinked = {
         type: 'device',
         model: 'DummyTemp',
         reference: 'attached_ayse_unlinked',
+        payloadUuids: ['some-uuid'],
+      }
+    }
+  ],
+  engineId: 'engine-ayse',
+  assetId: null
+};
+
+const dummyTempAttachedAyseUnLinked2 = {
+  reference: 'attached_ayse_unlinked_2',
+  model: 'DummyTemp',
+  measures: [
+    {
+      type: 'temperature',
+      unit: {
+        name: 'Degree',
+        sign: '°',
+        type: 'number',
+      },
+      values: {
+        temperature: 23.3,
+      },
+      measuredAt: 1610793427950,
+      origin: {
+        id: 'DummyTemp-attached_ayse_unlinked_2',
+        type: 'device',
+        model: 'DummyTemp',
+        reference: 'attached_ayse_unlinked_2',
+        payloadUuids: ['some-uuid'],
+      }
+    },
+    {
+      type: 'battery',
+      unit: {
+        name: 'Volt',
+        sign: 'v',
+        type: 'number',
+      },
+      values: {
+        battery: 80,
+      },
+      measuredAt: 1610793427950,
+      origin: {
+        id: 'DummyTemp-attached_ayse_unlinked_2',
+        type: 'device',
+        model: 'DummyTemp',
+        reference: 'attached_ayse_unlinked_2',
         payloadUuids: ['some-uuid'],
       }
     }
@@ -140,6 +185,8 @@ module.exports = {
       },
       { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
       dummyTempAttachedAyseUnLinked,
+      { index: { _id: 'DummyTemp-attached_ayse_unlinked_2' } },
+      dummyTempAttachedAyseUnLinked2,
       { index: { _id: 'DummyTemp-attached_ayse_linked' } },
       dummyTempAttachedAyseLinked,
     ]
@@ -148,6 +195,8 @@ module.exports = {
     devices: [
       { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
       dummyTempAttachedAyseUnLinked,
+      { index: { _id: 'DummyTemp-attached_ayse_unlinked_2' } },
+      dummyTempAttachedAyseUnLinked2,
       { index: { _id: 'DummyTemp-attached_ayse_linked' } },
       dummyTempAttachedAyseLinked,
     ],

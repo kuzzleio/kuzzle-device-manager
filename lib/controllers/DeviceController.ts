@@ -6,15 +6,11 @@ import {
   Plugin,
 } from 'kuzzle';
 
-import { DeviceBulkContent } from '../core-classes';
+import { AttachRequest, DeviceBulkContent, LinkRequest } from '../core-classes';
 import { DeviceService } from '../core-classes';
 
 export class DeviceController extends CRUDController {
   private deviceService: DeviceService;
-
-  private get sdk () {
-    return this.context.accessors.sdk;
-  }
 
   constructor(plugin: Plugin, deviceService: DeviceService) {
     super(plugin, 'devices');
@@ -88,8 +84,15 @@ export class DeviceController extends CRUDController {
   async attachEngine (request: KuzzleRequest) {
     const engineId = request.getIndex();
     const deviceId = request.getId();
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
 
-    await this.deviceService.attachEngine(engineId, deviceId, request.input.args);
+    const attacheRequest: AttachRequest = {
+      deviceId,
+      engineId,
+    };
+
+    await this.deviceService.attachEngine(attacheRequest, { strict, refresh });
   }
 
   /**
@@ -97,12 +100,19 @@ export class DeviceController extends CRUDController {
    */
   async mAttachEngines (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
 
     const promises = [];
 
     for (const { engineId, deviceId } of bulkData) {
+      const attacheRequest: AttachRequest = {
+        deviceId,
+        engineId,
+      };
+
       promises.push(
-        this.deviceService.attachEngine(engineId, deviceId, request.input.args));
+        this.deviceService.attachEngine(attacheRequest, { strict, refresh }));
     }
 
     return await Promise.all(promises);
@@ -113,8 +123,10 @@ export class DeviceController extends CRUDController {
    */
   async detachEngine (request: KuzzleRequest) {
     const deviceId = request.getId();
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
 
-    await this.deviceService.detachEngine(deviceId, request.input.args);
+    await this.deviceService.detachEngine(deviceId, { strict, refresh });
   }
 
   /**
@@ -122,6 +134,8 @@ export class DeviceController extends CRUDController {
    */
   async mDetachEngines (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
 
     const promises = [];
 
@@ -140,8 +154,17 @@ export class DeviceController extends CRUDController {
   async linkAsset (request: KuzzleRequest) {
     const assetId = request.getString('assetId');
     const deviceId = request.getId();
+    const measuresNames = request.getBodyObject('measuresNames', {});
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
 
-    await this.deviceService.linkAsset(deviceId, assetId, request.input.args);
+    const linkRequest: LinkRequest = {
+      deviceId,
+      assetId,
+      measuresNames,
+    };
+
+    await this.deviceService.linkAsset(linkRequest, { refresh, strict });
   }
 
   /**
@@ -149,10 +172,18 @@ export class DeviceController extends CRUDController {
    */
   async mLinkAssets (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
 
     for (const { deviceId, assetId } of bulkData) {
+      const linkRequest: LinkRequest = {
+        deviceId,
+        assetId,
+        // @todo handle measure names
+      };
+
       // Cannot be done in parallel because we need to copy previous measures
-      await this.deviceService.linkAsset(deviceId, assetId, request.input.args);
+      await this.deviceService.linkAsset(linkRequest, { strict, refresh });
     }
   }
 
@@ -161,8 +192,10 @@ export class DeviceController extends CRUDController {
    */
   async unlinkAsset (request: KuzzleRequest) {
     const deviceId = request.getId();
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
 
-    await this.deviceService.unlinkAsset(deviceId, request.input.args);
+    await this.deviceService.unlinkAsset(deviceId, { strict, refresh });
   }
 
   /**
@@ -170,10 +203,12 @@ export class DeviceController extends CRUDController {
    */
   async mUnlinkAssets (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
 
     for (const { deviceId } of bulkData) {
       // Cannot be done in parallel because we need to keep previous measures
-      await this.deviceService.unlinkAsset(deviceId, request.input.args);
+      await this.deviceService.unlinkAsset(deviceId, { strict, refresh });
     }
   }
 
@@ -209,26 +244,28 @@ export class DeviceController extends CRUDController {
 
   async importDevices (request: KuzzleRequest) {
     const content = request.getBodyString('csv');
+    const refresh = request.getRefresh();
 
     const devices = await csv({ delimiter: 'auto' }).fromString(content);
 
     return this.deviceService.importDevices(
       devices,
       {
-        options: { ...request.input.args },
+        refresh,
         strict: true
       });
   }
 
   async importCatalog (request: KuzzleRequest) {
     const content = request.getBodyString('csv');
+    const refresh = request.getRefresh();
 
     const catalog = await csv({ delimiter: 'auto' }).fromString(content);
 
     return this.deviceService.importCatalog(
       catalog,
       {
-        options: { ...request.input.args },
+        refresh,
         strict: true
       });
   }
