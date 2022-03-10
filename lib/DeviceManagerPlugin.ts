@@ -218,6 +218,8 @@ export class DeviceManagerPlugin extends Plugin {
       this.adminConfigManager,
       this.engineConfigManager);
 
+    this.decodersRegister.init(this.context);
+
     this.assetController = new AssetController(this, this.assetService);
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersRegister);
@@ -228,9 +230,14 @@ export class DeviceManagerPlugin extends Plugin {
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/decoders'] = this.decodersController.definition;
 
-    for (const decoder of this.decodersRegister.decoders) {
-      this.context.log.info(`Decoder for "${decoder.deviceModel}" registered`);
-    }
+    this.hooks = {
+      'kuzzle:state:live': async () => {
+        await this.decodersRegister.createDefaultRights();
+        this.context.log.info('Default rights for payload controller has been registered.');
+      }
+    };
+
+    this.decodersRegister.printDecoders();
 
     await this.initDatabase();
   }
