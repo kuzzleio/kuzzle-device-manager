@@ -17,23 +17,6 @@ Feature: Device Manager asset controller
       | _id   | "outils-PERFO-asset_01" |
     Then The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" does not exists
 
-  Scenario: Create, update and modify asset with events before/after
-    When I successfully execute the action "device-manager/asset":"create" with args:
-      | index          | "engine-kuzzle" |
-      | body.type      | "outils"        |
-      | body.model     | "PERFO"         |
-      | body.reference | "asset_01"      |
-    Then The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" exists
-    When I successfully execute the action "device-manager/asset":"update" with args:
-      | index                | "engine-kuzzle"         |
-      | _id                  | "outils-PERFO-asset_01" |
-      | body.metadata.foobar | 42                      |
-      | body.metadata.index  | "engine-kuzzle"         |
-    And The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" content match:
-      | metadata.enrichedByBeforeAssetUpdate | true |
-    And The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" content match:
-      | metadata.enrichedByAfterAssetUpdate | true |
-
   Scenario: Import assets using csv
     When I successfully execute the action "device-manager/asset":"importAssets" with args:
       | index    | "engine-kuzzle"                                |
