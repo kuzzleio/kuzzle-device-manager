@@ -92,7 +92,7 @@ export class DeviceController extends CRUDController {
       engineId,
     };
 
-    await this.deviceService.attachEngine(attacheRequest, { strict, refresh });
+    await this.deviceService.attachEngine(attacheRequest, { refresh, strict });
   }
 
   /**
@@ -112,7 +112,7 @@ export class DeviceController extends CRUDController {
       };
 
       promises.push(
-        this.deviceService.attachEngine(attacheRequest, { strict, refresh }));
+        this.deviceService.attachEngine(attacheRequest, { refresh, strict }));
     }
 
     return await Promise.all(promises);
@@ -126,7 +126,7 @@ export class DeviceController extends CRUDController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
 
-    await this.deviceService.detachEngine(deviceId, { strict, refresh });
+    await this.deviceService.detachEngine(deviceId, { refresh, strict });
   }
 
   /**
@@ -134,8 +134,6 @@ export class DeviceController extends CRUDController {
    */
   async mDetachEngines (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
-    const refresh = request.getRefresh();
-    const strict = request.getBoolean('strict');
 
     const promises = [];
 
@@ -156,15 +154,14 @@ export class DeviceController extends CRUDController {
     const deviceId = request.getId();
     const measuresNames = request.getBodyObject('measuresNames', {});
     const refresh = request.getRefresh();
-    const strict = request.getBoolean('strict');
 
     const linkRequest: LinkRequest = {
-      deviceId,
       assetId,
+      deviceId,
       measuresNames,
     };
 
-    await this.deviceService.linkAsset(linkRequest, { refresh, strict });
+    await this.deviceService.linkAsset(linkRequest, { refresh });
   }
 
   /**
@@ -173,17 +170,16 @@ export class DeviceController extends CRUDController {
   async mLinkAssets (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
     const refresh = request.getRefresh();
-    const strict = request.getBoolean('strict');
 
     for (const { deviceId, assetId } of bulkData) {
       const linkRequest: LinkRequest = {
-        deviceId,
         assetId,
+        deviceId,
         // @todo handle measure names
       };
 
       // Cannot be done in parallel because we need to copy previous measures
-      await this.deviceService.linkAsset(linkRequest, { strict, refresh });
+      await this.deviceService.linkAsset(linkRequest, { refresh });
     }
   }
 
@@ -195,7 +191,7 @@ export class DeviceController extends CRUDController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
 
-    await this.deviceService.unlinkAsset(deviceId, { strict, refresh });
+    await this.deviceService.unlinkAsset(deviceId, { refresh, strict });
   }
 
   /**
@@ -208,7 +204,7 @@ export class DeviceController extends CRUDController {
 
     for (const { deviceId } of bulkData) {
       // Cannot be done in parallel because we need to keep previous measures
-      await this.deviceService.unlinkAsset(deviceId, { strict, refresh });
+      await this.deviceService.unlinkAsset(deviceId, { refresh, strict });
     }
   }
 

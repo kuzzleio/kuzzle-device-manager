@@ -31,9 +31,9 @@ export type DeviceBulkContent = {
  * }
  */
 export type LinkRequest = {
-  deviceId: string;
-
   assetId: string;
+
+  deviceId: string;
 
   /**
    * List of measures names when linked to the asset.
@@ -45,8 +45,9 @@ export type LinkRequest = {
 }
 
 export type AttachRequest = {
-  engineId: string;
   deviceId: string;
+
+  engineId: string;
 }
 
 export class DeviceService {
@@ -64,7 +65,7 @@ export class DeviceService {
 
   async attachEngine (
     attachRequest: AttachRequest,
-    { strict, refresh }: { strict?: boolean, refresh?: any },
+    { refresh, strict }: { refresh?: any, strict?: boolean },
   ): Promise<Device> {
     const device = await this.getDevice(attachRequest.deviceId);
 
@@ -111,7 +112,7 @@ export class DeviceService {
 
   async detachEngine (
     deviceId: string,
-    { strict, refresh }: { strict?: boolean, refresh?: any }
+    { refresh, strict }: { refresh?: any, strict?: boolean }
   ): Promise<Device> {
     const device = await this.getDevice(deviceId);
 
@@ -162,7 +163,7 @@ export class DeviceService {
    */
   async linkAsset (
     linkRequest: LinkRequest,
-    { strict, refresh }: { strict?: boolean, refresh?: any }
+    { refresh }: { refresh?: any }
   ): Promise<{ asset: BaseAsset, device: Device }> {
     const device = await this.getDevice(linkRequest.deviceId);
 
@@ -245,7 +246,7 @@ export class DeviceService {
 
   async unlinkAsset (
     deviceId: string,
-    { strict, refresh }: { strict?: boolean, refresh?: any }
+    { refresh, strict }: { refresh?: any, strict?: boolean }
   ): Promise<{ asset: BaseAsset, device: Device }> {
     const device = await this.getDevice(deviceId);
 
@@ -305,7 +306,7 @@ export class DeviceService {
 
   async importDevices(
     devices: JSONObject,
-    { strict, refresh }: { strict?: boolean, refresh?: any }) {
+    { refresh, strict }: { refresh?: any, strict?: boolean }) {
     const results = {
       errors: [],
       successes: [],
@@ -322,7 +323,7 @@ export class DeviceService {
           'device-manager',
           'devices',
           result,
-          { strict, refresh });
+          { refresh, strict });
 
         return {
           errors: results.errors.concat(created.errors),
@@ -335,7 +336,7 @@ export class DeviceService {
 
   async importCatalog (
     catalog: JSONObject[],
-    { strict, refresh }: { strict?: boolean, refresh?: any }): Promise<mResponse> {
+    { refresh, strict }: { refresh?: any, strict?: boolean }): Promise<mResponse> {
     const results = {
       errors: [],
       successes: [],
@@ -366,7 +367,7 @@ export class DeviceService {
           this.config.adminIndex,
           this.config.adminCollections.config.name,
           result,
-          { strict, refresh });
+          { refresh, strict });
 
         return {
           errors: results.errors.concat(created.errors),
