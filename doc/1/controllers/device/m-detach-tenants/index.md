@@ -1,11 +1,11 @@
 ---
 code: true
 type: page
-title: mDetachTenants
+title: mDetachEngines
 description: Detach multiple devices from multiple tenants
 ---
 
-# mDetachTenants
+# mDetachEngines
 
 Detach multiple devices from multiple tenants.
 
@@ -35,7 +35,7 @@ Body:
 ``` js
 {
     "controller": "device-manager/device",
-    "action": "mDetachTenants",
+    "action": "mDetachEngines",
     "body": {
         // Using JSON
         "deviceIds" ["test-id"],
@@ -71,7 +71,7 @@ Body properties, must contain at least one of
     "error": null,
     "index": "<index>",
     "controller": "device-manager/device",
-    "action": "mDetachTenants",
+    "action": "mDetachEngines",
     "requestId": "<unique request identifier>",
     "result": {
         "errors": [],

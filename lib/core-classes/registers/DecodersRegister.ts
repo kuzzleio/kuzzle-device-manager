@@ -1,68 +1,93 @@
 import {
-  PluginContext,
-  EmbeddedSDK,
-  Plugin,
   ControllerDefinition,
+  PluginImplementationError,
+  KuzzleRequest,
+  Inflector,
+  PluginContext,
 } from 'kuzzle';
 
-import { Decoder } from './Decoder';
-import { DecoderContent } from '../types/decoders/DecodersContent';
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
-import { PayloadHandler } from '../../index';
-import { PayloadService } from './PayloadService';
+import { Decoder } from '../Decoder';
+import { DecoderContent } from '../../types/DecoderContent';
+import { PayloadService } from '../PayloadService';
 
-export class DecodersService {
-  private config: DeviceManagerConfig;
+export class DecodersRegister {
   private context: PluginContext;
+  private _decoders = new Map<string, Decoder>();
 
-  private _decoders: Map<string, Decoder>;
-  private handlers: { decoder: Decoder, handler: PayloadHandler }[];
-
-  get sdk (): EmbeddedSDK {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  get decoders (): Map<string, Decoder> {
-    return this._decoders;
+  get decoders (): Decoder[] {
+    return Array.from(this._decoders.values());
   }
 
-  constructor (plugin: Plugin, decoders: { decoder: Decoder, handler: PayloadHandler }[]) {
-    this.config = plugin.config as any;
-    this.context = plugin.context;
-    this.handlers = decoders
-    this._decoders = new Map();
-
-
-    for (const { decoder } of this.handlers) {
-      this.register(decoder);
-    }
-
-    this.printDecoders();
+  init (context: PluginContext) {
+    this.context = context;
   }
 
-  async list(): Promise<DecoderContent[]> {
-    const decoders = Array
-      .from(this._decoders.values())
-      .map(decoder => decoder.serialize())
+  async list (): Promise<DecoderContent[]> {
+    const decoders = this.decoders.map(decoder => decoder.serialize());
 
     return decoders;
   }
 
-  register (decoder: Decoder): void {
-    this.decoders.set(decoder.deviceModel, decoder);
+  /**
+   * Registers a new decoder for a device model.
+   *
+   * This will register a new API action:
+   *  - controller: `device-manager/payload`
+   *  - action: `action` property of the decoder or the device model in kebab-case
+   *
+   * @param decoder Instantiated decoder
+   *
+   * @returns Corresponding API action requestPayload
+   */
+  register (decoder: Decoder) {
+    decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
+
+    if (this._decoders.has(decoder.deviceModel)) {
+      throw new PluginImplementationError(`Decoder for device model "${decoder.deviceModel}" already registered`);
+    }
+
+    this._decoders.set(decoder.deviceModel, decoder);
+
+    return {
+      action: decoder.action,
+      controller: 'device-manager/payload',
+    };
   }
 
-  buildPayloadController (payloadService: PayloadService): ControllerDefinition {
+  /**
+   * Build the PayloadController with registered decoders
+   *
+   * @todo generate OpenAPI specification
+   *
+   * @internal
+   */
+  getPayloadController (payloadService: PayloadService): ControllerDefinition {
     const controllers: ControllerDefinition = { actions: {} };
 
-    for (const { decoder, handler } of this.handlers) {
+    for (const decoder of this.decoders) {
       controllers.actions[decoder.action] = {
-        handler: request => handler ? handler(request, decoder) : payloadService.process(request, decoder),
+        handler: async (request: KuzzleRequest) => {
+          const source = request.getBoolean('source');
+
+          const ret = await payloadService.process(request, decoder);
+
+          return source ? ret : undefined;
+        },
         http: decoder.http,
       };
     }
 
     return controllers;
+  }
+
+  printDecoders () {
+    for (const decoder of this.decoders) {
+      this.context.log.info(`Decoder for "${decoder.deviceModel}" registered`);
+    }
   }
 
   /**
@@ -104,12 +129,12 @@ export class DecodersService {
       }
     };
 
-    for (const { decoder } of this.handlers) {
+    for (const decoder of this.decoders) {
       const userId = `payload-gateway.${decoder.action}`;
       const user = {
         content: {
-        // each created user has only the profile of the same name
-        profileIds: [userId]
+          // each created user has only the profile of the same name
+          profileIds: [userId]
         }
       };
 
@@ -145,7 +170,7 @@ export class DecodersService {
       policies: []
     };
 
-    for (const { decoder } of this.handlers) {
+    for (const decoder of this.decoders) {
       const profileId = `payload-gateway.${decoder.action}`;
       const profile = {
         // each created profile has only the role of the same name
@@ -164,7 +189,7 @@ export class DecodersService {
   private async createDefaultRoles () {
     const promises = [];
 
-    for (const { decoder } of this.handlers) {
+    for (const decoder of this.decoders) {
       const roleId = `payload-gateway.${decoder.action}`;
       const role = {
         controllers: {
@@ -180,11 +205,5 @@ export class DecodersService {
     }
 
     await Promise.all(promises);
-  }
-
-  private printDecoders (): void {
-    for (const decoder of this._decoders.values()) {
-      this.context.log.info(`Register API action "device-manager/payload:${decoder.action}" with decoder "${decoder.constructor.name}" for device "${decoder.deviceModel}"`);
-    }
   }
 }

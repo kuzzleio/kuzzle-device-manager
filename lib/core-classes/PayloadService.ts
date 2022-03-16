@@ -1,9 +1,7 @@
 import _ from 'lodash';
 import {
   KuzzleRequest,
-  JSONObject,
   PluginContext,
-  EmbeddedSDK,
   BadRequestError,
   Plugin,
 } from 'kuzzle';
@@ -12,24 +10,28 @@ import { v4 as uuidv4 } from 'uuid';
 import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
 import { BatchController, BatchWriter } from './BatchProcessing';
-import { eventPayload } from '../utils';
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
-
-export type PayloadHandler = (request: KuzzleRequest, decoder: Decoder) => Promise<any>;
+import { ContextualMeasure, DeviceContent, DeviceManagerConfiguration } from '../types';
+import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class PayloadService {
-  private config: DeviceManagerConfig;
+  private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batchController: BatchController;
+  private measuresRegister: MeasuresRegister;
 
-  get sdk (): EmbeddedSDK {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  constructor (plugin: Plugin, batchWriter: BatchWriter) {
+  constructor (
+    plugin: Plugin,
+    batchWriter: BatchWriter,
+    measuresRegister: MeasuresRegister
+  ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
     this.batchController = batchWriter.document;
+    this.measuresRegister = measuresRegister;
   }
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
@@ -50,8 +52,6 @@ export class PayloadService {
       if (! valid) {
         return { valid };
       }
-
-      await decoder.beforeProcessing(payload, request);
     }
     catch (error) {
       valid = false;
@@ -63,55 +63,79 @@ export class PayloadService {
         'payloads',
         {
           deviceModel: decoder.deviceModel,
+          payload,
           uuid,
           valid,
-          payload,
         },
         uuid);
     }
 
-    const deviceContent = await decoder.decode(payload, request);
+    const decodedPayload = await decoder.decode(payload, request);
 
-    // Inject payload uuid
-    for (const measure of Object.values(deviceContent.measures)) {
-      if (! measure.payloadUuid) {
-        measure.payloadUuid = uuid;
+    const newMeasures: ContextualMeasure[] = [];
+
+    const deviceId = Device.id(decoder.deviceModel, decodedPayload.reference);
+
+    for (const [type, measure] of Object.entries(decodedPayload.measures)) {
+      newMeasures.push({
+        measuredAt: measure.measuredAt,
+        origin: {
+          id: deviceId,
+          model: decoder.deviceModel,
+          payloadUuids: [uuid],
+          reference: decodedPayload.reference,
+          type: 'device',
+        },
+        type,
+        unit: this.measuresRegister.get(type).unit,
+        values: measure.values
+      });
+    }
+
+    try {
+      const deviceDoc = await this.batchController.get(
+        this.config.adminIndex,
+        'devices',
+        deviceId);
+
+      const device = new Device(deviceDoc._source);
+
+      return await this.update(device, newMeasures, { refresh });
+    }
+    catch (error) {
+      if (error.id !== 'services.storage.not_found') {
+        throw error;
       }
+
+      const deviceContent: DeviceContent = {
+        measures: newMeasures,
+        model: decoder.deviceModel,
+        reference: decodedPayload.reference,
+      };
+
+      return await this.deviceProvisioning(deviceId, deviceContent, { refresh });
     }
-    if (! deviceContent.model) {
-      deviceContent.model = decoder.deviceModel;
-    }
-
-    const device = new Device(deviceContent);
-
-    const exists = await this.batchController.exists(
-      this.config.adminIndex,
-      'devices',
-      device._id);
-
-    if (exists) {
-      return await this.update(device, decoder, request, { refresh });
-    }
-
-    return await this.deviceProvisionning(device, decoder, request, { refresh });
   }
 
-  private async register (
-    device: Device,
-    decoder: Decoder,
-    request: KuzzleRequest,
-    { refresh }
-  ): Promise<JSONObject> {
-    const enrichedDevice = await decoder.beforeRegister(device, request);
-
-    await this.batchController.create(
+  /**
+   * Register a new device by creating the document in admin index
+   * @todo add before/afterRegister events
+   */
+  private async register (deviceId: string, deviceContent: DeviceContent, { refresh }) {
+    const deviceDoc = await this.batchController.create(
       this.config.adminIndex,
       'devices',
-      enrichedDevice._source,
-      enrichedDevice._id,
+      deviceContent,
+      deviceId,
       { refresh });
 
-    return await decoder.afterRegister(enrichedDevice, request);
+    const device = new Device(deviceDoc._source);
+
+    return {
+      asset: null,
+      device: device.serialize(),
+      engineId: device._source.engineId,
+    };
   }
 
   /**
@@ -128,69 +152,73 @@ export class PayloadService {
    * Then we look into the tenant provisioning catalog entry to:
    *   - link the device to an asset of this tenant
    */
-  private async deviceProvisionning (
-    device: Device,
-    decoder: Decoder,
-    request: KuzzleRequest,
+  private async deviceProvisioning (
+    deviceId: string,
+    deviceContent: DeviceContent,
     { refresh }
-  ): Promise<JSONObject> {
-    const pluginConfigDocument = await this.batchController.get(
+  ) {
+    const pluginConfig = await this.batchController.get(
       this.config.adminIndex,
-      this.config.configCollection,
+      this.config.adminCollections.config.name,
       'plugin--device-manager');
 
-    const autoProvisioningStrategy: boolean = pluginConfigDocument._source['device-manager'].provisioningStrategy === 'auto';
+    const autoProvisioning
+      = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
 
-    const catalogEntry = await this.getCatalogEntry(this.config.adminIndex, device._id);
+    const catalogEntry = await this.getCatalogEntry(this.config.adminIndex, deviceId);
 
-    if (! autoProvisioningStrategy && ! catalogEntry) {
-      throw new BadRequestError(`Device ${device._id} is not provisionned.`);
+    if (! autoProvisioning && ! catalogEntry) {
+      throw new BadRequestError(`Device "${deviceId}" is not provisioned.`);
     }
 
-    if (! autoProvisioningStrategy && catalogEntry.content.authorized === false) {
-      throw new BadRequestError(`Device ${device._id} is not allowed for registration.`);
+    if (! autoProvisioning && catalogEntry.content.authorized === false) {
+      throw new BadRequestError(`Device "${deviceId}" is not allowed for registration.`);
     }
 
-    const tenantIdExists = catalogEntry && catalogEntry.content && catalogEntry.content.tenantId;
-    const tenantCatalogEntry = tenantIdExists ? await this.getCatalogEntry(catalogEntry.content.tenantId, device._id) : undefined;
+    const engineId = _.get(catalogEntry, 'content.engineId');
 
-    const response = await global.app.trigger('device-manager:device:provisioning:before', {
-      device,
-      adminCatalog: catalogEntry,
-      tenantCatalog: tenantCatalogEntry,
-    });
+    const tenantCatalogEntry = engineId
+      ? await this.getCatalogEntry(engineId, deviceId)
+      : undefined;
 
-    const enrichedDevice = response.device;
-    const adminCatalog = response.adminCatalog;
-    const tenantCatalog = response.tenantCatalog;
+    const { adminCatalog, tenantCatalog } = await global.app.trigger(
+      'device-manager:device:provisioning:before',
+      {
+        adminCatalog: catalogEntry,
+        deviceId,
+        tenantCatalog: tenantCatalogEntry,
+      });
 
-    const ret = await this.register(response.device, decoder, request, { refresh });
-    
+    const { asset, device } = await this.register(
+      deviceId,
+      deviceContent,
+      { refresh });
+
     // If there is not auto attachment to a tenant then we cannot link asset as well
-    if (! tenantIdExists) {
-      // Trigger event even if there is not tenantId in the catalog
+    if (! engineId) {
+      // Trigger event even if there is not engineId in the catalog
       await global.app.trigger('device-manager:device:provisioning:after', {
-        device,
         adminCatalog,
+        device,
         tenantCatalog,
       });
 
-      return ret;
+      return { asset, device, engineId };
     }
 
     await this.sdk.query({
+      _id: deviceId,
+      action: 'attachEngine',
       controller: 'device-manager/device',
-      action: 'attachTenant',
-      _id: enrichedDevice._id,
-      index: adminCatalog.content.tenantId,
+      index: engineId,
     });
 
     if (adminCatalog.content.assetId) {
       await this.sdk.query({
-        controller: 'device-manager/device',
+        _id: deviceId,
         action: 'linkAsset',
-        _id: enrichedDevice._id,
         assetId: adminCatalog.content.assetId,
+        controller: 'device-manager/device',
       });
     }
 
@@ -200,21 +228,21 @@ export class PayloadService {
       && tenantCatalog.content.assetId
     ) {
       await this.sdk.query({
-        controller: 'device-manager/device',
+        _id: deviceId,
         action: 'linkAsset',
-        _id: enrichedDevice._id,
         assetId: tenantCatalog.content.assetId,
+        controller: 'device-manager/device',
       });
     }
 
-    // Trigger event when there is a tenantId in the catalog
+    // Trigger event when there is a engineId in the catalog
     await global.app.trigger('device-manager:device:provisioning:after', {
-      device,
       adminCatalog,
+      deviceId,
       tenantCatalog,
     });
 
-    return ret;
+    return { asset, device, engineId };
   }
 
   /**
@@ -224,7 +252,7 @@ export class PayloadService {
     try {
       const document = await this.batchController.get(
         index,
-        this.config.configCollection,
+        this.config.adminCollections.config.name,
         `catalog--${deviceId}`);
 
       return new Catalog(document);
@@ -236,11 +264,11 @@ export class PayloadService {
 
       const result = await this.sdk.document.search(
         index,
-        this.config.configCollection,
+        this.config.adminCollections.config.name,
         {
           query: { equals: { 'catalog.deviceId': deviceId } },
         },
-        { size: 1, lang: 'koncorde' });
+        { lang: 'koncorde', size: 1 });
 
       if (result.total !== 0) {
         return new Catalog(result.hits[0]);
@@ -250,59 +278,49 @@ export class PayloadService {
     }
   }
 
+  /**
+   * Updates the device with the new measures:
+   *  - in admin index
+   *  - in engine index
+   *  - in linked asset
+   *  - historize measures in engine index
+   *
+   * @todo add before/afterUpdate events
+   */
   private async update (
     device: Device,
-    decoder: Decoder,
-    request: KuzzleRequest,
-    { refresh }
+    newMeasures: ContextualMeasure[],
+    { refresh },
   ) {
     const refreshableCollections = [];
 
-    const previousDevice = await this.batchController.get(
-      this.config.adminIndex,
-      'devices',
-      device._id);
-
-    const enrichedDevice = await decoder.beforeUpdate(device, request);
-
-    const deviceDocument = await this.batchController.update(
-      this.config.adminIndex,
-      'devices',
-      enrichedDevice._id,
-      enrichedDevice._source,
-      { source: true, retryOnConflict: 10 });
-
-    const updatedDevice = new Device(deviceDocument._source as any, deviceDocument._id);
+    const updatedDevice = await this.updateDevice(device, newMeasures);
 
     refreshableCollections.push([this.config.adminIndex, 'devices']);
 
-    const tenantId = previousDevice._source.tenantId;
+    const engineId = updatedDevice._source.engineId;
     let updatedAsset: BaseAsset = null;
 
     // Propagate device into tenant index
-    if (tenantId) {
+    if (engineId) {
+      await this.historizeMeasures(engineId, newMeasures);
+
       await this.batchController.update(
-        tenantId,
+        engineId,
         'devices',
-        enrichedDevice._id,
-        enrichedDevice._source,
+        updatedDevice._id,
+        updatedDevice._source,
         { retryOnConflict: 10 });
 
-      refreshableCollections.push([tenantId, 'devices']);
+      refreshableCollections.push([engineId, 'devices']);
 
       // Propagate measures into linked asset
-      const assetId = previousDevice._source.assetId;
+      const assetId = updatedDevice._source.assetId;
 
       if (assetId) {
-        updatedAsset = await this.propagateToAsset(
-          tenantId,
-          decoder,
-          updatedDevice,
-          assetId);
+        updatedAsset = await this.propagateToAsset(engineId, newMeasures, assetId);
 
-        await this.historizeAsset(tenantId, updatedAsset)
-
-        refreshableCollections.push([tenantId, 'assets']);
+        refreshableCollections.push([engineId, 'assets']);
       }
     }
 
@@ -312,55 +330,99 @@ export class PayloadService {
       )));
     }
 
-    return decoder.afterUpdate(updatedDevice, updatedAsset, request);
+    return {
+      asset: updatedAsset ? updatedAsset.serialize() : null,
+      device: device.serialize(),
+      engineId,
+    };
   }
 
   /**
-   * Propagate the measures inside the asset document.
+   * Updates a device with the new measures
+   *
+   * @returns Updated device
+   */
+  private async updateDevice (
+    device: Device,
+    newMeasures: ContextualMeasure[],
+  ): Promise<Device> {
+    // dup array reference
+    const measures = newMeasures.map(m => m);
+
+    // Keep previous measures that were not updated
+    for (const previousMeasure of device._source.measures) {
+      if (! measures.find(m => m.type === previousMeasure.type)) {
+        measures.push(previousMeasure);
+      }
+    }
+
+    device._source.measures = measures;
+
+    const result = await global.app.trigger(
+      `engine:${device._source.engineId}:device:measures:new`,
+      { device, measures: newMeasures });
+
+    const deviceDocument = await this.batchController.update(
+      this.config.adminIndex,
+      'devices',
+      result.device._id,
+      result.device._source,
+      { retryOnConflict: 10, source: true });
+
+    return new Device(deviceDocument._source);
+  }
+
+  /**
+   * Save measures in engine "measures" collection
+   */
+  private async historizeMeasures (engineId: string, measures: ContextualMeasure[]) {
+    await Promise.all(measures.map(measure => {
+      return this.batchController.create(engineId, 'measures', measure);
+    }));
+  }
+
+  /**
+   * Propagate the measures inside the linked asset document.
    */
   private async propagateToAsset (
-    tenantId: string,
-    decoder: Decoder,
-    updatedDevice: Device,
+    engineId: string,
+    newMeasures: ContextualMeasure[],
     assetId: string
   ): Promise<BaseAsset> {
-    const measures = await decoder.copyToAsset(updatedDevice);
-
-    const measureTypes = Object.keys(measures);
+    // dup array reference
+    const measures = newMeasures.map(m => m);
 
     const asset = await this.batchController.get(
-      tenantId,
+      engineId,
       'assets',
       assetId);
 
-    asset._source.measures = _.merge(asset._source.measures, measures);
+    if (! _.isArray(asset._source.measures)) {
+      throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
+    }
 
-    const { result } = await global.app.trigger(
-      `tenant:${tenantId}:asset:measures:new`,
-      eventPayload({ asset, measureTypes }));
+    // Keep previous measures that were not updated
+    // array are updated in place so we need to keep previous elements
+    for (const previousMeasure of asset._source.measures) {
+      if (! measures.find(m => m.type === previousMeasure.type)) {
+        measures.push(previousMeasure);
+      }
+    }
+
+    asset._source.measures = measures;
+
+    // Give the list of new measures types in event payload
+    const result = await global.app.trigger(
+      `engine:${engineId}:asset:measures:new`,
+      { asset, measures: newMeasures });
 
     const assetDocument = await this.batchController.update(
-      tenantId,
+      engineId,
       'assets',
       assetId,
       result.asset._source,
-      { source: true, retryOnConflict: 10 });
+      { retryOnConflict: 10, source: true });
 
     return new BaseAsset(assetDocument._source as any, assetDocument._id);
-  }
-
-  /**
-   * Creates an history entry for an asset
-   */
-  private async historizeAsset (tenantId: string, asset: BaseAsset) {
-    await this.batchController.create(
-      tenantId,
-      'asset-history',
-      {
-        assetId: asset._id,
-        measureTypes: Object.keys(asset._source.measures),
-        asset: _.omit(asset._source, ['_kuzzle_info']),
-      }
-    )
   }
 }

@@ -38,8 +38,8 @@ export class BatchBuffer {
     if (! this.indexes[index][collection]) {
       this.indexes[index][collection] = {
         documents: [],
-        promise: new InstrumentablePromise(),
         options,
+        promise: new InstrumentablePromise(),
       };
     }
 
@@ -71,7 +71,7 @@ export class BatchBuffer {
  * (e.g. "limits.documentsWriteCount" is 200 by default)
  */
 export class BatchWriter {
-  private timer: NodeJS.Timeout;
+  private timer: any;
   private sdk: KuzzleSDK;
   /**
    * Timer interval to execute m* API actions
@@ -91,12 +91,12 @@ export class BatchWriter {
   // Buffers
   private buffers = {
     create: new BatchBuffer(),
-    update: new BatchBuffer(),
-    get: new BatchBuffer(),
-    exists: new BatchBuffer(),
-    delete: new BatchBuffer(),
-    replace: new BatchBuffer(),
     createOrReplace: new BatchBuffer(),
+    delete: new BatchBuffer(),
+    exists: new BatchBuffer(),
+    get: new BatchBuffer(),
+    replace: new BatchBuffer(),
+    update: new BatchBuffer(),
   };
 
   /**
@@ -173,14 +173,14 @@ export class BatchWriter {
       this.sendExistsBuffer(buffers.exists),
       this.sendGetBuffer(buffers.get),
       this.sendReplaceBuffer(buffers.replace),
-    ])
+    ]);
   }
 
   /**
    * Initialize the buffers and start the timer
    */
   begin () {
-    this.prepareRound()
+    this.prepareRound();
 
     this.timer = setInterval(async () => {
       await this.execute();
@@ -223,7 +223,7 @@ export class BatchWriter {
       }
     }
 
-    await Promise.all(promises)
+    await Promise.all(promises);
   }
 
   private async sendUpdateBuffer (buffer: BatchBuffer, options?: { refresh?: 'wait_for' }) {
@@ -244,7 +244,7 @@ export class BatchWriter {
       }
     }
 
-    await Promise.all(promises)
+    await Promise.all(promises);
   }
 
   private async sendReplaceBuffer (buffer: BatchBuffer, options?: { refresh?: 'wait_for' }) {
@@ -265,7 +265,7 @@ export class BatchWriter {
       }
     }
 
-    await Promise.all(promises)
+    await Promise.all(promises);
   }
 
   private async sendCreateOrReplaceBuffer (buffer: BatchBuffer, options?: { refresh?: 'wait_for' }) {
@@ -286,7 +286,7 @@ export class BatchWriter {
       }
     }
 
-    await Promise.all(promises)
+    await Promise.all(promises);
   }
 
   private async sendGetBuffer (buffer: BatchBuffer) {
@@ -309,7 +309,7 @@ export class BatchWriter {
       }
     }
 
-    await Promise.all(promises)
+    await Promise.all(promises);
   }
 
   private async sendExistsBuffer (buffer: BatchBuffer) {
@@ -340,7 +340,7 @@ export class BatchWriter {
       }
     }
 
-    await Promise.all(promises)
+    await Promise.all(promises);
   }
 
   private async sendDeleteBuffer (buffer: BatchBuffer) {
@@ -363,6 +363,6 @@ export class BatchWriter {
       }
     }
 
-    await Promise.all(promises)
+    await Promise.all(promises);
   }
 }

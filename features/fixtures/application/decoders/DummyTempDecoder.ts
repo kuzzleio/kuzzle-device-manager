@@ -1,9 +1,11 @@
-import { Decoder, DeviceContent, Device, BaseAsset } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+import { BatteryMeasure } from 'lib/measures';
+
+import { Decoder, DecodedPayload, TemperatureMeasure } from '../../../../index';
 
 export class DummyTempDecoder extends Decoder {
   constructor () {
-    super('DummyTemp', ["temperature"]);
+    super('DummyTemp', ['temperature']);
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }
@@ -22,50 +24,29 @@ export class DummyTempDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
-    const deviceContent: DeviceContent = {
-      reference: payload.deviceEUI,
-      measures: {
-        temperature: {
-          updatedAt: Date.now(),
-          degree: payload.register55,
-        }
-      },
-      qos: {
-        battery: payload.batteryLevel * 100
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
+    const temperature: TemperatureMeasure = {
+      measuredAt: Date.now(),
+      values: {
+        temperature: payload.register55,
       }
     };
 
-    return deviceContent;
-  }
-
-  async beforeRegister (device: Device, request: KuzzleRequest) {
-    device._source.qos.registerEnriched = true;
-
-    return device;
-  }
-
-  async beforeUpdate (device: Device, request: KuzzleRequest) {
-    device._source.qos.updateEnriched = true;
-
-    return device;
-  }
-
-  async afterRegister (device: Device, request: KuzzleRequest) {
-    const result = await super.afterRegister(device, request);
-
-    return {
-      ...result,
-      afterRegister: true,
+    const battery: BatteryMeasure = {
+      measuredAt: Date.now(),
+      values: {
+        battery: payload.batteryLevel * 100,
+      }
     };
-  }
 
-  async afterUpdate (device: Device, asset: BaseAsset, request: KuzzleRequest) {
-    const result = await super.afterUpdate(device, asset, request);
-
-    return {
-      ...result,
-      afterUpdate: true
+    const decodedPayload: DecodedPayload = {
+      reference: payload.deviceEUI,
+      measures: {
+        temperature,
+        battery,
+      },
     };
+
+    return decodedPayload;
   }
 }

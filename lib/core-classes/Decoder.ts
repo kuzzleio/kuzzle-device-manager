@@ -4,15 +4,12 @@ import {
   HttpRoute,
   PreconditionError,
 } from 'kuzzle';
+import _ from 'lodash';
 
-import has from 'lodash/has';
-
-import { Device, BaseAsset } from '../models';
-
-import { DeviceContent, DecoderContent, AssetDeviceMeasures } from '../types';
+import { DecodedPayload } from '../types/DecodedPayload';
+import { DecoderContent } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-empty-function */
 
 /**
  * Base class to implement a decoder for a device model.
@@ -25,17 +22,17 @@ export abstract class Decoder {
   /**
    * Device model name
    */
-  deviceModel: string;
+  public deviceModel: string;
 
   /**
    * Array of device measure type
    */
-  deviceMeasures: string[];
+  public deviceMeasures: string[];
 
   /**
    * Custom name for the associated API action in the "payload" controller
    */
-  action?: string;
+  public action?: string;
 
   /**
    * Custom mappings for the payload collection.
@@ -51,7 +48,7 @@ export abstract class Decoder {
    *   }
    * }
    */
-  payloadsMappings?: JSONObject = {};
+  public payloadsMappings?: JSONObject = {};
 
   /**
    * Define custom HTTP routes
@@ -63,7 +60,11 @@ export abstract class Decoder {
   }
 
   get http (): HttpRoute[] {
-    return this._http || [{ verb: 'post', path: `device-manager/payload/${this.action}` }]
+    if (! this._http) {
+      this._http = [{ path: `device-manager/payload/${this.action}`, verb: 'post' }];
+    }
+
+    return this._http;
   }
 
   /**
@@ -101,101 +102,9 @@ export abstract class Decoder {
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
-   * @returns Device content to save
+   * @returns Measure
    */
-  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent>
-
-  /**
-   * Hook executed before processing the payload but after validation
-   *
-   * @param payload Raw payload received in the API action body
-   * @param request Original request
-   */
-  async beforeProcessing (payload: JSONObject, request: KuzzleRequest): Promise<void> {
-  }
-
-  /**
-   * Enrichment hook executed before registering a device
-   *
-   * @param device Densor before being persisted
-   * @param request Original request
-   *
-   * @returns Enriched device
-   */
-  async beforeRegister (device: Device, request: KuzzleRequest): Promise<Device> {
-    return device;
-  }
-
-  /**
-   * Hook executed after registering a device.
-   * Return value of this method will be returned in the API action result.
-   *
-   * @param device Device after being persisted
-   * @param request Original request
-   *
-   * @returns Result of the corresponding API action
-   */
-  async afterRegister (device: Device, request: KuzzleRequest): Promise<any> {
-    return {
-      tenantId: device._source.tenantId,
-      device: device.serialize(),
-      asset: null,
-    };
-  }
-
-   /**
-   * Enrichment hook executed before updating a device
-   *
-   * @param device Device before being updated
-   * @param request Original request
-   *
-   * @returns Enriched device
-   */
-  async beforeUpdate (device: Device, request: KuzzleRequest): Promise<Device> {
-    return device;
-  }
-
-  /**
-   * Hook executed after updating a device.
-   * Return value of this method will be returned in the API action result.
-   *
-   * @param device Device after being updated
-   * @param request Original request
-   *
-   * @returns Result of the corresponding API action
-   */
-  async afterUpdate (device: Device, asset: BaseAsset, request: KuzzleRequest): Promise<any> {
-    return {
-      tenantId: device._source.tenantId,
-      device: device.serialize(),
-      asset: asset ? asset.serialize() : null,
-    };
-  }
-
-  /**
-   * Build the "measures" property that will be persisted in the asset document
-   *
-   * @param device Device after being updated
-   *
-   * @returns Content of the "measures" property
-   */
-  async copyToAsset (device: Device): Promise<AssetDeviceMeasures> {
-    const measures: AssetDeviceMeasures = {};
-
-    for (const [measureType, measure] of Object.entries(device._source.measures)) {
-      measures[measureType] = {
-        origin: {
-          id: device._id,
-          model: device._source.model,
-          reference: device._source.reference,
-          qos: device._source.qos,
-        },
-        ...measure,
-      };
-    }
-
-    return measures;
-  }
+  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>
 
   /**
    * Checks if the provided properties are present in the payload
@@ -207,19 +116,18 @@ export abstract class Decoder {
    */
   ensureProperties (payload: JSONObject, paths: string[]): void | never {
     for (const path of paths) {
-      if (! has(payload, path)) {
+      if (! _.has(payload, path)) {
         throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }
   }
 
-  serialize(): DecoderContent {
+  serialize (): DecoderContent {
     return {
-      deviceModel: this.deviceModel,
-      deviceMeasures: this.deviceMeasures
-    }
+      deviceMeasures: this.deviceMeasures,
+      deviceModel: this.deviceModel
+    };
   }
 }
 
 /* eslint-enable @typescript-eslint/no-unused-vars */
-/* eslint-enable @typescript-eslint/no-empty-function */

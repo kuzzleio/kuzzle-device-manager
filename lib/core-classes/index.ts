@@ -4,16 +4,16 @@ export * from './DeviceManagerEngine';
 
 export * from './DeviceService';
 
-export * from './MigrationService';
-
 export * from './BatchProcessing';
 
 export * from './Decoder';
 
-export * from './DecodersService';
-
 export * from './AssetService';
 
-export * from './CustomMappings/AssetMappingsManager';
+export * from './registers/AssetsRegister';
 
-export * from './CustomMappings/DeviceMappingsManager';
+export * from './registers/DevicesRegister';
+
+export * from './registers/MeasuresRegister';
+
+export * from './registers/DecodersRegister';

@@ -1,28 +1,26 @@
-import {
-  EmbeddedSDK,
-  Plugin,
-} from 'kuzzle';
+import { ControllerDefinition, PluginContext } from 'kuzzle';
 
-import { CRUDController } from './CRUDController';
-import { DecodersService } from '../core-classes';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import { DecodersRegister } from '../core-classes';
+import { DeviceManagerConfiguration } from '../types';
 
-export class DecodersController extends CRUDController {
-  private decodersService: DecodersService;
+export class DecodersController {
+  private context: PluginContext;
+  private config: DeviceManagerConfiguration;
+  private decodersRegister: DecodersRegister;
 
-  get sdk(): EmbeddedSDK {
-    return this.context.accessors.sdk;
-  }
+  public definition: ControllerDefinition;
 
-  constructor(plugin: Plugin, decodersService: DecodersService) {
-    super(plugin, 'decoders');
-
-    this.decodersService = decodersService;
+  constructor (plugin: DeviceManagerPlugin, decodersRegister: DecodersRegister) {
+    this.context = plugin.context;
+    this.config = plugin.config;
+    this.decodersRegister = decodersRegister;
 
     this.definition = {
       actions: {
         list: {
           handler: this.list.bind(this),
-          http: [{ verb: 'get', path: 'device-manager/decoders' }]
+          http: [{ path: 'device-manager/decoders', verb: 'get' }],
         }
       }
     };
@@ -32,9 +30,8 @@ export class DecodersController extends CRUDController {
    * List all available decoders
    */
   async list () {
-    const decoders = await this.decodersService.list();
+    const decoders = await this.decodersRegister.list();
 
     return { decoders };
   }
-
 }

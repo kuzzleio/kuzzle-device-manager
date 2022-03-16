@@ -1,18 +1,8 @@
 import { JSONObject } from 'kuzzle';
 
-import { DeviceMeasures } from './DeviceMeasures';
+import { ContextualMeasure } from './measures/ContextualMeasure';
 
 export type DeviceContent = {
-  /**
-   * Device unique reference for a model
-   */
-  reference: string;
-
-  /**
-   * Device measures gathered from a payload
-   */
-  measures?: DeviceMeasures;
-
   /**
    * Device model
    * (This will be auto-filled by Kuzzle)
@@ -20,10 +10,14 @@ export type DeviceContent = {
   model?: string;
 
   /**
-   * Device additionnal informations gathered from a payload
-   * (e.g. battery, network strength, etc.)
+   * Device unique reference for a model
    */
-  qos?: JSONObject;
+  reference: string;
+
+  /**
+   *
+   */
+  measures?: ContextualMeasure[];
 
   /**
    * Device metadata
@@ -36,9 +30,9 @@ export type DeviceContent = {
   assetId?: string;
 
   /**
-   * Attached tenant ID (index name)
+   * Attached engine ID (index name)
    */
-  tenantId?: string;
+  engineId?: string;
 
   /**
    * Document metadata

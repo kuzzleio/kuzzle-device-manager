@@ -1,23 +1,16 @@
-import { BaseMeasure } from './BaseMeasure';
+import { Measure, MeasureDefinition } from '../types';
 
-/**
- * Represents a temperature measure
- */
-export interface TemperatureMeasure extends BaseMeasure {
-  /**
-   * Temperature in celcius degree (decimal)
-   *
-   * @example
-   * 23.4
-   */
-  degree: number;
+export interface TemperatureMeasure extends Measure {
+  values: {
+    temperature: number;
+  }
 }
 
-export interface DeviceTemperatureMeasures {
-  temperature?: TemperatureMeasure
-}
-
-export const temperatureMeasureMappings = {
-  // temperature
-  degree: { type: 'float' },
+export const temperatureMeasure: MeasureDefinition = {
+  mappings: { temperature: { type: 'float' } },
+  unit: {
+    name: 'Degree',
+    sign: '°',
+    type: 'number',
+  },
 };

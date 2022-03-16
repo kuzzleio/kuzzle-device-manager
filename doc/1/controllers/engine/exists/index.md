@@ -27,7 +27,7 @@ Method: GET
 {
   "controller": "device-manager/engine",
   "action": "exists",
-  "index": "tenant-ayse"
+  "index": "engine-ayse"
 }
 ```
 
@@ -50,8 +50,8 @@ Returns an object containing an `exists` property.
   "controller": "device-manager/engine",
   "action": "exists",
   "collection": null,
-  "index": "tenant-ayse",
-  "result": { 
+  "index": "engine-ayse",
+  "result": {
     "exists": true
   }
 }

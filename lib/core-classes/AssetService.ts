@@ -1,17 +1,15 @@
-import omit from 'lodash/omit';
+import _ from 'lodash';
+import { PluginContext, Plugin, JSONObject } from 'kuzzle';
 
-import { PluginContext, EmbeddedSDK, Plugin, JSONObject } from 'kuzzle';
-
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';
-import { AssetContentBase } from '../types';
+import { BaseAssetContent, DeviceManagerConfiguration } from '../types';
 
 export class AssetService {
-  private config: DeviceManagerConfig;
+  private config: DeviceManagerConfiguration;
   private context: PluginContext;
 
-  get sdk(): EmbeddedSDK {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
@@ -30,14 +28,14 @@ export class AssetService {
       successes: [],
     };
 
-    const assetDocuments = assets.map((asset: AssetContentBase) => {
+    const assetDocuments = assets.map((asset: BaseAssetContent) => {
       const _asset = new BaseAsset(asset);
-      
+
       return {
         _id: _asset._id,
-        body: omit(asset, ['_id']),
-      }
-    })
+        body: _.omit(asset, ['_id']),
+      };
+    });
 
     await writeToDatabase(
       assetDocuments,
@@ -51,8 +49,8 @@ export class AssetService {
         );
 
         return {
-          successes: results.successes.concat(created.successes),
           errors: results.errors.concat(created.errors),
+          successes: results.successes.concat(created.successes),
         };
       }
     );

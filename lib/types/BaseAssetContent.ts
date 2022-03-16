@@ -1,18 +1,18 @@
 import { JSONObject } from 'kuzzle';
 
-import { AssetDeviceMeasures } from './AssetDeviceMeasures';
+import { ContextualMeasure } from './measures/ContextualMeasure';
 
 /**
  * Asset document
  */
-export interface AssetContentBase {
+export interface BaseAssetContent {
   type: string;
 
   model: string;
 
   reference: string;
 
-  measures?: AssetDeviceMeasures,
+  measures?: ContextualMeasure[],
 
   metadata?: JSONObject,
 }

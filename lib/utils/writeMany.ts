@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject } from 'kuzzle';
 
 export type mRequest = {
   _id: string;
@@ -12,12 +12,12 @@ export type mResponse = {
 
 export async function writeToDatabase (
   documents: mRequest[],
-  writer: (documents: mRequest[]) => Promise<mResponse>
+  writer: (docs: mRequest[]) => Promise<mResponse>
 ) {
   const results = {
     errors: [],
     successes: [],
-  }
+  };
 
   const limit = global.kuzzle.config.limits.documentsWriteCount;
 
@@ -42,7 +42,7 @@ export async function writeToDatabase (
   let done = false;
 
   while (! done) {
-    await writeMany(offset, offsetLimit)
+    await writeMany(offset, offsetLimit);
 
     offset += limit;
     offsetLimit += limit;
