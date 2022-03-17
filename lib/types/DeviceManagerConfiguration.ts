@@ -39,6 +39,8 @@ export type DeviceManagerConfiguration = {
 
   /**
    * Interval to write documents from the buffer
+   *
+   * @see https://docs.kuzzle.io/sdk/js/7/essentials/batch-processing/
    */
-  writerInterval: number;
+  batchInterval: number;
 }

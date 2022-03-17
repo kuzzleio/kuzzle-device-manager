@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
 import { BaseAsset, Device } from '../models';
-import { BaseAssetContent, ContextualMeasure, DeviceContent, DeviceManagerConfiguration } from '../types';
+import { BaseAssetContent, MeasureContent, DeviceContent, DeviceManagerConfiguration } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 
 export type DeviceBulkContent = {
@@ -184,7 +184,7 @@ export class DeviceService {
     }
 
     // Copy device measures and assign measures names
-    const measures: ContextualMeasure[] = device._source.measures.map(measure => {
+    const measures: MeasureContent[] = device._source.measures.map(measure => {
       const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
 
       return { ...measure, name };

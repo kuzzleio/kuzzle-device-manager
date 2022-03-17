@@ -3,35 +3,34 @@ import {
   KuzzleRequest,
   PluginContext,
   BadRequestError,
-  Plugin,
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
+import { BatchController } from 'kuzzle-sdk';
 
 import { Decoder } from './Decoder';
 import { Device, BaseAsset, Catalog } from '../models';
-import { BatchController, BatchWriter } from './BatchProcessing';
-import { ContextualMeasure, DeviceContent, DeviceManagerConfiguration } from '../types';
+import { MeasureContent, DeviceContent, DeviceManagerConfiguration, BaseAssetContent } from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 
 export class PayloadService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
-  private batchController: BatchController;
   private measuresRegister: MeasuresRegister;
+  private batch: BatchController;
 
   private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  constructor (
-    plugin: Plugin,
-    batchWriter: BatchWriter,
-    measuresRegister: MeasuresRegister
-  ) {
+  constructor (plugin: DeviceManagerPlugin, measuresRegister: MeasuresRegister) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-    this.batchController = batchWriter.document;
     this.measuresRegister = measuresRegister;
+
+    this.batch = new BatchController(this.sdk as any, {
+      interval: plugin.config.batchInterval
+    });
   }
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
@@ -58,7 +57,7 @@ export class PayloadService {
       throw error;
     }
     finally {
-      await this.batchController.create(
+      await this.batch.create(
         this.config.adminIndex,
         'payloads',
         {
@@ -72,7 +71,7 @@ export class PayloadService {
 
     const decodedPayload = await decoder.decode(payload, request);
 
-    const newMeasures: ContextualMeasure[] = [];
+    const newMeasures: MeasureContent[] = [];
 
     const deviceId = Device.id(decoder.deviceModel, decodedPayload.reference);
 
@@ -93,7 +92,7 @@ export class PayloadService {
     }
 
     try {
-      const deviceDoc = await this.batchController.get(
+      const deviceDoc = await this.batch.get<DeviceContent>(
         this.config.adminIndex,
         'devices',
         deviceId);
@@ -113,7 +112,7 @@ export class PayloadService {
         reference: decodedPayload.reference,
       };
 
-      return await this.deviceProvisioning(deviceId, deviceContent, { refresh });
+      return this.deviceProvisioning(deviceId, deviceContent, { refresh });
     }
   }
 
@@ -122,7 +121,7 @@ export class PayloadService {
    * @todo add before/afterRegister events
    */
   private async register (deviceId: string, deviceContent: DeviceContent, { refresh }) {
-    const deviceDoc = await this.batchController.create(
+    const deviceDoc = await this.batch.create<DeviceContent>(
       this.config.adminIndex,
       'devices',
       deviceContent,
@@ -157,7 +156,7 @@ export class PayloadService {
     deviceContent: DeviceContent,
     { refresh }
   ) {
-    const pluginConfig = await this.batchController.get(
+    const pluginConfig = await this.batch.get(
       this.config.adminIndex,
       this.config.adminCollections.config.name,
       'plugin--device-manager');
@@ -250,7 +249,7 @@ export class PayloadService {
    */
   private async getCatalogEntry (index: string, deviceId: string): Promise<Catalog | null> {
     try {
-      const document = await this.batchController.get(
+      const document = await this.batch.get(
         index,
         this.config.adminCollections.config.name,
         `catalog--${deviceId}`);
@@ -289,7 +288,7 @@ export class PayloadService {
    */
   private async update (
     device: Device,
-    newMeasures: ContextualMeasure[],
+    newMeasures: MeasureContent[],
     { refresh },
   ) {
     const refreshableCollections = [];
@@ -305,7 +304,7 @@ export class PayloadService {
     if (engineId) {
       await this.historizeMeasures(engineId, newMeasures);
 
-      await this.batchController.update(
+      await this.batch.update<DeviceContent>(
         engineId,
         'devices',
         updatedDevice._id,
@@ -344,7 +343,7 @@ export class PayloadService {
    */
   private async updateDevice (
     device: Device,
-    newMeasures: ContextualMeasure[],
+    newMeasures: MeasureContent[],
   ): Promise<Device> {
     // dup array reference
     const measures = newMeasures.map(m => m);
@@ -362,7 +361,7 @@ export class PayloadService {
       `engine:${device._source.engineId}:device:measures:new`,
       { device, measures: newMeasures });
 
-    const deviceDocument = await this.batchController.update(
+    const deviceDocument = await this.batch.update<DeviceContent>(
       this.config.adminIndex,
       'devices',
       result.device._id,
@@ -375,9 +374,9 @@ export class PayloadService {
   /**
    * Save measures in engine "measures" collection
    */
-  private async historizeMeasures (engineId: string, measures: ContextualMeasure[]) {
+  private async historizeMeasures (engineId: string, measures: MeasureContent[]) {
     await Promise.all(measures.map(measure => {
-      return this.batchController.create(engineId, 'measures', measure);
+      return this.batch.create<MeasureContent>(engineId, 'measures', measure);
     }));
   }
 
@@ -386,13 +385,13 @@ export class PayloadService {
    */
   private async propagateToAsset (
     engineId: string,
-    newMeasures: ContextualMeasure[],
+    newMeasures: MeasureContent[],
     assetId: string
   ): Promise<BaseAsset> {
     // dup array reference
     const measures = newMeasures.map(m => m);
 
-    const asset = await this.batchController.get(
+    const asset = await this.batch.get<BaseAssetContent>(
       engineId,
       'assets',
       assetId);
@@ -416,7 +415,7 @@ export class PayloadService {
       `engine:${engineId}:asset:measures:new`,
       { asset, measures: newMeasures });
 
-    const assetDocument = await this.batchController.update(
+    const assetDocument = await this.batch.update<BaseAssetContent>(
       engineId,
       'assets',
       assetId,

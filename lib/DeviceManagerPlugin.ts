@@ -55,8 +55,6 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
 
-  private batchWriter: BatchWriter;
-
   private decodersRegister = new DecodersRegister();
   private measuresRegister = new MeasuresRegister();
   private devicesRegister = new DevicesRegister(this.measuresRegister);
@@ -151,7 +149,7 @@ export class DeviceManagerPlugin extends Plugin {
           settings: {}
         }
       },
-      writerInterval: 10
+      batchInterval: 10
     };
     /* eslint-enable sort-keys */
   }
@@ -204,11 +202,8 @@ export class DeviceManagerPlugin extends Plugin {
     this.measures.register('humidity', humidityMeasure);
     this.measures.register('battery', batteryMeasure);
 
-    this.batchWriter = new BatchWriter(this.sdk, { interval: this.config.writerInterval });
-    this.batchWriter.begin();
-
     this.assetService = new AssetService(this);
-    this.payloadService = new PayloadService(this, this.batchWriter, this.measuresRegister);
+    this.payloadService = new PayloadService(this, this.measuresRegister);
     this.deviceService = new DeviceService(this);
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,

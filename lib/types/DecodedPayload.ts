@@ -1,4 +1,4 @@
-import { Measure } from './measures/Measure';
+import { Measurement } from './measures/Measurement';
 
 export interface DecodedPayload {
   /**
@@ -10,6 +10,6 @@ export interface DecodedPayload {
    * Array of decoded measures.
    */
   measures: {
-    [measureType: string]: Measure,
+    [measureType: string]: Measurement,
   };
 }

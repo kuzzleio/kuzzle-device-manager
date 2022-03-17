@@ -1,13 +1,13 @@
-import { Measure, MeasureDefinition } from '../types';
+import { Measurement, MeasureDefinition } from '../types';
 
-export interface BatteryMeasure extends Measure {
+export interface BatteryMeasurement extends Measurement {
   values: {
     battery: number;
   }
 }
 
 export const batteryMeasure: MeasureDefinition = {
-  mappings: { battery: { type: 'integer' } },
+  valuesMappings: { battery: { type: 'integer' } },
   unit: {
     name: 'Volt',
     sign: 'v',
