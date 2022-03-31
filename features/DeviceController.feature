@@ -283,14 +283,8 @@ Feature: Device Manager device controller
     Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     And The document "tenant-ayse":"assets":"PERFO-unlinked" content match:
-      | measures.position.reference   | "detached"    |
-      | measures.position.payloadUuid | "some-uuid"   |
-      | measures.position.accuracy    | 42            |
-      | measures.position.model       | "_STRING_"    |
-      | measures.position.id          | "_STRING_"    |
-      | measures.position.point.lon   | 3.876716      |
-      | measures.position.point.lat   | 43.610767     |
-      | measures.position.updatedAt   | 1610793427950 |
+      | measures.position.reference | "detached" |
+      | measures.temperature        | null       |
 
   Scenario: Clean payloads collection
     Given I successfully execute the action "collection":"truncate" with args:

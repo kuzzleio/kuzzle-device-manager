@@ -355,7 +355,7 @@ export class DeviceService {
 
     for (const [measureName] of Object.entries(device._source.measures)) {
       if (measures[measureName]) {
-        measures[measureName] = undefined;
+        measures[measureName] = null;
       }
     }
 
