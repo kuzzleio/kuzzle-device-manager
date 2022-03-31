@@ -8,6 +8,7 @@ import {
 
 import { AttachRequest, DeviceBulkContent, LinkRequest } from '../core-classes';
 import { DeviceService } from '../core-classes';
+import { Device } from '../models';
 
 export class DeviceController extends CRUDController {
   private deviceService: DeviceService;
@@ -22,6 +23,10 @@ export class DeviceController extends CRUDController {
         attachEngine: {
           handler: this.attachEngine.bind(this),
           http: [{ path: 'device-manager/:index/devices/:_id/_attach', verb: 'put' }]
+        },
+        create: {
+          handler: this.create.bind(this),
+          http: [{ path: 'device-manager/:index/devices', verb: 'post' }]
         },
         detachEngine: {
           handler: this.detachEngine.bind(this),
@@ -76,6 +81,21 @@ export class DeviceController extends CRUDController {
         },
       }
     };
+  }
+
+  /**
+   * Create and provision a new device
+   */
+  async create (request: KuzzleRequest) {
+    // @todo engine gestion?
+    const model = request.getBodyString('model');
+    const reference = request.getBodyString('reference');
+    throw new Error('ENSURE associated decoder exists');
+    if (! request.input.args._id) {
+      request.input.args._id = Device.id(model, reference);
+    }
+
+    return super.create(request);
   }
 
   /**

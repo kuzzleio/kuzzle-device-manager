@@ -79,14 +79,10 @@ export class AssetController extends CRUDController {
     const reference = request.getBodyString('reference');
 
     if (! request.input.args._id) {
-      const assetContent: BaseAssetContent = { model, reference, type, };
-
-      const asset = new BaseAsset(assetContent);
-
-      request.input.args._id = asset._id;
+      request.input.args._id = BaseAsset.id(type, model, reference);
     }
 
-    return await super.create(request);
+    return super.create(request);
   }
 
   async importAssets (request: KuzzleRequest) {
