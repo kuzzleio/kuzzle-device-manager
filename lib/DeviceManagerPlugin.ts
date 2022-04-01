@@ -38,7 +38,6 @@ import {
 import {
   payloadsMappings,
   devicesMappings,
-  catalogMappings,
 } from './mappings';
 import { DeviceManagerConfiguration } from './types';
 
@@ -176,7 +175,6 @@ export class DeviceManagerPlugin extends Plugin {
       mappings: this.config.adminCollections.config.mappings,
       settings: this.config.adminCollections.config.settings,
     });
-    this.adminConfigManager.register('catalog', catalogMappings);
     this.adminConfigManager.register('device-manager', {
       properties: {
         provisioningStrategy: { type: 'keyword' },
@@ -194,7 +192,6 @@ export class DeviceManagerPlugin extends Plugin {
       mappings: this.config.engineCollections.config.mappings,
       settings: this.config.engineCollections.config.settings,
     });
-    this.engineConfigManager.register('catalog', catalogMappings);
 
     this.measures.register('temperature', temperatureMeasure);
     this.measures.register('position', positionMeasure);

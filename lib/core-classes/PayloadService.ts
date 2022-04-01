@@ -3,13 +3,15 @@ import {
   KuzzleRequest,
   PluginContext,
   BadRequestError,
+  Backend,
+  UnauthorizedError,
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 import { BatchController } from 'kuzzle-sdk';
 
 import { Decoder } from './Decoder';
-import { Device, BaseAsset, Catalog } from '../models';
-import { MeasureContent, DeviceContent, DeviceManagerConfiguration, BaseAssetContent } from '../types';
+import { Device, BaseAsset } from '../models';
+import { MeasureContent, DeviceContent, DeviceManagerConfiguration, BaseAssetContent, DecodedPayload } from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 
@@ -23,6 +25,10 @@ export class PayloadService {
     return this.context.accessors.sdk;
   }
 
+  private get app (): Backend {
+    return global.app;
+  }
+
   constructor (plugin: DeviceManagerPlugin, measuresRegister: MeasuresRegister) {
     this.config = plugin.config as any;
     this.context = plugin.context;
@@ -34,13 +40,7 @@ export class PayloadService {
   }
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
-    const payload = request.input.body;
-
-    if ( ! payload
-      || (typeof payload === 'object' && Object.keys(payload).length === 0)
-    ) {
-      throw new BadRequestError('The body must contain the payload.');
-    }
+    const payload = request.getBody();
 
     const uuid = request.input.args.uuid || uuidv4();
     let valid = true;
@@ -102,18 +102,44 @@ export class PayloadService {
       return await this.update(device, newMeasures, { refresh });
     }
     catch (error) {
-      if (error.id !== 'services.storage.not_found') {
-        throw error;
+      if (error.id === 'services.storage.not_found') {
+        return this.provisionning(
+          decoder.deviceModel,
+          decodedPayload.reference,
+          newMeasures,
+          { refresh });
       }
 
-      const deviceContent: DeviceContent = {
-        measures: newMeasures,
-        model: decoder.deviceModel,
-        reference: decodedPayload.reference,
-      };
-
-      return this.deviceProvisioning(deviceId, deviceContent, { refresh });
+      throw error;
     }
+  }
+
+  private async provisionning (
+    model: string,
+    reference: string,
+    measures: MeasureContent[],
+    { refresh },
+  ) {
+    const pluginConfig = await this.batch.get(
+      this.config.adminIndex,
+      this.config.adminCollections.config.name,
+      'plugin--device-manager');
+
+    const autoProvisioning
+      = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
+
+    if (! autoProvisioning) {
+      throw new UnauthorizedError(`The device model "${model}" with reference "${reference}" is not registered on the platform.`);
+    }
+
+    const deviceId = Device.id(model, reference);
+    const deviceContent: DeviceContent = {
+      model,
+      reference,
+      measures,
+    };
+
+    return this.register(deviceId, deviceContent, { refresh });
   }
 
   /**
@@ -137,145 +163,6 @@ export class PayloadService {
     };
   }
 
-  /**
-   * Device provisioning strategy.
-   *
-   * If provisioningStrategy is "auto," device is automatically registered, otherwise
-   * we request the admin provisioning catalog to ensure this device is allowed
-   * to register.
-   *
-   * After registration, we look at the admin provisioning catalog entry to:
-   *   - attach the device to a tenant
-   *   - link the device to an asset of this tenant
-   *
-   * Then we look into the tenant provisioning catalog entry to:
-   *   - link the device to an asset of this tenant
-   */
-  private async deviceProvisioning (
-    deviceId: string,
-    deviceContent: DeviceContent,
-    { refresh }
-  ) {
-    const pluginConfig = await this.batch.get(
-      this.config.adminIndex,
-      this.config.adminCollections.config.name,
-      'plugin--device-manager');
-
-    const autoProvisioning
-      = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
-
-    const catalogEntry = await this.getCatalogEntry(this.config.adminIndex, deviceId);
-
-    if (! autoProvisioning && ! catalogEntry) {
-      throw new BadRequestError(`Device "${deviceId}" is not provisioned.`);
-    }
-
-    if (! autoProvisioning && catalogEntry.content.authorized === false) {
-      throw new BadRequestError(`Device "${deviceId}" is not allowed for registration.`);
-    }
-
-    const engineId = _.get(catalogEntry, 'content.engineId');
-
-    const tenantCatalogEntry = engineId
-      ? await this.getCatalogEntry(engineId, deviceId)
-      : undefined;
-
-    const { adminCatalog, tenantCatalog } = await global.app.trigger(
-      'device-manager:device:provisioning:before',
-      {
-        adminCatalog: catalogEntry,
-        deviceId,
-        tenantCatalog: tenantCatalogEntry,
-      });
-
-    const { asset, device } = await this.register(
-      deviceId,
-      deviceContent,
-      { refresh });
-
-    // If there is not auto attachment to a tenant then we cannot link asset as well
-    if (! engineId) {
-      // Trigger event even if there is not engineId in the catalog
-      await global.app.trigger('device-manager:device:provisioning:after', {
-        adminCatalog,
-        device,
-        tenantCatalog,
-      });
-
-      return { asset, device, engineId };
-    }
-
-    await this.sdk.query({
-      _id: deviceId,
-      action: 'attachEngine',
-      controller: 'device-manager/device',
-      engineId,
-    });
-
-    if (adminCatalog.content.assetId) {
-      await this.sdk.query({
-        _id: deviceId,
-        action: 'linkAsset',
-        assetId: adminCatalog.content.assetId,
-        controller: 'device-manager/device',
-      });
-    }
-
-
-    if ( tenantCatalog
-      && tenantCatalog.content.authorized !== false
-      && tenantCatalog.content.assetId
-    ) {
-      await this.sdk.query({
-        _id: deviceId,
-        action: 'linkAsset',
-        assetId: tenantCatalog.content.assetId,
-        controller: 'device-manager/device',
-      });
-    }
-
-    // Trigger event when there is a engineId in the catalog
-    await global.app.trigger('device-manager:device:provisioning:after', {
-      adminCatalog,
-      deviceId,
-      tenantCatalog,
-    });
-
-    return { asset, device, engineId };
-  }
-
-  /**
-   * Get the device entry from the provisioning catalog in corresponding index
-   */
-  private async getCatalogEntry (index: string, deviceId: string): Promise<Catalog | null> {
-    try {
-      const document = await this.batch.get(
-        index,
-        this.config.adminCollections.config.name,
-        `catalog--${deviceId}`);
-
-      return new Catalog(document);
-    }
-    catch (error) {
-      if (error.id !== 'services.storage.not_found') {
-        throw error;
-      }
-
-      const result = await this.sdk.document.search(
-        index,
-        this.config.adminCollections.config.name,
-        {
-          query: { equals: { 'catalog.deviceId': deviceId } },
-        },
-        { lang: 'koncorde', size: 1 });
-
-      if (result.total !== 0) {
-        return new Catalog(result.hits[0]);
-      }
-
-      return null;
-    }
-  }
 
   /**
    * Updates the device with the new measures:
