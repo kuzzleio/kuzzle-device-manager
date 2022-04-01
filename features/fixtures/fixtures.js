@@ -1,5 +1,3 @@
-const { devices } = require('./devices');
-
 const dummyTempAttachedAyseUnLinked = {
   reference: 'attached_ayse_unlinked',
   model: 'DummyTemp',
@@ -97,6 +95,7 @@ const dummyTempAttachedAyseUnLinked2 = {
 const measuresAttachedAyseLinked = [
   {
     type: 'temperature',
+/* A measure of the device `DummyTemp-attached_ayse_linked` */
     name: 'temperature',
     unit: {
       name: 'Degree',

@@ -209,7 +209,7 @@ export class PayloadService {
       _id: deviceId,
       action: 'attachEngine',
       controller: 'device-manager/device',
-      index: engineId,
+      engineId,
     });
 
     if (adminCatalog.content.assetId) {

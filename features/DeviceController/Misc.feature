@@ -2,18 +2,18 @@ Feature: Device Controller actions
 
   Scenario: Create a device
     When I successfully execute the action "device-manager/device":"create" with args:
-      | index          | "engine-kuzzle" |
+      | engineId       | "engine-kuzzle" |
       | body.model     | "DummyTemp"     |
-      | body.reference | "MATALE         |
+      | body.reference | "MATALE"        |
     Then The document "engine-kuzzle":"devices":"DummyTemp-MATALE" exists
 
   Scenario: Update a device
     When I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "engine-kuzzle"      |
+      | _id      | "DummyTemp-detached" |
+      | engineId | "engine-kuzzle"      |
     When I successfully execute the action "device-manager/device":"update" with args:
       | _id                          | "DummyTemp-detached" |
-      | index                        | "engine-kuzzle"      |
+      | engineId                     | "engine-kuzzle"      |
       | body.metadata.updatedByTests | true                 |
     Then I successfully execute the action "collection":"refresh" with args:
       | index      | "engine-kuzzle" |

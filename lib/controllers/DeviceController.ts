@@ -24,10 +24,6 @@ export class DeviceController extends CRUDController {
           handler: this.attachEngine.bind(this),
           http: [{ path: 'device-manager/:index/devices/:_id/_attach', verb: 'put' }]
         },
-        create: {
-          handler: this.create.bind(this),
-          http: [{ path: 'device-manager/:index/devices', verb: 'post' }]
-        },
         detachEngine: {
           handler: this.detachEngine.bind(this),
           http: [{ path: 'device-manager/devices/:_id/_detach', verb: 'delete' }]
@@ -64,6 +60,16 @@ export class DeviceController extends CRUDController {
           handler: this.prunePayloads.bind(this),
           http: [{ path: 'device-manager/devices/_prunePayloads', verb: 'delete' }]
         },
+        unlinkAsset: {
+          handler: this.unlinkAsset.bind(this),
+          http: [{ path: 'device-manager/:index/devices/:_id/_unlink', verb: 'delete' }]
+        },
+
+        // CRUD Controller
+        create: {
+          handler: this.create.bind(this),
+          http: [{ path: 'device-manager/:index/devices', verb: 'post' }]
+        },
         search: {
           handler: this.search.bind(this),
           http: [
@@ -71,13 +77,13 @@ export class DeviceController extends CRUDController {
             { path: 'device-manager/:index/devices/_search', verb: 'get' }
           ]
         },
-        unlinkAsset: {
-          handler: this.unlinkAsset.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id/_unlink', verb: 'delete' }]
-        },
         update: {
           handler: this.update.bind(this),
           http: [{ path: 'device-manager/:index/devices/:_id', verb: 'put' }]
+        },
+        delete: {
+          handler: this.delete.bind(this),
+          http: [{ path: 'device-manager/:index/devices/:_id', verb: 'delete' }]
         },
       }
     };
@@ -90,19 +96,39 @@ export class DeviceController extends CRUDController {
     // @todo engine gestion?
     const model = request.getBodyString('model');
     const reference = request.getBodyString('reference');
-    throw new Error('ENSURE associated decoder exists');
+
     if (! request.input.args._id) {
       request.input.args._id = Device.id(model, reference);
     }
 
+    request.input.args.index = request.getString('engineId');
+
     return super.create(request);
+  }
+
+  async update (request: KuzzleRequest) {
+    request.input.args.index = request.getString('engineId');
+
+    return super.update(request);
+  }
+
+  async search (request: KuzzleRequest) {
+    request.input.args.index = request.getString('engineId');
+
+    return super.search(request);
+  }
+
+  async delete (request: KuzzleRequest) {
+    request.input.args.index = request.getString('engineId');
+
+    return super.delete(request);
   }
 
   /**
    * Attach a device to a tenant
    */
   async attachEngine (request: KuzzleRequest) {
-    const engineId = request.getIndex();
+    const engineId = request.getString('engineId');
     const deviceId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
