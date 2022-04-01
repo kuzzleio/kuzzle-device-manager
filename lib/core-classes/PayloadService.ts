@@ -11,7 +11,12 @@ import { BatchController } from 'kuzzle-sdk';
 
 import { Decoder } from './Decoder';
 import { Device, BaseAsset } from '../models';
-import { MeasureContent, DeviceContent, DeviceManagerConfiguration, BaseAssetContent, DecodedPayload } from '../types';
+import {
+  MeasureContent,
+  DeviceContent,
+  DeviceManagerConfiguration,
+  BaseAssetContent,
+} from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 
@@ -134,9 +139,9 @@ export class PayloadService {
 
     const deviceId = Device.id(model, reference);
     const deviceContent: DeviceContent = {
+      measures,
       model,
       reference,
-      measures,
     };
 
     return this.register(deviceId, deviceContent, { refresh });

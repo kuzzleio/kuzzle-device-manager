@@ -18,6 +18,7 @@ export class DeviceController extends CRUDController {
 
     this.deviceService = deviceService;
 
+    /* eslint-disable sort-keys */
     this.definition = {
       actions: {
         attachEngine: {
@@ -87,6 +88,7 @@ export class DeviceController extends CRUDController {
         },
       }
     };
+    /* eslint-enable sort-keys */
   }
 
   /**

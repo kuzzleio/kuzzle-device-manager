@@ -1,5 +1,7 @@
 import { Measurement, MeasureDefinition } from '../types';
 
+/* eslint-disable sort-keys */
+
 export interface PositionMeasurement extends Measurement {
   values: {
     position: {

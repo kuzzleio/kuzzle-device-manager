@@ -19,7 +19,6 @@ import {
   DeviceManagerEngine,
   PayloadService,
   DeviceService,
-  BatchWriter,
   AssetsRegister,
   DevicesRegister,
   AssetService,
