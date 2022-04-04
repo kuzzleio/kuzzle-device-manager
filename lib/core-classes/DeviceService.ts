@@ -196,9 +196,7 @@ export class DeviceService {
       throw new BadRequestError(`Duplicate measure name "${duplicateMeasure.name}"`);
     }
 
-    // console.dir({measures, pref: asset._source.measures}, { depth:10})
     // Keep previous asset measures of different types
-    // @todo this should be done by measure name and not type
     for (const previousMeasure of asset._source.measures) {
       if (! measures.find(m => m.name === previousMeasure.name)) {
         measures.push(previousMeasure);
