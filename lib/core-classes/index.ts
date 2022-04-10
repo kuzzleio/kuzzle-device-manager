@@ -4,8 +4,6 @@ export * from './DeviceManagerEngine';
 
 export * from './DeviceService';
 
-export * from './BatchProcessing';
-
 export * from './Decoder';
 
 export * from './AssetService';
