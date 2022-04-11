@@ -140,8 +140,6 @@ export class DeviceController extends CRUDController {
       engineId,
     };
 
-    console.log({attacheRequest})
-
     await this.deviceService.attachEngine(attacheRequest, { refresh, strict });
   }
 
