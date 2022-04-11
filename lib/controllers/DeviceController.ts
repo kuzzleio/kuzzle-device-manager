@@ -3,17 +3,19 @@ import { CRUDController } from 'kuzzle-plugin-commons';
 import {
   KuzzleRequest,
   BadRequestError,
-  Plugin,
 } from 'kuzzle';
 
 import { AttachRequest, DeviceBulkContent, LinkRequest } from '../core-classes';
 import { DeviceService } from '../core-classes';
-import { Device } from '../models';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import { DeviceContent, DeviceManagerConfiguration } from '../types';
 
 export class DeviceController extends CRUDController {
+  protected config: DeviceManagerConfiguration;
+
   private deviceService: DeviceService;
 
-  constructor(plugin: Plugin, deviceService: DeviceService) {
+  constructor(plugin: DeviceManagerPlugin, deviceService: DeviceService) {
     super(plugin, 'devices');
 
     this.deviceService = deviceService;
@@ -95,17 +97,25 @@ export class DeviceController extends CRUDController {
    * Create and provision a new device
    */
   async create (request: KuzzleRequest) {
-    // @todo engine gestion?
+    const engineId = request.getString('engineId');
     const model = request.getBodyString('model');
     const reference = request.getBodyString('reference');
+    const assetId = request.input.args.assetId || null;
+    const metadata = request.getBodyObject('metadata', {});
+    const refresh = request.getRefresh();
 
-    if (! request.input.args._id) {
-      request.input.args._id = Device.id(model, reference);
-    }
+    const deviceContent: DeviceContent = {
+      measures: [],
+      metadata,
+      model,
+      reference,
+    };
 
-    request.input.args.index = request.getString('engineId');
+    const device = await this.deviceService.create(engineId, deviceContent, assetId, {
+      refresh
+    });
 
-    return super.create(request);
+    return device;
   }
 
   async update (request: KuzzleRequest) {

@@ -1,3 +1,4 @@
+import { KDocument } from 'kuzzle-sdk';
 import {
   JSONObject,
   PluginContext,
@@ -61,6 +62,49 @@ export class DeviceService {
   constructor(plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+  }
+
+  /**
+   * Create a new device.
+   *
+   * If the engineId is not the administration one, then the device will be
+   * automatically attached to the one provided.
+   *
+   * If an assetId is provided, then the device will be linked to this asset.
+   *
+   * @param engineId If it's not the admin engine, then the device will be attached to this one
+   * @param deviceContent Content of the device to create
+   */
+  async create (
+    engineId: string,
+    deviceContent: DeviceContent,
+    assetId: string,
+    { refresh }: { refresh?: any },
+  ): Promise<KDocument<DeviceContent>> {
+    const deviceId = Device.id(deviceContent.model, deviceContent.reference);
+
+    const device = await this.sdk.document.create<DeviceContent>(
+      this.config.adminIndex,
+      'devices',
+      deviceContent,
+      deviceId,
+      { refresh });
+
+    if (this.config.adminIndex === engineId) {
+      return device;
+    }
+
+    const attachedDevice = await this.attachEngine(
+      { deviceId, engineId },
+      { refresh, strict: true });
+
+    if (! assetId) {
+      return attachedDevice;
+    }
+
+    const { device: linkedDevice } = await this.linkAsset({ assetId, deviceId }, { refresh });
+
+    return linkedDevice;
   }
 
   async attachEngine (
@@ -184,7 +228,7 @@ export class DeviceService {
     }
 
     // Copy device measures and assign measures names
-    const measures: MeasureContent[] = device._source.measures.map(measure => {
+    const measures: MeasureContent[] = (device._source.measures || []).map(measure => {
       const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
 
       return { ...measure, name };

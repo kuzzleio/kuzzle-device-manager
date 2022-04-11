@@ -1,12 +1,5 @@
 Feature: Device Controller actions
 
-  Scenario: Create a device
-    When I successfully execute the action "device-manager/device":"create" with args:
-      | engineId       | "engine-kuzzle" |
-      | body.model     | "DummyTemp"     |
-      | body.reference | "MATALE"        |
-    Then The document "engine-kuzzle":"devices":"DummyTemp-MATALE" exists
-
   Scenario: Update a device
     When I successfully execute the action "device-manager/device":"attachEngine" with args:
       | _id      | "DummyTemp-detached" |

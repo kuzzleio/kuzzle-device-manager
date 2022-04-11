@@ -84,8 +84,7 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.query({
     controller: 'admin',
     action: 'loadFixtures',
-    // @todo uncomment with kuzzle 2.17.6
-    // refresh: 'false',
+    refresh: 'false',
     body: defaultFixtures,
   });
 });
