@@ -24,7 +24,7 @@ The document ID is `plugin--device-manager`.
 {
   "type": "device-manager",
   "device-manager": {
-    "provisioningStrategy": 'auto' | 'catalog'
+    "autoProvisioning": true
   }
 }
 ```

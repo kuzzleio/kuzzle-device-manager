@@ -6,6 +6,7 @@ const { Kuzzle, WebSocket } = require('kuzzle-sdk');
 
 const defaultFixtures = require('../fixtures/fixtures');
 const defaultRights = require('../fixtures/rights');
+const defaultMappings = require('../fixtures/mappings');
 
 const World = require('./world');
 
@@ -37,6 +38,11 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
   await Promise.all([
     resetEngine(world.sdk, 'engine-ayse'),
     resetEngine(world.sdk, 'engine-kuzzle'),
+    world.sdk.query({
+      controller: 'admin',
+      action: 'loadMappings',
+      body: defaultMappings,
+    }),
     world.sdk.query({
       controller: 'admin',
       action: 'loadSecurities',

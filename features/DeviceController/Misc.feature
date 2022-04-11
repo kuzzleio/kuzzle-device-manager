@@ -22,6 +22,11 @@ Feature: Device Controller actions
       | metadata.updatedByTests | true |
 
   Scenario: Clean payloads collection
+    Given I successfully execute the action "document":"update" with args:
+      | index                                    | "device-manager"         |
+      | collection                               | "config"                 |
+      | _id                                      | "plugin--device-manager" |
+      | body.device-manager.provisioningStrategy | "auto"                   |
     Given I successfully execute the action "collection":"truncate" with args:
       | index      | "device-manager" |
       | collection | "payloads"       |
