@@ -63,5 +63,7 @@ export interface MeasureContent extends KDocumentContent {
      * Array of payload uuids that were used to create this measure.
      */
     payloadUuids: string[];
-  }
+  };
+
+  // @todo Add assetId if an asset was linked to the device when the measure was done
 }

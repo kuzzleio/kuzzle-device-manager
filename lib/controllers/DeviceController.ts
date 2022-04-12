@@ -3,6 +3,7 @@ import { CRUDController } from 'kuzzle-plugin-commons';
 import {
   KuzzleRequest,
   BadRequestError,
+  PluginImplementationError,
 } from 'kuzzle';
 
 import { AttachRequest, DeviceBulkContent, LinkRequest } from '../core-classes';
@@ -30,10 +31,6 @@ export class DeviceController extends CRUDController {
         detachEngine: {
           handler: this.detachEngine.bind(this),
           http: [{ path: 'device-manager/devices/:_id/_detach', verb: 'delete' }]
-        },
-        importCatalog: {
-          handler: this.importCatalog.bind(this),
-          http: [{ path: 'device-manager/devices/_catalog', verb: 'post' }]
         },
         importDevices: {
           handler: this.importDevices.bind(this),
@@ -73,21 +70,6 @@ export class DeviceController extends CRUDController {
           handler: this.create.bind(this),
           http: [{ path: 'device-manager/:index/devices', verb: 'post' }]
         },
-        search: {
-          handler: this.search.bind(this),
-          http: [
-            { path: 'device-manager/:index/devices/_search', verb: 'post' },
-            { path: 'device-manager/:index/devices/_search', verb: 'get' }
-          ]
-        },
-        update: {
-          handler: this.update.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id', verb: 'put' }]
-        },
-        delete: {
-          handler: this.delete.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id', verb: 'delete' }]
-        },
       }
     };
     /* eslint-enable sort-keys */
@@ -118,22 +100,19 @@ export class DeviceController extends CRUDController {
     return device;
   }
 
-  async update (request: KuzzleRequest) {
-    request.input.args.index = request.getString('engineId');
-
-    return super.update(request);
+  // @todo to be implemented
+  async update (): Promise<any> {
+    throw new PluginImplementationError('Not available');
   }
 
-  async search (request: KuzzleRequest) {
-    request.input.args.index = request.getString('engineId');
-
-    return super.search(request);
+  // @todo to be implemented
+  async search () {
+    throw new PluginImplementationError('Not available');
   }
 
-  async delete (request: KuzzleRequest) {
-    request.input.args.index = request.getString('engineId');
-
-    return super.delete(request);
+  // @todo to be implemented
+  async delete (): Promise<any> {
+    throw new PluginImplementationError('Not available');
   }
 
   /**
@@ -304,20 +283,6 @@ export class DeviceController extends CRUDController {
 
     return this.deviceService.importDevices(
       devices,
-      {
-        refresh,
-        strict: true
-      });
-  }
-
-  async importCatalog (request: KuzzleRequest) {
-    const content = request.getBodyString('csv');
-    const refresh = request.getRefresh();
-
-    const catalog = await csv({ delimiter: 'auto' }).fromString(content);
-
-    return this.deviceService.importCatalog(
-      catalog,
       {
         refresh,
         strict: true

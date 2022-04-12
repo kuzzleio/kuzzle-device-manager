@@ -6,11 +6,6 @@ import { registerTestPipes } from './testPipes'
 
 const app = new Backend('kuzzle');
 
-app.pipe.register('server:afterNow', async (req) => {
-
-  await app.sdk.collection.list('do-not-exists');
-});
-
 const deviceManager = new DeviceManagerPlugin();
 
 deviceManager.decoders.register(new DummyTempDecoder());
