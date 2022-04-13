@@ -27,3 +27,5 @@ index.js.map
 # Doc
 doc/framework
 frontmatter-errors.json
+
+.vscode

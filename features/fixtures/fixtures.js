@@ -1,126 +1,226 @@
-const { devices } = require('./devices');
+const dummyTempAttachedAyseUnLinked = {
+  reference: 'attached_ayse_unlinked',
+  model: 'DummyTemp',
+  measures: [
+    {
+      type: 'temperature',
+      unit: {
+        name: 'Degree',
+        sign: '°',
+        type: 'number',
+      },
+      values: {
+        temperature: 23.3,
+      },
+      measuredAt: 1610793427950,
+      origin: {
+        id: 'DummyTemp-attached_ayse_unlinked',
+        type: 'device',
+        model: 'DummyTemp',
+        reference: 'attached_ayse_unlinked',
+        payloadUuids: ['some-uuid'],
+      }
+    },
+    {
+      type: 'battery',
+      unit: {
+        name: 'Volt',
+        sign: 'v',
+        type: 'number',
+      },
+      values: {
+        battery: 80,
+      },
+      measuredAt: 1610793427950,
+      origin: {
+        id: 'DummyTemp-attached_ayse_unlinked',
+        type: 'device',
+        model: 'DummyTemp',
+        reference: 'attached_ayse_unlinked',
+        payloadUuids: ['some-uuid'],
+      }
+    }
+  ],
+  engineId: 'engine-ayse',
+  assetId: null
+};
+
+const dummyTempAttachedAyseUnLinked2 = {
+  reference: 'attached_ayse_unlinked_2',
+  model: 'DummyTemp',
+  measures: [
+    {
+      type: 'temperature',
+      unit: {
+        name: 'Degree',
+        sign: '°',
+        type: 'number',
+      },
+      values: {
+        temperature: 23.3,
+      },
+      measuredAt: 1610793427950,
+      origin: {
+        id: 'DummyTemp-attached_ayse_unlinked_2',
+        type: 'device',
+        model: 'DummyTemp',
+        reference: 'attached_ayse_unlinked_2',
+        payloadUuids: ['some-uuid'],
+      }
+    },
+    {
+      type: 'battery',
+      unit: {
+        name: 'Volt',
+        sign: 'v',
+        type: 'number',
+      },
+      values: {
+        battery: 80,
+      },
+      measuredAt: 1610793427950,
+      origin: {
+        id: 'DummyTemp-attached_ayse_unlinked_2',
+        type: 'device',
+        model: 'DummyTemp',
+        reference: 'attached_ayse_unlinked_2',
+        payloadUuids: ['some-uuid'],
+      }
+    }
+  ],
+  engineId: 'engine-ayse',
+  assetId: null
+};
+
+const measuresAttachedAyseLinked = [
+  {
+    type: 'temperature',
+/* A measure of the device `DummyTemp-attached_ayse_linked` */
+    name: 'temperature',
+    unit: {
+      name: 'Degree',
+      sign: '°',
+      type: 'number',
+    },
+    values: {
+      temperature: 42.2,
+    },
+    measuredAt: 1610793427950,
+    origin: {
+      id: 'DummyTemp-attached_ayse_linked',
+      type: 'device',
+      model: 'DummyTemp',
+      reference: 'attached_ayse_linked',
+      payloadUuids: ['some-uuid'],
+    }
+  },
+  {
+    type: 'battery',
+    name: 'battery',
+    unit: {
+      name: 'Volt',
+      sign: 'v',
+      type: 'number',
+    },
+    values: {
+      battery: 80,
+    },
+    measuredAt: 1610793427950,
+    origin: {
+      id: 'DummyTemp-attached_ayse_linked',
+      type: 'device',
+      model: 'DummyTemp',
+      reference: 'attached_ayse_linked',
+      payloadUuids: ['some-uuid'],
+    }
+  }
+];
+
+const dummyTempAttachedAyseLinked = {
+  reference: 'attached_ayse_linked',
+  model: 'DummyTemp',
+  measures: measuresAttachedAyseLinked,
+  engineId: 'engine-ayse',
+  assetId: 'tools-MART-linked'
+};
 
 module.exports = {
   'device-manager': {
     devices: [
-      ...devices,
+      // ...devices,
       { index: { _id: 'DummyTemp-detached' } },
       {
         reference: 'detached',
         model: 'DummyTemp',
-        measures: {
-          position: {
-            updatedAt: 1610793427950,
-            payloadUuid: 'some-uuid',
-            point: {
-              lat: 43.610767,
-              lon: 3.876716,
+        measures: [
+          {
+            type: 'position',
+            name: 'position',
+            unit: {
+              name: 'GPS',
+              sign: null,
+              type: 'geo_point',
             },
-            accuracy: 42,
+            values: {
+              position: {
+                lat: 43.610767,
+                lon: 3.876716,
+              },
+              accuracy: 42,
+            },
+            measuredAt: 1610793427950,
+            origin: {
+              id: 'DummyTemp-detached',
+              type: 'device',
+              model: 'DummyTemp',
+              reference: 'detached',
+              payloadUuids: ['some-uuid'],
+            }
           }
-        },
+        ],
         metadata: {},
-        tenantId: null,
+        engineId: null,
         assetId: null
       },
       { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
-      {
-        reference: 'attached_ayse_unlinked',
-        model: 'DummyTemp',
-        measures: {
-          temperature: {
-            updatedAt: 1610793427950,
-            payloadUuid: 'some-uuid',
-            degree: 23.3,
-          }
-        },
-        qos: {
-          battery: 80
-        },
-        tenantId: 'tenant-ayse',
-        assetId: null
-      },
+      dummyTempAttachedAyseUnLinked,
+      { index: { _id: 'DummyTemp-attached_ayse_unlinked_2' } },
+      dummyTempAttachedAyseUnLinked2,
       { index: { _id: 'DummyTemp-attached_ayse_linked' } },
-      {
-        reference: 'attached_ayse_linked',
-        model: 'DummyTemp',
-        measures: {
-          temperature: {
-            updatedAt: 1610793427950,
-            payloadUuid: 'some-uuid',
-            degree: 42.2,
-          }
-        },
-        qos: {
-          battery: 80
-        },
-        tenantId: 'tenant-ayse',
-        assetId: 'MART-linked'
-      },
+      dummyTempAttachedAyseLinked,
     ]
   },
-  'tenant-ayse': {
+  'engine-ayse': {
     devices: [
       { index: { _id: 'DummyTemp-attached_ayse_unlinked' } },
-      {
-        reference: 'attached_ayse_unlinked',
-        model: 'DummyTemp',
-        measures: {
-          temperature: {
-            updatedAt: 1610793427950,
-            payloadUuid: 'some-uuid',
-            degree: 23.3,
-          }
-        },
-        qos: {
-          battery: 80
-        },
-        tenantId: 'tenant-ayse',
-        assetId: null
-      },
+      dummyTempAttachedAyseUnLinked,
+      { index: { _id: 'DummyTemp-attached_ayse_unlinked_2' } },
+      dummyTempAttachedAyseUnLinked2,
       { index: { _id: 'DummyTemp-attached_ayse_linked' } },
-      {
-        reference: 'attached_ayse_linked',
-        model: 'DummyTemp',
-        measures: {
-          temperature: {
-            updatedAt: 1610793427950,
-            payloadUuid: 'some-uuid',
-            degree: 42.2,
-          }
-        },
-        qos: {
-          battery: 80
-        },
-        tenantId: 'tenant-ayse',
-        assetId: 'MART-linked'
-      },
+      dummyTempAttachedAyseLinked,
     ],
     assets: [
-      { index: { _id: 'PERFO-unlinked' } },
+      { index: { _id: 'tools-PERFO-unlinked' } },
       {
+        type: 'tools',
         model: 'PERFO',
         reference: 'unlinked',
-        measures: {},
+        measures: [],
       },
-      { index: { _id: 'MART-linked' } },
+      { index: { _id: 'tools-SCREW-unlinked' } },
       {
+        type: 'tools',
+        model: 'SCREW',
+        reference: 'unlinked',
+        measures: [],
+      },
+      { index: { _id: 'tools-MART-linked' } },
+      {
+        type: 'tools',
         model: 'MART',
         reference: 'linked',
-        measures: {
-          temperature: {
-            reference: 'attached_ayse_linked',
-            qos: {
-              battery: 40
-            },
-            payloadUuid: 'some-uuid',
-            degree: 42.2,
-            model: 'DummyTemp',
-            id: 'DummyTemp-attached_ayse_linked',
-            updatedAt: 1610793427950
-          }
-        },
+        measures: measuresAttachedAyseLinked,
       }
     ]
   },
-}
+};

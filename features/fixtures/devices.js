@@ -3,11 +3,11 @@ const devices = [];
 for (let i = 0; i < 50; i++) {
   devices.push({ index: { _id: `DummyTemp-detached-${i}` } });
   devices.push({
-    reference: 'detached',
-    model: `DummyTemp-${i}`,
-    measures: {},
+    reference: `detached-${i}`,
+    model: 'DummyTemp',
+    measures: [],
     metadata: {},
-    tenantId: null,
+    engineId: null,
     assetId: null
   });
 }

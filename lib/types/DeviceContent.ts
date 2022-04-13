@@ -1,18 +1,9 @@
 import { JSONObject } from 'kuzzle';
+import { KDocumentContent } from 'kuzzle-sdk';
 
-import { DeviceMeasures } from './Measure';
+import { MeasureContent } from './measures/MeasureContent';
 
-export type DeviceContent = {
-  /**
-   * Device unique reference for a model
-   */
-  reference: string;
-
-  /**
-   * Device measures gathered from a payload
-   */
-  measures?: DeviceMeasures;
-
+export interface DeviceContent extends KDocumentContent {
   /**
    * Device model
    * (This will be auto-filled by Kuzzle)
@@ -20,10 +11,14 @@ export type DeviceContent = {
   model?: string;
 
   /**
-   * Device additionnal informations gathered from a payload
-   * (e.g. battery, network strength, etc.)
+   * Device unique reference for a model
    */
-  qos?: JSONObject;
+  reference: string;
+
+  /**
+   *
+   */
+  measures?: MeasureContent[];
 
   /**
    * Device metadata
@@ -36,40 +31,7 @@ export type DeviceContent = {
   assetId?: string;
 
   /**
-   * Attached tenant ID (index name)
+   * Attached engine ID (index name)
    */
-  tenantId?: string;
-
-  /**
-   * Document metadata
-   * @todo use DocumentMetadata when it's not an interface anymore
-   */
-  _kuzzle_info?: {
-    author?: string,
-    createdAt?: number,
-    updater?: string | null,
-    updatedAt?: number | null
-  }
-}
-
-export type DeviceBulkContent = {
-  tenantId?: string;
-  deviceId: string;
-  assetId?: string;
-}
-
-export type DeviceBulkBuildedContent = {
-  tenantId: string;
-  deviceIds: string[];
-  assetIds: string[];
-}
-
-export type DeviceMAttachementContent = {
-  errors: JSONObject[];
-  successes: JSONObject[];
-}
-
-export type DeviceMRequestContent = {
-  _id: string;
-  body: JSONObject;
+  engineId?: string;
 }

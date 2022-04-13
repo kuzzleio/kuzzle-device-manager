@@ -4,9 +4,9 @@ const _ = require('lodash');
 const { After, Before, BeforeAll } = require('cucumber');
 const { Kuzzle, WebSocket } = require('kuzzle-sdk');
 
-const defaultMappings = require('../fixtures/mappings');
 const defaultFixtures = require('../fixtures/fixtures');
 const defaultRights = require('../fixtures/rights');
+const defaultMappings = require('../fixtures/mappings');
 
 const World = require('./world');
 
@@ -35,24 +35,21 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
 
   await world.sdk.connect();
 
-  await world.sdk.query({
-    controller: 'admin',
-    action: 'loadSecurities',
-    body: defaultRights,
-    refresh: 'wait_for',
-    onExistingUsers: 'overwrite',
-  });
-
-  await world.sdk.query({
-    controller: 'admin',
-    action: 'loadMappings',
-    body: defaultMappings,
-    refresh: 'wait_for'
-  });
-
   await Promise.all([
-    resetEngine(world.sdk, 'tenant-ayse'),
-    resetEngine(world.sdk, 'tenant-kuzzle'),
+    resetEngine(world.sdk, 'engine-ayse'),
+    resetEngine(world.sdk, 'engine-kuzzle'),
+    world.sdk.query({
+      controller: 'admin',
+      action: 'loadMappings',
+      body: defaultMappings,
+    }),
+    world.sdk.query({
+      controller: 'admin',
+      action: 'loadSecurities',
+      body: defaultRights,
+      refresh: 'wait_for',
+      onExistingUsers: 'overwrite',
+    }),
   ]);
 
   world.sdk.disconnect();
@@ -72,21 +69,23 @@ Before({ timeout: 30 * 1000 }, async function () {
     truncateCollection(this.sdk, 'device-manager', 'devices'),
     removeCatalogEntries(this.sdk, 'device-manager'),
 
-    truncateCollection(this.sdk, 'tenant-kuzzle', 'assets'),
-    truncateCollection(this.sdk, 'tenant-kuzzle', 'asset-history'),
-    truncateCollection(this.sdk, 'tenant-kuzzle', 'devices'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'assets'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'measures'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'devices'),
 
-    truncateCollection(this.sdk, 'tenant-ayse', 'assets'),
-    truncateCollection(this.sdk, 'tenant-ayse', 'asset-history'),
-    truncateCollection(this.sdk, 'tenant-ayse', 'devices'),
-    removeCatalogEntries(this.sdk, 'tenant-ayse'),
+    truncateCollection(this.sdk, 'engine-ayse', 'assets'),
+    truncateCollection(this.sdk, 'engine-ayse', 'measures'),
+    truncateCollection(this.sdk, 'engine-ayse', 'devices'),
+    removeCatalogEntries(this.sdk, 'engine-ayse'),
+
+    truncateCollection(this.sdk, 'tests', 'events'),
   ]);
 
   await this.sdk.query({
     controller: 'admin',
     action: 'loadFixtures',
+    refresh: 'false',
     body: defaultFixtures,
-    refresh: 'wait_for'
   });
 });
 
@@ -139,7 +138,7 @@ After({ tags: '@realtime' }, function () {
 After({ tags: '@provisioning', timeout: 60 * 1000 }, async function () {
   await this.sdk.document.update('device-manager', 'config', 'plugin--device-manager', {
     'device-manager': {
-      autoProvisionning: true,
+      provisioningStrategy: 'auto',
     }
   });
 });

@@ -5,7 +5,7 @@ const { devicesTests } = require('../fixtures/devices');
 When('I succesfully execute {string}:{string} while exeding documentsWriteCount limit', async function (controller, action) {
   const records = [];
   for (let i = 0; i < devicesTests.length; i++) {
-    records.push({ deviceId: `DummyTemp-detached-${i}`, tenantId: 'tenant-kuzzle' });
+    records.push({ deviceId: `DummyTemp-detached-${i}`, engineId: 'engine-kuzzle' });
   }
 
 
@@ -35,7 +35,7 @@ Then('All devices in {string} {string} have the property {string} to {string}', 
     const theValue = value === "null" ? null : value;
 
     if (_source[key] !== theValue) {
-      throw new Error(`tenantId should be ${value} but current value is: ${_source.tenantId}`);
+      throw new Error(`engineId should be ${value} but current value is: ${_source.engineId}`);
     }
   }
 });

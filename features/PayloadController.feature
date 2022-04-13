@@ -6,14 +6,30 @@ Feature: Payloads Controller
       | register55   | 23.3    |
       | batteryLevel | 0.8     |
     Then The document "device-manager":"devices":"DummyTemp-12345" content match:
-      | reference                        | "12345"       |
-      | model                            | "DummyTemp"   |
-      | measures.temperature.updatedAt   | "_DATE_NOW_"  |
-      | measures.temperature.payloadUuid | "_STRING_"    |
-      | measures.temperature.degree      | 23.3          |
-      | qos.battery                      | 80            |
-      | tenantId                         | "_UNDEFINED_" |
-      | assetId                          | "_UNDEFINED_" |
+      | reference                      | "12345"           |
+      | model                          | "DummyTemp"       |
+      | measures[0].type               | "temperature"     |
+      | measures[0].measuredAt         | "_DATE_NOW_"      |
+      | measures[0].values.temperature | 23.3              |
+      | measures[0].origin.id          | "DummyTemp-12345" |
+      | measures[0].origin.model       | "DummyTemp"       |
+      | measures[0].origin.reference   | "12345"           |
+      | measures[0].origin.type        | "device"          |
+      | measures[0].unit.name          | "Degree"          |
+      | measures[0].unit.sign          | "°"               |
+      | measures[0].unit.type          | "number"          |
+      | measures[1].type               | "battery"         |
+      | measures[1].measuredAt         | "_DATE_NOW_"      |
+      | measures[1].values.battery     | 80                |
+      | measures[1].origin.id          | "DummyTemp-12345" |
+      | measures[1].origin.model       | "DummyTemp"       |
+      | measures[1].origin.reference   | "12345"           |
+      | measures[1].origin.type        | "device"          |
+      | measures[1].unit.name          | "Volt"            |
+      | measures[1].unit.sign          | "v"               |
+      | measures[1].unit.type          | "number"          |
+      | engineId                       | "_UNDEFINED_"     |
+      | assetId                        | "_UNDEFINED_"     |
 
   Scenario: Update a DummyTemp payload
     Given I successfully receive a "dummy-temp" payload with:
@@ -25,14 +41,12 @@ Feature: Payloads Controller
       | register55   | 42.2    |
       | batteryLevel | 0.7     |
     Then The document "device-manager":"devices":"DummyTemp-12345" content match:
-      | reference                        | "12345"       |
-      | model                            | "DummyTemp"   |
-      | measures.temperature.updatedAt   | "_DATE_NOW_"  |
-      | measures.temperature.payloadUuid | "_STRING_"    |
-      | measures.temperature.degree      | 42.2          |
-      | qos.battery                      | 70            |
-      | tenantId                         | "_UNDEFINED_" |
-      | assetId                          | "_UNDEFINED_" |
+      | reference                      | "12345"       |
+      | model                          | "DummyTemp"   |
+      | measures[0].values.temperature | 42.2          |
+      | measures[1].values.battery     | 70            |
+      | engineId                       | "_UNDEFINED_" |
+      | assetId                        | "_UNDEFINED_" |
 
   Scenario: Reject with error a DummyTemp payload
     When I receive a "dummy-temp" payload with:
@@ -48,9 +62,11 @@ Feature: Payloads Controller
       | invalid      | true   |
       | register55   | 42.2   |
       | batteryLevel | 0.7    |
-    Then The document "device-manager":"devices":"DummyTemp-4242" does not exists
+    Then I should receive a result matching:
+      | valid | false |
+    And The document "device-manager":"devices":"DummyTemp-4242" does not exists
 
-  Scenario: Receive a payload with 2 measures
+  Scenario: Receive a payload with 3 measures
     When I successfully receive a "dummy-temp-position" payload with:
       | deviceEUI     | "12345" |
       | register55    | 23.3    |
@@ -58,73 +74,66 @@ Feature: Payloads Controller
       | location.lon  | 2.42    |
       | location.accu | 2100    |
     Then The document "device-manager":"devices":"DummyTempPosition-12345" content match:
-      | reference                        | "12345"             |
-      | model                            | "DummyTempPosition" |
-      | measures.temperature.updatedAt   | "_DATE_NOW_"        |
-      | measures.temperature.payloadUuid | "_STRING_"          |
-      | measures.temperature.degree      | 23.3                |
-      | measures.position.updatedAt      | "_DATE_NOW_"        |
-      | measures.position.payloadUuid    | "_STRING_"          |
-      | measures.position.point.lat      | 42.2                |
-      | measures.position.point.lon      | 2.42                |
-      | measures.position.accuracy       | 2100                |
-      | qos.battery                      | 80                  |
-      | tenantId                         | "_UNDEFINED_"       |
-      | assetId                          | "_UNDEFINED_"       |
+      | reference                       | "12345"                   |
+      | model                           | "DummyTempPosition"       |
+      | measures[0].type                | "temperature"             |
+      | measures[0].measuredAt          | "_DATE_NOW_"              |
+      | measures[0].values.temperature  | 23.3                      |
+      | measures[0].origin.id           | "DummyTempPosition-12345" |
+      | measures[0].origin.model        | "DummyTempPosition"       |
+      | measures[0].origin.reference    | "12345"                   |
+      | measures[0].origin.type         | "device"                  |
+      | measures[0].unit.name           | "Degree"                  |
+      | measures[0].unit.sign           | "°"                       |
+      | measures[0].unit.type           | "number"                  |
+      | measures[1].type                | "position"                |
+      | measures[1].measuredAt          | "_DATE_NOW_"              |
+      | measures[1].values.position.lat | 42.2                      |
+      | measures[1].values.position.lon | 2.42                      |
+      | measures[1].values.accuracy     | 2100                      |
+      | measures[1].origin.id           | "DummyTempPosition-12345" |
+      | measures[1].origin.model        | "DummyTempPosition"       |
+      | measures[1].origin.reference    | "12345"                   |
+      | measures[1].origin.type         | "device"                  |
+      | measures[1].unit.name           | "GPS"                     |
+      | measures[1].unit.sign           | "_NULL_"                  |
+      | measures[1].unit.type           | "geo_point"               |
+      | measures[2].type                | "battery"                 |
+      | measures[2].measuredAt          | "_DATE_NOW_"              |
+      | measures[2].values.battery      | 80                        |
+      | measures[2].origin.id           | "DummyTempPosition-12345" |
+      | measures[2].origin.model        | "DummyTempPosition"       |
+      | measures[2].origin.reference    | "12345"                   |
+      | measures[2].origin.type         | "device"                  |
+      | measures[2].unit.name           | "Volt"                    |
+      | measures[2].unit.sign           | "v"                       |
+      | measures[2].unit.type           | "number"                  |
+      | engineId                        | "_UNDEFINED_"             |
+      | assetId                         | "_UNDEFINED_"             |
 
-  Scenario: Enrich tag with beforeRegister and beforeUpdate hooks
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "12345" |
-      | register55   | 23.3    |
-      | batteryLevel | 0.8     |
-    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
-      | qos.registerEnriched | true          |
-      | qos.updateEnriched   | "_UNDEFINED_" |
-    # Update
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "12345" |
-      | register55   | 23.3    |
-      | batteryLevel | 0.8     |
-    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
-      | qos.registerEnriched | true |
-      | qos.updateEnriched   | true |
-
-  Scenario: Execute afterRegister and afterUpdate hooks
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "12345" |
-      | register55   | 23.3    |
-      | batteryLevel | 0.8     |
-    Then I should receive a result matching:
-      | afterRegister | true |
-    # Update
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "12345" |
-      | register55   | 23.3    |
-      | batteryLevel | 0.8     |
-    Then I should receive a result matching:
-      | afterUpdate | true |
-
-  Scenario: Propagate device measure to tenant index
+  Scenario: Propagate device measure to engine index
     When I successfully receive a "dummy-temp" payload with:
       | deviceEUI    | "attached_ayse_unlinked" |
       | register55   | 42.2                     |
       | batteryLevel | 0.4                      |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | tenantId                         | "tenant-ayse" |
-      | measures.temperature.updatedAt   | "_DATE_NOW_"  |
-      | measures.temperature.payloadUuid | "_STRING_"    |
-      | measures.temperature.degree      | 42.2          |
-      | qos.battery                      | 40            |
-    And The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | tenantId                         | "tenant-ayse" |
-      | measures.temperature.updatedAt   | "_DATE_NOW_"  |
-      | measures.temperature.payloadUuid | "_STRING_"    |
-      | measures.temperature.degree      | 42.2          |
-      | qos.battery                      | 40            |
+      | engineId                       | "engine-ayse"              |
+      | measures[0].values.temperature | 42.2                       |
+      | measures[1].values.battery     | 40                         |
+      # Enriched with the event "engine:engine-ayse:device:measures:new"
+      | metadata.enriched              | true                       |
+      | metadata.measureTypes          | ["temperature", "battery"] |
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | engineId                       | "engine-ayse"              |
+      | measures[0].values.temperature | 42.2                       |
+      | measures[1].values.battery     | 40                         |
+      # Enriched with the event "engine:engine-ayse:device:measures:new"
+      | metadata.enriched              | true                       |
+      | metadata.measureTypes          | ["temperature", "battery"] |
     And I should receive a result matching:
       | device._id | "DummyTemp-attached_ayse_unlinked" |
       | asset      | null                               |
-      | tenantId   | "tenant-ayse"                      |
+      | engineId   | "engine-ayse"                      |
 
   Scenario: Propagate device measures to asset
     When I successfully receive a "dummy-temp" payload with:
@@ -132,38 +141,50 @@ Feature: Payloads Controller
       | register55   | 42.2                   |
       | batteryLevel | 0.4                    |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_linked" content match:
-      | tenantId | "tenant-ayse" |
-      | assetId  | "MART-linked" |
-    Then The document "tenant-ayse":"devices":"DummyTemp-attached_ayse_linked" content match:
-      | tenantId | "tenant-ayse" |
-      | assetId  | "MART-linked" |
-    And The document "tenant-ayse":"assets":"MART-linked" content match:
-      | measures.temperature.id          | "DummyTemp-attached_ayse_linked" |
-      | measures.temperature.reference   | "attached_ayse_linked"           |
-      | measures.temperature.model       | "DummyTemp"                      |
-      | measures.temperature.updatedAt   | "_DATE_NOW_"                     |
-      | measures.temperature.payloadUuid | "_STRING_"                       |
-      | measures.temperature.degree      | 42.2                             |
-      | measures.temperature.qos.battery | 40                               |
-      # Enriched with the event
-      | metadata.enriched                | true                             |
-      | metadata.measureTypes            | ["temperature"]                  |
+      | engineId | "engine-ayse"       |
+      | assetId  | "tools-MART-linked" |
+    Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_linked" content match:
+      | engineId | "engine-ayse"       |
+      | assetId  | "tools-MART-linked" |
+    And The document "engine-ayse":"assets":"tools-MART-linked" content match:
+      | measures[0].type               | "temperature"                    |
+      | measures[0].measuredAt         | "_DATE_NOW_"                     |
+      | measures[0].values.temperature | 42.2                             |
+      | measures[0].origin.id          | "DummyTemp-attached_ayse_linked" |
+      | measures[0].origin.model       | "DummyTemp"                      |
+      | measures[0].origin.reference   | "attached_ayse_linked"           |
+      | measures[0].origin.type        | "device"                         |
+      | measures[0].unit.name          | "Degree"                         |
+      | measures[0].unit.sign          | "°"                              |
+      | measures[0].unit.type          | "number"                         |
+      | measures[1].type               | "battery"                        |
+      | measures[1].measuredAt         | "_DATE_NOW_"                     |
+      | measures[1].values.battery     | 40                               |
+      | measures[1].origin.id          | "DummyTemp-attached_ayse_linked" |
+      | measures[1].origin.model       | "DummyTemp"                      |
+      | measures[1].origin.reference   | "attached_ayse_linked"           |
+      | measures[1].origin.type        | "device"                         |
+      | measures[1].unit.name          | "Volt"                           |
+      | measures[1].unit.sign          | "v"                              |
+      | measures[1].unit.type          | "number"                         |
+      # Enriched with the event "engine:engine-ayse:asset:measures:new"
+      | metadata.enriched              | true                             |
+      | metadata.measureTypes          | ["temperature", "battery"]       |
     And I should receive a result matching:
       | device._id | "DummyTemp-attached_ayse_linked" |
-      | asset._id  | "MART-linked"                    |
-      | tenantId   | "tenant-ayse"                    |
+      | asset._id  | "tools-MART-linked"              |
+      | engineId   | "engine-ayse"                    |
 
-  Scenario: Use event to enrich the asset and historize it
+  Scenario: Historize the measures
     When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "attached_ayse_linked" |
-      | register55   | 51.1                   |
-      | batteryLevel | 0.42                   |
-    And I refresh the collection "tenant-ayse":"asset-history"
-    And The last document from "tenant-ayse":"asset-history" content match:
-      | assetId                     | "MART-linked"   |
-      | measureTypes                | ["temperature"] |
-      | assetId                     | "MART-linked"   |
-      | asset.model                 | "MART"          |
-      | asset.reference             | "linked"        |
-      | asset.metadata.enriched     | true            |
-      | asset.metadata.measureTypes | ["temperature"] |
+      | deviceEUI    | "attached_ayse_unlinked" |
+      | register55   | 42.2                     |
+      | batteryLevel | 0.4                      |
+    And I refresh the collection "engine-ayse":"measures"
+    Then When I successfully execute the action "document":"search" with args:
+      | index      | "engine-ayse" |
+      | collection | "measures"    |
+    And I should receive a "hits" array of objects matching:
+      | _source.type  |
+      | "temperature" |
+      | "battery"     |

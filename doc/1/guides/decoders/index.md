@@ -37,7 +37,7 @@ const deviceManager = new DeviceManagerPlugin();
 
 class KarakoyDecoder extends Decoder {
   constructor () {
-    super("Karakoy");
+    super("Karakoy", ["temperature"]);
   }
 
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
@@ -74,7 +74,7 @@ You can specify a custom API action and custom HTTP routes by defining the `acti
 ```js
 class KarakoyDecoder extends Decoder {
   constructor () {
-    super("Karakoy");
+    super("Karakoy", ["temperature"]);
 
     // Generated API action: "device-manager/payload:karakoy-v1"
     this.action = 'karakoy-v1';
@@ -91,7 +91,7 @@ class KarakoyDecoder extends Decoder {
 
 When a new payload is received, if the corresponding device is assigned to a tenant then a Tenant Event is triggered: `tenant:<tenant-id>:device:new-payload`
 
-The `<tenant-id>` part will be replaced by the corresponding tenant ID (index name).  
+The `<tenant-id>` part will be replaced by the corresponding tenant ID (index name).
 
 This event payload contains a `KuzzleRequest` with the following properties:
 
@@ -100,6 +100,15 @@ This event payload contains a `KuzzleRequest` with the following properties:
 | `result.device` | <pre>Device</pre> | Device document corresponding to the received payload |
 | `result.asset`  | <pre>Asset</pre>  | Asset document if the device is linked to an asset    |
 
+## Defaults rights
+
+For each decoder model, the following are created:
+ - a role `payload-gateway.<model-kebab-case>` having access to the payload controller API action (e.g. `payload-gateway.karakoy`)
+ - a profile `payload-gateway.<model-kebab-case>` with the associated role for the model (e.g. `payload-gateway.karakoy`)
+ - a user `payload-gateway.<model-kebab-case>` with the associated profile for the model (e.g. `payload-gateway.karakoy`)
+
+Additionnaly, a `payload-gateway` profile and users are created. They have access to every actions of the payload controller.
+
 ## Action results
 
 Each action will return an object containing those 3 properties:
@@ -107,7 +116,7 @@ Each action will return an object containing those 3 properties:
  - `tenantId`: device tenant ID (only if the device was attached to a tenant)
  - `asset`: asset document (only if the device was linked to an asset)
 
-## Hooks 
+## Hooks
 
 You can then use lifecycle hooks to modify a payload while it's been processed
 

@@ -1,450 +1,444 @@
+import { KDocument } from 'kuzzle-sdk';
 import {
   JSONObject,
   PluginContext,
-  EmbeddedSDK,
   BadRequestError,
-  NotFoundError,
-  PreconditionError,
   Plugin,
 } from 'kuzzle';
+import { v4 as uuidv4 } from 'uuid';
+import _ from 'lodash';
 
-import {
-  DeviceBulkBuildedContent,
-  DeviceBulkContent,
-  DeviceMAttachementContent,
-  DeviceMRequestContent
-} from '../types';
+import { BaseAsset, Device } from '../models';
+import { BaseAssetContent, MeasureContent, DeviceContent, DeviceManagerConfiguration } from '../types';
+import { mRequest, mResponse, writeToDatabase } from '../utils/';
 
-import { Decoder } from './Decoder';
-import { Device } from '../models';
-import { DeviceManagerConfig } from '../DeviceManagerPlugin';
+export type DeviceBulkContent = {
+  engineId?: string;
+  deviceId: string;
+  assetId?: string;
+}
+
+/**
+ * Represents a request to link a device to an asset
+ *
+ * @example
+ * {
+ *   deviceId: 'Abeeway-4263232',
+ *   assetId: 'container-xlarger-HSZJSZ',
+ *   measuresNames: {
+ *     temperature: 'External temperature',
+ *     position: 'Lora Position'
+ *   }
+ * }
+ */
+export type LinkRequest = {
+  assetId: string;
+
+  deviceId: string;
+
+  /**
+   * List of measures names when linked to the asset.
+   * Default measure name is measure type.
+   */
+  measuresNames?: {
+    [measureType: string]: string;
+  }
+}
+
+export type AttachRequest = {
+  deviceId: string;
+
+  engineId: string;
+}
 
 export class DeviceService {
-  private config: DeviceManagerConfig;
+  private config: DeviceManagerConfiguration;
   private context: PluginContext;
 
-  private decoders: Map<string, Decoder>;
-
-  get sdk(): EmbeddedSDK {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  constructor(plugin: Plugin, decoders: Map<string, Decoder>) {
+  constructor(plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-
-    this.decoders = decoders;
   }
 
-  async mAttach (
-    devices: Device[],
-    bulkData: DeviceBulkContent[],
-    { strict, options }: { strict?: boolean, options?: JSONObject }
-  ): Promise<DeviceMAttachementContent> {
-    const attachedDevices = devices.filter(device => device._source.tenantId);
+  /**
+   * Create a new device.
+   *
+   * If the engineId is not the administration one, then the device will be
+   * automatically attached to the one provided.
+   *
+   * If an assetId is provided, then the device will be linked to this asset.
+   *
+   * @param engineId If it's not the admin engine, then the device will be attached to this one
+   * @param deviceContent Content of the device to create
+   */
+  async create (
+    engineId: string,
+    deviceContent: DeviceContent,
+    assetId: string,
+    { refresh }: { refresh?: any },
+  ): Promise<KDocument<DeviceContent>> {
+    const deviceId = Device.id(deviceContent.model, deviceContent.reference);
 
-    if (strict && attachedDevices.length > 0) {
-      const ids = attachedDevices.map(device => device._id).join(',')
-      throw new BadRequestError(`These devices "${ids}" are already attached to a tenant`);
+    const device = await this.sdk.document.create<DeviceContent>(
+      this.config.adminIndex,
+      'devices',
+      deviceContent,
+      deviceId,
+      { refresh });
+
+    if (this.config.adminIndex === engineId) {
+      return device;
     }
 
-    const documents = this.buildBulkDevices(bulkData);
-    const results = {
-      errors: [],
-      successes: [],
-    };
+    const attachedDevice = await this.attachEngine(
+      { deviceId, engineId },
+      { refresh, strict: true });
 
-    for (let i = 0; i < documents.length; i++) {
-      const document = documents[i];
-      const tenantExists = await this.tenantExists(document.tenantId);
+    if (! assetId) {
+      return attachedDevice;
+    }
 
-      if (strict && ! tenantExists) {
-        throw new BadRequestError(`Tenant "${document.tenantId}" does not have a device-manager engine`);
+    const { device: linkedDevice } = await this.linkAsset({ assetId, deviceId }, { refresh });
+
+    return linkedDevice;
+  }
+
+  async attachEngine (
+    attachRequest: AttachRequest,
+    { refresh, strict }: { refresh?: any, strict?: boolean },
+  ): Promise<Device> {
+    const device = await this.getDevice(attachRequest.deviceId);
+
+    if (strict && device._source.engineId) {
+      throw new BadRequestError(`Device "${device._id}" is already attached to an engine.`);
+    }
+
+    if (! await this.tenantExists(attachRequest.engineId)) {
+      throw new BadRequestError(`Engine "${attachRequest.engineId}" does not exists.`);
+    }
+
+    device._source.engineId = attachRequest.engineId;
+
+    const response = await global.app.trigger(
+      'device-manager:device:attach-engine:before',
+      {
+        device,
+        engineId: attachRequest.engineId,
+      });
+
+    await Promise.all([
+      this.sdk.document.update(
+        this.config.adminIndex,
+        'devices',
+        response.device._id,
+        { engineId: response.device._source.engineId },
+        { refresh }),
+
+      this.sdk.document.createOrReplace(
+        response.device._source.engineId,
+        'devices',
+        response.device._id,
+        response.device._source,
+        { refresh }),
+    ]);
+
+    await global.app.trigger('device-manager:device:attach-engine:after', {
+      device,
+      engineId: attachRequest.engineId,
+    });
+
+    return device;
+  }
+
+  async detachEngine (
+    deviceId: string,
+    { refresh, strict }: { refresh?: any, strict?: boolean }
+  ): Promise<Device> {
+    const device = await this.getDevice(deviceId);
+
+    const engineId = device._source.engineId;
+
+    if (strict && ! engineId) {
+      throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
+    }
+
+    if (device._source.assetId) {
+      throw new BadRequestError(`Device "${device._id}" is still linked to an asset.`);
+    }
+
+    const response = await global.app.trigger(
+      'device-manager:device:detach-engine:before',
+      {
+        device,
+        engineId,
+      });
+
+    await Promise.all([
+      this.sdk.document.update(
+        this.config.adminIndex,
+        'devices',
+        device._id,
+        { engineId: null },
+        { refresh }),
+
+      this.sdk.document.delete(
+        response.engineId,
+        'devices',
+        device._id,
+        { refresh }),
+    ]);
+
+    await global.app.trigger('device-manager:device:detach-engine:after', {
+      device,
+      engineId,
+    });
+
+    return device;
+  }
+
+  /**
+   * Link a device to an asset and copy device measures into the asset.
+   *
+   * Each measures will be given a distinct name when copied into the asset
+   */
+  async linkAsset (
+    linkRequest: LinkRequest,
+    { refresh }: { refresh?: any }
+  ): Promise<{ asset: BaseAsset, device: Device }> {
+    const device = await this.getDevice(linkRequest.deviceId);
+
+    const engineId = device._source.engineId;
+
+    if (! engineId) {
+      throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
+    }
+
+    if (device._source.assetId) {
+      throw new BadRequestError(`Device "${device._id}" is already linked to an asset.`);
+    }
+
+    const asset = await this.getAsset(linkRequest.assetId, engineId);
+
+    if (! _.isArray(asset._source.measures)) {
+      throw new BadRequestError(`Asset "${linkRequest.assetId}" measures property is not an array.`);
+    }
+
+    // Copy device measures and assign measures names
+    const measures: MeasureContent[] = (device._source.measures || []).map(measure => {
+      const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
+
+      return { ...measure, name };
+    });
+
+    const newMeasuresNames = measures.map(m => m.name);
+    const duplicateMeasure = asset._source.measures.find(m => newMeasuresNames.includes(m.name));
+    if (duplicateMeasure) {
+      throw new BadRequestError(`Duplicate measure name "${duplicateMeasure.name}"`);
+    }
+
+    // Keep previous asset measures of different types
+    for (const previousMeasure of asset._source.measures) {
+      if (! measures.find(m => m.name === previousMeasure.name)) {
+        measures.push(previousMeasure);
       }
-      else if (! strict && ! tenantExists) {
-        results.errors.push(`Tenant "${document.tenantId}" does not have a device-manager engine`)
-        continue;
-      }
-
-      const deviceDocuments = this.formatDevicesContent(devices, document);
-
-      const { errors, successes } = await this.writeToDatabase(
-        deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-          const updated = await this.sdk.document.mUpdate(
-            this.config.adminIndex,
-            'devices',
-            deviceDocuments,
-            { strict, refresh: options.refresh });
-
-          await this.sdk.document.mCreate(
-            document.tenantId,
-            'devices',
-            deviceDocuments,
-            { strict, refresh: options.refresh });
-
-            return {
-              successes: results.successes.concat(updated.successes),
-              errors: results.errors.concat(updated.errors)
-            }
-        });
-
-      results.successes.concat(successes);
-      results.errors.concat(errors);
     }
 
-    return results;
-  }
+    asset._source.measures = measures;
+    device._source.assetId = linkRequest.assetId;
 
-  async mDetach (
-    devices: Device[],
-    bulkData: DeviceBulkContent[],
-    { strict, options }: { strict?: boolean, options?: JSONObject }
-  ) {
-    const detachedDevices = devices.filter(device => {
-      return ! device._source.tenantId || device._source.tenantId === null
-    });
+    const response = await global.app.trigger(
+      'device-manager:device:link-asset:before',
+      { asset, device },
+    );
 
-    if (strict && detachedDevices.length > 0) {
-      const ids = detachedDevices.map(device => device._id).join(',')
-      throw new BadRequestError(`Devices "${ids}" are not attached to a tenant`);
-    }
+    await Promise.all([
+      this.sdk.document.update(
+        this.config.adminIndex,
+        'devices',
+        device._id,
+        { assetId: response.device._source.assetId },
+        { refresh }),
 
-    const linkedAssets = devices.filter(device => device._source.assetId);
+      this.sdk.document.update(
+        engineId,
+        'devices',
+        device._id,
+        { assetId: response.device._source.assetId },
+        { refresh }),
 
-    if (strict && linkedAssets.length > 0) {
-      const ids = linkedAssets.map(device => device._id).join(',')
-      throw new BadRequestError(`Devices "${ids}" are still linked to an asset`);
-    }
-
-    const builder = bulkData.map(data => {
-      const { deviceId } = data;
-      const device = devices.find(s => s._id === deviceId);
-      return { tenantId: device._source.tenantId, deviceId }
-    });
-
-    const documents = this.buildBulkDevices(builder);
-
-    const results = {
-      errors: [],
-      successes: [],
-    };
-
-    for (let i = 0; i < documents.length; i++) {
-      const document = documents[i];
-
-      const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
-      const deviceDocuments = devicesContent.map(device => {
-        return { _id: device._id, body: { tenantId: null } }
-      })
-
-      const { errors, successes } = await this.writeToDatabase(
-        deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-
-        const updated = await this.sdk.document.mUpdate(
-          this.config.adminIndex,
-          'devices',
-          deviceDocuments,
-          { strict, refresh: options.refresh });
-
-          await this.sdk.document.mDelete(
-            document.tenantId,
-            'devices',
-            deviceDocuments.map(device => device._id),
-            { strict, refresh: options.refresh });
-
-          return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
-      })
-
-      results.successes.concat(successes);
-      results.errors.concat(errors);
-    }
-
-    return results;
-  }
-
-  async mLink (
-    devices: Device[],
-    bulkData: DeviceBulkContent[],
-    { strict, options }: { strict?: boolean, options?: JSONObject }
-  ) {
-    const detachedDevices = devices.filter(device => {
-      return ! device._source.tenantId || device._source.tenantId === null
-    });
-
-    if (strict && detachedDevices.length > 0) {
-      const ids = detachedDevices.map(device => device._id).join(',')
-      throw new PreconditionError(`Devices "${ids}" are not attached to a tenant`);
-    }
-
-    const builder = bulkData.map(data => {
-      const { deviceId, assetId } = data;
-      const device = devices.find(s => s._id === deviceId);
-      return { tenantId: device._source.tenantId, deviceId, assetId }
-    });
-
-    const documents = this.buildBulkDevices(builder);
-
-    const results = {
-      errors: [],
-      successes: [],
-    };
-
-    for (let i = 0; i < documents.length; i++) {
-      const document = documents[i];
-      const existingAssets = await this.sdk.document.mGet(
-        document.tenantId,
+      this.sdk.document.update(
+        engineId,
         'assets',
-        document.assetIds);
+        asset._id,
+        { measures: response.asset._source.measures },
+        { refresh }),
+    ]);
 
-      if (strict && existingAssets.errors.length > 0) {
-        throw new NotFoundError(`Assets "${existingAssets.errors}" do not exist`);
-      }
+    await global.app.trigger(
+      'device-manager:device:link-asset:after',
+      { asset, device },
+    );
 
-      const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
-      const deviceDocuments = [];
-      const assetDocuments = [];
-
-      for (const device of devicesContent) {
-        const decoder = this.decoders.get(device._source.model);
-        const measures = await decoder.copyToAsset(device);
-        const { assetId } = bulkData.find(data => data.deviceId === device._id)
-
-        deviceDocuments.push({ _id: device._id, body: { assetId } });
-        assetDocuments.push({ _id: assetId, body: { measures } });
-      }
-
-      const updatedDevice = await this.writeToDatabase(
-        deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-          const updated = await this.sdk.document.mUpdate(
-            this.config.adminIndex,
-            'devices',
-            deviceDocuments,
-            { strict, refresh: options.refresh });
-
-          await this.sdk.document.mUpdate(
-            document.tenantId,
-            'devices',
-            deviceDocuments,
-            { strict, refresh: options.refresh });
-
-          return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
-      })
-
-      const updatedAssets = await this.writeToDatabase(
-        assetDocuments,
-        async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-          const updated = await this.sdk.document.mUpdate(
-            document.tenantId,
-            'assets',
-            assetDocuments,
-            { strict, refresh: options.refresh });
-
-          return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
-        }
-      )
-
-      results.successes.concat(updatedDevice.successes, updatedAssets.successes);
-      results.errors.concat(updatedDevice.errors, updatedDevice.errors);
-    }
-
-    return results;
+    return { asset, device };
   }
 
-  async mUnlink (
-    devices: Device[],
-    { strict, options }: { strict?: boolean, options?: JSONObject }
-  ) {
-    const unlinkedDevices = devices.filter(device => !device._source.assetId);
+  async unlinkAsset (
+    deviceId: string,
+    { refresh, strict }: { refresh?: any, strict?: boolean }
+  ): Promise<{ asset: BaseAsset, device: Device }> {
+    const device = await this.getDevice(deviceId);
 
-    if (strict && unlinkedDevices.length > 0) {
-      const ids = unlinkedDevices.map(d => d._id);
-      throw new BadRequestError(`Devices "${ids}" are not linked to an asset`);
+    const engineId = device._source.engineId;
+
+    if (strict && ! engineId) {
+      throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
 
+    if (! device._source.assetId) {
+      throw new BadRequestError(`Device "${device._id}" is not linked to an asset.`);
+    }
 
-    const builder = devices.map(device => {
-      const { _id, _source } = device;
-      return { tenantId: _source.tenantId, deviceId: _id, assetId: _source.assetId };
+    const asset = await this.getAsset(device._source.assetId, engineId);
+
+    // @todo should be done by measure name and not type
+    asset._source.measures = asset._source.measures.filter(m => {
+      return ! device._source.measures.find(dm => dm.type === m.type);
     });
+    device._source.assetId = null;
 
-    const documents = this.buildBulkDevices(builder);
+    const response = await global.app.trigger(
+      'device-manager:device:unlink-asset:before',
+      { asset, device },
+    );
 
+    await Promise.all([
+      this.sdk.document.update(
+        this.config.adminIndex,
+        'devices',
+        device._id,
+        { assetId: null },
+        { refresh }),
+
+      this.sdk.document.update(
+        engineId,
+        'devices',
+        device._id,
+        { assetId: null },
+        { refresh }),
+
+      this.sdk.document.update(
+        engineId,
+        'assets',
+        asset._id,
+        { measures: response.asset._source.measures },
+        { refresh }),
+    ]);
+
+    await global.app.trigger(
+      'device-manager:device:unlink-asset:before',
+      { asset, device },
+    );
+
+    return { asset, device };
+  }
+
+  async importDevices(
+    devices: JSONObject,
+    { refresh, strict }: { refresh?: any, strict?: boolean }) {
     const results = {
       errors: [],
       successes: [],
     };
 
-    for (let i = 0; i < documents.length; i++) {
-      const document = documents[i];
+    const deviceDocuments = devices
+      .map((device: JSONObject) => ({ _id: device._id || uuidv4(), body: _.omit(device, ['_id']) }));
 
-      const devicesContent = devices.filter(({ _id }) => document.deviceIds.includes(_id));
-      const deviceDocuments = [];
-      const assetDocuments = [];
+    await writeToDatabase(
+      deviceDocuments,
+      async (result: mRequest[]): Promise<mResponse> => {
 
-      for (const device of devicesContent) {
-        deviceDocuments.push({ _id: device._id, body: { assetId: null } });
+        const created = await this.sdk.document.mCreate(
+          'device-manager',
+          'devices',
+          result,
+          { refresh, strict });
 
-        const measures = await this.eraseAssetMeasure(document.tenantId, device);
-
-        assetDocuments.push({ _id: device._source.assetId, body: { measures } });
-      }
-
-      const updatedDevice = await this.writeToDatabase(
-        deviceDocuments,
-        async (deviceDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-          const updated = await this.sdk.document.mUpdate(
-            this.config.adminIndex,
-            'devices',
-            deviceDocuments,
-            { strict, refresh: options.refresh });
-
-          await this.sdk.document.mUpdate(
-            document.tenantId,
-            'devices',
-            deviceDocuments,
-            { strict, refresh: options.refresh });
-
-          return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
-      })
-
-      const updatedAssets = await this.writeToDatabase(
-        assetDocuments,
-        async (assetDocuments: DeviceMRequestContent[]): Promise<JSONObject> => {
-
-          const updated = await this.sdk.document.mUpdate(
-            document.tenantId,
-            'assets',
-            assetDocuments,
-            { strict, refresh: options.refresh });
-
-          return {
-            successes: results.successes.concat(updated.successes),
-            errors: results.errors.concat(updated.errors)
-          }
-        }
-      )
-
-      results.successes.concat(updatedDevice.successes, updatedAssets.successes);
-      results.errors.concat(updatedDevice.errors, updatedDevice.errors);
-    }
+        return {
+          errors: results.errors.concat(created.errors),
+          successes: results.successes.concat(created.successes)
+        };
+      });
 
     return results;
   }
 
-  private async eraseAssetMeasure (tenantId: string, device: Device) {
-    const { _source: { measures } } = await this.sdk.document.get(
-      tenantId,
-      'assets',
-      device._source.assetId);
+  async importCatalog (
+    catalog: JSONObject[],
+    { refresh, strict }: { refresh?: any, strict?: boolean }): Promise<mResponse> {
+    const results = {
+      errors: [],
+      successes: [],
+    };
 
+    const withoutIds = catalog.filter(content => !content.deviceId);
 
-    for (const [measureName] of Object.entries(device._source.measures)) {
-      if (measures[measureName]) {
-        measures[measureName] = null;
-      }
+    if (withoutIds.length > 0) {
+      throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);
     }
 
-    return measures;
+    const catalogDocuments = catalog
+      .map((catalogContent: JSONObject) => ({
+        _id: `catalog--${catalogContent.deviceId}`,
+        body: {
+          catalog: {
+            authorized: catalogContent.authorized === 'false' ? false : true,
+            deviceId: catalogContent.deviceId,
+          },
+          type: 'catalog'
+        }
+      }));
+
+    await writeToDatabase(
+      catalogDocuments,
+      async (result: mRequest[]): Promise<mResponse> => {
+        const created = await this.sdk.document.mCreate(
+          this.config.adminIndex,
+          this.config.adminCollections.config.name,
+          result,
+          { refresh, strict });
+
+        return {
+          errors: results.errors.concat(created.errors),
+          successes: results.successes.concat(created.successes)
+        };
+      });
+
+    return results;
   }
 
-  private async tenantExists (tenantId: string) {
+  private async getAsset (assetId: string, engineId: string) {
+    const document = await this.sdk.document.get(engineId, 'assets', assetId);
+
+    return new BaseAsset(document._source as BaseAssetContent, document._id);
+  }
+
+  private async getDevice (deviceId: string) {
+    const document = await this.sdk.document.get(this.config.adminIndex, 'devices', deviceId);
+
+    return new Device(document._source as DeviceContent, document._id);
+  }
+
+  private async tenantExists (engineId: string) {
     const { result: tenantExists } = await this.sdk.query({
-      controller: 'device-manager/engine',
       action: 'exists',
-      index: tenantId,
+      controller: 'device-manager/engine',
+      index: engineId,
     });
 
     return tenantExists;
-  }
-
-  private buildBulkDevices (bulkData: DeviceBulkContent[]): DeviceBulkBuildedContent[] {
-    const documents: DeviceBulkBuildedContent[] = [];
-    for (let i = 0; i < bulkData.length; i++) {
-      const { tenantId, deviceId, assetId } = bulkData[i];
-      const document = documents.find(doc => doc.tenantId === tenantId);
-
-      if (document) {
-        document.deviceIds.push(deviceId);
-        document.assetIds.push(assetId);
-      }
-      else {
-        documents.push({ tenantId, deviceIds: [deviceId], assetIds: [assetId] })
-      }
-    }
-    return documents;
-  }
-
-  private formatDevicesContent (
-    devices: Device[],
-    document: DeviceBulkBuildedContent
-  ): DeviceMRequestContent[] {
-    const devicesContent = devices.filter(device => document.deviceIds.includes(device._id));
-    const devicesDocuments = devicesContent.map(device => {
-      device._source.tenantId = document.tenantId;
-      return { _id: device._id, body: device._source }
-    });
-
-    return devicesDocuments;
-  }
-
-  private async writeToDatabase (
-    deviceDocuments: DeviceMRequestContent[],
-    writer: (deviceDocuments: DeviceMRequestContent[]) => Promise<JSONObject>
-  ) {
-    const results = {
-      errors: [],
-      successes: [],
-    }
-
-    const limit = global.kuzzle.config.limits.documentsWriteCount;
-
-    if (deviceDocuments.length <= limit) {
-      const { successes, errors } = await writer(deviceDocuments);
-      results.successes.push(successes);
-      results.errors.push(errors);
-
-      return results;
-    }
-
-    const writeMany = async (start: number, end: number) => {
-      const devices = deviceDocuments.slice(start, end);
-      const { successes, errors } = await writer(devices);
-
-      results.successes.push(successes);
-      results.errors.push(errors);
-    };
-
-    let offset = 0;
-    let offsetLimit = limit;
-    let done = false;
-
-    while (! done) {
-      await writeMany(offset, offsetLimit)
-
-      offset += limit;
-      offsetLimit += limit;
-
-      if (offsetLimit >= deviceDocuments.length) {
-        done = true;
-        await writeMany(offset, deviceDocuments.length);
-      }
-    }
-
-    return results;
   }
 }

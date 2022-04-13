@@ -26,7 +26,7 @@ import { Decoder } from 'kuzzle-plugin-device-manager';
 
 class KarakoyDecoder extends Decoder {
   constructor () {
-    super('Karakoy');
+    super("Karakoy", ["temperature"]);
   }
 
   // This method must be implemented

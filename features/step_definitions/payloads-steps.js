@@ -14,7 +14,8 @@ Then(/I (successfully )?receive a "(.*?)" payload with:/, async function (expect
     const response = await this.sdk.query({
       controller: 'device-manager/payload',
       action: payloadType,
-      body: payload
+      source: true,
+      body: payload,
     });
 
     this.props.result = response.result;

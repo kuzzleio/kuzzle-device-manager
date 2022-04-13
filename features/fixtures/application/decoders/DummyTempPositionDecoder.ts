@@ -1,9 +1,16 @@
-import { Decoder, DeviceContent } from '../../../../index';
 import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+
+import {
+  Decoder,
+  BatteryMeasurement,
+  PositionMeasurement,
+  TemperatureMeasurement,
+  DecodedPayload,
+} from '../../../../index';
 
 export class DummyTempPositionDecoder extends Decoder {
   constructor () {
-    super('DummyTempPosition');
+    super('DummyTempPosition', ["temperature", "position"]);
   }
 
   async validate (payload: JSONObject, request: KuzzleRequest) {
@@ -14,28 +21,41 @@ export class DummyTempPositionDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
-    const deviceContent: DeviceContent = {
-      reference: payload.deviceEUI,
-      measures: {
-        temperature: {
-          updatedAt: Date.now(),
-          degree: payload.register55,
-        },
-        position: {
-          updatedAt: Date.now(),
-          point: {
-            lat: payload.location.lat,
-            lon: payload.location.lon,
-          },
-          accuracy: payload.location.accu,
-        }
-      },
-      qos: {
-        battery: payload.batteryLevel * 100
+  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
+    const temperature: TemperatureMeasurement = {
+      measuredAt: Date.now(),
+      values: {
+        temperature: payload.register55,
       }
     };
 
-    return deviceContent;
+    const position: PositionMeasurement = {
+      measuredAt: Date.now(),
+      values: {
+        position: {
+          lat: payload.location.lat,
+          lon: payload.location.lon,
+        },
+        accuracy: payload.location.accu,
+      }
+    };
+
+    const battery: BatteryMeasurement = {
+      measuredAt: Date.now(),
+      values: {
+        battery: payload.batteryLevel * 100,
+      }
+    };
+
+    const decodedPayload: DecodedPayload = {
+      reference: payload.deviceEUI,
+      measures: {
+        temperature,
+        position,
+        battery,
+      },
+    };
+
+    return decodedPayload;
   }
 }

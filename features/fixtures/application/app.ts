@@ -2,25 +2,14 @@ import { Backend, KuzzleRequest } from 'kuzzle';
 
 import { DeviceManagerPlugin } from '../../../index';
 import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
+import { registerTestPipes } from './testPipes'
 
 const app = new Backend('kuzzle');
 
 const deviceManager = new DeviceManagerPlugin();
 
-deviceManager.registerDecoder(new DummyTempDecoder());
-deviceManager.registerDecoder(new DummyTempPositionDecoder());
-
-// Register commons properties
-deviceManager.devices.registerMeasure('humidity', {
-  value: { type: 'float' },
-});
-
-deviceManager.devices.registerQoS({
-  battery: { type: 'integer' }
-});
-deviceManager.devices.registerQoS({
-  battery2: { type: 'integer' }
-});
+deviceManager.decoders.register(new DummyTempDecoder());
+deviceManager.decoders.register(new DummyTempPositionDecoder());
 
 deviceManager.devices.registerMetadata({
   group: {
@@ -58,20 +47,7 @@ deviceManager.assets.register('hevSuit', {
   freezing: { type: 'boolean' }
 }, { group: 'astronaut' });
 
-
-// Register a pipe to enrich a tenant asset
-app.pipe.register(`engine:tenant-ayse:asset:measures:new`, async (request: KuzzleRequest) => {
-  if (request.result.asset._id !== 'MART-linked') {
-    return request;
-  }
-
-  request.result.asset._source.metadata = {
-    enriched: true,
-    measureTypes: request.result.measureTypes
-  };
-
-  return request;
-});
+registerTestPipes(app);
 
 app.plugin.use(deviceManager);
 
