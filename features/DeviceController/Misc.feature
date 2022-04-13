@@ -1,20 +1,11 @@
 Feature: Device Controller actions
 
-  Scenario: Update a device
-    When I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "engine-kuzzle"      |
-    When I successfully execute the action "device-manager/device":"update" with args:
-      | _id                          | "DummyTemp-detached" |
-      | index                        | "engine-kuzzle"      |
-      | body.metadata.updatedByTests | true                 |
-    Then I successfully execute the action "collection":"refresh" with args:
-      | index      | "engine-kuzzle" |
-      | collection | "devices"       |
-    Then The document "engine-kuzzle":"devices":"DummyTemp-detached" content match:
-      | metadata.updatedByTests | true |
-
   Scenario: Clean payloads collection
+    Given I successfully execute the action "document":"update" with args:
+      | index                                    | "device-manager"         |
+      | collection                               | "config"                 |
+      | _id                                      | "plugin--device-manager" |
+      | body.device-manager.provisioningStrategy | "auto"                   |
     Given I successfully execute the action "collection":"truncate" with args:
       | index      | "device-manager" |
       | collection | "payloads"       |

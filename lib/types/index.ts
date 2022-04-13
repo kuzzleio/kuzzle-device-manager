@@ -2,9 +2,9 @@ export * from './BaseAssetContent';
 
 export * from './DeviceContent';
 
-export * from './measures/ContextualMeasure';
+export * from './measures/MeasureContent';
 
-export * from './measures/Measure';
+export * from './measures/Measurement';
 
 export * from './measures/MeasureDefinition';
 

@@ -1,6 +1,8 @@
-import { Measure, MeasureDefinition } from '../types';
+import { Measurement, MeasureDefinition } from '../types';
 
-export interface PositionMeasure extends Measure {
+/* eslint-disable sort-keys */
+
+export interface PositionMeasurement extends Measurement {
   values: {
     position: {
       lat: number;
@@ -12,7 +14,7 @@ export interface PositionMeasure extends Measure {
 }
 
 export const positionMeasure: MeasureDefinition = {
-  mappings: {
+  valuesMappings: {
     accuracy: { type: 'float' },
     altitude: { type: 'float' },
     position: { type: 'geo_point' },

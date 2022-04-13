@@ -2,23 +2,23 @@ Feature: Attach device to engine
 
   Scenario: Attach a device to an engine
     When I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "engine-kuzzle"      |
+      | _id      | "DummyTemp-detached" |
+      | engineId | "engine-kuzzle"      |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | engineId | "engine-kuzzle" |
     And The document "engine-kuzzle":"devices":"DummyTemp-detached" exists
 
   Scenario: Attach a non-existing device to an engine should throw an error
     When I execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "Not-existing-device" |
-      | index | "engine-kuzzle"       |
+      | _id      | "Not-existing-device" |
+      | engineId | "engine-kuzzle"       |
     Then I should receive an error matching:
       | id | "services.storage.not_found" |
 
   Scenario: Attach a device to an engine and enrich it with event
     When I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "engine-kuzzle"      |
+      | _id      | "DummyTemp-detached" |
+      | engineId | "engine-kuzzle"      |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | engineId | "engine-kuzzle" |
     And The document "engine-kuzzle":"devices":"DummyTemp-detached" exists
@@ -55,16 +55,16 @@ Feature: Attach device to engine
 
   Scenario: Error when attaching a device to an engine
     When I execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "engine-kaliop"      |
+      | _id      | "DummyTemp-detached" |
+      | engineId | "engine-kaliop"      |
     Then I should receive an error matching:
       | message | "Tenant \"engine-kaliop\" does not have a device-manager engine" |
     And I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "engine-kuzzle"      |
+      | _id      | "DummyTemp-detached" |
+      | engineId | "engine-kuzzle"      |
     When I execute the action "device-manager/device":"attachEngine" with args:
-      | _id    | "DummyTemp-detached" |
-      | index  | "engine-kuzzle"      |
-      | strict | true                 |
+      | _id      | "DummyTemp-detached" |
+      | engineId | "engine-kuzzle"      |
+      | strict   | true                 |
     Then I should receive an error matching:
       | message | "Device \"DummyTemp-detached\" is already attached to an engine." |

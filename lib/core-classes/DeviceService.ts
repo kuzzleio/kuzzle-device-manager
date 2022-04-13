@@ -1,3 +1,4 @@
+import { KDocument } from 'kuzzle-sdk';
 import {
   JSONObject,
   PluginContext,
@@ -8,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
 import { BaseAsset, Device } from '../models';
-import { BaseAssetContent, ContextualMeasure, DeviceContent, DeviceManagerConfiguration } from '../types';
+import { BaseAssetContent, MeasureContent, DeviceContent, DeviceManagerConfiguration } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 
 export type DeviceBulkContent = {
@@ -61,6 +62,49 @@ export class DeviceService {
   constructor(plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+  }
+
+  /**
+   * Create a new device.
+   *
+   * If the engineId is not the administration one, then the device will be
+   * automatically attached to the one provided.
+   *
+   * If an assetId is provided, then the device will be linked to this asset.
+   *
+   * @param engineId If it's not the admin engine, then the device will be attached to this one
+   * @param deviceContent Content of the device to create
+   */
+  async create (
+    engineId: string,
+    deviceContent: DeviceContent,
+    assetId: string,
+    { refresh }: { refresh?: any },
+  ): Promise<KDocument<DeviceContent>> {
+    const deviceId = Device.id(deviceContent.model, deviceContent.reference);
+
+    const device = await this.sdk.document.create<DeviceContent>(
+      this.config.adminIndex,
+      'devices',
+      deviceContent,
+      deviceId,
+      { refresh });
+
+    if (this.config.adminIndex === engineId) {
+      return device;
+    }
+
+    const attachedDevice = await this.attachEngine(
+      { deviceId, engineId },
+      { refresh, strict: true });
+
+    if (! assetId) {
+      return attachedDevice;
+    }
+
+    const { device: linkedDevice } = await this.linkAsset({ assetId, deviceId }, { refresh });
+
+    return linkedDevice;
   }
 
   async attachEngine (
@@ -184,7 +228,7 @@ export class DeviceService {
     }
 
     // Copy device measures and assign measures names
-    const measures: ContextualMeasure[] = device._source.measures.map(measure => {
+    const measures: MeasureContent[] = (device._source.measures || []).map(measure => {
       const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
 
       return { ...measure, name };
@@ -196,9 +240,7 @@ export class DeviceService {
       throw new BadRequestError(`Duplicate measure name "${duplicateMeasure.name}"`);
     }
 
-    // console.dir({measures, pref: asset._source.measures}, { depth:10})
     // Keep previous asset measures of different types
-    // @todo this should be done by measure name and not type
     for (const previousMeasure of asset._source.measures) {
       if (! measures.find(m => m.name === previousMeasure.name)) {
         measures.push(previousMeasure);

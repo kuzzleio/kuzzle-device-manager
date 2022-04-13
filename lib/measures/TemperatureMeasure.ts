@@ -1,13 +1,15 @@
-import { Measure, MeasureDefinition } from '../types';
+import { Measurement, MeasureDefinition } from '../types';
 
-export interface TemperatureMeasure extends Measure {
+/* eslint-disable sort-keys */
+
+export interface TemperatureMeasurement extends Measurement {
   values: {
     temperature: number;
   }
 }
 
 export const temperatureMeasure: MeasureDefinition = {
-  mappings: { temperature: { type: 'float' } },
+  valuesMappings: { temperature: { type: 'float' } },
   unit: {
     name: 'Degree',
     sign: '°',

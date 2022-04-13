@@ -1,6 +1,7 @@
 import { JSONObject, PluginImplementationError } from 'kuzzle';
 
-import { MeasureDefinition, measuresMappings } from '../../types';
+import { measuresMappings } from '../../mappings';
+import { MeasureDefinition } from '../../types';
 
 export class MeasuresRegister {
   private mappings: JSONObject;
@@ -35,7 +36,7 @@ export class MeasuresRegister {
       throw new PluginImplementationError(`Measure "${type}" already exists.`);
     }
 
-    for (const [field, definition] of Object.entries(measure.mappings)) {
+    for (const [field, definition] of Object.entries(measure.valuesMappings)) {
       if (this.mappings.properties.values.properties[field]) {
         throw new PluginImplementationError(`Field "${type}" already exists in measures mappings.`);
       }

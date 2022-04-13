@@ -34,8 +34,8 @@ Feature: UnlinkAsset
 
   Scenario: Keep measures of first device when the second one is unlinked
     And I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "engine-ayse"        |
+      | _id      | "DummyTemp-detached" |
+      | engineId | "engine-ayse"        |
     When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
       | body.records.0.deviceId | "DummyTemp-detached"               |
       | body.records.0.assetId  | "tools-PERFO-unlinked"             |

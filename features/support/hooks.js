@@ -4,9 +4,9 @@ const _ = require('lodash');
 const { After, Before, BeforeAll } = require('cucumber');
 const { Kuzzle, WebSocket } = require('kuzzle-sdk');
 
-const defaultMappings = require('../fixtures/mappings');
 const defaultFixtures = require('../fixtures/fixtures');
 const defaultRights = require('../fixtures/rights');
+const defaultMappings = require('../fixtures/mappings');
 
 const World = require('./world');
 
@@ -35,24 +35,21 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
 
   await world.sdk.connect();
 
-  await world.sdk.query({
-    controller: 'admin',
-    action: 'loadSecurities',
-    body: defaultRights,
-    refresh: 'wait_for',
-    onExistingUsers: 'overwrite',
-  });
-
-  await world.sdk.query({
-    controller: 'admin',
-    action: 'loadMappings',
-    body: defaultMappings,
-    refresh: 'wait_for'
-  });
-
   await Promise.all([
     resetEngine(world.sdk, 'engine-ayse'),
     resetEngine(world.sdk, 'engine-kuzzle'),
+    world.sdk.query({
+      controller: 'admin',
+      action: 'loadMappings',
+      body: defaultMappings,
+    }),
+    world.sdk.query({
+      controller: 'admin',
+      action: 'loadSecurities',
+      body: defaultRights,
+      refresh: 'wait_for',
+      onExistingUsers: 'overwrite',
+    }),
   ]);
 
   world.sdk.disconnect();
@@ -87,8 +84,8 @@ Before({ timeout: 30 * 1000 }, async function () {
   await this.sdk.query({
     controller: 'admin',
     action: 'loadFixtures',
+    refresh: 'false',
     body: defaultFixtures,
-    refresh: 'wait_for'
   });
 });
 

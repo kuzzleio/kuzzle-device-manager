@@ -6,7 +6,6 @@ import {
 } from 'kuzzle';
 
 import { BaseAsset } from '../models/BaseAsset';
-import { BaseAssetContent } from '../types';
 import { AssetService } from '../core-classes';
 
 export class AssetController extends CRUDController {
@@ -52,15 +51,16 @@ export class AssetController extends CRUDController {
 
   async update (request: KuzzleRequest) {
     const id = request.getId();
-    const index = request.getIndex();
+    const engineId = request.getString('engineId');
     const body = request.getBody();
-    const asset = await this.sdk.document.get(index, this.collection, id);
+    const asset = await this.sdk.document.get(engineId, this.collection, id);
 
     const response = await global.app.trigger(
       'device-manager:asset:update:before', {
         asset,
         updates: body});
 
+    request.input.args.index = engineId;
     request.input.body = response.updates;
 
     const result = await super.update(request);
@@ -79,24 +79,22 @@ export class AssetController extends CRUDController {
     const reference = request.getBodyString('reference');
 
     if (! request.input.args._id) {
-      const assetContent: BaseAssetContent = { model, reference, type, };
-
-      const asset = new BaseAsset(assetContent);
-
-      request.input.args._id = asset._id;
+      request.input.args._id = BaseAsset.id(type, model, reference);
     }
 
-    return await super.create(request);
+    request.input.args.index = request.getString('engineId');
+
+    return super.create(request);
   }
 
   async importAssets (request: KuzzleRequest) {
-    const index = request.getIndex();
+    const engineId = request.getString('engineId');
     const content = request.getBodyString('csv');
 
     const assets = await csv({ delimiter: 'auto' }).fromString(content);
 
     const results = await this.assetService.importAssets(
-      index,
+      engineId,
       assets,
       {
         options: { ...request.input.args },
@@ -104,5 +102,11 @@ export class AssetController extends CRUDController {
       });
 
     return results;
+  }
+
+  async delete (request: KuzzleRequest) {
+    request.input.args.index = request.getString('engineId');
+
+    return super.delete(request);
   }
 }

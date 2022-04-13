@@ -1,22 +1,7 @@
 import { JSONObject } from 'kuzzle';
 
-import { CatalogContent } from './Catalog';
+export type ConfigContent = JSONObject;
 
-/**
- * Represents either a Rule or Workflow raw configuration document
- */
-export type ConfigContent = ConfigCatalogContent | JSONObject;
-
-/**
- * Content of a configuration document for a catalog entry
- */
-export type ConfigCatalogContent = {
-  type: 'catalog';
-
-  catalog: CatalogContent;
-
-  _kuzzle_info?: JSONObject;
-}
 
 /**
  * Class to manipulate configuration documents

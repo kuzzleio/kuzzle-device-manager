@@ -19,7 +19,6 @@ import {
   DeviceManagerEngine,
   PayloadService,
   DeviceService,
-  BatchWriter,
   AssetsRegister,
   DevicesRegister,
   AssetService,
@@ -38,7 +37,6 @@ import {
 import {
   payloadsMappings,
   devicesMappings,
-  catalogMappings,
 } from './mappings';
 import { DeviceManagerConfiguration } from './types';
 
@@ -54,8 +52,6 @@ export class DeviceManagerPlugin extends Plugin {
   private payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
-
-  private batchWriter: BatchWriter;
 
   private decodersRegister = new DecodersRegister();
   private measuresRegister = new MeasuresRegister();
@@ -151,7 +147,7 @@ export class DeviceManagerPlugin extends Plugin {
           settings: {}
         }
       },
-      writerInterval: 10
+      batchInterval: 10
     };
     /* eslint-enable sort-keys */
   }
@@ -178,7 +174,6 @@ export class DeviceManagerPlugin extends Plugin {
       mappings: this.config.adminCollections.config.mappings,
       settings: this.config.adminCollections.config.settings,
     });
-    this.adminConfigManager.register('catalog', catalogMappings);
     this.adminConfigManager.register('device-manager', {
       properties: {
         provisioningStrategy: { type: 'keyword' },
@@ -196,7 +191,6 @@ export class DeviceManagerPlugin extends Plugin {
       mappings: this.config.engineCollections.config.mappings,
       settings: this.config.engineCollections.config.settings,
     });
-    this.engineConfigManager.register('catalog', catalogMappings);
 
     this.measures.register('temperature', temperatureMeasure);
     this.measures.register('position', positionMeasure);
@@ -204,11 +198,8 @@ export class DeviceManagerPlugin extends Plugin {
     this.measures.register('humidity', humidityMeasure);
     this.measures.register('battery', batteryMeasure);
 
-    this.batchWriter = new BatchWriter(this.sdk, { interval: this.config.writerInterval });
-    this.batchWriter.begin();
-
     this.assetService = new AssetService(this);
-    this.payloadService = new PayloadService(this, this.batchWriter, this.measuresRegister);
+    this.payloadService = new PayloadService(this, this.measuresRegister);
     this.deviceService = new DeviceService(this);
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
@@ -328,17 +319,17 @@ export class DeviceManagerPlugin extends Plugin {
   }
 
   private async pipeCheckEngine (request: KuzzleRequest) {
-    const index = request.getIndex();
+    const engineId = request.getString('engineId');
 
-    if (index !== this.config.adminIndex) {
+    if (engineId !== this.config.adminIndex) {
       const { result: { exists } } = await this.sdk.query({
         action: 'exists',
         controller: 'device-manager/engine',
-        index,
+        index: engineId,
       });
 
       if (! exists) {
-        throw new BadRequestError(`Tenant "${index}" does not have a device-manager engine`);
+        throw new BadRequestError(`Tenant "${engineId}" does not have a device-manager engine`);
       }
     }
 

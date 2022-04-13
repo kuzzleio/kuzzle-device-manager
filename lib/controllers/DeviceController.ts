@@ -3,20 +3,25 @@ import { CRUDController } from 'kuzzle-plugin-commons';
 import {
   KuzzleRequest,
   BadRequestError,
-  Plugin,
+  PluginImplementationError,
 } from 'kuzzle';
 
 import { AttachRequest, DeviceBulkContent, LinkRequest } from '../core-classes';
 import { DeviceService } from '../core-classes';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import { DeviceContent, DeviceManagerConfiguration } from '../types';
 
 export class DeviceController extends CRUDController {
+  protected config: DeviceManagerConfiguration;
+
   private deviceService: DeviceService;
 
-  constructor(plugin: Plugin, deviceService: DeviceService) {
+  constructor(plugin: DeviceManagerPlugin, deviceService: DeviceService) {
     super(plugin, 'devices');
 
     this.deviceService = deviceService;
 
+    /* eslint-disable sort-keys */
     this.definition = {
       actions: {
         attachEngine: {
@@ -26,10 +31,6 @@ export class DeviceController extends CRUDController {
         detachEngine: {
           handler: this.detachEngine.bind(this),
           http: [{ path: 'device-manager/devices/:_id/_detach', verb: 'delete' }]
-        },
-        importCatalog: {
-          handler: this.importCatalog.bind(this),
-          http: [{ path: 'device-manager/devices/_catalog', verb: 'post' }]
         },
         importDevices: {
           handler: this.importDevices.bind(this),
@@ -59,30 +60,66 @@ export class DeviceController extends CRUDController {
           handler: this.prunePayloads.bind(this),
           http: [{ path: 'device-manager/devices/_prunePayloads', verb: 'delete' }]
         },
-        search: {
-          handler: this.search.bind(this),
-          http: [
-            { path: 'device-manager/:index/devices/_search', verb: 'post' },
-            { path: 'device-manager/:index/devices/_search', verb: 'get' }
-          ]
-        },
         unlinkAsset: {
           handler: this.unlinkAsset.bind(this),
           http: [{ path: 'device-manager/:index/devices/:_id/_unlink', verb: 'delete' }]
         },
-        update: {
-          handler: this.update.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id', verb: 'put' }]
+
+        // CRUD Controller
+        create: {
+          handler: this.create.bind(this),
+          http: [{ path: 'device-manager/:index/devices', verb: 'post' }]
         },
       }
     };
+    /* eslint-enable sort-keys */
+  }
+
+  /**
+   * Create and provision a new device
+   */
+  async create (request: KuzzleRequest) {
+    const engineId = request.getString('engineId');
+    const model = request.getBodyString('model');
+    const reference = request.getBodyString('reference');
+    const assetId = request.input.args.assetId || null;
+    const metadata = request.getBodyObject('metadata', {});
+    const refresh = request.getRefresh();
+
+    const deviceContent: DeviceContent = {
+      measures: [],
+      metadata,
+      model,
+      reference,
+    };
+
+    const device = await this.deviceService.create(engineId, deviceContent, assetId, {
+      refresh
+    });
+
+    return device;
+  }
+
+  // @todo to be implemented
+  async update (): Promise<any> {
+    throw new PluginImplementationError('Not available');
+  }
+
+  // @todo to be implemented
+  async search () {
+    throw new PluginImplementationError('Not available');
+  }
+
+  // @todo to be implemented
+  async delete (): Promise<any> {
+    throw new PluginImplementationError('Not available');
   }
 
   /**
    * Attach a device to a tenant
    */
   async attachEngine (request: KuzzleRequest) {
-    const engineId = request.getIndex();
+    const engineId = request.getString('engineId');
     const deviceId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
@@ -246,20 +283,6 @@ export class DeviceController extends CRUDController {
 
     return this.deviceService.importDevices(
       devices,
-      {
-        refresh,
-        strict: true
-      });
-  }
-
-  async importCatalog (request: KuzzleRequest) {
-    const content = request.getBodyString('csv');
-    const refresh = request.getRefresh();
-
-    const catalog = await csv({ delimiter: 'auto' }).fromString(content);
-
-    return this.deviceService.importCatalog(
-      catalog,
       {
         refresh,
         strict: true

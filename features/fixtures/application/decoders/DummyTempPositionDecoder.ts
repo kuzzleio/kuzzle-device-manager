@@ -2,9 +2,9 @@ import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
 
 import {
   Decoder,
-  BatteryMeasure,
-  PositionMeasure,
-  TemperatureMeasure,
+  BatteryMeasurement,
+  PositionMeasurement,
+  TemperatureMeasurement,
   DecodedPayload,
 } from '../../../../index';
 
@@ -22,14 +22,14 @@ export class DummyTempPositionDecoder extends Decoder {
   }
 
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
-    const temperature: TemperatureMeasure = {
+    const temperature: TemperatureMeasurement = {
       measuredAt: Date.now(),
       values: {
         temperature: payload.register55,
       }
     };
 
-    const position: PositionMeasure = {
+    const position: PositionMeasurement = {
       measuredAt: Date.now(),
       values: {
         position: {
@@ -40,7 +40,7 @@ export class DummyTempPositionDecoder extends Decoder {
       }
     };
 
-    const battery: BatteryMeasure = {
+    const battery: BatteryMeasurement = {
       measuredAt: Date.now(),
       values: {
         battery: payload.batteryLevel * 100,

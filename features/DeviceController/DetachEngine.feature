@@ -2,8 +2,8 @@ Feature: Detach device from engine
 
   Scenario: Detach device from an engine
     And I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id   | "DummyTemp-detached" |
-      | index | "engine-kuzzle"      |
+      | _id      | "DummyTemp-detached" |
+      | engineId | "engine-kuzzle"      |
     When I successfully execute the action "device-manager/device":"detachEngine" with args:
       | _id | "DummyTemp-detached" |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
@@ -43,10 +43,7 @@ Feature: Detach device from engine
       | strict | true                 |
     Then I should receive an error matching:
       | message | "Device \"DummyTemp-detached\" is not attached to an engine." |
-    Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"             |
     When I execute the action "device-manager/device":"detachEngine" with args:
-      | _id | "DummyTemp-attached_ayse_unlinked" |
+      | _id | "DummyTemp-attached_ayse_linked" |
     Then I should receive an error matching:
-      | message | "Device \"DummyTemp-attached_ayse_unlinked\" is still linked to an asset." |
+      | message | "Device \"DummyTemp-attached_ayse_linked\" is still linked to an asset." |

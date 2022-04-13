@@ -1,8 +1,9 @@
 import { JSONObject } from 'kuzzle';
+import { KDocumentContent } from 'kuzzle-sdk';
 
-import { ContextualMeasure } from './measures/ContextualMeasure';
+import { MeasureContent } from './measures/MeasureContent';
 
-export type DeviceContent = {
+export interface DeviceContent extends KDocumentContent {
   /**
    * Device model
    * (This will be auto-filled by Kuzzle)
@@ -17,7 +18,7 @@ export type DeviceContent = {
   /**
    *
    */
-  measures?: ContextualMeasure[];
+  measures?: MeasureContent[];
 
   /**
    * Device metadata
@@ -33,15 +34,4 @@ export type DeviceContent = {
    * Attached engine ID (index name)
    */
   engineId?: string;
-
-  /**
-   * Document metadata
-   * @todo use DocumentMetadata when it's not an interface anymore
-   */
-  _kuzzle_info?: {
-    author?: string,
-    createdAt?: number,
-    updater?: string | null,
-    updatedAt?: number | null
-  }
 }

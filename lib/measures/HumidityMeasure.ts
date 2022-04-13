@@ -1,13 +1,15 @@
-import { Measure, MeasureDefinition } from '../types';
+import { Measurement, MeasureDefinition } from '../types';
 
-export interface HumidityMeasure extends Measure {
+/* eslint-disable sort-keys */
+
+export interface HumidityMeasurement extends Measurement {
   values: {
     humidity: number;
   }
 }
 
 export const humidityMeasure: MeasureDefinition = {
-  mappings: { humidity: { type: 'float' } },
+  valuesMappings: { humidity: { type: 'float' } },
   unit: {
     name: 'Humidity',
     sign: '%',
