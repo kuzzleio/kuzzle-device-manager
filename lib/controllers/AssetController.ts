@@ -21,6 +21,7 @@ export class AssetController extends CRUDController {
 
     this.assetService = assetService;
 
+    /* eslint-disable sort-keys */
     this.definition = {
       actions: {
         create: {
@@ -52,6 +53,7 @@ export class AssetController extends CRUDController {
         }
       },
     };
+    /* eslint-enable sort-keys */
   }
 
   async measures (request: KuzzleRequest) {

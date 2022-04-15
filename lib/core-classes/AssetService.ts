@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { PluginContext, Plugin, JSONObject, KDocument, BadRequestError, User } from 'kuzzle';
+import { PluginContext, Plugin, JSONObject, KDocument, BadRequestError } from 'kuzzle';
 
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';
