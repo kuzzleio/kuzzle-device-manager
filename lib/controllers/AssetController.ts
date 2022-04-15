@@ -1,6 +1,7 @@
 import csv from 'csvtojson';
 import { CRUDController } from 'kuzzle-plugin-commons';
 import {
+  BadRequestError,
   KuzzleRequest,
   Plugin,
 } from 'kuzzle';
@@ -44,9 +45,32 @@ export class AssetController extends CRUDController {
         update: {
           handler: this.update.bind(this),
           http: [{ path: 'device-manager/:index/assets/:_id', verb: 'put' }],
+        },
+        measures: {
+          handler: this.measures.bind(this),
+          http: [{ path: 'device-manager/:index/assets/:_id/measures', verb: 'get' }],
         }
       },
     };
+  }
+
+  async measures (request: KuzzleRequest) {
+    const id = request.getId();
+    const engineId = request.getString('engineId');
+    const size = request.input.args.size;
+    const startAt = request.input.args.startAt;
+    const endAt = request.input.args.endAt;
+
+    if (size && startAt || size && endAt) {
+      throw new BadRequestError('You cannot specify both a "size" and a "startAt" or "endAt"');
+    }
+
+    const measures = await this.assetService.measureHistory(
+      engineId,
+      id,
+      { endAt, size, startAt });
+
+    return { measures };
   }
 
   async update (request: KuzzleRequest) {
