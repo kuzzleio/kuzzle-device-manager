@@ -84,10 +84,10 @@ export class PayloadService {
       newMeasures.push({
         measuredAt: measure.measuredAt,
         origin: {
+          assetId: null,
           id: deviceId,
           model: decoder.deviceModel,
           payloadUuids: [uuid],
-          reference: decodedPayload.reference,
           type: 'device',
         },
         type,
@@ -103,6 +103,12 @@ export class PayloadService {
         deviceId);
 
       const device = new Device(deviceDoc._source);
+
+      if (device._source.assetId) {
+        for (const measure of newMeasures) {
+          measure.origin.assetId = device._source.assetId;
+        }
+      }
 
       return await this.update(device, newMeasures, { refresh });
     }

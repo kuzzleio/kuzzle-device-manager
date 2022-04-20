@@ -55,15 +55,13 @@ export interface MeasureContent extends KDocumentContent {
     model: string;
 
     /**
-     * Reference of the data source (e.g. a device manufacturer ID)
-     */
-    reference: string;
-
-    /**
      * Array of payload uuids that were used to create this measure.
      */
     payloadUuids: string[];
-  };
 
-  // @todo Add assetId if an asset was linked to the device when the measure was done
+    /**
+     * Asset ID linked to the device when the measure was made
+     */
+    assetId?: string;
+  };
 }

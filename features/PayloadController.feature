@@ -13,7 +13,6 @@ Feature: Payloads Controller
       | measures[0].values.temperature | 23.3              |
       | measures[0].origin.id          | "DummyTemp-12345" |
       | measures[0].origin.model       | "DummyTemp"       |
-      | measures[0].origin.reference   | "12345"           |
       | measures[0].origin.type        | "device"          |
       | measures[0].unit.name          | "Degree"          |
       | measures[0].unit.sign          | "°"               |
@@ -23,7 +22,6 @@ Feature: Payloads Controller
       | measures[1].values.battery     | 80                |
       | measures[1].origin.id          | "DummyTemp-12345" |
       | measures[1].origin.model       | "DummyTemp"       |
-      | measures[1].origin.reference   | "12345"           |
       | measures[1].origin.type        | "device"          |
       | measures[1].unit.name          | "Volt"            |
       | measures[1].unit.sign          | "v"               |
@@ -81,8 +79,8 @@ Feature: Payloads Controller
       | measures[0].values.temperature  | 23.3                      |
       | measures[0].origin.id           | "DummyTempPosition-12345" |
       | measures[0].origin.model        | "DummyTempPosition"       |
-      | measures[0].origin.reference    | "12345"                   |
       | measures[0].origin.type         | "device"                  |
+      | measures[0].origin.assetId      | null                      |
       | measures[0].unit.name           | "Degree"                  |
       | measures[0].unit.sign           | "°"                       |
       | measures[0].unit.type           | "number"                  |
@@ -93,7 +91,6 @@ Feature: Payloads Controller
       | measures[1].values.accuracy     | 2100                      |
       | measures[1].origin.id           | "DummyTempPosition-12345" |
       | measures[1].origin.model        | "DummyTempPosition"       |
-      | measures[1].origin.reference    | "12345"                   |
       | measures[1].origin.type         | "device"                  |
       | measures[1].unit.name           | "GPS"                     |
       | measures[1].unit.sign           | "_NULL_"                  |
@@ -103,7 +100,6 @@ Feature: Payloads Controller
       | measures[2].values.battery      | 80                        |
       | measures[2].origin.id           | "DummyTempPosition-12345" |
       | measures[2].origin.model        | "DummyTempPosition"       |
-      | measures[2].origin.reference    | "12345"                   |
       | measures[2].origin.type         | "device"                  |
       | measures[2].unit.name           | "Volt"                    |
       | measures[2].unit.sign           | "v"                       |
@@ -152,7 +148,6 @@ Feature: Payloads Controller
       | measures[0].values.temperature | 42.2                             |
       | measures[0].origin.id          | "DummyTemp-attached_ayse_linked" |
       | measures[0].origin.model       | "DummyTemp"                      |
-      | measures[0].origin.reference   | "attached_ayse_linked"           |
       | measures[0].origin.type        | "device"                         |
       | measures[0].unit.name          | "Degree"                         |
       | measures[0].unit.sign          | "°"                              |
@@ -162,7 +157,7 @@ Feature: Payloads Controller
       | measures[1].values.battery     | 40                               |
       | measures[1].origin.id          | "DummyTemp-attached_ayse_linked" |
       | measures[1].origin.model       | "DummyTemp"                      |
-      | measures[1].origin.reference   | "attached_ayse_linked"           |
+      | measures[1].origin.assetId     | "tools-MART-linked"              |
       | measures[1].origin.type        | "device"                         |
       | measures[1].unit.name          | "Volt"                           |
       | measures[1].unit.sign          | "v"                              |
@@ -177,14 +172,15 @@ Feature: Payloads Controller
 
   Scenario: Historize the measures
     When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "attached_ayse_unlinked" |
-      | register55   | 42.2                     |
-      | batteryLevel | 0.4                      |
+      | deviceEUI    | "attached_ayse_linked" |
+      | register55   | 42.2                   |
+      | batteryLevel | 0.4                    |
     And I refresh the collection "engine-ayse":"measures"
     Then When I successfully execute the action "document":"search" with args:
       | index      | "engine-ayse" |
       | collection | "measures"    |
     And I should receive a "hits" array of objects matching:
-      | _source.type  |
-      | "temperature" |
-      | "battery"     |
+      | _source.type  | _source.origin.assetId |
+      | "temperature" | "tools-MART-linked"    |
+      | "battery"     | "tools-MART-linked"    |
+
