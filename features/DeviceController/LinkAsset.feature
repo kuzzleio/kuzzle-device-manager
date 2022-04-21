@@ -16,7 +16,6 @@ Feature: LinkAsset
       | measures[0].values.temperature | 23.3                               |
       | measures[0].origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures[0].origin.model       | "DummyTemp"                        |
-      | measures[0].origin.reference   | "attached_ayse_unlinked"           |
       | measures[0].origin.type        | "device"                           |
       | measures[0].unit.name          | "Degree"                           |
       | measures[0].unit.sign          | "°"                                |
@@ -27,7 +26,6 @@ Feature: LinkAsset
       | measures[1].values.battery     | 80                                 |
       | measures[1].origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures[1].origin.model       | "DummyTemp"                        |
-      | measures[1].origin.reference   | "attached_ayse_unlinked"           |
       | measures[1].origin.type        | "device"                           |
       | measures[1].unit.name          | "Volt"                             |
       | measures[1].unit.sign          | "v"                                |
@@ -68,7 +66,6 @@ Feature: LinkAsset
       | measures[0].values.temperature | 23.3                               |
       | measures[0].origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures[0].origin.model       | "DummyTemp"                        |
-      | measures[0].origin.reference   | "attached_ayse_unlinked"           |
       | measures[0].origin.type        | "device"                           |
       | measures[0].unit.name          | "Degree"                           |
       | measures[0].unit.sign          | "°"                                |
@@ -78,7 +75,6 @@ Feature: LinkAsset
       | measures[1].values.battery     | 80                                 |
       | measures[1].origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures[1].origin.model       | "DummyTemp"                        |
-      | measures[1].origin.reference   | "attached_ayse_unlinked"           |
       | measures[1].origin.type        | "device"                           |
       | measures[1].unit.name          | "Volt"                             |
       | measures[1].unit.sign          | "v"                                |
@@ -97,7 +93,6 @@ Feature: LinkAsset
       | measures[0].values.temperature | 23.3                               |
       | measures[0].origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures[0].origin.model       | "DummyTemp"                        |
-      | measures[0].origin.reference   | "attached_ayse_unlinked"           |
       | measures[0].origin.type        | "device"                           |
       | measures[0].unit.name          | "Degree"                           |
       | measures[0].unit.sign          | "°"                                |
@@ -107,7 +102,6 @@ Feature: LinkAsset
       | measures[1].values.battery     | 80                                 |
       | measures[1].origin.id          | "DummyTemp-attached_ayse_unlinked" |
       | measures[1].origin.model       | "DummyTemp"                        |
-      | measures[1].origin.reference   | "attached_ayse_unlinked"           |
       | measures[1].origin.type        | "device"                           |
       | measures[1].unit.name          | "Volt"                             |
       | measures[1].unit.sign          | "v"                                |

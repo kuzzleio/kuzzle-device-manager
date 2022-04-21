@@ -70,6 +70,9 @@ export abstract class Decoder {
   /**
    * @param deviceModel Device model for this decoder
    * @param deviceMeasures Devices measure types for this decoder
+   *
+   * @example
+   * super('AbeewayGPS', ['position']);
    */
   constructor (deviceModel: string, deviceMeasures: string[]) {
     this.deviceModel = deviceModel;
@@ -97,7 +100,6 @@ export abstract class Decoder {
    * Decode the payload:
    *  - set "reference"
    *  - fetch measures
-   *  - fetch qos
    *
    * @param payload Raw payload received in the API action body
    * @param request Original request
