@@ -1,8 +1,9 @@
+/* eslint-disable sort-keys */
+
 export const measuresMappings = {
   dynamic: 'strict',
   properties: {
-
-    measuredAt: { type: 'float' },
+    measuredAt: { type: 'double' },
 
     /**
      * A device may have different measures for the same type (e.g. measure temperature 2 times)
@@ -11,25 +12,23 @@ export const measuresMappings = {
     name: { type: 'keyword' },
 
     origin: {
+      type: 'nested',
+
       properties: {
         // ID of the device (document _id)
         id: { type: 'keyword' },
 
-
         // E.g. "AbeewayTemp"
         model: { type: 'keyword' },
-
 
         // Array of payload uuids that were used to create this measure.
         payloadUuids: { type: 'keyword' },
 
-
-        // Reference of the data source (e.g. a device manufacturer ID)
-        reference: { type: 'keyword' },
-
-
         // E.g. "device"
         type: { type: 'keyword' },
+
+        // Asset linked to the device when the measure was made
+        assetId: { type: 'keyword' },
       }
     },
 
@@ -45,17 +44,14 @@ export const measuresMappings = {
      * Measure self-description
      */
     unit: {
-      properties: {
-        name: { type: 'keyword' },
-
-        sign: { type: 'keyword' },
-
-        type: { type: 'keyword' },
-      }
+      dynamic: 'false',
+      properties: {}
     },
 
     values: {
       properties: {},
-    }
+    },
   }
 };
+
+/* eslint-enable sort-keys */

@@ -81,12 +81,18 @@ Before({ timeout: 30 * 1000 }, async function () {
     truncateCollection(this.sdk, 'tests', 'events'),
   ]);
 
-  await this.sdk.query({
-    controller: 'admin',
-    action: 'loadFixtures',
-    refresh: 'false',
-    body: defaultFixtures,
-  });
+  try {
+    await this.sdk.query({
+      controller: 'admin',
+      action: 'loadFixtures',
+      refresh: 'false',
+      body: defaultFixtures,
+    });
+  }
+  catch (error) {
+    console.dir(error, { depth: 10 });
+    throw error;
+  }
 });
 
 After(async function () {

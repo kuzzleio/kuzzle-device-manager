@@ -47,7 +47,6 @@ Feature: UnlinkAsset
       | measures[0].values.temperature  | 23.3                               |
       | measures[0].origin.id           | "DummyTemp-attached_ayse_unlinked" |
       | measures[0].origin.model        | "DummyTemp"                        |
-      | measures[0].origin.reference    | "attached_ayse_unlinked"           |
       | measures[0].origin.type         | "device"                           |
       | measures[0].unit.name           | "Degree"                           |
       | measures[0].unit.sign           | "°"                                |
@@ -57,7 +56,6 @@ Feature: UnlinkAsset
       | measures[1].values.battery      | 80                                 |
       | measures[1].origin.id           | "DummyTemp-attached_ayse_unlinked" |
       | measures[1].origin.model        | "DummyTemp"                        |
-      | measures[1].origin.reference    | "attached_ayse_unlinked"           |
       | measures[1].origin.type         | "device"                           |
       | measures[1].unit.name           | "Volt"                             |
       | measures[1].unit.sign           | "v"                                |
@@ -69,7 +67,6 @@ Feature: UnlinkAsset
       | measures[2].values.accuracy     | 42                                 |
       | measures[2].origin.id           | "DummyTemp-detached"               |
       | measures[2].origin.model        | "DummyTemp"                        |
-      | measures[2].origin.reference    | "detached"                         |
       | measures[2].origin.type         | "device"                           |
       | measures[2].unit.name           | "GPS"                              |
       | measures[2].unit.type           | "geo_point"                        |
@@ -87,7 +84,6 @@ Feature: UnlinkAsset
       | measures[0].values.accuracy     | 42                   |
       | measures[0].origin.id           | "DummyTemp-detached" |
       | measures[0].origin.model        | "DummyTemp"          |
-      | measures[0].origin.reference    | "detached"           |
       | measures[0].origin.type         | "device"             |
       | measures[0].unit.name           | "GPS"                |
       | measures[0].unit.type           | "geo_point"          |

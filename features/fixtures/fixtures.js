@@ -17,7 +17,6 @@ const dummyTempAttachedAyseUnLinked = {
         id: 'DummyTemp-attached_ayse_unlinked',
         type: 'device',
         model: 'DummyTemp',
-        reference: 'attached_ayse_unlinked',
         payloadUuids: ['some-uuid'],
       }
     },
@@ -36,7 +35,6 @@ const dummyTempAttachedAyseUnLinked = {
         id: 'DummyTemp-attached_ayse_unlinked',
         type: 'device',
         model: 'DummyTemp',
-        reference: 'attached_ayse_unlinked',
         payloadUuids: ['some-uuid'],
       }
     }
@@ -64,7 +62,6 @@ const dummyTempAttachedAyseUnLinked2 = {
         id: 'DummyTemp-attached_ayse_unlinked_2',
         type: 'device',
         model: 'DummyTemp',
-        reference: 'attached_ayse_unlinked_2',
         payloadUuids: ['some-uuid'],
       }
     },
@@ -83,7 +80,6 @@ const dummyTempAttachedAyseUnLinked2 = {
         id: 'DummyTemp-attached_ayse_unlinked_2',
         type: 'device',
         model: 'DummyTemp',
-        reference: 'attached_ayse_unlinked_2',
         payloadUuids: ['some-uuid'],
       }
     }
@@ -110,8 +106,8 @@ const measuresAttachedAyseLinked = [
       id: 'DummyTemp-attached_ayse_linked',
       type: 'device',
       model: 'DummyTemp',
-      reference: 'attached_ayse_linked',
       payloadUuids: ['some-uuid'],
+      assetId: 'tools-MART-linked',
     }
   },
   {
@@ -130,8 +126,8 @@ const measuresAttachedAyseLinked = [
       id: 'DummyTemp-attached_ayse_linked',
       type: 'device',
       model: 'DummyTemp',
-      reference: 'attached_ayse_linked',
       payloadUuids: ['some-uuid'],
+      assetId: 'tools-MART-linked',
     }
   }
 ];
@@ -173,7 +169,6 @@ module.exports = {
               id: 'DummyTemp-detached',
               type: 'device',
               model: 'DummyTemp',
-              reference: 'detached',
               payloadUuids: ['some-uuid'],
             }
           }
