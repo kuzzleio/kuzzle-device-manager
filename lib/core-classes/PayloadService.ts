@@ -18,9 +18,9 @@ import { DeviceManagerConfig } from '../DeviceManagerPlugin';
 export type PayloadHandler = (request: KuzzleRequest, decoder: Decoder) => Promise<any>;
 
 export class PayloadService {
-  private config: DeviceManagerConfig;
-  private context: PluginContext;
-  private batchController: BatchController;
+  protected config: DeviceManagerConfig;
+  protected context: PluginContext;
+  protected batchController: BatchController;
 
   get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
@@ -214,7 +214,7 @@ export class PayloadService {
     }
   }
 
-  private async update (
+  protected async update (
     device: Device,
     decoder: Decoder,
     request: KuzzleRequest,
@@ -282,7 +282,7 @@ export class PayloadService {
   /**
    * Propagate the measures inside the asset document.
    */
-  private async propagateToAsset (
+  protected async propagateToAsset (
     tenantId: string,
     decoder: Decoder,
     updatedDevice: Device,
@@ -316,7 +316,7 @@ export class PayloadService {
   /**
    * Creates an history entry for an asset
    */
-  private async historizeAsset (tenantId: string, asset: BaseAsset) {
+  protected async historizeAsset (tenantId: string, asset: BaseAsset) {
     await this.batchController.create(
       tenantId,
       'asset-history',
