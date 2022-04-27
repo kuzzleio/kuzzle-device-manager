@@ -1,6 +1,6 @@
 {
   "name": "kuzzle-device-manager",
-  "version": "0.4.14",
+  "version": "0.4.16",
   "description": "Manage your IoT devices and assets. Choose a provisionning strategy, receive and decode payload, handle your IoT business logic.",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
@@ -25,29 +25,30 @@
   "license": "Apache-2.0",
   "dependencies": {
     "csvtojson": "~2.0.10",
+    "kuzzle": "^2.18.0",
     "kuzzle-plugin-commons": "https://github.com/kuzzleio/kuzzle-plugin-commons/archive/refs/tags/0.0.1.tar.gz",
     "uuid": "~8.3.2"
   },
   "devDependencies": {
-    "@types/node": "^16.11.11",
-    "@typescript-eslint/eslint-plugin": "^5.5.0",
-    "@typescript-eslint/parser": "^5.5.0",
-    "cucumber": "^6.0.5",
-    "ergol": "^1.0.1",
-    "eslint": "^8.4.0",
+    "@types/node": "^16.11.27",
+    "@typescript-eslint/eslint-plugin": "^5.20.0",
+    "@typescript-eslint/parser": "^5.20.0",
+    "cucumber": "^6.0.7",
+    "ergol": "^1.0.2",
+    "eslint": "^8.13.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-loader": "^4.0.2",
-    "kuzzle": "^2.15.2",
-    "kuzzle-sdk": "^7.7.6",
+    "kuzzle": "^2.18.0",
+    "kuzzle-sdk": "^7.10.0",
     "lodash": "^4.17.21",
-    "mocha": "^9.1.3",
+    "mocha": "^9.2.2",
     "mock-require": "^3.0.3",
     "rewire": "^5.0.0",
     "should": "^13.2.3",
     "should-sinon": "^0.0.6",
     "sinon": "^12.0.1",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.2"
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   },
   "peerDependencies": {
     "kuzzle": "^2.15.2"

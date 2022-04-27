@@ -82,14 +82,14 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceController: DeviceController;
   private engineController: EngineController<DeviceManagerPlugin>;
 
-  private payloadService: PayloadService;
+  protected payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
   private migrationService: MigrationService;
 
-  private batchWriter: BatchWriter;
+  protected batchWriter: BatchWriter;
 
-  private get sdk (): EmbeddedSDK {
+  protected get sdk (): EmbeddedSDK {
     return this.context.accessors.sdk;
   }
 
