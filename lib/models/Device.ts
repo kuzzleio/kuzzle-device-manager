@@ -15,6 +15,10 @@ export class Device {
       metadata: {},
       ...content
     };
+
+    if (! Array.isArray(this._source.measures)) {
+      this._source.measures = [];
+    }
   }
 
   serialize (): { _id: string, _source: DeviceContent } {
