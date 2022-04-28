@@ -5,7 +5,6 @@ import {
   BadRequestError,
   Backend,
   UnauthorizedError,
-  InternalError,
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 import { BatchController } from 'kuzzle-sdk';
