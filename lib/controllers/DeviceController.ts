@@ -26,7 +26,7 @@ export class DeviceController extends CRUDController {
       actions: {
         attachEngine: {
           handler: this.attachEngine.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id/_attach', verb: 'put' }]
+          http: [{ path: 'device-manager/:engineId/devices/:_id/_attach', verb: 'put' }]
         },
         detachEngine: {
           handler: this.detachEngine.bind(this),
@@ -38,7 +38,7 @@ export class DeviceController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id/_link/:assetId', verb: 'put' }]
+          http: [{ path: 'device-manager/:engineId/devices/:_id/_link/:assetId', verb: 'put' }]
         },
         mAttachEngines: {
           handler: this.mAttachEngines.bind(this),
@@ -62,13 +62,13 @@ export class DeviceController extends CRUDController {
         },
         unlinkAsset: {
           handler: this.unlinkAsset.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id/_unlink', verb: 'delete' }]
+          http: [{ path: 'device-manager/:engineId/devices/:_id/_unlink', verb: 'delete' }]
         },
 
         // CRUD Controller
         create: {
           handler: this.create.bind(this),
-          http: [{ path: 'device-manager/:index/devices', verb: 'post' }]
+          http: [{ path: 'device-manager/:engineId/devices', verb: 'post' }]
         },
       }
     };

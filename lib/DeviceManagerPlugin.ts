@@ -211,7 +211,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.decodersRegister.init(this.context);
 
-    this.assetController = new AssetController(this, this.assetService);
+    this.assetController = new AssetController(this, this.assetService, this.deviceService);
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);

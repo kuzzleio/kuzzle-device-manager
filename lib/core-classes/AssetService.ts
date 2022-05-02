@@ -116,4 +116,21 @@ export class AssetService {
 
     return parsed;
   }
+
+
+  async getDeviceByAsset(assetId :string) {
+    const filter = {
+      'query': {
+        'term': {
+          'assetId': {
+            'value': assetId
+          }
+        }
+      }
+    } ;
+    
+    return await this.sdk.document.search('device-manager', 'devices', filter);
+
+  }
+
 }

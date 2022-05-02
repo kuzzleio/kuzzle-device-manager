@@ -17,6 +17,33 @@ Feature: Device Manager asset controller
       | _id      | "outils-PERFO-asset_01" |
     Then The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" does not exists
 
+  Scenario: Delete a linked asset
+    When I successfully execute the action "device-manager/asset":"create" with args:
+      | engineId       | "engine-ayse" |
+      | body.type      | "outils"        |
+      | body.model     | "PERFO"         |
+      | body.reference | "asset_02"      |
+    Then The document "engine-ayse":"assets":"outils-PERFO-asset_02" exists
+    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+        | _id                            | "DummyTemp-attached_ayse_unlinked" |
+        | assetId                        | "outils-PERFO-asset_02"             |
+        | body.metadata.index  | "engine-ayse"         |
+    Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | "outils-PERFO-asset_02" |
+    And  The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | "outils-PERFO-asset_02" |
+    And I refresh the collection "engine-ayse":"devices"
+    And I refresh the collection "device-manager":"devices"
+
+    When I successfully execute the action "device-manager/asset":"delete" with args:
+      | engineId | "engine-ayse"         |
+      | _id      | "outils-PERFO-asset_02" |
+    Then The document "engine-ayse":"assets":"outils-PERFO-asset_02" does not exists
+    And The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | null |
+    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | null |
+
   Scenario: Import assets using csv
     When I successfully execute the action "device-manager/asset":"importAssets" with args:
       | engineId | "engine-kuzzle"                                |

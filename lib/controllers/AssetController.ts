@@ -7,49 +7,50 @@ import {
 } from 'kuzzle';
 
 import { BaseAsset } from '../models/BaseAsset';
-import { AssetService } from '../core-classes';
+import { AssetService, DeviceService } from '../core-classes';
 
 export class AssetController extends CRUDController {
   private assetService: AssetService;
+  private deviceService: DeviceService;
 
   private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  constructor (plugin: Plugin, assetService: AssetService) {
+  constructor (plugin: Plugin, assetService: AssetService, deviceService : DeviceService) {
     super(plugin, 'assets');
 
     this.assetService = assetService;
-
+    this.deviceService = deviceService;
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
         create: {
           handler: this.create.bind(this),
-          http: [{ path: 'device-manager/:index/assets', verb: 'post' }],
+          http: [{ path: 'device-manager/:engineId/assets', verb: 'post' }],
         },
         delete: {
           handler: this.delete.bind(this),
-          http: [{ path: 'device-manager/:index/assets/:_id', verb: 'delete' }],
+          http: [{ path: 'device-manager/:engineId/assets/:_id', verb: 'delete' }],
         },
         importAssets: {
           handler: this.importAssets.bind(this),
-          http: [{ path: 'device-manager/:index/assets/_import', verb: 'post' }]
+          http: [{ path: 'device-manager/:engineId/assets/_import', verb: 'post' }]
         },
         search: {
           handler: this.search.bind(this),
           http: [
-            { path: 'device-manager/:index/assets/_search', verb: 'post' },
-            { path: 'device-manager/:index/assets/_search', verb: 'get' },
+            { path: 'device-manager/:engineId/assets/_search', verb: 'post' },
+            { path: 'device-manager/:engineId/assets/_search', verb: 'get' },
           ],
         },
         update: {
           handler: this.update.bind(this),
-          http: [{ path: 'device-manager/:index/assets/:_id', verb: 'put' }],
+          http: [{ path: 'device-manager/:engineId/assets/:_id', verb: 'put' }],
         },
         measures: {
           handler: this.measures.bind(this),
-          http: [{ path: 'device-manager/:index/assets/:_id/measures', verb: 'get' }],
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'get' }],
         }
       },
     };
@@ -109,6 +110,7 @@ export class AssetController extends CRUDController {
     }
 
     request.input.args.index = request.getString('engineId');
+    request.input.body.measures = [];
 
     return super.create(request);
   }
@@ -131,7 +133,16 @@ export class AssetController extends CRUDController {
   }
 
   async delete (request: KuzzleRequest) {
+    
     request.input.args.index = request.getString('engineId');
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
+
+
+    const device = (await this.assetService.getDeviceByAsset(request.getId())).hits[0];
+    if(device) {
+      await this.deviceService.unlinkAsset(device._id, { refresh, strict });
+    }
 
     return super.delete(request);
   }
