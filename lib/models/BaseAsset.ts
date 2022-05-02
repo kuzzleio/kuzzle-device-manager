@@ -14,10 +14,6 @@ export class BaseAsset {
     this._id = _id || BaseAsset.id(content.type, content.model, content.reference);
 
     this._source = content;
-
-    if (! Array.isArray(this._source.measures)) {
-      this._source.measures = [];
-    }
   }
 
   serialize (): JSONObject {
