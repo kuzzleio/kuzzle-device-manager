@@ -110,8 +110,6 @@ export class AssetController extends CRUDController {
 
     request.input.args.index = request.getString('engineId');
 
-    request.input.body.measures = [];
-
     return super.create(request);
   }
 

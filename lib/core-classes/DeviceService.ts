@@ -221,10 +221,14 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is already linked to an asset.`);
     }
 
-    const asset = await this.getAsset(engineId, linkRequest.assetId);
+    const asset = await this.getAsset(linkRequest.assetId, engineId);
+
+    if (! _.isArray(asset._source.measures)) {
+      throw new BadRequestError(`Asset "${linkRequest.assetId}" measures property is not an array.`);
+    }
 
     // Copy device measures and assign measures names
-    const measures: MeasureContent[] = device._source.measures.map(measure => {
+    const measures: MeasureContent[] = (device._source.measures || []).map(measure => {
       const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
 
       return { ...measure, name };
@@ -298,7 +302,7 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is not linked to an asset.`);
     }
 
-    const asset = await this.getAsset(engineId, device._source.assetId);
+    const asset = await this.getAsset(device._source.assetId, engineId);
 
     // @todo should be done by measure name and not type
     asset._source.measures = asset._source.measures.filter(m => {
@@ -416,7 +420,7 @@ export class DeviceService {
     return results;
   }
 
-  private async getAsset (engineId: string, assetId: string) {
+  private async getAsset (assetId: string, engineId: string) {
     const document = await this.sdk.document.get(engineId, 'assets', assetId);
 
     return new BaseAsset(document._source as BaseAssetContent, document._id);

@@ -97,7 +97,12 @@ export class PayloadService {
     }
 
     try {
-      const device = await this.getDevice(deviceId);
+      const deviceDoc = await this.batch.get<DeviceContent>(
+        this.config.adminIndex,
+        'devices',
+        deviceId);
+
+      const device = new Device(deviceDoc._source);
 
       if (device._source.assetId) {
         for (const measure of newMeasures) {
@@ -284,15 +289,18 @@ export class PayloadService {
     // dup array reference
     const measures = newMeasures.map(m => m);
 
-    const asset = await this.getAsset(engineId, assetId);
+    const asset = await this.batch.get<BaseAssetContent>(
+      engineId,
+      'assets',
+      assetId);
 
-    if (asset._source.measures && ! _.isArray(asset._source.measures)) {
+    if (! _.isArray(asset._source.measures)) {
       throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
     }
 
     // Keep previous measures that were not updated
     // array are updated in place so we need to keep previous elements
-    for (const previousMeasure of asset._source.measures || []) {
+    for (const previousMeasure of asset._source.measures) {
       if (! measures.find(m => m.type === previousMeasure.type)) {
         measures.push(previousMeasure);
       }
@@ -313,20 +321,5 @@ export class PayloadService {
       { retryOnConflict: 10, source: true });
 
     return new BaseAsset(assetDocument._source as any, assetDocument._id);
-  }
-
-  private async getAsset (engineId: string, assetId: string) {
-    const document = await this.batch.get<BaseAssetContent>(engineId, 'assets', assetId);
-
-    return new BaseAsset(document._source, document._id);
-  }
-
-  private async getDevice (deviceId: string) {
-    const document = await this.batch.get<DeviceContent>(
-      this.config.adminIndex,
-      'devices',
-      deviceId);
-
-    return new Device(document._source, document._id);
   }
 }
