@@ -138,7 +138,6 @@ export class AssetController extends CRUDController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
 
-
     const device = (await this.assetService.getDeviceByAsset(request.getId())).hits[0];
     if(device) {
       await this.deviceService.unlinkAsset(device._id, { refresh, strict });
