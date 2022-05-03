@@ -16,4 +16,6 @@ export interface BaseAssetContent extends KDocumentContent {
   measures?: MeasureContent[],
 
   metadata?: JSONObject,
+
+  deviceIds?: string[]
 }

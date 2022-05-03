@@ -133,16 +133,17 @@ export class AssetController extends CRUDController {
   }
 
   async delete (request: KuzzleRequest) {
-    
-    request.input.args.index = request.getString('engineId');
+    const engineId = request.getString('engineId');
+    request.input.args.index = engineId;
+    const assetId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
-
-    const device = (await this.assetService.getDeviceByAsset(request.getId())).hits[0];
-    if(device) {
-      await this.deviceService.unlinkAsset(device._id, { refresh, strict });
+    const devices = (await this.assetService.getAsset(engineId, assetId))._source.deviceIds;
+    if(Array.isArray(devices)) {
+      for(const device of devices) {
+        await this.deviceService.unlinkAsset(device, { refresh, strict });
+      }
     }
-
     return super.delete(request);
   }
 }

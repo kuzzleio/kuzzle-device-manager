@@ -91,7 +91,7 @@ export class AssetService {
     return results;
   }
 
-  private getAsset (engineId: string, assetId: string): Promise<KDocument<BaseAssetContent>> {
+  getAsset (engineId: string, assetId: string): Promise<KDocument<BaseAssetContent>> {
     return this.sdk.document.get<BaseAssetContent>(engineId, 'assets', assetId);
   }
 
@@ -115,7 +115,7 @@ export class AssetService {
         }
       }
     } ;
-    return await this.sdk.document.search('device-manager', 'devices', filter);
+    return this.sdk.document.search('device-manager', 'devices', filter);
   }
 
 }
