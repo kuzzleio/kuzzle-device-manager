@@ -103,19 +103,4 @@ export class AssetService {
     }
     return parsed;
   }
-
-
-  async getDeviceByAsset(assetId :string) {
-    const filter = {
-      'query': {
-        'term': {
-          'assetId': {
-            'value': assetId
-          }
-        }
-      }
-    } ;
-    return this.sdk.document.search('device-manager', 'devices', filter);
-  }
-
 }
