@@ -5,8 +5,8 @@ should.Assertion.add(
   'matchObject',
   function (expected) {
     this.params = { operator: 'match object' };
-
     for (const [keyPath, expectedValue] of Object.entries(expected)) {
+
       const objectValue = _.get(this.obj, keyPath);
 
       if (expectedValue === '_ANY_') {
@@ -33,13 +33,13 @@ should.Assertion.add(
       else if (expectedValue === '_DATE_NOW_SEC_') {
         should(objectValue).be.approximately(Date.now() / 1000, 1000);
       }
-      else if (_.isPlainObject(objectValue)) {
+      else if (_.isPlainObject(expectedValue)) {
         should(objectValue).matchObject(
           expectedValue,
           `"${keyPath}" does not match. Expected "${JSON.stringify(expectedValue)}" have "${JSON.stringify(objectValue)}"`);
       }
-      else if (Array.isArray(objectValue)) {
-        for (let i = 0; i < objectValue.length; i++) {
+      else if (Array.isArray(expectedValue)) {
+        for (let i = 0; i < expectedValue.length; i++) {
           should(objectValue[i]).matchObject(
             expectedValue[i],
             `"${keyPath}[${i}]" does not match. Expected "${JSON.stringify(expectedValue[i])}" have "${JSON.stringify(objectValue[i])}"`);

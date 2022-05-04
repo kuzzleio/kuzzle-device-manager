@@ -1,11 +1,31 @@
 export const assetsMappings = {
   dynamic: 'strict',
   properties: {
-    deviceIds: {
-      fields: {
-        text: { type: 'text' }
-      },
-      type: 'keyword'
+    deviceLinks: {
+      properties: {
+        deviceId: {
+          fields: {
+            text: { type: 'text' }
+          },
+          type: 'keyword'
+        },
+        measuresName: {
+          properties: {
+            name : {
+              fields: {
+                text: { type: 'text' }
+              },
+              type : 'keyword'
+            },
+            type : {
+              fields: {
+                text: { type: 'text' }
+              },
+              type : 'keyword'
+            }
+          }
+        }
+      }
     },
     measures: {
       properties: {

@@ -234,7 +234,14 @@ export class DeviceService {
       return { ...measure, name };
     });
 
+  
+    const listMeasures = []; // contain name and type of each measure to keep this data in device element
+    for(const measure of measures) {
+      listMeasures.push({name : measure.name, type : measure.type});
+    }
+  
     const newMeasuresNames = measures.map(m => m.name);
+        
     const duplicateMeasure = asset._source.measures.find(m => newMeasuresNames.includes(m.name));
     if (duplicateMeasure) {
       throw new BadRequestError(`Duplicate measure name "${duplicateMeasure.name}"`);
@@ -250,10 +257,10 @@ export class DeviceService {
     asset._source.measures = measures;
     device._source.assetId = linkRequest.assetId;
 
-    if(!Array.isArray(asset._source.deviceIds)) {
-      asset._source.deviceIds=[];
+    if(!Array.isArray(asset._source.deviceLinks)) {
+      asset._source.deviceLinks=[];
     }
-    asset._source.deviceIds.push(linkRequest.deviceId);
+    asset._source.deviceLinks.push({deviceId : linkRequest.deviceId}); //TODO : gérer les measuresName
     
     const response = await global.app.trigger(
       'device-manager:device:link-asset:before',
@@ -265,14 +272,16 @@ export class DeviceService {
         this.config.adminIndex,
         'devices',
         device._id,
-        { assetId: response.device._source.assetId },
+        { assetId: response.device._source.assetId,
+          measuresName : listMeasures
+        },
         { refresh }),
-
       this.sdk.document.update(
         engineId,
         'devices',
         device._id,
-        { assetId: response.device._source.assetId },
+        { assetId: response.device._source.assetId,
+          measuresName : listMeasures },
         { refresh }),
 
       this.sdk.document.update(
@@ -280,7 +289,7 @@ export class DeviceService {
         'assets',
         asset._id,
         { 
-          deviceIds: response.asset._source.deviceIds,
+          deviceLinks: response.asset._source.deviceLinks,
           measures: response.asset._source.measures
         },
         { refresh }),
@@ -318,14 +327,14 @@ export class DeviceService {
     });
     device._source.assetId = null;
 
-    if(Array.isArray(asset._source.deviceIds)) {
+    if(Array.isArray(asset._source.deviceLinks)) {
       const filteredDeviceList = [];
-      for(const linkedDevice of asset._source.deviceIds) {
-        if(linkedDevice !== deviceId) {
+      for(const linkedDevice of asset._source.deviceLinks) {
+        if(linkedDevice.deviceId !== deviceId) {
           filteredDeviceList.push(linkedDevice);
         }
       }
-      asset._source.deviceIds = filteredDeviceList;
+      asset._source.deviceLinks = filteredDeviceList;
     } 
 
     const response = await global.app.trigger(
@@ -352,7 +361,7 @@ export class DeviceService {
         engineId,
         'assets',
         asset._id,
-        { deviceIds: response.asset._source.deviceIds,
+        { deviceLinks: response.asset._source.deviceLinks,
           measures: response.asset._source.measures },
         { refresh }),
     ]);
