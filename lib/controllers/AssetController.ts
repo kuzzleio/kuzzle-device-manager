@@ -85,7 +85,7 @@ export class AssetController extends CRUDController {
     const response = await global.app.trigger(
       'device-manager:asset:update:before', {
         asset,
-        updates: body});
+        updates: body });
 
     request.input.args.index = engineId;
     request.input.body = response.updates;
@@ -139,8 +139,8 @@ export class AssetController extends CRUDController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
     const devices = (await this.assetService.getAsset(engineId, assetId))._source.deviceIds;
-    if(Array.isArray(devices)) {
-      for(const device of devices) {
+    if (Array.isArray(devices)) {
+      for (const device of devices) {
         await this.deviceService.unlinkAsset(device, { refresh, strict });
       }
     }

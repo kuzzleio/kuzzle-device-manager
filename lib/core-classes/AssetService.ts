@@ -11,7 +11,7 @@ export class AssetService {
   private get sdk () {
     return this.context.accessors.sdk;
   }
-  constructor(plugin: Plugin) {
+  constructor (plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
   }
@@ -28,7 +28,7 @@ export class AssetService {
   async measureHistory (
     engineId: string,
     assetId: string,
-    { size=25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
+    { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
   ): Promise<KDocument<MeasureContent>[]> {
     await this.getAsset(engineId, assetId);
     const query = {
@@ -54,7 +54,7 @@ export class AssetService {
     return measures.hits;
   }
 
-  async importAssets(
+  async importAssets (
     index: string,
     assets: JSONObject,
     { strict, options }: { strict?: boolean; options?: JSONObject }

@@ -16,7 +16,7 @@ export class DeviceController extends CRUDController {
 
   private deviceService: DeviceService;
 
-  constructor(plugin: DeviceManagerPlugin, deviceService: DeviceService) {
+  constructor (plugin: DeviceManagerPlugin, deviceService: DeviceService) {
     super(plugin, 'devices');
 
     this.deviceService = deviceService;
@@ -297,7 +297,7 @@ export class DeviceController extends CRUDController {
     if (body.csv) {
       const lines = await csv({ delimiter: 'auto' }).fromString(body.csv);
 
-      bulkData = lines.map(({ engineId, deviceId, assetId}) => ({
+      bulkData = lines.map(({ engineId, deviceId, assetId }) => ({
         assetId,
         deviceId,
         engineId
