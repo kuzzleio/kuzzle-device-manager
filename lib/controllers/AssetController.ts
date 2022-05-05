@@ -85,7 +85,7 @@ export class AssetController extends CRUDController {
     const response = await global.app.trigger(
       'device-manager:asset:update:before', {
         asset,
-        updates: body});
+        updates: body });
 
     request.input.args.index = engineId;
     request.input.body = response.updates;
