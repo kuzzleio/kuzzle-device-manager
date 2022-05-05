@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
 import { BaseAsset, Device } from '../models';
-import { BaseAssetContent, MeasureContent, DeviceContent, DeviceManagerConfiguration } from '../types';
+import { BaseAssetContent, MeasureContent, DeviceContent, DeviceManagerConfiguration, MeasureName } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 
 export type DeviceBulkContent = {
@@ -235,10 +235,10 @@ export class DeviceService {
     });
 
   
-    const listMeasures = []; // contain name and type of each measure to keep this data in device element
+    const listMeasures: Array<MeasureName> = []; // contain name and type of each measure to keep this data in device element
     for(const measure of measures) {
       listMeasures.push({name : measure.name, type : measure.type});
-    }
+    } 
   
     const newMeasuresNames = measures.map(m => m.name);
         
@@ -361,8 +361,10 @@ export class DeviceService {
         engineId,
         'assets',
         asset._id,
-        { deviceLinks: response.asset._source.deviceLinks,
-          measures: response.asset._source.measures },
+        { 
+          deviceLinks: response.asset._source.deviceLinks,
+          measures: response.asset._source.measures 
+        },
         { refresh }),
     ]);
 
