@@ -10,8 +10,9 @@ export type mResponse = {
   errors: JSONObject[];
 }
 
-export async function writeToDatabase (
+export async function writeToDatabase ( 
   documents: mRequest[],
+  // eslint-disable-next-line no-unused-vars
   writer: (docs: mRequest[]) => Promise<mResponse>
 ) {
   const results = {

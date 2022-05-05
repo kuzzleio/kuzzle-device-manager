@@ -103,7 +103,7 @@ export class DeviceManagerPlugin extends Plugin {
     return this.decodersRegister;
   }
 
-  constructor() {
+  constructor () {
     super({
       kuzzleVersion: '>=2.16.8 <3'
     });

@@ -11,17 +11,17 @@ export const assetsMappings = {
         },
         measuresName: {
           properties: {
-            name : {
+            name: {
               fields: {
                 text: { type: 'text' }
               },
-              type : 'keyword'
+              type: 'keyword'
             },
-            type : {
+            type: {
               fields: {
                 text: { type: 'text' }
               },
-              type : 'keyword'
+              type: 'keyword'
             }
           }
         }

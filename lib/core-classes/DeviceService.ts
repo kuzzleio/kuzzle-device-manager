@@ -59,7 +59,7 @@ export class DeviceService {
     return this.context.accessors.sdk;
   }
 
-  constructor(plugin: Plugin) {
+  constructor (plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
   }
@@ -236,8 +236,8 @@ export class DeviceService {
 
   
     const listMeasures: Array<MeasureName> = []; // contain name and type of each measure to keep this data in device element
-    for(const measure of measures) {
-      listMeasures.push({name : measure.name, type : measure.type});
+    for (const measure of measures) {
+      listMeasures.push({ name: measure.name, type: measure.type });
     } 
   
     const newMeasuresNames = measures.map(m => m.name);
@@ -257,10 +257,10 @@ export class DeviceService {
     asset._source.measures = measures;
     device._source.assetId = linkRequest.assetId;
 
-    if(!Array.isArray(asset._source.deviceLinks)) {
-      asset._source.deviceLinks=[];
+    if (! asset._source.deviceLinks) {
+      asset._source.deviceLinks = [];
     }
-    asset._source.deviceLinks.push({deviceId : linkRequest.deviceId}); //TODO : gérer les measuresName
+    asset._source.deviceLinks.push({ deviceId: linkRequest.deviceId }); //TODO : gérer les measuresName
     
     const response = await global.app.trigger(
       'device-manager:device:link-asset:before',
@@ -273,7 +273,7 @@ export class DeviceService {
         'devices',
         device._id,
         { assetId: response.device._source.assetId,
-          measuresName : listMeasures
+          measuresName: listMeasures
         },
         { refresh }),
       this.sdk.document.update(
@@ -281,7 +281,7 @@ export class DeviceService {
         'devices',
         device._id,
         { assetId: response.device._source.assetId,
-          measuresName : listMeasures },
+          measuresName: listMeasures },
         { refresh }),
 
       this.sdk.document.update(
@@ -327,15 +327,16 @@ export class DeviceService {
     });
     device._source.assetId = null;
 
-    if(Array.isArray(asset._source.deviceLinks)) {
+    if (Array.isArray(asset._source.deviceLinks)) {
       const filteredDeviceList = [];
-      for(const linkedDevice of asset._source.deviceLinks) {
-        if(linkedDevice.deviceId !== deviceId) {
+      for (const linkedDevice of asset._source.deviceLinks) {
+        if (linkedDevice.deviceId !== deviceId) {
           filteredDeviceList.push(linkedDevice);
         }
       }
       asset._source.deviceLinks = filteredDeviceList;
     } 
+
 
     const response = await global.app.trigger(
       'device-manager:device:unlink-asset:before',
@@ -376,7 +377,7 @@ export class DeviceService {
     return { asset, device };
   }
 
-  async importDevices(
+  async importDevices (
     devices: JSONObject,
     { refresh, strict }: { refresh?: any, strict?: boolean }) {
     const results = {
@@ -414,7 +415,7 @@ export class DeviceService {
       successes: [],
     };
 
-    const withoutIds = catalog.filter(content => !content.deviceId);
+    const withoutIds = catalog.filter(content => ! content.deviceId);
 
     if (withoutIds.length > 0) {
       throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);

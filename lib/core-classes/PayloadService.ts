@@ -45,7 +45,7 @@ export class PayloadService {
     });
   }
 
-  async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
+  async process (request: KuzzleRequest, decoder: Decoder, { refresh = undefined } = {}) {
     const payload = request.getBody();
 
     const uuid = request.input.args.uuid || uuidv4();
@@ -289,15 +289,15 @@ export class PayloadService {
   ): Promise<BaseAsset> {
     // dup array reference
     const measureNameMap = new Map<string, string>();
-    if(measuresNames) {
-      for(const measureName of measuresNames) {
+    if (measuresNames) {
+      for (const measureName of measuresNames) {
         measureNameMap.set(measureName.type, measureName.name);
       }
     }
     
     const measures = newMeasures.map(m => m);
-    for(const measure of measures) {
-      if(measureNameMap.has(measure.type)) {
+    for (const measure of measures) {
+      if (measureNameMap.has(measure.type)) {
         measure.name = measureNameMap.get(measure.type);
       }
     }
