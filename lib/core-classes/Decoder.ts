@@ -92,6 +92,7 @@ export abstract class Decoder {
    *
    * @return A boolean indicating if the payload is valid
    */
+  // eslint-disable-next-line no-unused-vars
   async validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
     return true;
   }
@@ -106,6 +107,7 @@ export abstract class Decoder {
    *
    * @returns Measure
    */
+  // eslint-disable-next-line no-unused-vars
   abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>
 
   /**

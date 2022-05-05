@@ -8,9 +8,11 @@ import { BaseAssetContent, DeviceManagerConfiguration, MeasureContent } from '..
 export class AssetService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
+
   private get sdk () {
     return this.context.accessors.sdk;
   }
+
   constructor (plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
@@ -31,6 +33,7 @@ export class AssetService {
     { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
   ): Promise<KDocument<MeasureContent>[]> {
     await this.getAsset(engineId, assetId);
+
     const query = {
       range: {
         measuredAt: {
@@ -39,18 +42,23 @@ export class AssetService {
         }
       }
     };
+
     if (startAt) {
       query.range.measuredAt.gte = this.iso8601(startAt, 'startAt').getTime();
     }
+
     if (endAt) {
       query.range.measuredAt.lte = this.iso8601(startAt, 'endAt').getTime();
     }
+
     const sort = { 'measuredAt': 'desc' };
+
     const measures = await this.sdk.document.search<MeasureContent>(
       engineId,
       'measures',
       { query, sort },
       { size: size || 25 });
+
     return measures.hits;
   }
 
@@ -66,6 +74,7 @@ export class AssetService {
 
     const assetDocuments = assets.map((asset: BaseAssetContent) => {
       const _asset = new BaseAsset(asset);
+      
       return {
         _id: _asset._id,
         body: _.omit(asset, ['_id']),
@@ -75,6 +84,7 @@ export class AssetService {
     await writeToDatabase(
       assetDocuments,
       async (result: mRequest[]): Promise<mResponse> => {
+
         const created = await this.sdk.document.mCreate(
           index,
           'assets',
@@ -88,6 +98,7 @@ export class AssetService {
         };
       }
     );
+
     return results;
   }
 
@@ -98,9 +109,11 @@ export class AssetService {
   // @todo remove when we have the date extractor in the core
   private iso8601 (value: string, name: string): Date {
     const parsed: any = new Date(value);
+
     if (isNaN(parsed)) {
       throw new BadRequestError(`"${name}" is not a valid ISO8601 date`);
     }
+    
     return parsed;
   }
 }
