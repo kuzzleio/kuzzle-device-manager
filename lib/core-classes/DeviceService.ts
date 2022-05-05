@@ -250,7 +250,7 @@ export class DeviceService {
     asset._source.measures = measures;
     device._source.assetId = linkRequest.assetId;
 
-    if (! Array.isArray(asset._source.deviceIds)) {
+    if (! asset._source.deviceIds) {
       asset._source.deviceIds = [];
     }
     asset._source.deviceIds.push(linkRequest.deviceId);
