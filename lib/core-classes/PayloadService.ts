@@ -44,7 +44,7 @@ export class PayloadService {
     });
   }
 
-  async process (request: KuzzleRequest, decoder: Decoder, { refresh=undefined } = {}) {
+  async process (request: KuzzleRequest, decoder: Decoder, { refresh = undefined } = {}) {
     const payload = request.getBody();
 
     const uuid = request.input.args.uuid || uuidv4();

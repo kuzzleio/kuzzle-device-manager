@@ -59,7 +59,7 @@ export class DeviceService {
     return this.context.accessors.sdk;
   }
 
-  constructor(plugin: Plugin) {
+  constructor (plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
   }
@@ -123,13 +123,13 @@ export class DeviceService {
 
     device._source.engineId = attachRequest.engineId;
 
+
     const response = await global.app.trigger(
       'device-manager:device:attach-engine:before',
       {
         device,
         engineId: attachRequest.engineId,
       });
-
     await Promise.all([
       this.sdk.document.update(
         this.config.adminIndex,
@@ -250,6 +250,11 @@ export class DeviceService {
     asset._source.measures = measures;
     device._source.assetId = linkRequest.assetId;
 
+    if (! asset._source.deviceIds) {
+      asset._source.deviceIds = [];
+    }
+    asset._source.deviceIds.push(linkRequest.deviceId);
+    
     const response = await global.app.trigger(
       'device-manager:device:link-asset:before',
       { asset, device },
@@ -274,7 +279,10 @@ export class DeviceService {
         engineId,
         'assets',
         asset._id,
-        { measures: response.asset._source.measures },
+        { 
+          deviceIds: response.asset._source.deviceIds,
+          measures: response.asset._source.measures
+        },
         { refresh }),
     ]);
 
@@ -310,6 +318,15 @@ export class DeviceService {
     });
     device._source.assetId = null;
 
+    const filteredDeviceList = [];
+    for (const linkedDevice of asset._source.deviceIds) {
+      if (linkedDevice !== deviceId) {
+        filteredDeviceList.push(linkedDevice);
+      }
+    }
+    asset._source.deviceIds = filteredDeviceList;
+    
+
     const response = await global.app.trigger(
       'device-manager:device:unlink-asset:before',
       { asset, device },
@@ -334,7 +351,10 @@ export class DeviceService {
         engineId,
         'assets',
         asset._id,
-        { measures: response.asset._source.measures },
+        { 
+          deviceIds: response.asset._source.deviceIds,
+          measures: response.asset._source.measures 
+        },
         { refresh }),
     ]);
 
@@ -346,7 +366,7 @@ export class DeviceService {
     return { asset, device };
   }
 
-  async importDevices(
+  async importDevices (
     devices: JSONObject,
     { refresh, strict }: { refresh?: any, strict?: boolean }) {
     const results = {
@@ -384,7 +404,7 @@ export class DeviceService {
       successes: [],
     };
 
-    const withoutIds = catalog.filter(content => !content.deviceId);
+    const withoutIds = catalog.filter(content => ! content.deviceId);
 
     if (withoutIds.length > 0) {
       throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);

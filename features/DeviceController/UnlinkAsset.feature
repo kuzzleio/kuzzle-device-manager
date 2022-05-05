@@ -17,7 +17,8 @@ Feature: UnlinkAsset
     Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
-      | measures | {} |
+      | measures   | {} |
+      | deviceIds  | [] |
 
   Scenario: Unlink multiple device from multiple assets using CSV
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
