@@ -111,6 +111,7 @@ export class AssetController extends CRUDController {
 
     request.input.args.index = request.getString('engineId');
     request.input.body.measures = [];
+    request.input.body.deviceLinks = [];
 
     return super.create(request);
   }
