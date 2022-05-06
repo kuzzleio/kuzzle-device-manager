@@ -88,6 +88,7 @@ export class DeviceController extends CRUDController {
 
     const deviceContent: DeviceContent = {
       measures: [],
+      measuresName: [],
       metadata,
       model,
       reference,

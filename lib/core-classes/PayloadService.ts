@@ -16,6 +16,7 @@ import {
   DeviceContent,
   DeviceManagerConfiguration,
   BaseAssetContent,
+  LinkedMeasureName,
 } from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
@@ -120,7 +121,6 @@ export class PayloadService {
           newMeasures,
           { refresh });
       }
-
       throw error;
     }
   }
@@ -145,9 +145,10 @@ export class PayloadService {
 
     const deviceId = Device.id(model, reference);
     const deviceContent: DeviceContent = {
-      measures,
-      model,
-      reference,
+      measures: measures,
+      measuresName: [],
+      model: model,
+      reference: reference,
     };
 
     return this.register(deviceId, deviceContent, { refresh });
@@ -215,7 +216,7 @@ export class PayloadService {
       const assetId = updatedDevice._source.assetId;
 
       if (assetId) {
-        updatedAsset = await this.propagateToAsset(engineId, newMeasures, assetId);
+        updatedAsset = await this.propagateToAsset(engineId, newMeasures, assetId, device._source.measuresName);
 
         refreshableCollections.push([engineId, 'assets']);
       }
@@ -284,11 +285,23 @@ export class PayloadService {
   private async propagateToAsset (
     engineId: string,
     newMeasures: MeasureContent[],
-    assetId: string
+    assetId: string,
+    measuresNames: LinkedMeasureName[],
   ): Promise<BaseAsset> {
     // dup array reference
+    const measureNameMap = new Map<string, string>();
+    if (measuresNames) {
+      for (const measureName of measuresNames) {
+        measureNameMap.set(measureName.type, measureName.name);
+      }
+    }
+    
     const measures = newMeasures.map(m => m);
-
+    for (const measure of measures) {
+      if (measureNameMap.has(measure.type)) {
+        measure.name = measureNameMap.get(measure.type);
+      }
+    }
     const asset = await this.batch.get<BaseAssetContent>(
       engineId,
       'assets',
@@ -298,10 +311,11 @@ export class PayloadService {
       throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
     }
 
+
     // Keep previous measures that were not updated
     // array are updated in place so we need to keep previous elements
     for (const previousMeasure of asset._source.measures) {
-      if (! measures.find(m => m.type === previousMeasure.type)) {
+      if (! measures.find(m => (m.name === previousMeasure.name ))) {
         measures.push(previousMeasure);
       }
     }
