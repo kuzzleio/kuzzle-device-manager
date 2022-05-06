@@ -11,13 +11,14 @@ Feature: UnlinkAsset
       | _id     | "DummyTemp-attached_ayse_unlinked" |
       | assetId | "tools-PERFO-unlinked"             |
     When I successfully execute the action "device-manager/device":"mUnlinkAssets" with args:
-      | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
+      | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |  
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
-      | measures | {} |
+      | measures   | {} |
+      | deviceLinks  | [] |
 
   Scenario: Unlink multiple device from multiple assets using CSV
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:

@@ -201,6 +201,7 @@ module.exports = {
         model: 'PERFO',
         reference: 'unlinked',
         measures: [],
+        deviceLinks: [],
       },
       { index: { _id: 'tools-SCREW-unlinked' } },
       {
@@ -208,6 +209,7 @@ module.exports = {
         model: 'SCREW',
         reference: 'unlinked',
         measures: [],
+        deviceLinks: [],
       },
       { index: { _id: 'tools-MART-linked' } },
       {
@@ -215,6 +217,7 @@ module.exports = {
         model: 'MART',
         reference: 'linked',
         measures: measuresAttachedAyseLinked,
+        deviceLinks: [],
       }
     ]
   },

@@ -60,7 +60,7 @@ export class AssetsRegister {
   register (
     type: string,
     metadata: JSONObject,
-    { group='commons' }: { group?: string } = {}
+    { group = 'commons' }: { group?: string } = {}
   ) {
     if (this.assetByName.has(type)) {
       throw new PluginImplementationError(`Asset of type "${type}" has already been registered.`);

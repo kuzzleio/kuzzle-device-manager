@@ -6,7 +6,7 @@ export const devicesMappings = {
         text: { type: 'text' }
       },
       type: 'keyword'
-    },
+    },  
     engineId: {
       fields: {
         text: { type: 'text' }
@@ -16,6 +16,22 @@ export const devicesMappings = {
     measures: {
       properties: {
         // measures mappings will be injected by the plugin
+      }
+    },
+    measuresName: {
+      properties: {
+        name: {
+          fields: {
+            text: { type: 'text' }
+          },
+          type: 'keyword'
+        },
+        type: {
+          fields: {
+            text: { type: 'text' }
+          },
+          type: 'keyword'
+        }
       }
     },
     metadata: {

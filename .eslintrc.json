@@ -1,21 +1,9 @@
 {
-  "env": {
-    "node": true
-  },
-  "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "@typescript-eslint"
-  ],
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
-  ],
+  "plugins": ["@typescript-eslint"],
   "rules": {
-    "@typescript-eslint/no-explicit-any": 0,
-    "@typescript-eslint/explicit-module-boundary-types": 0,
-    "quotes": [2, "single", "avoid-escape"],
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/ban-ts-ignore": "off",
     "consistent-return": 0,
     "curly": 2,
     "dot-notation": 2,
@@ -60,12 +48,46 @@
     "no-unused-expressions": [2, {"allowShortCircuit": true}],
     "no-useless-call": 2,
     "no-with": 2,
+    "quotes": [2, "single"],
     "require-atomic-updates": 0,
     "semi": [2, "always"],
     "space-before-blocks": 2,
     "strict": [2, "global"],
     "vars-on-top": 2,
     "yoda": [2, "never"],
-    "sort-keys": ["error", "asc"]
-  }
+    "sort-keys": ["error", "asc"],
+    "keyword-spacing": ["error", { "before": true, "after": true }],
+    "object-curly-spacing": ["error", "always"],
+    "space-before-function-paren": ["error", "always"],
+    "comma-spacing": 2,
+    "brace-style": ["error", "stroustrup"],
+    "space-infix-ops": 2,
+    "space-unary-ops": [2, { "words": true, "nonwords": false, "overrides": { "!": true } }],
+    "key-spacing": ["error", { "afterColon": true }]
+  },
+  "overrides": [
+    {
+      "files": [
+        "test/**/*.js",
+        "features-legacy/**/*.js",
+        "features/**/*.js"
+      ],
+      "rules": {
+        "sort-keys": "off"
+      }
+    }
+  ],
+  "env": {
+    "node": true,
+    "es6": true,
+    "mocha": true
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+        "impliedStrict": false
+    },
+    "sourceType": "module",
+    "ecmaVersion": 2018
+  },
+  "extends": "eslint:recommended"
 }
