@@ -257,10 +257,8 @@ export class DeviceService {
     asset._source.measures = measures;
     device._source.assetId = linkRequest.assetId;
 
-    if (! asset._source.deviceLinks) {
-      asset._source.deviceLinks = [];
-    }
-    asset._source.deviceLinks.push({ deviceId: linkRequest.deviceId, measuresName: listMeasures }); //TODO : gérer les measuresName
+
+    asset._source.deviceLinks.push({ deviceId: linkRequest.deviceId, measuresName: listMeasures }); 
     
     const response = await global.app.trigger(
       'device-manager:device:link-asset:before',
