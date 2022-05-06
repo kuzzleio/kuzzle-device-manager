@@ -16,7 +16,7 @@ import {
   DeviceContent,
   DeviceManagerConfiguration,
   BaseAssetContent,
-  MeasureName,
+  LinkedMeasureName,
 } from '../types';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
@@ -145,9 +145,10 @@ export class PayloadService {
 
     const deviceId = Device.id(model, reference);
     const deviceContent: DeviceContent = {
-      measures,
-      model,
-      reference,
+      measures: measures,
+      measuresName: [],
+      model: model,
+      reference: reference,
     };
 
     return this.register(deviceId, deviceContent, { refresh });
@@ -285,7 +286,7 @@ export class PayloadService {
     engineId: string,
     newMeasures: MeasureContent[],
     assetId: string,
-    measuresNames: MeasureName[]
+    measuresNames: LinkedMeasureName[],
   ): Promise<BaseAsset> {
     // dup array reference
     const measureNameMap = new Map<string, string>();
@@ -314,7 +315,7 @@ export class PayloadService {
     // Keep previous measures that were not updated
     // array are updated in place so we need to keep previous elements
     for (const previousMeasure of asset._source.measures) {
-      if (! measures.find(m => (m.type === previousMeasure.type && m.name === previousMeasure.name ))) { 
+      if (! measures.find(m => (m.name === previousMeasure.name ))) {
         measures.push(previousMeasure);
       }
     }

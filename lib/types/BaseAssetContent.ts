@@ -2,11 +2,11 @@ import { JSONObject } from 'kuzzle';
 import { KDocumentContent } from 'kuzzle-sdk';
 
 import { MeasureContent } from './measures/MeasureContent';
-import { MeasureName } from './measures/MeasureDefinition';
+import { LinkedMeasureName } from './measures/MeasureDefinition';
 
 export interface DeviceLink {
   deviceId : string,
-  measuresName?: MeasureName[];
+  measuresName: LinkedMeasureName[];
 }
 
 /**

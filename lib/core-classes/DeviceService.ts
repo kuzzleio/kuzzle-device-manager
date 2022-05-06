@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
 import { BaseAsset, Device } from '../models';
-import { BaseAssetContent, MeasureContent, DeviceContent, DeviceManagerConfiguration, MeasureName } from '../types';
+import { BaseAssetContent, MeasureContent, DeviceContent, DeviceManagerConfiguration, LinkedMeasureName } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 
 export type DeviceBulkContent = {
@@ -235,7 +235,7 @@ export class DeviceService {
     });
 
   
-    const listMeasures: Array<MeasureName> = []; // contain name and type of each measure to keep this data in device element
+    const listMeasures: LinkedMeasureName[] = []; // contain name and type of each measure to keep this data in device element
     for (const measure of measures) {
       listMeasures.push({ name: measure.name, type: measure.type });
     } 
@@ -260,7 +260,7 @@ export class DeviceService {
     if (! asset._source.deviceLinks) {
       asset._source.deviceLinks = [];
     }
-    asset._source.deviceLinks.push({ deviceId: linkRequest.deviceId }); //TODO : gérer les measuresName
+    asset._source.deviceLinks.push({ deviceId: linkRequest.deviceId, measuresName: listMeasures }); //TODO : gérer les measuresName
     
     const response = await global.app.trigger(
       'device-manager:device:link-asset:before',
@@ -272,7 +272,8 @@ export class DeviceService {
         this.config.adminIndex,
         'devices',
         device._id,
-        { assetId: response.device._source.assetId,
+        {
+          assetId: response.device._source.assetId,
           measuresName: listMeasures
         },
         { refresh }),
@@ -280,8 +281,10 @@ export class DeviceService {
         engineId,
         'devices',
         device._id,
-        { assetId: response.device._source.assetId,
-          measuresName: listMeasures },
+        {
+          assetId: response.device._source.assetId,
+          measuresName: listMeasures
+        },
         { refresh }),
 
       this.sdk.document.update(
@@ -327,15 +330,9 @@ export class DeviceService {
     });
     device._source.assetId = null;
 
-    if (Array.isArray(asset._source.deviceLinks)) {
-      const filteredDeviceList = [];
-      for (const linkedDevice of asset._source.deviceLinks) {
-        if (linkedDevice.deviceId !== deviceId) {
-          filteredDeviceList.push(linkedDevice);
-        }
-      }
-      asset._source.deviceLinks = filteredDeviceList;
-    } 
+    const filteredDeviceList = asset._source.deviceLinks.filter(linkedDevice => linkedDevice.deviceId !== deviceId);
+    asset._source.deviceLinks = filteredDeviceList;
+
 
 
     const response = await global.app.trigger(

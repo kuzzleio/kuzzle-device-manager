@@ -48,7 +48,7 @@ export interface MeasureDefinition {
 /**
  * mapping between measure name and type (include in devices and assets)
  */
-export interface MeasureName {
+export interface LinkedMeasureName {
   name : string;
   type : string;
 }

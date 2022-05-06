@@ -2,7 +2,7 @@ import { JSONObject } from 'kuzzle';
 import { KDocumentContent } from 'kuzzle-sdk';
 
 import { MeasureContent } from './measures/MeasureContent';
-import { MeasureName } from './measures/MeasureDefinition';
+import { LinkedMeasureName } from './measures/MeasureDefinition';
 
 
 export interface DeviceContent extends KDocumentContent {
@@ -35,7 +35,7 @@ export interface DeviceContent extends KDocumentContent {
   /**
    * correspondence table between measures types and names
    */
-  measuresName?: MeasureName[];
+  measuresName: LinkedMeasureName[];
 
   /**
    * Attached engine ID (index name)
