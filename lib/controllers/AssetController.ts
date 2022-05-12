@@ -1,7 +1,7 @@
 import csv from 'csvtojson';
 import { CRUDController } from 'kuzzle-plugin-commons';
 import {
-  BadRequestError,
+  BadRequestError, KuzzleError,
   KuzzleRequest,
   Plugin,
 } from 'kuzzle';
@@ -51,7 +51,15 @@ export class AssetController extends CRUDController {
         measures: {
           handler: this.measures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'get' }],
-        }
+        },
+        linkCategory: {
+          handler: this.linkCategory.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/_link/category/:categoryId', verb: 'put' }],
+        },
+        unlinkCategory: {
+          handler: this.unlinkCategory.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/_unlink/category/:categoryId', verb: 'delete' }],
+        },
       },
     };
     /* eslint-enable sort-keys */
@@ -63,17 +71,45 @@ export class AssetController extends CRUDController {
     const size = request.input.args.size;
     const startAt = request.input.args.startAt;
     const endAt = request.input.args.endAt;
-
     if (size && startAt || size && endAt) {
       throw new BadRequestError('You cannot specify both a "size" and a "startAt" or "endAt"');
     }
-
     const measures = await this.assetService.measureHistory(
       engineId,
       id,
       { endAt, size, startAt });
 
     return { measures };
+  }
+
+  async unlinkCategory (request: KuzzleRequest) {
+    const id = request.getId();
+    const engineId = request.getString('engineId');
+    const document = await this.sdk.document.get(engineId, this.collection, id);
+    const updateRequest = { categories: [] };
+    if ( document._source.categories) {
+      updateRequest.categories = document._source.categories;
+    }
+    else {
+      throw new KuzzleError('you can\'t remove an unexisting link', 404 );
+    }
+    updateRequest.categories.filter(linkedId => linkedId !== request.getString('categoryId') );
+    request.input.body = updateRequest;
+    return this.update(request);
+  }
+
+  async linkCategory (request: KuzzleRequest) { //TODO : verify mandatory metadatas (for later)
+    const id = request.getId();
+    const engineId = request.getString('engineId');
+    const document = await this.sdk.document.get(engineId, this.collection, id);
+    await this.sdk.document.get(engineId, 'asset-category', request.getString('categoryId')); //only for throwing error if it does not exist
+    const updateRequest = { categories: [] };
+    if ( document._source.categories) {
+      updateRequest.categories = document._source.categories;
+    }
+    updateRequest.categories.push(request.getString('categoryId'));
+    request.input.body = updateRequest;
+    return this.update(request);
   }
 
   async update (request: KuzzleRequest) {
@@ -112,6 +148,7 @@ export class AssetController extends CRUDController {
     request.input.args.index = request.getString('engineId');
     request.input.body.measures = [];
     request.input.body.deviceLinks = [];
+    request.input.body.categories = [];
 
     request.input.body.measures = [];
 

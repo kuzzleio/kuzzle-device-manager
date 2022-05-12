@@ -39,6 +39,8 @@ import {
   devicesMappings,
 } from './mappings';
 import { DeviceManagerConfiguration } from './types';
+import { AssetCategoryController } from './controllers/AssetCategoryController';
+import { MetadataController } from './controllers/MetadataController';
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -47,6 +49,8 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceController: DeviceController;
   private decodersController: DecodersController;
   private engineController: EngineController<DeviceManagerPlugin>;
+  private assetCategoryController : AssetCategoryController;
+  private metadataController: MetadataController;
 
   private assetService: AssetService;
   private payloadService: PayloadService;
@@ -215,11 +219,16 @@ export class DeviceManagerPlugin extends Plugin {
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
+    this.assetCategoryController = new AssetCategoryController(this);
+    this.metadataController = new MetadataController(this);
 
     this.api['device-manager/payload'] = this.decodersRegister.getPayloadController(this.payloadService);
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
     this.api['device-manager/decoders'] = this.decodersController.definition;
+    this.api['device-manager/assetCategory'] = this.assetCategoryController.definition;
+    this.api['device-manager/metadata'] = this.metadataController.definition;
+
 
     this.hooks = {
       'kuzzle:state:live': async () => {

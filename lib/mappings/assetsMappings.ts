@@ -1,6 +1,12 @@
 export const assetsMappings = {
   dynamic: 'strict',
   properties: {
+    categories: {
+      fields: {
+        text: { type: 'text' }
+      },
+      type: 'keyword'
+    },
     deviceLinks: {
       properties: {
         deviceId: {
@@ -22,7 +28,7 @@ export const assetsMappings = {
                 text: { type: 'text' }
               },
               type: 'keyword'
-            }
+            },
           }
         }
       }
