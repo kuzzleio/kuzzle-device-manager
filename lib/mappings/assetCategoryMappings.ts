@@ -27,7 +27,7 @@ export const assetCategoryMappings = {
       },
       type: 'keyword'
     },
-    parent: { //recursive embbeded : TODO : replace by embeded!
+    parent: { //recursive embbeded : 
       dynamic: 'true',
       properties: {
         _kuzzleId: {

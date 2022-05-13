@@ -33,12 +33,12 @@ export abstract class RelationalController extends CRUDController {
       const document = await this.sdk.document.get(request.getString('engineId'), this.collection, request.getId());
       if (manyToManyLinkedFields) {
         for (const linkedField of manyToManyLinkedFields) {
-          promises.push(this.propagateUpdate(linkedField, true, document, request.getBody(), request.getId(), request.context.user, request));
+          promises.push(this.propagateUpdate(linkedField, true, document, request));
         }
       }
       if (oneToManyLinkedFields) {
         for (const linkedField of oneToManyLinkedFields) {
-          promises.push(this.propagateUpdate(linkedField, false, document, request.getBody(), request.getId(), request.context.user, request));
+          promises.push(this.propagateUpdate(linkedField, false, document, request));
         }
       }
     }
@@ -46,7 +46,10 @@ export abstract class RelationalController extends CRUDController {
     return super.update(request);
   }
 
-  async propagateUpdate (linkedField : string, manyToMany : boolean, documentToUpdate : KDocument<any>, updateBody, updateId : string, user : User, originalRequest : KuzzleRequest ) { //TODO : optimize that !!!!!
+  async propagateUpdate (linkedField : string, manyToMany : boolean, documentToUpdate : KDocument<any>, originalRequest : KuzzleRequest ) {
+    const updateBody = originalRequest.getBody();
+    const updateId = originalRequest.getId();
+    const user = originalRequest.getUser();
     const listContainer : FieldPath[] = documentToUpdate._source[linkedField];
     const promises : Promise<void>[] = [];
     for (const containerFieldPath of listContainer) {
@@ -55,7 +58,7 @@ export abstract class RelationalController extends CRUDController {
       //Lazy deleting
       const containerDocument = await this.getDocumentContent(containerFieldPath);
       if (! containerDocument) {
-        this.remove(originalRequest, linkedField, containerFieldPath, documentToUpdate);
+        this.removeLink(originalRequest, linkedField, containerFieldPath, documentToUpdate);
         continue;
       }
       //end of lazy deleting
@@ -85,12 +88,12 @@ export abstract class RelationalController extends CRUDController {
       const document = await this.sdk.document.get(request.getString('engineId'), this.collection, request.getId());
       if (manyToManyLinkedFields) {
         for (const childrenField of manyToManyLinkedFields) {
-          promises.push(this.propagateDelete(document._source[childrenField], childrenField, request.getString('engineId'), request.getId(), true, request));
+          promises.push(this.propagateDelete(document._source[childrenField], childrenField, true, request));
         }
       }
       if (oneToManyLinkedFields) {
         for (const containerField of oneToManyLinkedFields) {
-          promises.push(this.propagateDelete(document._source[containerField], containerField, request.getString('engineId'), request.getId(), false, request)); //TODO : await all
+          promises.push(this.propagateDelete(document._source[containerField], containerField, false, request)); 
         }
       }
     }
@@ -130,31 +133,31 @@ export abstract class RelationalController extends CRUDController {
     await Promise.all(promises);
   }
   
-  async propagateDelete ( listContainer: FieldPath[], childrenField: string, engineId : string, removedObjectId : string, manyToMany : boolean, request : KuzzleRequest) { //TODO : optimize!
+  async propagateDelete ( listContainer: FieldPath[], childrenField: string, manyToMany : boolean, request : KuzzleRequest) {
+    const engineId = request.getString('engineId');
+    const removedObjectId = request.getId();
     const promises : Promise<void>[] = [];
-
     for (const container of listContainer) {
       promises.push( this.genericUnlink(request,
         { collection: this.collection, document: removedObjectId, field: childrenField, index: engineId, },
-        container, manyToMany)); //TODO : remove await? => await.all
+        container, manyToMany)); 
     }
     await Promise.all(promises);
-
   }
 
 
   async genericLink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany : boolean) {
 
     //First we update embedded document by adding link to container document
-    const document = await this.sdk.document.get(embedded.index, embedded.collection, embedded.document); //TODO : verify that document is not already linked
+    const document = await this.sdk.document.get(embedded.index, embedded.collection, embedded.document);
     if (! document._source[embedded.field]) {
       document._source[embedded.field] = [];
     }
     document._source[embedded.field].push(container);
     const updateMessage = {};
     updateMessage[embedded.field] = document._source[embedded.field];
-    //await this.sdk.document.update(embedded.index, embedded.collection, embedded.document, updateMessage ); // TODO : await to Promise.all //TODO :         await GenericController.classMap.get(containerFieldPath.collection).update(request); //Chinese black magic!
     await this.updateRequest(embedded.index, embedded.collection, embedded.document, updateMessage, request.getUser());
+
     //Second we update child document by adding content of parent document
     delete document._source[embedded.field];
     delete document._source._kuzzle_info;
@@ -164,37 +167,31 @@ export abstract class RelationalController extends CRUDController {
       const updateMessageDest = {};
       updateMessageDest[container.field] = containerDocument[container.field] ? containerDocument[container.field] : [];
       updateMessageDest[container.field].push(document._source);
-      //await this.sdk.document.update(container.index, container.collection, container.document, updateMessageDest );
       await this.updateRequest(container.index, container.collection, container.document, updateMessageDest, request.getUser());
     }
     else {
       const updateMessageDest = {};
       updateMessageDest[container.field] = document._source;
-      //await this.sdk.document.update(container.index, container.collection, container.document, updateMessageDest );
       await this.updateRequest(container.index, container.collection, container.document, updateMessageDest, request.getUser());
-
     }
   }
 
   async genericUnlink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany :boolean) {
+    //First we update the embedded document
     const document = await this.sdk.document.get(embedded.index, embedded.collection, embedded.document);
     if (! document._source[embedded.field]) {
       throw new KuzzleError('you cannot unlink object that is not linked', 404);
     }
-
     const index = document._source[embedded.field].findIndex(fieldPath => this.equal(fieldPath, container));
-
     if (index === -1) {
       throw new KuzzleError('you cannot unlink object that is not linked', 404);
     }
     document._source[embedded.field].splice(index, 1);
-
     const updateMessage = {};
     updateMessage[embedded.field] = document._source[embedded.field];
-    //await this.sdk.document.update(embedded.index, embedded.collection, embedded.document, updateMessage ); //TODO : remove await => Promise.all
     await this.updateRequest(embedded.index, embedded.collection, embedded.document, updateMessage, request.getUser());
 
-    //Second we update container document by removing content of embedded document TODO : list and not a single object so remove element to old list
+    //Second we update container document by removing content of embedded document
     const containerDocument = await this.sdk.document.get(container.index, container.collection, container.document );
     const updateRequest = {};
     if (manyToMany) {
@@ -203,9 +200,7 @@ export abstract class RelationalController extends CRUDController {
     else {
       updateRequest[container.field] = null;
     }
-    //await this.sdk.document.update(container.index, container.collection, container.document, updateRequest );
     await this.updateRequest(container.index, container.collection, container.document, updateRequest, request.getUser());
-
   }
 
   public async getDocumentContent (path : FieldPath) {
@@ -221,7 +216,7 @@ export abstract class RelationalController extends CRUDController {
   }
 
   //change the update request to add the order to remove the link
-  private remove (request: KuzzleRequest, linkedField: string, containerFieldPath: FieldPath, containerDocument: KDocument<KDocumentContentGeneric>) {
+  private removeLink (request: KuzzleRequest, linkedField: string, containerFieldPath: FieldPath, containerDocument: KDocument<KDocumentContentGeneric>) {
     if (! request.input.body[linkedField]) {
       request.input.body[linkedField] = containerDocument._source[linkedField];
     }
@@ -234,8 +229,7 @@ export abstract class RelationalController extends CRUDController {
       && f1.document === f2.document
       && f1.field === f2.field;
   }
-  
-  
+
   private async updateRequest (index: string, collection : string, document : string, body, user : User) {
     if (RelationalController.classMap && RelationalController.classMap.has(collection)) {
       const request = new KuzzleRequest({
@@ -243,14 +237,12 @@ export abstract class RelationalController extends CRUDController {
         body: body,
         engineId: index,
         index: index,
-
-
       }, {});
       request.context.user = user;
-      await RelationalController.classMap.get(collection).update(request); //Chinese black magic!
+      await RelationalController.classMap.get(collection).update(request);
     }
     else {
-      await this.as(user).document.update( //TODO : remove await? => await.all : TODO : lazy remove TODO : use this.update for propagate change to chain embedding!!!!
+      await this.as(user).document.update(
         index,
         collection,
         document,

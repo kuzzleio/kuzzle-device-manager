@@ -36,8 +36,6 @@ export class AssetCategoryController extends RelationalController {
           handler: this.unlinkParent.bind(this),
           http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_unlink/parent/:parentId', verb: 'delete' }],
         }
-
-        //TODO : link and unlink to a parent!!!!!
       },
     };
   }
@@ -110,7 +108,7 @@ export class AssetCategoryController extends RelationalController {
       index: request.getString('engineId'),
       collection: 'asset-category',
       document: request.getString('_id'),
-      field: 'assetMetadatas' //TODO : cohérence minuscule/majuscule
+      field: 'assetMetadatas'
     };
     //return super.linkV2(request, embeddedMetadata, assetCategoryContainer);
     return super.genericLink(request, embeddedMetadata, assetCategoryContainer, true);
