@@ -8,6 +8,8 @@ import {
 
 import { BaseAsset } from '../models/BaseAsset';
 import { AssetService, DeviceService } from '../core-classes';
+import { AssetCategoryService } from '../core-classes/AssetCategoryService';
+import { AssetCategoryContent } from '../types/AssetCategoryContent';
 
 export class AssetController extends CRUDController {
   private assetService: AssetService;
@@ -137,22 +139,42 @@ export class AssetController extends CRUDController {
   }
 
   async create (request: KuzzleRequest) {
+    const engineId = request.getString('engineId');
+    
     const type = request.getBodyString('type');
     const model = request.getBodyString('model');
     const reference = request.getBodyString('reference');
+    const categories = request.getBody().categories;
 
+    if (categories) {
+      const assetMetadata = request.getBodyObject('metadata');
+      for (const category of categories ) {
+        const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
+        const metadatas = AssetCategoryService.getMetadatas(assetCategory._source);
+        for (const metadata of metadatas) {
+          if (metadata.mandatory) {
+            if (! assetMetadata.hasOwnProperty(metadata.name)) {
+              throw new KuzzleError(`metadata ${metadata.name} is mandatory for the asset`, 400);
+            }
+          }
+        }
+      }
+    }
+    else {
+      request.input.body.categories = [];
+    }
     if (! request.input.args._id) {
       request.input.args._id = BaseAsset.id(type, model, reference);
     }
 
-    request.input.args.index = request.getString('engineId');
+    request.input.args.index = engineId;
     request.input.body.measures = [];
     request.input.body.deviceLinks = [];
-    request.input.body.categories = [];
+
 
     request.input.body.measures = [];
-
     return super.create(request);
+
   }
 
   async importAssets (request: KuzzleRequest) {

@@ -62,7 +62,6 @@ Feature: AssetCategory
     Then The document "engine-ayse":"asset-category":"truck" content match:
       | assetMetadatas | [] |
 
-
   Scenario: Create an assetCategory, and add a parent to it.
     When I successfully execute the action "device-manager/assetCategory":"create" with args:
       | engineId  | "engine-ayse" |
@@ -74,6 +73,48 @@ Feature: AssetCategory
     Then The document "engine-ayse":"asset-category":"bigTruck" content match:
       | name        | "bigTruck" |
       | parent.name | "truck"    |
+
+  Scenario: Create an asset with AssetCategory
+    When I successfully execute the action "device-manager/asset":"create" with args:
+      | engineId        | "engine-ayse" |
+      | body.type       | "truck"       |
+      | body.model      | "M"           |
+      | body.reference  | "asset_01"    |
+      | body.categories | ["bigTruck"]  |
+      | body.metadata   | {}            |
+    Then The document "engine-ayse":"assets":"truck-M-asset_01" content match:
+      | categories | ["bigTruck"] |
+
+  Scenario: Create an asset with AssetCategory and absent mandatory metadatas
+    When I successfully execute the action "device-manager/metadata":"create" with args:
+      | engineId       | "engine-ayse" |
+      | body.name      | "surname"     |
+      | body.valueType | "integer"     |
+      | body.mandatory | true          |
+    When I successfully execute the action "device-manager/assetCategory":"linkMedatadata" with args:
+      | engineId    | "engine-ayse" |
+      | _id         | "truck"       |
+      | _metadataId | "surname"     |
+    When I execute the action "device-manager/asset":"create" with args:
+      | engineId        | "engine-ayse" |
+      | body.type       | "truck"         |
+      | body.model      | "M"             |
+      | body.reference  | "asset_02"      |
+      | body.categories | ["bigTruck"]    |
+      | body.metadata   | {}              |
+    Then I should receive an error matching:
+      | status | 400 |
+
+
+  Scenario: Create an asset with AssetCategory and present mandatory metadatas
+    When I successfully execute the action "device-manager/asset":"create" with args:
+      | engineId              | "engine-ayse" |
+      | body.type             | "truck"       |
+      | body.model            | "M"           |
+      | body.reference        | "asset_02"    |
+      | body.categories       | ["bigTruck"]  |
+      | body.metadata.surname | "test"        |
+
 
   Scenario: Update a parent, and verify edition propagation
     When I successfully execute the action "device-manager/assetCategory":"update" with args:
