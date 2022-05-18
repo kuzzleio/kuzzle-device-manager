@@ -98,12 +98,7 @@ export class PayloadService {
     }
 
     try {
-      const deviceDoc = await this.batch.get<DeviceContent>(
-        this.config.adminIndex,
-        'devices',
-        deviceId);
-
-      const device = new Device(deviceDoc._source);
+      const device = await this.getDevice(deviceId);
 
       if (device._source.assetId) {
         for (const measure of newMeasures) {
@@ -302,12 +297,10 @@ export class PayloadService {
         measure.name = measureNameMap.get(measure.type);
       }
     }
-    const asset = await this.batch.get<BaseAssetContent>(
-      engineId,
-      'assets',
-      assetId);
 
-    if (! _.isArray(asset._source.measures)) {
+    const asset = await this.getAsset(engineId, assetId);
+
+    if (asset._source.measures && ! _.isArray(asset._source.measures)) {
       throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
     }
 
@@ -335,5 +328,20 @@ export class PayloadService {
       { retryOnConflict: 10, source: true });
 
     return new BaseAsset(assetDocument._source as any, assetDocument._id);
+  }
+
+  private async getAsset (engineId: string, assetId: string) {
+    const document = await this.batch.get<BaseAssetContent>(engineId, 'assets', assetId);
+
+    return new BaseAsset(document._source, document._id);
+  }
+
+  private async getDevice (deviceId: string) {
+    const document = await this.batch.get<DeviceContent>(
+      this.config.adminIndex,
+      'devices',
+      deviceId);
+
+    return new Device(document._source, document._id);
   }
 }
