@@ -2,6 +2,8 @@ import { JSONObject } from 'kuzzle';
 import { KDocumentContent } from 'kuzzle-sdk';
 
 import { MeasureContent } from './measures/MeasureContent';
+import { LinkedMeasureName } from './measures/MeasureDefinition';
+
 
 export interface DeviceContent extends KDocumentContent {
   /**
@@ -29,6 +31,11 @@ export interface DeviceContent extends KDocumentContent {
    * Linked asset unique identifier
    */
   assetId?: string;
+
+  /**
+   * correspondence table between measures types and names
+   */
+  measuresName: LinkedMeasureName[];
 
   /**
    * Attached engine ID (index name)

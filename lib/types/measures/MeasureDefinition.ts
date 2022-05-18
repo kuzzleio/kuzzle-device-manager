@@ -43,3 +43,12 @@ export interface MeasureDefinition {
    */
    valuesMappings: JSONObject;
 }
+
+
+/**
+ * mapping between measure name and type (include in devices and assets)
+ */
+export interface LinkedMeasureName {
+  name : string;
+  type : string;
+}

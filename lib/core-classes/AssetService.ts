@@ -13,7 +13,7 @@ export class AssetService {
     return this.context.accessors.sdk;
   }
 
-  constructor(plugin: Plugin) {
+  constructor (plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
   }
@@ -30,7 +30,7 @@ export class AssetService {
   async measureHistory (
     engineId: string,
     assetId: string,
-    { size=25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
+    { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
   ): Promise<KDocument<MeasureContent>[]> {
     await this.getAsset(engineId, assetId);
 
@@ -62,7 +62,7 @@ export class AssetService {
     return measures.hits;
   }
 
-  async importAssets(
+  async importAssets (
     index: string,
     assets: JSONObject,
     { strict, options }: { strict?: boolean; options?: JSONObject }
@@ -74,7 +74,7 @@ export class AssetService {
 
     const assetDocuments = assets.map((asset: BaseAssetContent) => {
       const _asset = new BaseAsset(asset);
-
+      
       return {
         _id: _asset._id,
         body: _.omit(asset, ['_id']),
@@ -102,7 +102,7 @@ export class AssetService {
     return results;
   }
 
-  private getAsset (engineId: string, assetId: string): Promise<KDocument<BaseAssetContent>> {
+  getAsset (engineId: string, assetId: string): Promise<KDocument<BaseAssetContent>> {
     return this.sdk.document.get<BaseAssetContent>(engineId, 'assets', assetId);
   }
 
@@ -113,7 +113,7 @@ export class AssetService {
     if (isNaN(parsed)) {
       throw new BadRequestError(`"${name}" is not a valid ISO8601 date`);
     }
-
+    
     return parsed;
   }
 }

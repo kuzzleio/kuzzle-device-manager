@@ -30,6 +30,7 @@ Feature: LinkAsset
       | measures[1].unit.name          | "Volt"                             |
       | measures[1].unit.sign          | "v"                                |
       | measures[1].unit.type          | "number"                           |
+      | deviceLinks[0].deviceId        | "DummyTemp-attached_ayse_unlinked" |
 
   Scenario: Link device to an asset and enriching the asset with before event
     When I successfully execute the action "device-manager/device":"linkAsset" with args:

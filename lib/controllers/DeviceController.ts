@@ -16,7 +16,7 @@ export class DeviceController extends CRUDController {
 
   private deviceService: DeviceService;
 
-  constructor(plugin: DeviceManagerPlugin, deviceService: DeviceService) {
+  constructor (plugin: DeviceManagerPlugin, deviceService: DeviceService) {
     super(plugin, 'devices');
 
     this.deviceService = deviceService;
@@ -26,7 +26,7 @@ export class DeviceController extends CRUDController {
       actions: {
         attachEngine: {
           handler: this.attachEngine.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id/_attach', verb: 'put' }]
+          http: [{ path: 'device-manager/:engineId/devices/:_id/_attach', verb: 'put' }]
         },
         detachEngine: {
           handler: this.detachEngine.bind(this),
@@ -38,7 +38,7 @@ export class DeviceController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id/_link/:assetId', verb: 'put' }]
+          http: [{ path: 'device-manager/:engineId/devices/:_id/_link/:assetId', verb: 'put' }]
         },
         mAttachEngines: {
           handler: this.mAttachEngines.bind(this),
@@ -62,13 +62,13 @@ export class DeviceController extends CRUDController {
         },
         unlinkAsset: {
           handler: this.unlinkAsset.bind(this),
-          http: [{ path: 'device-manager/:index/devices/:_id/_unlink', verb: 'delete' }]
+          http: [{ path: 'device-manager/:engineId/devices/:_id/_unlink', verb: 'delete' }]
         },
 
         // CRUD Controller
         create: {
           handler: this.create.bind(this),
-          http: [{ path: 'device-manager/:index/devices', verb: 'post' }]
+          http: [{ path: 'device-manager/:engineId/devices', verb: 'post' }]
         },
       }
     };
@@ -88,6 +88,7 @@ export class DeviceController extends CRUDController {
 
     const deviceContent: DeviceContent = {
       measures: [],
+      measuresName: [],
       metadata,
       model,
       reference,
@@ -297,7 +298,7 @@ export class DeviceController extends CRUDController {
     if (body.csv) {
       const lines = await csv({ delimiter: 'auto' }).fromString(body.csv);
 
-      bulkData = lines.map(({ engineId, deviceId, assetId}) => ({
+      bulkData = lines.map(({ engineId, deviceId, assetId }) => ({
         assetId,
         deviceId,
         engineId
