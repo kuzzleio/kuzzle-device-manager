@@ -148,7 +148,7 @@ export class AssetController extends CRUDController {
 
     if (categories) {
       const assetMetadata = request.getBodyObject('metadata');
-      for (const category of categories ) {
+      for (const category of categories) {
         const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
         const metadatas = AssetCategoryService.getMetadatas(assetCategory._source);
         for (const metadata of metadatas) {

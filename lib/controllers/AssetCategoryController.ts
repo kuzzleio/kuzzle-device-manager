@@ -26,7 +26,7 @@ export class AssetCategoryController extends RelationalController {
         },
         unlinkMedatadata: {
           handler: this.unlinkMetadata.bind(this),
-          http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_unlink/metadata/:_metadataId', verb: 'delete' }], //TODO : enlever le _
+          http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_unlink/metadata/:_metadataId', verb: 'delete' }],
         },
         linkParent: {
           handler: this.linkParent.bind(this),
@@ -37,6 +37,15 @@ export class AssetCategoryController extends RelationalController {
           http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_unlink/parent/:parentId', verb: 'delete' }],
         }
       },
+    };
+  }
+  
+  private getFieldPath (request : KuzzleRequest,  fieldName : string, documentKey : string = '_id', collectionName : string = 'asset-category', indexKey : string = 'engineId', ): FieldPath {
+    return {
+      index: indexKey ? request.getString(indexKey) : null,
+      collection: collectionName,
+      document: documentKey ? request.getString(documentKey) : null,
+      field: fieldName
     };
   }
 
@@ -53,34 +62,42 @@ export class AssetCategoryController extends RelationalController {
   }
 
   async delete (request: KuzzleRequest) {
-    //return super.delete(request);
+    /*
     const linkedAsset: FieldPath = {
       index: request.getString('engineId'),
       collection: 'assets',
       document: null,
       field: 'categories'
     };
+     */
+    const linkedAsset = this.getFieldPath(request, 'categories', null,  'assets');
     return super.genericDelete(request, null, ['children'], [linkedAsset]);
   }
 
   async linkParent (request: KuzzleRequest) {
+    /*
     const embeddedAssetCategory: FieldPath = {
       index: request.getString('engineId'),
       collection: 'asset-category',
       document: request.getString('parentId'),
       field: 'children'
     };
+    */
+    const embeddedAssetCategory = this.getFieldPath(request, 'children', 'parentId');
+    /*
     const assetCategoryContainer: FieldPath = {
       index: request.getString('engineId'),
       collection: 'asset-category',
       document: request.getString('_id'),
       field: 'parent'
     };
-    //return super.link(request, embeddedAssetCategory, assetCategoryContainer);
+    */
+    const assetCategoryContainer = this.getFieldPath(request, 'parent');
     return super.genericLink(request, embeddedAssetCategory, assetCategoryContainer, false);
   }
 
   async unlinkParent (request: KuzzleRequest) {
+    /*
     const embeddedAssetCategory: FieldPath = {
       index: request.getString('engineId'),
       collection: 'asset-category',
@@ -93,10 +110,14 @@ export class AssetCategoryController extends RelationalController {
       document: request.getString('_id'),
       field: 'parent'
     };
+    */
+    const embeddedAssetCategory =  this.getFieldPath(request, 'children', 'parentId');
+    const assetCategoryContainer = this.getFieldPath(request, 'parent');
     return super.genericUnlink(request, embeddedAssetCategory, assetCategoryContainer, false);
   }
 
   async linkMetadata (request: KuzzleRequest) {
+    /*
     const embeddedMetadata : FieldPath = {
       index: request.getString('engineId'),
       collection: 'metadata',
@@ -110,24 +131,18 @@ export class AssetCategoryController extends RelationalController {
       document: request.getString('_id'),
       field: 'assetMetadatas'
     };
-    //return super.linkV2(request, embeddedMetadata, assetCategoryContainer);
+    */
+    const embeddedMetadata =  this.getFieldPath(request, 'AssetCategory', '_metadataId', 'metadata');
+    const assetCategoryContainer = this.getFieldPath(request, 'assetMetadatas');
     return super.genericLink(request, embeddedMetadata, assetCategoryContainer, true);
   }
 
   async unlinkMetadata (request: KuzzleRequest) {
-    const embeddedMetadata : FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'metadata',
-      document: request.getString('_metadataId'),
-      field: 'AssetCategory'
-    };
 
-    const assetCategoryContainer : FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'asset-category',
-      document: request.getString('_id'),
-      field: 'assetMetadatas'
-    };
+    const embeddedMetadata =  this.getFieldPath(request, 'AssetCategory', '_metadataId', 'metadata');
+    const assetCategoryContainer = this.getFieldPath(request, 'assetMetadatas');
+
+
     return super.genericUnlink(request, embeddedMetadata, assetCategoryContainer, true);
   }
 
