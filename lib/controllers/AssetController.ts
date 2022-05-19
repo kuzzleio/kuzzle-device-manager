@@ -171,8 +171,8 @@ export class AssetController extends CRUDController {
     request.input.body.measures = [];
     request.input.body.deviceLinks = [];
 
-
     request.input.body.measures = [];
+
     return super.create(request);
 
   }

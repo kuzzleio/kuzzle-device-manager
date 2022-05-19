@@ -300,7 +300,6 @@ export class PayloadService {
       }
     }
 
-
     if (asset._source.measures && ! _.isArray(asset._source.measures)) {
       throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
     }
