@@ -153,6 +153,7 @@ export class AssetController extends CRUDController {
         const metadatas = AssetCategoryService.getMetadatas(assetCategory._source);
         for (const metadata of metadatas) {
           if (metadata.mandatory) {
+            // eslint-disable-next-line no-prototype-builtins
             if (! assetMetadata.hasOwnProperty(metadata.name)) {
               throw new KuzzleError(`metadata ${metadata.name} is mandatory for the asset`, 400);
             }

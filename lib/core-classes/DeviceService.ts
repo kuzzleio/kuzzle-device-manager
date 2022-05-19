@@ -328,7 +328,6 @@ export class DeviceService {
     asset._source.deviceLinks = filteredDeviceList;
 
 
-
     const response = await global.app.trigger(
       'device-manager:device:unlink-asset:before',
       { asset, device },
