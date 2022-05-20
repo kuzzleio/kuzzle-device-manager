@@ -55,12 +55,15 @@ Feature: AssetCategory
     Then The document "engine-ayse":"asset-category":"truck" content match:
       | assetMetadatas[0].mandatory | true |
 
+
   Scenario: Delete a metadata, and verify edition propagation
     When I successfully execute the action "device-manager/metadata":"delete" with args:
       | engineId | "engine-ayse" |
       | _id      | "size"        |
     Then The document "engine-ayse":"asset-category":"truck" content match:
       | assetMetadatas | [] |
+
+
 
   Scenario: Create an assetCategory, and add a parent to it.
     When I successfully execute the action "device-manager/assetCategory":"create" with args:
@@ -125,6 +128,16 @@ Feature: AssetCategory
       | name        | "bigTruck" |
       | parent.name | "basicTruck"    |
 
+  Scenario: Unlink a metadata on a parent category, verify parent update and verify edition propagation on children category
+    When I successfully execute the action "device-manager/assetCategory":"unlinkMedatadata" with args:
+      | engineId       | "engine-ayse" |
+      | _id | "truck" |
+      | _metadataId | "surname"  |
+    Then The document "engine-ayse":"asset-category":"truck" content match:
+      | assetMetadatas | [] |
+    Then The document "engine-ayse":"asset-category":"bigTruck" content match:
+      | parent.assetMetadatas | [] |
+
   Scenario: link a metadata on a parent category, and verify edition propagation on children category
     When I successfully execute the action "device-manager/metadata":"create" with args:
       | engineId       | "engine-ayse" |
@@ -139,7 +152,6 @@ Feature: AssetCategory
       | parent.assetMetadatas[0].name      | "height" |
       | parent.assetMetadatas[0].mandatory | false    |
 
-
   Scenario: update a metadata on a parent category, and verify edition propagation on children category
     When I successfully execute the action "device-manager/metadata":"update" with args:
       | engineId       | "engine-ayse" |
@@ -147,17 +159,6 @@ Feature: AssetCategory
       | body.mandatory | true          |
     Then The document "engine-ayse":"asset-category":"bigTruck" content match:
       | parent.assetMetadatas[0].mandatory | true |
-
-  Scenario: Unlink a metadata on a parent category, verify parent update and verify edition propagation on children category
-    When I successfully execute the action "device-manager/assetCategory":"unlinkMedatadata" with args:
-      | engineId       | "engine-ayse" |
-      | _id | "truck" |
-      | _metadataId | "height"  |
-    Then The document "engine-ayse":"asset-category":"truck" content match:
-      | assetMetadatas | [] |
-    Then The document "engine-ayse":"asset-category":"bigTruck" content match:
-      | parent.assetMetadatas | [] |
-
 
   Scenario: Delete a child, update parent and validate the lazy link remove work fine
     When I successfully execute the action "device-manager/assetCategory":"delete" with args:

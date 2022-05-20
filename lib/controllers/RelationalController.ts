@@ -26,6 +26,12 @@ export abstract class RelationalController extends CRUDController {
     return super.create(request);
   }
 
+  /**
+   * Update document (like update from CRUDController) but propagate update from objects that contain the edited object
+   * @param request : standard update request
+   * @param manyToManyLinkedFields : list of field name that contain FieldPath representing a manyToMany relation where the updated object is embedded
+   * @param oneToManyLinkedFields : list of field name that contain FieldPath representing a oneToMany relation where the updated object is embedded
+   */
   async genericUpdate (request: KuzzleRequest, manyToManyLinkedFields? : string[], oneToManyLinkedFields? : string[]) {
     request.input.args.index = request.getString('engineId');
     const promises : Promise<void>[] = [];
@@ -46,6 +52,14 @@ export abstract class RelationalController extends CRUDController {
     return super.update(request);
   }
 
+  /**
+   * function used to propagate the update the changes to documents that contain an embedded version of the edited document (name documentToUpdate)
+   * remove the dead link to document that does not exist anymore.
+   * @param linkedField : name of the field used to represent the link between the original updated document and documents that embedded it
+   * @param manyToMany : is it a many to many relation (or one to one)
+   * @param documentToUpdate : original updated document
+   * @param originalRequest : original received request (will be edited to add remove dead link informations.
+   */
   async propagateUpdate (linkedField : string, manyToMany : boolean, documentToUpdate : KDocument<any>, originalRequest : KuzzleRequest ) {
     const updateBody = originalRequest.getBody();
     const updateId = originalRequest.getId();
@@ -56,7 +70,7 @@ export abstract class RelationalController extends CRUDController {
       const containerUpdateBody = {};
 
       //Lazy deleting
-      const containerDocument = await this.getDocumentContent(containerFieldPath);
+      const containerDocument = await this.getDocumentContent(containerFieldPath, false);
       if (! containerDocument) {
         this.removeLink(originalRequest, linkedField, containerFieldPath, documentToUpdate);
         continue;
@@ -64,75 +78,104 @@ export abstract class RelationalController extends CRUDController {
       //end of lazy deleting
 
       if (manyToMany) {
-        const indexToEdit = containerDocument._source[containerFieldPath.field].findIndex(element => element._kuzzleId === updateId);
-        containerDocument._source[containerFieldPath.field][indexToEdit] = updateBody;
-        containerDocument._source[containerFieldPath.field][indexToEdit]._kuzzleId = updateId;
-        containerUpdateBody[containerFieldPath.field] = containerDocument._source[containerFieldPath.field];
+        const arrayToEdit = containerDocument[containerFieldPath.field];
+        const indexToEdit = arrayToEdit.findIndex(element => element._kuzzleId === updateId);
+        arrayToEdit[indexToEdit] = updateBody;
+        arrayToEdit[indexToEdit]._kuzzleId = updateId;
+        containerUpdateBody[containerFieldPath.field] = arrayToEdit;
       }
       else {
         containerUpdateBody[containerFieldPath.field] = updateBody;
       }
-      promises.push(this.updateRequest(containerFieldPath.index, containerFieldPath.collection, containerFieldPath.document, containerUpdateBody, user));
+      promises.push(this.updateRequest(containerFieldPath, containerUpdateBody, user));
     }
     await Promise.all(promises);
   }
 
-  async genericDelete (request: KuzzleRequest, manyToManyLinkedFields? : string[], oneToManyLinkedFields? : string[], nestedFields? : FieldPath[]) {
+
+  /**
+   * Delete document (like update from CRUDController) but propagate deletion from objects that contain the edited object
+   * @param request : standard delete request
+   * @param manyToManyLinkedFields : list of field name that contain FieldPath representing a manyToMany relation where the removed document is embedded
+   * @param oneToManyLinkedFields : list of field name that contain FieldPath representing a oneToMany relation where the removed document is embedded
+   * @param nestedFields : contain field name, collection name and index name of documents that can have a reference to the document to delete.
+   */
+  async genericDelete (request: KuzzleRequest, manyToManyLinkedFields : string[] = [], oneToManyLinkedFields : string[] = [], nestedFields : FieldPath[] = []) {
     request.input.args.index = request.getString('engineId');
     const promises : Promise<void>[] = [];
 
-    if (nestedFields) {
-      promises.push(this.deleteNested(request, nestedFields));
-    }
-    if (manyToManyLinkedFields || oneToManyLinkedFields ) {
+    promises.push(this.deleteNested(request, nestedFields));
+    
+    if (manyToManyLinkedFields !== [] || oneToManyLinkedFields !== [] ) {
       const document = await this.sdk.document.get(request.getString('engineId'), this.collection, request.getId());
-      if (manyToManyLinkedFields) {
-        for (const childrenField of manyToManyLinkedFields) {
-          promises.push(this.propagateDelete(document._source[childrenField], childrenField, true, request));
-        }
+
+      for (const childrenField of manyToManyLinkedFields) {
+        promises.push(this.propagateDelete(document._source[childrenField], childrenField, true, request));
       }
-      if (oneToManyLinkedFields) {
-        for (const containerField of oneToManyLinkedFields) {
-          promises.push(this.propagateDelete(document._source[containerField], containerField, false, request)); 
-        }
+
+      for (const containerField of oneToManyLinkedFields) {
+        promises.push(this.propagateDelete(document._source[containerField], containerField, false, request));
       }
+
     }
     await Promise.all(promises);
     return super.delete(request);
   }
-  
-  async deleteNested (request: KuzzleRequest, nestedFields : FieldPath[]) { //nestedField must contain : index/collection and field with id to object to delete of CONTAINER
+
+  /**
+   *
+   * @param request : original delete request
+   * @param nestedFields : contain field name, collection name and index name of documents that can have a reference to the document to delete.
+   */
+  async deleteNested (request: KuzzleRequest, nestedFields : FieldPath[] = []) { //nestedField must contain : index/collection and field with id to object to delete of CONTAINER
     request.input.args.index = request.getString('engineId');
     const promises : Promise<void>[] = [];
-    if (nestedFields) {
-      for (const nestedField of nestedFields) {
-        const search = {
-          'equals': { }
+    for (const nestedField of nestedFields) {
+      const query = {
+        'equals': { }
+      };
+      query.equals[nestedField.field] = request.getId();
+      const search =
+        {
+          query: query
         };
-        search.equals[nestedField.field] = request.getId();
-        const realSearch =
-          {
-            query: search
-          };
-        promises.push(this.sdk.document.search(nestedField.index, nestedField.collection, realSearch, { lang: 'koncorde' } ).then(
-          find => {
-            return this.propagateToNested(find, nestedField.index, nestedField.collection, nestedField.field, request.getId(), request.getUser());
-          }));
-      }
+      promises.push(this.sdk.document.search(nestedField.index, nestedField.collection, search, { lang: 'koncorde' } ).then(
+        find => {
+          return this.propagateToNested(find, nestedField.index, nestedField.collection, nestedField.field, request.getId(), request.getUser());
+        }));
     }
     await Promise.all(promises);
   }
-  
+
+  /**
+   * edit nested fields of document that contain link to removed document
+   * @param documents : SearchResult of all documents to edit
+   * @param index of document to edit
+   * @param collection of document to edit
+   * @param field that need to be edited
+   * @param requestId : id of document removed from the original request
+   * @param user : User of original request
+   */
   async propagateToNested (documents : SearchResult<KHit<KDocumentContentGeneric>>, index : string, collection : string, field : string, requestId : string, user : User) {
     const promises : Promise<void>[] = [];
-    for (const document of documents.hits) {
-      const request = {};
-      request[field] = document[field].filter( id => id !== requestId);
-      promises.push(this.updateRequest(index, collection, document._id, request, user));
+    while (documents) {
+      for (const document of documents.hits) {
+        const request = {};
+        request[field] = document[field].filter(id => id !== requestId);
+        promises.push(this.updateRequestRaw(index, collection, document._id, request, user));
+      }
+      documents = await documents.next();
     }
     await Promise.all(promises);
   }
-  
+
+  /**
+   * delete embedded copy of a removed document
+    * @param listContainer : list of fieldPath that represent fields where doc
+   * @param childrenField : name of field in removed document that contain relation information
+   * @param manyToMany : is it manyToMany relation (or one to many?)
+   * @param request : original delete request
+   */
   async propagateDelete ( listContainer: FieldPath[], childrenField: string, manyToMany : boolean, request : KuzzleRequest) {
     const engineId = request.getString('engineId');
     const removedObjectId = request.getId();
@@ -146,76 +189,102 @@ export abstract class RelationalController extends CRUDController {
   }
 
 
+  /**
+   * link two element
+   * @param request : original request
+   * @param embedded : field that represent relation in document that will be embedded
+   * @param container : field that represent relation in document that will contain the other
+   * @param manyToMany : is it manyToMany relation (or one to many?)
+   */
   async genericLink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany : boolean) {
 
     //First we update embedded document by adding link to container document
-    const document = await this.sdk.document.get(embedded.index, embedded.collection, embedded.document);
-    if (! document._source[embedded.field]) {
-      document._source[embedded.field] = [];
+    const document = await this.getDocumentContent(embedded);
+    if (! document[embedded.field]) {
+      document[embedded.field] = [];
     }
-    document._source[embedded.field].push(container);
+    document[embedded.field].push(container);
     const updateMessage = {};
-    updateMessage[embedded.field] = document._source[embedded.field];
-    await this.updateRequest(embedded.index, embedded.collection, embedded.document, updateMessage, request.getUser());
+    updateMessage[embedded.field] = document[embedded.field];
+    await this.updateRequest(embedded, updateMessage, request.getUser());
 
     //Second we update child document by adding content of parent document
-    delete document._source[embedded.field];
-    delete document._source._kuzzle_info;
+    delete document[embedded.field];
+    delete document._kuzzle_info;
+    const updateMessageDest = {};
     if (manyToMany) {
-      const containerDocument = await this.sdk.document.get(container.index, container.collection, container.document );
-      document._source._kuzzleId = document._id;
-      const updateMessageDest = {};
+      const containerDocument = await this.getDocumentContent(container);
+      document._kuzzleId = embedded.document; 
       updateMessageDest[container.field] = containerDocument[container.field] ? containerDocument[container.field] : [];
-      updateMessageDest[container.field].push(document._source);
-      await this.updateRequest(container.index, container.collection, container.document, updateMessageDest, request.getUser());
+      updateMessageDest[container.field].push(document);
     }
     else {
-      const updateMessageDest = {};
-      updateMessageDest[container.field] = document._source;
-      await this.updateRequest(container.index, container.collection, container.document, updateMessageDest, request.getUser());
+      updateMessageDest[container.field] = document;
     }
+    await this.updateRequest(container, updateMessageDest, request.getUser());
+
   }
 
+  /**
+   * unlink two element
+   * @param request : original request
+   * @param embedded : field that represent relation in document that is embedded
+   * @param container : field that represent relation in document that contain the other
+   * @param manyToMany : is it manyToMany relation (or one to many?)
+   */
   async genericUnlink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany :boolean) {
     //First we update the embedded document
-    const document = await this.sdk.document.get(embedded.index, embedded.collection, embedded.document);
-    if (! document._source[embedded.field]) {
+    const document = await this.getDocumentContent(embedded);
+    if (! document[embedded.field]) {
       throw new KuzzleError('you cannot unlink object that is not linked', 404);
     }
-    const index = document._source[embedded.field].findIndex(fieldPath => this.equal(fieldPath, container));
+    const index = document[embedded.field].findIndex(fieldPath => this.equal(fieldPath, container));
     if (index === -1) {
       throw new KuzzleError('you cannot unlink object that is not linked', 404);
     }
-    document._source[embedded.field].splice(index, 1);
+    document[embedded.field].splice(index, 1);
     const updateMessage = {};
-    updateMessage[embedded.field] = document._source[embedded.field];
-    await this.updateRequest(embedded.index, embedded.collection, embedded.document, updateMessage, request.getUser());
+    updateMessage[embedded.field] = document[embedded.field];
+    await this.updateRequest(embedded, updateMessage, request.getUser());
 
     //Second we update container document by removing content of embedded document
-    const containerDocument = await this.sdk.document.get(container.index, container.collection, container.document );
+    const containerDocument = await this.getDocumentContent(container );
     const updateRequest = {};
     if (manyToMany) {
-      updateRequest[container.field] = containerDocument._source[container.field].filter(embeddedDocument => embeddedDocument._kuzzleId === document._id);
+      updateRequest[container.field] = containerDocument[container.field].filter(embeddedDocument => embeddedDocument._kuzzleId !== embedded.document);
     }
     else {
       updateRequest[container.field] = null;
     }
-    await this.updateRequest(container.index, container.collection, container.document, updateRequest, request.getUser());
+    await this.updateRequest(container, updateRequest, request.getUser());
   }
 
-  public async getDocumentContent (path : FieldPath) {
+  /**
+   * return the content (_source) of the document represented in the fieldPath (null if the document does not exist)
+   * @param path
+   */
+  public async getDocumentContent (path : FieldPath, throwError = true) {
     try {
-      return await this.sdk.document.get(path.index, path.collection, path.document);
+      const document = await this.sdk.document.get(path.index, path.collection, path.document);
+      return document._source;
     }
     catch (err) {
-      if (err.id === 'services.storage.not_found') {
+      if (err.id === 'services.storage.not_found' && ! throwError) {
         return null;
       } 
       throw err;
     }
   }
 
-  //change the update request to add the order to remove the link
+
+  /**
+   * remove a broken link (linked document was removed)
+   * @param request : original request
+   * @param linkedField : name of the field used to represent the link between the original updated document and documents that embedded it
+   * @param containerFieldPath : FieldPath to a document that contain link to a removed document
+   * @param containerDocument : document that contain the broken link
+   * @private
+   */
   private removeLink (request: KuzzleRequest, linkedField: string, containerFieldPath: FieldPath, containerDocument: KDocument<KDocumentContentGeneric>) {
     if (! request.input.body[linkedField]) {
       request.input.body[linkedField] = containerDocument._source[linkedField];
@@ -223,6 +292,11 @@ export abstract class RelationalController extends CRUDController {
     request.input.body[linkedField] = request.input.body[linkedField].filter(field => ! this.equal(field, containerFieldPath));
   }
 
+  /**
+   * return true if two FieldsPath are equals
+   * @param f1
+   * @param f2
+   */
   public equal (f1 : FieldPath, f2 : FieldPath) {
     return f1.index === f2.index
       && f1.collection === f2.collection
@@ -230,7 +304,27 @@ export abstract class RelationalController extends CRUDController {
       && f1.field === f2.field;
   }
 
-  private async updateRequest (index: string, collection : string, document : string, body, user : User) {
+  /**
+   * create a new update request to edit a document (call controller.update if controller to call is know, or use document.update)
+   * @param fieldPath : target document
+   * @param body : body of the update request
+   * @param user : user of original request
+   * @private
+   */
+  private async updateRequest (fieldPath: FieldPath, body: any, user : User) {
+    await this.updateRequestRaw(fieldPath.index, fieldPath.collection, fieldPath.document, body, user);
+  }
+
+  /**
+   * create a new update request to edit a document (call controller.update if controller to call is know, or use document.update)
+   * @param index : index of target document
+   * @param collection  : collection  of target document
+   * @param document   : index of target document
+   * @param body : body of the update request
+   * @param user : user of original request
+   * @private
+   */
+  private async updateRequestRaw (index: string, collection : string, document : string, body, user : User) {
     if (RelationalController.classMap && RelationalController.classMap.has(collection)) {
       const request = new KuzzleRequest({
         _id: document,
