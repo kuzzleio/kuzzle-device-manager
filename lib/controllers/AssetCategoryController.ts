@@ -62,76 +62,28 @@ export class AssetCategoryController extends RelationalController {
   }
 
   async delete (request: KuzzleRequest) {
-    /*
-    const linkedAsset: FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'assets',
-      document: null,
-      field: 'categories'
-    };
-     */
+
     const linkedAsset = this.getFieldPath(request, 'categories', null,  'assets');
-    return super.genericDelete(request, null, ['children'], [linkedAsset]);
+    return super.genericDelete(request, [], ['children'], [linkedAsset]);
   }
 
   async linkParent (request: KuzzleRequest) {
-    /*
-    const embeddedAssetCategory: FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'asset-category',
-      document: request.getString('parentId'),
-      field: 'children'
-    };
-    */
+
     const embeddedAssetCategory = this.getFieldPath(request, 'children', 'parentId');
-    /*
-    const assetCategoryContainer: FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'asset-category',
-      document: request.getString('_id'),
-      field: 'parent'
-    };
-    */
+
     const assetCategoryContainer = this.getFieldPath(request, 'parent');
     return super.genericLink(request, embeddedAssetCategory, assetCategoryContainer, false);
   }
 
   async unlinkParent (request: KuzzleRequest) {
-    /*
-    const embeddedAssetCategory: FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'asset-category',
-      document: request.getString('parentId'),
-      field: 'children'
-    };
-    const assetCategoryContainer: FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'asset-category',
-      document: request.getString('_id'),
-      field: 'parent'
-    };
-    */
+
     const embeddedAssetCategory =  this.getFieldPath(request, 'children', 'parentId');
     const assetCategoryContainer = this.getFieldPath(request, 'parent');
     return super.genericUnlink(request, embeddedAssetCategory, assetCategoryContainer, false);
   }
 
   async linkMetadata (request: KuzzleRequest) {
-    /*
-    const embeddedMetadata : FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'metadata',
-      document: request.getString('_metadataId'),
-      field: 'AssetCategory'
-    };
-    
-    const assetCategoryContainer : FieldPath = {
-      index: request.getString('engineId'),
-      collection: 'asset-category',
-      document: request.getString('_id'),
-      field: 'assetMetadatas'
-    };
-    */
+
     const embeddedMetadata =  this.getFieldPath(request, 'AssetCategory', '_metadataId', 'metadata');
     const assetCategoryContainer = this.getFieldPath(request, 'assetMetadatas');
     return super.genericLink(request, embeddedMetadata, assetCategoryContainer, true);
@@ -141,9 +93,7 @@ export class AssetCategoryController extends RelationalController {
 
     const embeddedMetadata =  this.getFieldPath(request, 'AssetCategory', '_metadataId', 'metadata');
     const assetCategoryContainer = this.getFieldPath(request, 'assetMetadatas');
-
-
     return super.genericUnlink(request, embeddedMetadata, assetCategoryContainer, true);
   }
-
+  
 }
