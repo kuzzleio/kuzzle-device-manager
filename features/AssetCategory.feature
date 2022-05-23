@@ -41,7 +41,8 @@ Feature: AssetCategory
       | _id        | "tools-MART-linked" |
       | categoryId | "tool"              |
       | engineId   | "engine-ayse"       |
-    When I successfully execute the action "device-manager/assetCategory":"delete" with args:
+    And I refresh the collection "engine-ayse":"assets"
+    And I successfully execute the action "device-manager/assetCategory":"delete" with args:
       | engineId | "engine-ayse" |
       | _id      | "tool"        |
     Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
@@ -184,4 +185,5 @@ Feature: AssetCategory
       | _id      | "truck"        |
     Then The document "engine-ayse":"asset-category":"littleTruck" content match:
       | parent | null |
+
 

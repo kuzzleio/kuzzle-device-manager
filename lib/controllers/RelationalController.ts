@@ -132,14 +132,15 @@ export abstract class RelationalController extends CRUDController {
     const promises : Promise<void>[] = [];
     for (const nestedField of nestedFields) {
       const query = {
-        'equals': { }
+        'match': { }
       };
-      query.equals[nestedField.field] = request.getId();
+      query.match[nestedField.field] = request.getId();
       const search =
         {
           query: query
         };
-      promises.push(this.sdk.document.search(nestedField.index, nestedField.collection, search, { lang: 'koncorde' } ).then(
+
+      promises.push(this.sdk.document.search(nestedField.index, nestedField.collection, search).then(
         find => {
           return this.propagateToNested(find, nestedField.index, nestedField.collection, nestedField.field, request.getId(), request.getUser());
         }));
@@ -161,7 +162,7 @@ export abstract class RelationalController extends CRUDController {
     while (documents) {
       for (const document of documents.hits) {
         const request = {};
-        request[field] = document[field].filter(id => id !== requestId);
+        request[field] = document._source[field].filter(id => id !== requestId);
         promises.push(this.updateRequestRaw(index, collection, document._id, request, user));
       }
       documents = await documents.next();
@@ -233,6 +234,7 @@ export abstract class RelationalController extends CRUDController {
    * @param manyToMany : is it manyToMany relation (or one to many?)
    */
   async genericUnlink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany :boolean) {
+
     //First we update the embedded document
     const document = await this.getDocumentContent(embedded);
     if (! document[embedded.field]) {
@@ -248,6 +250,7 @@ export abstract class RelationalController extends CRUDController {
     await this.updateRequest(embedded, updateMessage, request.getUser());
 
     //Second we update container document by removing content of embedded document
+
     const containerDocument = await this.getDocumentContent(container );
     const updateRequest = {};
     if (manyToMany) {

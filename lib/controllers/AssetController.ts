@@ -95,7 +95,7 @@ export class AssetController extends CRUDController {
     else {
       throw new KuzzleError('you can\'t remove an unexisting link', 404 );
     }
-    updateRequest.categories.filter(linkedId => linkedId !== request.getString('categoryId') );
+    updateRequest.categories = updateRequest.categories.filter(linkedId => linkedId !== request.getString('categoryId') );
     request.input.body = updateRequest;
     return this.update(request);
   }
