@@ -1,10 +1,8 @@
 import { CRUDController } from 'kuzzle-plugin-commons';
 import {
-  Backend,
   KDocument,
   KDocumentContentGeneric,
   KHit,
-  KuzzleError,
   KuzzleRequest,
   Plugin,
   SearchResult

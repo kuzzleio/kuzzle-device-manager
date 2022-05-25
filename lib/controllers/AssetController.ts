@@ -1,8 +1,7 @@
 import csv from 'csvtojson';
 import { CRUDController } from 'kuzzle-plugin-commons';
 import {
-  Backend,
-  BadRequestError, KuzzleError,
+  BadRequestError,
   KuzzleRequest,
   Plugin,
 } from 'kuzzle';
