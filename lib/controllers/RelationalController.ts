@@ -1,5 +1,14 @@
 import { CRUDController } from 'kuzzle-plugin-commons';
-import { KDocument, KDocumentContentGeneric, KHit, KuzzleError, KuzzleRequest, Plugin, SearchResult } from 'kuzzle';
+import {
+  Backend,
+  KDocument,
+  KDocumentContentGeneric,
+  KHit,
+  KuzzleError,
+  KuzzleRequest,
+  Plugin,
+  SearchResult
+} from 'kuzzle';
 import { User } from 'kuzzle/lib/types';
 
 export interface FieldPath {
@@ -13,8 +22,23 @@ export abstract class RelationalController extends CRUDController {
 
   public static classMap : Map<string, RelationalController> = new Map<string, RelationalController>(); //key : collection name (must be index+collection in futur....). Value : controller
 
+  private static isInit = false;
+
+  public static init () {
+    if (! this.isInit) {
+      this.isInit = true;
+      global.app.errors.register('device-manager', 'relational', 'removeUnexistingLink', {
+        class: 'BadRequestError',
+        description: 'you can\'t remove an unexisting link',
+        message: 'you can\'t remove an unexisting link',
+      });
+    }
+
+  }
+  
   protected constructor (plugin: Plugin, name : string) {
     super(plugin, name);
+    RelationalController.init();
   }
 
   private get sdk () {
@@ -139,7 +163,6 @@ export abstract class RelationalController extends CRUDController {
         {
           query: query
         };
-
       promises.push(this.sdk.document.search(nestedField.index, nestedField.collection, search).then(
         find => {
           return this.propagateToNested(find, nestedField.index, nestedField.collection, nestedField.field, request.getId(), request.getUser());
@@ -238,11 +261,11 @@ export abstract class RelationalController extends CRUDController {
     //First we update the embedded document
     const document = await this.getDocumentContent(embedded);
     if (! document[embedded.field]) {
-      throw new KuzzleError('you cannot unlink object that is not linked', 404);
+      global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
     }
     const index = document[embedded.field].findIndex(fieldPath => this.equal(fieldPath, container));
     if (index === -1) {
-      throw new KuzzleError('you cannot unlink object that is not linked', 404);
+      global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
     }
     document[embedded.field].splice(index, 1);
     const updateMessage = {};

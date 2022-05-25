@@ -1,6 +1,7 @@
 import csv from 'csvtojson';
 import { CRUDController } from 'kuzzle-plugin-commons';
 import {
+  Backend,
   BadRequestError, KuzzleError,
   KuzzleRequest,
   Plugin,
@@ -19,9 +20,14 @@ export class AssetController extends CRUDController {
     return this.context.accessors.sdk;
   }
 
+
   constructor (plugin: Plugin, assetService: AssetService, deviceService : DeviceService) {
     super(plugin, 'assets');
-
+    global.app.errors.register('device-manager', 'assetController', 'MandatoryMetadata', {
+      class: 'BadRequestError',
+      description: 'Metadata which are specified in AssetCategory as mandatory must be present',
+      message: 'metadata %s is mandatory for the asset',
+    });
     this.assetService = assetService;
     this.deviceService = deviceService;
     /* eslint-disable sort-keys */
@@ -93,9 +99,10 @@ export class AssetController extends CRUDController {
       updateRequest.categories = document._source.categories;
     }
     else {
-      throw new KuzzleError('you can\'t remove an unexisting link', 404 );
+      global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
     }
-    updateRequest.categories = updateRequest.categories.filter(linkedId => linkedId !== request.getString('categoryId') );
+    const categoryId = request.getString('categoryId');
+    updateRequest.categories = updateRequest.categories.filter(linkedId => linkedId !== categoryId);
     request.input.body = updateRequest;
     return this.update(request);
   }
@@ -155,7 +162,7 @@ export class AssetController extends CRUDController {
           if (metadata.mandatory) {
             // eslint-disable-next-line no-prototype-builtins
             if (! assetMetadata.hasOwnProperty(metadata.name)) {
-              throw new KuzzleError(`metadata ${metadata.name} is mandatory for the asset`, 400);
+              throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
             }
           }
         }
