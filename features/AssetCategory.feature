@@ -19,7 +19,7 @@ Feature: AssetCategory
       | assetMetadatas[0].valueType | "integer" |
       | assetMetadatas[0].mandatory | false     |
 
-  Scenario: Link and unlink an asset and an AssetCategory
+  Scenario: Link and unlink an asset and a AssetCategory
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
       | _id        | "tools-MART-linked" |
       | categoryId | "truck"             |
@@ -32,6 +32,23 @@ Feature: AssetCategory
       | engineId   | "engine-ayse"       |
     Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
       | category | null |
+
+  Scenario: Link and unlink an asset and a subcategory
+    When I successfully execute the action "device-manager/asset":"linkCategory" with args:
+      | _id        | "tools-MART-linked" |
+      | categoryId | "bigTruck"             |
+      | engineId   | "engine-ayse"       |
+    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+      | category    | 'truck'    |
+      | subcategory | 'bigTruck' |
+    When I successfully execute the action "device-manager/asset":"unlinkCategory" with args:
+      | _id        | "tools-MART-linked" |
+      | categoryId | "truck"             |
+      | engineId   | "engine-ayse"       |
+    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+      | category | null |
+      | subcategory | null |
+
 
   Scenario: Remove an AssetCategory and verify propagation to a linked asset
     When I successfully execute the action "device-manager/assetCategory":"create" with args:

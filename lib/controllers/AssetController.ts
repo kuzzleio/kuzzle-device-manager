@@ -120,7 +120,7 @@ export class AssetController extends CRUDController {
       throw global.app.errors.get('device-manager', 'relational', 'alreadyLinked', 'asset', 'category');
     }
     else if (categoryDocument._source.parent) {
-      updateRequest.category = categoryDocument._source.parent;
+      updateRequest.category = categoryDocument._source.parent.name;
       updateRequest.subcategory = request.getString('categoryId');
     }
     else {
