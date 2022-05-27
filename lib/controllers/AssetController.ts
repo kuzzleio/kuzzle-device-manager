@@ -27,6 +27,11 @@ export class AssetController extends CRUDController {
       description: 'Metadata which are specified in AssetCategory as mandatory must be present',
       message: 'metadata %s is mandatory for the asset',
     });
+    global.app.errors.register('device-manager', 'assetController', 'MandatoryMetadata', {
+      class: 'BadRequestError',
+      description: 'Metadata which are specified in AssetCategory as mandatory must be present',
+      message: 'metadata %s is mandatory for the asset',
+    });
     this.assetService = assetService;
     this.deviceService = deviceService;
     /* eslint-disable sort-keys */
@@ -93,29 +98,35 @@ export class AssetController extends CRUDController {
     const id = request.getId();
     const engineId = request.getString('engineId');
     const document = await this.sdk.document.get(engineId, this.collection, id);
-    const updateRequest = { categories: [] };
-    if ( document._source.categories) {
-      updateRequest.categories = document._source.categories;
-    }
-    else {
-      global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
-    }
-    const categoryId = request.getString('categoryId');
-    updateRequest.categories = updateRequest.categories.filter(linkedId => linkedId !== categoryId);
-    request.input.body = updateRequest;
-    return this.update(request);
+    const updateRequest = { category: null, subcategory: null };
+    if ( document._source.category === request.getString('categoryId') || document._source.subcategory === request.getString('categoryId') ) {
+      request.input.body = updateRequest;
+      return this.update(request);
+    } 
+    throw global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
+    
   }
 
   async linkCategory (request: KuzzleRequest) { //TODO : verify mandatory metadatas (for later)
     const id = request.getId();
     const engineId = request.getString('engineId');
     const document = await this.sdk.document.get(engineId, this.collection, id);
-    await this.sdk.document.get(engineId, 'asset-category', request.getString('categoryId')); //only for throwing error if it does not exist
-    const updateRequest = { categories: [] };
-    if ( document._source.categories) {
-      updateRequest.categories = document._source.categories;
+    const categoryDocument = await this.sdk.document.get(engineId, 'asset-category', request.getString('categoryId')); 
+    const updateRequest = { 
+      category: null,
+      subcategory: null
+    };
+    if ( document._source.category) {
+      throw global.app.errors.get('device-manager', 'relational', 'alreadyLinked', 'asset', 'category');
     }
-    updateRequest.categories.push(request.getString('categoryId'));
+    else if (categoryDocument._source.parent) {
+      updateRequest.category = categoryDocument._source.parent;
+      updateRequest.subcategory = request.getString('categoryId');
+    }
+    else {
+      updateRequest.category = request.getString('categoryId');
+
+    } 
     request.input.body = updateRequest;
     return this.update(request);
   }
@@ -150,25 +161,23 @@ export class AssetController extends CRUDController {
     const type = request.getBodyString('type');
     const model = request.getBodyString('model');
     const reference = request.getBodyString('reference');
-    const categories = request.getBody().categories;
+    const category = request.getBody().category;
 
-    if (categories) {
+    if (category) {
       const assetMetadata = request.getBodyObject('metadata');
-      for (const category of categories) {
-        const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
-        const metadatas = AssetCategoryService.getMetadatas(assetCategory._source);
-        for (const metadata of metadatas) {
-          if (metadata.mandatory) {
-            // eslint-disable-next-line no-prototype-builtins
-            if (! assetMetadata.hasOwnProperty(metadata.name)) {
-              throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
-            }
+      const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
+      const metadatas = AssetCategoryService.getMetadatas(assetCategory._source);
+      for (const metadata of metadatas) {
+        if (metadata.mandatory) {
+          // eslint-disable-next-line no-prototype-builtins
+          if (! assetMetadata.hasOwnProperty(metadata.name)) {
+            throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
           }
         }
       }
     }
     else {
-      request.input.body.categories = [];
+      request.input.body.category = null;
     }
     if (! request.input.args._id) {
       request.input.args._id = BaseAsset.id(type, model, reference);
