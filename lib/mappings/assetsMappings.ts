@@ -7,12 +7,6 @@ export const assetsMappings = {
       },
       type: 'keyword'
     },
-    subcategory: {
-      fields: {
-        text: { type: 'text' }
-      },
-      type: 'keyword'
-    },
     deviceLinks: {
       properties: {
         deviceId: {
@@ -55,6 +49,12 @@ export const assetsMappings = {
       type: 'keyword'
     },
     reference: {
+      fields: {
+        text: { type: 'text' }
+      },
+      type: 'keyword'
+    },
+    subcategory: {
       fields: {
         text: { type: 'text' }
       },
