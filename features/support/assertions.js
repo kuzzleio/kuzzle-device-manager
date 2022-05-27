@@ -6,7 +6,6 @@ should.Assertion.add(
   function (expected) {
     this.params = { operator: 'match object' };
     for (const [keyPath, expectedValue] of Object.entries(expected)) {
-
       const objectValue = _.get(this.obj, keyPath);
       if (expectedValue === '_ANY_') {
         should(objectValue).not.be.undefined();
@@ -44,9 +43,11 @@ should.Assertion.add(
         }
         else {
           for (let i = 0; i < expectedValue.length; i++) {
-            should(objectValue[i]).matchObject(
-              expectedValue[i],
-              `"${keyPath}[${i}]" does not match. Expected "${JSON.stringify(expectedValue[i])}" have "${JSON.stringify(objectValue[i])}"`);
+            if (expectedValue[i]) {
+              should(objectValue[i]).matchObject(
+                expectedValue[i],
+                `"${keyPath}[${i}]" does not match. Expected "${JSON.stringify(expectedValue[i])}" have "${JSON.stringify(objectValue[i])}"`);
+            }
           }
         }
       }

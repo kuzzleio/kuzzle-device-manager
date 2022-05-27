@@ -91,7 +91,7 @@ const dummyTempAttachedAyseUnLinked2 = {
 const measuresAttachedAyseLinked = [
   {
     type: 'temperature',
-/* A measure of the device `DummyTemp-attached_ayse_linked` */
+    /* A measure of the device `DummyTemp-attached_ayse_linked` */
     name: 'temperature',
     unit: {
       name: 'Degree',
@@ -138,6 +138,37 @@ const dummyTempAttachedAyseLinked = {
   measures: measuresAttachedAyseLinked,
   engineId: 'engine-ayse',
   assetId: 'tools-MART-linked'
+};
+
+const truckCategory = 
+  {
+    'name': 'truck',
+    'children': [
+      {
+        'field': 'parent',
+        'document': 'bigTruck',
+        'index': 'engine-ayse',
+        'collection': 'asset-category'
+      }
+    ],
+    'assetMetadatas': [],
+    'assetMeasuresDefinition': []
+  };
+
+const bigTruckCategory = {
+  'name': 'bigTruck',
+  'children': [],
+  'parent': {
+    'name': 'truck',
+    'assetMeasuresDefinition': [],
+    'assetMetadatas': []
+  }
+};
+
+const sizeMetadata = {
+  'name': 'size',
+  'valueType': 'integer',
+  'mandatory': false,
 };
 
 module.exports = {
@@ -193,6 +224,16 @@ module.exports = {
       dummyTempAttachedAyseUnLinked2,
       { index: { _id: 'DummyTemp-attached_ayse_linked' } },
       dummyTempAttachedAyseLinked,
+    ],
+    'asset-category': [
+      { index: { _id: 'truck' } },
+      truckCategory,
+      { index: { _id: 'bigTruck' } },
+      bigTruckCategory,
+    ],
+    metadata: [
+      { index: { _id: 'size' } },
+      sizeMetadata,
     ],
     assets: [
       { index: { _id: 'tools-PERFO-unlinked' } },

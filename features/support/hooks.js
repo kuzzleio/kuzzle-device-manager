@@ -72,10 +72,15 @@ Before({ timeout: 30 * 1000 }, async function () {
     truncateCollection(this.sdk, 'engine-kuzzle', 'assets'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'measures'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'devices'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'asset-category'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'metadata'),
+
 
     truncateCollection(this.sdk, 'engine-ayse', 'assets'),
     truncateCollection(this.sdk, 'engine-ayse', 'measures'),
     truncateCollection(this.sdk, 'engine-ayse', 'devices'),
+    truncateCollection(this.sdk, 'engine-ayse', 'asset-category'),
+    truncateCollection(this.sdk, 'engine-ayse', 'metadata'),
     removeCatalogEntries(this.sdk, 'engine-ayse'),
 
     truncateCollection(this.sdk, 'tests', 'events'),

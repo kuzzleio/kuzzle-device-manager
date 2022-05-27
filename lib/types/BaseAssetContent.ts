@@ -26,5 +26,8 @@ export interface BaseAssetContent extends KDocumentContent {
 
   deviceLinks: DeviceLink[],
 
-  categories: AssetCategoryContent,
+  category: AssetCategoryContent,
+  subcategory: AssetCategoryContent,
+
+
 }

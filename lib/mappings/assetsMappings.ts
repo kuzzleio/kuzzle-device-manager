@@ -1,7 +1,13 @@
 export const assetsMappings = {
   dynamic: 'strict',
   properties: {
-    categories: {
+    category: {
+      fields: {
+        text: { type: 'text' }
+      },
+      type: 'keyword'
+    },
+    subcategory: {
       fields: {
         text: { type: 'text' }
       },
