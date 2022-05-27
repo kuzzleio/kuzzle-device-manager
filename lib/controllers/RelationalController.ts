@@ -30,8 +30,12 @@ export abstract class RelationalController extends CRUDController {
         description: 'you can\'t remove an unexisting link',
         message: 'you can\'t remove an unexisting link',
       });
+      global.app.errors.register('device-manager', 'relational', 'alreadyLinked', {
+        class: 'BadRequestError',
+        description: 'Creation of multiple relation on a OneToMany relation',
+        message: '%s cannot have multiple %s relation',
+      });
     }
-
   }
   
   protected constructor (plugin: Plugin, name : string) {
@@ -39,7 +43,7 @@ export abstract class RelationalController extends CRUDController {
     RelationalController.init();
   }
 
-  private get sdk () {
+  protected get sdk () {
     return this.context.accessors.sdk;
   }
   
@@ -87,6 +91,9 @@ export abstract class RelationalController extends CRUDController {
     const updateId = originalRequest.getId();
     const user = originalRequest.getUser();
     const listContainer : FieldPath[] = documentToUpdate._source[linkedField];
+    if (! listContainer) {
+      return ;
+    }
     const promises : Promise<void>[] = [];
     for (const containerFieldPath of listContainer) {
       const containerUpdateBody = {};
@@ -130,15 +137,12 @@ export abstract class RelationalController extends CRUDController {
     
     if (manyToManyLinkedFields !== [] || oneToManyLinkedFields !== [] ) {
       const document = await this.sdk.document.get(request.getString('engineId'), this.collection, request.getId());
-
       for (const childrenField of manyToManyLinkedFields) {
         promises.push(this.propagateDelete(document._source[childrenField], childrenField, true, request));
       }
-
       for (const containerField of oneToManyLinkedFields) {
         promises.push(this.propagateDelete(document._source[containerField], containerField, false, request));
       }
-
     }
     await Promise.all(promises);
     return super.delete(request);
@@ -183,7 +187,12 @@ export abstract class RelationalController extends CRUDController {
     while (documents) {
       for (const document of documents.hits) {
         const request = {};
-        request[field] = document._source[field].filter(id => id !== requestId);
+        if (Array.isArray(document._source[field])) {
+          request[field] = document._source[field].filter(id => id !== requestId);
+        }
+        else {
+          request[field] = null;
+        }
         promises.push(this.updateRequestRaw(index, collection, document._id, request, user));
       }
       documents = await documents.next();
@@ -199,6 +208,9 @@ export abstract class RelationalController extends CRUDController {
    * @param request : original delete request
    */
   async propagateDelete ( listContainer: FieldPath[], childrenField: string, manyToMany : boolean, request : KuzzleRequest) {
+    if (! listContainer) {
+      return;
+    }
     const engineId = request.getString('engineId');
     const removedObjectId = request.getId();
     const promises : Promise<void>[] = [];
@@ -219,7 +231,15 @@ export abstract class RelationalController extends CRUDController {
    * @param manyToMany : is it manyToMany relation (or one to many?)
    */
   async genericLink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany : boolean) {
-
+    
+    // before alteration, we verify that a document with OneToMany relation is not already linked
+    if (! manyToMany) {
+      const containerDocument = await this.getDocumentContent(container);
+      if (containerDocument[container.field]) {
+        throw global.app.errors.get('device-manager', 'relational', 'alreadyLinked', container.collection, container.field);
+      }
+    }
+    
     //First we update embedded document by adding link to container document
     const document = await this.getDocumentContent(embedded);
     if (! document[embedded.field]) {
@@ -244,7 +264,6 @@ export abstract class RelationalController extends CRUDController {
       updateMessageDest[container.field] = document;
     }
     await this.updateRequest(container, updateMessageDest, request.getUser());
-
   }
 
   /**
