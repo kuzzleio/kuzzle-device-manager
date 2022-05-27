@@ -1,21 +1,100 @@
 import _ from 'lodash';
-import { PluginContext, Plugin, JSONObject, KDocument, BadRequestError } from 'kuzzle';
+import {
+  PluginContext,
+  Plugin,
+  JSONObject,
+  KDocument,
+  BadRequestError,
+  BatchController,
+  EmbeddedSDK
+} from 'kuzzle';
 
+import { MeasuresRegister } from './registers/MeasuresRegister';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';
-import { BaseAssetContent, DeviceManagerConfiguration, MeasureContent } from '../types';
+import { BaseAssetContent, DeviceManagerConfiguration, LinkedMeasureName, MeasureContent, MeasureDefinition } from '../types';
+import { validateMeasurement } from 'lib/utils/measurement';
 
 export class AssetService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
+  private batch: BatchController;
+  // private measuresRegister: MeasuresRegister;
+  private static _collectionName: string = 'assets';
 
-  private get sdk () {
+  private get sdk() {
     return this.context.accessors.sdk;
   }
 
-  constructor (plugin: Plugin) {
+  public static get collectionName(): string {
+    return AssetService._collectionName;
+  }
+
+  constructor(plugin: Plugin){//, measuresRegister: MeasuresRegister) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+    // this.measuresRegister = measuresRegister;
+
+    this.batch = new BatchController(this.sdk as any, {
+      interval: plugin.config.batchInterval
+    });
+  }
+
+  /**
+   * Updates an asset with the new measures
+   *
+   * @returns Updated asset
+   */
+  public async updateMeasures(
+    engineId: string,
+    assetId: string,
+    newMeasures: MeasureContent[],
+    measuresNames?: LinkedMeasureName[],
+  ): Promise<BaseAsset> {
+    // dup array reference
+    const measureNameMap = new Map<string, string>();
+    if (measuresNames) {
+      for (const measureName of measuresNames) {
+        measureNameMap.set(measureName.type, measureName.name);
+      }
+    }
+
+    const measures = newMeasures.map(m => m);
+    for (const measure of measures) {
+      if (measureNameMap.has(measure.type)) {
+        measure.name = measureNameMap.get(measure.type);
+      }
+    }
+
+    const asset = await AssetService.getAsset(this.sdk, engineId, assetId);
+
+    if (asset._source.measures && !_.isArray(asset._source.measures)) {
+      throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
+    }
+
+    // Keep previous measures that were not updated
+    // array are updated in place so we need to keep previous elements
+    for (const previousMeasure of asset._source.measures) {
+      if (!measures.find(m => (m.name === previousMeasure.name))) {
+        measures.push(previousMeasure);
+      }
+    }
+
+    asset._source.measures = measures;
+
+    // Give the list of new measures types in event payload
+    const result = await global.app.trigger(
+      `engine:${engineId}:asset:measures:new`,
+      { asset, measures: newMeasures });
+
+    const assetDocument = await this.batch.update<BaseAssetContent>(
+      engineId,
+      AssetService.collectionName,
+      assetId,
+      result.asset._source,
+      { retryOnConflict: 10, source: true });
+
+    return new BaseAsset(assetDocument._source as any, assetDocument._id);
   }
 
   /**
@@ -74,7 +153,7 @@ export class AssetService {
 
     const assetDocuments = assets.map((asset: BaseAssetContent) => {
       const _asset = new BaseAsset(asset);
-      
+
       return {
         _id: _asset._id,
         body: _.omit(asset, ['_id']),
@@ -106,6 +185,16 @@ export class AssetService {
     return this.sdk.document.get<BaseAssetContent>(engineId, 'assets', assetId);
   }
 
+  public static async getAsset (
+    sdk: EmbeddedSDK,
+    engineId: string,
+    assetId: string
+  ): Promise<BaseAsset> {
+    const document = await sdk.document.get(engineId, 'assets', assetId);
+
+    return new BaseAsset(document._source as BaseAssetContent, document._id);
+  }
+
   // @todo remove when we have the date extractor in the core
   private iso8601 (value: string, name: string): Date {
     const parsed: any = new Date(value);
@@ -113,7 +202,7 @@ export class AssetService {
     if (isNaN(parsed)) {
       throw new BadRequestError(`"${name}" is not a valid ISO8601 date`);
     }
-    
+
     return parsed;
   }
 }

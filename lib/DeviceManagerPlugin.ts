@@ -39,6 +39,7 @@ import {
   devicesMappings,
 } from './mappings';
 import { DeviceManagerConfiguration } from './types';
+import { MeasureService } from './core-classes/MeasureService';
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -52,6 +53,7 @@ export class DeviceManagerPlugin extends Plugin {
   private payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
+  private measuresService: MeasureService;
 
   private decodersRegister = new DecodersRegister();
   private measuresRegister = new MeasuresRegister();
@@ -199,8 +201,10 @@ export class DeviceManagerPlugin extends Plugin {
     this.measures.register('battery', batteryMeasure);
 
     this.assetService = new AssetService(this);
-    this.payloadService = new PayloadService(this, this.measuresRegister);
     this.deviceService = new DeviceService(this);
+    this.measuresService = new MeasureService(this, this.deviceService, this.assetService, this.measuresRegister);
+    this.payloadService = new PayloadService(this, this.measuresRegister, this.measuresService);
+
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
       this.assetsRegister,
@@ -211,7 +215,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.decodersRegister.init(this.context);
 
-    this.assetController = new AssetController(this, this.assetService, this.deviceService);
+    this.assetController = new AssetController(this, this.assetService, this.deviceService, this.measuresService);
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);

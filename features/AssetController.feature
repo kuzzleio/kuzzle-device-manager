@@ -60,7 +60,7 @@ Feature: Device Manager asset controller
       | register55   | 11.3                   |
       | batteryLevel | 0.4                    |
     Given I refresh the collection "engine-ayse":"measures"
-    When I successfully execute the action "device-manager/asset":"measures" with args:
+    When I successfully execute the action "device-manager/asset":"getMeasures" with args:
       | engineId | "engine-ayse"       |
       | _id      | "tools-MART-linked" |
       | size     | 5                   |
