@@ -35,14 +35,6 @@ export class AssetCategoryController extends RelationalController {
           handler: this.unlinkMetadata.bind(this),
           http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_unlink/metadata/:_metadataId', verb: 'delete' }],
         },
-        linkMeasureDefinition: {
-          handler: this.linkMeasureDefinition.bind(this),
-          http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_link/measureDefinition/:_measureDefinitionId', verb: 'put' }],
-        },
-        unlinkMeasureDefinition: {
-          handler: this.unlinkMeasureDefinition.bind(this),
-          http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_unlink/measureDefinition/:_measureDefinitionId', verb: 'delete' }],
-        },
         linkParent: {
           handler: this.linkParent.bind(this),
           http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_link/parent/:parentId', verb: 'put' }],
@@ -120,19 +112,6 @@ export class AssetCategoryController extends RelationalController {
 
     const embeddedMetadata = this.getFieldPath(request, 'AssetCategory', '_metadataId', 'metadata');
     const assetCategoryContainer = this.getFieldPath(request, 'assetMetadatas');
-    return super.genericUnlink(request, embeddedMetadata, assetCategoryContainer, true);
-  }
-
-
-  async linkMeasureDefinition (request: KuzzleRequest) {
-    const embeddedMeasureDefinition = this.getFieldPath(request, 'AssetCategory', '_measureDefinitionId', 'measure-definition');
-    const assetCategoryContainer = this.getFieldPath(request, 'assetMeasuresDefinition');
-    return super.genericLink(request, embeddedMeasureDefinition, assetCategoryContainer, true);
-  }
-
-  async unlinkMeasureDefinition (request: KuzzleRequest) {
-    const embeddedMetadata = this.getFieldPath(request, 'AssetCategory', '_measureDefinitionId', 'measure-definition');
-    const assetCategoryContainer = this.getFieldPath(request, 'assetMeasuresDefinition');
     return super.genericUnlink(request, embeddedMetadata, assetCategoryContainer, true);
   }
 

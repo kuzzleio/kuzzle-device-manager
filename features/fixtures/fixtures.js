@@ -152,7 +152,6 @@ const truckCategory =
       }
     ],
     'assetMetadatas': [],
-    'assetMeasuresDefinition': []
   };
 
 const bigTruckCategory = {
@@ -160,7 +159,6 @@ const bigTruckCategory = {
   'children': [],
   'parent': {
     'name': 'truck',
-    'assetMeasuresDefinition': [],
     'assetMetadatas': []
   }
 };
