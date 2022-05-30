@@ -9,11 +9,9 @@ import {
   EmbeddedSDK
 } from 'kuzzle';
 
-import { MeasuresRegister } from './registers/MeasuresRegister';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';
-import { BaseAssetContent, DeviceManagerConfiguration, LinkedMeasureName, MeasureContent, MeasureDefinition } from '../types';
-import { validateMeasurement } from 'lib/utils/measurement';
+import { BaseAssetContent, DeviceManagerConfiguration, LinkedMeasureName, MeasureContent } from '../types';
 
 export class AssetService {
   private config: DeviceManagerConfiguration;
@@ -21,15 +19,15 @@ export class AssetService {
   private batch: BatchController;
   private static _collectionName: string = 'assets';
 
-  private get sdk() {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  public static get collectionName(): string {
+  public static get collectionName (): string {
     return AssetService._collectionName;
   }
 
-  constructor(plugin: Plugin) {
+  constructor (plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
 
@@ -43,7 +41,7 @@ export class AssetService {
    *
    * @returns Updated asset
    */
-  public async updateMeasures(
+  public async updateMeasures (
     engineId: string,
     assetId: string,
     newMeasures: MeasureContent[],
@@ -67,14 +65,14 @@ export class AssetService {
 
     const asset = await AssetService.getAsset(this.sdk, engineId, assetId);
 
-    if (asset._source.measures && !_.isArray(asset._source.measures)) {
+    if (asset._source.measures && ! _.isArray(asset._source.measures)) {
       throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
     }
 
     // Keep previous measures that were not updated
     // array are updated in place so we need to keep previous elements
     for (const previousMeasure of asset._source.measures) {
-      if (!measures.find(m => (m.name === previousMeasure.name))) {
+      if (! measures.find(m => (m.name === previousMeasure.name))) {
         measures.push(previousMeasure);
       }
     }

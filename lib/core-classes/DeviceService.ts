@@ -5,7 +5,7 @@ import { KDocument } from 'kuzzle-sdk';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseAsset, Device } from '../models';
-import { BaseAssetContent, DeviceContent, DeviceManagerConfiguration, LinkedMeasureName, MeasureContent } from '../types';
+import { DeviceContent, DeviceManagerConfiguration, LinkedMeasureName, MeasureContent } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 import { AssetService } from './AssetService';
 
@@ -463,17 +463,17 @@ export class DeviceService {
       throw new BadRequestError(`${withoutIds.length} Devices do not have an ID`);
     }
 
-    const catalogDocuments = catalog
-    .map((catalogContent: JSONObject) => ({
-      _id: `catalog--${catalogContent.deviceId}`,
-      body: {
-        catalog: {
-          authorized: catalogContent.authorized === 'false' ? false : true,
-          deviceId: catalogContent.deviceId,
-        },
-        type: 'catalog'
-      }
-    }));
+    const catalogDocuments = catalog.map(
+      (catalogContent: JSONObject) => ({
+        _id: `catalog--${catalogContent.deviceId}`,
+        body: {
+          catalog: {
+            authorized: catalogContent.authorized === 'false' ? false : true,
+            deviceId: catalogContent.deviceId,
+          },
+          type: 'catalog'
+        }
+      }));
 
     await writeToDatabase(
       catalogDocuments,

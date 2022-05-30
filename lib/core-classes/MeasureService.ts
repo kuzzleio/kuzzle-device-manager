@@ -1,12 +1,11 @@
 import { Backend, BatchController, JSONObject, PluginContext, PluginImplementationError } from 'kuzzle';
-import { DeviceManagerPlugin } from 'lib/DeviceManagerPlugin';
-import { BaseAsset } from 'lib/models';
-import { DeviceManagerConfiguration, MeasureContent } from 'lib/types';
-import { v4 as uuidv4 } from 'uuid';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import { BaseAsset } from '../models';
+import { DeviceManagerConfiguration, MeasureContent } from '../types';
+import { validateMeasurement } from '../utils';
 import { AssetService } from './AssetService';
 import { DeviceService } from './DeviceService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
-import { validateMeasurement } from './../utils';
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
@@ -130,7 +129,7 @@ export class MeasureService {
       [engineId, MeasureService.collectionName]
     ];
 
-    const newMeasures = { valids: [], invalids: [] };
+    const newMeasures = { invalids: [], valids: [] };
 
     for (const measure of measures) {
       if (validateMeasurement(measure) && this.measuresRegister.has(measure.type)) {
