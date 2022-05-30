@@ -14,7 +14,7 @@
   "include": [
     "lib/**/*.ts",
     "features/**/*.ts",
-    "index.ts",
+    "index.ts"
   ],
   "exclude": [
     "node_modules"
