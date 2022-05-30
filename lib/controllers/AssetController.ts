@@ -1,9 +1,5 @@
 import csv from 'csvtojson';
-import {
-    BadRequestError,
-    KuzzleRequest,
-    Plugin
-} from 'kuzzle';
+import { BadRequestError, KuzzleRequest, Plugin } from 'kuzzle';
 import { CRUDController } from 'kuzzle-plugin-commons';
 import { MeasureService } from 'lib/core-classes/MeasureService';
 import { v4 as uuidv4 } from 'uuid';
@@ -97,10 +93,15 @@ export class AssetController extends CRUDController {
     const strict = request.getBoolean('strict');
     const body = request.getBody();
 
+    const measures = body.measures;
+    if (! (measures && Array.isArray(measures))) {
+      throw new BadRequestError("The payload must have a 'measures' field containing an array of measures.");
+    }
+
     const result = await this.measureService.registerByAsset(
       engineId,
       assetId,
-      body.measures,
+      measures,
       refresh,
       strict);
 

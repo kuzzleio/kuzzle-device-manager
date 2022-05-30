@@ -19,7 +19,6 @@ export class AssetService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
-  // private measuresRegister: MeasuresRegister;
   private static _collectionName: string = 'assets';
 
   private get sdk() {
@@ -30,10 +29,9 @@ export class AssetService {
     return AssetService._collectionName;
   }
 
-  constructor(plugin: Plugin){//, measuresRegister: MeasuresRegister) {
+  constructor(plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-    // this.measuresRegister = measuresRegister;
 
     this.batch = new BatchController(this.sdk as any, {
       interval: plugin.config.batchInterval
@@ -53,6 +51,7 @@ export class AssetService {
   ): Promise<BaseAsset> {
     // dup array reference
     const measureNameMap = new Map<string, string>();
+
     if (measuresNames) {
       for (const measureName of measuresNames) {
         measureNameMap.set(measureName.type, measureName.name);

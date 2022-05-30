@@ -80,21 +80,21 @@ export class PayloadService {
     const newMeasures: MeasureContent[] = [];
 
     const deviceId = Device.id(decoder.deviceModel, decodedPayload.reference);
-    // for (const [type, measure] of Object.entries(decodedPayload.measures)) {
-    //   newMeasures.push({
-    //     measuredAt: measure.measuredAt,
-    //     origin: {
-    //       assetId: null,
-    //       id: deviceId,
-    //       model: decoder.deviceModel,
-    //       payloadUuids: [uuid],
-    //       type: 'device',
-    //     },
-    //     type,
-    //     unit: this.measuresRegister.get(type).unit,
-    //     values: measure.values
-    //   });
-    // }
+    for (const [type, measure] of Object.entries(decodedPayload.measures)) {
+      newMeasures.push({
+        measuredAt: measure.measuredAt,
+        origin: {
+          assetId: null,
+          id: deviceId,
+          model: decoder.deviceModel,
+          payloadUuids: [uuid],
+          type: 'device',
+        },
+        type,
+        unit: this.measuresRegister.get(type).unit,
+        values: measure.values
+      });
+    }
 
     try {
       return await this.measureService.registerByDevice(
