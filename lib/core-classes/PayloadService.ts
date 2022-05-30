@@ -10,7 +10,8 @@ import { BatchController } from 'kuzzle-sdk';
 import { Decoder } from './Decoder';
 import { Device, BaseAsset } from '../models';
 import {
-  MeasureContent,
+  Measure,
+  OriginType,
   DeviceContent,
   DeviceManagerConfiguration,
   BaseAssetContent,
@@ -77,7 +78,7 @@ export class PayloadService {
 
     const decodedPayload = await decoder.decode(payload, request);
 
-    const newMeasures: MeasureContent[] = [];
+    const newMeasures: Measure[] = [];
 
     const deviceId = Device.id(decoder.deviceModel, decodedPayload.reference);
     for (const [type, measure] of Object.entries(decodedPayload.measures)) {
@@ -88,7 +89,7 @@ export class PayloadService {
           id: deviceId,
           model: decoder.deviceModel,
           payloadUuids: [uuid],
-          type: 'device',
+          type: OriginType.DEVICE,
         },
         type,
         unit: this.measuresRegister.get(type).unit,
@@ -115,7 +116,7 @@ export class PayloadService {
   private async provisionning (
     model: string,
     reference: string,
-    measures: MeasureContent[],
+    measures: Measure[],
     { refresh },
   ) {
     const pluginConfig = await this.batch.get(

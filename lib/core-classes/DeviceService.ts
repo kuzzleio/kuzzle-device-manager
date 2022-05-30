@@ -5,7 +5,7 @@ import { KDocument } from 'kuzzle-sdk';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseAsset, Device } from '../models';
-import { DeviceContent, DeviceManagerConfiguration, LinkedMeasureName, MeasureContent } from '../types';
+import { DeviceContent, DeviceManagerConfiguration, LinkedMeasureName, Measure } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 import { AssetService } from './AssetService';
 
@@ -231,7 +231,7 @@ export class DeviceService {
     const asset = await AssetService.getAsset(this.sdk, engineId, linkRequest.assetId);
 
     // Copy device measures and assign measures names
-    const measures: MeasureContent[] = device._source.measures.map(measure => {
+    const measures: Measure[] = device._source.measures.map(measure => {
       const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
 
       return { ...measure, name };
@@ -380,7 +380,7 @@ export class DeviceService {
    */
   async updateMeasures (
     device: Device,
-    newMeasures: MeasureContent[],
+    newMeasures: Measure[],
   ) {
     // dup array reference
     const measures = newMeasures.map(m => m);

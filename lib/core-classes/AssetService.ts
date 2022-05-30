@@ -11,7 +11,7 @@ import {
 
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';
-import { BaseAssetContent, DeviceManagerConfiguration, LinkedMeasureName, MeasureContent } from '../types';
+import { BaseAssetContent, DeviceManagerConfiguration, LinkedMeasureName, Measure } from '../types';
 
 export class AssetService {
   private config: DeviceManagerConfiguration;
@@ -44,7 +44,7 @@ export class AssetService {
   public async updateMeasures (
     engineId: string,
     assetId: string,
-    newMeasures: MeasureContent[],
+    newMeasures: Measure[],
     measuresNames?: LinkedMeasureName[],
   ): Promise<BaseAsset> {
     // dup array reference
@@ -107,7 +107,7 @@ export class AssetService {
     engineId: string,
     assetId: string,
     { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
-  ): Promise<KDocument<MeasureContent>[]> {
+  ): Promise<KDocument<Measure>[]> {
     await this.getAsset(engineId, assetId);
 
     const query = {
@@ -129,7 +129,7 @@ export class AssetService {
 
     const sort = { 'measuredAt': 'desc' };
 
-    const measures = await this.sdk.document.search<MeasureContent>(
+    const measures = await this.sdk.document.search<Measure>(
       engineId,
       'measures',
       { query, sort },

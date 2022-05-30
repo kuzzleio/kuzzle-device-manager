@@ -1,2 +1,2 @@
 export * from './writeMany';
-export * from './measurement';
+export * from './measure';

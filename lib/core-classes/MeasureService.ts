@@ -1,8 +1,13 @@
 import { Backend, BatchController, JSONObject, PluginContext, PluginImplementationError } from 'kuzzle';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { BaseAsset } from '../models';
-import { DeviceManagerConfiguration, MeasureContent } from '../types';
-import { validateMeasurement } from '../utils';
+import {
+    BaseMeasure,
+  DeviceManagerConfiguration,
+  Measure,
+  OriginType 
+} from '../types';
+import { validateBaseMeasure } from '../utils';
 import { AssetService } from './AssetService';
 import { DeviceService } from './DeviceService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
@@ -59,7 +64,7 @@ export class MeasureService {
    */
   public async registerByDevice (
     deviceId: string,
-    newMeasures: MeasureContent[],
+    newMeasures: Measure[],
     { refresh }
   ) {
     const refreshableCollections = [];
@@ -113,6 +118,7 @@ export class MeasureService {
    * - linked asset
    * - engine measures
    *
+   * The `measuredAt` will be set automatically if not setted
    * Do not call other `registerX`, only `updateX`
    *
    * @todo add before/afterUpdate events (in updates)
@@ -129,22 +135,25 @@ export class MeasureService {
       [engineId, MeasureService.collectionName]
     ];
 
-    const newMeasures = { invalids: [], valids: [] };
+    const newMeasures: { invalids: JSONObject[], valids: Measure[]}
+      = { invalids: [], valids: [] };
 
     for (const measure of measures) {
-      if (validateMeasurement(measure) && this.measuresRegister.has(measure.type)) {
+      if (validateBaseMeasure(measure) && this.measuresRegister.has(measure.type)) {
+        const baseMeasure = <BaseMeasure>measure;
+
         newMeasures.valids.push({
-          measuredAt: measure.measuredAt ? measure.measureAt : Date.now(),
+          measuredAt: baseMeasure.measuredAt ? baseMeasure.measuredAt : Date.now(),
           origin: {
             assetId: assetId,
             id: null,
             model: null,
             payloadUuids: null,
-            type: 'asset',
+            type: OriginType.ASSET,
           },
-          type: measure.type,
-          unit: this.measuresRegister.get(measure.type).unit,
-          values: measure.values
+          type: baseMeasure.type,
+          unit: this.measuresRegister.get(baseMeasure.type).unit,
+          values: baseMeasure.values
         });
       }
       else {
@@ -183,11 +192,11 @@ export class MeasureService {
 
   private async historizeEngineMeasures (
     engineId: string,
-    newMeasures: MeasureContent[]
+    newMeasures: Measure[]
   ) {
 
     await Promise.all(newMeasures.map(measure => {
-      return this.batch.create<MeasureContent>(engineId, MeasureService.collectionName, measure);
+      return this.batch.create<Measure>(engineId, MeasureService.collectionName, measure);
     }));
   }
 }
