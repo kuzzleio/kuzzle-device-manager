@@ -1,8 +1,8 @@
-import { Measurement, MeasureDefinition } from '../types';
+import { BasePayloadMeasure, MeasureDefinition } from '../types';
 
 /* eslint-disable sort-keys */
 
-export interface MovementMeasurement extends Measurement {
+export interface MovementMeasurement extends BasePayloadMeasure {
   values: {
     movement: boolean;
   }

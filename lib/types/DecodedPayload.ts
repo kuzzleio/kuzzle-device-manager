@@ -1,4 +1,4 @@
-import { Measurement } from './measures/Measurement';
+import { BasePayloadMeasure } from './measures/Measure';
 
 /**
  * Result of the `Decoder.decode` method.
@@ -39,6 +39,6 @@ export interface DecodedPayload {
    * Array of decoded measures.
    */
   measures: {
-    [measureType: string]: Measurement,
+    [measureType: string]: BasePayloadMeasure,
   };
 }

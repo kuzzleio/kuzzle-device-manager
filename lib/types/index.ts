@@ -4,8 +4,6 @@ export * from './DeviceContent';
 
 export * from './measures/Measure';
 
-export * from './measures/Measurement';
-
 export * from './measures/MeasureDefinition';
 
 export * from './measures/MeasureOrigin';

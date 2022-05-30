@@ -43,7 +43,7 @@ export class AssetService {
    */
   public async updateMeasures (
     engineId: string,
-    assetId: string,
+    asset: BaseAsset,
     newMeasures: Measure[],
     measuresNames?: LinkedMeasureName[],
   ): Promise<BaseAsset> {
@@ -63,10 +63,8 @@ export class AssetService {
       }
     }
 
-    const asset = await AssetService.getAsset(this.sdk, engineId, assetId);
-
     if (asset._source.measures && ! _.isArray(asset._source.measures)) {
-      throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
+      throw new BadRequestError(`Asset "${asset._id}" measures property is not an array.`);
     }
 
     // Keep previous measures that were not updated
@@ -87,7 +85,7 @@ export class AssetService {
     const assetDocument = await this.batch.update<BaseAssetContent>(
       engineId,
       AssetService.collectionName,
-      assetId,
+      asset._id,
       result.asset._source,
       { retryOnConflict: 10, source: true });
 

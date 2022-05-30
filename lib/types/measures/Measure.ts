@@ -4,7 +4,10 @@ import { KDocumentContent } from 'kuzzle-sdk';
 import { MeasureUnit } from './MeasureDefinition';
 import { MeasureOrigin } from './MeasureOrigin';
 
-export interface BaseMeasure extends KDocumentContent {
+/**
+ * Represents a measurement of a value to post on an asset
+ */
+export interface BaseAssetMeasure extends KDocumentContent {
   /**
    * Type of the measure. (e.g. "temperature")
    * The type name is also the name of the sub-property to look at
@@ -13,7 +16,9 @@ export interface BaseMeasure extends KDocumentContent {
   type: string;
 
   /**
-   * Mesured values
+   * Property containing the actual measurement.
+   *
+   * This should be specialized by child interfaces
    */
   values: JSONObject;
 
@@ -24,9 +29,29 @@ export interface BaseMeasure extends KDocumentContent {
 }
 
 /**
+ * Represents a measurement of a value to post from a decoder
+ *
+ * This interface should be extended and the `values` property specialized
+ * to declare new measurement type.
+ */
+export interface BasePayloadMeasure {
+  /**
+   * Property containing the actual measurement.
+   *
+   * This should be specialized by child interfaces
+   */
+  values: JSONObject;
+
+  /**
+   * Micro Timestamp of the measurement time
+   */
+  measuredAt: number;
+}
+
+/**
  * Represent the full content of a measure document.
  */
-export interface Measure extends BaseMeasure {
+export interface MetaMeasure {
   /**
    * A device may have different measures for the same type (e.g. measure temperature 2 times)
    * Should be set when you link the device to the asset
@@ -48,3 +73,8 @@ export interface Measure extends BaseMeasure {
    */
   origin: MeasureOrigin;
 }
+
+/**
+ * Represent the full content of a measure document.
+ */
+export type Measure = BaseAssetMeasure & MetaMeasure & BasePayloadMeasure;

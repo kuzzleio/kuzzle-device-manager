@@ -1,8 +1,8 @@
-import { Measurement, MeasureDefinition } from '../types';
+import { BasePayloadMeasure, MeasureDefinition } from '../types';
 
 /* eslint-disable sort-keys */
 
-export interface BatteryMeasurement extends Measurement {
+export interface BatteryMeasurement extends BasePayloadMeasure {
   values: {
     battery: number;
   }

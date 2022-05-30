@@ -2,10 +2,9 @@ import { Backend, BatchController, JSONObject, PluginContext, PluginImplementati
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { BaseAsset } from '../models';
 import {
-    BaseMeasure,
+  BaseAssetMeasure,
   DeviceManagerConfiguration,
   Measure,
-  OriginType 
 } from '../types';
 import { validateBaseMeasure } from '../utils';
 import { AssetService } from './AssetService';
@@ -83,9 +82,11 @@ export class MeasureService {
         measure.origin.assetId = device._source.assetId;
       }
 
+      const asset = await AssetService.getAsset(this.sdk, engineId, assetId);
+
       updatedAsset = await this.assetService.updateMeasures(
         engineId,
-        assetId,
+        asset,
         newMeasures,
         device._source.measuresName);
 
@@ -140,7 +141,7 @@ export class MeasureService {
 
     for (const measure of measures) {
       if (validateBaseMeasure(measure) && this.measuresRegister.has(measure.type)) {
-        const baseMeasure = <BaseMeasure>measure;
+        const baseMeasure = <BaseAssetMeasure>measure;
 
         newMeasures.valids.push({
           measuredAt: baseMeasure.measuredAt ? baseMeasure.measuredAt : Date.now(),
@@ -149,7 +150,7 @@ export class MeasureService {
             id: null,
             model: null,
             payloadUuids: null,
-            type: OriginType.ASSET,
+            type: 'asset',
           },
           type: baseMeasure.type,
           unit: this.measuresRegister.get(baseMeasure.type).unit,
@@ -165,14 +166,19 @@ export class MeasureService {
       throw new PluginImplementationError(`Some measure pushed by asset ${assetId} are invalid, all has been blocked`);
     }
 
+    const asset = await AssetService.getAsset(this.sdk, engineId, assetId);
+
     if (! newMeasures.valids.length) {
-      // TODO Return normal response payload (device, asset, engineId...)
-      return {};
+      return {
+        asset: asset.serialize(),
+        engineId,
+        errors: newMeasures.invalids
+      };
     }
 
     const updatedAsset = await this.assetService.updateMeasures(
       engineId,
-      assetId,
+      asset,
       newMeasures.valids);
 
     await this.historizeEngineMeasures(engineId, newMeasures.valids);

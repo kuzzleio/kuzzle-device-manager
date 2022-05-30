@@ -11,7 +11,6 @@ import { Decoder } from './Decoder';
 import { Device, BaseAsset } from '../models';
 import {
   Measure,
-  OriginType,
   DeviceContent,
   DeviceManagerConfiguration,
   BaseAssetContent,
@@ -89,7 +88,7 @@ export class PayloadService {
           id: deviceId,
           model: decoder.deviceModel,
           payloadUuids: [uuid],
-          type: OriginType.DEVICE,
+          type: 'device',
         },
         type,
         unit: this.measuresRegister.get(type).unit,

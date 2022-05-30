@@ -1,8 +1,8 @@
-import { Measurement, MeasureDefinition } from '../types';
+import { BasePayloadMeasure, MeasureDefinition } from '../types';
 
 /* eslint-disable sort-keys */
 
-export interface HumidityMeasurement extends Measurement {
+export interface HumidityMeasurement extends BasePayloadMeasure {
   values: {
     humidity: number;
   }
