@@ -10,7 +10,7 @@ export interface MeasureOrigin {
   /**
    * E.g. "device"
    */
-  type: OriginType;
+  type: string;
 
   /**
    * E.g. "AbeewayTemp"
@@ -26,9 +26,4 @@ export interface MeasureOrigin {
    * Asset ID linked to the device when the measure was made
    */
   assetId?: string;
-}
-
-export enum OriginType {
-  DEVICE = 'device',
-  ASSET = 'asset'
 }
