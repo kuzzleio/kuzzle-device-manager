@@ -1,4 +1,4 @@
-Feature:DeviceManager asset controller
+Feature: DeviceManager asset controller
 
   Scenario: Create, update and delete an asset
     When I successfully execute the action "device-manager/asset":"create" with args:
@@ -74,7 +74,7 @@ Feature:DeviceManager asset controller
       | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
 
 
-  Scenario:Add a measure
+  Scenario: Add a measure
     When I successfully execute the action "device-manager/asset":"postMeasures" with args:
       | engineId | "engine-ayse"       |
       | _id      | "tools-MART-linked" |

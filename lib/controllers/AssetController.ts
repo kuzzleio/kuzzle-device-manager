@@ -90,12 +90,7 @@ export class AssetController extends CRUDController {
     const assetId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
-    const body = request.getBody();
-
-    const measures = body.measures;
-    if (! (measures && Array.isArray(measures))) {
-      throw new BadRequestError('The payload must have a \'measures\' field containing an array of measures.');
-    }
+    const measures = request.getBodyArray('measures');
 
     const result = await this.measureService.registerByAsset(
       engineId,

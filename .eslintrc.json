@@ -60,6 +60,7 @@
     "object-curly-spacing": ["error", "always"],
     "space-before-function-paren": ["error", "always"],
     "comma-spacing": 2,
+    "comma-dangle": ["error", "always"],
     "brace-style": ["error", "stroustrup"],
     "space-infix-ops": 2,
     "space-unary-ops": [2, { "words": true, "nonwords": false, "overrides": { "!": true } }],
