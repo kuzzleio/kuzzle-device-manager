@@ -8,6 +8,7 @@ import {
 } from 'kuzzle';
 import { BatchController } from 'kuzzle-sdk';
 
+import { InternalCollection } from '../InternalCollection';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';
 import {
@@ -21,7 +22,6 @@ export class AssetService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
-  public static readonly collectionName: string = 'assets';
 
   private get sdk () {
     return this.context.accessors.sdk;
@@ -82,7 +82,7 @@ export class AssetService {
 
     const assetDocument = await this.batch.update<BaseAssetContent>(
       engineId,
-      AssetService.collectionName,
+      InternalCollection.ASSETS,
       asset._id,
       result.asset._source,
       { retryOnConflict: 10, source: true });
@@ -180,7 +180,7 @@ export class AssetService {
   ): Promise<BaseAsset> {
     const document = await this.sdk.document.get(
       engineId,
-      AssetService.collectionName,
+      InternalCollection.ASSETS,
       assetId);
 
     return new BaseAsset(document._source as BaseAssetContent, document._id);

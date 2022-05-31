@@ -1,5 +1,6 @@
 import { Backend, JSONObject, PluginContext, PluginImplementationError } from 'kuzzle';
 import { BatchController } from 'kuzzle-sdk'
+import { InternalCollection } from 'lib/InternalCollection';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { BaseAsset } from '../models';
 import {
@@ -19,14 +20,9 @@ export class MeasureService {
   private deviceService: DeviceService;
   private assetService: AssetService;
   private measuresRegister: MeasuresRegister;
-  private static _collectionName: string = 'measures';
 
   private get sdk () {
     return this.context.accessors.sdk;
-  }
-
-  public static get collectionName (): string {
-    return MeasureService._collectionName;
   }
 
   private get app (): Backend {
@@ -67,7 +63,7 @@ export class MeasureService {
     { refresh }
   ) {
     const refreshableCollections = [];
-    refreshableCollections.push([this.config.adminIndex, DeviceService.collectionName]);
+    refreshableCollections.push([this.config.adminIndex, InternalCollection.DEVICES]);
 
     let updatedAsset: BaseAsset = null;
 
@@ -90,13 +86,13 @@ export class MeasureService {
         newMeasures,
         device._source.measuresName);
 
-      refreshableCollections.push([engineId, AssetService.collectionName]);
+      refreshableCollections.push([engineId, InternalCollection.ASSETS]);
     }
 
     if (engineId) {
       await this.historizeEngineMeasures(engineId, newMeasures);
 
-      refreshableCollections.push([engineId, DeviceService.collectionName]);
+      refreshableCollections.push([engineId, InternalCollection.DEVICES]);
     }
 
     const updatedDevice = await this.deviceService.updateMeasures(device, newMeasures);
@@ -132,8 +128,8 @@ export class MeasureService {
     strict: boolean
   ) {
     const refreshableCollections = [
-      [this.config.adminIndex, AssetService.collectionName],
-      [engineId, MeasureService.collectionName]
+      [this.config.adminIndex, InternalCollection.ASSETS],
+      [engineId, InternalCollection.MEASURES]
     ];
 
     const newMeasures: { invalids: JSONObject[], valids: Measure[]}
@@ -202,7 +198,7 @@ export class MeasureService {
   ) {
 
     await Promise.all(newMeasures.map(measure => {
-      return this.batch.create<Measure>(engineId, MeasureService.collectionName, measure);
+      return this.batch.create<Measure>(engineId, InternalCollection.MEASURES, measure);
     }));
   }
 }

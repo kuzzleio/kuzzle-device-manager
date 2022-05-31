@@ -9,6 +9,7 @@ import { BatchController } from 'kuzzle-sdk'
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
+import { InternalCollection } from '../InternalCollection';
 import { BaseAsset, Device } from '../models';
 import {
   DeviceContent,
@@ -63,7 +64,6 @@ export class DeviceService {
   private context: PluginContext;
   private batch: BatchController;
   private assetService: AssetService;
-  public static readonly collectionName: string = 'devices';
 
   private get sdk () {
     return this.context.accessors.sdk;
@@ -509,7 +509,7 @@ export class DeviceService {
   ): Promise<Device> {
     const document = await this.sdk.document.get(
       config.adminIndex,
-      DeviceService.collectionName,
+      InternalCollection.DEVICES,
       deviceId);
 
     return new Device(document._source as DeviceContent, document._id);
