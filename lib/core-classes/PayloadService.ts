@@ -100,8 +100,9 @@ export class PayloadService {
     }
 
     try {
-      return await this.measureService.registerByDevice(
-        deviceId, newMeasures, { refresh });
+      return await this.measureService.registerByDevice(deviceId, newMeasures, {
+        refresh
+      });
     }
     catch (error) {
       if (error.id === 'services.storage.not_found') {

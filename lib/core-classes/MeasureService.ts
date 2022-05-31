@@ -13,7 +13,6 @@ import {
   DeviceManagerConfiguration,
   Measure,
 } from '../types';
-import { validateBaseMeasure } from '../utils';
 import { AssetService } from './AssetService';
 import { DeviceService } from './DeviceService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
@@ -137,14 +136,14 @@ export class MeasureService {
       [engineId, InternalCollection.MEASURES]
     ];
 
-    const newMeasures: { invalids: JSONObject[], valids: Measure[]}
-      = { invalids: [], valids: [] };
+    const invalidMeasures: JSONObject[] = [];
+    const validMeasures: Measure[] = [];
 
     for (const measure of measures) {
       if (validateBaseMeasure(measure) && this.measuresRegister.has(measure.type)) {
-        const baseMeasure = <BaseAssetMeasure>measure;
+        const baseMeasure = measure as BaseAssetMeasure;
 
-        newMeasures.valids.push({
+        validMeasures.push({
           measuredAt: baseMeasure.measuredAt ? baseMeasure.measuredAt : Date.now(),
           origin: {
             assetId: assetId,
@@ -159,30 +158,30 @@ export class MeasureService {
         });
       }
       else {
-        newMeasures.invalids.push(measure);
+        invalidMeasures.push(measure);
       }
     }
 
-    if (strict && newMeasures.invalids.length) {
+    if (strict && invalidMeasures.length) {
       throw new PluginImplementationError(`Some measure pushed by asset ${assetId} are invalid, all has been blocked`);
     }
 
     const asset = await this.assetService.getAsset(engineId, assetId);
 
-    if (! newMeasures.valids.length) {
+    if (! validMeasures.length) {
       return {
         asset: asset.serialize(),
         engineId,
-        errors: newMeasures.invalids
+        errors: invalidMeasures
       };
     }
 
     const updatedAsset = await this.assetService.updateMeasures(
       engineId,
       asset,
-      newMeasures.valids);
+      validMeasures);
 
-    await this.historizeEngineMeasures(engineId, newMeasures.valids);
+    await this.historizeEngineMeasures(engineId, validMeasures);
 
     if (refresh === 'wait_for') {
       await Promise.all(refreshableCollections.map(([index, collection]) => (
@@ -193,7 +192,7 @@ export class MeasureService {
     return {
       asset: updatedAsset ? updatedAsset.serialize() : null,
       engineId,
-      errors: newMeasures.invalids
+      errors: invalidMeasures
     };
   }
 
@@ -206,4 +205,9 @@ export class MeasureService {
       return this.batch.create<Measure>(engineId, InternalCollection.MEASURES, measure);
     }));
   }
+}
+
+function validateBaseMeasure (toValidate: JSONObject): boolean {
+  return _.has(toValidate, 'values')
+    && _.has(toValidate, 'type');
 }
