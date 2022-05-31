@@ -34,6 +34,7 @@ export class MeasureService {
 
   constructor (
     plugin: DeviceManagerPlugin,
+    batchController: BatchController,
     deviceService: DeviceService,
     assetService: AssetService,
     measuresRegister: MeasuresRegister
@@ -45,9 +46,7 @@ export class MeasureService {
     this.assetService = assetService;
     this.measuresRegister = measuresRegister;
 
-    this.batch = new BatchController(this.sdk as any, {
-      interval: plugin.config.batchInterval
-    });
+    this.batch = batchController;
   }
 
   /**

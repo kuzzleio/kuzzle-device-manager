@@ -28,13 +28,11 @@ export class AssetService {
     return this.context.accessors.sdk;
   }
 
-  constructor (plugin: Plugin) {
+  constructor (plugin: Plugin, batchController: BatchController) {
     this.config = plugin.config as any;
     this.context = plugin.context;
 
-    this.batch = new BatchController(this.sdk as any, {
-      interval: plugin.config.batchInterval
-    });
+    this.batch = batchController;
   }
 
   /**

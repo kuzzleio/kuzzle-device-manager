@@ -48,6 +48,7 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceController: DeviceController;
   private decodersController: DecodersController;
   private engineController: EngineController<DeviceManagerPlugin>;
+  private batchController: BatchController;
 
   private assetService: AssetService;
   private payloadService: PayloadService;
@@ -200,10 +201,23 @@ export class DeviceManagerPlugin extends Plugin {
     this.measures.register('humidity', humidityMeasure);
     this.measures.register('battery', batteryMeasure);
 
-    this.assetService = new AssetService(this);
-    this.deviceService = new DeviceService(this);
-    this.measuresService = new MeasureService(this, this.deviceService, this.assetService, this.measuresRegister);
-    this.payloadService = new PayloadService(this, this.measuresRegister, this.measuresService);
+    this.batchController = new BatchController(this.sdk as any, {
+      interval: this.config.batchInterval
+    });
+
+    this.assetService = new AssetService(this, this.batchController);
+    this.deviceService = new DeviceService(this, this.batchController, this.assetService);
+    this.measuresService = new MeasureService(
+      this,
+      this.batchController,
+      this.deviceService,
+      this.assetService,
+      this.measuresRegister);
+    this.payloadService = new PayloadService(
+      this,
+      this.batchController,
+      this.measuresRegister,
+      this.measuresService);
 
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,

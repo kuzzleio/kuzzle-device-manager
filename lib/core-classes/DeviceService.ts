@@ -74,14 +74,16 @@ export class DeviceService {
     return DeviceService._collectionName;
   }
 
-  constructor (plugin: Plugin, assetService: AssetService) {
+  constructor (
+    plugin: Plugin,
+    batchController: BatchController,
+    assetService: AssetService
+  ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
     this.assetService = assetService;
 
-    this.batch = new BatchController(this.sdk as any, {
-      interval: plugin.config.batchInterval
-    });
+    this.batch = batchController;
   }
 
   /**
