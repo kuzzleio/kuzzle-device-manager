@@ -7,6 +7,7 @@ import {
   Mutex,
   KuzzleRequest,
   BadRequestError,
+  BatchController
 } from 'kuzzle';
 import { ConfigManager, EngineController } from 'kuzzle-plugin-commons';
 
