@@ -1,5 +1,4 @@
-import { JSONObject } from 'kuzzle';
-import { KDocumentContent } from 'kuzzle-sdk';
+import { JSONObject, KDocumentContent  } from 'kuzzle';
 
 import { MeasureUnit } from './MeasureDefinition';
 import { MeasureOrigin } from './MeasureOrigin';

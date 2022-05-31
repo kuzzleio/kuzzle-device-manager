@@ -3,9 +3,9 @@ import {
   PluginContext,
   Backend,
   UnauthorizedError,
+  BatchController
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
-import { BatchController } from 'kuzzle-sdk';
 
 import { Decoder } from './Decoder';
 import { Device, BaseAsset } from '../models';

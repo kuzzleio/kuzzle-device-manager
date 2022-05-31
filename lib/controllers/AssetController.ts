@@ -86,7 +86,6 @@ export class AssetController extends CRUDController {
 
   async postMeasures (request: KuzzleRequest) {
     const engineId = request.getString('engineId');
-    request.input.args.index = engineId;
     const assetId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');

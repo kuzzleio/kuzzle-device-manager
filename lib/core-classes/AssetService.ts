@@ -5,8 +5,8 @@ import {
   JSONObject,
   KDocument,
   BadRequestError,
+  BatchController 
 } from 'kuzzle';
-import { BatchController } from 'kuzzle-sdk';
 
 import { InternalCollection } from '../InternalCollection';
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
@@ -61,14 +61,10 @@ export class AssetService {
       }
     }
 
-    if (asset._source.measures && ! _.isArray(asset._source.measures)) {
-      throw new BadRequestError(`Asset "${asset._id}" measures property is not an array.`);
-    }
-
     // Keep previous measures that were not updated
     // array are updated in place so we need to keep previous elements
     for (const previousMeasure of asset._source.measures) {
-      if (! measures.find(m => (m.name === previousMeasure.name))) {
+      if (! measures.find(m => m.name === previousMeasure.name)) {
         measures.push(previousMeasure);
       }
     }
@@ -178,12 +174,12 @@ export class AssetService {
     engineId: string,
     assetId: string
   ): Promise<BaseAsset> {
-    const document = await this.sdk.document.get(
+    const document = await this.sdk.document.get<BaseAssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assetId);
 
-    return new BaseAsset(document._source as BaseAssetContent, document._id);
+    return new BaseAsset(document._source, document._id);
   }
 
   // @todo remove when we have the date extractor in the core

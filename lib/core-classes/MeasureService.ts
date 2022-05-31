@@ -1,6 +1,11 @@
-import { Backend, JSONObject, PluginContext, PluginImplementationError } from 'kuzzle';
-import { BatchController } from 'kuzzle-sdk'
-import { InternalCollection } from 'lib/InternalCollection';
+import {
+  Backend,
+  JSONObject,
+  PluginContext,
+  PluginImplementationError,
+  BatchController
+} from 'kuzzle';
+import { InternalCollection } from '../InternalCollection';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { BaseAsset } from '../models';
 import {
