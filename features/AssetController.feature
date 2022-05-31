@@ -88,4 +88,3 @@ Feature:DeviceManager asset controller
       | measures[0].values.temperature  | 70                      |
       | measures[0].origin.assetId      | "tools-MART-linked"     |
       | measures[0].origin.type         | "asset"                 |
-      | measures[0].origin.type         | "asset"                 |

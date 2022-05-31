@@ -22,14 +22,10 @@ export class AssetService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
-  private static _collectionName: string = 'assets';
+  public static readonly _collectionName: string = 'assets';
 
   private get sdk () {
     return this.context.accessors.sdk;
-  }
-
-  public static get collectionName (): string {
-    return AssetService._collectionName;
   }
 
   constructor (plugin: Plugin) {
@@ -111,7 +107,7 @@ export class AssetService {
     assetId: string,
     { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
   ): Promise<KDocument<Measure>[]> {
-    await AssetService.getAsset(this.sdk, engineId, assetId);
+    await this.getAsset(engineId, assetId);
 
     const query = {
       range: {
@@ -181,12 +177,11 @@ export class AssetService {
     return results;
   }
 
-  public static async getAsset (
-    sdk: EmbeddedSDK,
+  public async getAsset (
     engineId: string,
     assetId: string
   ): Promise<BaseAsset> {
-    const document = await sdk.document.get(
+    const document = await this.sdk.document.get(
       engineId,
       AssetService.collectionName,
       assetId);

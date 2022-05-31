@@ -63,6 +63,7 @@ export class DeviceService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
+  private assetService: AssetService;
   private static _collectionName: string = 'devices';
 
   private get sdk () {
@@ -73,9 +74,10 @@ export class DeviceService {
     return DeviceService._collectionName;
   }
 
-  constructor (plugin: Plugin) {
+  constructor (plugin: Plugin, assetService: AssetService) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+    this.assetService = assetService;
 
     this.batch = new BatchController(this.sdk as any, {
       interval: plugin.config.batchInterval
@@ -129,7 +131,7 @@ export class DeviceService {
     attachRequest: AttachRequest,
     { refresh, strict }: { refresh?: any, strict?: boolean },
   ): Promise<Device> {
-    const device = await DeviceService.getDevice(this.sdk, this.config, attachRequest.deviceId);
+    const device = await this.getDevice(this.config, attachRequest.deviceId);
 
     if (strict && device._source.engineId) {
       throw new BadRequestError(`Device "${device._id}" is already attached to an engine.`);
@@ -176,7 +178,7 @@ export class DeviceService {
     deviceId: string,
     { refresh, strict }: { refresh?: any, strict?: boolean }
   ): Promise<Device> {
-    const device = await DeviceService.getDevice(this.sdk, this.config, deviceId);
+    const device = await this.getDevice(this.config, deviceId);
 
     const engineId = device._source.engineId;
 
@@ -227,7 +229,7 @@ export class DeviceService {
     linkRequest: LinkRequest,
     { refresh }: { refresh?: any }
   ): Promise<{ asset: BaseAsset, device: Device }> {
-    const device = await DeviceService.getDevice(this.sdk, this.config, linkRequest.deviceId);
+    const device = await this.getDevice(this.config, linkRequest.deviceId);
 
     const engineId = device._source.engineId;
 
@@ -239,7 +241,7 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is already linked to an asset.`);
     }
 
-    const asset = await AssetService.getAsset(this.sdk, engineId, linkRequest.assetId);
+    const asset = await this.assetService.getAsset(engineId, linkRequest.assetId);
 
     // Copy device measures and assign measures names
     const measures: Measure[] = device._source.measures.map(measure => {
@@ -322,7 +324,7 @@ export class DeviceService {
     deviceId: string,
     { refresh, strict }: { refresh?: any, strict?: boolean }
   ): Promise<{ asset: BaseAsset, device: Device }> {
-    const device = await DeviceService.getDevice(this.sdk, this.config, deviceId);
+    const device = await this.getDevice(this.config, deviceId);
 
     const engineId = device._source.engineId;
 
@@ -334,7 +336,7 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is not linked to an asset.`);
     }
 
-    const asset = await AssetService.getAsset(this.sdk, engineId, device._source.assetId);
+    const asset = await this.assetService.getAsset(engineId, device._source.assetId);
 
     // @todo should be done by measure name and not type
     asset._source.measures = asset._source.measures.filter(m => {
@@ -504,12 +506,11 @@ export class DeviceService {
     return results;
   }
 
-  public static async getDevice (
-    sdk: EmbeddedSDK,
+  public async getDevice (
     config: DeviceManagerConfiguration,
     deviceId: string
   ): Promise<Device> {
-    const document = await sdk.document.get(
+    const document = await this.sdk.document.get(
       config.adminIndex,
       DeviceService.collectionName,
       deviceId);
