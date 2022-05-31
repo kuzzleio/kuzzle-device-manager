@@ -36,9 +36,9 @@ export class PayloadService {
 
   constructor (
     plugin: DeviceManagerPlugin,
+    batchController: BatchController,
     measuresRegister: MeasuresRegister,
-    measureService: MeasureService,
-    batchController: BatchController
+    measureService: MeasureService
   ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
