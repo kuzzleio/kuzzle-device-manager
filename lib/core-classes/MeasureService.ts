@@ -70,7 +70,7 @@ export class MeasureService {
 
     let updatedAsset: BaseAsset = null;
 
-    const device = await DeviceService.getDevice(this.sdk, this.config, deviceId);
+    const device = await this.deviceService.getDevice(this.config, deviceId);
 
     const engineId = device._source.engineId;
     const assetId = device._source.assetId;
@@ -81,7 +81,7 @@ export class MeasureService {
         measure.origin.assetId = device._source.assetId;
       }
 
-      const asset = await AssetService.getAsset(this.sdk, engineId, assetId);
+      const asset = await this.assetService.getAsset(engineId, assetId);
 
       updatedAsset = await this.assetService.updateMeasures(
         engineId,
@@ -165,7 +165,7 @@ export class MeasureService {
       throw new PluginImplementationError(`Some measure pushed by asset ${assetId} are invalid, all has been blocked`);
     }
 
-    const asset = await AssetService.getAsset(this.sdk, engineId, assetId);
+    const asset = await this.assetService.getAsset(engineId, assetId);
 
     if (! newMeasures.valids.length) {
       return {
