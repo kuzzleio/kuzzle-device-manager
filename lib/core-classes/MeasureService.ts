@@ -1,4 +1,5 @@
-import { Backend, BatchController, JSONObject, PluginContext, PluginImplementationError } from 'kuzzle';
+import { Backend, JSONObject, PluginContext, PluginImplementationError } from 'kuzzle';
+import { BatchController } from 'kuzzle-sdk'
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { BaseAsset } from '../models';
 import {

@@ -5,8 +5,8 @@ import {
   JSONObject,
   KDocument,
   BadRequestError,
-  BatchController
 } from 'kuzzle';
+import { BatchController } from 'kuzzle-sdk';
 
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';

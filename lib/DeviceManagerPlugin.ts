@@ -7,8 +7,8 @@ import {
   Mutex,
   KuzzleRequest,
   BadRequestError,
-  BatchController
 } from 'kuzzle';
+import { BatchController } from 'kuzzle-sdk'
 import { ConfigManager, EngineController } from 'kuzzle-plugin-commons';
 
 import {
@@ -230,7 +230,11 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.decodersRegister.init(this.context);
 
-    this.assetController = new AssetController(this, this.assetService, this.deviceService, this.measuresService);
+    this.assetController = new AssetController(
+      this,
+      this.assetService,
+      this.deviceService,
+      this.measuresService);
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);

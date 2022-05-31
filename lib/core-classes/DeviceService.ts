@@ -1,11 +1,11 @@
 import {
   BadRequestError,
-  BatchController,
   JSONObject,
   Plugin,
   PluginContext
 } from 'kuzzle';
 import { KDocument } from 'kuzzle-sdk';
+import { BatchController } from 'kuzzle-sdk'
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 

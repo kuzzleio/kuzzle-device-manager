@@ -172,7 +172,7 @@ export class AssetController extends CRUDController {
     const assetId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
-    const devicesLinks = await this.assetService.getAsset(this.sdk, engineId, assetId);
+    const devicesLinks = await this.assetService.getAsset(engineId, assetId);
 
     if (Array.isArray(devicesLinks._source.deviceLinks)) {
       for (const deviceLink of devicesLinks._source.deviceLinks) {
