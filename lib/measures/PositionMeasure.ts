@@ -1,8 +1,8 @@
-import { BasePayloadMeasure, MeasureDefinition } from '../types';
+import { Measurement, MeasureDefinition } from '../types';
 
 /* eslint-disable sort-keys */
 
-export interface PositionMeasurement extends BasePayloadMeasure {
+export interface PositionMeasurement extends Measurement {
   values: {
     position: {
       lat: number;

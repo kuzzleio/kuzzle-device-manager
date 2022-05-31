@@ -15,7 +15,7 @@ import {
   BaseAssetContent,
   DeviceManagerConfiguration,
   LinkedMeasureName,
-  Measure
+  MeasureContent
 } from '../types';
 
 export class AssetService {
@@ -42,7 +42,7 @@ export class AssetService {
   public async updateMeasures (
     engineId: string,
     asset: BaseAsset,
-    newMeasures: Measure[],
+    newMeasures: MeasureContent[],
     measuresNames?: LinkedMeasureName[],
   ): Promise<BaseAsset> {
     // dup array reference
@@ -99,7 +99,7 @@ export class AssetService {
     engineId: string,
     assetId: string,
     { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
-  ): Promise<KDocument<Measure>[]> {
+  ): Promise<KDocument<MeasureContent>[]> {
     await this.getAsset(engineId, assetId);
 
     const query = {
@@ -121,7 +121,7 @@ export class AssetService {
 
     const sort = { 'measuredAt': 'desc' };
 
-    const measures = await this.sdk.document.search<Measure>(
+    const measures = await this.sdk.document.search<MeasureContent>(
       engineId,
       'measures',
       { query, sort },

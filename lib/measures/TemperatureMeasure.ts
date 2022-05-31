@@ -1,8 +1,8 @@
-import { BasePayloadMeasure, MeasureDefinition } from '../types';
+import { Measurement, MeasureDefinition } from '../types';
 
 /* eslint-disable sort-keys */
 
-export interface TemperatureMeasurement extends BasePayloadMeasure {
+export interface TemperatureMeasurement extends Measurement {
   values: {
     temperature: number;
   }

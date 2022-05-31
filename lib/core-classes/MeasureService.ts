@@ -5,13 +5,16 @@ import {
   PluginImplementationError,
   BatchController
 } from 'kuzzle';
+import _ from 'lodash';
+
 import { InternalCollection } from '../InternalCollection';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { BaseAsset } from '../models';
 import {
-  BaseAssetMeasure,
+  AssetMeasurement,
+  Measurement,
   DeviceManagerConfiguration,
-  Measure,
+  MeasureContent,
 } from '../types';
 import { AssetService } from './AssetService';
 import { DeviceService } from './DeviceService';
@@ -63,7 +66,7 @@ export class MeasureService {
    */
   public async registerByDevice (
     deviceId: string,
-    newMeasures: Measure[],
+    newMeasures: MeasureContent[],
     { refresh }
   ) {
     const refreshableCollections = [];
@@ -137,14 +140,14 @@ export class MeasureService {
     ];
 
     const invalidMeasures: JSONObject[] = [];
-    const validMeasures: Measure[] = [];
+    const validMeasures: MeasureContent[] = [];
 
     for (const measure of measures) {
       if (validateBaseMeasure(measure) && this.measuresRegister.has(measure.type)) {
-        const baseMeasure = measure as BaseAssetMeasure;
+        const measurement = measure as AssetMeasurement;
 
         validMeasures.push({
-          measuredAt: baseMeasure.measuredAt ? baseMeasure.measuredAt : Date.now(),
+          measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
           origin: {
             assetId: assetId,
             id: null,
@@ -152,9 +155,9 @@ export class MeasureService {
             payloadUuids: null,
             type: 'asset',
           },
-          type: baseMeasure.type,
-          unit: this.measuresRegister.get(baseMeasure.type).unit,
-          values: baseMeasure.values
+          type: measurement.type,
+          unit: this.measuresRegister.get(measurement.type).unit,
+          values: measurement.values
         });
       }
       else {
@@ -198,11 +201,11 @@ export class MeasureService {
 
   private async historizeEngineMeasures (
     engineId: string,
-    newMeasures: Measure[]
+    newMeasures: MeasureContent[]
   ) {
 
     await Promise.all(newMeasures.map(measure => {
-      return this.batch.create<Measure>(engineId, InternalCollection.MEASURES, measure);
+      return this.batch.create<MeasureContent>(engineId, InternalCollection.MEASURES, measure);
     }));
   }
 }

@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Decoder } from './Decoder';
 import { Device, BaseAsset } from '../models';
 import {
-  Measure,
+  MeasureContent,
   DeviceContent,
   DeviceManagerConfiguration,
   BaseAssetContent,
@@ -80,7 +80,7 @@ export class PayloadService {
 
     const decodedPayload = await decoder.decode(payload, request);
 
-    const newMeasures: Measure[] = [];
+    const newMeasures: MeasureContent[] = [];
 
     const deviceId = Device.id(decoder.deviceModel, decodedPayload.reference);
     for (const [type, measure] of Object.entries(decodedPayload.measures)) {
@@ -119,7 +119,7 @@ export class PayloadService {
   private async provisionning (
     model: string,
     reference: string,
-    measures: Measure[],
+    measures: MeasureContent[],
     { refresh },
   ) {
     const pluginConfig = await this.batch.get(

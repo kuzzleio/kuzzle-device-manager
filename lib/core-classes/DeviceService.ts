@@ -15,7 +15,7 @@ import {
   DeviceContent,
   DeviceManagerConfiguration,
   LinkedMeasureName,
-  Measure
+  MeasureContent
 } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 import { AssetService } from './AssetService';
@@ -241,7 +241,7 @@ export class DeviceService {
     const asset = await this.assetService.getAsset(engineId, linkRequest.assetId);
 
     // Copy device measures and assign measures names
-    const measures: Measure[] = device._source.measures.map(measure => {
+    const measures: MeasureContent[] = device._source.measures.map(measure => {
       const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
 
       return { ...measure, name };
@@ -390,7 +390,7 @@ export class DeviceService {
    */
   async updateMeasures (
     device: Device,
-    newMeasures: Measure[],
+    newMeasures: MeasureContent[],
   ) {
     // dup array reference
     const measures = newMeasures.map(m => m);

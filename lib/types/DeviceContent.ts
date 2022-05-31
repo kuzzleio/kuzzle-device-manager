@@ -1,6 +1,6 @@
 import { JSONObject, KDocumentContent } from 'kuzzle';
 
-import { Measure } from './measures/Measure';
+import { MeasureContent } from './measures/MeasureContent';
 import { LinkedMeasureName } from './measures/MeasureDefinition';
 
 
@@ -19,7 +19,7 @@ export interface DeviceContent extends KDocumentContent {
   /**
    *
    */
-  measures?: Measure[];
+  measures?: MeasureContent[];
 
   /**
    * Device metadata

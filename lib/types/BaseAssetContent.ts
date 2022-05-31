@@ -1,6 +1,6 @@
 import { JSONObject, KDocumentContent } from 'kuzzle';
 
-import { Measure } from './measures/Measure';
+import { MeasureContent } from './measures/MeasureContent';
 import { LinkedMeasureName } from './measures/MeasureDefinition';
 
 export interface DeviceLink {
@@ -18,7 +18,7 @@ export interface BaseAssetContent extends KDocumentContent {
 
   reference: string;
 
-  measures?: Measure[],
+  measures?: MeasureContent[],
 
   metadata?: JSONObject,
 
