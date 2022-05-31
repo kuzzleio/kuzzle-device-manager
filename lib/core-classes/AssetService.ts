@@ -5,8 +5,7 @@ import {
   JSONObject,
   KDocument,
   BadRequestError,
-  BatchController,
-  EmbeddedSDK
+  BatchController
 } from 'kuzzle';
 
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
@@ -22,7 +21,7 @@ export class AssetService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
-  public static readonly _collectionName: string = 'assets';
+  public static readonly collectionName: string = 'assets';
 
   private get sdk () {
     return this.context.accessors.sdk;

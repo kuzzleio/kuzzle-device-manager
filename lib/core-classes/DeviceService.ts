@@ -3,8 +3,7 @@ import {
   BatchController,
   JSONObject,
   Plugin,
-  PluginContext,
-  EmbeddedSDK
+  PluginContext
 } from 'kuzzle';
 import { KDocument } from 'kuzzle-sdk';
 import _ from 'lodash';
@@ -64,14 +63,10 @@ export class DeviceService {
   private context: PluginContext;
   private batch: BatchController;
   private assetService: AssetService;
-  private static _collectionName: string = 'devices';
+  public static readonly collectionName: string = 'devices';
 
   private get sdk () {
     return this.context.accessors.sdk;
-  }
-
-  public static get collectionName (): string {
-    return DeviceService._collectionName;
   }
 
   constructor (
