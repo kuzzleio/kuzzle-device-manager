@@ -1,11 +1,22 @@
 import {
-  BadRequestError, BatchController, JSONObject, Plugin, PluginContext, EmbeddedSDK
+  BadRequestError,
+  BatchController,
+  JSONObject,
+  Plugin,
+  PluginContext,
+  EmbeddedSDK
 } from 'kuzzle';
 import { KDocument } from 'kuzzle-sdk';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
+
 import { BaseAsset, Device } from '../models';
-import { DeviceContent, DeviceManagerConfiguration, LinkedMeasureName, Measure } from '../types';
+import {
+  DeviceContent,
+  DeviceManagerConfiguration,
+  LinkedMeasureName,
+  Measure
+} from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 import { AssetService } from './AssetService';
 
@@ -497,8 +508,11 @@ export class DeviceService {
     sdk: EmbeddedSDK,
     config: DeviceManagerConfiguration,
     deviceId: string
-  ) {
-    const document = await sdk.document.get(config.adminIndex, 'devices', deviceId);
+  ): Promise<Device> {
+    const document = await sdk.document.get(
+      config.adminIndex,
+      DeviceService.collectionName,
+      deviceId);
 
     return new Device(document._source as DeviceContent, document._id);
   }

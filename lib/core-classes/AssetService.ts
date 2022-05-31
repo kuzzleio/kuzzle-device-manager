@@ -11,7 +11,12 @@ import {
 
 import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
 import { BaseAsset } from '../models/BaseAsset';
-import { BaseAssetContent, DeviceManagerConfiguration, LinkedMeasureName, Measure } from '../types';
+import {
+  BaseAssetContent,
+  DeviceManagerConfiguration,
+  LinkedMeasureName,
+  Measure
+} from '../types';
 
 export class AssetService {
   private config: DeviceManagerConfiguration;
@@ -106,7 +111,7 @@ export class AssetService {
     assetId: string,
     { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
   ): Promise<KDocument<Measure>[]> {
-    await this.getAsset(engineId, assetId);
+    await AssetService.getAsset(this.sdk, engineId, assetId);
 
     const query = {
       range: {
@@ -176,16 +181,15 @@ export class AssetService {
     return results;
   }
 
-  getAsset (engineId: string, assetId: string): Promise<KDocument<BaseAssetContent>> {
-    return this.sdk.document.get<BaseAssetContent>(engineId, 'assets', assetId);
-  }
-
   public static async getAsset (
     sdk: EmbeddedSDK,
     engineId: string,
     assetId: string
   ): Promise<BaseAsset> {
-    const document = await sdk.document.get(engineId, 'assets', assetId);
+    const document = await sdk.document.get(
+      engineId,
+      AssetService.collectionName,
+      assetId);
 
     return new BaseAsset(document._source as BaseAssetContent, document._id);
   }
