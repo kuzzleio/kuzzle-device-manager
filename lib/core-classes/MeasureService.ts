@@ -143,7 +143,7 @@ export class MeasureService {
     const validMeasures: MeasureContent[] = [];
 
     for (const measure of measures) {
-      if (validateBaseMeasure(measure) && this.measuresRegister.has(measure.type)) {
+      if (validateAssetMeasurement(measure) && this.measuresRegister.has(measure.type)) {
         const measurement = measure as AssetMeasurement;
 
         validMeasures.push({
@@ -210,7 +210,7 @@ export class MeasureService {
   }
 }
 
-function validateBaseMeasure (toValidate: JSONObject): boolean {
+function validateAssetMeasurement (toValidate: JSONObject): boolean {
   return _.has(toValidate, 'values')
     && _.has(toValidate, 'type');
 }
