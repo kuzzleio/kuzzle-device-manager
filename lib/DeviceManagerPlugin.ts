@@ -7,6 +7,7 @@ import {
   Mutex,
   KuzzleRequest,
   BadRequestError,
+  BatchController
 } from 'kuzzle';
 import { ConfigManager, EngineController } from 'kuzzle-plugin-commons';
 
@@ -39,6 +40,7 @@ import {
   devicesMappings,
 } from './mappings';
 import { DeviceManagerConfiguration } from './types';
+import { MeasureService } from './core-classes/MeasureService';
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -47,11 +49,13 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceController: DeviceController;
   private decodersController: DecodersController;
   private engineController: EngineController<DeviceManagerPlugin>;
+  private batchController: BatchController;
 
   private assetService: AssetService;
   private payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
+  private measuresService: MeasureService;
 
   private decodersRegister = new DecodersRegister();
   private measuresRegister = new MeasuresRegister();
@@ -198,9 +202,24 @@ export class DeviceManagerPlugin extends Plugin {
     this.measures.register('humidity', humidityMeasure);
     this.measures.register('battery', batteryMeasure);
 
-    this.assetService = new AssetService(this);
-    this.payloadService = new PayloadService(this, this.measuresRegister);
-    this.deviceService = new DeviceService(this);
+    this.batchController = new BatchController(this.sdk as any, {
+      interval: this.config.batchInterval
+    });
+
+    this.assetService = new AssetService(this, this.batchController);
+    this.deviceService = new DeviceService(this, this.batchController, this.assetService);
+    this.measuresService = new MeasureService(
+      this,
+      this.batchController,
+      this.deviceService,
+      this.assetService,
+      this.measuresRegister);
+    this.payloadService = new PayloadService(
+      this,
+      this.batchController,
+      this.measuresRegister,
+      this.measuresService);
+
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
       this.assetsRegister,
@@ -211,7 +230,11 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.decodersRegister.init(this.context);
 
-    this.assetController = new AssetController(this, this.assetService, this.deviceService);
+    this.assetController = new AssetController(
+      this,
+      this.assetService,
+      this.deviceService,
+      this.measuresService);
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);

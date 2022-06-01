@@ -1,27 +1,31 @@
 import csv from 'csvtojson';
+import { BadRequestError, KuzzleRequest, Plugin } from 'kuzzle';
 import { CRUDController } from 'kuzzle-plugin-commons';
-import {
-  BadRequestError,
-  KuzzleRequest,
-  Plugin,
-} from 'kuzzle';
-
-import { BaseAsset } from '../models/BaseAsset';
+import { MeasureService } from 'lib/core-classes/MeasureService';
 import { AssetService, DeviceService } from '../core-classes';
+import { BaseAsset } from '../models/BaseAsset';
 
 export class AssetController extends CRUDController {
   private assetService: AssetService;
   private deviceService: DeviceService;
+  private measureService: MeasureService;
 
   private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  constructor (plugin: Plugin, assetService: AssetService, deviceService : DeviceService) {
+  constructor (
+    plugin: Plugin,
+    assetService: AssetService,
+    deviceService: DeviceService,
+    measureService: MeasureService
+  ) {
     super(plugin, 'assets');
 
     this.assetService = assetService;
     this.deviceService = deviceService;
+    this.measureService = measureService;
+
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
@@ -48,16 +52,20 @@ export class AssetController extends CRUDController {
           handler: this.update.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id', verb: 'put' }],
         },
-        measures: {
-          handler: this.measures.bind(this),
+        getMeasures: {
+          handler: this.getMeasures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'get' }],
+        },
+        pushMeasures: {
+          handler: this.pushMeasures.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'post' }],
         }
       },
     };
     /* eslint-enable sort-keys */
   }
 
-  async measures (request: KuzzleRequest) {
+  async getMeasures (request: KuzzleRequest) {
     const id = request.getId();
     const engineId = request.getString('engineId');
     const size = request.input.args.size;
@@ -74,6 +82,23 @@ export class AssetController extends CRUDController {
       { endAt, size, startAt });
 
     return { measures };
+  }
+
+  async pushMeasures (request: KuzzleRequest) {
+    const engineId = request.getString('engineId');
+    const assetId = request.getId();
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
+    const measures = request.getBodyArray('measures');
+
+    const { asset, errors } = await this.measureService.registerByAsset(
+      engineId,
+      assetId,
+      measures,
+      refresh,
+      strict);
+
+    return { asset, engineId, errors };
   }
 
   async update (request: KuzzleRequest) {
@@ -142,6 +167,7 @@ export class AssetController extends CRUDController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
     const devicesLinks = await this.assetService.getAsset(engineId, assetId);
+
     if (Array.isArray(devicesLinks._source.deviceLinks)) {
       for (const deviceLink of devicesLinks._source.deviceLinks) {
         await this.deviceService.unlinkAsset(deviceLink.deviceId, { refresh, strict });

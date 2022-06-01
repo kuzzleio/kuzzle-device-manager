@@ -1,4 +1,4 @@
-import { Measurement } from './measures/Measurement';
+import { Measurement } from './measures/MeasureContent';
 
 /**
  * Result of the `Decoder.decode` method.

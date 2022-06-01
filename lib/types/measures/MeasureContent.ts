@@ -1,12 +1,19 @@
-import { JSONObject } from 'kuzzle';
-import { KDocumentContent } from 'kuzzle-sdk';
+import { JSONObject, KDocumentContent } from 'kuzzle';
 
-import { MeasurementUnit } from './MeasureDefinition';
+import { MeasureUnit } from './MeasureDefinition';
 
 /**
- * Represent the content of a measure document.
+ * Represents a measurement of a value to post on an asset
  */
-export interface MeasureContent extends KDocumentContent {
+export interface AssetMeasurement {
+  // TODO : Refine types more precisely
+
+  /**
+  * A device may have different measures for the same type (e.g. measure temperature 2 times)
+   * Should be set when you link the device to the asset
+   */
+  name?: string;
+
   /**
    * Type of the measure. (e.g. "temperature")
    * The type name is also the name of the sub-property to look at
@@ -15,25 +22,59 @@ export interface MeasureContent extends KDocumentContent {
   type: string;
 
   /**
-   * A device may have different measures for the same type (e.g. measure temperature 2 times)
-   * Should be set when you link the device to the asset
-   */
-  name?: string;
-
-  /**
-   * Measurement self-description
-   */
-  unit: MeasurementUnit;
-
-  /**
-   * Mesured values
+   * Property containing the actual measurement.
+   *
+   * This should be specialized by child interfaces
    */
   values: JSONObject;
 
   /**
    * Micro Timestamp of the measure
    */
+  measuredAt?: number;
+}
+
+/**
+ * Represents a measurement of a value to post from a decoder
+ *
+ * This interface should be extended and the `values` property specialized
+ * to declare new measurement type.
+ */
+export interface Measurement {
+  /**
+   * A device may have different measures for the same type (e.g. measure temperature 2 times)
+   * Should be set when you link the device to the asset
+   */
+  name?: string;
+
+  /**
+   * Property containing the actual measurement.
+   *
+   * This should be specialized by child interfaces
+   */
+  values: JSONObject;
+
+  /**
+   * Micro Timestamp of the measurement time
+   */
   measuredAt: number;
+}
+
+/**
+ * Represent the full content of a measure document.
+ */
+export interface MeasureContent extends KDocumentContent, Measurement {
+  /**
+   * Type of the measure. (e.g. "temperature")
+   * The type name is also the name of the sub-property to look at
+   * in the "values" object to get the measure main value.
+   */
+  type: string;
+
+  /**
+   * Measurement self-description
+   */
+  unit: MeasureUnit;
 
   /**
    * Origin of the measure
@@ -42,7 +83,7 @@ export interface MeasureContent extends KDocumentContent {
     /**
      * ID of the device (document _id)
      */
-    id: string;
+    id?: string;
 
     /**
      * E.g. "device"
