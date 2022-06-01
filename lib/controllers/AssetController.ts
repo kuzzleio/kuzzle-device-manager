@@ -91,14 +91,14 @@ export class AssetController extends CRUDController {
     const strict = request.getBoolean('strict');
     const measures = request.getBodyArray('measures');
 
-    const result = await this.measureService.registerByAsset(
+    const { asset, errors } = await this.measureService.registerByAsset(
       engineId,
       assetId,
       measures,
       refresh,
       strict);
 
-    return result;
+    return { asset, engineId, errors };
   }
 
   async update (request: KuzzleRequest) {
