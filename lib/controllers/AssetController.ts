@@ -56,8 +56,8 @@ export class AssetController extends CRUDController {
           handler: this.getMeasures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'get' }],
         },
-        postMeasures: {
-          handler: this.postMeasures.bind(this),
+        pushMeasures: {
+          handler: this.pushMeasures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'post' }],
         }
       },
@@ -84,7 +84,7 @@ export class AssetController extends CRUDController {
     return { measures };
   }
 
-  async postMeasures (request: KuzzleRequest) {
+  async pushMeasures (request: KuzzleRequest) {
     const engineId = request.getString('engineId');
     const assetId = request.getId();
     const refresh = request.getRefresh();
