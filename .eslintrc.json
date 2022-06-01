@@ -5,7 +5,6 @@
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/ban-ts-ignore": "off",
     "brace-style": ["error", "stroustrup"],
-    "comma-dangle": ["error", "always"],
     "comma-spacing": 2,
     "consistent-return": 0,
     "curly": 2,
