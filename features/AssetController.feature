@@ -75,7 +75,7 @@ Feature: DeviceManager asset controller
 
 
   Scenario: Add a measure
-    When I successfully execute the action "device-manager/asset":"postMeasures" with args:
+    When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
       | engineId | "engine-ayse"       |
       | _id      | "tools-MART-linked" |
       | body     | { "measures": [ { "values": { "temperature": 70 }, "type": "temperature" }, { "values": { "nothing": null }, "type": "nonValidType" } ] } |
