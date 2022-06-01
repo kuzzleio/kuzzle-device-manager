@@ -6,8 +6,6 @@ export * from './measures/MeasureContent';
 
 export * from './measures/MeasureDefinition';
 
-export * from './measures/MeasureOrigin';
-
 export * from './DecoderContent';
 
 export * from './DecodedPayload';
