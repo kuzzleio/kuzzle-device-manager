@@ -12,7 +12,6 @@ import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { BaseAsset } from '../models';
 import {
   AssetMeasurement,
-  Measurement,
   DeviceManagerConfiguration,
   MeasureContent,
 } from '../types';
@@ -149,7 +148,7 @@ export class MeasureService {
         validMeasures.push({
           measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
           origin: {
-            assetId: assetId,
+            assetId,
             id: null,
             model: null,
             payloadUuids: null,

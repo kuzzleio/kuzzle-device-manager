@@ -1,7 +1,6 @@
-import { JSONObject, KDocumentContent  } from 'kuzzle';
+import { JSONObject, KDocumentContent } from 'kuzzle';
 
 import { MeasureUnit } from './MeasureDefinition';
-import { MeasureOrigin } from './MeasureOrigin';
 
 /**
  * Represents a measurement of a value to post on an asset

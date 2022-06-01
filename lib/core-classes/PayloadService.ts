@@ -136,10 +136,10 @@ export class PayloadService {
 
     const deviceId = Device.id(model, reference);
     const deviceContent: DeviceContent = {
-      measures: measures,
+      measures,
       measuresName: [],
-      model: model,
-      reference: reference,
+      model,
+      reference,
     };
 
     return this.register(deviceId, deviceContent, { refresh });
