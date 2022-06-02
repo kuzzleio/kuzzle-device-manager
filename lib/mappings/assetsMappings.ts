@@ -54,7 +54,7 @@ export const assetsMappings = {
       },
       type: 'keyword'
     },
-    subcategory: {
+    subCategory: {
       fields: {
         text: { type: 'text' }
       },

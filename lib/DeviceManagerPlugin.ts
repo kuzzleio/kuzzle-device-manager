@@ -41,6 +41,7 @@ import {
 import { DeviceManagerConfiguration } from './types';
 import { AssetCategoryController } from './controllers/AssetCategoryController';
 import { MetadataController } from './controllers/MetadataController';
+import { AssetCategoryService } from './core-classes/AssetCategoryService';
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -53,6 +54,7 @@ export class DeviceManagerPlugin extends Plugin {
   private metadataController: MetadataController;
 
   private assetService: AssetService;
+  private assetCategoryService: AssetCategoryService;
   private payloadService: PayloadService;
   private deviceManagerEngine: DeviceManagerEngine;
   private deviceService: DeviceService;
@@ -203,6 +205,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.measures.register('battery', batteryMeasure);
 
     this.assetService = new AssetService(this);
+    this.assetCategoryService = new AssetCategoryService(this);
     this.payloadService = new PayloadService(this, this.measuresRegister);
     this.deviceService = new DeviceService(this);
     this.deviceManagerEngine = new DeviceManagerEngine(
@@ -215,7 +218,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.decodersRegister.init(this.context);
 
-    this.assetController = new AssetController(this, this.assetService, this.deviceService);
+    this.assetController = new AssetController(this, this.assetService, this.deviceService, this.assetCategoryService);
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
