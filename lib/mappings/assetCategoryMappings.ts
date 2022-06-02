@@ -15,9 +15,9 @@ function embedded (mapping) {
 export const assetCategoryMappings = {
   dynamic: 'strict',
   properties: {
-    assetMetadatas: embedded(metadataMappings),
+    assetMetadata: embedded(metadataMappings),
     children: fieldPathMappings,
-    metadatasValues: { //Hashmap mapping...
+    metadataValues: { //Hashmap mapping...
       dynamic: 'true',
       properties: {}
     },

@@ -61,8 +61,8 @@ export class AssetCategoryController extends RelationalController {
     if (! request.input.body.children) {
       request.input.body.children = [];
     }
-    if (! request.input.body.metadatasValues) {
-      request.input.body.metadatasValues = {};
+    if (! request.input.body.metadataValues) {
+      request.input.body.metadataValues = {};
     }
     return super.create(request);
   }
@@ -107,24 +107,23 @@ export class AssetCategoryController extends RelationalController {
   async linkMetadata (request: KuzzleRequest) {
 
     const embeddedMetadata = this.getFieldPath(request, 'AssetCategory', '_metadataId', 'metadata');
-    const assetCategoryContainer = this.getFieldPath(request, 'assetMetadatas');
-    const r = await super.genericLink(request, embeddedMetadata, assetCategoryContainer, true);
-    if (request.input.body && request.input.body.value) {
+    const assetCategoryContainer = this.getFieldPath(request, 'assetMetadata');
+    await super.genericLink(request, embeddedMetadata, assetCategoryContainer, true);
+    if (request.input?.body?.value) {
       const updateRequest = {
-        metadatasValues: {}
-      };
-      updateRequest.metadatasValues[request.getString('_metadataId')] = request.input.body.value;
+        metadataValues: {
+          [request.getString('_metadataId')]: request.input.body.value
+        }
+      };      
       request.input.body = updateRequest;
       await this.update(request);
     }
-    return r;
-
   }
 
   async unlinkMetadata (request: KuzzleRequest) {
 
     const embeddedMetadata = this.getFieldPath(request, 'AssetCategory', '_metadataId', 'metadata');
-    const assetCategoryContainer = this.getFieldPath(request, 'assetMetadatas');
+    const assetCategoryContainer = this.getFieldPath(request, 'assetMetadata');
     return super.genericUnlink(request, embeddedMetadata, assetCategoryContainer, true);
   }
 

@@ -1,6 +1,6 @@
 import { MetadataContent } from '../types/MetadataContent';
 import { AssetCategoryContent } from '../types/AssetCategoryContent';
-import { Plugin, PluginContext } from 'kuzzle';
+import { JSONObject, Plugin, PluginContext } from 'kuzzle';
 import { DeviceManagerConfiguration } from '../types';
 
 export class AssetCategoryService {
@@ -17,36 +17,36 @@ export class AssetCategoryService {
     this.context = plugin.context;
   }
 
-  getMetadatas (assetCategory : AssetCategoryContent) : MetadataContent[] {
+  getMetadata (assetCategory : AssetCategoryContent) : MetadataContent[] {
     let metadataList;
-    if (! assetCategory.assetMetadatas) {
+    if (! assetCategory.assetMetadata) {
       metadataList = [];
     }
     else {
-      metadataList = JSON.parse(JSON.stringify(assetCategory.assetMetadatas));
+      metadataList = JSON.parse(JSON.stringify(assetCategory.assetMetadata));
     }
     let assetCategoryTmp = assetCategory;
     while (assetCategoryTmp.parent) {
-      if (assetCategoryTmp.parent.assetMetadatas) {
-        metadataList = metadataList.concat(assetCategoryTmp.parent.assetMetadatas);
+      if (assetCategoryTmp.parent.assetMetadata) {
+        metadataList = metadataList.concat(assetCategoryTmp.parent.assetMetadata);
       }
       assetCategoryTmp = assetCategoryTmp.parent;
     }
     return metadataList;
   }
 
-  getMetadatasValues (assetCategory : AssetCategoryContent) {
+  getMetadataValues (assetCategory : AssetCategoryContent) : JSONObject[] {
     let metadataValueList;
-    if (! assetCategory.assetMetadatas) {
+    if (! assetCategory.assetMetadata) {
       metadataValueList = [];
     }
     else {
-      metadataValueList = JSON.parse(JSON.stringify(assetCategory.metadatasValues));
+      metadataValueList = JSON.parse(JSON.stringify(assetCategory.metadataValues));
     }
     let assetCategoryTmp = assetCategory;
     while (assetCategoryTmp.parent) {
-      if (assetCategoryTmp.parent.metadatasValues) {
-        metadataValueList = metadataValueList.concat(assetCategoryTmp.parent.metadatasValues);
+      if (assetCategoryTmp.parent.metadataValues) {
+        metadataValueList = metadataValueList.concat(assetCategoryTmp.parent.metadataValues);
       }
       assetCategoryTmp = assetCategoryTmp.parent;
     }
@@ -54,14 +54,14 @@ export class AssetCategoryService {
   }
 
 
-  async validateMetadata (assetMetadata, engineId, category) {
+  async validateMetadata (assetMetadata : JSONObject, engineId : string, category : string) {
     const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
-    const metadatas = this.getMetadatas(assetCategory._source);
-    const metadatasValues = this.getMetadatasValues(assetCategory._source);
-    for (const metadata of metadatas) {
+    const metadataList = this.getMetadata(assetCategory._source);
+    const metadataValues = this.getMetadataValues(assetCategory._source);
+    for (const metadata of metadataList) {
       if (metadata.mandatory) {
         // eslint-disable-next-line no-prototype-builtins
-        if (! (assetMetadata && assetMetadata.hasOwnProperty(metadata.name)) && ! metadatasValues.hasOwnProperty(metadata.name)) {
+        if (! (assetMetadata[metadata.name]) && ! metadataValues[metadata.name]) {
           throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
         }
       }

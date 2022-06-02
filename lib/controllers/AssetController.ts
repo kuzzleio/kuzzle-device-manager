@@ -9,6 +9,7 @@ import {
 import { BaseAsset } from '../models/BaseAsset';
 import { AssetService, DeviceService } from '../core-classes';
 import { AssetCategoryService } from '../core-classes/AssetCategoryService';
+import { AssetCategoryContent } from '../types/AssetCategoryContent';
 
 export class AssetController extends CRUDController {
   private assetService: AssetService;
@@ -108,7 +109,7 @@ export class AssetController extends CRUDController {
     
   }
 
-  async linkCategory (request: KuzzleRequest) { //TODO : verify mandatory metadatas (for later)
+  async linkCategory (request: KuzzleRequest) { //TODO : verify mandatory metadata (for later)
     const id = request.getId();
     const engineId = request.getString('engineId');
     const document = await this.sdk.document.get(engineId, this.collection, id);
@@ -166,7 +167,12 @@ export class AssetController extends CRUDController {
 
     if (category) {
       const assetMetadata = request.getBodyObject('metadata');
-      await this.assetCategoryService.validateMetadata(assetMetadata, engineId, category);
+      if (assetMetadata) {
+        await this.assetCategoryService.validateMetadata(assetMetadata, engineId, category);
+      }
+      const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
+      const values = this.assetCategoryService.getMetadataValues(assetCategory._source);
+      request.input.body.metadata = { ...assetMetadata, ...values };
     }
     else {
       request.input.body.category = null;
