@@ -9,14 +9,16 @@ import { Measurement } from './measures/MeasureContent';
  *
  *  const decodedPayload: DecodedPayload = {
  *    reference: 'BZH42AZF',
- *    measures: {
- *      temperature: {
+ *    measures: [
+ *      {
+ *        type: temperature,
  *        measuredAt: Date.now(),
  *        values: {
  *          temperature: 23.8,
  *        }
  *      },
- *      position: {
+ *      {
+ *        type: position,
  *        measuredAt: Date.now(),
  *        values: {
  *          position: {
@@ -26,19 +28,17 @@ import { Measurement } from './measures/MeasureContent';
  *          accuracy: 100,
  *        }
  *      },
- *    },
+ *    ],
  *  };
  */
 export interface DecodedPayload {
   /**
    * Device unique reference
    */
-  reference: string;
+  deviceReference: string;
 
   /**
    * Array of decoded measures.
    */
-  measures: {
-    [measureType: string]: Measurement,
-  };
+  measurements: Measurement[];
 }

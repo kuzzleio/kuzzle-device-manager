@@ -190,13 +190,13 @@ export class DeviceController extends CRUDController {
   async linkAsset (request: KuzzleRequest) {
     const assetId = request.getString('assetId');
     const deviceId = request.getId();
-    const measuresNames = request.getBodyObject('measuresNames', {});
+    const measureNameLinks = request.getBodyArray('measureNameLinks');
     const refresh = request.getRefresh();
 
     const linkRequest: LinkRequest = {
       assetId,
       deviceId,
-      measuresNames,
+      measureNameLinks,
     };
 
     await this.deviceService.linkAsset(linkRequest, { refresh });

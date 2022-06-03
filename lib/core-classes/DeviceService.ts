@@ -1,10 +1,10 @@
 import {
   BadRequestError,
+  BatchController,
   JSONObject,
+  KDocument,
   Plugin,
   PluginContext,
-  BatchController,
-  KDocument 
 } from 'kuzzle';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,8 +14,8 @@ import { BaseAsset, Device } from '../models';
 import {
   DeviceContent,
   DeviceManagerConfiguration,
-  LinkedMeasureName,
-  MeasureContent
+  MeasureContent,
+  DeviceLink,
 } from '../types';
 import { mRequest, mResponse, writeToDatabase } from '../utils/';
 import { AssetService } from './AssetService';
@@ -41,16 +41,7 @@ export type DeviceBulkContent = {
  */
 export type LinkRequest = {
   assetId: string;
-
-  deviceId: string;
-
-  /**
-   * List of measures names when linked to the asset.
-   * Default measure name is measure type.
-   */
-  measuresNames?: {
-    [measureType: string]: string;
-  }
+  deviceLink: DeviceLink;
 }
 
 export type AttachRequest = {
@@ -67,6 +58,10 @@ export class DeviceService {
 
   private get sdk () {
     return this.context.accessors.sdk;
+  }
+
+  private get app (): Backend {
+    return global.app;
   }
 
   constructor (
@@ -140,13 +135,13 @@ export class DeviceService {
 
     device._source.engineId = attachRequest.engineId;
 
-
-    const response = await global.app.trigger(
+    const response = await this.app.trigger(
       'device-manager:device:attach-engine:before',
       {
         device,
         engineId: attachRequest.engineId,
       });
+
     await Promise.all([
       this.sdk.document.update(
         this.config.adminIndex,
@@ -163,7 +158,7 @@ export class DeviceService {
         { refresh }),
     ]);
 
-    await global.app.trigger('device-manager:device:attach-engine:after', {
+    await this.app.trigger('device-manager:device:attach-engine:after', {
       device,
       engineId: attachRequest.engineId,
     });
@@ -226,7 +221,7 @@ export class DeviceService {
     linkRequest: LinkRequest,
     { refresh }: { refresh?: any }
   ): Promise<{ asset: BaseAsset, device: Device }> {
-    const device = await this.getDevice(this.config, linkRequest.deviceId);
+    const device = await this.getDevice(this.config, linkRequest.deviceLink.deviceId);
 
     const engineId = device._source.engineId;
 
@@ -281,16 +276,16 @@ export class DeviceService {
     await Promise.all([
       this.sdk.document.update(
         this.config.adminIndex,
-        'devices',
+        InternalCollection.DEVICES,
         device._id,
         {
-          assetId: response.device._source.assetId,
-          measuresName: listMeasures
+          assetId: response.device._source.assetId
         },
         { refresh }),
+
       this.sdk.document.update(
         engineId,
-        'devices',
+        InternalCollection.DEVICES,
         device._id,
         {
           assetId: response.device._source.assetId,
@@ -300,16 +295,17 @@ export class DeviceService {
 
       this.sdk.document.update(
         engineId,
-        'assets',
+        InternalCollection.ASSETS,
         asset._id,
         { 
           deviceLinks: response.asset._source.deviceLinks,
+          // TODO : Refactor with `asset.updateMeasures` but do only one call to add links
           measures: response.asset._source.measures
         },
         { refresh }),
     ]);
 
-    await global.app.trigger(
+    await this.app.trigger(
       'device-manager:device:link-asset:after',
       { asset, device },
     );

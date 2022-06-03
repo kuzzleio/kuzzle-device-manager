@@ -1,7 +1,7 @@
 import {
+  HttpRoute,
   JSONObject,
   KuzzleRequest,
-  HttpRoute,
   PreconditionError,
 } from 'kuzzle';
 import _ from 'lodash';
@@ -25,7 +25,7 @@ export abstract class Decoder {
   public deviceModel: string;
 
   /**
-   * Array of device measure type
+   * Array of device measure name
    */
   public deviceMeasures: string[];
 
@@ -105,10 +105,10 @@ export abstract class Decoder {
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
-   * @returns Measure
+   * @returns Array of decodedPayload. The order of their measurements matters
    */
   // eslint-disable-next-line no-unused-vars
-  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>
+  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload[]>
 
   /**
    * Checks if the provided properties are present in the payload

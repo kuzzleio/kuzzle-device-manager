@@ -1,9 +1,9 @@
 import {
   ControllerDefinition,
-  PluginImplementationError,
-  KuzzleRequest,
   Inflector,
+  KuzzleRequest,
   PluginContext,
+  PluginImplementationError,
 } from 'kuzzle';
 
 import { Decoder } from '../Decoder';
@@ -34,6 +34,7 @@ export class DecodersRegister {
 
   /**
    * Registers a new decoder for a device model.
+   * Decoder and device models share a 1:1 relationship
    *
    * This will register a new API action:
    *  - controller: `device-manager/payload`

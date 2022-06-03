@@ -1,11 +1,16 @@
 import { JSONObject, KDocumentContent } from 'kuzzle';
 
 import { MeasureContent } from './measures/MeasureContent';
-import { LinkedMeasureName } from './measures/MeasureDefinition';
+import { MeasureNameLink } from './measures/MeasureDefinition';
 
 export interface DeviceLink {
   deviceId : string,
-  measuresName: LinkedMeasureName[];
+
+  /**
+   * List of measures names when linked to the asset.
+   * Default measure name is measure type.
+   */
+  measuresNameLinks: MeasureNameLink[];
 }
 
 /**

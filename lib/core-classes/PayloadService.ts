@@ -1,19 +1,16 @@
 import {
+  Backend,
+  BatchController,
   KuzzleRequest,
   PluginContext,
-  Backend,
-  UnauthorizedError,
-  BatchController
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Decoder } from './Decoder';
-import { Device, BaseAsset } from '../models';
+import { Device } from '../models';
 import {
-  MeasureContent,
   DeviceContent,
   DeviceManagerConfiguration,
-  BaseAssetContent,
 } from '../types';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { MeasureService } from './MeasureService';
@@ -48,6 +45,12 @@ export class PayloadService {
     this.batch = batchController;
   }
 
+  /**
+   * Process a payload by validating and decode it with the `decoder` associated
+   * with the device model. It :
+   * - register the brut `Payload`
+   * - redirect measurements to MeasureService
+   */
   async process (request: KuzzleRequest, decoder: Decoder, { refresh = undefined } = {}) {
     const payload = request.getBody();
 
@@ -78,34 +81,28 @@ export class PayloadService {
         uuid);
     }
 
-    const decodedPayload = await decoder.decode(payload, request);
+    const decodedPayloads = await decoder.decode(payload, request);
 
-    const newMeasures: MeasureContent[] = [];
-
-    const deviceId = Device.id(decoder.deviceModel, decodedPayload.reference);
-    for (const [type, measure] of Object.entries(decodedPayload.measures)) {
-      newMeasures.push({
-        measuredAt: measure.measuredAt,
-        origin: {
-          assetId: null,
-          id: deviceId,
-          model: decoder.deviceModel,
-          payloadUuids: [uuid],
-          type: 'device',
-        },
-        type,
-        unit: this.measuresRegister.get(type).unit,
-        values: measure.values
-      });
+    for (const { deviceReference, measurements } of decodedPayloads) {
+      this.measureService.registerByDevice(
+        decoder.deviceModel,
+        deviceReference,
+        measurements,
+        uuid,
+        { refresh });
     }
 
+    // TODO : refresh the payload if needed
+
+    // TODO : Try in Measure Service maybe ?
     try {
-      return await this.measureService.registerByDevice(deviceId, newMeasures, {
+      return await this.measureService.registerByDevice(decoder.deviceModel, decodedPayloads, {
         refresh
       });
     }
     catch (error) {
       if (error.id === 'services.storage.not_found') {
+        // TODO : Where to register a new device ? (in Device Service)
         return this.provisionning(
           decoder.deviceModel,
           decodedPayload.reference,
@@ -164,20 +161,5 @@ export class PayloadService {
       device: device.serialize(),
       engineId: device._source.engineId,
     };
-  }
-
-  private async getAsset (engineId: string, assetId: string) {
-    const document = await this.batch.get<BaseAssetContent>(engineId, 'assets', assetId);
-
-    return new BaseAsset(document._source, document._id);
-  }
-
-  private async getDevice (deviceId: string) {
-    const document = await this.batch.get<DeviceContent>(
-      this.config.adminIndex,
-      'devices',
-      deviceId);
-
-    return new Device(document._source, document._id);
   }
 }

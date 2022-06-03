@@ -46,9 +46,9 @@ export interface MeasureDefinition {
 
 
 /**
- * mapping between measure name and type (include in devices and assets)
+ * mapping between measure name of device and asset
  */
-export interface LinkedMeasureName {
-  name : string;
-  type : string;
+export interface MeasureNameLink {
+  assetMeasureName : string;
+  deviceMeasureName : string;
 }
