@@ -14,10 +14,16 @@ Feature: AssetCategory
       | _id         | "smallTruck"  |
       | _metadataId | "length"      |
     Then The document "engine-ayse":"asset-category":"smallTruck" content match:
-      | name                        | "smallTruck"   |
-      | assetMetadata[0].name      | "length"    |
-      | assetMetadata[0].valueType | "integer" |
-      | assetMetadata[0].mandatory | false     |
+      | name             | "smallTruck" |
+      | assetMetadata[0] | "length"     |
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | _id      | "smallTruck"  |
+      | engineId | "engine-ayse" |
+    Then I should receive a result matching:
+      | assetMetadata[0].name      | "length"     |
+      | assetMetadata[0].valueType | "integer"    |
+      | assetMetadata[0].mandatory | false        |
+
 
   Scenario: Create an assetCategory, a  metadata and link them statically
     When I successfully execute the action "device-manager/assetCategory":"create" with args:
@@ -34,9 +40,9 @@ Feature: AssetCategory
       | _metadataId | "volume"       |
       | body.value  | 101            |
     Then The document "engine-ayse":"asset-category":"strangeTruck" content match:
-      | name                   | "strangeTruck" |
-      | assetMetadata[0].name | "volume"     |
-      | metadataValues.volume | 101          |
+      | name                  | "strangeTruck" |
+      | assetMetadata[0]      | "volume"       |
+      | metadataValues.volume | 101            |
 
   Scenario: Link and unlink an asset and a AssetCategory
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
@@ -88,21 +94,28 @@ Feature: AssetCategory
   Scenario: Update and delete a metadata, and verify edition propagation
     When I successfully execute the action "device-manager/metadata":"create" with args:
       | engineId       | "engine-ayse" |
-      | body.name      | "weight"        |
+      | body.name      | "weight"      |
       | body.valueType | "integer"     |
       | body.mandatory | false         |
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
       | engineId    | "engine-ayse" |
       | _id         | "truck"       |
       | _metadataId | "weight"      |
-    Then The document "engine-ayse":"asset-category":"truck" content match:
-      | assetMetadata[0].mandatory | false |
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | _id      | "truck"       |
+      | engineId | "engine-ayse" |
+    Then I should receive a result matching:
+      | assetMetadata[0].mandatory |  false |
     When I successfully execute the action "device-manager/metadata":"update" with args:
       | engineId       | "engine-ayse" |
-      | _id            | "weight"        |
+      | _id            | "weight"      |
       | body.mandatory | true          |
-    Then The document "engine-ayse":"asset-category":"truck" content match:
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | _id      | "truck"       |
+      | engineId | "engine-ayse" |
+    Then I should receive a result matching:
       | assetMetadata[0].mandatory | true |
+    Then I refresh the collection "engine-ayse":"asset-category"
     When I successfully execute the action "device-manager/metadata":"delete" with args:
       | engineId | "engine-ayse" |
       | _id      | "weight"        |
@@ -118,12 +131,8 @@ Feature: AssetCategory
       | _id      | "specialTruck"    |
       | parentId | "truck"           |
     Then The document "engine-ayse":"asset-category":"specialTruck" content match:
-      | name        | "specialTruck" |
-      | parent.name | "truck"    |
-    And I wait 3000 ms
-    And The document "engine-ayse":"asset-category":"truck" content match:
-      | name                 | "truck"        |
-      | children[1].document | "specialTruck" |
+      | name   | "specialTruck" |
+      | parent | "truck"        |
     When I successfully execute the action "device-manager/assetCategory":"unlinkParent" with args:
       | engineId | "engine-ayse" |
       | _id      | "specialTruck"    |
@@ -131,9 +140,6 @@ Feature: AssetCategory
     Then The document "engine-ayse":"asset-category":"specialTruck" content match:
       | name   | "specialTruck" |
       | parent | null           |
-    And The document "engine-ayse":"asset-category":"truck" content match:
-      | name        | "truck"   |
-      | children[1] | undefined |
 
   Scenario: Create an asset with AssetCategory
     When I successfully execute the action "device-manager/asset":"create" with args:
@@ -207,16 +213,7 @@ Feature: AssetCategory
       | body.reference | "asset_03"    |
       | body.category  | "solarTruck"  |
     Then The document "engine-ayse":"assets":"solarTruck-M-asset_03" content match:
-      | metadata.panelSurface | 101     |
-
-  Scenario: Update a parent, and verify edition propagation
-    When I successfully execute the action "device-manager/assetCategory":"update" with args:
-      | engineId  | "engine-ayse" |
-      | _id       | "truck"       |
-      | body.name | "basicTruck"  |
-    Then The document "engine-ayse":"asset-category":"bigTruck" content match:
-      | name        | "bigTruck" |
-      | parent.name | "basicTruck"    |
+      | metadata.panelSurface | 101 |
 
   Scenario: link, update and unlink a metadata on a parent category, and verify edition propagation on children category
     When I successfully execute the action "device-manager/metadata":"create" with args:
@@ -225,39 +222,38 @@ Feature: AssetCategory
       | body.valueType | "integer"     |
       | body.mandatory | false         |
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
-      | engineId       | "engine-ayse" |
-      | _id | "truck" |
-      | _metadataId | "height"  |
-    Then The document "engine-ayse":"asset-category":"bigTruck" content match:
-      | parent.assetMetadata[0].name      | "height" |
-      | parent.assetMetadata[0].mandatory | false    |
+      | engineId    | "engine-ayse" |
+      | _id         | "truck"       |
+      | _metadataId | "height"      |
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | _id      | "bigTruck"  |
+      | engineId | "engine-ayse" |
+    Then I should receive a result matching:
+      | assetMetadata[0].name      | "height" |
+      | assetMetadata[0].mandatory | false    |
     When I successfully execute the action "device-manager/metadata":"update" with args:
       | engineId       | "engine-ayse" |
-      | _id            | "height"        |
+      | _id            | "height"      |
       | body.mandatory | true          |
-    Then The document "engine-ayse":"asset-category":"bigTruck" content match:
-      | parent.assetMetadata[0].mandatory | true |
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | _id      | "bigTruck"  |
+      | engineId | "engine-ayse" |
+    Then I should receive a result matching:
+      | assetMetadata[0].name      | "height" |
+      | assetMetadata[0].mandatory | true     |
     When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
       | engineId       | "engine-ayse" |
       | _id | "truck" |
       | _metadataId | "height"  |
     Then The document "engine-ayse":"asset-category":"truck" content match:
       | assetMetadata | [] |
-    Then The document "engine-ayse":"asset-category":"bigTruck" content match:
-      | parent.assetMetadata | [] |
-
-  Scenario: Delete a child, update parent and validate the lazy link remove work fine
-    When I successfully execute the action "device-manager/assetCategory":"delete" with args:
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | _id      | "bigTruck"  |
       | engineId | "engine-ayse" |
-      | _id      | "bigTruck"    |
-    When I successfully execute the action "device-manager/assetCategory":"update" with args:
-      | engineId  | "engine-ayse"  |
-      | _id       | "truck"        |
-      | body.name | "genericTruck" |
-    Then The document "engine-ayse":"asset-category":"truck" content match:
-      | children | [] |
+    Then I should receive a result matching:
+      | assetMetadata | [] |
 
-  Scenario: Delete a parent, and verify deletion propagation
+  Scenario: Delete a parent, and verify parent relation deletion
     When I successfully execute the action "device-manager/assetCategory":"create" with args:
       | engineId  | "engine-ayse" |
       | body.name | "littleTruck" |
@@ -265,9 +261,11 @@ Feature: AssetCategory
       | engineId | "engine-ayse" |
       | _id      | "littleTruck" |
       | parentId | "truck"       |
+    Then I refresh the collection "engine-ayse":"asset-category"
     When I successfully execute the action "device-manager/assetCategory":"delete" with args:
       | engineId | "engine-ayse" |
       | _id      | "truck"       |
-    Then The document "engine-ayse":"asset-category":"littleTruck" does not exists
+    Then The document "engine-ayse":"asset-category":"littleTruck" content match:
+      | parent | null |
 
 

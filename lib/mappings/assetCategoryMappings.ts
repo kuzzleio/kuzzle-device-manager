@@ -1,21 +1,12 @@
 
-import { metadataMappings } from './metadataMappings';
 import { fieldPathMappings } from './fieldpathMappings';
-
-function embedded (mapping) {
-  mapping.properties._kuzzleId = {
-    fields: {
-      text: { type: 'text' }
-    },
-    type: 'keyword'
-  };
-  return mapping;
-}
 
 export const assetCategoryMappings = {
   dynamic: 'strict',
   properties: {
-    assetMetadata: embedded(metadataMappings),
+    assetMetadata: {
+      type: 'keyword',
+    },
     children: fieldPathMappings,
     metadataValues: { //Hashmap mapping...
       dynamic: 'true',
@@ -27,16 +18,8 @@ export const assetCategoryMappings = {
       },
       type: 'keyword'
     },
-    parent: { //recursive embbeded : 
-      dynamic: 'true',
-      properties: {
-        _kuzzleId: {
-          fields: {
-            text: { type: 'text' }
-          },
-          type: 'keyword'
-        }
-      }
+    parent: {
+      type: 'keyword'
     },
   }
 };

@@ -122,12 +122,11 @@ export class AssetController extends CRUDController {
       throw global.app.errors.get('device-manager', 'relational', 'alreadyLinked', 'asset', 'category');
     }
     else if (categoryDocument._source.parent) {
-      updateRequest.category = categoryDocument._source.parent.name;
+      updateRequest.category = categoryDocument._source.parent;
       updateRequest.subCategory = request.getString('categoryId');
     }
     else {
       updateRequest.category = request.getString('categoryId');
-
     } 
     request.input.body = updateRequest;
     return this.update(request);
@@ -166,12 +165,12 @@ export class AssetController extends CRUDController {
     const category = request.getBody().category;
 
     if (category) {
-      const assetMetadata = request.getBodyObject('metadata');
+      const assetMetadata = request.input.body.metadata;
       if (assetMetadata) {
         await this.assetCategoryService.validateMetadata(assetMetadata, engineId, category);
       }
       const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
-      const values = this.assetCategoryService.getMetadataValues(assetCategory._source);
+      const values = await this.assetCategoryService.getMetadataValues(assetCategory._source, engineId);
       request.input.body.metadata = { ...assetMetadata, ...values };
     }
     else {
@@ -180,7 +179,6 @@ export class AssetController extends CRUDController {
     if (! request.input.args._id) {
       request.input.args._id = BaseAsset.id(type, model, reference);
     }
-
     request.input.args.index = engineId;
     request.input.body.measures = [];
     request.input.body.deviceLinks = [];
@@ -222,4 +220,5 @@ export class AssetController extends CRUDController {
     }
     return super.delete(request);
   }
+
 }

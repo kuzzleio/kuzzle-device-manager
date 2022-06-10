@@ -8,27 +8,15 @@ export const metadataMappings = {
       type: 'boolean'
     },
     name: {
-      fields: {
-        text: { type: 'text' }
-      },
       type: 'keyword'
     },
     unit: {
-      fields: {
-        text: { type: 'text' }
-      },
       type: 'keyword'
     },
     valueList: {
-      fields: {
-        text: { type: 'text' }
-      },
       type: 'keyword'
     },
     valueType: {
-      fields: {
-        text: { type: 'text' }
-      },
       type: 'keyword'
     },
   }

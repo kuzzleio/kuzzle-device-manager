@@ -1,5 +1,4 @@
 import { KDocumentContent } from 'kuzzle-sdk';
-import { FieldPath } from '../controllers/RelationalController';
 
 /* eslint-disable no-shadow, no-unused-vars */
 export enum metadataType {
@@ -19,6 +18,5 @@ export interface MetadataContent extends KDocumentContent {
     internalProperties? : MetadataContent[], //Only object type
     valueList? : string, //Only for enum type
     mandatory : boolean,
-    AssetCategory : FieldPath[]
 }
 

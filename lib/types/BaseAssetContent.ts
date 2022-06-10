@@ -3,7 +3,6 @@ import { KDocumentContent } from 'kuzzle-sdk';
 
 import { MeasureContent } from './measures/MeasureContent';
 import { LinkedMeasureName } from './measures/MeasureDefinition';
-import { AssetCategoryContent } from './AssetCategoryContent';
 
 export interface DeviceLink {
   deviceId : string,
@@ -26,8 +25,8 @@ export interface BaseAssetContent extends KDocumentContent {
 
   deviceLinks: DeviceLink[],
 
-  category: AssetCategoryContent,
-  subCategory: AssetCategoryContent,
+  category: string,
+  subCategory: string,
 
 
 }

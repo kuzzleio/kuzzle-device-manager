@@ -222,7 +222,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
-    this.assetCategoryController = new AssetCategoryController(this);
+    this.assetCategoryController = new AssetCategoryController(this, this.assetCategoryService);
     this.metadataController = new MetadataController(this);
 
     this.api['device-manager/payload'] = this.decodersRegister.getPayloadController(this.payloadService);
@@ -267,7 +267,6 @@ export class DeviceManagerPlugin extends Plugin {
           }
         }
       }
-
       await Promise.all([
         this.adminConfigManager.createCollection(this.config.adminIndex)
           .catch(error => {
@@ -282,7 +281,6 @@ export class DeviceManagerPlugin extends Plugin {
             throw new PluginImplementationError(`Cannot create admin "payloads" collection: ${error}`);
           }),
       ]);
-
       await this.initializeConfig();
     }
     finally {

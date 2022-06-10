@@ -46,6 +46,15 @@ export abstract class RelationalController extends CRUDController {
   protected get sdk () {
     return this.context.accessors.sdk;
   }
+
+  protected getFieldPath (request : KuzzleRequest, fieldName : string, documentKey : string = '_id', collectionName : string = this.collection, indexKey : string = 'engineId', ): FieldPath {
+    return {
+      collection: collectionName,
+      document: documentKey ? request.getString(documentKey) : null,
+      field: fieldName,
+      index: indexKey ? request.getString(indexKey) : null,
+    };
+  }
   
   async create (request: KuzzleRequest) {
     request.input.args.index = request.getString('engineId');
@@ -158,9 +167,10 @@ export abstract class RelationalController extends CRUDController {
     const promises : Promise<void>[] = [];
     for (const nestedField of nestedFields) {
       const query = {
-        'match': { }
+        'match': {
+          [nestedField.field]: request.getId()
+        }
       };
-      query.match[nestedField.field] = request.getId();
       const search =
         {
           query: query

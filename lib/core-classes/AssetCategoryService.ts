@@ -17,47 +17,69 @@ export class AssetCategoryService {
     this.context = plugin.context;
   }
 
-  getMetadata (assetCategory : AssetCategoryContent) : MetadataContent[] {
+  async getMetadataFromId (assetCategory : AssetCategoryContent, engineId :string, metadataList) {
+    if ( assetCategory.assetMetadata) {
+      for (const metadataId of assetCategory.assetMetadata) {
+        const m = await this.sdk.document.get<MetadataContent>(engineId, 'metadata', metadataId);
+        metadataList.push({
+          'mandatory': m._source.mandatory,
+          'name': m._source.name,
+          'unit': m._source.unit,
+          'valueList': m._source.valueList,
+          'valueType': m._source.valueType,
+        });
+      }
+    }
+  }
+  
+  async getMetadata (assetCategory : AssetCategoryContent, engineId : string) : Promise<MetadataContent[]> {
     let metadataList;
-    if (! assetCategory.assetMetadata) {
-      metadataList = [];
-    }
-    else {
-      metadataList = JSON.parse(JSON.stringify(assetCategory.assetMetadata));
-    }
+    metadataList = [];
+    await this.getMetadataFromId(assetCategory, engineId, metadataList);
+
     let assetCategoryTmp = assetCategory;
     while (assetCategoryTmp.parent) {
-      if (assetCategoryTmp.parent.assetMetadata) {
-        metadataList = metadataList.concat(assetCategoryTmp.parent.assetMetadata);
+      try {
+        const parent = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', assetCategoryTmp.parent);
+        await this.getMetadataFromId(parent._source, engineId, metadataList);
+        assetCategoryTmp = parent._source;
       }
-      assetCategoryTmp = assetCategoryTmp.parent;
+      catch (e) {
+        assetCategoryTmp = null;
+      }
     }
     return metadataList;
   }
 
-  getMetadataValues (assetCategory : AssetCategoryContent) : JSONObject[] {
-    let metadataValueList;
-    if (! assetCategory.assetMetadata) {
-      metadataValueList = [];
+  async getMetadataValues (assetCategory : AssetCategoryContent, engineId : string) : Promise<JSONObject[]> {
+    let getMetadataValues;
+    if (! assetCategory.metadataValues) {
+      getMetadataValues = [];
     }
     else {
-      metadataValueList = JSON.parse(JSON.stringify(assetCategory.metadataValues));
+      getMetadataValues = JSON.parse(JSON.stringify(assetCategory.metadataValues));
     }
     let assetCategoryTmp = assetCategory;
     while (assetCategoryTmp.parent) {
-      if (assetCategoryTmp.parent.metadataValues) {
-        metadataValueList = metadataValueList.concat(assetCategoryTmp.parent.metadataValues);
+      try {
+        const parent = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', assetCategoryTmp.parent);
+        if (parent._source.assetMetadata) {
+          getMetadataValues = getMetadataValues.concat(parent._source.assetMetadata);
+        }
+        assetCategoryTmp = parent._source;
       }
-      assetCategoryTmp = assetCategoryTmp.parent;
+      catch (e) {
+        assetCategoryTmp = null;
+      }
     }
-    return metadataValueList;
+    return getMetadataValues;
   }
 
 
   async validateMetadata (assetMetadata : JSONObject, engineId : string, category : string) {
     const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
-    const metadataList = this.getMetadata(assetCategory._source);
-    const metadataValues = this.getMetadataValues(assetCategory._source);
+    const metadataList = await this.getMetadata(assetCategory._source, engineId);
+    const metadataValues = await this.getMetadataValues(assetCategory._source, engineId);
     for (const metadata of metadataList) {
       if (metadata.mandatory) {
         // eslint-disable-next-line no-prototype-builtins

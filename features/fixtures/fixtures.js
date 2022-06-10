@@ -143,26 +143,13 @@ const dummyTempAttachedAyseLinked = {
 const truckCategory = 
   {
     'name': 'truck',
-    'children': [
-      {
-        'field': 'parent',
-        'document': 'bigTruck',
-        'index': 'engine-ayse',
-        'collection': 'asset-category'
-      }
-    ],
     'assetMetadata': [],
     'metadataValues': {}
   };
 
 const bigTruckCategory = {
   'name': 'bigTruck',
-  'children': [],
-  'parent': {
-    'name': 'truck',
-    'assetMetadata': [],
-    'metadataValues': {}
-  }
+  'parent': 'truck'
 };
 
 const sizeMetadata = {

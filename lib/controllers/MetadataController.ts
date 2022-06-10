@@ -39,6 +39,7 @@ export class MetadataController extends RelationalController {
   }
 
   async delete (request: KuzzleRequest) {
-    return super.genericDelete(request, ['AssetCategory']);
+    const AssetCategory = this.getFieldPath(request, 'assetMetadata', null, 'asset-category');
+    return super.genericDelete(request, [], [], [AssetCategory]);
   }
 }
