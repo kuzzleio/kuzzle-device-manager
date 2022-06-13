@@ -27,4 +27,30 @@ export class Device {
       _source: this._source
     };
   }
+  
+  public linkToAsset(linkRequest: LinkRequest) {
+    this._source.assetId = linkRequest.assetId;
+  }
+
+  public updateMeasures (measures: MeasureContent[]) {
+    const measuresByName: Map<string, MeasureContent> = new Map();
+
+    for (const measure of this._source.measures) {
+      measuresByName.set(measure.deviceMeasureName, measure);
+    }
+
+    for (const measure of measures) {
+      const existingMeasure = measuresByName.get(measure.deviceMeasureName);
+      if (existingMeasure) {
+        if (existingMeasure.measuredAt < measure.measuredAt) {
+          measuresByName.set(measure.deviceMeasureName, measure);
+        }
+      }
+      else {
+        measuresByName.set(measure.deviceMeasureName, measure)
+      }
+    }
+
+    this._source.measures = Array.from(measuresByName.values());
+  }
 }

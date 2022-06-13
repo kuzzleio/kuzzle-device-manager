@@ -325,38 +325,31 @@ export class DeviceService {
 
     const asset = await this.assetService.getAsset(engineId, device._source.assetId);
 
-    // @todo should be done by measure name and not type
-    asset._source.measures = asset._source.measures.filter(m => {
-      return ! device._source.measures.find(dm => dm.type === m.type);
-    });
-    device._source.assetId = null;
+    asset.unlinkDevice(device);
 
-    const filteredDeviceList = asset._source.deviceLinks.filter(linkedDevice => linkedDevice.deviceId !== deviceId);
-    asset._source.deviceLinks = filteredDeviceList;
-
-    const response = await global.app.trigger(
-      'device-manager:device:unlink-asset:before',
+    const response = await this.app.trigger(
+      `${eventId}:before`,
       { asset, device },
     );
 
     await Promise.all([
       this.sdk.document.update(
         this.config.adminIndex,
-        'devices',
+        InternalCollection.DEVICES,
         device._id,
-        { assetId: null },
+        response.device,
         { refresh }),
 
       this.sdk.document.update(
         engineId,
-        'devices',
+        InternalCollection.DEVICES,
         device._id,
-        { assetId: null },
+        response.device,
         { refresh }),
 
       this.sdk.document.update(
         engineId,
-        'assets',
+        InternalCollection.ASSETS,
         asset._id,
         { 
           deviceLinks: response.asset._source.deviceLinks,
@@ -365,59 +358,55 @@ export class DeviceService {
         { refresh }),
     ]);
 
-    await global.app.trigger(
-      'device-manager:device:unlink-asset:before',
-      { asset, device },
+    await this.app.trigger(
+      `${eventId}:after`,
+      response,
     );
 
     return { asset, device };
   }
 
-  /**
-   * Updates a device with the new measures
-   *
-   * @returns Updated device
-   */
-  async updateMeasures (
-    device: Device,
-    newMeasures: MeasureContent[],
-  ) {
-    // dup array reference
-    const measures = newMeasures.map(m => m);
+  // /**
+  //  * Updates a device with the new measures
+  //  *
+  //  * @returns Updated device
+  //  */
+  // async TODO-replace-by-model-updateMeasures (
+  //   device: Device,
+  //   measures: MeasureContent[],
+  // ) {
+  //   // TODO : How to design the event calls ? Normally should not
+  //   // TODO : Remove everything of it and call the refacto from
+  //   const eventId = `${DeviceService.eventId}:measures`;
 
-    // Keep previous measures that were not updated
-    for (const previousMeasure of device._source.measures) {
-      if (! measures.find(m => m.type === previousMeasure.type)) {
-        measures.push(previousMeasure);
-      }
-    }
+  //   device.updateMeasures(measures);
 
-    device._source.measures = measures;
+  //   const response = await this.app.trigger(
+  //     // `engine:${device._source.engineId}:device:measures:new`,
+  //     `${eventId}:new`,
+  //     { device, measures });
 
-    const result = await global.app.trigger(
-      `engine:${device._source.engineId}:device:measures:new`,
-      { device, measures: newMeasures });
+  //   const deviceDocument = await this.batch.update<DeviceContent>(
+  //     this.config.adminIndex,
+  //     'devices',
+  //     response.device._id,
+  //     response.device._source,
+  //     { retryOnConflict: 10, source: true });
 
-    const deviceDocument = await this.batch.update<DeviceContent>(
-      this.config.adminIndex,
-      'devices',
-      result.device._id,
-      result.device._source,
-      { retryOnConflict: 10, source: true });
+  //   const engineId = device._source.engineId;
+  //   if (engineId) {
+  //     await this.batch.update<DeviceContent>(
+  //       engineId,
+  //       'devices',
+  //       response.device._id,
+  //       response.device._source,
+  //       { retryOnConflict: 10 });
+  //   }
 
-    const engineId = device._source.engineId;
-    if (engineId) {
-      await this.batch.update<DeviceContent>(
-        engineId,
-        'devices',
-        result.device._id,
-        result.device._source,
-        { retryOnConflict: 10 });
-    }
+  //   return new Device(deviceDocument._source);
+  // }
 
-    return new Device(deviceDocument._source);
-  }
-
+  // TODO : See if changements needed
   async importDevices (
     devices: JSONObject,
     { refresh, strict }: { refresh?: any, strict?: boolean }) {
@@ -492,6 +481,28 @@ export class DeviceService {
 
     return results;
   }
+
+  // /**
+  //  * Register a new device by creating the document in admin index
+  //  * @todo add before/afterRegister events
+  //  */
+  // private async register (deviceId: string, deviceContent: DeviceContent, { refresh }) {
+  //   // TODO : See if needed
+  //   const deviceDoc = await this.batch.create<DeviceContent>(
+  //     this.config.adminIndex,
+  //     'devices',
+  //     deviceContent,
+  //     deviceId,
+  //     { refresh });
+
+  //   const device = new Device(deviceDoc._source);
+
+  //   return {
+  //     asset: null,
+  //     device: device.serialize(),
+  //     engineId: device._source.engineId,
+  //   };
+  // }
 
   public async getDevice (
     config: DeviceManagerConfiguration,

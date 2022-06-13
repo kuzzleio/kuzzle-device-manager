@@ -24,21 +24,13 @@ export class BaseAsset {
     this._source.deviceLinks.push(linkRequest.deviceLink);
   }
 
-  public unlinkToDevice (device: Device) {
-    const { linkToKeep, linkToRemove } = asset._source.deviceLinks.reduce(
-      ({ linkToKeep, linkToRemove }, deviceLink: DeviceLink) => {
-        if (deviceLink.deviceId === device._id) {
-          linkToRemove.push(deviceLink);
-        }
-        else {
-          linkToKeep.push(deviceLink);
-        }
-        return { linkToKeep, linkToRemove };
-      },
-      { linkToKeep: [], linkToRemove: [] });
+  public unlinkDevice (device: Device) {
+    // TOSEE : Iterate over all or assert there is
+    // only one link and remove first match?
+    const linkToKeep = this._source.deviceLinks.filter(
+      (deviceLink: DeviceLink) => deviceLink.deviceId !== device._id);
 
-    asset._source.deviceLinks = linkToKeep;
-
+    this._source.deviceLinks = linkToKeep;
   }
 
   serialize (): JSONObject {
