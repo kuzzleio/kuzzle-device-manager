@@ -33,6 +33,25 @@ export class BaseAsset {
     this._source.deviceLinks = linkToKeep;
   }
 
+  public updateMeasures (measures: MeasureContent) {
+    // Transform existing array in map and fill it
+    const measuresByName = new Map<string, string>();
+
+    for (const existingMeasure of this._source.measures) {
+      measuresByName.set(existingMeasure.assetMeasureName, existingMeasure);
+    }
+
+    for (const measure of measures) {
+      const existingMeasure = measuresByName.get(measure.assetMeasureName);
+
+      if (! existingMeasure || existingMeasure.measuredAt < measure.measuredAt) {
+        measuresByName.set(measure.assetMeasureName, measure);
+      }
+    }
+
+    this._source.measures = Array.from(measuresByName.values());
+  }
+
   serialize (): JSONObject {
     return {
       _id: this._id,

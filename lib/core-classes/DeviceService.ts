@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { InternalCollection } from '../InternalCollection';
 import { BaseAsset, Device } from '../models';
-import { LinkRequest } from '../types/Request';
+import { AttachRequest, LinkRequest } from '../types/Request';
 import {
   DeviceContent,
   DeviceManagerConfiguration,
@@ -21,7 +21,6 @@ import {
 import {
   mRequest,
   mResponse,
-  refreshCollections,
   writeToDatabase,
 } from '../utils/';
 import { AssetService } from './AssetService';
@@ -136,7 +135,7 @@ export class DeviceService {
         { refresh });
     }
 
-    return { device };
+    return device;
   }
 
   async attachEngine (
@@ -255,8 +254,8 @@ export class DeviceService {
       throw new BadRequestError(`Asset "${asset._id}" does not exist.`);
     }
 
-    device.linkAsset
-    asset._source.deviceLinks.push(deviceLink); 
+    device.linkToAsset({ assetId, deviceLink });
+    asset.linkToDevice({ assetId, deviceLink });
 
     const response = await this.app.trigger(
       `${eventId}:before`, { asset, device });
@@ -266,34 +265,27 @@ export class DeviceService {
         this.config.adminIndex,
         InternalCollection.DEVICES,
         device._id,
-        {
-          assetId: response.device._source.assetId
-        },
+        response.device._source,
         { refresh }),
 
       this.sdk.document.update(
         engineId,
         InternalCollection.DEVICES,
         device._id,
-        {
-          assetId: response.device._source.assetId,
-          measuresName: listMeasures
-        },
+        response.device._source,
         { refresh }),
 
       this.sdk.document.update(
         engineId,
         InternalCollection.ASSETS,
         asset._id,
-        { 
-          deviceLinks: response.asset._source.deviceLinks,
-        },
+        response.asset,
         { refresh }),
     ]);
 
     await this.app.trigger(
-      'device-manager:device:link-asset:after',
-      { asset, device },
+      `${eventId}:after`,
+      response,
     );
 
     return { asset, device };

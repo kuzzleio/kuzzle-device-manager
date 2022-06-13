@@ -82,20 +82,21 @@ export class DeviceController extends CRUDController {
     const engineId = request.getString('engineId');
     const model = request.getBodyString('model');
     const reference = request.getBodyString('reference');
-    const assetId = request.input.args.assetId || null;
     const metadata = request.getBodyObject('metadata', {});
     const refresh = request.getRefresh();
+    const linkRequest = request.getBodyObject('linkRequest');
 
     const deviceContent: DeviceContent = {
       measures: [],
-      measuresName: [],
       metadata,
       model,
       reference,
     };
 
-    const device = await this.deviceService.create(engineId, deviceContent, assetId, {
-      refresh
+    const device = await this.deviceService.create(deviceContent, {
+      engineId,
+      linkRequest,
+      refresh,
     });
 
     return device;
