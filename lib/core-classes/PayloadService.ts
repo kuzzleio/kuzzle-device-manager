@@ -84,7 +84,7 @@ export class PayloadService {
     const decodedPayloads = await decoder.decode(payload, request);
 
     for (const { deviceReference, measurements } of decodedPayloads) {
-      this.measureService.registerByDevice(
+      this.measureService.registerByDecodedPayload(
         decoder.deviceModel,
         deviceReference,
         measurements,
@@ -96,7 +96,7 @@ export class PayloadService {
 
     // TODO : Try in Measure Service maybe ?
     try {
-      return await this.measureService.registerByDevice(decoder.deviceModel, decodedPayloads, {
+      return await this.measureService.registerByDecodedPayload(decoder.deviceModel, decodedPayloads, {
         refresh
       });
     }

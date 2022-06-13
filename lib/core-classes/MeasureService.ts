@@ -104,23 +104,14 @@ export class MeasureService {
       for (const measurement of measurements) {
         const assetMeasureName = asset
           ? asset._source.deviceLinks.find(
-            deviceLink => deviceLink.deviceId === deviceId
-          ).measuresNameLinks.find(
-            measureNameLink =>
-            measureNameLink.deviceMeasureName === measurement.deviceMeasureName
-          ).assetMeasureName
+              deviceLink => deviceLink.deviceId === deviceId
+            ).measuresNameLinks.find(
+              measureNameLink =>
+              measureNameLink.deviceMeasureName === measurement.deviceMeasureName
+            ).assetMeasureName
           : null;
 
-        if (asset) {
-          assetMeasureName = asset._source.deviceLinks.find(
-            deviceLink => deviceLink.deviceId === deviceId
-          ).measuresNameLinks.find(
-            measureNameLink =>
-            measureNameLink.deviceMeasureName === measurement.deviceMeasureName
-          ).assetMeasureName;
-        }
-
-        const measureContent = {
+        const measureContent: MeasureContent = {
           type: measurement.type,
           values: measurement.values,
           measuredAt: measurement.measuredAt,

@@ -20,6 +20,27 @@ export class BaseAsset {
     }
   }
 
+  public linkToDevice (linkRequest: LinkRequest) {
+    this._source.deviceLinks.push(linkRequest.deviceLink);
+  }
+
+  public unlinkToDevice (device: Device) {
+    const { linkToKeep, linkToRemove } = asset._source.deviceLinks.reduce(
+      ({ linkToKeep, linkToRemove }, deviceLink: DeviceLink) => {
+        if (deviceLink.deviceId === device._id) {
+          linkToRemove.push(deviceLink);
+        }
+        else {
+          linkToKeep.push(deviceLink);
+        }
+        return { linkToKeep, linkToRemove };
+      },
+      { linkToKeep: [], linkToRemove: [] });
+
+    asset._source.deviceLinks = linkToKeep;
+
+  }
+
   serialize (): JSONObject {
     return {
       _id: this._id,
