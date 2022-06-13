@@ -34,10 +34,18 @@ export interface Measurement {
   deviceMeasureName: string;
 }
 
+export interface AssetMeasurement extends Measurement {
+  /**
+   * A device may have different measures for the same type (e.g. measure temperature 2 times)
+   * Should be set when you link the device to the asset
+   */
+  assetMeasureName: string;
+}
+
 /**
  * Represent the full content of a measure document.
  */
-export interface MeasureContent extends KDocumentContent, Measurement {
+export interface MeasureContent extends KDocumentContent, AssetMeasurement {
   /**
    * Measurement self-description
    */
@@ -51,7 +59,7 @@ export interface MeasureContent extends KDocumentContent, Measurement {
   /**
    * Array of payload uuids that were used to create this measure.
    */
-  payloadUuids: string[];
+  payloadUuids: string;
 
   /**
    * E.g. "AbeewayTemp"
@@ -67,12 +75,6 @@ export interface MeasureContent extends KDocumentContent, Measurement {
    * Asset ID linked to the device when the measure was made
    */
   assetId?: string;
-
-  /**
-   * A device may have different measures for the same type (e.g. measure temperature 2 times)
-   * Should be set when you link the device to the asset
-   */
-  assetMeasureName?: string;
 }
 
 export enum OriginType {

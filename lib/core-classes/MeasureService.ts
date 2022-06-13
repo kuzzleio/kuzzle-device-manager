@@ -1,6 +1,6 @@
 import {
   Backend,
-  BatchController
+  BatchController,
   JSONObject,
   PluginContext,
   PluginImplementationError,
@@ -11,6 +11,7 @@ import { InternalCollection } from '../InternalCollection';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { BaseAsset, Device } from '../models';
 import {
+  AssetMeasurement,
   DecodedPayload,
   DeviceManagerConfiguration,
   MeasureContent,

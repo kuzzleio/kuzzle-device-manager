@@ -1,6 +1,8 @@
 import { JSONObject } from 'kuzzle';
+import { LinkRequest } from '../types/Request';
 
-import { BaseAssetContent } from '../types';
+import { BaseAssetContent, DeviceLink } from '../types';
+import { Device } from './Device';
 
 export class BaseAsset {
   static id (type: string, model: string, reference: string) {
@@ -34,8 +36,7 @@ export class BaseAsset {
   }
 
   public updateMeasures (measures: MeasureContent) {
-    // Transform existing array in map and fill it
-    const measuresByName = new Map<string, string>();
+    const measuresByName = new Map<string, MeasureContent>();
 
     for (const existingMeasure of this._source.measures) {
       measuresByName.set(existingMeasure.assetMeasureName, existingMeasure);

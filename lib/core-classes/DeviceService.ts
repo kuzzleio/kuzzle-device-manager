@@ -6,7 +6,6 @@ import {
   Plugin,
   PluginContext,
 } from 'kuzzle';
-import { LinkRequest } from 'lib/types/Request';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 

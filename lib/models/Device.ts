@@ -1,4 +1,5 @@
-import { DeviceContent } from '../types';
+import { LinkRequest } from 'lib/types/Request';
+import { DeviceContent, MeasureContent } from '../types';
 
 export class Device {
   static id (model: string, reference: string) {
