@@ -47,37 +47,47 @@ export interface AssetMeasurement extends Measurement {
  */
 export interface MeasureContent extends KDocumentContent, AssetMeasurement {
   /**
-   * Measurement self-description
+   * Define the origin of the measure
    */
-  unit: MeasureUnit;
+  origin: {
+    /**
+     * Measurement self-description
+     */
+    unit: MeasureUnit;
 
-  /**
-   * E.g. "device"
-   */
-  originType: OriginType;
+    /**
+     * E.g. "device"
+     */
+    type: OriginType;
 
-  /**
-   * Array of payload uuids that were used to create this measure.
-   */
-  payloadUuids: string;
+    /**
+     * Array of payload uuids that were used to create this measure.
+     */
+    payloadUuid: string;
 
-  /**
-   * E.g. "AbeewayTemp"
-   */
-  deviceModel?: string;
+    /**
+     * E.g. "AbeewayTemp"
+     */
+    deviceModel?: string;
 
-  /**
-   * ID of the device (document _id)
-   */
-  deviceId?: string;
+    /**
+     * ID of the origin.
+     * - device id if origin type is `device`
+     * - user id if origin type is `asset`
+     */
+    id?: string;
 
-  /**
-   * Asset ID linked to the device when the measure was made
-   */
-  assetId?: string;
+    /**
+     * Asset ID linked to the device when the measure was made
+     */
+    assetId?: string;
+  }
 }
 
+/**
+ * From where the measure has been pushed
+ */
 export enum OriginType {
   ASSET = 'asset',
-  DEVICE = 'device'
+  DEVICE = 'device',
 }

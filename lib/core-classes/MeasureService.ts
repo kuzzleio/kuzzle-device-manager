@@ -218,17 +218,20 @@ export class MeasureService {
       }
     }
 
-    // TODO : Trigger
-    // const result
+    const response = await this.app.trigger(`${eventId}:before`, {
+      measuresByEngine,
+      assetMeasuresByEngineAndId,
+      deviceMeasuresByEngineAndId,
+    });
 
     // Push measures
     // Engine
-    for (const [engineId, measures] of measuresByEngine.entries()) {
+    for (const [engineId, measures] of response.measuresByEngine.entries()) {
       await this.historizeEngineMeasures(engineId, measures, { refresh });
     }
 
     // Asset
-    for (const [engineId, assetMeasuresMap] of assetMeasuresByEngineAndId.entries()) {
+    for (const [engineId, assetMeasuresMap] of response.assetMeasuresByEngineAndId.entries()) {
       for (const { asset, measures } of assetMeasuresMap.values()) {
         asset.updateMeasures(measures);
       }
@@ -243,7 +246,7 @@ export class MeasureService {
 
     // Device
     const devices: Device[] = [];
-    for (const [engineId, deviceMeasuresMap] of deviceMeasuresByEngineAndId.entries()) {
+    for (const [engineId, deviceMeasuresMap] of response.deviceMeasuresByEngineAndId.entries()) {
       for (const { device, measures } of deviceMeasuresMap.values()) {
         device.updateMeasures(measures);
         devices.push(device);
