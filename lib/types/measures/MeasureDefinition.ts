@@ -49,6 +49,6 @@ export interface MeasureDefinition {
  * mapping between measure name of device and asset
  */
 export interface MeasureNameLink {
-  assetMeasureName : string;
-  deviceMeasureName : string;
+  assetMeasureName: string;
+  deviceMeasureName: string;
 }

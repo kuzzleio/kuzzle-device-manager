@@ -24,10 +24,10 @@ export abstract class Decoder {
    */
   public deviceModel: string;
 
-  /**
-   * Array of device measure name
-   */
-  public deviceMeasures: string[];
+//   /**
+//    * Array of device measure name
+//    */
+//   public deviceMeasures: string[];
 
   /**
    * Custom name for the associated API action in the "payload" controller
@@ -105,10 +105,10 @@ export abstract class Decoder {
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
-   * @returns Array of decodedPayload. The order of their measurements matters
+   * @returns Array of decodedPayload.
    */
   // eslint-disable-next-line no-unused-vars
-  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload[]>
+  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>
 
   /**
    * Checks if the provided properties are present in the payload

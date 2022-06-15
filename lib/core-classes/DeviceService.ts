@@ -76,7 +76,7 @@ export class DeviceService {
       linkRequest?: LinkRequest,
       refresh?: any,
       strict?: boolean
-    },
+    } = {},
   ): Promise<KDocument<DeviceContent>> {
     const collectionsToRefresh: [string, string][] = [];
     const device = new Device(

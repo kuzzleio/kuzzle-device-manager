@@ -2,6 +2,7 @@ import {
   Backend,
   BatchController,
   JSONObject,
+  NotFoundError,
   PluginContext,
   PluginImplementationError,
 } from 'kuzzle';
@@ -64,8 +65,6 @@ export class MeasureService {
    * - engine measures
    *
    * Do not call other `registerX`, only `updateX`
-   * 
-   * @TODO add before/afterUpdate
    */
   public async registerByDecodedPayload (
     deviceModel: string,
@@ -78,7 +77,6 @@ export class MeasureService {
     } = {}
   ) {
     const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
-    // TODO : Realtime event
 
     // Sorting structs
     const measuresByEngine: Map<string, MeasureContent[]> = new Map();
@@ -163,8 +161,7 @@ export class MeasureService {
 
       for (const measurement of measurements) {
         // Get type
-        const measureType = this.measuresRegister.get(measurement.type);
-        if (! measureType) {
+        if (! this.measuresRegister.has(measurement.type)) {
           unaivailableTypeMeasurements.push(measurement);
           continue;
         }
@@ -192,17 +189,17 @@ export class MeasureService {
           values: measurement.values,
           measuredAt: measurement.measuredAt,
           deviceMeasureName: measurement.deviceMeasureName,
-          unit: this.measuresRegister.get(measurement.type).unit,
-          originType: OriginType.DEVICE,
-          payloadUuids: payloadUuid,
-          deviceModel,
-          deviceId,
-          assetId,
           assetMeasureName,
+          origin: {
+            unit: this.measuresRegister.get(measurement.type).unit,
+            type: OriginType.DEVICE,
+            payloadUuid: payloadUuid,
+            deviceModel,
+            id: deviceId,
+            assetId,
+          }
         };
 
-        // TODO : See if stock in Admin engine
-        //
         // Insert measures in sort structs
         if (engineMeasures) {
           engineMeasures.push(measureContent);
@@ -222,6 +219,8 @@ export class MeasureService {
       measuresByEngine,
       assetMeasuresByEngineAndId,
       deviceMeasuresByEngineAndId,
+      unaivailableTypeMeasurements,
+      measurementsWithoutDevice,
     });
 
     // Push measures
@@ -241,6 +240,7 @@ export class MeasureService {
         InternalCollection.ASSETS,
         Array.from(assetMeasuresMap.values()).map(
           ({ asset }) => ({ _id: asset._id, body: asset._source })),
+        { refresh }
       );
     }
 
@@ -258,6 +258,7 @@ export class MeasureService {
           InternalCollection.DEVICES,
           Array.from(deviceMeasuresMap.values()).map(
             ({ device }) => ({ _id: device._id, body: device._source })),
+          { refresh }
         );
       }
     }
@@ -267,6 +268,7 @@ export class MeasureService {
       InternalCollection.DEVICES,
       devices.map(
         device => ({ _id: device._id, body: device._source })),
+      { refresh }
     );
 
     await this.app.trigger(`${eventId}:after`, {
@@ -277,8 +279,13 @@ export class MeasureService {
 
 
     return {
-      // TOSEE : What to return ?
+      // TOSEE : What to return, how (serialization) ?
       // TOSEE : Stock updated assets, devices and measures for return result ?
+      // measuresByEngine,
+      // assetMeasuresByEngineAndId,
+      // deviceMeasuresByEngineAndId,
+      // unaivailableTypeMeasurements,
+      // measurementsWithoutDevice,
     };
   }
 
@@ -289,26 +296,27 @@ export class MeasureService {
    *
    * The `measuredAt` will be set automatically if not setted
    * Do not call other `registerX`, only `updateX`
-   *
-   * @todo add before/afterUpdate events (in updates)
    */
   public async registerByAsset (
     engineId: string,
     assetId: string,
     jsonMeasurements: JSONObject[],
-    refresh: string,
-    strict: boolean
+    { refresh, strict }: { refresh: string, strict: boolean } = {}
   ) {
-    const refreshableCollections = [
-      [this.config.adminIndex, InternalCollection.ASSETS],
-      [engineId, InternalCollection.MEASURES]
-    ];
+    const eventId = `${MeasureService.eventId}:registerByAsset`;
 
     const invalidMeasurements: JSONObject[] = [];
     const validMeasurements: MeasureContent[] = [];
 
+    const asset = await this.assetService.getAsset(engineId, assetId);
+
+    if (! asset) {
+      throw new NotFoundError(`Asset ${assetId} does not exist`);
+    }
+
     for (const jsonMeasurement of jsonMeasurements) {
-      if (validateAssetMeasurement(measurement) && this.measuresRegister.has(measurement.type)) {
+      if (this.validateAssetMeasurement(jsonMeasurement)
+        && this.measuresRegister.has(jsonMeasurement.type)) {
         const measurement = jsonMeasurement as AssetMeasurement;
 
         validMeasurements.push({
@@ -316,13 +324,13 @@ export class MeasureService {
           values: measurement.values,
           measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
           deviceMeasureName: null,
-          unit: this.measuresRegister.get(measurement.type).unit,
-          originType: OriginType.ASSET,
-          payloadUuids: null,
-          deviceModel: null,
-          deviceId: null,
-          assetId: null,
           assetMeasureName: measurement.assetMeasureName,
+          origin: {
+            unit: this.measuresRegister.get(measurement.type).unit,
+            type: OriginType.ASSET,
+            id: TODO : USER,
+            assetId: null,
+          }
         });
       }
       else {
@@ -334,31 +342,40 @@ export class MeasureService {
       throw new PluginImplementationError(`Some measure pushed by asset ${assetId} are invalid, all has been blocked`);
     }
 
-    const asset = await this.assetService.getAsset(engineId, assetId);
-
     if (! validMeasurements.length) {
       return {
         asset: asset.serialize(),
-        engineId,
-        errors: invalidMeasurements
+        invalid: invalidMeasurements
       };
     }
 
-    const updatedAsset = await this.assetService.TODO-use-model-updateMeasures(
-      engineId,
+    asset.updateMeasures;
+
+    const response = await this.app.trigger(`${eventId}:before`, {
       asset,
-      validMeasurements);
+      engineId,
+      invalidMeasurements,
+      validMeasurements,
+    });
 
-    await this.historizeEngineMeasures(engineId, validMeasurements);
+    this.sdk.document.update(
+      engineId,
+      InternalCollection.ASSETS,
+      asset._id,
+      response.asset._source,
+    )
 
-    if (refresh === 'wait_for') {
-      await Promise.all(refreshableCollections.map(([index, collection]) => (
-        this.sdk.collection.refresh(index, collection)
-      )));
-    }
+    await this.historizeEngineMeasures(engineId, validMeasurements, { refresh });
+
+    this.app.trigger(`${eventId}:after`, {
+      asset,
+      engineId,
+      invalidMeasurements,
+      validMeasurements,
+    });
 
     return {
-      asset: updatedAsset ? updatedAsset.serialize() : null,
+      asset: asset.serialize,
       engineId,
       errors: invalidMeasurements
     };
@@ -367,7 +384,7 @@ export class MeasureService {
   private async historizeEngineMeasures (
     engineId: string,
     newMeasures: MeasureContent[],
-    { refresh }: { refresh?: string }
+    { refresh }: { refresh?: string } = {}
   ) {
     await Promise.all(newMeasures.map(measure => {
       return this.batch.create<MeasureContent>(engineId,
