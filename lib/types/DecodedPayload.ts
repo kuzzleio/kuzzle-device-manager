@@ -31,14 +31,4 @@ import { Measurement } from './measures/MeasureContent';
  *    ],
  *  };
  */
-export interface DecodedPayload {
-  /**
-   * Device unique reference
-   */
-  deviceReference: string;
-
-  /**
-   * Array of decoded measures.
-   */
-  measurements: Measurement[];
-}
+export type DecodedPayload = Map<string, Measurement[]>;

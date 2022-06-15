@@ -83,83 +83,16 @@ export class PayloadService {
 
     const decodedPayloads = await decoder.decode(payload, request);
 
-    for (const { deviceReference, measurements } of decodedPayloads) {
+    for (const _ of decodedPayloads) {
       this.measureService.registerByDecodedPayload(
         decoder.deviceModel,
-        deviceReference,
-        measurements,
+        decodedPayloads,
         uuid,
         { refresh });
     }
 
-    // TODO : refresh the payload if needed
-
-    // TODO : Try in Measure Service maybe ?
-    try {
-      return await this.measureService.registerByDecodedPayload(decoder.deviceModel, decodedPayloads, {
-        refresh
-      });
-    }
-    catch (error) {
-      if (error.id === 'services.storage.not_found') {
-        // TODO : Where to register a new device ? (in Device Service)
-        return this.provisionning(
-          decoder.deviceModel,
-          decodedPayload.reference,
-          newMeasures,
-          { refresh });
-      }
-      throw error;
-    }
-  }
-
-  private async provisionning (
-    model: string,
-    reference: string,
-    measures: MeasureContent[],
-    { refresh },
-  ) {
-    const pluginConfig = await this.batch.get(
-      this.config.adminIndex,
-      this.config.adminCollections.config.name,
-      'plugin--device-manager');
-
-    const autoProvisioning
-      = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
-
-    if (! autoProvisioning) {
-      throw new UnauthorizedError(`The device model "${model}" with reference "${reference}" is not registered on the platform.`);
-    }
-
-    const deviceId = Device.id(model, reference);
-    const deviceContent: DeviceContent = {
-      measures,
-      measuresName: [],
-      model,
-      reference,
-    };
-
-    return this.register(deviceId, deviceContent, { refresh });
-  }
-
-  /**
-   * Register a new device by creating the document in admin index
-   * @todo add before/afterRegister events
-   */
-  private async register (deviceId: string, deviceContent: DeviceContent, { refresh }) {
-    const deviceDoc = await this.batch.create<DeviceContent>(
-      this.config.adminIndex,
-      'devices',
-      deviceContent,
-      deviceId,
-      { refresh });
-
-    const device = new Device(deviceDoc._source);
-
-    return {
-      asset: null,
-      device: device.serialize(),
-      engineId: device._source.engineId,
-    };
+    return await this.measureService.registerByDecodedPayload(decoder.deviceModel, decodedPayloads, {
+      refresh
+    });
   }
 }
