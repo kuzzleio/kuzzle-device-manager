@@ -345,7 +345,9 @@ export class MeasureService {
     if (! validMeasurements.length) {
       return {
         asset: asset.serialize(),
-        invalid: invalidMeasurements
+        engineId,
+        invalids: invalidMeasurements,
+        valids: [],
       };
     }
 
@@ -377,7 +379,8 @@ export class MeasureService {
     return {
       asset: asset.serialize,
       engineId,
-      errors: invalidMeasurements
+      invalids: invalidMeasurements,
+      valids: validMeasurements,
     };
   }
 
