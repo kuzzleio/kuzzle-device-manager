@@ -6,6 +6,7 @@ import {
   KuzzleRequest,
   PluginImplementationError,
 } from 'kuzzle';
+import _ from 'lodash';
 
 import { DeviceBulkContent } from '../core-classes';
 import { DeviceService } from '../core-classes';

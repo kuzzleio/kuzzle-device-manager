@@ -7,7 +7,6 @@ import {
 } from 'kuzzle';
 
 import { Decoder } from '../Decoder';
-import { DecoderContent } from '../../types/DecoderContent';
 import { PayloadService } from '../PayloadService';
 
 export class DecodersRegister {
@@ -26,7 +25,7 @@ export class DecodersRegister {
     this.context = context;
   }
 
-  async list (): Promise<DecoderContent[]> {
+  async list (): Promise<string[]> {
     const decoders = this.decoders.map(decoder => decoder.serialize());
 
     return decoders;

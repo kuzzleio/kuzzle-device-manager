@@ -73,7 +73,7 @@ export class MeasureService {
     { provisionDevice, refresh }:
     {
       provisionDevice?: boolean,
-      refresh?: string
+      refresh?: 'wait_for' | 'false',
     } = {}
   ) {
     const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
@@ -325,7 +325,7 @@ export class MeasureService {
           origin: {
             unit: this.measuresRegister.get(measurement.type).unit,
             type: OriginType.ASSET,
-            id: jwt,
+            id: kuid,
             assetId: null,
           }
         });

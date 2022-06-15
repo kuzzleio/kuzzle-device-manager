@@ -1,7 +1,7 @@
 import { JSONObject } from 'kuzzle';
 import { LinkRequest } from '../types/Request';
 
-import { BaseAssetContent, DeviceLink } from '../types';
+import { BaseAssetContent, DeviceLink, MeasureContent } from '../types';
 import { Device } from './Device';
 
 export class BaseAsset {
@@ -35,7 +35,7 @@ export class BaseAsset {
     this._source.deviceLinks = linkToKeep;
   }
 
-  public updateMeasures (measures: MeasureContent) {
+  public updateMeasures (measures: MeasureContent[]) {
     const measuresByName = new Map<string, MeasureContent>();
 
     for (const existingMeasure of this._source.measures) {

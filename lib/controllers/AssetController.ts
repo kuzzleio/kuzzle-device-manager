@@ -10,6 +10,10 @@ export class AssetController extends CRUDController {
   private deviceService: DeviceService;
   private measureService: MeasureService;
 
+  private get sdk () {
+    return this.context.accessors.sdk;
+  }
+
   constructor (
     plugin: Plugin,
     assetService: AssetService,
