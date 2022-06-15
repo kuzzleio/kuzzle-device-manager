@@ -89,8 +89,6 @@ export class MeasureService {
       device: Device, measures: MeasureContent[],
     }>> = new Map();
 
-    const measures: MeasureContent[] = [];
-
     const measurementsWithoutDevice: Map<string, Measurement[]> = new Map();
 
     const unaivailableTypeMeasurements: Measurement[] = [];
@@ -103,12 +101,10 @@ export class MeasureService {
       // Search for device
       if (!device) {
         if (provisionDevice) {
-          // device = 
-          // TODO : Create real measure and create the device
-          // this.deviceService.create({
-          //   model: deviceModel,
-          //   reference,
-          // }, { measures });
+          device = await this.deviceService.create({
+            model: deviceModel,
+            reference,
+          });
         }
         else {
           measurementsWithoutDevice.set(reference, measurements);
@@ -301,6 +297,7 @@ export class MeasureService {
     engineId: string,
     assetId: string,
     jsonMeasurements: JSONObject[],
+    jwt,
     { refresh, strict }: { refresh: string, strict: boolean } = {}
   ) {
     const eventId = `${MeasureService.eventId}:registerByAsset`;
@@ -384,6 +381,9 @@ export class MeasureService {
     };
   }
 
+  /**
+   * Register new measures in the engine
+   */
   private async historizeEngineMeasures (
     engineId: string,
     newMeasures: MeasureContent[],
