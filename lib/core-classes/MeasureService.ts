@@ -266,12 +266,16 @@ export class MeasureService {
         device => ({ _id: device._id, body: device._source })),
     );
 
+    await this.app.trigger(`${eventId}:after`, {
+      measuresByEngine,
+      assetMeasuresByEngineAndId,
+      deviceMeasuresByEngineAndId,
+    });
+
+
     return {
-      // TODO : Stock updated assets, devices and measures for return result ?
-      // TODO : What to return ?
-      // asset: updatedAsset ? updatedAsset.serialize() : null,
-      // device: updatedDevice.serialize(),
-      // engineId,
+      // TOSEE : What to return ?
+      // TOSEE : Stock updated assets, devices and measures for return result ?
     };
   }
 
