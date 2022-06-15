@@ -5,6 +5,7 @@ import {
   PluginContext,
   PluginImplementationError,
 } from 'kuzzle';
+import { DecoderContent } from 'lib/types';
 
 import { Decoder } from '../Decoder';
 import { PayloadService } from '../PayloadService';
@@ -25,7 +26,7 @@ export class DecodersRegister {
     this.context = context;
   }
 
-  async list (): Promise<string[]> {
+  async list (): Promise<DecoderContent[]> {
     const decoders = this.decoders.map(decoder => decoder.serialize());
 
     return decoders;

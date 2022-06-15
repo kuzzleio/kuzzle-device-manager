@@ -23,39 +23,34 @@ export class DummyTempPositionDecoder extends Decoder {
 
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
     const temperature: TemperatureMeasurement = {
+      deviceMeasureName: 'theTemperature',
       measuredAt: Date.now(),
-      values: {
-        temperature: payload.register55,
-      }
+      type: 'temperature',
+      values: { temperature: payload.register55 },
     };
 
     const position: PositionMeasurement = {
+      deviceMeasureName: 'thePositition',
       measuredAt: Date.now(),
+      type: 'position',
       values: {
         position: {
           lat: payload.location.lat,
           lon: payload.location.lon,
         },
         accuracy: payload.location.accu,
-      }
-    };
-
-    const battery: BatteryMeasurement = {
-      measuredAt: Date.now(),
-      values: {
-        battery: payload.batteryLevel * 100,
-      }
-    };
-
-    const decodedPayload: DecodedPayload = {
-      reference: payload.deviceEUI,
-      measures: {
-        temperature,
-        position,
-        battery,
       },
     };
 
-    return decodedPayload;
+    const battery: BatteryMeasurement = {
+      deviceMeasureName: 'theBattery',
+      measuredAt: Date.now(),
+      type: 'battery',
+      values: {
+        battery: payload.batteryLevel * 100,
+      },
+    };
+
+    return new Map([[payload.deviceEUI, [temperature, position, battery]]]);
   }
 }

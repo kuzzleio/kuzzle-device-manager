@@ -7,6 +7,7 @@ import {
 import _ from 'lodash';
 
 import { DecodedPayload } from '../types/DecodedPayload';
+import { DecoderContent } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -22,6 +23,11 @@ export abstract class Decoder {
    * Device model name
    */
   public deviceModel: string;
+
+  /**
+   * Array of device measure type
+   */
+  public deviceMeasures: string[];
 
   /**
    * Custom name for the associated API action in the "payload" controller
@@ -63,12 +69,14 @@ export abstract class Decoder {
 
   /**
    * @param deviceModel Device model for this decoder
+   * @param deviceMeasures Devices measure types for this decoder
    *
    * @example
    * super('AbeewayGPS', ['position']);
    */
-  constructor (deviceModel: string) {
+  constructor (deviceModel: string, deviceMeasures: string[]) {
     this.deviceModel = deviceModel;
+    this.deviceMeasures = deviceMeasures;
   }
 
   /**
@@ -97,10 +105,10 @@ export abstract class Decoder {
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
-   * @returns Array of decodedPayload.
+   * @returns Array of `decodedPayload`.
    */
   // eslint-disable-next-line no-unused-vars
-  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>
+  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>;
 
   /**
    * Checks if the provided properties are present in the payload
@@ -118,8 +126,11 @@ export abstract class Decoder {
     }
   }
 
-  serialize (): string {
-    return this.deviceModel;
+  serialize (): DecoderContent {
+    return {
+      deviceMeasures: this.deviceMeasures,
+      deviceModel: this.deviceModel,
+    };
   }
 }
 

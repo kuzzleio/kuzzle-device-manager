@@ -1,3 +1,4 @@
 export interface DecoderContent {
-  deviceModel: string
+  deviceModel: string,
+  deviceMeasures: string[],
 }
