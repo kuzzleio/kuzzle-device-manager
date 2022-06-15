@@ -99,7 +99,7 @@ export class MeasureService {
       let device = await this.deviceService.getDevice(this.config, deviceId);
 
       // Search for device
-      if (!device) {
+      if (! device) {
         if (provisionDevice) {
           device = await this.deviceService.create({
             model: deviceModel,
@@ -138,7 +138,7 @@ export class MeasureService {
           assetMeasures = {
             asset: await this.assetService.getAsset(engineId, assetId),
             measures: []
-          }
+          };
           assetMeasuresInEngine.set(assetId, assetMeasures);
         }
       }
@@ -171,8 +171,8 @@ export class MeasureService {
 
           if (link) {
             const measureNameLink = link.measuresNameLinks.find(
-              measureNameLink =>
-              measureNameLink.deviceMeasureName === measurement.deviceMeasureName);
+              nameLink =>
+                nameLink.deviceMeasureName === measurement.deviceMeasureName);
 
             if (measureNameLink) {
               assetMeasureName = measureNameLink.assetMeasureName;
@@ -181,19 +181,19 @@ export class MeasureService {
         }
 
         const measureContent: MeasureContent = {
-          type: measurement.type,
-          values: measurement.values,
-          measuredAt: measurement.measuredAt,
-          deviceMeasureName: measurement.deviceMeasureName,
           assetMeasureName,
+          deviceMeasureName: measurement.deviceMeasureName,
+          measuredAt: measurement.measuredAt,
           origin: {
-            unit: this.measuresRegister.get(measurement.type).unit,
-            type: OriginType.DEVICE,
-            payloadUuid: payloadUuid,
+            assetId,
             deviceModel,
             id: deviceId,
-            assetId,
-          }
+            payloadUuid,
+            type: OriginType.DEVICE,
+            unit: this.measuresRegister.get(measurement.type).unit,
+          },
+          type: measurement.type,
+          values: measurement.values,
         };
 
         // Insert measures in sort structs
@@ -212,11 +212,11 @@ export class MeasureService {
     }
 
     const response = await this.app.trigger(`${eventId}:before`, {
-      measuresByEngine,
       assetMeasuresByEngineAndId,
       deviceMeasuresByEngineAndId,
-      unaivailableTypeMeasurements,
       measurementsWithoutDevice,
+      measuresByEngine,
+      unaivailableTypeMeasurements,
     });
 
     // Push measures
@@ -268,9 +268,9 @@ export class MeasureService {
     );
 
     await this.app.trigger(`${eventId}:after`, {
-      measuresByEngine,
       assetMeasuresByEngineAndId,
       deviceMeasuresByEngineAndId,
+      measuresByEngine,
     });
 
 
@@ -303,7 +303,7 @@ export class MeasureService {
     const eventId = `${MeasureService.eventId}:registerByAsset`;
 
     const invalidMeasurements: JSONObject[] = [];
-    const validMeasurements: MeasureContent[] = [];
+    const validMeasures: MeasureContent[] = [];
 
     const asset = await this.assetService.getAsset(engineId, assetId);
 
@@ -316,18 +316,18 @@ export class MeasureService {
         && this.measuresRegister.has(jsonMeasurement.type)) {
         const measurement = jsonMeasurement as AssetMeasurement;
 
-        validMeasurements.push({
+        validMeasures.push({
+          assetMeasureName: measurement.assetMeasureName,
+          deviceMeasureName: null,
+          measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
+          origin: {
+            assetId: null,
+            id: kuid,
+            type: OriginType.ASSET,
+            unit: this.measuresRegister.get(measurement.type).unit,
+          },
           type: measurement.type,
           values: measurement.values,
-          measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
-          deviceMeasureName: null,
-          assetMeasureName: measurement.assetMeasureName,
-          origin: {
-            unit: this.measuresRegister.get(measurement.type).unit,
-            type: OriginType.ASSET,
-            id: kuid,
-            assetId: null,
-          }
         });
       }
       else {
@@ -339,7 +339,7 @@ export class MeasureService {
       throw new PluginImplementationError(`Some measure pushed by asset ${assetId} are invalid, all has been blocked`);
     }
 
-    if (! validMeasurements.length) {
+    if (! validMeasures.length) {
       return {
         asset: asset.serialize(),
         engineId,
@@ -348,13 +348,13 @@ export class MeasureService {
       };
     }
 
-    asset.updateMeasures;
+    asset.updateMeasures(validMeasures);
 
     const response = await this.app.trigger(`${eventId}:before`, {
       asset,
       engineId,
       invalidMeasurements,
-      validMeasurements,
+      validMeasures,
     });
 
     this.sdk.document.update(
@@ -362,22 +362,22 @@ export class MeasureService {
       InternalCollection.ASSETS,
       asset._id,
       response.asset._source,
-    )
+    );
 
-    await this.historizeEngineMeasures(engineId, validMeasurements, { refresh });
+    await this.historizeEngineMeasures(engineId, validMeasures, { refresh });
 
     this.app.trigger(`${eventId}:after`, {
       asset,
       engineId,
       invalidMeasurements,
-      validMeasurements,
+      validMeasures,
     });
 
     return {
       asset: asset.serialize,
       engineId,
       invalids: invalidMeasurements,
-      valids: validMeasurements,
+      valids: validMeasures,
     };
   }
 

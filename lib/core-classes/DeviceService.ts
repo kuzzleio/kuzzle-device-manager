@@ -1,9 +1,8 @@
 import {
-    Backend,
+  Backend,
   BadRequestError,
   BatchController,
   JSONObject,
-  KDocument,
   Plugin,
   PluginContext,
 } from 'kuzzle';
@@ -176,7 +175,7 @@ export class DeviceService {
         { refresh }),
     ]);
 
-    await this.app.trigger(`${eventId}:after`,  response );
+    await this.app.trigger(`${eventId}:after`, response );
 
     return device;
   }

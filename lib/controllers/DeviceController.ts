@@ -235,11 +235,11 @@ export class DeviceController extends CRUDController {
         valids.push(result);
       }
       catch (error) {
-        invalids.push({ linkRequest: linkRequest, error })
+        invalids.push({ error, linkRequest });
       }
     }
     
-    return { valids, invalids };
+    return { invalids, valids };
   }
 
   /**
@@ -271,11 +271,11 @@ export class DeviceController extends CRUDController {
         valids.push(result);
       }
       catch (error) {
-        invalids.push({ linkRequest: deviceId, error })
+        invalids.push({ error, linkRequest: deviceId });
       }
     }
     
-    return { valids, invalids };
+    return { invalids, valids };
   }
 
   /**

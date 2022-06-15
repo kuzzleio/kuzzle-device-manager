@@ -29,7 +29,7 @@ export class Device {
     };
   }
   
-  public linkToAsset(linkRequest: LinkRequest) {
+  public linkToAsset (linkRequest: LinkRequest) {
     this._source.assetId = linkRequest.assetId;
   }
 
@@ -48,7 +48,7 @@ export class Device {
         }
       }
       else {
-        measuresByName.set(measure.deviceMeasureName, measure)
+        measuresByName.set(measure.deviceMeasureName, measure);
       }
     }
 

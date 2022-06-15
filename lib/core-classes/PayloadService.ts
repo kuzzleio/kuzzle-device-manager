@@ -7,11 +7,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 import { Decoder } from './Decoder';
-import { Device } from '../models';
-import {
-  DeviceContent,
-  DeviceManagerConfiguration,
-} from '../types';
+import { DeviceManagerConfiguration } from '../types';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { MeasureService } from './MeasureService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
@@ -86,13 +82,11 @@ export class PayloadService {
 
     const decodedPayloads = await decoder.decode(payload, request);
 
-    for (const _ of decodedPayloads) {
-      this.measureService.registerByDecodedPayload(
-        decoder.deviceModel,
-        decodedPayloads,
-        uuid,
-        { refresh });
-    }
+    this.measureService.registerByDecodedPayload(
+      decoder.deviceModel,
+      decodedPayloads,
+      uuid,
+      { refresh });
 
     return await this.measureService.registerByDecodedPayload(
       decoder.deviceModel, decodedPayloads, uuid, { refresh });
