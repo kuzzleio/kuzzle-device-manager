@@ -328,7 +328,7 @@ export class MeasureService {
           origin: {
             unit: this.measuresRegister.get(measurement.type).unit,
             type: OriginType.ASSET,
-            id: TODO : USER,
+            id: jwt,
             assetId: null,
           }
         });
