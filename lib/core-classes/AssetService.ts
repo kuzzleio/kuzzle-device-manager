@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import {
-  PluginContext,
-  Plugin,
+  BadRequestError,
+  BatchController,
   JSONObject,
   KDocument,
-  BadRequestError,
-  BatchController 
+  Plugin,
+  PluginContext,
 } from 'kuzzle';
 
 import { InternalCollection } from '../InternalCollection';
@@ -14,7 +14,6 @@ import { BaseAsset } from '../models/BaseAsset';
 import {
   BaseAssetContent,
   DeviceManagerConfiguration,
-  LinkedMeasureName,
   MeasureContent
 } from '../types';
 

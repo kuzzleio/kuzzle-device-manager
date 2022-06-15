@@ -1,3 +1,5 @@
+import { DeviceLink } from './BaseAssetContent';
+
 export type AttachRequest = {
   deviceId: string;
 

@@ -86,12 +86,12 @@ export class AssetController extends CRUDController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
     const measures = request.getBodyArray('measures');
-    const jwt = request.get;
+    const kuid = request.getKuid();
 
     const {
       asset, invalids, valids
     } = await this.measureService.registerByAsset(
-      engineId, assetId, measures, jwt, { refresh, strict });
+      engineId, assetId, measures, kuid, { refresh, strict });
 
     return { asset, engineId, invalids, valids };
   }

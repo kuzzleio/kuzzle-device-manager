@@ -297,8 +297,8 @@ export class MeasureService {
     engineId: string,
     assetId: string,
     jsonMeasurements: JSONObject[],
-    jwt,
-    { refresh, strict }: { refresh: string, strict: boolean } = {}
+    kuid: string,
+    { refresh, strict }: { refresh?: 'wait_for' | 'false', strict?: boolean } = {}
   ) {
     const eventId = `${MeasureService.eventId}:registerByAsset`;
 
@@ -387,7 +387,7 @@ export class MeasureService {
   private async historizeEngineMeasures (
     engineId: string,
     newMeasures: MeasureContent[],
-    { refresh }: { refresh?: string } = {}
+    { refresh }: { refresh?: 'wait_for' | 'false' } = {}
   ) {
     await Promise.all(newMeasures.map(measure => {
       return this.batch.create<MeasureContent>(engineId,

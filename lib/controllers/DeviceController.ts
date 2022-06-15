@@ -1,15 +1,17 @@
 import csv from 'csvtojson';
 import { CRUDController } from 'kuzzle-plugin-commons';
 import {
-  KuzzleRequest,
   BadRequestError,
+  JSONObject,
+  KuzzleRequest,
   PluginImplementationError,
 } from 'kuzzle';
 
-import { AttachRequest, DeviceBulkContent, LinkRequest } from '../core-classes';
+import { DeviceBulkContent } from '../core-classes';
 import { DeviceService } from '../core-classes';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { DeviceContent, DeviceManagerConfiguration } from '../types';
+import { AttachRequest, LinkRequest } from '../types/Request';
 
 export class DeviceController extends CRUDController {
   protected config: DeviceManagerConfiguration;
@@ -84,7 +86,11 @@ export class DeviceController extends CRUDController {
     const reference = request.getBodyString('reference');
     const metadata = request.getBodyObject('metadata', {});
     const refresh = request.getRefresh();
-    const linkRequest = request.getBodyObject('linkRequest');
+    const jsonLinkRequest = request.getBodyObject('linkRequest');
+
+    if (! this.validateLinkRequest(jsonLinkRequest)) {
+      throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
+    }
 
     const deviceContent: DeviceContent = {
       measures: [],
@@ -92,6 +98,8 @@ export class DeviceController extends CRUDController {
       model,
       reference,
     };
+
+    const linkRequest = jsonLinkRequest as LinkRequest;
 
     const device = await this.deviceService.create(deviceContent, {
       engineId,
@@ -189,37 +197,48 @@ export class DeviceController extends CRUDController {
    * @todo there is no restriction according to tenant index?
    */
   async linkAsset (request: KuzzleRequest) {
-    const assetId = request.getString('assetId');
-    const deviceId = request.getId();
-    const measureNameLinks = request.getBodyArray('measureNameLinks');
+    const jsonLinkRequest = request.getBodyObject('linkRequest');
     const refresh = request.getRefresh();
 
-    const linkRequest: LinkRequest = {
-      assetId,
-      deviceId,
-      measureNameLinks,
-    };
+    if (! this.validateLinkRequest(jsonLinkRequest)) {
+      throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
+    }
 
-    await this.deviceService.linkAsset(linkRequest, { refresh });
+    const linkRequest = jsonLinkRequest as LinkRequest;
+
+    return await this.deviceService.linkAsset(linkRequest, { refresh });
   }
 
   /**
    * Link multiple devices to multiple assets.
    */
   async mLinkAssets (request: KuzzleRequest) {
-    const { bulkData } = await this.mParseRequest(request);
+    const jsonLinkRequests = request.getBodyArray('linkRequests');
     const refresh = request.getRefresh();
 
-    for (const { deviceId, assetId } of bulkData) {
-      const linkRequest: LinkRequest = {
-        assetId,
-        deviceId,
-        // @todo handle measure names
-      };
-
-      // Cannot be done in parallel because we need to copy previous measures
-      await this.deviceService.linkAsset(linkRequest, { refresh });
+    for (const jsonLinkRequest of jsonLinkRequests) {
+      if (! this.validateLinkRequest(jsonLinkRequest)) {
+        throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
+      }
     }
+
+    const linkRequests = jsonLinkRequests as LinkRequest[];
+
+    const valids = [];
+    const invalids = [];
+
+    for (const linkRequest of linkRequests) {
+      // Cannot be done in parallel because we need to keep previous measures
+      try {
+        const result = await this.deviceService.linkAsset(linkRequest, { refresh });
+        valids.push(result);
+      }
+      catch (error) {
+        invalids.push({ linkRequest: linkRequest, error })
+      }
+    }
+    
+    return { valids, invalids };
   }
 
   /**
@@ -230,21 +249,32 @@ export class DeviceController extends CRUDController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
 
-    await this.deviceService.unlinkAsset(deviceId, { refresh, strict });
+    return await this.deviceService.unlinkAsset(deviceId, { refresh, strict });
   }
 
   /**
    * Unlink multiple device from multiple assets.
    */
   async mUnlinkAssets (request: KuzzleRequest) {
-    const { bulkData } = await this.mParseRequest(request);
+    const deviceIds = request.getBodyArray('deviceIds');
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
 
-    for (const { deviceId } of bulkData) {
+    const valids = [];
+    const invalids = [];
+
+    for (const deviceId of deviceIds) {
       // Cannot be done in parallel because we need to keep previous measures
-      await this.deviceService.unlinkAsset(deviceId, { refresh, strict });
+      try {
+        const result = await this.deviceService.unlinkAsset(deviceId, { refresh, strict });
+        valids.push(result);
+      }
+      catch (error) {
+        invalids.push({ linkRequest: deviceId, error })
+      }
     }
+    
+    return { valids, invalids };
   }
 
   /**
@@ -318,5 +348,21 @@ export class DeviceController extends CRUDController {
     const strict = request.getBoolean('strict');
 
     return { bulkData, strict };
+  }
+
+  private validateLinkRequest (toValidate: JSONObject) {
+    if (! _.has(toValidate, 'assetId')
+      && _.has(toValidate, 'deviceLink')
+      && _.has(toValidate.devicelink, 'deviceId')) {
+      return false;
+    }
+
+    for (const measureNameLink of toValidate.deviceLink.measureNameLinks) {
+      if (! _.has(measureNameLink, 'assetMeasureName')
+        && _.has(measureNameLink, 'deviceMeasureName')) {
+        return false;
+      }
+    }
+    return true;
   }
 }

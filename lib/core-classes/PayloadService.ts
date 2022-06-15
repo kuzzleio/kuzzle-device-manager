@@ -51,7 +51,10 @@ export class PayloadService {
    * - register the brut `Payload`
    * - redirect measurements to MeasureService
    */
-  async process (request: KuzzleRequest, decoder: Decoder, { refresh = undefined } = {}) {
+  async process (request: KuzzleRequest,
+    decoder: Decoder,
+    { refresh }: { refresh?: 'wait_for' | 'false' } = {}
+  ) {
     const payload = request.getBody();
 
     const uuid = request.input.args.uuid || uuidv4();
@@ -91,8 +94,7 @@ export class PayloadService {
         { refresh });
     }
 
-    return await this.measureService.registerByDecodedPayload(decoder.deviceModel, decodedPayloads, {
-      refresh
-    });
+    return await this.measureService.registerByDecodedPayload(
+      decoder.deviceModel, decodedPayloads, uuid, { refresh });
   }
 }

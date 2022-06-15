@@ -7,7 +7,6 @@ import {
 import _ from 'lodash';
 
 import { DecodedPayload } from '../types/DecodedPayload';
-import { DecoderContent } from '../types';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -23,11 +22,6 @@ export abstract class Decoder {
    * Device model name
    */
   public deviceModel: string;
-
-//   /**
-//    * Array of device measure name
-//    */
-//   public deviceMeasures: string[];
 
   /**
    * Custom name for the associated API action in the "payload" controller
@@ -69,14 +63,12 @@ export abstract class Decoder {
 
   /**
    * @param deviceModel Device model for this decoder
-   * @param deviceMeasures Devices measure types for this decoder
    *
    * @example
    * super('AbeewayGPS', ['position']);
    */
-  constructor (deviceModel: string, deviceMeasures: string[]) {
+  constructor (deviceModel: string) {
     this.deviceModel = deviceModel;
-    this.deviceMeasures = deviceMeasures;
   }
 
   /**
@@ -126,11 +118,8 @@ export abstract class Decoder {
     }
   }
 
-  serialize (): DecoderContent {
-    return {
-      deviceMeasures: this.deviceMeasures,
-      deviceModel: this.deviceModel
-    };
+  serialize (): string {
+    return this.deviceModel;
   }
 }
 
