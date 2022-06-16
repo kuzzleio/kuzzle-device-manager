@@ -1,5 +1,8 @@
 import { DeviceLink } from './BaseAssetContent';
 
+/**
+ * Represents a request to link a device to an engine
+ */
 export type AttachRequest = {
   deviceId: string;
 

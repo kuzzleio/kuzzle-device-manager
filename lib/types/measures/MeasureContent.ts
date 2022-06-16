@@ -3,7 +3,7 @@ import { JSONObject, KDocumentContent } from 'kuzzle';
 import { MeasureUnit } from './MeasureDefinition';
 
 /**
- * Represents a measurement of a value to post
+ * Represents a measurement sent with a payload.
  *
  * This interface should be extended and the `values` property specialized
  * to declare new measurement type.
@@ -19,25 +19,24 @@ export interface Measurement {
   /**
    * Property containing the actual measurement.
    *
-   * This should be specialized by child interfaces
+   * This should be specialized by child interfaces.
    */
   values: JSONObject;
 
   /**
-   * Micro Timestamp of the measurement time
+   * Micro Timestamp of the measurement time.
    */
   measuredAt: number;
 
   /**
-   * Name given by the decode to the measure
+   * Name given by the decoder to the measure.
    */
   deviceMeasureName: string;
 }
 
 export interface AssetMeasurement extends Measurement {
   /**
-   * A device may have different measures for the same type (e.g. measure temperature 2 times)
-   * Should be set when you link the device to the asset
+   * Name given by the `deviceLink` of the linked asset.
    */
   assetMeasureName: string;
 }
@@ -47,31 +46,33 @@ export interface AssetMeasurement extends Measurement {
  */
 export interface MeasureContent extends KDocumentContent, AssetMeasurement {
   /**
-   * Define the origin of the measure
+   * Define the origin of the measure.
    */
   origin: {
     /**
-     * Measurement self-description
+     * Measurement self-description.
      */
     unit: MeasureUnit;
 
     /**
-     * E.g. "device"
+     * From what the measure has been pushed. Can be:
+     * - 'asset'
+     * - 'device'
      */
     type: OriginType;
 
     /**
-     * Array of payload uuids that were used to create this measure.
+     * Payload uuid that was used to create this measure.
      */
     payloadUuid?: string;
 
     /**
-     * E.g. "AbeewayTemp"
+     * E.g. "AbeewayTemp".
      */
     deviceModel?: string;
 
     /**
-     * ID of the origin.
+     * ID of the origin. Can be:
      * - device id if origin type is `device`
      * - user id if origin type is `asset`
      */

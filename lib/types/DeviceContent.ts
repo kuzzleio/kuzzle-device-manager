@@ -3,6 +3,9 @@ import { JSONObject, KDocumentContent } from 'kuzzle';
 import { MeasureContent } from './measures/MeasureContent';
 
 
+/**
+ * Device document content
+ */
 export interface DeviceContent extends KDocumentContent {
   /**
    * Device model
@@ -16,7 +19,7 @@ export interface DeviceContent extends KDocumentContent {
   reference: string;
 
   /**
-   *
+   * Each most recent measures with a different `deviceMeasureName`
    */
   measures?: MeasureContent[];
 

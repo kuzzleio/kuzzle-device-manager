@@ -105,7 +105,7 @@ export abstract class Decoder {
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
-   * @returns Array of `decodedPayload`.
+   * @returns Map of `Measurements` by device reference.
    */
   // eslint-disable-next-line no-unused-vars
   abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>;
