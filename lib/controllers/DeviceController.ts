@@ -167,7 +167,7 @@ export class DeviceController extends CRUDController {
   }
 
   /**
-   * Unattach a device from it's tenant
+   * Detach a device from it's tenant
    */
   async detachEngine (request: KuzzleRequest) {
     const deviceId = request.getId();

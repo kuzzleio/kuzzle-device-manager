@@ -64,7 +64,13 @@ export class MeasureService {
    * - linked asset
    * - engine measures
    *
-   * Do not call other `registerX`, only `updateX`
+   * @param deviceModel Model of the device
+   * @param decodedPayloads `decodedPayload` 
+   * @param payloadUuid Payload Uuid that generated the measurements
+   * @param {object} options
+   * @param options.provisionDevice If true and a `decodedPayload`
+   * reference a nonexisting device, create this device
+   * @param options.refresh Wait for ES indexation
    */
   public async registerByDecodedPayload (
     deviceModel: string,
@@ -290,8 +296,15 @@ export class MeasureService {
    * - linked asset
    * - engine measures
    *
-   * The `measuredAt` will be set automatically if not setted
-   * Do not call other `registerX`, only `updateX`
+   * The `measuredAt` of the measures will be set automatically if not setted
+   *
+   * @param engineId Engine id
+   * @param assetId Asset id
+   * @param jsonMeasurements `AssetMeasurement` array from a request
+   * @param kuid Kuid of the user pushing the measurements
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
    */
   public async registerByAsset (
     engineId: string,

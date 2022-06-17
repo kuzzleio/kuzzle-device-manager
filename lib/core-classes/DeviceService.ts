@@ -60,13 +60,15 @@ export class DeviceService {
   /**
    * Create a new device.
    *
-   * If the engineId is not the administration one, then the device will be
-   * automatically attached to the one provided.
-   *
-   * If an assetId is provided, then the device will be linked to this asset.
-   *
-   * @param engineId If it's not the admin engine, then the device will be attached to this one
    * @param deviceContent Content of the device to create
+   * @param {Object} options
+   * @param options.engineId If it's not the admin engine,
+   *  then the device will be attached to this one
+   * @param options.measures Measures to be pushed to the device.
+   *  They will be filtered by name and date like an update
+   * @param options.linkRequest If specified, link to an asset
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
    */
   async create (
     deviceContent: DeviceContent,
@@ -136,6 +138,15 @@ export class DeviceService {
     return device;
   }
 
+  /**
+   * Attach the device to an engine
+   * @param {object} attachRequest
+   * @param attachRequest.deviceId Device id to attach
+   * @param attachRequest.engineId Engine id to attach to
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
+   */
   async attachEngine (
     { deviceId, engineId }: AttachRequest,
     { refresh, strict }: { refresh?: any, strict?: boolean },
@@ -180,6 +191,14 @@ export class DeviceService {
     return device;
   }
 
+  /**
+   * Detach a device from its attached engine
+   *
+   * @param deviceId Device id
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
+   */
   async detachEngine (
     deviceId: string,
     { refresh, strict }: { refresh?: any, strict?: boolean }
@@ -225,9 +244,15 @@ export class DeviceService {
   }
 
   /**
-   * Link a device to an asset and copy device measures into the asset.
+   * Link a device to an asset. A match between `deviceMeasureName`s
+   * and `assetMeasureName` is specified.
    *
-   * Each measures will be given a distinct name when copied into the asset
+   * @param {object} linkRequest Link request between an asset by Id and a device
+   * @param linkRequest.assetId Asset id to link to
+   * @param linkRequest.deviceLink The link with the device
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
    */
   async linkAsset (
     { assetId, deviceLink }: LinkRequest,
@@ -290,7 +315,12 @@ export class DeviceService {
   }
 
   /**
-   * Unlink a device of an asset and copy device measures into the asset.
+   * Unlink a device of an asset
+   *
+   * @param deviceId Id of the device
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
    */
   async unlinkAsset (
     deviceId: string,
@@ -356,47 +386,7 @@ export class DeviceService {
     return { asset, device };
   }
 
-  // /**
-  //  * Updates a device with the new measures
-  //  *
-  //  * @returns Updated device
-  //  */
-  // async TODO-replace-by-model-updateMeasures (
-  //   device: Device,
-  //   measures: MeasureContent[],
-  // ) {
-  //   // TODO : How to design the event calls ? Normally should not
-  //   // TODO : Remove everything of it and call the refacto from
-  //   const eventId = `${DeviceService.eventId}:measures`;
-
-  //   device.updateMeasures(measures);
-
-  //   const response = await this.app.trigger(
-  //     // `engine:${device._source.engineId}:device:measures:new`,
-  //     `${eventId}:new`,
-  //     { device, measures });
-
-  //   const deviceDocument = await this.batch.update<DeviceContent>(
-  //     this.config.adminIndex,
-  //     'devices',
-  //     response.device._id,
-  //     response.device._source,
-  //     { retryOnConflict: 10, source: true });
-
-  //   const engineId = device._source.engineId;
-  //   if (engineId) {
-  //     await this.batch.update<DeviceContent>(
-  //       engineId,
-  //       'devices',
-  //       response.device._id,
-  //       response.device._source,
-  //       { retryOnConflict: 10 });
-  //   }
-
-  //   return new Device(deviceDocument._source);
-  // }
-
-  // TODO : See if changements needed
+  // TOSEE : See if changements needed
   async importDevices (
     devices: JSONObject,
     { refresh, strict }: { refresh?: any, strict?: boolean }) {
@@ -471,28 +461,6 @@ export class DeviceService {
 
     return results;
   }
-
-  // /**
-  //  * Register a new device by creating the document in admin index
-  //  * @todo add before/afterRegister events
-  //  */
-  // private async register (deviceId: string, deviceContent: DeviceContent, { refresh }) {
-  //   // TODO : See if needed
-  //   const deviceDoc = await this.batch.create<DeviceContent>(
-  //     this.config.adminIndex,
-  //     'devices',
-  //     deviceContent,
-  //     deviceId,
-  //     { refresh });
-
-  //   const device = new Device(deviceDoc._source);
-
-  //   return {
-  //     asset: null,
-  //     device: device.serialize(),
-  //     engineId: device._source.engineId,
-  //   };
-  // }
 
   public async getDevice (
     config: DeviceManagerConfiguration,

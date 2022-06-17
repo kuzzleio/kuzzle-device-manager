@@ -25,9 +25,10 @@ export abstract class Decoder {
   public deviceModel: string;
 
   /**
+   * TOSEE : Useless? because no constraint
    * Array of device measure type
    */
-  public deviceMeasures: string[];
+  public deviceMeasureNames: string[];
 
   /**
    * Custom name for the associated API action in the "payload" controller
@@ -69,14 +70,14 @@ export abstract class Decoder {
 
   /**
    * @param deviceModel Device model for this decoder
-   * @param deviceMeasures Devices measure types for this decoder
+   * @param deviceMeasureNames Devices measure names for this decoder
    *
    * @example
    * super('AbeewayGPS', ['position']);
    */
-  constructor (deviceModel: string, deviceMeasures: string[]) {
+  constructor (deviceModel: string, deviceMeasureNames: string[]) {
     this.deviceModel = deviceModel;
-    this.deviceMeasures = deviceMeasures;
+    this.deviceMeasureNames = deviceMeasureNames;
   }
 
   /**
@@ -128,7 +129,7 @@ export abstract class Decoder {
 
   serialize (): DecoderContent {
     return {
-      deviceMeasures: this.deviceMeasures,
+      deviceMeasures: this.deviceMeasureNames,
       deviceModel: this.deviceModel,
     };
   }
