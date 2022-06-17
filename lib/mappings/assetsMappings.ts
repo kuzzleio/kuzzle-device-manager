@@ -9,15 +9,15 @@ export const assetsMappings = {
           },
           type: 'keyword'
         },
-        measuresName: {
+        measuresNameLinks: {
           properties: {
-            name: {
+            assetMeasureName: {
               fields: {
                 text: { type: 'text' }
               },
               type: 'keyword'
             },
-            type: {
+            deviceMeasureName: {
               fields: {
                 text: { type: 'text' }
               },

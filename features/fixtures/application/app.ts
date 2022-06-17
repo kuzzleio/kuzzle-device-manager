@@ -1,7 +1,12 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
 
 import { DeviceManagerPlugin } from '../../../index';
-import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
+import {
+  DummyTempDecoder,
+  DummyTempMultipleDeviceDecoder,
+  DummyTempPositionDecoder,
+  DummyTempWithDelayMultipleDeviceDecoder,
+} from './decoders';
 import { registerTestPipes } from './testPipes'
 
 const app = new Backend('kuzzle');
@@ -9,7 +14,9 @@ const app = new Backend('kuzzle');
 const deviceManager = new DeviceManagerPlugin();
 
 deviceManager.decoders.register(new DummyTempDecoder());
+deviceManager.decoders.register(new DummyTempMultipleDeviceDecoder());
 deviceManager.decoders.register(new DummyTempPositionDecoder());
+deviceManager.decoders.register(new DummyTempWithDelayMultipleDeviceDecoder());
 
 deviceManager.devices.registerMetadata({
   group: {
@@ -19,6 +26,7 @@ deviceManager.devices.registerMetadata({
     }
   }
 });
+
 deviceManager.devices.registerMetadata({
   group2: {
     type: 'keyword',

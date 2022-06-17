@@ -55,7 +55,7 @@ export interface MeasureContent extends KDocumentContent, AssetMeasurement {
     unit: MeasureUnit;
 
     /**
-     * From what the measure has been pushed. Can be:
+     * From what the measure has been pushed. Can be :
      * - 'asset'
      * - 'device'
      */

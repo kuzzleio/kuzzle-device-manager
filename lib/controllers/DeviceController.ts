@@ -87,9 +87,13 @@ export class DeviceController extends CRUDController {
     const reference = request.getBodyString('reference');
     const metadata = request.getBodyObject('metadata', {});
     const refresh = request.getRefresh();
-    const jsonLinkRequest = request.getBodyObject('linkRequest');
+    let jsonLinkRequest = null;
+    try {
+      jsonLinkRequest = request.getBodyObject('linkRequest');
+    }
+    catch(error) {}
 
-    if (! this.validateLinkRequest(jsonLinkRequest)) {
+    if (jsonLinkRequest && ! this.validateLinkRequest(jsonLinkRequest)) {
       throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
     }
 

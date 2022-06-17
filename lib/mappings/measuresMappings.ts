@@ -3,35 +3,6 @@
 export const measuresMappings = {
   dynamic: 'strict',
   properties: {
-    measuredAt: { type: 'double' },
-
-    /**
-     * A device may have different measures for the same type (e.g. measure temperature 2 times)
-     * Should be set when you link the device to the asset
-     */
-    name: { type: 'keyword' },
-
-    origin: {
-      type: 'nested',
-
-      properties: {
-        // ID of the device (document _id)
-        id: { type: 'keyword' },
-
-        // E.g. "AbeewayTemp"
-        model: { type: 'keyword' },
-
-        // Array of payload uuids that were used to create this measure.
-        payloadUuids: { type: 'keyword' },
-
-        // E.g. "device"
-        type: { type: 'keyword' },
-
-        // Asset linked to the device when the measure was made
-        assetId: { type: 'keyword' },
-      }
-    },
-
 
     /**
      * Type of the measure. (e.g. "temperature")
@@ -41,16 +12,70 @@ export const measuresMappings = {
     type: { type: 'keyword' },
 
     /**
-     * Measure self-description
+     * Property containing the actual measurement.
+     *
+     * This should be specialized by child interfaces.
      */
-    unit: {
-      dynamic: 'false',
-      properties: {}
-    },
-
     values: {
       properties: {},
     },
+
+    /**
+     * Micro Timestamp of the measurement time.
+     */
+    measuredAt: { type: 'double' },
+
+    /**
+     * Name given by the decoder to the measure.
+     */
+    deviceMeasureName: { type: 'keyword' },
+
+    /**
+     * Name given by the `deviceLink` of the linked asset.
+     */
+    assetMeasureName: { type: 'keyword' },
+
+    /**
+     * Define the origin of the measure.
+     */
+    origin: {
+      type: 'nested',
+      properties: {
+        /**
+         * Measurement self-description.
+         */
+        unit: {
+          dynamic: 'false',
+          properties: {}
+        },
+
+        /**
+         * From what the measure has been pushed. Can be:
+         * - 'asset'
+         * - 'device'
+         */
+        type: { type: 'keyword' },
+
+        /**
+         * Payload uuid that was used to create this measure.
+         */
+        payloadUuid: { type: 'keyword' },
+
+        // E.g. "AbeewayTemp"
+        deviceModel: { type: 'keyword' },
+
+        /**
+         * ID of the origin. Can be:
+         * - device id if origin type is `device`
+         * - user id if origin type is `asset`
+         */
+        id: { type: 'keyword' },
+
+        // Asset linked to the device when the measure was made
+        assetId: { type: 'keyword' },
+      }
+    },
+
   }
 };
 
