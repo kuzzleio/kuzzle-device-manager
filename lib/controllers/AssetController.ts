@@ -169,6 +169,7 @@ export class AssetController extends CRUDController {
 
     if (Array.isArray(devicesLinks._source.deviceLinks)) {
       for (const deviceLink of devicesLinks._source.deviceLinks) {
+        // TODO : Refacto Call get the asset and search links incide for nothing
         await this.deviceService.unlinkAsset(deviceLink.deviceId, { refresh, strict });
       }
     }

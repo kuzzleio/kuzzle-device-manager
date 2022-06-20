@@ -4,6 +4,7 @@ const dummyTempAttachedAyseUnLinked = {
   measures: [
     {
       type: 'temperature',
+      deviceMeasureName: 'theTemperature',
       unit: {
         name: 'Degree',
         sign: '°',
@@ -16,12 +17,13 @@ const dummyTempAttachedAyseUnLinked = {
       origin: {
         id: 'DummyTemp-attached_ayse_unlinked',
         type: 'device',
-        model: 'DummyTemp',
-        payloadUuids: ['some-uuid'],
+        deviceModel: 'DummyTemp',
+        payloadUuid: 'some-uuid',
       }
     },
     {
       type: 'battery',
+      deviceMeasureName: 'theBattery',
       unit: {
         name: 'Volt',
         sign: 'v',
@@ -34,8 +36,8 @@ const dummyTempAttachedAyseUnLinked = {
       origin: {
         id: 'DummyTemp-attached_ayse_unlinked',
         type: 'device',
-        model: 'DummyTemp',
-        payloadUuids: ['some-uuid'],
+        deviceModel: 'DummyTemp',
+        payloadUuid: 'some-uuid',
       }
     }
   ],
@@ -49,6 +51,7 @@ const dummyTempAttachedAyseUnLinked2 = {
   measures: [
     {
       type: 'temperature',
+      deviceMeasureName: 'theTemperature',
       unit: {
         name: 'Degree',
         sign: '°',
@@ -61,12 +64,13 @@ const dummyTempAttachedAyseUnLinked2 = {
       origin: {
         id: 'DummyTemp-attached_ayse_unlinked_2',
         type: 'device',
-        model: 'DummyTemp',
-        payloadUuids: ['some-uuid'],
+        deviceModel: 'DummyTemp',
+        payloadUuid: 'some-uuid',
       }
     },
     {
       type: 'battery',
+      deviceMeasureName: 'theBattery',
       unit: {
         name: 'Volt',
         sign: 'v',
@@ -79,8 +83,8 @@ const dummyTempAttachedAyseUnLinked2 = {
       origin: {
         id: 'DummyTemp-attached_ayse_unlinked_2',
         type: 'device',
-        model: 'DummyTemp',
-        payloadUuids: ['some-uuid'],
+        deviceModel: 'DummyTemp',
+        payloadUuid: 'some-uuid',
       }
     }
   ],
@@ -92,7 +96,7 @@ const measuresAttachedAyseLinked = [
   {
     type: 'temperature',
 /* A measure of the device `DummyTemp-attached_ayse_linked` */
-    name: 'temperature',
+    deviceMeasureName: 'theTemperature',
     unit: {
       name: 'Degree',
       sign: '°',
@@ -105,14 +109,14 @@ const measuresAttachedAyseLinked = [
     origin: {
       id: 'DummyTemp-attached_ayse_linked',
       type: 'device',
-      model: 'DummyTemp',
-      payloadUuids: ['some-uuid'],
+      deviceModel: 'DummyTemp',
+      payloadUuid: 'some-uuid',
       assetId: 'tools-MART-linked',
     }
   },
   {
     type: 'battery',
-    name: 'battery',
+    deviceMeasureName: 'theBattery',
     unit: {
       name: 'Volt',
       sign: 'v',
@@ -125,8 +129,8 @@ const measuresAttachedAyseLinked = [
     origin: {
       id: 'DummyTemp-attached_ayse_linked',
       type: 'device',
-      model: 'DummyTemp',
-      payloadUuids: ['some-uuid'],
+      deviceModel: 'DummyTemp',
+      payloadUuid: 'some-uuid',
       assetId: 'tools-MART-linked',
     }
   }
@@ -151,7 +155,7 @@ module.exports = {
         measures: [
           {
             type: 'position',
-            name: 'position',
+            deviceMeasureName: 'thePosition',
             unit: {
               name: 'GPS',
               sign: null,
@@ -168,8 +172,8 @@ module.exports = {
             origin: {
               id: 'DummyTemp-detached',
               type: 'device',
-              model: 'DummyTemp',
-              payloadUuids: ['some-uuid'],
+              deviceModel: 'DummyTemp',
+              payloadUuid: 'some-uuid',
             }
           }
         ],

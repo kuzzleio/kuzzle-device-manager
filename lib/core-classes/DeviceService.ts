@@ -261,11 +261,12 @@ export class DeviceService {
     console.log("assetId: ", assetId);
     console.log("deviceLink: ", deviceLink);
     const eventId = `${DeviceService.eventId}:link-asset`;
+
     console.log("1");
+
     const device = await this.getDevice(this.config, deviceLink.deviceId);
 
     console.log("2");
-
 
     const engineId = device._source.engineId;
 
@@ -301,21 +302,21 @@ export class DeviceService {
         this.config.adminIndex,
         InternalCollection.DEVICES,
         device._id,
-        response.device._source,
+        { assetId: response.device._source.assetId },
         { refresh }),
 
       this.sdk.document.update(
         engineId,
         InternalCollection.DEVICES,
         device._id,
-        response.device._source,
+        { assetId: response.device._source.assetId },
         { refresh }),
 
       this.sdk.document.update(
         engineId,
         InternalCollection.ASSETS,
         asset._id,
-        response.asset._source,
+        { deviceLinks: response.asset._source.deviceLinks },
         { refresh }),
     ]);
 
@@ -359,6 +360,7 @@ export class DeviceService {
     const asset = await this.assetService.getAsset(engineId, device._source.assetId);
 
     asset.unlinkDevice(device);
+    device.unlinkToAsset();
 
     const response = await this.app.trigger(
       `${eventId}:before`,
@@ -370,14 +372,14 @@ export class DeviceService {
         this.config.adminIndex,
         InternalCollection.DEVICES,
         device._id,
-        response.device,
+        { assetId: response.device._source.assetId },
         { refresh }),
 
       this.sdk.document.update(
         engineId,
         InternalCollection.DEVICES,
         device._id,
-        response.device,
+        { assetId: response.device._source.assetId },
         { refresh }),
 
       this.sdk.document.update(

@@ -36,19 +36,20 @@ export const measuresMappings = {
     assetMeasureName: { type: 'keyword' },
 
     /**
+     * Measurement self-description.
+     */
+    unit: {
+      dynamic: 'false',
+      properties: {}
+    },
+
+
+    /**
      * Define the origin of the measure.
      */
     origin: {
       type: 'nested',
       properties: {
-        /**
-         * Measurement self-description.
-         */
-        unit: {
-          dynamic: 'false',
-          properties: {}
-        },
-
         /**
          * From what the measure has been pushed. Can be:
          * - 'asset'

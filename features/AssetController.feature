@@ -24,14 +24,15 @@ Feature: DeviceManager asset controller
       | body.model     | "PERFO"         |
       | body.reference | "asset_02"      |
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id                            | "DummyTemp-attached_ayse_unlinked" |
-      | assetId                        | "outils-PERFO-asset_02"             |
-      | body.metadata.index  | "engine-ayse"         |
+    # Correct link
+      | _id                     | "DummyTemp-attached_ayse_unlinked"  |
+      | assetId                 | "outils-PERFO-asset_02"             |
+      | body.metadata.index     | "engine-ayse"         |
+      | body.measureNamesLinks  | [ { assetMeasureName: "coreBattery", deviceMeasureName: "theBattery" }, { assetMeasureName: "motorTemp", deviceMeasureName: "theTemperature" } ] |
     When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-ayse"         |
       | _id      | "outils-PERFO-asset_02" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-      | assetId | null |
+    Then The document "engine-ayse":"assets":"outils-PERFO-asset_02" does not exist:
     And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
 
@@ -76,15 +77,11 @@ Feature: DeviceManager asset controller
 
   Scenario: Add a measure
     When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
-      | engineId | "engine-ayse"       |
-      | _id      | "tools-MART-linked" |
-      | body     | { "measures": [ { "values": { "temperature": 70 }, "type": "temperature" }, { "values": { "nothing": null }, "type": "nonValidType" } ] } |
+      | engineId  | "engine-ayse"       |
+      | _id       | "tools-MART-linked" |
+      | body      | { "measures": [ { "values": { "temperature": 70 }, "type": "temperature", "assetMeasureName": "motorTemp" }, { "values": { "nothing": null }, "type": "nonValidType" } ] } |
     Then I should receive a result matching:
-      | asset           | { "_source": { "measures": [ { "values": { "temperature": 70 } } ] } }  |
-      | engineId        | "engine-ayse"                                                           |
-      | errors          | [ { "values": { "nothing": null }, "type": "nonValidType" } ]           |
+      | engineId  | "engine-ayse"                                                 |
+      | invalids  | [ { "values": { "nothing": null }, "type": "nonValidType" } ] |
     Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
-      | measures[0].type                | "temperature"           |
-      | measures[0].values.temperature  | 70                      |
-      | measures[0].origin.assetId      | "tools-MART-linked"     |
-      | measures[0].origin.type         | "asset"                 |
+      | measures | [ {}, { "type": "temperature", "assetMeasureName": "motorTemp", "values": { "temperature": 70 }, "origin": { "type": "asset" } } ] |

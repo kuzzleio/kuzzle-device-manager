@@ -5,7 +5,6 @@ import {
   DummyTempDecoder,
   DummyTempMultipleDeviceDecoder,
   DummyTempPositionDecoder,
-  DummyTempWithDelayMultipleDeviceDecoder,
 } from './decoders';
 import { registerTestPipes } from './testPipes'
 
@@ -16,7 +15,6 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.decoders.register(new DummyTempDecoder());
 deviceManager.decoders.register(new DummyTempMultipleDeviceDecoder());
 deviceManager.decoders.register(new DummyTempPositionDecoder());
-deviceManager.decoders.register(new DummyTempWithDelayMultipleDeviceDecoder());
 
 deviceManager.devices.registerMetadata({
   group: {

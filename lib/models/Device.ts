@@ -29,6 +29,10 @@ export class Device {
     };
   }
   
+  public unlinkToAsset () {
+    this._source.assetId = null;
+  }
+
   public linkToAsset (linkRequest: LinkRequest) {
     this._source.assetId = linkRequest.assetId;
   }

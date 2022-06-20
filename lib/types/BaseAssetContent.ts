@@ -13,13 +13,13 @@ export interface DeviceLink {
    * List of matches between `deviceMeasureName`
    * and `assetMeasureName`
    */
-  measureNamesLinks: MeasureNameLink[];
+  measureNamesLinks: MeasureNamesLink[];
 }
 
 /**
  * Match between a `deviceMeasureName` and an `assetMeasureName`
  */
-export interface MeasureNameLink {
+export interface MeasureNamesLink {
   assetMeasureName: string;
   deviceMeasureName: string;
 }
@@ -48,5 +48,5 @@ export interface BaseAssetContent extends KDocumentContent {
   /**
    * Link with attached device
    */
-  deviceLinks: DeviceLink[]
+  deviceLinks: DeviceLink[],
 }

@@ -11,7 +11,7 @@ import _ from 'lodash';
 import { DeviceBulkContent } from '../core-classes';
 import { DeviceService } from '../core-classes';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
-import { DeviceContent, DeviceManagerConfiguration } from '../types';
+import { DeviceContent, DeviceManagerConfiguration, MeasureNamesLink } from '../types';
 import { AttachRequest, LinkRequest } from '../types/Request';
 
 export class DeviceController extends CRUDController {
@@ -41,7 +41,7 @@ export class DeviceController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ path: 'device-manager/devices/_link', verb: 'put' }]
+          http: [{ path: 'device-manager/devices/:_id/_link/:assetId', verb: 'put' }]
         },
         mAttachEngines: {
           handler: this.mAttachEngines.bind(this),
@@ -87,6 +87,7 @@ export class DeviceController extends CRUDController {
     const reference = request.getBodyString('reference');
     const metadata = request.getBodyObject('metadata', {});
     const refresh = request.getRefresh();
+
     let jsonLinkRequest = null;
     try {
       jsonLinkRequest = request.getBodyObject('linkRequest');
@@ -202,16 +203,21 @@ export class DeviceController extends CRUDController {
    * @todo there is no restriction according to tenant index?
    */
   async linkAsset (request: KuzzleRequest) {
-    const jsonLinkRequest = request.getBody();
+    const deviceId = request.getId();
+    const assetId = request.getString('assetId');
     const refresh = request.getRefresh();
+    const jsonMeasureNamesLinks = request.getBodyArray('measureNamesLinks');
 
-    if (! this.validateLinkRequest(jsonLinkRequest)) {
+    if (! this.validateMeasureNamesLinks(jsonMeasureNamesLinks)) {
       throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
     }
 
-    const linkRequest = jsonLinkRequest as LinkRequest;
+    const measureNamesLinks = jsonMeasureNamesLinks as MeasureNamesLink[];
 
-    return await this.deviceService.linkAsset(linkRequest, { refresh });
+    return await this.deviceService.linkAsset({
+      assetId,
+      deviceLink: { deviceId, measureNamesLinks }
+    }, { refresh });
   }
 
   /**
@@ -359,12 +365,22 @@ export class DeviceController extends CRUDController {
     if (! (_.has(toValidate, 'assetId')
       && _.has(toValidate, 'deviceLink')
       && _.has(toValidate.deviceLink, 'deviceId')
-      && _.has(toValidate.deviceLink, 'measureNamesLinks')
-      && Array.isArray(toValidate.deviceLink.measureNamesLinks))) {
+      && _.has(toValidate.deviceLink, 'measureNamesLinks'))
+    ) {
       return false;
     }
 
-    for (const measureNameLink of toValidate.deviceLink.measureNamesLinks) {
+    return this.validateMeasureNamesLinks(toValidate.deviceLink.measureNameLinks);
+  }
+
+  private validateMeasureNamesLinks (toValidate: JSONObject) {
+    if (! Array.isArray(toValidate)) {
+      return false;
+    }
+
+    const measureNamesLinks = toValidate as MeasureNamesLink[];
+
+    for (const measureNameLink of measureNamesLinks) {
       if (! (_.has(measureNameLink, 'assetMeasureName')
         && _.has(measureNameLink, 'deviceMeasureName'))) {
         return false;

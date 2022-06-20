@@ -178,7 +178,7 @@ export class MeasureService {
           if (link) {
             const measureNameLink = link.measureNamesLinks.find(
               nameLink =>
-                nameLink.deviceMeasureName === measurement.deviceMeasureName);
+              nameLink.deviceMeasureName === measurement.deviceMeasureName);
 
             if (measureNameLink) {
               assetMeasureName = measureNameLink.assetMeasureName;
@@ -196,9 +196,9 @@ export class MeasureService {
             id: deviceId,
             payloadUuid,
             type: OriginType.DEVICE,
-            unit: this.measuresRegister.get(measurement.type).unit,
           },
           type: measurement.type,
+          unit: this.measuresRegister.get(measurement.type).unit,
           values: measurement.values,
         };
 
@@ -337,9 +337,9 @@ export class MeasureService {
             assetId: null,
             id: kuid,
             type: OriginType.ASSET,
-            unit: this.measuresRegister.get(measurement.type).unit,
           },
           type: measurement.type,
+          unit: this.measuresRegister.get(measurement.type).unit,
           values: measurement.values,
         });
       }
@@ -374,7 +374,7 @@ export class MeasureService {
       engineId,
       InternalCollection.ASSETS,
       asset._id,
-      response.asset._source,
+      { measures: response.asset._source.measures }
     );
 
     await this.historizeEngineMeasures(engineId, validMeasures, { refresh });
