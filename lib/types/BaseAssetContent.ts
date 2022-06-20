@@ -13,7 +13,7 @@ export interface DeviceLink {
    * List of matches between `deviceMeasureName`
    * and `assetMeasureName`
    */
-  measuresNameLinks: MeasureNameLink[];
+  measureNamesLinks: MeasureNameLink[];
 }
 
 /**

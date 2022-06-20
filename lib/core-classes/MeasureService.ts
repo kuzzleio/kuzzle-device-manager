@@ -176,7 +176,7 @@ export class MeasureService {
             deviceLink => deviceLink.deviceId === deviceId);
 
           if (link) {
-            const measureNameLink = link.measuresNameLinks.find(
+            const measureNameLink = link.measureNamesLinks.find(
               nameLink =>
                 nameLink.deviceMeasureName === measurement.deviceMeasureName);
 

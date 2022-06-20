@@ -41,7 +41,7 @@ export class DeviceController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ path: 'device-manager/:engineId/devices/:_id/_link/:assetId', verb: 'put' }]
+          http: [{ path: 'device-manager/devices/_link', verb: 'put' }]
         },
         mAttachEngines: {
           handler: this.mAttachEngines.bind(this),
@@ -91,7 +91,7 @@ export class DeviceController extends CRUDController {
     try {
       jsonLinkRequest = request.getBodyObject('linkRequest');
     }
-    catch(error) {}
+    catch (error) {}
 
     if (jsonLinkRequest && ! this.validateLinkRequest(jsonLinkRequest)) {
       throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
@@ -202,7 +202,7 @@ export class DeviceController extends CRUDController {
    * @todo there is no restriction according to tenant index?
    */
   async linkAsset (request: KuzzleRequest) {
-    const jsonLinkRequest = request.getBodyObject('linkRequest');
+    const jsonLinkRequest = request.getBody();
     const refresh = request.getRefresh();
 
     if (! this.validateLinkRequest(jsonLinkRequest)) {
@@ -356,15 +356,17 @@ export class DeviceController extends CRUDController {
   }
 
   private validateLinkRequest (toValidate: JSONObject) {
-    if (! _.has(toValidate, 'assetId')
+    if (! (_.has(toValidate, 'assetId')
       && _.has(toValidate, 'deviceLink')
-      && _.has(toValidate.devicelink, 'deviceId')) {
+      && _.has(toValidate.deviceLink, 'deviceId')
+      && _.has(toValidate.deviceLink, 'measureNamesLinks')
+      && Array.isArray(toValidate.deviceLink.measureNamesLinks))) {
       return false;
     }
 
-    for (const measureNameLink of toValidate.deviceLink.measureNameLinks) {
-      if (! _.has(measureNameLink, 'assetMeasureName')
-        && _.has(measureNameLink, 'deviceMeasureName')) {
+    for (const measureNameLink of toValidate.deviceLink.measureNamesLinks) {
+      if (! (_.has(measureNameLink, 'assetMeasureName')
+        && _.has(measureNameLink, 'deviceMeasureName'))) {
         return false;
       }
     }
