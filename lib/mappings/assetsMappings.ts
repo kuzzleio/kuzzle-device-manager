@@ -9,7 +9,7 @@ export const assetsMappings = {
           },
           type: 'keyword'
         },
-        measuresNameLinks: {
+        measureNamesLinks: {
           properties: {
             assetMeasureName: {
               fields: {

@@ -258,18 +258,26 @@ export class DeviceService {
     { assetId, deviceLink }: LinkRequest,
     { refresh }: { refresh?: any }
   ): Promise<{ asset: BaseAsset, device: Device }> {
+    console.log("assetId: ", assetId);
+    console.log("deviceLink: ", deviceLink);
     const eventId = `${DeviceService.eventId}:link-asset`;
+    console.log("1");
     const device = await this.getDevice(this.config, deviceLink.deviceId);
+
+    console.log("2");
+
 
     const engineId = device._source.engineId;
 
     if (! engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
+    console.log("3");
 
     if (device._source.assetId) {
       throw new BadRequestError(`Device "${device._id}" is already linked to an asset.`);
     }
+    console.log("4");
 
     const asset = await this.assetService.getAsset(engineId, assetId);
 
@@ -277,11 +285,16 @@ export class DeviceService {
       throw new BadRequestError(`Asset "${asset._id}" does not exist.`);
     }
 
+    console.log("5");
     device.linkToAsset({ assetId, deviceLink });
     asset.linkToDevice({ assetId, deviceLink });
 
     const response = await this.app.trigger(
       `${eventId}:before`, { asset, device });
+
+
+    console.log("6");
+    console.log('response:', response)
 
     await Promise.all([
       this.sdk.document.update(
@@ -302,7 +315,7 @@ export class DeviceService {
         engineId,
         InternalCollection.ASSETS,
         asset._id,
-        response.asset,
+        response.asset._source,
         { refresh }),
     ]);
 
