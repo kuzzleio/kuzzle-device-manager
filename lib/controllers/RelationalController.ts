@@ -35,6 +35,11 @@ export abstract class RelationalController extends CRUDController {
         description: 'Creation of multiple relation on a OneToMany relation',
         message: '%s cannot have multiple %s relation',
       });
+      global.app.errors.register('device-manager', 'relational', 'linkAlreadyExist', {
+        class: 'BadRequestError',
+        description: 'the link already exist',
+        message: 'the link already exist',
+      });
     }
   }
   

@@ -124,11 +124,13 @@ export class AssetCategoryController extends RelationalController {
     await this.sdk.document.get(engineId, 'metadata', metadataId); //existance verification
     const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id);
     const metadata = category._source.assetMetadata ? category._source.assetMetadata : [];
+    if (metadata.includes(metadataId)) {
+      throw global.app.errors.get('device-manager', 'relational', 'linkAlreadyExist');
+    }
     metadata.push(metadataId);
     request.input.body = {
       'assetMetadata': metadata
     };
-
     if (value) {
       if (category._source.metadataValues) {
         category._source.metadataValues[metadataId] = value;
@@ -140,8 +142,6 @@ export class AssetCategoryController extends RelationalController {
       }
       request.input.body.metadataValues = category._source.metadataValues;
     }
-    
-
     return this.update(request);
   }
   
