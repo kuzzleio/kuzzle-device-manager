@@ -24,11 +24,11 @@ Feature: Attach device to engine
     And The document "engine-kuzzle":"devices":"DummyTemp-detached" exists
     # Events
     And The document "tests":"events":"device-manager:device:attach-engine:before" content match:
-      | device._id | "DummyTemp-detached" |
-      | engineId   | "engine-kuzzle"      |
+      | device._id              | "DummyTemp-detached" |
+      | device._source.engineId | "engine-kuzzle"      |
     And The document "tests":"events":"device-manager:device:attach-engine:after" content match:
-      | device._id | "DummyTemp-detached" |
-      | engineId   | "engine-kuzzle"      |
+      | device._id              | "DummyTemp-detached" |
+      | device._source.engineId | "engine-kuzzle"      |
 
   Scenario: Attach multiple device to an engine using JSON
     When I successfully execute the action "device-manager/device":"mAttachEngines" with args:

@@ -30,7 +30,7 @@ export class MeasureService {
   private deviceService: DeviceService;
   private assetService: AssetService;
   private measuresRegister: MeasuresRegister;
-  private static eventId = 'MeasureService';
+  private static eventId = 'device-manager:measure';
 
   private get sdk () {
     return this.context.accessors.sdk;

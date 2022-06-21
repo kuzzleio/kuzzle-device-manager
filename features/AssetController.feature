@@ -33,6 +33,8 @@ Feature: DeviceManager asset controller
       | engineId | "engine-ayse"         |
       | _id      | "outils-PERFO-asset_02" |
     Then The document "engine-ayse":"assets":"outils-PERFO-asset_02" does not exist:
+    And The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+      | assetId | null |
     And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
 

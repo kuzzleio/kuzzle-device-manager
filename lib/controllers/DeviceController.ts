@@ -370,7 +370,7 @@ export class DeviceController extends CRUDController {
       return false;
     }
 
-    return this.validateMeasureNamesLinks(toValidate.deviceLink.measureNameLinks);
+    return this.validateMeasureNamesLinks(toValidate.deviceLink.measureNamesLinks);
   }
 
   private validateMeasureNamesLinks (toValidate: JSONObject) {
@@ -380,9 +380,9 @@ export class DeviceController extends CRUDController {
 
     const measureNamesLinks = toValidate as MeasureNamesLink[];
 
-    for (const measureNameLink of measureNamesLinks) {
-      if (! (_.has(measureNameLink, 'assetMeasureName')
-        && _.has(measureNameLink, 'deviceMeasureName'))) {
+    for (const measureNamesLink of measureNamesLinks) {
+      if (! (_.has(measureNamesLink, 'assetMeasureName')
+        && _.has(measureNamesLink, 'deviceMeasureName'))) {
         return false;
       }
     }
