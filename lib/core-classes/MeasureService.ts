@@ -129,6 +129,19 @@ export class MeasureService {
         deviceMeasuresByEngineAndId.set(engineId, deviceMeasuresInEngine);
       }
 
+      // TODO : Integrate provisioning option
+      // const pluginConfig = await this.batch.get(
+      //   this.config.adminIndex,
+      //   this.config.adminCollections.config.name,
+      //   'plugin--device-manager');
+
+      // const autoProvisioning
+      //   = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
+
+      // if (! autoProvisioning) {
+      //   throw new UnauthorizedError(`The device model "${model}" with reference "${reference}" is not registered on the platform.`);
+      // }
+
 
       // Search for asset
       let assetMeasures: { asset: BaseAsset, measures: MeasureContent[] } = null;

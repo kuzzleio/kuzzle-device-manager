@@ -288,6 +288,13 @@ const device_DummyMultiTemp_AttachedAyse_unlinked = {
   assetId: null
 };
 
+const device_DummyMultiTemp_detached = {
+  reference: 'detached',
+  model: 'DummyMultiTemp',
+  measures: [],
+  assetId: null
+};
+
 
 // --- Assets ---------------------------------------------
 
@@ -354,6 +361,8 @@ const devices = [
   device_DummyMultiTemp_AttachedAyse_linked_2,
   { index: { _id: 'DummyMultiTemp-attached_ayse_unlinked' } },
   device_DummyMultiTemp_AttachedAyse_unlinked,
+  { index: { _id: 'DummyMultiTemp-detached' } },
+  device_DummyMultiTemp_detached,
 ]
 
 module.exports = {

@@ -1,12 +1,18 @@
 Feature: Attach device to engine
 
-  Scenario: Attach a device to an engine
+  Scenario: Attach a device to an engine and historize measures
     When I successfully execute the action "device-manager/device":"attachEngine" with args:
       | _id      | "DummyMultiTemp-detached" |
       | engineId | "engine-kuzzle"      |
     Then The document "device-manager":"devices":"DummyMultiTemp-detached" content match:
       | engineId | "engine-kuzzle" |
-    And The document "engine-kuzzle":"devices":"DummyMultiTemp-detached" exists
+    When I successfully receive a "dummy-multi-temp" payload with:
+      | payloads[0].deviceEUI     | "detached"  |
+      | payloads[0].register1     | -3          |
+      | payloads[0].register2     | 40.3        |
+      | payloads[0].batteryLevel  | 0.4         |
+    Then I refresh the collection "engine-kuzzle":"measures"
+    Then I count 3 documents in "engine-kuzzle":"measures"
 
   Scenario: Attach a non-existing device to an engine should throw an error
     When I execute the action "device-manager/device":"attachEngine" with args:
@@ -55,16 +61,16 @@ Feature: Attach device to engine
 
   Scenario: Error when attaching a device to an engine
     When I execute the action "device-manager/device":"attachEngine" with args:
-      | _id      | "DummyMultiTemp-detached" |
-      | engineId | "engine-kaliop"      |
+      | _id      | "DummyMultiTemp-detached"  |
+      | engineId | "engine-kaliop"            |
     Then I should receive an error matching:
       | message | "Tenant \"engine-kaliop\" does not have a device-manager engine" |
     And I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id      | "DummyMultiTemp-detached" |
-      | engineId | "engine-kuzzle"      |
+      | _id      | "DummyMultiTemp-detached"  |
+      | engineId | "engine-kuzzle"            |
     When I execute the action "device-manager/device":"attachEngine" with args:
-      | _id      | "DummyMultiTemp-detached" |
-      | engineId | "engine-kuzzle"      |
-      | strict   | true                 |
+      | _id      | "DummyMultiTemp-detached"  |
+      | engineId | "engine-kuzzle"            |
+      | strict   | true                       |
     Then I should receive an error matching:
       | message | "Device \"DummyMultiTemp-detached\" is already attached to an engine." |

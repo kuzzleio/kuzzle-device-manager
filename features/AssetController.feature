@@ -80,5 +80,6 @@ Feature: DeviceManager asset controller
     Then I should receive a result matching:
       | engineId  | "engine-ayse"                                                 |
       | invalids  | [ { "values": { "nothing": null }, "type": "nonValidType" } ] |
-    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
+    And The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | measures | [ {}, { "type": "temperature", "deviceMeasureName": null, "assetMeasureName": "leftExternalTemp", "values": { "temperature": 70 }, "origin": { "type": "asset" } } ] |
+      #TODO: Check the historization of measures of "engine-ayse"
