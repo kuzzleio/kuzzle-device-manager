@@ -416,7 +416,8 @@ export class MeasureService {
     { refresh }: { refresh?: 'wait_for' | 'false' } = {}
   ) {
     await Promise.all(newMeasures.map(measure => {
-      return this.batch.create<MeasureContent>(engineId,
+      return this.batch.create<MeasureContent>(
+        engineId,
         InternalCollection.MEASURES,
         measure,
         refresh);
