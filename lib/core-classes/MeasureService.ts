@@ -114,6 +114,7 @@ export class MeasureService {
         }
         else {
           measurementsWithoutDevice.set(reference, measurements);
+          continue;
         }
       }
 
@@ -278,7 +279,6 @@ export class MeasureService {
       deviceMeasuresByEngineAndId,
       measuresByEngine,
     });
-
 
     return {
       // TOSEE : What to return, how (serialization) ?

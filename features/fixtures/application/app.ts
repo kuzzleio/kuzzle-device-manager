@@ -2,8 +2,8 @@ import { Backend, KuzzleRequest } from 'kuzzle';
 
 import { DeviceManagerPlugin } from '../../../index';
 import {
+  DummyMultiTempDecoder,
   DummyTempDecoder,
-  DummyTempMultipleDeviceDecoder,
   DummyTempPositionDecoder,
 } from './decoders';
 import { registerTestPipes } from './testPipes'
@@ -13,7 +13,7 @@ const app = new Backend('kuzzle');
 const deviceManager = new DeviceManagerPlugin();
 
 deviceManager.decoders.register(new DummyTempDecoder());
-deviceManager.decoders.register(new DummyTempMultipleDeviceDecoder());
+deviceManager.decoders.register(new DummyMultiTempDecoder());
 deviceManager.decoders.register(new DummyTempPositionDecoder());
 
 deviceManager.devices.registerMetadata({

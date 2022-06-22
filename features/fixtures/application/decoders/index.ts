@@ -1,5 +1,5 @@
-export * from './DummyTempDecoder';
+export * from './DummyMultiTempDecoder';
 
-export * from './DummyTempMultipleDeviceDecoder'
+export * from './DummyTempDecoder';
 
 export * from './DummyTempPositionDecoder';

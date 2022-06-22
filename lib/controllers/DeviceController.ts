@@ -73,6 +73,8 @@ export class DeviceController extends CRUDController {
           handler: this.create.bind(this),
           http: [{ path: 'device-manager/:engineId/devices', verb: 'post' }]
         },
+
+        // TOSEE : Delete a measure from device by `deviceMeasureName`
       }
     };
     /* eslint-enable sort-keys */
