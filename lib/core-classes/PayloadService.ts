@@ -82,12 +82,6 @@ export class PayloadService {
 
     const decodedPayloads = await decoder.decode(payload, request);
 
-    this.measureService.registerByDecodedPayload(
-      decoder.deviceModel,
-      decodedPayloads,
-      uuid,
-      { refresh });
-
     return await this.measureService.registerByDecodedPayload(
       decoder.deviceModel, decodedPayloads, uuid, { refresh });
   }
