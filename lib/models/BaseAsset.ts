@@ -53,6 +53,29 @@ export class BaseAsset {
     this._source.measures = Array.from(measuresByName.values());
   }
 
+  public removeMeasures (assetMeasureNames: string[]) {
+    const removed = [];
+    const toKeep = [];
+
+    for (const measure of this._source.measures) {
+      const index = assetMeasureNames.indexOf(measure.assetMeasureName);
+      if (0 <= index) {
+        removed.push(measure);
+        assetMeasureNames.splice(index, 1);
+      }
+      else {
+        toKeep.push(measure);
+      }
+    }
+
+    this._source.measures = toKeep;
+
+    return {
+      removed,
+      notFound: assetMeasureNames,
+    }
+  }
+
   serialize (): JSONObject {
     return {
       _id: this._id,

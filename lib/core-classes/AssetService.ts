@@ -4,6 +4,7 @@ import {
   BatchController,
   JSONObject,
   KDocument,
+  NotFoundError,
   Plugin,
   PluginContext,
 } from 'kuzzle';
@@ -127,6 +128,32 @@ export class AssetService {
       assetId);
 
     return new BaseAsset(document._source, document._id);
+  }
+
+  public async removeMeasures (
+    engineId: string,
+    assetId: string,
+    assetMeasureNames: string[],
+    { strict }: { strict?: boolean }
+  ) {
+    const asset = await this.getAsset(engineId, assetId);
+    const result = asset.removeMeasures(assetMeasureNames);
+
+    if (strict && result.notFound.length) {
+      throw new NotFoundError(`AssetMeasureNames ${result.notFound} in asset ${assetId} of engine ${engineId}`);
+    }
+
+    await this.sdk.document.update(
+      engineId,
+      InternalCollection.ASSETS,
+      asset._id,
+      asset._source,
+      { strict });
+
+    return {
+      asset,
+      ... result,
+    };
   }
 
   // @todo remove when we have the date extractor in the core

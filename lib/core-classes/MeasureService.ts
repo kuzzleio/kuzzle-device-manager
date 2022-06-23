@@ -420,7 +420,8 @@ export class MeasureService {
         engineId,
         InternalCollection.MEASURES,
         measure,
-        refresh);
+        null,
+        { refresh });
     }));
   }
 

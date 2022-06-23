@@ -81,10 +81,10 @@ const measure_last_leftInnerTemp = {
   }
 };
 
-const measure_last_leftExternalTemp = {
+const measure_last_leftOuterTemp = {
   type: 'temperature',
-  assetMeasureName: 'leftExternalTemp',
-  deviceMeasureName: 'extTemp',
+  assetMeasureName: 'leftOuterTemp',
+  deviceMeasureName: 'outerTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -123,10 +123,10 @@ const measure_last_rightInnerTemp = {
   }
 };
 
-const measure_last_rightExternalTemp = {
+const measure_last_rightOuterTemp = {
   type: 'temperature',
-  assetMeasureName: 'rightExternalTemp',
-  deviceMeasureName: 'extTemp',
+  assetMeasureName: 'rightOuterTemp',
+  deviceMeasureName: 'outerTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -207,10 +207,10 @@ const measure_unlinked_innerTemp = {
   }
 };
 
-const measure_unlinked_extTemp = {
+const measure_unlinked_outerTemp = {
   type: 'temperature',
   assetMeasureName: null,
-  deviceMeasureName: 'extTemp',
+  deviceMeasureName: 'outerTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -257,7 +257,7 @@ const device_DummyMultiTemp_AttachedAyse_linked_1 = {
   model: 'DummyMultiTemp',
   measures: [
     measure_last_leftInnerTemp,
-    measure_last_leftExternalTemp,
+    measure_last_leftOuterTemp,
     measure_old_coreBatteryLevel,
   ],
   engineId: 'engine-ayse',
@@ -269,7 +269,7 @@ const device_DummyMultiTemp_AttachedAyse_linked_2 = {
   model: 'DummyMultiTemp',
   measures: [
     measure_last_rightInnerTemp,
-    measure_last_rightExternalTemp,
+    measure_last_rightOuterTemp,
     measure_last_coreBatteryLevel
   ],
   engineId: 'engine-ayse',
@@ -282,7 +282,7 @@ const device_DummyMultiTemp_AttachedAyse_unlinked = {
   engineId: 'engine-ayse',
   measures: [
     measure_unlinked_innerTemp,
-    measure_unlinked_extTemp,
+    measure_unlinked_outerTemp,
     measure_unlinked_lvlBattery
   ],
   assetId: null
@@ -304,9 +304,9 @@ const asset_Fridge_AttachedAyse_linked = {
   reference: 'linked',
   measures: [
     measure_last_coreBatteryLevel,
-    measure_last_leftExternalTemp,
+    measure_last_leftOuterTemp,
     measure_last_leftInnerTemp,
-    measure_last_rightExternalTemp,
+    measure_last_rightOuterTemp,
     measure_last_rightInnerTemp
   ],
   deviceLinks: [
@@ -319,8 +319,8 @@ const asset_Fridge_AttachedAyse_linked = {
 
         },
         {
-          assetMeasureName: 'leftExternalTemp',
-          deviceMeasureName: 'extTemp',
+          assetMeasureName: 'leftOuterTemp',
+          deviceMeasureName: 'outerTemp',
 
         },
         {
@@ -338,8 +338,8 @@ const asset_Fridge_AttachedAyse_linked = {
 
         },
         {
-          assetMeasureName: 'rightExternalTemp',
-          deviceMeasureName: 'extTemp',
+          assetMeasureName: 'rightOuterTemp',
+          deviceMeasureName: 'outerTemp',
 
         },
         {
@@ -349,6 +349,14 @@ const asset_Fridge_AttachedAyse_linked = {
       ]
     }
   ],
+}
+
+const asset_Fridge_AttachedAyse_unlinked = {
+  type: 'container',
+  model: 'FRIDGE',
+  reference: 'unlinked',
+  measures: [],
+  deviceLinks: [],
 }
 
 
@@ -381,17 +389,19 @@ module.exports = {
     assets: [
       { index: { _id: 'container-FRIDGE-linked' } },
       asset_Fridge_AttachedAyse_linked,
+      { index: { _id: 'container-FRIDGE-unlinked' } },
+      asset_Fridge_AttachedAyse_unlinked,
     ],
     devices: devices,
     measures: [
       { index: { _id: '0' } },
       measure_last_leftInnerTemp,
       { index: { _id: '1' } },
-      measure_last_leftExternalTemp,
+      measure_last_leftOuterTemp,
       { index: { _id: '2' } },
       measure_last_rightInnerTemp,
       { index: { _id: '3' } },
-      measure_last_rightExternalTemp,
+      measure_last_rightOuterTemp,
       { index: { _id: '4' } },
       measure_last_coreBatteryLevel,
       { index: { _id: '5' } },
@@ -399,7 +409,7 @@ module.exports = {
       { index: { _id: '6' } },
       measure_unlinked_innerTemp,
       { index: { _id: '7' } },
-      measure_unlinked_extTemp,
+      measure_unlinked_outerTemp,
       { index: { _id: '8' } },
       measure_unlinked_lvlBattery,
 

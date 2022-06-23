@@ -13,6 +13,7 @@ import { DeviceService } from '../core-classes';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { DeviceContent, DeviceManagerConfiguration, MeasureNamesLink } from '../types';
 import { AttachRequest, LinkRequest } from '../types/Request';
+import { Device } from '../models';
 
 export class DeviceController extends CRUDController {
   protected config: DeviceManagerConfiguration;
@@ -90,13 +91,14 @@ export class DeviceController extends CRUDController {
     const metadata = request.getBodyObject('metadata', {});
     const refresh = request.getRefresh();
 
-    let jsonLinkRequest = null;
+    let assetId = null;
     try {
-      jsonLinkRequest = request.getBodyObject('linkRequest');
+      assetId = request.getBodyString('assetId');
     }
     catch (error) {}
+    const measureNamesLinks = request.getBodyArray('measureNamesLinks', []);
 
-    if (jsonLinkRequest && ! this.validateLinkRequest(jsonLinkRequest)) {
+    if (measureNamesLinks.length && ! this.validateMeasureNamesLinks(measureNamesLinks)) {
       throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
     }
 
@@ -107,7 +109,12 @@ export class DeviceController extends CRUDController {
       reference,
     };
 
-    const linkRequest = jsonLinkRequest as LinkRequest;
+    const linkRequest: LinkRequest = assetId && measureNamesLinks.length
+      ? {
+        assetId: assetId,
+        deviceLink: { deviceId: Device.id(model, reference), measureNamesLinks }
+      }
+      : null;
 
     const device = await this.deviceService.create(deviceContent, {
       engineId,
@@ -250,7 +257,7 @@ export class DeviceController extends CRUDController {
         invalids.push({ error, linkRequest });
       }
     }
-    
+
     return { invalids, valids };
   }
 
@@ -286,7 +293,7 @@ export class DeviceController extends CRUDController {
         invalids.push({ error, linkRequest: deviceId });
       }
     }
-    
+
     return { invalids, valids };
   }
 

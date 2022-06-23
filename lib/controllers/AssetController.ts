@@ -59,12 +59,37 @@ export class AssetController extends CRUDController {
         pushMeasures: {
           handler: this.pushMeasures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'post' }],
-        }
-
+        },
+        removeMeasure: {
+          handler: this.removeMeasure.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures/:assetMeasureName', verb: 'delete' }],
+        },
+        mRemoveMeasure: {
+          handler: this.mRemoveMeasure.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'delete' }],
+        },
         // TOSEE : Delete a measure from asset by `assetMeasureName`
       },
     };
     /* eslint-enable sort-keys */
+  }
+
+  async mRemoveMeasure (request: KuzzleRequest) {
+    const id = request.getId();
+    const strict = request.getBoolean('strict');
+    const engineId = request.getString('engineId');
+    const assetMeasureNames = request.getBodyArray('assetMeasureNames');
+
+    return await this.assetService.removeMeasures(engineId, id, assetMeasureNames, { strict });
+  }
+
+  async removeMeasure (request: KuzzleRequest) {
+    const id = request.getId();
+    const strict = request.getBoolean('strict');
+    const engineId = request.getString('engineId');
+    const assetMeasureName = request.getString('assetMeasureName');
+
+    return await this.assetService.removeMeasures(engineId, id, [assetMeasureName], { strict });
   }
 
   async getMeasures (request: KuzzleRequest) {
@@ -93,6 +118,8 @@ export class AssetController extends CRUDController {
     const strict = request.getBoolean('strict');
     const measures = request.getBodyArray('measures');
     const kuid = request.getKuid();
+
+    // TODO : Throw if invalid measures
 
     const {
       asset, invalids, valids

@@ -7,19 +7,18 @@ Feature: Device provisioning
       | body.reference | "MATALE"         |
     Then The document "device-manager":"devices":"DummyTemp-MATALE" exists
 
-    # TODO : Link request
   Scenario: Create a device in a device-manager engine and linked to an asset
     When I successfully execute the action "device-manager/device":"create" with args:
-      | engineId                                                      | "engine-ayse"           |
-      | body.linkRequest.assetId                                      | "tools-PERFO-unlinked"  |
-      | body.linkRequest.deviceLink.deviceId                          | "DummyTemp-MATALE"      |
-      | body.linkRequest.deviceLink.measureNamesLinks| [{"assetMeasureName":"motorTemp", "deviceMeasureName":"theTemperature"}]|
-      | body.model                            | "DummyTemp"             |
-      | body.reference                        | "MATALE"                |
+      | engineId               | "engine-ayse"               |
+      | body.assetId           | "container-FRIDGE-unlinked" |
+      | body.measureNamesLinks | [{"assetMeasureName":"coreTemp", "deviceMeasureName":"theTemperature"}] |
+      | body.model                            | "DummyTemp"  |
+      | body.reference                        | "MATALE"     |
     Then The document "device-manager":"devices":"DummyTemp-MATALE" content match:
-      | assetId | "tools-PERFO-unlinked" |
+      | assetId | "container-FRIDGE-unlinked" |
     And The document "engine-ayse":"devices":"DummyTemp-MATALE" content match:
-      | assetId | "tools-PERFO-unlinked" |
-
-      #
-      # | assetId        | "tools-PERFO-unlinked" |
+      | assetId | "container-FRIDGE-unlinked" |
+    And The document "engine-ayse":"assets":"container-FRIDGE-unlinked" content match:
+      | deviceLinks[0].deviceId                               | "DummyTemp-MATALE"  |
+      | deviceLinks[0].measureNamesLinks[0].assetMeasureName  | "coreTemp"          |
+      | deviceLinks[0].measureNamesLinks[0].deviceMeasureName | "theTemperature"    |
