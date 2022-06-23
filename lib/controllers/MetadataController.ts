@@ -4,7 +4,6 @@ import { RelationalController } from './RelationalController';
 export class MetadataController extends RelationalController {
   constructor (plugin: Plugin) {
     super(plugin, 'metadata');
-    RelationalController.classMap.set('metadata', this);
 
     /* eslint-disable sort-keys */
     this.definition = {

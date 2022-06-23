@@ -10,7 +10,6 @@ export class AssetCategoryController extends RelationalController {
   constructor (plugin: Plugin, assetCategoryService : AssetCategoryService) {
     super(plugin, 'asset-category');
     this.assetCategoryService = assetCategoryService;
-    RelationalController.classMap.set('asset-category', this);
 
     global.app.errors.register('device-manager', 'relational', 'forbiddenParent', {
       class: 'BadRequestError',

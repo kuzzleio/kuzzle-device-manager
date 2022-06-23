@@ -9,6 +9,10 @@ import {
 } from 'kuzzle';
 import { User } from 'kuzzle/lib/types';
 
+/**
+ * interface to indicate a specific field in a specific document.
+ * Used to indicate field used to represent relation
+ */
 export interface FieldPath {
   'index' : string,
   'collection' : string,
@@ -45,6 +49,7 @@ export abstract class RelationalController extends CRUDController {
   
   protected constructor (plugin: Plugin, name : string) {
     super(plugin, name);
+    RelationalController.classMap.set(name, this);
     RelationalController.init();
   }
 
@@ -52,6 +57,10 @@ export abstract class RelationalController extends CRUDController {
     return this.context.accessors.sdk;
   }
 
+
+  /**
+   * Default FieldPath builder, to write smaller code
+   */
   protected getFieldPath (request : KuzzleRequest, fieldName : string, documentKey : string = '_id', collectionName : string = this.collection, indexKey : string = 'engineId', ): FieldPath {
     return {
       collection: collectionName,
@@ -260,6 +269,7 @@ export abstract class RelationalController extends CRUDController {
     if (! document[embedded.field]) {
       document[embedded.field] = [];
     }
+    this.verifyNotAlreadyLinked(document[embedded.field], container);
     document[embedded.field].push(container);
     const updateMessage = {};
     updateMessage[embedded.field] = document[embedded.field];
@@ -279,6 +289,19 @@ export abstract class RelationalController extends CRUDController {
       updateMessageDest[container.field] = document;
     }
     await this.updateRequest(container, updateMessageDest, request.getUser());
+  }
+
+  /**
+   * throw an error if the link is in the list of link
+   * @param listList
+   * @param link
+   */
+  verifyNotAlreadyLinked (listList: FieldPath[], link: FieldPath) {
+    for (const fieldPath of listList) {
+      if (this.equal(fieldPath, link)) {
+        throw global.app.errors.get('device-manager', 'relational', 'linkAlreadyExist');
+      }
+    }
   }
 
   /**
@@ -318,7 +341,8 @@ export abstract class RelationalController extends CRUDController {
   }
 
   /**
-   * return the content (_source) of the document represented in the fieldPath (null if the document does not exist)
+   * return the content (_source) of the document represented in the fieldPath
+   * If throwError = false, return null if the document does not exist, if not throw error
    * @param path
    */
   public async getDocumentContent (path : FieldPath, throwError = true) {
