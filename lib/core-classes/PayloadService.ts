@@ -82,7 +82,16 @@ export class PayloadService {
 
     const decodedPayloads = await decoder.decode(payload, request);
 
+
+    const pluginConfig = await this.batch.get(
+      this.config.adminIndex,
+      this.config.adminCollections.config.name,
+      'plugin--device-manager');
+
+    const autoProvisionDevice
+      = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
+
     return await this.measureService.registerByDecodedPayload(
-      decoder.deviceModel, decodedPayloads, uuid, { refresh });
+      decoder.deviceModel, decodedPayloads, uuid, { autoProvisionDevice, refresh });
   }
 }

@@ -18,7 +18,7 @@ export class DummyMultiTempDecoder extends Decoder {
 
   async validate (payload: JSONObject, request: KuzzleRequest) {
     if (payload.payloads.find(devicePayload => ! devicePayload.deviceEUI)) {
-      throw new PreconditionError('Invalid payload: missing "deviceEUIs"');
+      throw new PreconditionError('Invalid payload: missing "deviceEUI" in some devicePayload');
     }
 
     if (payload.invalid) {
@@ -61,15 +61,15 @@ export class DummyMultiTempDecoder extends Decoder {
           });
       }
 
-      if (devicePayload.batteryLevel) {
+      if (devicePayload.lvlBattery) {
         deviceMeasurements.push({
           deviceMeasureName: 'lvlBattery',
-          measuredAt: Date.now() - (devicePayload.delayBatteryLevel
-            ? devicePayload.delayBatteryLevel
+          measuredAt: Date.now() - (devicePayload.delayLvlBattery
+            ? devicePayload.delayLvlBattery
             : 0),
           type: 'battery',
           values: {
-            battery: devicePayload.batteryLevel * 100,
+            battery: devicePayload.lvlBattery * 100,
           },
         });
       }

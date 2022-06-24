@@ -7,10 +7,10 @@ Feature: Attach device to engine
     Then The document "device-manager":"devices":"DummyMultiTemp-detached" content match:
       | engineId | "engine-kuzzle" |
     When I successfully receive a "dummy-multi-temp" payload with:
-      | payloads[0].deviceEUI     | "detached"  |
-      | payloads[0].register1     | -3          |
-      | payloads[0].register2     | 40.3        |
-      | payloads[0].batteryLevel  | 0.4         |
+      | payloads[0].deviceEUI   | "detached"  |
+      | payloads[0].register1   | -10         |
+      | payloads[0].register2   | 30          |
+      | payloads[0].lvlBattery  | 0.9         |
     Then I refresh the collection "engine-kuzzle":"measures"
     Then I count 3 documents in "engine-kuzzle":"measures"
 
@@ -41,23 +41,23 @@ Feature: Attach device to engine
       | body.records.0.engineId | "engine-kuzzle"                    |
       | body.records.0.deviceId | "DummyMultiTemp-detached"               |
       | body.records.1.engineId | "engine-kuzzle"                    |
-      | body.records.1.deviceId | "DummyMultiTemp-attached_ayse_unlinked" |
+      | body.records.1.deviceId | "DummyMultiTemp-attached_ayse_unlinked_1" |
     Then The document "device-manager":"devices":"DummyMultiTemp-detached" content match:
       | engineId | "engine-kuzzle" |
-    Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked" content match:
+    Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
       | engineId | "engine-kuzzle" |
     And The document "engine-kuzzle":"devices":"DummyMultiTemp-detached" exists
-    And The document "engine-kuzzle":"devices":"DummyMultiTemp-attached_ayse_unlinked" exists
+    And The document "engine-kuzzle":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" exists
 
   Scenario: Attach multiple device to an engine using CSV
     When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
-      | body.csv | "engineId,deviceId\\nengine-kuzzle,DummyMultiTemp-detached\\nengine-kuzzle,DummyMultiTemp-attached_ayse_unlinked," |
+      | body.csv | "engineId,deviceId\\nengine-kuzzle,DummyMultiTemp-detached\\nengine-kuzzle,DummyMultiTemp-attached_ayse_unlinked_1," |
     Then The document "device-manager":"devices":"DummyMultiTemp-detached" content match:
       | engineId | "engine-kuzzle" |
-    Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked" content match:
+    Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
       | engineId | "engine-kuzzle" |
     And The document "engine-kuzzle":"devices":"DummyMultiTemp-detached" exists
-    And The document "engine-kuzzle":"devices":"DummyMultiTemp-attached_ayse_unlinked" exists
+    And The document "engine-kuzzle":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" exists
 
   Scenario: Error when attaching a device to an engine
     When I execute the action "device-manager/device":"attachEngine" with args:

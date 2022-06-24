@@ -68,7 +68,6 @@ export class AssetController extends CRUDController {
           handler: this.mRemoveMeasure.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'delete' }],
         },
-        // TOSEE : Delete a measure from asset by `assetMeasureName`
       },
     };
     /* eslint-enable sort-keys */

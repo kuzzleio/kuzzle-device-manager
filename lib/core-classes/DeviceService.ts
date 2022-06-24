@@ -101,7 +101,7 @@ export class DeviceService {
       }
     }
 
-    if (this.config.adminIndex !== engineId) {
+    if (engineId && this.config.adminIndex !== engineId) {
       if (! await this.tenantExists(engineId)) {
         if (strict) {
           throw new BadRequestError(`Engine "${engineId}" does not exists.`);

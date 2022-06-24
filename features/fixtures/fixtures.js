@@ -84,7 +84,7 @@ const measure_last_leftInnerTemp = {
 const measure_last_leftOuterTemp = {
   type: 'temperature',
   assetMeasureName: 'leftOuterTemp',
-  deviceMeasureName: 'outerTemp',
+  deviceMeasureName: 'extTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -126,7 +126,7 @@ const measure_last_rightInnerTemp = {
 const measure_last_rightOuterTemp = {
   type: 'temperature',
   assetMeasureName: 'rightOuterTemp',
-  deviceMeasureName: 'outerTemp',
+  deviceMeasureName: 'extTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -207,10 +207,10 @@ const measure_unlinked_innerTemp = {
   }
 };
 
-const measure_unlinked_outerTemp = {
+const measure_unlinked_extTemp = {
   type: 'temperature',
   assetMeasureName: null,
-  deviceMeasureName: 'outerTemp',
+  deviceMeasureName: 'extTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -276,13 +276,25 @@ const device_DummyMultiTemp_AttachedAyse_linked_2 = {
   assetId: 'container-FRIDGE-linked'
 };
 
-const device_DummyMultiTemp_AttachedAyse_unlinked = {
-  reference: 'attached_ayse_unlinked',
+const device_DummyMultiTemp_AttachedAyse_unlinked_1 = {
+  reference: 'attached_ayse_unlinked_1',
   model: 'DummyMultiTemp',
   engineId: 'engine-ayse',
   measures: [
     measure_unlinked_innerTemp,
-    measure_unlinked_outerTemp,
+    measure_unlinked_extTemp,
+    measure_unlinked_lvlBattery
+  ],
+  assetId: null
+};
+
+const device_DummyMultiTemp_AttachedAyse_unlinked_2 = {
+  reference: 'attached_ayse_unlinked_2',
+  model: 'DummyMultiTemp',
+  engineId: 'engine-ayse',
+  measures: [
+    measure_unlinked_innerTemp,
+    measure_unlinked_extTemp,
     measure_unlinked_lvlBattery
   ],
   assetId: null
@@ -320,7 +332,7 @@ const asset_Fridge_AttachedAyse_linked = {
         },
         {
           assetMeasureName: 'leftOuterTemp',
-          deviceMeasureName: 'outerTemp',
+          deviceMeasureName: 'extTemp',
 
         },
         {
@@ -339,7 +351,7 @@ const asset_Fridge_AttachedAyse_linked = {
         },
         {
           assetMeasureName: 'rightOuterTemp',
-          deviceMeasureName: 'outerTemp',
+          deviceMeasureName: 'extTemp',
 
         },
         {
@@ -351,10 +363,18 @@ const asset_Fridge_AttachedAyse_linked = {
   ],
 }
 
-const asset_Fridge_AttachedAyse_unlinked = {
+const asset_Fridge_AttachedAyse_unlinked_1 = {
   type: 'container',
   model: 'FRIDGE',
-  reference: 'unlinked',
+  reference: 'unlinked_1',
+  measures: [],
+  deviceLinks: [],
+}
+
+const asset_Fridge_AttachedAyse_unlinked_2 = {
+  type: 'container',
+  model: 'FRIDGE',
+  reference: 'unlinked_2',
   measures: [],
   deviceLinks: [],
 }
@@ -362,20 +382,25 @@ const asset_Fridge_AttachedAyse_unlinked = {
 
 // --- Exports --------------------------------------------
 
-const devices = [
-  { index: { _id: 'DummyMultiTemp-attached_ayse_linked_1' } },
+const attachedDevices = [
+  { create: { _id: 'DummyMultiTemp-attached_ayse_linked_1' } },
   device_DummyMultiTemp_AttachedAyse_linked_1,
-  { index: { _id: 'DummyMultiTemp-attached_ayse_linked_2' } },
+  { create: { _id: 'DummyMultiTemp-attached_ayse_linked_2' } },
   device_DummyMultiTemp_AttachedAyse_linked_2,
-  { index: { _id: 'DummyMultiTemp-attached_ayse_unlinked' } },
-  device_DummyMultiTemp_AttachedAyse_unlinked,
-  { index: { _id: 'DummyMultiTemp-detached' } },
-  device_DummyMultiTemp_detached,
-]
+  { create: { _id: 'DummyMultiTemp-attached_ayse_unlinked_1' } },
+  device_DummyMultiTemp_AttachedAyse_unlinked_1,
+  { create: { _id: 'DummyMultiTemp-attached_ayse_unlinked_2' } },
+  device_DummyMultiTemp_AttachedAyse_unlinked_2,
+];
 
 module.exports = {
   'device-manager': {
-    devices: devices,
+    devices: [
+      ...attachedDevices,
+      { create: { _id: 'DummyMultiTemp-detached' } },
+      device_DummyMultiTemp_detached,
+    ],
+    // devices: JSON.parse(JSON.stringify(devices)),
     payloads: [
       { index: { _id: '0' } },
       payload_0,
@@ -389,10 +414,13 @@ module.exports = {
     assets: [
       { index: { _id: 'container-FRIDGE-linked' } },
       asset_Fridge_AttachedAyse_linked,
-      { index: { _id: 'container-FRIDGE-unlinked' } },
-      asset_Fridge_AttachedAyse_unlinked,
+      { index: { _id: 'container-FRIDGE-unlinked_1' } },
+      asset_Fridge_AttachedAyse_unlinked_1,
+      { index: { _id: 'container-FRIDGE-unlinked_2' } },
+      asset_Fridge_AttachedAyse_unlinked_2,
     ],
-    devices: devices,
+    devices: attachedDevices,
+    // devices: JSON.parse(JSON.stringify(devices)),
     measures: [
       { index: { _id: '0' } },
       measure_last_leftInnerTemp,
@@ -409,7 +437,7 @@ module.exports = {
       { index: { _id: '6' } },
       measure_unlinked_innerTemp,
       { index: { _id: '7' } },
-      measure_unlinked_outerTemp,
+      measure_unlinked_extTemp,
       { index: { _id: '8' } },
       measure_unlinked_lvlBattery,
 
