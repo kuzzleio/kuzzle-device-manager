@@ -42,6 +42,7 @@ import { DeviceManagerConfiguration } from './types';
 import { AssetCategoryController } from './controllers/AssetCategoryController';
 import { MetadataController } from './controllers/MetadataController';
 import { AssetCategoryService } from './core-classes/AssetCategoryService';
+import { TreeNodeController } from '../features/fixtures/fakeclasses/TreeNodeController';
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -52,6 +53,7 @@ export class DeviceManagerPlugin extends Plugin {
   private engineController: EngineController<DeviceManagerPlugin>;
   private assetCategoryController : AssetCategoryController;
   private metadataController: MetadataController;
+  private treeNodeController: TreeNodeController;
 
   private assetService: AssetService;
   private assetCategoryService: AssetCategoryService;
@@ -224,6 +226,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
     this.assetCategoryController = new AssetCategoryController(this, this.assetCategoryService);
     this.metadataController = new MetadataController(this);
+
 
     this.api['device-manager/payload'] = this.decodersRegister.getPayloadController(this.payloadService);
     this.api['device-manager/asset'] = this.assetController.definition;
