@@ -38,21 +38,17 @@ export class Device {
   }
 
   public updateMeasures (measures: MeasureContent[]) {
-    const measuresByName: Map<string, MeasureContent> = new Map();
+    const measuresByName = new Map<string, MeasureContent>();
 
-    for (const measure of this._source.measures) {
-      measuresByName.set(measure.deviceMeasureName, measure);
+    for (const existingMeasure of this._source.measures) {
+      measuresByName.set(existingMeasure.deviceMeasureName, existingMeasure);
     }
 
     for (const measure of measures) {
       const existingMeasure = measuresByName.get(measure.deviceMeasureName);
-      if (existingMeasure) {
-        if (existingMeasure.measuredAt < measure.measuredAt) {
+
+      if (! existingMeasure || existingMeasure.measuredAt < measure.measuredAt) {
           measuresByName.set(measure.deviceMeasureName, measure);
-        }
-      }
-      else {
-        measuresByName.set(measure.deviceMeasureName, measure);
       }
     }
 

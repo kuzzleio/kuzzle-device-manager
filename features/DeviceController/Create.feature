@@ -23,7 +23,6 @@ Feature: Device provisioning
       | deviceLinks[0].measureNamesLinks[0].assetMeasureName  | "coreTemp"          |
       | deviceLinks[0].measureNamesLinks[0].deviceMeasureName | "theTemperature"    |
 
-      # TODO : Finish
   Scenario: Create by provisioning by a payload
     Given I successfully execute the action "document":"update" with args:
       | index                                    | "device-manager"         |

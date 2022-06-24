@@ -146,7 +146,6 @@ Feature: DeviceManager asset controller
       | measures[4].assetMeasureName    | "rightInnerTemp"    |
       | measures[4].values.temperature  | -21                 |
 
-
   Scenario: Get payloads from devices to multiple assetes
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1"  |
