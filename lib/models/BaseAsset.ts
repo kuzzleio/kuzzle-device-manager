@@ -71,9 +71,9 @@ export class BaseAsset {
     this._source.measures = toKeep;
 
     return {
-      removed,
       notFound: assetMeasureNames,
-    }
+      removed,
+    };
   }
 
   serialize (): JSONObject {

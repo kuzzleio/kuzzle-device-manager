@@ -28,7 +28,7 @@ export class Device {
       _source: this._source
     };
   }
-  
+
   public unlinkToAsset () {
     this._source.assetId = null;
   }
@@ -48,7 +48,7 @@ export class Device {
       const existingMeasure = measuresByName.get(measure.deviceMeasureName);
 
       if (! existingMeasure || existingMeasure.measuredAt < measure.measuredAt) {
-          measuresByName.set(measure.deviceMeasureName, measure);
+        measuresByName.set(measure.deviceMeasureName, measure);
       }
     }
 

@@ -67,8 +67,7 @@
     "space-infix-ops": 2,
     "space-unary-ops": [2, { "words": true, "nonwords": false, "overrides": { "!": true } }],
     "strict": [2, "global"],
-    "vars-on-top": 2,
-    "yoda": [2, "never"]
+    "vars-on-top": 2
   },
   "overrides": [
     {
