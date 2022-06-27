@@ -111,6 +111,7 @@ Feature: DeviceManager asset controller
       | payloads[1].deviceEUI    | "attached_ayse_linked_2"   |
       | payloads[1].register1    | -20                        |
       | payloads[1].register2    | 40                         |
+    And I refresh the collection "engine-ayse":"assets"
     Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
       | measures[0].values.battery      | 90                  |
