@@ -73,41 +73,42 @@ Feature: Payloads Controller
       | location.lat  | 42.2    |
       | location.lon  | 2.42    |
       | location.accu | 2100    |
+    And I refresh the collection "device-manager":"devices"
     Then The document "device-manager":"devices":"DummyTempPosition-12345" content match:
-      | reference                       | "12345"                   |
-      | model                           | "DummyTempPosition"       |
-      | measures[0].type                | "temperature"             |
-      | measures[0].measuredAt          | "_DATE_NOW_"              |
-      | measures[0].values.temperature  | 23.3                      |
-      | measures[0].origin.id           | "DummyTempPosition-12345" |
+      | reference                             | "12345"                   |
+      | model                                 | "DummyTempPosition"       |
+      | measures[0].type                      | "temperature"             |
+      | measures[0].measuredAt                | "_DATE_NOW_"              |
+      | measures[0].values.temperature        | 23.3                      |
+      | measures[0].origin.id                 | "DummyTempPosition-12345" |
       | measures[0].origin.deviceModel        | "DummyTempPosition"       |
-      | measures[0].origin.type         | "device"                  |
-      | measures[0].origin.assetId      | "_UNDEFINED_"             |
-      | measures[0].unit.name           | "Degree"                  |
-      | measures[0].unit.sign           | "°"                       |
-      | measures[0].unit.type           | "number"                  |
-      | measures[1].type                | "position"                |
-      | measures[1].measuredAt          | "_DATE_NOW_"              |
-      | measures[1].values.position.lat | 42.2                      |
-      | measures[1].values.position.lon | 2.42                      |
-      | measures[1].values.accuracy     | 2100                      |
-      | measures[1].origin.id           | "DummyTempPosition-12345" |
+      | measures[0].origin.type               | "device"                  |
+      | measures[0].origin.assetId            | "_UNDEFINED_"             |
+      | measures[0].unit.name                 | "Degree"                  |
+      | measures[0].unit.sign                 | "°"                       |
+      | measures[0].unit.type                 | "number"                  |
+      | measures[1].type                      | "position"                |
+      | measures[1].measuredAt                | "_DATE_NOW_"              |
+      | measures[1].values.position.lat       | 42.2                      |
+      | measures[1].values.position.lon       | 2.42                      |
+      | measures[1].values.accuracy           | 2100                      |
+      | measures[1].origin.id                 | "DummyTempPosition-12345" |
       | measures[1].origin.deviceModel        | "DummyTempPosition"       |
-      | measures[1].origin.type         | "device"                  |
-      | measures[1].unit.name           | "GPS"                     |
-      | measures[1].unit.sign           | "_NULL_"                  |
-      | measures[1].unit.type           | "geo_point"               |
-      | measures[2].type                | "battery"                 |
-      | measures[2].measuredAt          | "_DATE_NOW_"              |
-      | measures[2].values.battery      | 80                        |
-      | measures[2].origin.id           | "DummyTempPosition-12345" |
+      | measures[1].origin.type               | "device"                  |
+      | measures[1].unit.name                 | "GPS"                     |
+      | measures[1].unit.sign                 | "_NULL_"                  |
+      | measures[1].unit.type                 | "geo_point"               |
+      | measures[2].type                      | "battery"                 |
+      | measures[2].measuredAt                | "_DATE_NOW_"              |
+      | measures[2].values.battery            | 80                        |
+      | measures[2].origin.id                 | "DummyTempPosition-12345" |
       | measures[2].origin.deviceModel        | "DummyTempPosition"       |
-      | measures[2].origin.type         | "device"                  |
-      | measures[2].unit.name           | "Volt"                    |
-      | measures[2].unit.sign           | "v"                       |
-      | measures[2].unit.type           | "number"                  |
-      | engineId                        | "_UNDEFINED_"             |
-      | assetId                         | "_UNDEFINED_"             |
+      | measures[2].origin.type               | "device"                  |
+      | measures[2].unit.name                 | "Volt"                    |
+      | measures[2].unit.sign                 | "v"                       |
+      | measures[2].unit.type                 | "number"                  |
+      | engineId                              | "_UNDEFINED_"             |
+      | assetId                               | "_UNDEFINED_"             |
 
       # TOSEE : Keep test with pipes? Are they already well designed?
   # Scenario: Propagate device measure to engine index
