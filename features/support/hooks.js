@@ -73,6 +73,7 @@ Before({ timeout: 30 * 1000 }, async function () {
     truncateCollection(this.sdk, 'engine-kuzzle', 'assets'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'measures'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'devices'),
+    removeCatalogEntries(this.sdk, 'engine-kuzzle'),
 
     truncateCollection(this.sdk, 'engine-ayse', 'assets'),
     truncateCollection(this.sdk, 'engine-ayse', 'measures'),
@@ -148,6 +149,23 @@ After({ tags: '@manual-provisioning', timeout: 60 * 1000 }, async function () {
       provisioningStrategy: 'auto',
     }
   });
+});
+
+// engine hooks ================================================================
+
+After({ tags: '@reset-engines', timeout: 60 * 1000 }, async function () {
+  const world = new World({});
+
+  world.sdk = new Kuzzle(
+    new WebSocket(world.host, { port: world.port })
+  );
+
+  await world.sdk.connect();
+
+  await Promise.all([
+    resetEngine(world.sdk, 'engine-ayse'),
+    resetEngine(world.sdk, 'engine-kuzzle'),
+  ]);
 });
 
 // cleaning hooks ==============================================================
