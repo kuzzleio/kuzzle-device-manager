@@ -328,12 +328,10 @@ const asset_Fridge_AttachedAyse_linked = {
         {
           assetMeasureName: 'leftInnerTemp',
           deviceMeasureName: 'innerTemp',
-
         },
         {
           assetMeasureName: 'leftOuterTemp',
           deviceMeasureName: 'extTemp',
-
         },
         {
           assetMeasureName: 'coreBatteryLevel',
@@ -347,12 +345,10 @@ const asset_Fridge_AttachedAyse_linked = {
         {
           assetMeasureName: 'rightInnerTemp',
           deviceMeasureName: 'innerTemp',
-
         },
         {
           assetMeasureName: 'rightOuterTemp',
           deviceMeasureName: 'extTemp',
-
         },
         {
           assetMeasureName: 'coreBatteryLevel',
@@ -420,7 +416,6 @@ module.exports = {
       asset_Fridge_AttachedAyse_unlinked_2,
     ],
     devices: attachedDevices,
-    // devices: JSON.parse(JSON.stringify(devices)),
     measures: [
       { index: { _id: '0' } },
       measure_last_leftInnerTemp,
@@ -440,7 +435,6 @@ module.exports = {
       measure_unlinked_extTemp,
       { index: { _id: '8' } },
       measure_unlinked_lvlBattery,
-
     ]
   },
 };

@@ -67,6 +67,7 @@ Before({ timeout: 30 * 1000 }, async function () {
 
   await Promise.all([
     truncateCollection(this.sdk, 'device-manager', 'devices'),
+    truncateCollection(this.sdk, 'device-manager', 'payloads'),
     removeCatalogEntries(this.sdk, 'device-manager'),
 
     truncateCollection(this.sdk, 'engine-kuzzle', 'assets'),

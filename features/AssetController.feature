@@ -134,8 +134,8 @@ Feature: DeviceManager asset controller
       | payloads[1].delayRegister2  | 999999                     |
       | payloads[1].lvlBattery      | 0.91                       |
       | payloads[1].delayLvlBattery | 999999                     |
-    Then I refresh the collection "engine-ayse":"assets"
-    And The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
+    And I refresh the collection "engine-ayse":"assets"
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
       | measures[0].values.battery      | 90                  |
       | measures[1].assetMeasureName    | "leftOuterTemp"     |
@@ -149,19 +149,20 @@ Feature: DeviceManager asset controller
 
   Scenario: Get payloads from devices to multiple assetes
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1"  |
-      | assetId                                     | "container-FRIDGE-unlinked_1"             |
-      | body.metadata.index                         | "engine-ayse"         |
-      | body.measureNamesLinks[0].assetMeasureName  | "coreBatteryLevel"   |
-      | body.measureNamesLinks[0].deviceMeasureName | "lvlBattery"    |
+      | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1"   |
+      | assetId                                     | "container-FRIDGE-unlinked_1"               |
+      | body.metadata.index                         | "engine-ayse"                               |
+      | body.measureNamesLinks[0].assetMeasureName  | "coreBatteryLevel"                          |
+      | body.measureNamesLinks[0].deviceMeasureName | "lvlBattery"                                |
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI    | "attached_ayse_linked_1"   |
       | payloads[0].lvlBattery   | 0.12                       |
       | payloads[1].deviceEUI    | "attached_ayse_unlinked_1" |
       | payloads[1].lvlBattery   | 0.11                       |
+    And I refresh the collection "engine-ayse":"assets"
     Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
       | measures[0].values.battery      | 12                  |
-    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+    And The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
       | measures[0].values.battery      | 11                  |
