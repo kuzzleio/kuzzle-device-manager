@@ -110,7 +110,7 @@ Feature: Payloads Controller
       | engineId                              | "_UNDEFINED_"             |
       | assetId                               | "_UNDEFINED_"             |
 
-      # TOSEE : Keep test with pipes? Are they already well designed?
+      # TOSEE : Keep test with pipes? Are they already well redesigned?
   # Scenario: Propagate device measure to engine index
   #   When I successfully receive a "dummy-multi-temp" payload with:
   #     | payloads[0].deviceEUI    | "attached_ayse_unlinked_1" |

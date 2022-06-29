@@ -64,8 +64,8 @@ export class AssetController extends CRUDController {
           handler: this.removeMeasure.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures/:assetMeasureName', verb: 'delete' }],
         },
-        mRemoveMeasure: {
-          handler: this.mRemoveMeasure.bind(this),
+        mRemoveMeasures: {
+          handler: this.mRemoveMeasures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'delete' }],
         },
       },
@@ -73,7 +73,7 @@ export class AssetController extends CRUDController {
     /* eslint-enable sort-keys */
   }
 
-  async mRemoveMeasure (request: KuzzleRequest) {
+  async mRemoveMeasures (request: KuzzleRequest) {
     const id = request.getId();
     const strict = request.getBoolean('strict');
     const engineId = request.getString('engineId');
@@ -84,11 +84,10 @@ export class AssetController extends CRUDController {
 
   async removeMeasure (request: KuzzleRequest) {
     const id = request.getId();
-    const strict = request.getBoolean('strict');
     const engineId = request.getString('engineId');
     const assetMeasureName = request.getString('assetMeasureName');
 
-    return await this.assetService.removeMeasures(engineId, id, [assetMeasureName], { strict });
+    return await this.assetService.removeMeasures(engineId, id, [assetMeasureName], { strict: true });
   }
 
   async getMeasures (request: KuzzleRequest) {
