@@ -1,0 +1,1 @@
+{"version":3,"file":"InvertTreeNodeMapping.js","sourceRoot":"","sources":["InvertTreeNodeMapping.ts"],"names":[],"mappings":";;;AAAA,4EAAyE;AAE5D,QAAA,sBAAsB,GAAG;IACpC,OAAO,EAAE,QAAQ;IACjB,UAAU,EAAE;QAEV,QAAQ,EAAE,qCAAiB;QAC3B,IAAI,EAAE;YACJ,IAAI,EAAE,SAAS;SAChB;QACD,MAAM,EAAE;YACN,OAAO,EAAE,MAAM;YACf,UAAU,EAAE,EACX;SACF;KACF;CACF,CAAA"}

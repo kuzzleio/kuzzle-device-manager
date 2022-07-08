@@ -1,9 +1,11 @@
-import { FieldPath, RelationalController } from '../../../lib/controllers/RelationalController';
+import { RelationalController } from '../../lib/controllers/RelationalController';
 import { KuzzleRequest, Plugin } from 'kuzzle';
 
 export class TreeNodeController extends RelationalController {
   constructor (plugin: Plugin) {
-    super(plugin, 'treeNode');
+    console.log('-------------------- TreeNodeController --------------------');
+    console.log('TreeNodeController plugin.context : ' + plugin.context);
+    super(plugin, 'node');
     this.definition = {
       actions: {
         create: {
@@ -16,11 +18,11 @@ export class TreeNodeController extends RelationalController {
         },
         link: {
           handler: this.link.bind(this),
-          http: [{ path: 'device-manager/:engineId/treeNode/:_id/parent/_parenId', verb: 'put' }],
+          http: [{ path: 'device-manager/:engineId/treeNode/:_id/parent/:_parentId', verb: 'put' }],
         },
         unlink: {
           handler: this.unlink.bind(this),
-          http: [{ path: 'device-manager/:engineId/treeNode/:_id/parent/_parenId', verb: 'delete' }],
+          http: [{ path: 'device-manager/:engineId/treeNode/:_id/parent/:_parentId', verb: 'delete' }],
         },
         update: {
           handler: this.update.bind(this),
@@ -31,30 +33,31 @@ export class TreeNodeController extends RelationalController {
   }
 
   async create (request: KuzzleRequest) {
-    request.input.args.id = request.getBodyString('name');
+    request.input.args._id = request.getBodyString('name');
+    request.input.body.children = [];
+    request.input.body.parent = [];
     return super.create(request);
   }
 
   async update (request: KuzzleRequest) {
-    return super.genericUpdate(request, ['children']);
+    return super.genericUpdate(request, ['parent']);
   }
 
   async delete (request: KuzzleRequest) {
-    request.input.args.id = request.getString('name');
-    return super.genericDelete(request, ['children']);
+    //request.input.body = {};
+    return super.genericDelete(request, ['parent']);
   }
 
   async link (request: KuzzleRequest) {
-    request.input.args.id = request.getString('name');
-    const embedded = this.getFieldPath(request, 'children');
-    const container = this.getFieldPath(request, 'parent');
+    const embedded = this.getFieldPath(request, 'parent');
+    const container = this.getFieldPath(request, 'children', '_parentId');
     return super.genericLink(request, embedded, container, true);
   }
 
   async unlink (request: KuzzleRequest) {
-    const embedded = this.getFieldPath(request, 'children');
-    const container = this.getFieldPath(request, 'parent', '_parenId');
-    return super.genericLink(request, embedded, container, true);
+    const embedded = this.getFieldPath(request, 'parent');
+    const container = this.getFieldPath(request, 'children', '_parentId');
+    return super.genericUnlink(request, embedded, container, true);
   }
 
 }

@@ -1,5 +1,4 @@
 import csv from 'csvtojson';
-import { CRUDController } from 'kuzzle-plugin-commons';
 import {
   BadRequestError,
   KuzzleRequest,
@@ -10,16 +9,12 @@ import { BaseAsset } from '../models/BaseAsset';
 import { AssetService, DeviceService } from '../core-classes';
 import { AssetCategoryService } from '../core-classes/AssetCategoryService';
 import { AssetCategoryContent } from '../types/AssetCategoryContent';
+import { RelationalController } from './RelationalController';
 
-export class AssetController extends CRUDController {
+export class AssetController extends RelationalController {
   private assetService: AssetService;
   private deviceService: DeviceService;
   private assetCategoryService: AssetCategoryService;
-
-  private get sdk () {
-    return this.context.accessors.sdk;
-  }
-
 
   constructor (plugin: Plugin, assetService: AssetService, deviceService : DeviceService, assetCategoryService : AssetCategoryService) {
     super(plugin, 'assets');
@@ -110,6 +105,7 @@ export class AssetController extends CRUDController {
   }
 
   async linkCategory (request: KuzzleRequest) { //TODO : verify mandatory metadata (for later)
+
     const id = request.getId();
     const engineId = request.getString('engineId');
     const document = await this.sdk.document.get(engineId, this.collection, id);

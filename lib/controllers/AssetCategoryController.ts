@@ -59,9 +59,7 @@ export class AssetCategoryController extends RelationalController {
 
   async create (request: KuzzleRequest) {
     request.input.resource._id = request.input.body.name;
-    if (! request.input.body.children) {
-      request.input.body.children = [];
-    }
+
     if (! request.input.body.metadataValues) {
       request.input.body.metadataValues = {};
     }

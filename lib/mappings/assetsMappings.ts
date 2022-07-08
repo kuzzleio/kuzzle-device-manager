@@ -39,8 +39,9 @@ export const assetsMappings = {
       }
     },
     metadata: {
-      dynamic: 'false',
-      properties: {}
+      dynamic: 'true',
+      properties: {
+      }
     },
     model: {
       fields: {

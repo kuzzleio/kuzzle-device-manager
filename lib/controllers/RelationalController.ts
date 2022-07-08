@@ -110,10 +110,12 @@ export abstract class RelationalController extends CRUDController {
    * @param originalRequest : original received request (will be edited to add remove dead link informations.
    */
   async propagateUpdate (linkedField : string, manyToMany : boolean, documentToUpdate : KDocument<any>, originalRequest : KuzzleRequest ) {
-    const updateBody = originalRequest.getBody();
+    const updateBody = JSON.parse(JSON.stringify(originalRequest.getBody()));
     const updateId = originalRequest.getId();
     const user = originalRequest.getUser();
+
     const listContainer : FieldPath[] = documentToUpdate._source[linkedField];
+
     if (! listContainer) {
       return ;
     }
@@ -281,7 +283,7 @@ export abstract class RelationalController extends CRUDController {
     const updateMessageDest = {};
     if (manyToMany) {
       const containerDocument = await this.getDocumentContent(container);
-      document._kuzzleId = embedded.document; 
+      document._kuzzleId = embedded.document;
       updateMessageDest[container.field] = containerDocument[container.field] ? containerDocument[container.field] : [];
       updateMessageDest[container.field].push(document);
     }
@@ -312,8 +314,6 @@ export abstract class RelationalController extends CRUDController {
    * @param manyToMany : is it manyToMany relation (or one to many?)
    */
   async genericUnlink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany :boolean) {
-
-    //First we update the embedded document
     const document = await this.getDocumentContent(embedded);
     if (! document[embedded.field]) {
       global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
@@ -327,8 +327,6 @@ export abstract class RelationalController extends CRUDController {
     updateMessage[embedded.field] = document[embedded.field];
     await this.updateRequest(embedded, updateMessage, request.getUser());
 
-    //Second we update container document by removing content of embedded document
-
     const containerDocument = await this.getDocumentContent(container );
     const updateRequest = {};
     if (manyToMany) {
@@ -338,6 +336,8 @@ export abstract class RelationalController extends CRUDController {
       updateRequest[container.field] = null;
     }
     await this.updateRequest(container, updateRequest, request.getUser());
+
+
   }
 
   /**
@@ -416,8 +416,10 @@ export abstract class RelationalController extends CRUDController {
       }, {});
       request.context.user = user;
       await RelationalController.classMap.get(collection).update(request);
+
     }
     else {
+
       await this.as(user).document.update(
         index,
         collection,

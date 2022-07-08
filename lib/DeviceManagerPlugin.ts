@@ -42,7 +42,7 @@ import { DeviceManagerConfiguration } from './types';
 import { AssetCategoryController } from './controllers/AssetCategoryController';
 import { MetadataController } from './controllers/MetadataController';
 import { AssetCategoryService } from './core-classes/AssetCategoryService';
-import { TreeNodeController } from '../features/fixtures/fakeclasses/TreeNodeController';
+import { TreeNodeController } from '../features/fakeclasses/TreeNodeController';
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
