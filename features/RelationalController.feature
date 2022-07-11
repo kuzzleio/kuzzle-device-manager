@@ -57,7 +57,7 @@ Feature: RelationalController
     Then The document "test":"node":"grandFather" content match:
       | children[0].children[0].name | "newName" |
 
-  Scenario: Create three TreeNode, link them, remove the second and verify edition propagation
+  Scenario: Create three TreeNode, link them, remove the second, update the third (for lazy deleting) and verify edition propagation
     When I successfully execute the action "device-manager/treeNode":"create" with args:
       | engineId  | "test"         |
       | body.name | "grandFather2" |
@@ -80,6 +80,13 @@ Feature: RelationalController
       | _id      | "father2" |
     Then The document "test":"node":"grandFather2" content match:
       | children | [] |
+    When I successfully execute the action "device-manager/treeNode":"update" with args:
+      | engineId | "test"                      |
+      | _id      | "child2"                   |
+      | body     | {"name" : "child2newName"} |
+    Then The document "test":"node":"child2" content match:
+      | parent | {} |
+
 
   Scenario: Create two InvertTreeNode (One to Many), link and unlink them
     When I successfully execute the action "device-manager/invertTreeNode":"create" with args:
