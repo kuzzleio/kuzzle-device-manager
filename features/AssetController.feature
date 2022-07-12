@@ -78,7 +78,7 @@ Feature: DeviceManager asset controller
       | engineId  | "engine-ayse"                                                 |
       | invalids  | [ { "values": { "nothing": null }, "type": "nonValidType" } ] |
     Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
-      | measures | [ { "type": "temperature", "deviceMeasureName": null, "assetMeasureName": "leftOuterTemp", "values": { "temperature": 70 }, "origin": { "type": "asset" } } ] |
+      | measures | [ { "type": "temperature", "deviceMeasureName": null, "assetMeasureName": "leftOuterTemp", "values": { "temperature": 70 }, "origin": { "type": "user" } } ] |
     When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
       | engineId  | "engine-ayse"             |
       | _id       | "container-FRIDGE-unlinked_1" |

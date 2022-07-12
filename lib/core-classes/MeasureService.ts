@@ -347,7 +347,7 @@ export class MeasureService {
           origin: {
             assetId: null,
             id: kuid,
-            type: OriginType.ASSET,
+            type: OriginType.USER,
           },
           type: measurement.type,
           unit: this.measuresRegister.get(measurement.type).unit,
