@@ -17,7 +17,6 @@ Feature: LinkAsset
       | deviceLinks[0].measureNamesLinks[2].assetMeasureName  | "lvlBattery"                              |
       | deviceLinks[0].measureNamesLinks[2].deviceMeasureName | "lvlBattery"                              |
 
-
   Scenario: Link device to an asset with measureNamesLinks
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id                                     | "DummyMultiTemp-attached_ayse_unlinked_1" |
