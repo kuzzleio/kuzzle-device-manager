@@ -6,7 +6,7 @@ Feature: LinkAsset
       | _id                    | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | body.measureNamesLinks | [{"assetMeasureName":"coreTemp", "deviceMeasureName":"theTemperature"}] |
     Then I should receive an error matching:
-      | message | "The linkRequest provided is incorrectly formed\\nThis is probably not a Kuzzle error, but a problem with a plugin implementation." |
+      | message | "Missing argument \"assetId\"." |
 
   Scenario: Create a device with an incorrect link request (no assetId) throw an error:
     When I execute the action "device-manager/device":"linkAsset" with args:
@@ -71,8 +71,8 @@ Feature: LinkAsset
 
   Scenario: Link multiple device to multiple assets using JSON
     When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
-      | body.linkRequests[0].assetId  | "container-FRIDGE-unlinked_1"             |
-      | body.linkRequests[0].deviceLink.deviceId | "DummyMultiTemp-attached_ayse_unlinked_1" |
+      | body.linkRequests[0].assetId              | "container-FRIDGE-unlinked_1"             |
+      | body.linkRequests[0].deviceLink.deviceId  | "DummyMultiTemp-attached_ayse_unlinked_1" |
     Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
       | assetId | "container-FRIDGE-unlinked_1" |
     And The document "engine-ayse":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:

@@ -55,4 +55,5 @@ import { Measurement } from './measures/MeasureContent';
  *   ]
  * ]);
  */
-export type DecodedPayload = Map<string, Measurement[]>;
+export type DecodedPayload = Map<string,  // deviceReference
+  Measurement[]>;

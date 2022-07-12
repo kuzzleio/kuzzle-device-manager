@@ -11,7 +11,6 @@ function checkEventWithDocument (app: Backend, event: string) {
   });
 }
 
-
 export function registerTestPipes (app: Backend) {
   checkEventWithDocument(app, 'device-manager:device:provisioning:before');
   checkEventWithDocument(app, 'device-manager:device:provisioning:after');

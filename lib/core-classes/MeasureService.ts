@@ -87,9 +87,10 @@ export class MeasureService {
     // Sorting structs
     const measuresByEngine: Map<string, MeasureContent[]> = new Map();
 
-    const assetMeasuresByEngineAndId: Map<string, Map<string, {
-      asset: BaseAsset, measures: MeasureContent[],
-    }>> = new Map();
+    const assetMeasuresByEngineAndId: Map<string,
+      Map<string, {
+        asset: BaseAsset, measures: MeasureContent[],
+      }>> = new Map();
 
     const deviceMeasuresByEngineAndId: Map<string, Map<string, {
       device: Device, measures: MeasureContent[],
@@ -184,7 +185,7 @@ export class MeasureService {
           if (link) {
             const measureNameLink = link.measureNamesLinks.find(
               nameLink =>
-                nameLink.deviceMeasureName === measurement.deviceMeasureName);
+              nameLink.deviceMeasureName === measurement.deviceMeasureName);
 
             if (measureNameLink) {
               assetMeasureName = measureNameLink.assetMeasureName;

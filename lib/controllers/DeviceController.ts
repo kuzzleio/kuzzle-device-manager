@@ -228,35 +228,38 @@ export class DeviceController extends CRUDController {
 
   /**
    * Link multiple devices to multiple assets.
-    */
-    async mLinkAssets (request: KuzzleRequest) {
-      const jsonLinkRequests = request.getBodyArray('linkRequests');
-      const refresh = request.getRefresh();
+   */
+  async mLinkAssets (request: KuzzleRequest) {
+    const jsonLinkRequests = request.getBodyArray('linkRequests');
+    const refresh = request.getRefresh();
 
-      for (const jsonLinkRequest of jsonLinkRequests) {
-        if (! this.validateLinkRequest(jsonLinkRequest)) {
-          throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
-        }
+    for (const jsonLinkRequest of jsonLinkRequests) {
+      if (! this.validateLinkRequest(jsonLinkRequest)) {
+        throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
       }
-
-      const linkRequests = jsonLinkRequests as LinkRequest[];
-
-      const valids = [];
-      const invalids = [];
-
-      for (const linkRequest of linkRequests) {
-        // Cannot be done in parallel because we need to keep previous measures
-        try {
-          const result = await this.deviceService.linkAsset(linkRequest, { refresh });
-          valids.push(result);
-        }
-        catch (error) {
-          invalids.push({ error, linkRequest });
-        }
-      }
-
-      return { invalids, valids };
     }
+
+    const linkRequests = jsonLinkRequests as LinkRequest[];
+
+    const valids = [];
+    const invalids = [];
+
+    for (const linkRequest of linkRequests) {
+      // Cannot be done in parallel because we need to keep previous measures
+      try {
+        linkRequest.deviceLink.measureNamesLinks
+          = linkRequest.deviceLink.measureNamesLinks ?? [];
+
+        const result = await this.deviceService.linkAsset(linkRequest, { refresh });
+        valids.push(result);
+      }
+      catch (error) {
+        invalids.push({ error, linkRequest });
+      }
+    }
+
+    return { invalids, valids };
+  }
 
   /**
    * Unlink a device from an asset.
@@ -371,9 +374,12 @@ export class DeviceController extends CRUDController {
     if (! (_.has(toValidate, 'assetId')
       && _.has(toValidate, 'deviceLink')
       && _.has(toValidate.deviceLink, 'deviceId')
-      && _.has(toValidate.deviceLink, 'measureNamesLinks'))
-    ) {
+    )) {
       return false;
+    }
+
+    if (! (_.has(toValidate.deviceLink, 'measureNamesLink'))) {
+      return true;
     }
 
     return this.validateMeasureNamesLinks(toValidate.deviceLink.measureNamesLinks);
