@@ -91,7 +91,7 @@ export class PayloadService {
     const autoProvisionDevice
       = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
 
-    return await this.measureService.registerByDecodedPayload(
+    return this.measureService.registerByDecodedPayload(
       decoder.deviceModel, decodedPayloads, uuid, { autoProvisionDevice, refresh });
   }
 }

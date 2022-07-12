@@ -18,22 +18,6 @@ export const devicesMappings = {
         // measures mappings will be injected by the plugin
       }
     },
-    // measuresName: {
-    //   properties: {
-    //     name: {
-    //       fields: {
-    //         text: { type: 'text' }
-    //       },
-    //       type: 'keyword'
-    //     },
-    //     type: {
-    //       fields: {
-    //         text: { type: 'text' }
-    //       },
-    //       type: 'keyword'
-    //     }
-    //   }
-    // },
     metadata: {
       dynamic: 'false',
       properties: {},

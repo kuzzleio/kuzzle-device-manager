@@ -100,7 +100,7 @@ export class MeasureService {
         device: Device, measures: MeasureContent[],
       }>> = new Map();
 
-    const measurementsWithoutDevice: Map<string,  // deviceId
+    const measurementsWithoutDevice: Map<string,  // measureId
       Measurement[]> = new Map();
 
     const unaivailableTypeMeasurements: Measurement[] = [];
@@ -249,7 +249,7 @@ export class MeasureService {
         asset.updateMeasures(measures);
       }
 
-      this.sdk.document.mUpdate(
+      await this.sdk.document.mUpdate(
         engineId,
         InternalCollection.ASSETS,
         Array.from(assetMeasuresMap.values()).map(
@@ -267,7 +267,7 @@ export class MeasureService {
       }
 
       if (engineId) {
-        this.sdk.document.mUpdate(
+        await this.sdk.document.mUpdate(
           engineId,
           InternalCollection.DEVICES,
           Array.from(deviceMeasuresMap.values()).map(
@@ -277,7 +277,7 @@ export class MeasureService {
       }
     }
 
-    this.sdk.document.mUpdate(
+    await this.sdk.document.mUpdate(
       this.config.adminIndex,
       InternalCollection.DEVICES,
       devices.map(
@@ -381,7 +381,7 @@ export class MeasureService {
       validMeasures,
     });
 
-    this.sdk.document.update(
+    await this.sdk.document.update(
       engineId,
       InternalCollection.ASSETS,
       asset._id,
@@ -390,7 +390,7 @@ export class MeasureService {
 
     await this.historizeEngineMeasures(engineId, validMeasures, { refresh });
 
-    this.app.trigger(`${eventId}:after`, {
+    await this.app.trigger(`${eventId}:after`, {
       asset,
       engineId,
       invalidMeasurements,
