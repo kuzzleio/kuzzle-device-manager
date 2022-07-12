@@ -79,7 +79,7 @@ export class AssetController extends CRUDController {
     const engineId = request.getString('engineId');
     const assetMeasureNames = request.getBodyArray('assetMeasureNames');
 
-    return await this.assetService.removeMeasures(engineId, id, assetMeasureNames, { strict });
+    return this.assetService.removeMeasures(engineId, id, assetMeasureNames, { strict });
   }
 
   async removeMeasure (request: KuzzleRequest) {
@@ -87,7 +87,7 @@ export class AssetController extends CRUDController {
     const engineId = request.getString('engineId');
     const assetMeasureName = request.getString('assetMeasureName');
 
-    return await this.assetService.removeMeasures(engineId, id, [assetMeasureName], { strict: true });
+    return this.assetService.removeMeasures(engineId, id, [assetMeasureName], { strict: true });
   }
 
   async getMeasures (request: KuzzleRequest) {
@@ -196,7 +196,7 @@ export class AssetController extends CRUDController {
 
     if (Array.isArray(devicesLinks._source.deviceLinks)) {
       for (const deviceLink of devicesLinks._source.deviceLinks) {
-        // TODO : Refacto Call get the asset and search links incide for nothing
+        // TODO : Refacto to only get the asset one time
         await this.deviceService.unlinkAsset(deviceLink.deviceId, { refresh, strict });
       }
     }

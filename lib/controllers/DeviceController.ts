@@ -106,7 +106,7 @@ export class DeviceController extends CRUDController {
       reference,
     };
 
-    const linkRequest: LinkRequest = assetId
+    const linkRequest: LinkRequest = assetId.length
       ? {
         assetId,
         deviceLink: { deviceId: Device.id(model, reference), measureNamesLinks }
@@ -220,7 +220,7 @@ export class DeviceController extends CRUDController {
 
     const measureNamesLinks = jsonMeasureNamesLinks as MeasureNamesLink[];
 
-    return await this.deviceService.linkAsset({
+    return this.deviceService.linkAsset({
       assetId,
       deviceLink: { deviceId, measureNamesLinks }
     }, { refresh });
@@ -269,7 +269,7 @@ export class DeviceController extends CRUDController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
 
-    return await this.deviceService.unlinkAsset(deviceId, { refresh, strict });
+    return this.deviceService.unlinkAsset(deviceId, { refresh, strict });
   }
 
   /**

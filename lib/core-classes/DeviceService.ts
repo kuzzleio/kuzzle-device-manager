@@ -25,7 +25,6 @@ import {
 } from '../utils/';
 import { AssetService } from './AssetService';
 import { DecodersRegister } from './registers/DecodersRegister';
-import { Decoder } from './Decoder';
 
 export type DeviceBulkContent = {
   engineId?: string;
