@@ -14,17 +14,26 @@ split again
 end split
 
 if (device exist) then (yes)
-  :Create `Measure` from the `Measurement` array adding:
-  - unit
-  - origin:
-    - type: 'device'
-    - deviceModel: '<model of the device>'
-  - ...;
-  :Save to device once fully enriched;
+else (no)
+    if (provision device setting is true) then (yes)
+        :Create the unattached and unlinked device;
+    else (no)
+        stop
+    endif
 endif
 
+:Create `Measure` from the `Measurement` array adding:
+- unit
+- origin:
+  - type: 'device'
+  - deviceModel: '<model of the device>'
+  - id: '<id of the device>'
+- ...;
+
+:Save to device once fully enriched;
+
 if (device attached to engine) then (yes)
-  :Historize in the engine once fully enriched;
+    :Historize measures in the engine once fully enriched;
 endif
 
 if (device linked to an asset) then (yes)
@@ -32,11 +41,11 @@ if (device linked to an asset) then (yes)
   - origin:
     - assetId: '<id of linked asset>';
 
-  if (`deviceMeasureName` specified in the `deviceLink` of the asset) then
-    :Enrich the measure with:
-    - assetMeasureName: '<name specified in the deviceLink>';
-    :Update asset measures' with the new measure;
-  endif
+    if (`deviceMeasureName` specified in the `deviceLink` of the asset) then (yes)
+        :Enrich the measure with:
+        - assetMeasureName: '<name specified in the deviceLink>';
+        :Update asset measures' with the new measure;
+    endif
 endif
 stop
 @enduml
