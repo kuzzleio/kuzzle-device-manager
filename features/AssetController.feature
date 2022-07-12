@@ -27,7 +27,6 @@ Feature: DeviceManager asset controller
       | _id                     | "DummyMultiTemp-attached_ayse_unlinked_1"  |
       | assetId                 | "outils-PERFO-asset_02"             |
       | body.metadata.index     | "engine-ayse"         |
-      | body.measureNamesLinks  | [ { assetMeasureName: "coreBattery", deviceMeasureName: "theBattery" }, { assetMeasureName: "motorTemp", deviceMeasureName: "theTemperature" } ] |
     And I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-ayse"         |
       | _id      | "outils-PERFO-asset_02" |
@@ -51,13 +50,13 @@ Feature: DeviceManager asset controller
   Scenario: Retrieve asset measures history
     Given I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI    | "attached_ayse_linked_1" |
-      | payloads[0].register1    | 42.2                     |
+      | payloads[0].registerInner    | 42.2                     |
     And I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI    | "attached_ayse_linked_1" |
-      | payloads[0].register1    | 42.1                     |
+      | payloads[0].registerInner    | 42.1                     |
     And I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI    | "attached_ayse_linked_1" |
-      | payloads[0].register1    | 42.0                     |
+      | payloads[0].registerInner    | 42.0                     |
     And I refresh the collection "engine-ayse":"measures"
     When I successfully execute the action "device-manager/asset":"getMeasures" with args:
       | engineId | "engine-ayse"              |
@@ -105,13 +104,12 @@ Feature: DeviceManager asset controller
   Scenario: Get payloads from devices and register correctly
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI    | "attached_ayse_linked_1"   |
-      | payloads[0].register1    | -10                        |
-      | payloads[0].register2    | 30                         |
+      | payloads[0].registerInner    | -10                        |
+      | payloads[0].registerOuter    | 30                         |
       | payloads[0].lvlBattery   | 0.9                        |
       | payloads[1].deviceEUI    | "attached_ayse_linked_2"   |
-      | payloads[1].register1    | -20                        |
-      | payloads[1].register2    | 40                         |
-    And I refresh the collection "engine-ayse":"assets"
+      | payloads[1].registerInner    | -20                        |
+      | payloads[1].registerOuter    | 40                         |
     Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
       | measures[0].values.battery      | 90                  |
@@ -125,15 +123,15 @@ Feature: DeviceManager asset controller
       | measures[4].values.temperature  | -20                 |
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI       | "attached_ayse_linked_1"   |
-      | payloads[0].register1       | -11                        |
-      | payloads[0].delayRegister1  | 999999                     |
-      | payloads[0].register2       | 31                         |
+      | payloads[0].registerInner       | -11                        |
+      | payloads[0].measuredAtRegisterInner  | 100000                     |
+      | payloads[0].registerOuter       | 31                         |
       | payloads[1].deviceEUI       | "attached_ayse_linked_2"   |
-      | payloads[1].register1       | -21                        |
-      | payloads[1].register2       | 41                         |
-      | payloads[1].delayRegister2  | 999999                     |
+      | payloads[1].registerInner       | -21                        |
+      | payloads[1].registerOuter       | 41                         |
+      | payloads[1].measuredAtRegisterOuter  | 100000                     |
       | payloads[1].lvlBattery      | 0.91                       |
-      | payloads[1].delayLvlBattery | 999999                     |
+      | payloads[1].measuredAtLvlBattery | 100000                     |
     And I refresh the collection "engine-ayse":"assets"
     Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
@@ -165,4 +163,3 @@ Feature: DeviceManager asset controller
       | measures[0].values.battery      | 12                  |
     And The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
-      | measures[0].values.battery      | 11                  |

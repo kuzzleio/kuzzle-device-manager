@@ -91,14 +91,11 @@ export class DeviceController extends CRUDController {
     const metadata = request.getBodyObject('metadata', {});
     const refresh = request.getRefresh();
 
-    let assetId = null;
-    try {
-      assetId = request.getBodyString('assetId');
-    }
-    catch (error) {}
+    const assetId = request.getBodyString('assetId', '');
     const measureNamesLinks = request.getBodyArray('measureNamesLinks', []);
 
-    if (measureNamesLinks.length && ! this.validateMeasureNamesLinks(measureNamesLinks)) {
+    if ((assetId.length && (! this.validateMeasureNamesLinks(measureNamesLinks)))
+      || ((! assetId.length) && measureNamesLinks.length)) {
       throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
     }
 
@@ -109,7 +106,7 @@ export class DeviceController extends CRUDController {
       reference,
     };
 
-    const linkRequest: LinkRequest = assetId && measureNamesLinks.length
+    const linkRequest: LinkRequest = assetId
       ? {
         assetId,
         deviceLink: { deviceId: Device.id(model, reference), measureNamesLinks }
@@ -231,35 +228,35 @@ export class DeviceController extends CRUDController {
 
   /**
    * Link multiple devices to multiple assets.
-   */
-  async mLinkAssets (request: KuzzleRequest) {
-    const jsonLinkRequests = request.getBodyArray('linkRequests');
-    const refresh = request.getRefresh();
+    */
+    async mLinkAssets (request: KuzzleRequest) {
+      const jsonLinkRequests = request.getBodyArray('linkRequests');
+      const refresh = request.getRefresh();
 
-    for (const jsonLinkRequest of jsonLinkRequests) {
-      if (! this.validateLinkRequest(jsonLinkRequest)) {
-        throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
+      for (const jsonLinkRequest of jsonLinkRequests) {
+        if (! this.validateLinkRequest(jsonLinkRequest)) {
+          throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
+        }
       }
+
+      const linkRequests = jsonLinkRequests as LinkRequest[];
+
+      const valids = [];
+      const invalids = [];
+
+      for (const linkRequest of linkRequests) {
+        // Cannot be done in parallel because we need to keep previous measures
+        try {
+          const result = await this.deviceService.linkAsset(linkRequest, { refresh });
+          valids.push(result);
+        }
+        catch (error) {
+          invalids.push({ error, linkRequest });
+        }
+      }
+
+      return { invalids, valids };
     }
-
-    const linkRequests = jsonLinkRequests as LinkRequest[];
-
-    const valids = [];
-    const invalids = [];
-
-    for (const linkRequest of linkRequests) {
-      // Cannot be done in parallel because we need to keep previous measures
-      try {
-        const result = await this.deviceService.linkAsset(linkRequest, { refresh });
-        valids.push(result);
-      }
-      catch (error) {
-        invalids.push({ error, linkRequest });
-      }
-    }
-
-    return { invalids, valids };
-  }
 
   /**
    * Unlink a device from an asset.

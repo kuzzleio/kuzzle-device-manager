@@ -8,8 +8,8 @@ Feature: Attach device to engine
       | engineId | "engine-kuzzle" |
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI   | "detached"  |
-      | payloads[0].register1   | -10         |
-      | payloads[0].register2   | 30          |
+      | payloads[0].registerInner   | -10         |
+      | payloads[0].registerOuter   | 30          |
       | payloads[0].lvlBattery  | 0.9         |
     Then I refresh the collection "engine-kuzzle":"measures"
     Then I count 3 documents in "engine-kuzzle":"measures"

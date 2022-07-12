@@ -9,7 +9,7 @@ import {
 
 export class DummyMultiTempDecoder extends Decoder {
   constructor () {
-    super('DummyMultiTemp', ['innerTemp', 'extTemp', 'lvlBattery']);
+    super('DummyMultiTemp', ['innerTemp', 'outerTemp', 'lvlBattery']);
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }
@@ -34,29 +34,25 @@ export class DummyMultiTempDecoder extends Decoder {
     for (const devicePayload of payload.payloads) {
       const deviceMeasurements = [];
 
-      if (devicePayload.register1) {
+      if (devicePayload.registerInner) {
         deviceMeasurements.push({
           deviceMeasureName: 'innerTemp',
-          measuredAt: Date.now() - (devicePayload.delayRegister1
-            ? devicePayload.delayRegister1
-            : 0),
+          measuredAt: devicePayload.measuredAtRegisterInner ?? Date.now(),
           type: 'temperature',
           values: {
-            temperature: devicePayload.register1,
+            temperature: devicePayload.registerInner,
           },
         });
       }
 
-      if (devicePayload.register2) {
+      if (devicePayload.registerOuter) {
         deviceMeasurements.push(
           {
-            deviceMeasureName: 'extTemp',
-            measuredAt: Date.now() - (devicePayload.delayRegister2
-              ? devicePayload.delayRegister2
-              : 0),
+            deviceMeasureName: 'outerTemp',
+            measuredAt: devicePayload.measuredAtRegisterOuter ?? Date.now(),
             type: 'temperature',
             values: {
-              temperature: devicePayload.register2,
+              temperature: devicePayload.registerOuter,
             },
           });
       }
@@ -64,9 +60,7 @@ export class DummyMultiTempDecoder extends Decoder {
       if (devicePayload.lvlBattery) {
         deviceMeasurements.push({
           deviceMeasureName: 'lvlBattery',
-          measuredAt: Date.now() - (devicePayload.delayLvlBattery
-            ? devicePayload.delayLvlBattery
-            : 0),
+          measuredAt: devicePayload.measuredAtLvlBattery ?? Date.now(),
           type: 'battery',
           values: {
             battery: devicePayload.lvlBattery * 100,

@@ -110,11 +110,12 @@ Feature: Payloads Controller
       | engineId                              | "_UNDEFINED_"             |
       | assetId                               | "_UNDEFINED_"             |
 
+      # TODO : Design good pipes
       # TOSEE : Keep test with pipes? Are they already well redesigned?
   # Scenario: Propagate device measure to engine index
   #   When I successfully receive a "dummy-multi-temp" payload with:
   #     | payloads[0].deviceEUI    | "attached_ayse_unlinked_1" |
-  #     | payloads[0].register1    | 42.2                     |
+  #     | payloads[0].registerInner    | 42.2                     |
   #     | payloads[0].lvlBattery   | 0.4                      |
   #   Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
   #     | engineId                       | "engine-ayse"              |
@@ -141,7 +142,7 @@ Feature: Payloads Controller
       | engineId | "engine-kuzzle"            |
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI    | "detached" |
-      | payloads[0].register1    | 42.2                     |
+      | payloads[0].registerInner    | 42.2                     |
       | payloads[0].lvlBattery   | 0.4                      |
     And I refresh the collection "engine-kuzzle":"measures"
     Then When I successfully execute the action "document":"search" with args:
@@ -151,4 +152,3 @@ Feature: Payloads Controller
       | _source.type  | _source.origin.id           |
       | "temperature" | "DummyMultiTemp-detached"   |
       | "battery"     | "DummyMultiTemp-detached"   |
-

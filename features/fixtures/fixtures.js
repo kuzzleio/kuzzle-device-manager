@@ -84,7 +84,7 @@ const measure_last_leftInnerTemp = {
 const measure_last_leftOuterTemp = {
   type: 'temperature',
   assetMeasureName: 'leftOuterTemp',
-  deviceMeasureName: 'extTemp',
+  deviceMeasureName: 'outerTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -126,7 +126,7 @@ const measure_last_rightInnerTemp = {
 const measure_last_rightOuterTemp = {
   type: 'temperature',
   assetMeasureName: 'rightOuterTemp',
-  deviceMeasureName: 'extTemp',
+  deviceMeasureName: 'outerTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -207,10 +207,10 @@ const measure_unlinked_innerTemp = {
   }
 };
 
-const measure_unlinked_extTemp = {
+const measure_unlinked_outerTemp = {
   type: 'temperature',
   assetMeasureName: null,
-  deviceMeasureName: 'extTemp',
+  deviceMeasureName: 'outerTemp',
   unit: {
     name: 'Degree',
     sign: '°',
@@ -282,7 +282,7 @@ const device_DummyMultiTemp_AttachedAyse_unlinked_1 = {
   engineId: 'engine-ayse',
   measures: [
     measure_unlinked_innerTemp,
-    measure_unlinked_extTemp,
+    measure_unlinked_outerTemp,
     measure_unlinked_lvlBattery
   ],
   assetId: null
@@ -294,7 +294,7 @@ const device_DummyMultiTemp_AttachedAyse_unlinked_2 = {
   engineId: 'engine-ayse',
   measures: [
     measure_unlinked_innerTemp,
-    measure_unlinked_extTemp,
+    measure_unlinked_outerTemp,
     measure_unlinked_lvlBattery
   ],
   assetId: null
@@ -331,7 +331,7 @@ const asset_Fridge_AttachedAyse_linked = {
         },
         {
           assetMeasureName: 'leftOuterTemp',
-          deviceMeasureName: 'extTemp',
+          deviceMeasureName: 'outerTemp',
         },
         {
           assetMeasureName: 'coreBatteryLevel',
@@ -348,7 +348,7 @@ const asset_Fridge_AttachedAyse_linked = {
         },
         {
           assetMeasureName: 'rightOuterTemp',
-          deviceMeasureName: 'extTemp',
+          deviceMeasureName: 'outerTemp',
         },
         {
           assetMeasureName: 'coreBatteryLevel',
@@ -432,7 +432,7 @@ module.exports = {
       { index: { _id: '6' } },
       measure_unlinked_innerTemp,
       { index: { _id: '7' } },
-      measure_unlinked_extTemp,
+      measure_unlinked_outerTemp,
       { index: { _id: '8' } },
       measure_unlinked_lvlBattery,
     ]

@@ -4,7 +4,7 @@ Feature: Device Manager Decoders
     When When I successfully execute the action "device-manager/decoders":"list"
     Then I should receive a result matching:
       | decoders.[0] | {"deviceModel":"DummyTemp","deviceMeasures":["temperature"]}                           |
-      | decoders.[1] | {"deviceModel":"DummyMultiTemp","deviceMeasures":["innerTemp","extTemp","lvlBattery"]} |
+      | decoders.[1] | {"deviceModel":"DummyMultiTemp","deviceMeasures":["innerTemp","outerTemp","lvlBattery"]} |
       | decoders.[2] | {"deviceModel":"DummyTempPosition","deviceMeasures":["temperature","position"]}        |
 
   Scenario: Creates default roles, profiles and users
