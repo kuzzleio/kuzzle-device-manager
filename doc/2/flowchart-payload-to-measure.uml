@@ -22,7 +22,7 @@ else (no)
     endif
 endif
 
-:Create `Measure` from the `Measurement` array adding:
+:produce `Measure` from the `Measurement` array adding:
 - unit
 - origin:
   - type: 'device'
