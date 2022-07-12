@@ -1,6 +1,5 @@
 Feature: LinkAsset
 
-    # TODO : Correct please
   Scenario: Create a device with an incorrect link request (wrong measureNamesLinks) throw an error:
     When I execute the action "device-manager/device":"linkAsset" with args:
       | _id                    | "DummyMultiTemp-attached_ayse_unlinked_1" |
