@@ -110,7 +110,8 @@ Feature: Payloads Controller
       | engineId                              | "_UNDEFINED_"             |
       | assetId                               | "_UNDEFINED_"             |
 
-      # TODO : Design good pipes
+
+      # TODO : Design good pipes (and returns)
       # TOSEE : Keep test with pipes? Are they already well redesigned?
   # Scenario: Propagate device measure to engine index
   #   When I successfully receive a "dummy-multi-temp" payload with:
@@ -138,17 +139,17 @@ Feature: Payloads Controller
 
   Scenario: Historize the measures with deviceId and assetId
     Given I successfully execute the action "device-manager/asset":"create" with args:
-      | _id             | "DummyMultiTemp-detached" |
-      | engineId        | "kuzzle"                  |
+      | engineId        | "engine-kuzzle"                  |
       | body.type       | "type1"                   |
       | body.reference  | "reference1"              |
       | body.model      | "model1"                  |
     And I successfully execute the action "device-manager/device":"attachEngine" with args:
       | _id      | "DummyMultiTemp-detached"  |
       | engineId | "engine-kuzzle"            |
+    And I refresh the collection "engine-ayse":"assets"
     And I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id      | "DummyMultiTemp-detached"  |
-      | assetID  | "type1-model1-reference1"  |
+      | assetId  | "type1-model1-reference1"  |
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI     | "detached" |
       | payloads[0].registerInner | 42.2       |
