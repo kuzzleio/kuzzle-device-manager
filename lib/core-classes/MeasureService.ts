@@ -85,18 +85,23 @@ export class MeasureService {
     const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
 
     // Sorting structs
-    const measuresByEngine: Map<string, MeasureContent[]> = new Map();
+    const measuresByEngine: Map<string, // engineId
+      MeasureContent[]> = new Map();
 
-    const assetMeasuresByEngineAndId: Map<string,
-      Map<string, {
+    const assetMeasuresByEngineAndId: Map<string, // engineId
+      Map<string,                                 // collectionId
+      {
         asset: BaseAsset, measures: MeasureContent[],
       }>> = new Map();
 
-    const deviceMeasuresByEngineAndId: Map<string, Map<string, {
-      device: Device, measures: MeasureContent[],
-    }>> = new Map();
+    const deviceMeasuresByEngineAndId: Map<string,  // engineId
+      Map<string,                                   // collectionId
+      {                 
+        device: Device, measures: MeasureContent[],
+      }>> = new Map();
 
-    const measurementsWithoutDevice: Map<string, Measurement[]> = new Map();
+    const measurementsWithoutDevice: Map<string,  // deviceId
+      Measurement[]> = new Map();
 
     const unaivailableTypeMeasurements: Measurement[] = [];
 
