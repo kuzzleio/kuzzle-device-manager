@@ -30,7 +30,7 @@ endif
   - id: '<id of the device>'
 - ...;
 
-:Save to device once fully enriched;
+:Update device measures' with the new measure;
 
 if (device attached to engine) then (yes)
     :Historize measures in the engine once fully enriched;
