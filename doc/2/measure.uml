@@ -1,0 +1,42 @@
+@startuml
+start
+:payload;
+:decoder;
+split
+  :Historize payload `device-manager`;
+  detach
+split again
+  :Produce `Measurement` array in a `decodedPayload` with:
+  - type
+  - values
+  - measuredAt
+  - deviceMeasureName;
+end split
+
+if (device exist) then (yes)
+  :Create `Measure` from the `Measurement` array adding:
+  - unit
+  - origin:
+    - type: 'device'
+    - deviceModel: '<model of the device>'
+  - ...;
+  :Save to device once fully enriched;
+endif
+
+if (device attached to engine) then (yes)
+  :Historize in the engine once fully enriched;
+endif
+
+if (device linked to an asset) then (yes)
+  :Add to measure:
+  - origin:
+    - assetId: '<id of linked asset>';
+
+  if (`deviceMeasureName` specified in the `deviceLink` of the asset) then
+    :Enrich the measure with:
+    - assetMeasureName: '<name specified in the deviceLink>';
+    :Update asset measures' with the new measure;
+  endif
+endif
+stop
+@enduml
