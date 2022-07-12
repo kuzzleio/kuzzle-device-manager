@@ -1,6 +1,24 @@
 Feature: LinkAsset
 
-  Scenario: Link device to an asset
+  Scenario: Link device to an asset without measureNamesLinks
+    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id                                     | "DummyMultiTemp-attached_ayse_unlinked_1" |
+      | assetId                                 | "container-FRIDGE-unlinked_1"             |
+    Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
+      | assetId | "container-FRIDGE-unlinked_1" |
+    And The document "engine-ayse":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
+      | assetId | "container-FRIDGE-unlinked_1" |
+    And The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | deviceLinks[0].deviceId                               | "DummyMultiTemp-attached_ayse_unlinked_1" |
+      | deviceLinks[0].measureNamesLinks[0].assetMeasureName  | "innerTemp"                               |
+      | deviceLinks[0].measureNamesLinks[0].deviceMeasureName | "innerTemp"                               |
+      | deviceLinks[0].measureNamesLinks[1].assetMeasureName  | "extTemp"                                 |
+      | deviceLinks[0].measureNamesLinks[1].deviceMeasureName | "extTemp"                                 |
+      | deviceLinks[0].measureNamesLinks[2].assetMeasureName  | "lvlBattery"                              |
+      | deviceLinks[0].measureNamesLinks[2].deviceMeasureName | "lvlBattery"                              |
+
+
+  Scenario: Link device to an asset with measureNamesLinks
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id                                     | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId                                 | "container-FRIDGE-unlinked_1"             |

@@ -16,6 +16,7 @@ import {
   DeviceContent,
   DeviceManagerConfiguration,
   MeasureContent,
+  MeasureNamesLink,
 } from '../types';
 import {
   mRequest,
@@ -23,6 +24,8 @@ import {
   writeToDatabase,
 } from '../utils/';
 import { AssetService } from './AssetService';
+import { DecodersRegister } from './registers/DecodersRegister';
+import { Decoder } from './Decoder';
 
 export type DeviceBulkContent = {
   engineId?: string;
@@ -35,6 +38,7 @@ export class DeviceService {
   private context: PluginContext;
   private batch: BatchController;
   private assetService: AssetService;
+  private decodersRegister: DecodersRegister;
   static eventId = 'device-manager:device';
 
   private get sdk () {
@@ -48,11 +52,13 @@ export class DeviceService {
   constructor (
     plugin: Plugin,
     batchController: BatchController,
-    assetService: AssetService
+    assetService: AssetService,
+    decoderRegister: DecodersRegister,
   ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
     this.assetService = assetService;
+    this.decodersRegister = decoderRegister;
 
     this.batch = batchController;
   }
@@ -244,8 +250,10 @@ export class DeviceService {
   }
 
   /**
-   * Link a device to an asset. A match between `deviceMeasureName`s
-   * and `assetMeasureName` is specified.
+   * Link a device to an asset.
+   * If a match between `deviceMeasureName`s and `assetMeasureName` 
+   * isn't specified, it will be auto generated with the 
+   * `deviceMeasureNames` of the associated decoder
    *
    * @param {object} linkRequest Link request between an asset by Id and a device
    * @param linkRequest.assetId Asset id to link to
@@ -276,6 +284,18 @@ export class DeviceService {
 
     if (! asset) {
       throw new BadRequestError(`Asset "${asset._id}" does not exist.`);
+    }
+
+    if (! deviceLink.measureNamesLinks.length) {
+      deviceLink.measureNamesLinks
+        = this.decodersRegister.getByDeviceModel(device._source.model)
+        .deviceMeasureNames.map(
+          (deviceMeasureName: string): MeasureNamesLink => {
+            return {
+              deviceMeasureName,
+              assetMeasureName: deviceMeasureName,
+            }
+          });
     }
 
     device.linkToAsset({ assetId, deviceLink });
@@ -388,7 +408,6 @@ export class DeviceService {
     return { asset, device };
   }
 
-  // TOSEE : See if changements needed
   async importDevices (
     devices: JSONObject,
     { refresh, strict }: { refresh?: any, strict?: boolean }) {

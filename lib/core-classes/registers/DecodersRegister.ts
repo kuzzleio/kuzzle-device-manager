@@ -12,10 +12,15 @@ import { PayloadService } from '../PayloadService';
 
 export class DecodersRegister {
   private context: PluginContext;
-  private _decoders = new Map<string, Decoder>();
+  private _decoders = new Map<string, // DeviceModel
+    Decoder>();
 
   private get sdk () {
     return this.context.accessors.sdk;
+  }
+
+  public getByDeviceModel (deviceModel: string) {
+    return this._decoders.get(deviceModel);
   }
 
   get decoders (): Decoder[] {

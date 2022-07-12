@@ -207,7 +207,10 @@ export class DeviceManagerPlugin extends Plugin {
     });
 
     this.assetService = new AssetService(this, this.batchController);
-    this.deviceService = new DeviceService(this, this.batchController, this.assetService);
+    this.deviceService = new DeviceService(this,
+      this.batchController,
+      this.assetService,
+      this.decodersRegister);
     this.measuresService = new MeasureService(
       this,
       this.batchController,

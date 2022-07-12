@@ -215,7 +215,7 @@ export class DeviceController extends CRUDController {
     const deviceId = request.getId();
     const assetId = request.getString('assetId');
     const refresh = request.getRefresh();
-    const jsonMeasureNamesLinks = request.getBodyArray('measureNamesLinks');
+    const jsonMeasureNamesLinks = request.getBodyArray('measureNamesLinks', []);
 
     if (! this.validateMeasureNamesLinks(jsonMeasureNamesLinks)) {
       throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
@@ -383,7 +383,7 @@ export class DeviceController extends CRUDController {
   }
 
   private validateMeasureNamesLinks (toValidate: JSONObject) {
-    if (! Array.isArray(toValidate)) {
+    if (toValidate && ! Array.isArray(toValidate)) {
       return false;
     }
 
