@@ -157,7 +157,6 @@ Feature: DeviceManager asset controller
       | payloads[0].lvlBattery   | 0.12                       |
       | payloads[1].deviceEUI    | "attached_ayse_unlinked_1" |
       | payloads[1].lvlBattery   | 0.11                       |
-    And I refresh the collection "engine-ayse":"assets"
     Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
       | measures[0].values.battery      | 12                  |
