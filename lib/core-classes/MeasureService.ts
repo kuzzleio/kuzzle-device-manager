@@ -85,32 +85,37 @@ export class MeasureService {
     const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
 
     // Sorting structs
-    const measuresByEngine: Map<string, // engineId
-      MeasureContent[]> = new Map();
+    const measuresByEngine: Record<string, // engineId
+      MeasureContent[]> = {};
 
-    const assetMeasuresByEngineAndId: Map<string, // engineId
-      Map<string,                                 // collectionId
+    const assetMeasuresByEngineAndId: Record<string, // engineId
+      Record<string,                                 // assetId
       {
         asset: BaseAsset, measures: MeasureContent[],
-      }>> = new Map();
+      }>> = {};
 
-    const deviceMeasuresByEngineAndId: Map<string,  // engineId
-      Map<string,                                   // collectionId
+    const deviceMeasuresByEngineAndId: Record<string,  // engineId
+      Record<string,                                   // deviceId
       {                 
         device: Device, measures: MeasureContent[],
-      }>> = new Map();
+      }>> = {};
 
-    const measurementsWithoutDevice: Map<string,  // measureId
-      Measurement[]> = new Map();
+    const deviceMeasuresWithoutEngine: Record<string, // deviceId
+      {                 
+        device: Device, measures: MeasureContent[],
+      }> = {};
 
-    const unaivailableTypeMeasurements: Measurement[] = [];
+    const measurementsWithoutDevice: Record<string,  // measureId
+      Measurement[]> = {};
+
+    const unknownTypeMeasurements: Measurement[] = [];
 
     // By device
     for (const [reference, measurements] of decodedPayloads.entries()) {
-      const deviceId = Device.id(deviceModel, reference);
-      let device = null;
 
       // Search for device
+      const deviceId = Device.id(deviceModel, reference);
+      let device = null;
       try {
         device = await this.deviceService.getDevice(this.config, deviceId);
       }
@@ -125,7 +130,7 @@ export class MeasureService {
           });
         }
         else {
-          measurementsWithoutDevice.set(reference, measurements);
+          measurementsWithoutDevice[reference] = measurements;
           continue;
         }
       }
@@ -133,50 +138,55 @@ export class MeasureService {
       const engineId = device._source.engineId;
       const assetId = device._source.assetId;
 
-      // Search for device
-      let deviceMeasures: { device: Device, measures: MeasureContent[] } = { device, measures: [] };
-      let deviceMeasuresInEngine = deviceMeasuresByEngineAndId.get(engineId);
-      if (! deviceMeasuresInEngine) {
-        deviceMeasuresInEngine = new Map([[deviceId, deviceMeasures]]);
-        deviceMeasuresByEngineAndId.set(engineId, deviceMeasuresInEngine);
+      const deviceMeasures: { device: Device, measures: MeasureContent[] } = { device, measures: [] };
+
+      if (engineId) {
+        let deviceMeasuresInEngine = deviceMeasuresByEngineAndId[engineId];
+        if (! deviceMeasuresInEngine) {
+          deviceMeasuresInEngine = { [deviceId]: deviceMeasures };
+          deviceMeasuresByEngineAndId[engineId] = deviceMeasuresInEngine;
+        }
+      }
+      else {
+        deviceMeasuresWithoutEngine[deviceId] = deviceMeasures;
       }
 
       // Search for asset
       let assetMeasures: { asset: BaseAsset, measures: MeasureContent[] } = null;
       if (device._source.assetId) {
-        let assetMeasuresInEngine = assetMeasuresByEngineAndId.get(device._source.engineId);
+        let assetMeasuresInEngine = assetMeasuresByEngineAndId[device._source.engineId];
 
         if (! assetMeasuresInEngine) {
-          assetMeasuresInEngine = new Map();
-          assetMeasuresByEngineAndId.set(engineId, assetMeasuresInEngine);
+          assetMeasuresInEngine = { };
+          assetMeasuresByEngineAndId[engineId] = assetMeasuresInEngine;
         }
 
-        assetMeasures = assetMeasuresInEngine.get(assetId);
+        assetMeasures = assetMeasuresInEngine[assetId];
         if (! assetMeasures) {
           assetMeasures = {
             asset: await this.assetService.getAsset(engineId, assetId),
             measures: []
           };
-          assetMeasuresInEngine.set(assetId, assetMeasures);
+          assetMeasuresInEngine[assetId] = assetMeasures;
         }
       }
 
       // Search for engine
       let engineMeasures = null;
       if (engineId) {
-        engineMeasures = measuresByEngine.get(engineId);
+        engineMeasures = measuresByEngine[engineId];
 
         if (! engineMeasures) {
           // TOSEE : Check if engine exist or assert the propagation is always right
           engineMeasures = [];
-          measuresByEngine.set(engineId, engineMeasures);
+          measuresByEngine[engineId] = engineMeasures;
         }
       }
 
       for (const measurement of measurements) {
         // Get type
         if (! this.measuresRegister.has(measurement.type)) {
-          unaivailableTypeMeasurements.push(measurement);
+          unknownTypeMeasurements.push(measurement);
           continue;
         }
 
@@ -232,27 +242,29 @@ export class MeasureService {
     const response = await this.app.trigger(`${eventId}:before`, {
       assetMeasuresByEngineAndId,
       deviceMeasuresByEngineAndId,
+      deviceMeasuresWithoutEngine,
       measurementsWithoutDevice,
       measuresByEngine,
-      unaivailableTypeMeasurements,
+      unknownTypeMeasurements,
     });
 
     // Push measures
     // Engine
-    for (const [engineId, measures] of response.measuresByEngine.entries()) {
-      await this.historizeEngineMeasures(engineId, measures, { refresh });
+    for (const [engineId, measures] of Object.entries(response.measuresByEngine)) {
+      const measureArray = measures as Array<MeasureContent>;
+      await this.historizeEngineMeasures(engineId, measureArray, { refresh });
     }
 
     // Asset
-    for (const [engineId, assetMeasuresMap] of response.assetMeasuresByEngineAndId.entries()) {
-      for (const { asset, measures } of assetMeasuresMap.values()) {
+    for (const [engineId, assetMeasuresRecord] of Object.entries(response.assetMeasuresByEngineAndId)) {
+      for (const { asset, measures } of Object.values(assetMeasuresRecord)) {
         asset.updateMeasures(measures);
       }
 
       await this.sdk.document.mUpdate(
         engineId,
         InternalCollection.ASSETS,
-        Array.from(assetMeasuresMap.values()).map(
+        Object.values(assetMeasuresRecord).map(
           ({ asset }) => ({ _id: asset._id, body: asset._source })),
         { refresh }
       );
@@ -260,21 +272,24 @@ export class MeasureService {
 
     // Device
     const devices: Device[] = [];
-    for (const [engineId, deviceMeasuresMap] of response.deviceMeasuresByEngineAndId.entries()) {
-      for (const { device, measures } of deviceMeasuresMap.values()) {
+    for (const [engineId, deviceMeasuresRecord] of Object.entries(response.deviceMeasuresByEngineAndId)) {
+      for (const { device, measures } of Object.values(deviceMeasuresRecord)) {
         device.updateMeasures(measures);
         devices.push(device);
       }
 
-      if (engineId) {
-        await this.sdk.document.mUpdate(
-          engineId,
-          InternalCollection.DEVICES,
-          Array.from(deviceMeasuresMap.values()).map(
-            ({ device }) => ({ _id: device._id, body: device._source })),
-          { refresh }
-        );
-      }
+      await this.sdk.document.mUpdate(
+        engineId,
+        InternalCollection.DEVICES,
+        Object.values(deviceMeasuresRecord).map(
+          ({ device }) => ({ _id: device._id, body: device._source })),
+        { refresh }
+      );
+    }
+
+    for (const { device, measures } of Object.values(deviceMeasuresWithoutEngine)) {
+      device.updateMeasures(measures);
+      devices.push(device);
     }
 
     await this.sdk.document.mUpdate(
@@ -299,7 +314,7 @@ export class MeasureService {
       // deviceMeasuresByEngineAndId,
       // unaivailableTypeMeasurements,
       // measurementsWithoutDevice,
-    };
+    }
   }
 
   /**
