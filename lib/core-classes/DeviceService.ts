@@ -291,9 +291,9 @@ export class DeviceService {
           .deviceMeasureNames.map(
             (deviceMeasureName: string): MeasureNamesLink => {
               return {
-                deviceMeasureName,
                 assetMeasureName: deviceMeasureName,
-              }
+                deviceMeasureName,
+              };
             });
     }
 
