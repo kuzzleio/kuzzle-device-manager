@@ -89,23 +89,23 @@ export class MeasureService {
       MeasureContent[]> = {};
 
     const assetMeasuresByEngineAndId: Record<string, // engineId
-      Record<string,                                 // assetId
+      Record<string, // assetId
       {
         asset: BaseAsset, measures: MeasureContent[],
       }>> = {};
 
-    const deviceMeasuresByEngineAndId: Record<string,  // engineId
-      Record<string,                                   // deviceId
+    const deviceMeasuresByEngineAndId: Record<string, // engineId
+      Record<string, // deviceId
       {                 
         device: Device, measures: MeasureContent[],
       }>> = {};
 
     const deviceMeasuresWithoutEngine: Record<string, // deviceId
-      {                 
+      {
         device: Device, measures: MeasureContent[],
       }> = {};
 
-    const measurementsWithoutDevice: Record<string,  // measureId
+    const measurementsWithoutDevice: Record<string, // measureId
       Measurement[]> = {};
 
     const unknownTypeMeasurements: Measurement[] = [];
@@ -200,7 +200,7 @@ export class MeasureService {
           if (link) {
             const measureNameLink = link.measureNamesLinks.find(
               nameLink =>
-              nameLink.deviceMeasureName === measurement.deviceMeasureName);
+                nameLink.deviceMeasureName === measurement.deviceMeasureName);
 
             if (measureNameLink) {
               assetMeasureName = measureNameLink.assetMeasureName;
@@ -314,7 +314,7 @@ export class MeasureService {
       // deviceMeasuresByEngineAndId,
       // unaivailableTypeMeasurements,
       // measurementsWithoutDevice,
-    }
+    };
   }
 
   /**

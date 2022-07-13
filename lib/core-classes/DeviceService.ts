@@ -288,13 +288,13 @@ export class DeviceService {
     if (! deviceLink.measureNamesLinks.length) {
       deviceLink.measureNamesLinks
         = this.decodersRegister.getByDeviceModel(device._source.model)
-        .deviceMeasureNames.map(
-          (deviceMeasureName: string): MeasureNamesLink => {
-            return {
-              deviceMeasureName,
-              assetMeasureName: deviceMeasureName,
-            }
-          });
+          .deviceMeasureNames.map(
+            (deviceMeasureName: string): MeasureNamesLink => {
+              return {
+                deviceMeasureName,
+                assetMeasureName: deviceMeasureName,
+              }
+            });
     }
 
     device.linkToAsset({ assetId, deviceLink });
