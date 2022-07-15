@@ -278,8 +278,8 @@ export abstract class RelationalController extends CRUDController {
     await this.updateRequest(embedded, updateMessage, request.getUser());
 
     //Second we update child document by adding content of parent document
-    delete document[embedded.field];
-    delete document._kuzzle_info;
+    document[embedded.field] = undefined;
+    document._kuzzle_info = undefined;
     const updateMessageDest = {};
     if (manyToMany) {
       const containerDocument = await this.getDocumentContent(container);

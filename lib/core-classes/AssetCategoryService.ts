@@ -82,16 +82,25 @@ export class AssetCategoryService {
       await this.getMetadata(assetCategory._source, engineId),
       await this.getMetadataValues(assetCategory._source, engineId)
     ]);
-
     for (const metadata of metadataList) {
       if (metadata.mandatory) {
         // eslint-disable-next-line no-prototype-builtins
-        if (! (assetMetadata[metadata.name]) && ! metadataValues[metadata.name]) {
+        if (! (assetMetadata[metadata.name]) && ! this.containsValue(metadataValues, metadata.name)) {
           throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
         }
       }
     }
   }
+
+  containsValue (metadataValues : FormattedMetadata[], name : string) {
+    for (const metadata of metadataValues) {
+      if (metadata.key === name) {
+        return true;
+      }
+    } 
+    return false;
+  }
+  
   
   async formatValue (value : string) {
     let formattedValue : FormattedValue = {};

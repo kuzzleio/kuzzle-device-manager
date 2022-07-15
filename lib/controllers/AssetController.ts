@@ -176,10 +176,7 @@ export class AssetController extends RelationalController {
     let assetMetadata = request.getBodyObject('metadata', {});
 
     if (category) {
-      if (! _.isEmpty(assetMetadata)) {
-        await this.assetCategoryService.validateMetadata(assetMetadata, engineId, category);
-      }
-
+      await this.assetCategoryService.validateMetadata(assetMetadata, engineId, category);
       const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
       const values = await this.assetCategoryService.getMetadataValues(assetCategory._source, engineId);
       request.input.body.metadata = await this.assetCategoryService.formatMetadataForES(assetMetadata);
