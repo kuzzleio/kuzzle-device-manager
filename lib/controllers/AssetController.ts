@@ -11,6 +11,7 @@ import { AssetCategoryService } from '../core-classes/AssetCategoryService';
 import { AssetCategoryContent } from '../types/AssetCategoryContent';
 import { RelationalController } from './RelationalController';
 import { BaseAssetContent } from '../types';
+import _ from 'lodash';
 
 export class AssetController extends RelationalController {
   private assetService: AssetService;
@@ -172,15 +173,13 @@ export class AssetController extends RelationalController {
     const model = request.getBodyString('model');
     const reference = request.getBodyString('reference');
     const category = request.getBody().category;
-    let assetMetadata = request.input.body.metadata;
+    let assetMetadata = request.getBodyObject('metadata', {});
 
     if (category) {
-      if (assetMetadata) {
+      if (! _.isEmpty(assetMetadata)) {
         await this.assetCategoryService.validateMetadata(assetMetadata, engineId, category);
       }
-      else {
-        assetMetadata = {};
-      }
+
       const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
       const values = await this.assetCategoryService.getMetadataValues(assetCategory._source, engineId);
       request.input.body.metadata = await this.assetCategoryService.formatMetadataForES(assetMetadata);

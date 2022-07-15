@@ -28,6 +28,4 @@ export interface BaseAssetContent extends KDocumentContent {
 
   category: string,
   subCategory: string,
-
-
 }
