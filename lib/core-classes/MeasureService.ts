@@ -112,131 +112,20 @@ export class MeasureService {
 
     // By device
     for (const [reference, measurements] of decodedPayloads.entries()) {
+      await this.insertInSortingRecords(
+        measuresByEngine,
+        assetMeasuresByEngineAndId,
+        deviceMeasuresByEngineAndId,
+        deviceMeasuresWithoutEngine,
+        measurementsWithoutDevice,
+        unknownTypeMeasurements,
+        payloadUuid,
+        deviceModel,
+        reference,
+        measurements,
+        autoProvisionDevice,
+      );
 
-      // Search for device
-      const deviceId = Device.id(deviceModel, reference);
-      let device = null;
-      try {
-        device = await this.deviceService.getDevice(this.config, deviceId);
-      }
-      catch (error) {}
-
-      if (! device) {
-        if (autoProvisionDevice) {
-          // TODO : Optimize, ES request to create and then update at end
-          device = await this.deviceService.create({
-            model: deviceModel,
-            reference,
-          });
-        }
-        else {
-          measurementsWithoutDevice[reference] = measurements;
-          continue;
-        }
-      }
-
-      const engineId = device._source.engineId;
-      const assetId = device._source.assetId;
-
-      const deviceMeasures: { device: Device, measures: MeasureContent[] } = { device, measures: [] };
-
-      if (engineId) {
-        let deviceMeasuresInEngine = deviceMeasuresByEngineAndId[engineId];
-        if (! deviceMeasuresInEngine) {
-          deviceMeasuresInEngine = { [deviceId]: deviceMeasures };
-          deviceMeasuresByEngineAndId[engineId] = deviceMeasuresInEngine;
-        }
-      }
-      else {
-        deviceMeasuresWithoutEngine[deviceId] = deviceMeasures;
-      }
-
-      // Search for asset
-      let assetMeasures: { asset: BaseAsset, measures: MeasureContent[] } = null;
-      if (device._source.assetId) {
-        let assetMeasuresInEngine = assetMeasuresByEngineAndId[device._source.engineId];
-
-        if (! assetMeasuresInEngine) {
-          assetMeasuresInEngine = { };
-          assetMeasuresByEngineAndId[engineId] = assetMeasuresInEngine;
-        }
-
-        assetMeasures = assetMeasuresInEngine[assetId];
-        if (! assetMeasures) {
-          assetMeasures = {
-            asset: await this.assetService.getAsset(engineId, assetId),
-            measures: []
-          };
-          assetMeasuresInEngine[assetId] = assetMeasures;
-        }
-      }
-
-      // Search for engine
-      let engineMeasures = null;
-      if (engineId) {
-        engineMeasures = measuresByEngine[engineId];
-
-        if (! engineMeasures) {
-          // TOSEE : Check if engine exist or assert the propagation is always right
-          engineMeasures = [];
-          measuresByEngine[engineId] = engineMeasures;
-        }
-      }
-
-      for (const measurement of measurements) {
-        // Get type
-        if (! this.measuresRegister.has(measurement.type)) {
-          unknownTypeMeasurements.push(measurement);
-          continue;
-        }
-
-        // Refine measurements in measures
-        let assetMeasureName = null;
-
-        if (assetMeasures) {
-          const link = assetMeasures.asset._source.deviceLinks.find(
-            deviceLink => deviceLink.deviceId === deviceId);
-
-          if (link) {
-            const measureNameLink = link.measureNamesLinks.find(
-              nameLink =>
-                nameLink.deviceMeasureName === measurement.deviceMeasureName);
-
-            if (measureNameLink) {
-              assetMeasureName = measureNameLink.assetMeasureName;
-            }
-          }
-        }
-
-        const measureContent: MeasureContent = {
-          assetMeasureName,
-          deviceMeasureName: measurement.deviceMeasureName,
-          measuredAt: measurement.measuredAt,
-          origin: {
-            assetId,
-            deviceModel,
-            id: deviceId,
-            payloadUuid,
-            type: OriginType.DEVICE,
-          },
-          type: measurement.type,
-          unit: this.measuresRegister.get(measurement.type).unit,
-          values: measurement.values,
-        };
-
-        // Insert measures in sort structs
-        if (engineMeasures) {
-          engineMeasures.push(measureContent);
-        }
-
-        if (assetMeasureName) {
-          assetMeasures.measures.push(measureContent);
-        }
-
-        if (device) {
-          deviceMeasures.measures.push(measureContent);
-        }
-      }
     }
 
     const response = await this.app.trigger(`${eventId}:before`, {
@@ -316,6 +205,152 @@ export class MeasureService {
       // measurementsWithoutDevice,
     };
   }
+
+  private async insertInSortingRecords (
+    measuresByEngine: Record<string, MeasureContent[]>,
+    assetMeasuresByEngineAndId : Record<string, Record<string, {
+      asset: BaseAsset, measures: MeasureContent[]
+    }>>,
+    deviceMeasuresByEngineAndId: Record<string, Record<string, {                 
+      device: Device, measures: MeasureContent[],
+    }>>,
+    deviceMeasuresWithoutEngine: Record<string, {
+      device: Device, measures: MeasureContent[],
+    }>,
+    measurementsWithoutDevice: Record<string, Measurement[]>,
+    unknownTypeMeasurements: Measurement[],
+    payloadUuid: string,
+    deviceModel: string,
+    reference: string,
+    measurements: Measurement[],
+    autoProvisionDevice: boolean,
+  ) {
+    // Search for device
+    const deviceId = Device.id(deviceModel, reference);
+    let device = null;
+    try {
+      device = await this.deviceService.getDevice(this.config, deviceId);
+    }
+    catch (error) {}
+
+    if (! device) {
+      if (autoProvisionDevice) {
+        // TODO : Optimize, ES request to create and then update at end
+        device = await this.deviceService.create({
+          model: deviceModel,
+          reference,
+        });
+      }
+      else {
+        measurementsWithoutDevice[reference] = measurements;
+        return ;
+      }
+    }
+
+    const engineId = device._source.engineId;
+    const assetId = device._source.assetId;
+
+    const deviceMeasures: { device: Device, measures: MeasureContent[] } = { device, measures: [] };
+
+    if (engineId) {
+      let deviceMeasuresInEngine = deviceMeasuresByEngineAndId[engineId];
+      if (! deviceMeasuresInEngine) {
+        deviceMeasuresInEngine = { [deviceId]: deviceMeasures };
+        deviceMeasuresByEngineAndId[engineId] = deviceMeasuresInEngine;
+      }
+    }
+    else {
+      deviceMeasuresWithoutEngine[deviceId] = deviceMeasures;
+    }
+
+    // Search for asset
+    let assetMeasures: { asset: BaseAsset, measures: MeasureContent[] } = null;
+    if (device._source.assetId) {
+      let assetMeasuresInEngine = assetMeasuresByEngineAndId[device._source.engineId];
+
+      if (! assetMeasuresInEngine) {
+        assetMeasuresInEngine = { };
+        assetMeasuresByEngineAndId[engineId] = assetMeasuresInEngine;
+      }
+
+      assetMeasures = assetMeasuresInEngine[assetId];
+      if (! assetMeasures) {
+        assetMeasures = {
+          asset: await this.assetService.getAsset(engineId, assetId),
+          measures: []
+        };
+        assetMeasuresInEngine[assetId] = assetMeasures;
+      }
+    }
+
+    // Search for engine
+    let engineMeasures = null;
+    if (engineId) {
+      engineMeasures = measuresByEngine[engineId];
+
+      if (! engineMeasures) {
+        // TOSEE : Check if engine exist or assert the propagation is always right
+        engineMeasures = [];
+        measuresByEngine[engineId] = engineMeasures;
+      }
+    }
+
+    for (const measurement of measurements) {
+      // Get type
+      if (! this.measuresRegister.has(measurement.type)) {
+        unknownTypeMeasurements.push(measurement);
+        continue;
+      }
+
+      // Refine measurements in measures
+      let assetMeasureName = null;
+
+      if (assetMeasures) {
+        const link = assetMeasures.asset._source.deviceLinks.find(
+          deviceLink => deviceLink.deviceId === deviceId);
+
+        if (link) {
+          const measureNameLink = link.measureNamesLinks.find(
+            nameLink =>
+            nameLink.deviceMeasureName === measurement.deviceMeasureName);
+
+          if (measureNameLink) {
+            assetMeasureName = measureNameLink.assetMeasureName;
+          }
+        }
+      }
+
+      const measureContent: MeasureContent = {
+        assetMeasureName,
+        deviceMeasureName: measurement.deviceMeasureName,
+        measuredAt: measurement.measuredAt,
+        origin: {
+          assetId,
+          deviceModel,
+          id: deviceId,
+          payloadUuid,
+          type: OriginType.DEVICE,
+        },
+        type: measurement.type,
+        unit: this.measuresRegister.get(measurement.type).unit,
+        values: measurement.values,
+      };
+
+      // Insert measures in sort structs
+      if (engineMeasures) {
+        engineMeasures.push(measureContent);
+      }
+
+      if (assetMeasureName) {
+        assetMeasures.measures.push(measureContent);
+      }
+
+      if (device) {
+        deviceMeasures.measures.push(measureContent);
+      }
+    }
+  }
+
 
   /**
    * Register new measures from a device, updates :
