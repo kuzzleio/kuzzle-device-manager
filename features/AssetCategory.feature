@@ -10,9 +10,9 @@ Feature: AssetCategory
       | body.valueType | "integer"     |
       | body.mandatory | false         |
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
-      | engineId    | "engine-ayse" |
-      | _id         | "smallTruck"  |
-      | _metadataId | "length"      |
+      | engineId   | "engine-ayse" |
+      | _id        | "smallTruck"  |
+      | metadataId | "length"      |
     Then The document "engine-ayse":"asset-category":"smallTruck" content match:
       | name             | "smallTruck" |
       | assetMetadata[0] | "length"     |
@@ -37,12 +37,12 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
       | engineId    | "engine-ayse"  |
       | _id         | "strangeTruck" |
-      | _metadataId | "volume"       |
+      | metadataId | "volume"       |
       | body.value  | 101            |
     Then The document "engine-ayse":"asset-category":"strangeTruck" content match:
-      | name                  | "strangeTruck" |
-      | assetMetadata[0]      | "volume"       |
-      | metadataValues.volume | 101            |
+      | name                            | "strangeTruck" |
+      | assetMetadata[0]                | "volume"       |
+      | metadataValues[0].value.integer | 101            |
 
   Scenario: Link and unlink an asset and a AssetCategory
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
@@ -100,7 +100,7 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
       | engineId    | "engine-ayse" |
       | _id         | "truck"       |
-      | _metadataId | "weight"      |
+      | metadataId | "weight"      |
     When I successfully execute the action "device-manager/assetCategory":"get" with args:
       | _id      | "truck"       |
       | engineId | "engine-ayse" |
@@ -161,7 +161,7 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
       | engineId    | "engine-ayse" |
       | _id         | "truck"       |
-      | _metadataId | "surname"     |
+      | metadataId | "surname"     |
     When I execute the action "device-manager/asset":"create" with args:
       | engineId       | "engine-ayse" |
       | body.type      | "truck"       |
@@ -182,12 +182,21 @@ Feature: AssetCategory
       | body.category         | "bigTruck"    |
       | body.metadata.surname | "test"        |
     Then The document "engine-ayse":"assets":"truck-M-asset_02" content match:
+      | type                      | "truck"    |
+      | model                     | "M"        |
+      | reference                 | "asset_02" |
+      | category                  | "bigTruck" |
+      | metadata[0].key           | "surname"  |
+      | metadata[0].value.keyword | "test"     |
+    When I successfully execute the action "device-manager/asset":"get" with args:
+      | engineId | "engine-ayse" |
+      | _id      | "truck-M-asset_02" |
+    Then I should receive a result matching:
       | type             | "truck"    |
       | model            | "M"        |
       | reference        | "asset_02" |
       | category         | "bigTruck" |
       | metadata.surname | "test"     |
-
 
   Scenario: Create an assetCategory, a mandatory metadata, link them statically and create an asset with
     When I successfully execute the action "device-manager/assetCategory":"create" with args:
@@ -201,9 +210,13 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
       | engineId    | "engine-ayse"  |
       | _id         | "solarTruck"   |
-      | _metadataId | "panelSurface" |
+      | metadataId | "panelSurface" |
       | body.value  | 101            |
-    Then The document "engine-ayse":"asset-category":"solarTruck" content match:
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | engineId | "engine-ayse" |
+      | _id      | "solarTruck"  |
+    Then I debug "result"
+    Then I should receive a result matching:
       | name                   | "solarTruck" |
       | metadataValues.panelSurface | 101          |
     When I execute the action "device-manager/asset":"create" with args:
@@ -212,7 +225,10 @@ Feature: AssetCategory
       | body.model     | "M"           |
       | body.reference | "asset_03"    |
       | body.category  | "solarTruck"  |
-    Then The document "engine-ayse":"assets":"solarTruck-M-asset_03" content match:
+    When I successfully execute the action "device-manager/asset":"get" with args:
+      | engineId | "engine-ayse" |
+      | _id      | "solarTruck-M-asset_03" |
+    Then I should receive a result matching:
       | metadata.panelSurface | 101 |
 
   Scenario: link, update and unlink a metadata on a parent category, and verify edition propagation on children category
@@ -224,7 +240,7 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
       | engineId    | "engine-ayse" |
       | _id         | "truck"       |
-      | _metadataId | "height"      |
+      | metadataId | "height"      |
     When I successfully execute the action "device-manager/assetCategory":"get" with args:
       | _id      | "bigTruck"  |
       | engineId | "engine-ayse" |
@@ -244,7 +260,7 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
       | engineId       | "engine-ayse" |
       | _id | "truck" |
-      | _metadataId | "height"  |
+      | metadataId | "height"  |
     Then The document "engine-ayse":"asset-category":"truck" content match:
       | assetMetadata | [] |
     When I successfully execute the action "device-manager/assetCategory":"get" with args:

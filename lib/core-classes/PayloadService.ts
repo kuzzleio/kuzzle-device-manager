@@ -299,7 +299,6 @@ export class PayloadService {
         measure.name = measureNameMap.get(measure.type);
       }
     }
-
     if (asset._source.measures && ! _.isArray(asset._source.measures)) {
       throw new BadRequestError(`Asset "${assetId}" measures property is not an array.`);
     }
@@ -308,7 +307,7 @@ export class PayloadService {
     // Keep previous measures that were not updated
     // array are updated in place so we need to keep previous elements
 
-    for (const previousMeasure of asset._source.measures || []) {
+    for (const previousMeasure of asset._source.measures) {
       if (! measures.find(m => (m.name === previousMeasure.name ))) {
         measures.push(previousMeasure);
       }
@@ -327,7 +326,6 @@ export class PayloadService {
       assetId,
       result.asset._source,
       { retryOnConflict: 10, source: true });
-
     return new BaseAsset(assetDocument._source as any, assetDocument._id);
   }
 

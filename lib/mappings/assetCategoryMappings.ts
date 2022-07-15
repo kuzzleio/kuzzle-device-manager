@@ -4,9 +4,18 @@ export const assetCategoryMappings = {
     assetMetadata: {
       type: 'keyword',
     },
-    metadataValues: { //Hashmap mapping...
-      dynamic: 'true',
-      properties: {}
+    metadataValues: {
+      dynamic: 'strict',
+      properties: {
+        key: { type: 'keyword' },
+        value: {
+          properties: {
+            boolean: { type: 'boolean' },
+            integer: { type: 'integer' },
+            keyword: { type: 'keyword' },
+          }
+        }
+      }
     },
     name: {
       fields: {

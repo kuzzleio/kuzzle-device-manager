@@ -25,7 +25,6 @@ export class MetadataController extends RelationalController {
   }
 
   async create (request: KuzzleRequest) {
-    request.input.body.AssetCategory = [];
     request.input.args._id = request.input.body.name;
     if (! request.input.body.mandatory) {
       request.input.body.mandatory = false;

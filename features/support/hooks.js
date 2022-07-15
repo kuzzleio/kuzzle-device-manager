@@ -29,8 +29,10 @@ async function resetEngine (sdk, index) {
 async function createNodeCollection (sdk) {
   await sdk.index.delete('test').catch(() => {});
   await sdk.index.create('test');
-  await sdk.collection.create('test', 'node', { mappings: TreeNodeMappings });
-  await sdk.collection.create('test', 'invertnode', { mappings: InvertTreeNodeMappings });
+  await Promise.all([
+    sdk.collection.create('test', 'node', { mappings: TreeNodeMappings }),
+    sdk.collection.create('test', 'invertnode', { mappings: InvertTreeNodeMappings })
+  ]);
 
 }
 

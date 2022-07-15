@@ -1,5 +1,5 @@
 import { MetadataContent } from '../types/MetadataContent';
-import { AssetCategoryContent } from '../types/AssetCategoryContent';
+import { AssetCategoryContent, FormattedMetadata, FormattedValue } from '../types/AssetCategoryContent';
 import { JSONObject, Plugin, PluginContext } from 'kuzzle';
 import { DeviceManagerConfiguration } from '../types';
 
@@ -18,15 +18,15 @@ export class AssetCategoryService {
   }
 
   async getMetadataFromId (assetCategory : AssetCategoryContent, engineId :string, metadataList) {
-    if ( assetCategory.assetMetadata) {
-      for (const metadataId of assetCategory.assetMetadata) {
-        const m = await this.sdk.document.get<MetadataContent>(engineId, 'metadata', metadataId);
+    if ( assetCategory.assetMetadata && assetCategory.assetMetadata.length ) {
+      const metadataContents = await this.sdk.document.mGet<MetadataContent>(engineId, 'metadata', assetCategory.assetMetadata);
+      for (const metadataContent of metadataContents.successes) {
         metadataList.push({
-          'mandatory': m._source.mandatory,
-          'name': m._source.name,
-          'unit': m._source.unit,
-          'valueList': m._source.valueList,
-          'valueType': m._source.valueType,
+          'mandatory': metadataContent._source.mandatory,
+          'name': metadataContent._source.name,
+          'unit': metadataContent._source.unit,
+          'valueList': metadataContent._source.valueList,
+          'valueType': metadataContent._source.valueType,
         });
       }
     }
@@ -38,7 +38,7 @@ export class AssetCategoryService {
     await this.getMetadataFromId(assetCategory, engineId, metadataList);
 
     let assetCategoryTmp = assetCategory;
-    while (assetCategoryTmp.parent) {
+    while (assetCategoryTmp?.parent) {
       try {
         const parent = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', assetCategoryTmp.parent);
         await this.getMetadataFromId(parent._source, engineId, metadataList);
@@ -51,20 +51,20 @@ export class AssetCategoryService {
     return metadataList;
   }
 
-  async getMetadataValues (assetCategory : AssetCategoryContent, engineId : string) : Promise<JSONObject[]> {
+  async getMetadataValues (assetCategory : AssetCategoryContent, engineId : string) : Promise<FormattedMetadata[]> {
     let getMetadataValues;
-    if (! assetCategory.metadataValues) {
+    if (! assetCategory.metadataValues ) {
       getMetadataValues = [];
     }
     else {
       getMetadataValues = JSON.parse(JSON.stringify(assetCategory.metadataValues));
     }
     let assetCategoryTmp = assetCategory;
-    while (assetCategoryTmp.parent) {
+    while (assetCategoryTmp?.parent) {
       try {
         const parent = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', assetCategoryTmp.parent);
-        if (parent._source.assetMetadata) {
-          getMetadataValues = getMetadataValues.concat(parent._source.assetMetadata);
+        if (parent._source.metadataValues) {
+          getMetadataValues = getMetadataValues.concat(parent._source.metadataValues);
         }
         assetCategoryTmp = parent._source;
       }
@@ -78,8 +78,11 @@ export class AssetCategoryService {
 
   async validateMetadata (assetMetadata : JSONObject, engineId : string, category : string) {
     const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
-    const metadataList = await this.getMetadata(assetCategory._source, engineId);
-    const metadataValues = await this.getMetadataValues(assetCategory._source, engineId);
+    const [metadataList, metadataValues] = await Promise.all([
+      await this.getMetadata(assetCategory._source, engineId),
+      await this.getMetadataValues(assetCategory._source, engineId)
+    ]);
+
     for (const metadata of metadataList) {
       if (metadata.mandatory) {
         // eslint-disable-next-line no-prototype-builtins
@@ -88,6 +91,49 @@ export class AssetCategoryService {
         }
       }
     }
+  }
+  
+  async formatValue (value : string) {
+    let formattedValue : FormattedValue = {};
+    if (typeof value === 'number' ) {
+      formattedValue.integer = value;
+    }
+    else if (typeof value === 'boolean') {
+      formattedValue.boolean = value;
+    }
+    else {
+      formattedValue.keyword = value;
+    }
+    return formattedValue;
+  }
+
+  async formatMetadataForES (assetMetadata : JSONObject): Promise<FormattedMetadata[]> {
+    if (! assetMetadata) {
+      return [];
+    }
+    const formattedMetadata : FormattedMetadata[] = [];
+    for ( const [key, value] of Object.entries(assetMetadata)) {
+      formattedMetadata.push({ key, value: await this.formatValue(value) });
+    }
+    return formattedMetadata;
+  }
+
+  async formatMetadataForGet (assetMetadata : FormattedMetadata[]) {
+    const formattedMetadata : JSONObject = {};
+    for (const metadata of assetMetadata) {
+      formattedMetadata[metadata.key] = this.getValue(metadata.value);
+    }
+    return formattedMetadata;
+  }
+
+  getValue (value: FormattedValue) {
+    if (value.keyword) {
+      return value.keyword;
+    }
+    else if (value.integer || value.integer === 0) {
+      return value.integer;
+    } 
+    return value.boolean;
   }
   
 }

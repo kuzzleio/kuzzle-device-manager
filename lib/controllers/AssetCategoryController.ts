@@ -1,6 +1,6 @@
 import { KuzzleRequest, Plugin } from 'kuzzle';
 import { RelationalController } from './RelationalController';
-import { AssetCategoryContent, ProcessedAssetCategoryContent } from '../types/AssetCategoryContent';
+import { AssetCategoryContent, FormattedValue, ProcessedAssetCategoryContent } from '../types/AssetCategoryContent';
 import { AssetCategoryService } from '../core-classes/AssetCategoryService';
 
 
@@ -38,11 +38,11 @@ export class AssetCategoryController extends RelationalController {
         },
         linkMetadata: {
           handler: this.linkMetadata.bind(this),
-          http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_link/metadata/:_metadataId', verb: 'put' }],
+          http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_link/metadata/:metadataId', verb: 'put' }],
         },
         unlinkMetadata: {
           handler: this.unlinkMetadata.bind(this),
-          http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_unlink/metadata/:_metadataId', verb: 'delete' }],
+          http: [{ path: 'device-manager/:engineId/assetCategory/:_id/_unlink/metadata/:metadataId', verb: 'delete' }],
         },
         linkParent: {
           handler: this.linkParent.bind(this),
@@ -59,9 +59,21 @@ export class AssetCategoryController extends RelationalController {
 
   async create (request: KuzzleRequest) {
     request.input.resource._id = request.input.body.name;
+    let metadataValues = request.input.body.metadataValues;
+    let assetMetadata = request.input.body.assetMetadata;
+    if (! assetMetadata) {
+      request.input.body.assetMetadata = [];
+    }
+    if (! metadataValues) {
+      request.input.body.metadataValues = [];
+    }
+    else {
+      const metadataValuesTable = [];
+      for (const [key, value] of Object.entries(metadataValues)) {
+        metadataValuesTable.push({ key, value });
+      }
+      request.input.body.metadataValues = metadataValuesTable;
 
-    if (! request.input.body.metadataValues) {
-      request.input.body.metadataValues = {};
     }
     return super.create(request);
   }
@@ -98,11 +110,11 @@ export class AssetCategoryController extends RelationalController {
   async unlinkMetadata (request: KuzzleRequest) {
     const id = request.getId();
     const engineId = request.getString('engineId');
-    const metadataId = request.getString('_metadataId');
+    const metadataId = request.getString('metadataId');
     const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id);
     const updatedMetadata = category._source.assetMetadata.filter(ownedMetadataId => ownedMetadataId !== metadataId);
     request.input.body = {
-      'assetMetadata': updatedMetadata
+      assetMetadata: updatedMetadata
     };
     return this.update(request);
   }
@@ -110,34 +122,39 @@ export class AssetCategoryController extends RelationalController {
   async linkMetadata (request: KuzzleRequest) {
     const id = request.getId();
     const engineId = request.getString('engineId');
-    const metadataId = request.getString('_metadataId');
-    let value;
-    try {
-      value = request.input.body.value;
-    }
-    // eslint-disable-next-line no-empty
-    catch (e) {
-    }
+    const metadataId = request.getString('metadataId');
+    const value = request.input.body?.value;
+
     await this.sdk.document.get(engineId, 'metadata', metadataId); //existance verification
     const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id);
     const metadata = category._source.assetMetadata ? category._source.assetMetadata : [];
+    let metadataValues = category._source.metadataValues;
+
     if (metadata.includes(metadataId)) {
       throw global.app.errors.get('device-manager', 'relational', 'linkAlreadyExist');
     }
     metadata.push(metadataId);
     request.input.body = {
-      'assetMetadata': metadata
+      assetMetadata: metadata
     };
+    let update = false;
     if (value) {
-      if (category._source.metadataValues) {
-        category._source.metadataValues[metadataId] = value;
+      const formattedValue : FormattedValue = await this.assetCategoryService.formatValue(value);
+      if (metadataValues) {
+        for (const metadataValue of metadataValues) {
+          if (metadataValue.key === metadataId) {
+            metadataValue.value = formattedValue;
+            update = true;
+          }
+        }
       }
       else {
-        category._source.metadataValues = {
-          [metadataId]: value
-        };
+        metadataValues = [];
       }
-      request.input.body.metadataValues = category._source.metadataValues;
+      if (! update) {
+        metadataValues.push({ key: metadataId, value: formattedValue });
+      }
+      request.input.body.metadataValues = metadataValues;
     }
     return this.update(request);
   }
@@ -147,13 +164,19 @@ export class AssetCategoryController extends RelationalController {
     const engineId = request.getString('engineId');
     const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id); //TODO : split assetCategorycontent with one for bdd mapping and one for get return 
     const source = category._source;
+    const [assetMetadata, metadataValues] = await Promise.all([
+      this.assetCategoryService.getMetadata(source, engineId),
+      this.assetCategoryService.getMetadataValues(source, engineId)
+    ]
+    );
+
+    const formattedAssetMetadata = await this.assetCategoryService.formatMetadataForGet(metadataValues);
     const processedAssetCategoryContent :ProcessedAssetCategoryContent = {
       name: source.name,
       parent: source.parent,
-      assetMetadata: await this.assetCategoryService.getMetadata(source, engineId),
-      metadataValues: await this.assetCategoryService.getMetadataValues(source, engineId)
+      assetMetadata: assetMetadata,
+      metadataValues: formattedAssetMetadata
     };
     return processedAssetCategoryContent;
   }
-  
 }

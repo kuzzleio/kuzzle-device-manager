@@ -3,9 +3,6 @@ import { KuzzleRequest, Plugin } from 'kuzzle';
 
 export class InvertTreeNodeController extends RelationalController {
   constructor (plugin: Plugin) {
-    console.log('-------------------- InvertTreeNodeController --------------------');
-
-    console.log('InvertTreeNodeController plugin.context : ' + plugin.context);
     super(plugin, 'invertnode');
     this.definition = {
       actions: {

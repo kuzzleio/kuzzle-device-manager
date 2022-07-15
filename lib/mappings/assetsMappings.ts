@@ -39,8 +39,16 @@ export const assetsMappings = {
       }
     },
     metadata: {
-      dynamic: 'true',
+      dynamic: 'strict',
       properties: {
+        key: { type: 'keyword' },
+        value: {
+          properties: {
+            boolean: { type: 'boolean' },
+            integer: { type: 'integer' },
+            keyword: { type: 'keyword' },
+          }
+        }
       }
     },
     model: {

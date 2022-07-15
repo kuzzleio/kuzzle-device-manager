@@ -144,7 +144,7 @@ const truckCategory =
   {
     'name': 'truck',
     'assetMetadata': [],
-    'metadataValues': {}
+    'metadataValues': []
   };
 
 const bigTruckCategory = {

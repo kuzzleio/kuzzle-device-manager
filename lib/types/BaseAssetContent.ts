@@ -3,6 +3,7 @@ import { KDocumentContent } from 'kuzzle-sdk';
 
 import { MeasureContent } from './measures/MeasureContent';
 import { LinkedMeasureName } from './measures/MeasureDefinition';
+import { FormattedMetadata } from './AssetCategoryContent';
 
 export interface DeviceLink {
   deviceId : string,
@@ -21,7 +22,7 @@ export interface BaseAssetContent extends KDocumentContent {
 
   measures?: MeasureContent[],
 
-  metadata?: JSONObject,
+  metadata: FormattedMetadata[],
 
   deviceLinks: DeviceLink[],
 

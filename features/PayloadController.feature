@@ -162,9 +162,6 @@ Feature: Payloads Controller
       | measures[1].unit.name          | "Volt"                           |
       | measures[1].unit.sign          | "v"                              |
       | measures[1].unit.type          | "number"                         |
-      # Enriched with the event "engine:engine-ayse:asset:measures:new"
-      | metadata.enriched              | true                             |
-      | metadata.measureTypes          | ["temperature", "battery"]       |
     And I should receive a result matching:
       | device._id | "DummyTemp-attached_ayse_linked" |
       | asset._id  | "tools-MART-linked"              |

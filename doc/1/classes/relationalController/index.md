@@ -29,3 +29,6 @@ When we remove a container object, we do not have informations about where does 
 That should be ok, because fieldPath are designed for internal use in RelationalController.
 But if a custom code should exploit information in FieldPath, it must take dead link into consideration. 
 FieldPath will be removed when we try to propagate an edition : if the FieldPath is a dead link (referenced object is deleted), it will be deleted. 
+
+
+

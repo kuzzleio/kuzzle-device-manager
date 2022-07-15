@@ -3,8 +3,6 @@ import { KuzzleRequest, Plugin } from 'kuzzle';
 
 export class TreeNodeController extends RelationalController {
   constructor (plugin: Plugin) {
-    console.log('-------------------- TreeNodeController --------------------');
-    console.log('TreeNodeController plugin.context : ' + plugin.context);
     super(plugin, 'node');
     this.definition = {
       actions: {
