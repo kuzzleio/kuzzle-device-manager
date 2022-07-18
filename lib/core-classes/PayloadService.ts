@@ -3,7 +3,7 @@ import {
   PluginContext,
   Backend,
   UnauthorizedError,
-  BatchController
+  BatchController, BadRequestError
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,11 +13,12 @@ import {
   MeasureContent,
   DeviceContent,
   DeviceManagerConfiguration,
-  BaseAssetContent,
+  BaseAssetContent, LinkedMeasureName,
 } from '../types';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { MeasureService } from './MeasureService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
+import _ from 'lodash';
 
 export class PayloadService {
   private config: DeviceManagerConfiguration;

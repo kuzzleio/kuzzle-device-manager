@@ -95,7 +95,7 @@ export class AssetCategoryController extends RelationalController {
       throw global.app.errors.get('device-manager', 'assetController', 'forbiddenParent');
     }
     request.input.body = {
-      'parent': parent
+      parent
     };
     return this.update(request);
   }
@@ -174,7 +174,7 @@ export class AssetCategoryController extends RelationalController {
     const processedAssetCategoryContent :ProcessedAssetCategoryContent = {
       name: source.name,
       parent: source.parent,
-      assetMetadata: assetMetadata,
+      assetMetadata,
       metadataValues: formattedAssetMetadata
     };
     return processedAssetCategoryContent;

@@ -1,4 +1,4 @@
-import { JSONObject, KDocumentContent } from 'kuzzle';
+import { KDocumentContent } from 'kuzzle';
 
 import { MeasureContent } from './measures/MeasureContent';
 import { LinkedMeasureName } from './measures/MeasureDefinition';

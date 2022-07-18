@@ -189,7 +189,7 @@ export abstract class RelationalController extends CRUDController {
       };
       const search =
         {
-          query: query
+          query
         };
       promises.push(this.sdk.document.search(nestedField.index, nestedField.collection, search).then(
         find => {
@@ -410,9 +410,9 @@ export abstract class RelationalController extends CRUDController {
     if (RelationalController.classMap && RelationalController.classMap.has(collection)) {
       const request = new KuzzleRequest({
         _id: document,
-        body: body,
+        body,
         engineId: index,
-        index: index,
+        index,
       }, {});
       request.context.user = user;
       await RelationalController.classMap.get(collection).update(request);

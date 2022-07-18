@@ -1,5 +1,5 @@
 
-// eslint-disable-next-line no-unused-vars
+//eslint-disable-next-line
 function embedded (mapping) {
   mapping.properties._kuzzleId = {
     fields: {

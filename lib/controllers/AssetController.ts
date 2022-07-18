@@ -11,7 +11,6 @@ import { AssetCategoryService } from '../core-classes/AssetCategoryService';
 import { AssetCategoryContent } from '../types/AssetCategoryContent';
 import { RelationalController } from './RelationalController';
 import { BaseAssetContent } from '../types';
-import _ from 'lodash';
 import { MeasureService } from 'lib/core-classes/MeasureService';
 
 export class AssetController extends RelationalController {
@@ -20,12 +19,9 @@ export class AssetController extends RelationalController {
   private assetCategoryService: AssetCategoryService;
   private measureService: MeasureService;
 
-  private get sdk () {
-    return this.context.accessors.sdk;
-  }
   
   constructor (plugin: Plugin, assetService: AssetService, deviceService : DeviceService, assetCategoryService : AssetCategoryService, measureService: MeasureService
-) {
+  ) {
 
     super(plugin, 'assets');
     global.app.errors.register('device-manager', 'assetController', 'MandatoryMetadata', {
