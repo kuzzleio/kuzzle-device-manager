@@ -1,10 +1,10 @@
 import {
-    Backend,
-    BadRequestError,
-    BatchController,
-    JSONObject,
-    Plugin,
-    PluginContext
+  Backend,
+  BadRequestError,
+  BatchController,
+  JSONObject,
+  Plugin,
+  PluginContext
 } from 'kuzzle';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,16 +12,16 @@ import { v4 as uuidv4 } from 'uuid';
 import { InternalCollection } from '../InternalCollection';
 import { BaseAsset, Device } from '../models';
 import {
-    DeviceContent,
-    DeviceManagerConfiguration,
-    MeasureContent,
-    MeasureNamesLink
+  DeviceContent,
+  DeviceManagerConfiguration,
+  MeasureContent,
+  MeasureNamesLink
 } from '../types';
 import { AttachRequest, LinkRequest } from '../types/Request';
 import {
-    mRequest,
-    mResponse,
-    writeToDatabase
+  mRequest,
+  mResponse,
+  writeToDatabase
 } from '../utils/';
 import { AssetService } from './AssetService';
 import { DecodersRegister } from './registers/DecodersRegister';
@@ -289,13 +289,13 @@ export class DeviceService {
       deviceLink.measureNamesLinks
         = Object.keys(this.decodersRegister
           .getByDeviceModel(device._source.model)
-          .decoderMeasures).map(
-            (deviceMeasureName: string): MeasureNamesLink => {
-              return {
-                assetMeasureName: deviceMeasureName,
-                deviceMeasureName,
-              };
-            });
+          .decoderMeasures)
+          .map((deviceMeasureName: string): MeasureNamesLink => {
+            return {
+              assetMeasureName: deviceMeasureName,
+              deviceMeasureName,
+            };
+          });
     }
 
     device.linkToAsset({ assetId, deviceLink });

@@ -111,7 +111,7 @@ export class MeasureService {
     const unknownTypeMeasurements: Measurement[] = [];
 
     // By device
-    for (const [reference, measurements] of decodedPayloads.entries()) {
+    for (const [reference, measurements] of Object.entries(decodedPayloads)) {
       await this.insertInSortingRecords(
         measuresByEngine,
         assetMeasuresByEngineAndId,
@@ -125,7 +125,6 @@ export class MeasureService {
         measurements,
         autoProvisionDevice,
       );
-
     }
 
     const response = await this.app.trigger(`${eventId}:before`, {
@@ -312,7 +311,7 @@ export class MeasureService {
         if (link) {
           const measureNameLink = link.measureNamesLinks.find(
             nameLink =>
-            nameLink.deviceMeasureName === measurement.deviceMeasureName);
+              nameLink.deviceMeasureName === measurement.deviceMeasureName);
 
           if (measureNameLink) {
             assetMeasureName = measureNameLink.assetMeasureName;

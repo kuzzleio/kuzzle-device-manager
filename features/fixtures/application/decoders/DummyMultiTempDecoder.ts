@@ -35,7 +35,7 @@ export class DummyMultiTempDecoder extends Decoder {
   }
 
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
-    const decodedPayload: DecodedPayload = new Map();
+    const decodedPayload: DecodedPayload = {};
 
     for (const devicePayload of payload.payloads) {
       const deviceMeasurements = [];
@@ -74,8 +74,7 @@ export class DummyMultiTempDecoder extends Decoder {
         });
       }
 
-      decodedPayload.set(
-        devicePayload.deviceEUI, deviceMeasurements);
+      decodedPayload[devicePayload.deviceEUI] = deviceMeasurements;
     }
 
     return decodedPayload;

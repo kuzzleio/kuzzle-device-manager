@@ -57,6 +57,6 @@ export class DummyTempPositionDecoder extends Decoder {
       },
     };
 
-    return new Map([[payload.deviceEUI, [temperature, position, battery]]]);
+    return {[payload.deviceEUI]: [temperature, position, battery]};
   }
 }
