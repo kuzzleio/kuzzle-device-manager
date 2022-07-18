@@ -66,7 +66,7 @@ export class MeasureService {
    *
    * @param deviceModel Model of the device
    * @param decodedPayloads `decodedPayload` 
-   * @param payloadUuid Payload Uuid that generated the measurements
+   * @param payloadUuids Payload Uuids that generated the measurements
    * @param {object} options
    * @param options.provisionDevice If true and a `decodedPayload`
    * reference a nonexisting device, create this device
@@ -75,7 +75,7 @@ export class MeasureService {
   public async registerByDecodedPayload (
     deviceModel: string,
     decodedPayloads: DecodedPayload,
-    payloadUuid: string,
+    payloadUuids: Array<string>,
     { autoProvisionDevice, refresh }:
     {
       autoProvisionDevice?: boolean,
@@ -119,7 +119,7 @@ export class MeasureService {
         deviceMeasuresWithoutEngine,
         measurementsWithoutDevice,
         unknownTypeMeasurements,
-        payloadUuid,
+        payloadUuids,
         deviceModel,
         reference,
         measurements,
@@ -219,7 +219,7 @@ export class MeasureService {
     }>,
     measurementsWithoutDevice: Record<string, Measurement[]>,
     unknownTypeMeasurements: Measurement[],
-    payloadUuid: string,
+    payloadUuids: Array<string>,
     deviceModel: string,
     reference: string,
     measurements: Measurement[],
@@ -328,7 +328,7 @@ export class MeasureService {
           assetId,
           deviceModel,
           id: deviceId,
-          payloadUuid,
+          payloadUuids,
           type: OriginType.DEVICE,
         },
         type: measurement.type,

@@ -58,9 +58,9 @@ export const measuresMappings = {
         type: { type: 'keyword' },
 
         /**
-         * Payload uuid that was used to create this measure.
+         * Array of payloads uuids that were used to create this measure.
          */
-        payloadUuid: { type: 'keyword' },
+        payloadUuids: { type: 'keyword' },
 
         // E.g. "AbeewayTemp"
         deviceModel: { type: 'keyword' },

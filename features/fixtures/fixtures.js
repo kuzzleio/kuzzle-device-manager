@@ -77,7 +77,7 @@ const measure_last_leftInnerTemp = {
     id: 'DummyMultiTemp-attached_ayse_linked_1',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '0',
+    payloadUuids: ['0'],
   }
 };
 
@@ -98,7 +98,7 @@ const measure_last_leftOuterTemp = {
     id: 'DummyMultiTemp-attached_ayse_linked_1',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '0',
+    payloadUuids: ['0'],
   }
 };
 
@@ -119,7 +119,7 @@ const measure_last_rightInnerTemp = {
     id: 'DummyMultiTemp-attached_ayse_linked_2',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '2',
+    payloadUuids: ['2'],
   }
 };
 
@@ -140,7 +140,7 @@ const measure_last_rightOuterTemp = {
     id: 'DummyMultiTemp-attached_ayse_linked_2',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '2',
+    payloadUuids: ['2'],
   }
 };
 
@@ -161,7 +161,7 @@ const measure_last_coreBatteryLevel = {
     id: 'DummyMultiTemp-attached_ayse_linked_2',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '2',
+    payloadUuids: ['2'],
   }
 };
 
@@ -182,7 +182,7 @@ const measure_old_coreBatteryLevel = {
     id: 'DummyMultiTemp-attached_ayse_linked_1',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '0',
+    payloadUuids: ['0'],
   }
 };
 
@@ -203,7 +203,7 @@ const measure_unlinked_innerTemp = {
     id: 'DummyMultiTemp-attached_ayse_unlinked',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '0',
+    payloadUuids: ['0'],
   }
 };
 
@@ -224,7 +224,7 @@ const measure_unlinked_outerTemp = {
     id: 'DummyMultiTemp-attached_ayse_unlinked',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '0',
+    payloadUuids: ['0'],
   }
 };
 
@@ -245,7 +245,7 @@ const measure_unlinked_lvlBattery = {
     id: 'DummyMultiTemp-attached_ayse_unlinked',
     type: 'device',
     deviceModel: 'DummyMultiTemp',
-    payloadUuid: '0',
+    payloadUuids: ['0'],
   }
 };
 

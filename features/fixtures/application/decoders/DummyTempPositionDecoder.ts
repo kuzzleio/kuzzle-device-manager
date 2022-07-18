@@ -6,11 +6,17 @@ import {
   PositionMeasurement,
   TemperatureMeasurement,
   DecodedPayload,
+  MeasuresRegister,
 } from '../../../../index';
 
 export class DummyTempPositionDecoder extends Decoder {
-  constructor () {
-    super('DummyTempPosition', ["temperature", "position"]);
+  constructor (measuresRegister: MeasuresRegister) {
+    super('DummyTempPosition', {
+      'theTemperature': 'temperature',
+      'theBattery': 'battery',
+      'thePosition': 'position',
+    },
+    measuresRegister);
   }
 
   async validate (payload: JSONObject, request: KuzzleRequest) {

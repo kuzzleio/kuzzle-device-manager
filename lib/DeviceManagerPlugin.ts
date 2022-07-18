@@ -154,6 +154,12 @@ export class DeviceManagerPlugin extends Plugin {
       batchInterval: 10
     };
     /* eslint-enable sort-keys */
+
+    this.measures.register('temperature', temperatureMeasure);
+    this.measures.register('position', positionMeasure);
+    this.measures.register('movement', movementMeasure);
+    this.measures.register('humidity', humidityMeasure);
+    this.measures.register('battery', batteryMeasure);
   }
 
   /**
@@ -183,6 +189,7 @@ export class DeviceManagerPlugin extends Plugin {
         provisioningStrategy: { type: 'keyword' },
       }
     });
+
     this.adminConfigManager.register('engine', {
       properties: {
         group: { type: 'keyword' },
@@ -195,12 +202,6 @@ export class DeviceManagerPlugin extends Plugin {
       mappings: this.config.engineCollections.config.mappings,
       settings: this.config.engineCollections.config.settings,
     });
-
-    this.measures.register('temperature', temperatureMeasure);
-    this.measures.register('position', positionMeasure);
-    this.measures.register('movement', movementMeasure);
-    this.measures.register('humidity', humidityMeasure);
-    this.measures.register('battery', batteryMeasure);
 
     this.batchController = new BatchController(this.sdk as any, {
       interval: this.config.batchInterval

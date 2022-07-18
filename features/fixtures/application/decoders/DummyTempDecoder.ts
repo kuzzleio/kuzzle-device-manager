@@ -5,11 +5,16 @@ import {
   DecodedPayload,
   TemperatureMeasurement,
   BatteryMeasurement,
+  MeasuresRegister,
 } from '../../../../index';
 
 export class DummyTempDecoder extends Decoder {
-  constructor () {
-    super('DummyTemp', ['temperature']);
+  constructor (measuresRegister: MeasuresRegister) {
+    super('DummyTemp', {
+      'theTemperature': 'temperature',
+      'theBatteryLevel': 'battery',
+    },
+    measuresRegister);
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }

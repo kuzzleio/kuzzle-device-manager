@@ -2,12 +2,15 @@ import {
   HttpRoute,
   JSONObject,
   KuzzleRequest,
+  PluginImplementationError,
   PreconditionError,
 } from 'kuzzle';
 import _ from 'lodash';
 
 import { DecodedPayload } from '../types/DecodedPayload';
 import { DecoderContent } from '../types';
+import { MeasuresRegister } from './registers/MeasuresRegister';
+
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export type DecoderMeasures = Record<string, // deviceMeasureName
@@ -56,10 +59,10 @@ export abstract class Decoder {
    * Define custom HTTP routes
    *
    * @param http HttpRoute array
-    */
-    set http (http: HttpRoute[]) {
-      this._http = http;
-    }
+   */
+  set http (http: HttpRoute[]) {
+    this._http = http;
+  }
 
   get http (): HttpRoute[] {
     if (! this._http) {
@@ -75,11 +78,22 @@ export abstract class Decoder {
    *
    * @example
    * super('AbeewayGPS', ['position']);
-  */
-    constructor (deviceModel: string, decoderMeasures: DecoderMeasures) {
-      this.deviceModel = deviceModel;
-      this.decoderMeasures = decoderMeasures;
+   */
+  constructor (
+    deviceModel: string,
+    decoderMeasures: DecoderMeasures,
+    measuresRegister: MeasuresRegister,
+  ) {
+    this.deviceModel = deviceModel;
+
+    for (const [measureName, measureType] of Object.entries(decoderMeasures)) {
+      if (! measuresRegister.has(measureType)) {
+        throw new PluginImplementationError(`Attempted creation of the decoder for the devices of model"${deviceModel}" with unknown measure type "${measureType}" for the measure named "${measureName}".`);
+      }
     }
+
+    this.decoderMeasures = decoderMeasures;
+  }
 
   /**
    * Validate the payload format before processing.
@@ -93,11 +107,11 @@ export abstract class Decoder {
    * @param request Original request
    *
    * @return A boolean indicating if the payload is valid
-    */
-    // eslint-disable-next-line no-unused-vars
-    async validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
-      return true;
-    }
+   */
+  // eslint-disable-next-line no-unused-vars
+  async validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
+    return true;
+  }
 
   /**
    * Decode the payload:
@@ -108,9 +122,9 @@ export abstract class Decoder {
    * @param request Original request
    *
    * @returns Map of `Measurements` by device reference.
-    */
-    // eslint-disable-next-line no-unused-vars
-    abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>;
+   */
+  // eslint-disable-next-line no-unused-vars
+  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>;
 
   /**
    * Checks if the provided properties are present in the payload
@@ -119,18 +133,18 @@ export abstract class Decoder {
    * @param paths Paths of properties (lodash style)
    *
    * @throws
-    */
-    ensureProperties (payload: JSONObject, paths: string[]): void | never {
-      for (const path of paths) {
-        if (! _.has(payload, path)) {
-          throw new PreconditionError(`Missing property "${path}" in payload`);
-        }
+   */
+  ensureProperties (payload: JSONObject, paths: string[]): void | never {
+    for (const path of paths) {
+      if (! _.has(payload, path)) {
+        throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }
+  }
 
   serialize (): DecoderContent {
     return {
-      deviceMeasures: this.decoderMeasures,
+      decoderMeasures: this.decoderMeasures,
       deviceModel: this.deviceModel,
     };
   }

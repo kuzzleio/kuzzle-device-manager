@@ -64,7 +64,7 @@ export interface MeasureContent extends KDocumentContent, AssetMeasurement {
     /**
      * Payload uuid that was used to create this measure.
      */
-    payloadUuid?: string;
+    payloadUuids?: Array<string>;
 
     /**
      * E.g. "AbeewayTemp".

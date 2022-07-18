@@ -31,7 +31,7 @@ export class DecodersRegister {
     this.context = context;
   }
 
-  async list (): Promise<DecoderContent[]> {
+  list (): DecoderContent[] {
     const decoders = this.decoders.map(decoder => decoder.serialize());
 
     return decoders;
