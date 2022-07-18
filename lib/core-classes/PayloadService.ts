@@ -1,13 +1,11 @@
-import _ from 'lodash';
 import {
   KuzzleRequest,
   PluginContext,
-  BadRequestError,
   Backend,
   UnauthorizedError,
+  BatchController
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
-import { BatchController } from 'kuzzle-sdk';
 
 import { Decoder } from './Decoder';
 import { Device, BaseAsset } from '../models';
@@ -16,16 +14,17 @@ import {
   DeviceContent,
   DeviceManagerConfiguration,
   BaseAssetContent,
-  LinkedMeasureName,
 } from '../types';
-import { MeasuresRegister } from './registers/MeasuresRegister';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import { MeasureService } from './MeasureService';
+import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class PayloadService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
-  private measuresRegister: MeasuresRegister;
   private batch: BatchController;
+  private measuresRegister: MeasuresRegister;
+  private measureService: MeasureService;
 
   private get sdk () {
     return this.context.accessors.sdk;
@@ -35,14 +34,18 @@ export class PayloadService {
     return global.app;
   }
 
-  constructor (plugin: DeviceManagerPlugin, measuresRegister: MeasuresRegister) {
+  constructor (
+    plugin: DeviceManagerPlugin,
+    batchController: BatchController,
+    measuresRegister: MeasuresRegister,
+    measureService: MeasureService
+  ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+    this.measureService = measureService;
     this.measuresRegister = measuresRegister;
 
-    this.batch = new BatchController(this.sdk as any, {
-      interval: plugin.config.batchInterval
-    });
+    this.batch = batchController;
   }
 
   async process (request: KuzzleRequest, decoder: Decoder, { refresh = undefined } = {}) {
@@ -80,7 +83,6 @@ export class PayloadService {
     const newMeasures: MeasureContent[] = [];
 
     const deviceId = Device.id(decoder.deviceModel, decodedPayload.reference);
-
     for (const [type, measure] of Object.entries(decodedPayload.measures)) {
       newMeasures.push({
         measuredAt: measure.measuredAt,
@@ -98,15 +100,9 @@ export class PayloadService {
     }
 
     try {
-      const device = await this.getDevice(deviceId);
-
-      if (device._source.assetId) {
-        for (const measure of newMeasures) {
-          measure.origin.assetId = device._source.assetId;
-        }
-      }
-
-      return await this.update(device, newMeasures, { refresh });
+      return await this.measureService.registerByDevice(deviceId, newMeasures, {
+        refresh
+      });
     }
     catch (error) {
       if (error.id === 'services.storage.not_found') {
@@ -140,10 +136,10 @@ export class PayloadService {
 
     const deviceId = Device.id(model, reference);
     const deviceContent: DeviceContent = {
-      measures: measures,
+      measures,
       measuresName: [],
-      model: model,
-      reference: reference,
+      model,
+      reference,
     };
 
     return this.register(deviceId, deviceContent, { refresh });
@@ -328,6 +324,7 @@ export class PayloadService {
       { retryOnConflict: 10, source: true });
     return new BaseAsset(assetDocument._source as any, assetDocument._id);
   }
+
 
   private async getAsset (engineId: string, assetId: string) {
     const document = await this.batch.get<BaseAssetContent>(engineId, 'assets', assetId);

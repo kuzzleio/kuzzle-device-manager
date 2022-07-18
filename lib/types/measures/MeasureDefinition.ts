@@ -11,7 +11,7 @@ import { JSONObject } from 'kuzzle';
    }
  *
  */
-export interface MeasurementUnit {
+export interface MeasureUnit {
   name: string;
 
   sign: string;
@@ -36,7 +36,7 @@ export interface MeasureDefinition {
   /**
    * Unit definition
    */
-  unit: MeasurementUnit;
+  unit: MeasureUnit;
 
   /**
    * Mappings for the measurement values in order to index the fields

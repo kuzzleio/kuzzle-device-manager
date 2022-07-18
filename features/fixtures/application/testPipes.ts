@@ -44,3 +44,4 @@ export function registerTestPipes (app: Backend) {
       return { device, measures };
     });
 }
+

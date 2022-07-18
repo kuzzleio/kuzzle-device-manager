@@ -1,4 +1,4 @@
-Feature: Device Manager asset controller
+Feature: DeviceManager asset controller
 
   Scenario: Create, update and delete an asset
     When I successfully execute the action "device-manager/asset":"create" with args:
@@ -24,9 +24,9 @@ Feature: Device Manager asset controller
       | body.model     | "PERFO"         |
       | body.reference | "asset_02"      |
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
-        | _id                            | "DummyTemp-attached_ayse_unlinked" |
-        | assetId                        | "outils-PERFO-asset_02"             |
-        | body.metadata.index  | "engine-ayse"         |
+      | _id                            | "DummyTemp-attached_ayse_unlinked" |
+      | assetId                        | "outils-PERFO-asset_02"             |
+      | body.metadata.index  | "engine-ayse"         |
     When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-ayse"         |
       | _id      | "outils-PERFO-asset_02" |
@@ -60,12 +60,12 @@ Feature: Device Manager asset controller
       | register55   | 11.3                   |
       | batteryLevel | 0.4                    |
     Given I refresh the collection "engine-ayse":"measures"
-    When I successfully execute the action "device-manager/asset":"measures" with args:
+    When I successfully execute the action "device-manager/asset":"getMeasures" with args:
       | engineId | "engine-ayse"       |
       | _id      | "tools-MART-linked" |
       | size     | 5                   |
-    # there is 6 measures with the 3 from fixtures
     Then I should receive a "measures" array of objects matching:
+    # there is 6 measures with the 3 from fixtures
       | _source.origin.assetId | _source.origin.id                |
       | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
       | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
@@ -73,3 +73,18 @@ Feature: Device Manager asset controller
       | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
       | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
 
+
+  Scenario: Add a measure
+    When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
+      | engineId | "engine-ayse"       |
+      | _id      | "tools-MART-linked" |
+      | body     | { "measures": [ { "values": { "temperature": 70 }, "type": "temperature" }, { "values": { "nothing": null }, "type": "nonValidType" } ] } |
+    Then I should receive a result matching:
+      | asset           | { "_source": { "measures": [ { "values": { "temperature": 70 } } ] } }  |
+      | engineId        | "engine-ayse"                                                           |
+      | errors          | [ { "values": { "nothing": null }, "type": "nonValidType" } ]           |
+    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+      | measures[0].type                | "temperature"           |
+      | measures[0].values.temperature  | 70                      |
+      | measures[0].origin.assetId      | "tools-MART-linked"     |
+      | measures[0].origin.type         | "asset"                 |

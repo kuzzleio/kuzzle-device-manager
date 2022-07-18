@@ -12,13 +12,21 @@ import { AssetCategoryContent } from '../types/AssetCategoryContent';
 import { RelationalController } from './RelationalController';
 import { BaseAssetContent } from '../types';
 import _ from 'lodash';
+import { MeasureService } from 'lib/core-classes/MeasureService';
 
 export class AssetController extends RelationalController {
   private assetService: AssetService;
   private deviceService: DeviceService;
   private assetCategoryService: AssetCategoryService;
+  private measureService: MeasureService;
 
-  constructor (plugin: Plugin, assetService: AssetService, deviceService : DeviceService, assetCategoryService : AssetCategoryService) {
+  private get sdk () {
+    return this.context.accessors.sdk;
+  }
+  
+  constructor (plugin: Plugin, assetService: AssetService, deviceService : DeviceService, assetCategoryService : AssetCategoryService, measureService: MeasureService
+) {
+
     super(plugin, 'assets');
     global.app.errors.register('device-manager', 'assetController', 'MandatoryMetadata', {
       class: 'BadRequestError',
@@ -29,6 +37,8 @@ export class AssetController extends RelationalController {
     this.assetCategoryService = assetCategoryService;
     this.assetService = assetService;
     this.deviceService = deviceService;
+    this.measureService = measureService;
+
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
@@ -59,8 +69,8 @@ export class AssetController extends RelationalController {
           handler: this.update.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id', verb: 'put' }],
         },
-        measures: {
-          handler: this.measures.bind(this),
+        getMeasures: {
+          handler: this.getMeasures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'get' }],
         },
         linkCategory: {
@@ -71,12 +81,16 @@ export class AssetController extends RelationalController {
           handler: this.unlinkCategory.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/_unlink/category/:categoryId', verb: 'delete' }],
         },
+        pushMeasures: {
+          handler: this.pushMeasures.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'post' }],
+        }
       },
     };
     /* eslint-enable sort-keys */
   }
 
-  async measures (request: KuzzleRequest) {
+  async getMeasures (request: KuzzleRequest) {
     const id = request.getId();
     const engineId = request.getString('engineId');
     const size = request.input.args.size;
@@ -140,6 +154,23 @@ export class AssetController extends RelationalController {
     } 
     request.input.body = updateRequest;
     return this.update(request);
+  }
+  
+  async pushMeasures (request: KuzzleRequest) {
+    const engineId = request.getString('engineId');
+    const assetId = request.getId();
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean('strict');
+    const measures = request.getBodyArray('measures');
+
+    const { asset, errors } = await this.measureService.registerByAsset(
+      engineId,
+      assetId,
+      measures,
+      refresh,
+      strict);
+
+    return { asset, engineId, errors };
   }
 
   async update (request: KuzzleRequest) {
@@ -220,6 +251,7 @@ export class AssetController extends RelationalController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
     const devicesLinks = await this.assetService.getAsset(engineId, assetId);
+
     if (Array.isArray(devicesLinks._source.deviceLinks)) {
       for (const deviceLink of devicesLinks._source.deviceLinks) {
         await this.deviceService.unlinkAsset(deviceLink.deviceId, { refresh, strict });
