@@ -1,4 +1,4 @@
-'use strict';
+
 
 const _ = require('lodash');
 const { After, Before, BeforeAll } = require('cucumber');
@@ -9,6 +9,8 @@ const defaultRights = require('../fixtures/rights');
 const defaultMappings = require('../fixtures/mappings');
 
 const World = require('./world');
+const { TreeNodeMappings } = require('../fakeclasses/TreeNodeMapping');
+const { InvertTreeNodeMappings } = require('../fakeclasses/InvertTreeNodeMapping');
 
 async function resetEngine (sdk, index) {
   await sdk.query({
@@ -22,6 +24,16 @@ async function resetEngine (sdk, index) {
     action: 'create',
     index,
   });
+}
+
+async function createNodeCollection (sdk) {
+  await sdk.index.delete('test').catch(() => {});
+  await sdk.index.create('test');
+  await Promise.all([
+    sdk.collection.create('test', 'node', { mappings: TreeNodeMappings }),
+    sdk.collection.create('test', 'invertnode', { mappings: InvertTreeNodeMappings })
+  ]);
+
 }
 
 BeforeAll({ timeout: 30 * 1000 }, async function () {
@@ -50,6 +62,7 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
       refresh: 'wait_for',
       onExistingUsers: 'overwrite',
     }),
+    createNodeCollection(world.sdk)
   ]);
 
   world.sdk.disconnect();
@@ -72,10 +85,15 @@ Before({ timeout: 30 * 1000 }, async function () {
     truncateCollection(this.sdk, 'engine-kuzzle', 'assets'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'measures'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'devices'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'asset-category'),
+    truncateCollection(this.sdk, 'engine-kuzzle', 'metadata'),
+
 
     truncateCollection(this.sdk, 'engine-ayse', 'assets'),
     truncateCollection(this.sdk, 'engine-ayse', 'measures'),
     truncateCollection(this.sdk, 'engine-ayse', 'devices'),
+    truncateCollection(this.sdk, 'engine-ayse', 'asset-category'),
+    truncateCollection(this.sdk, 'engine-ayse', 'metadata'),
     removeCatalogEntries(this.sdk, 'engine-ayse'),
 
     truncateCollection(this.sdk, 'tests', 'events'),
@@ -110,7 +128,7 @@ After({ tags: '@security', timeout: 60 * 1000 }, async function () {
   await resetSecurityDefault(this.sdk);
 });
 
-async function resetSecurityDefault(sdk) {
+async function resetSecurityDefault (sdk) {
   await sdk.query({
     controller: 'admin',
     action: 'resetSecurity',
@@ -157,8 +175,9 @@ Before({ tags: '@tenant-custom' }, async function () {
       controller: 'device-manager/engine',
       action: 'delete',
       index: 'tenant-custom',
-    })
-  } catch {}
+    });
+  }
+  catch {}
 });
 
 async function truncateCollection (sdk, index, collection) {
@@ -168,7 +187,7 @@ async function truncateCollection (sdk, index, collection) {
       if (! error.message.includes('does not exist')) {
         throw error;
       }
-    })
+    });
 }
 
 async function removeCatalogEntries (sdk, index) {

@@ -1,6 +1,12 @@
 export const assetsMappings = {
   dynamic: 'strict',
   properties: {
+    category: {
+      fields: {
+        text: { type: 'text' }
+      },
+      type: 'keyword'
+    },
     deviceLinks: {
       properties: {
         deviceId: {
@@ -22,7 +28,7 @@ export const assetsMappings = {
                 text: { type: 'text' }
               },
               type: 'keyword'
-            }
+            },
           }
         }
       }
@@ -33,8 +39,17 @@ export const assetsMappings = {
       }
     },
     metadata: {
-      dynamic: 'false',
-      properties: {}
+      dynamic: 'strict',
+      properties: {
+        key: { type: 'keyword' },
+        value: {
+          properties: {
+            boolean: { type: 'boolean' },
+            integer: { type: 'integer' },
+            keyword: { type: 'keyword' },
+          }
+        }
+      }
     },
     model: {
       fields: {
@@ -43,6 +58,12 @@ export const assetsMappings = {
       type: 'keyword'
     },
     reference: {
+      fields: {
+        text: { type: 'text' }
+      },
+      type: 'keyword'
+    },
+    subCategory: {
       fields: {
         text: { type: 'text' }
       },
