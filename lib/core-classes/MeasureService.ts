@@ -247,7 +247,7 @@ export class MeasureService {
     }
 
     // Search for asset
-    let assetCacheEntity: AssetCacheEntity = null
+    let assetCacheEntity: AssetCacheEntity = null;
 
     if (assetId) {
 
@@ -470,6 +470,6 @@ export class MeasureService {
       }
     }
 
-    return null
+    return null;
   }
 }
