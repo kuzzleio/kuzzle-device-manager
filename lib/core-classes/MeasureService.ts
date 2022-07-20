@@ -97,7 +97,7 @@ export class MeasureService {
   ) {
     const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
 
-    // Sorting structs
+    // Create caching structures
     const engineMeasuresCache: EngineMeasuresCache = {};
 
     const assetMeasuresInEngineCache: EntityMeasuresInEngineCache<AssetCacheEntity> = {};
@@ -107,7 +107,7 @@ export class MeasureService {
     const measurementsWithoutDevice: Record<string, Measurement[]> = {};
     const unknownTypeMeasurements: Measurement[] = [];
 
-    // By device
+    // Craft and insert measures in cache by each device
     // Need to be atomic (no Promise.all) because it would erase the array in `assetMeasuresInEngineCache` and `deviceMeasuresInEngineCache`
     for (const [reference, measurements] of Object.entries(decodedPayloads)) {
       await this.insertIntoSortingRecords(
@@ -131,14 +131,14 @@ export class MeasureService {
       unknownTypeMeasurements,
     });
 
-    // Push measures
-    // Engine
+    // Push measures in db
+    // In Engine measures
     await Promise.all(Object.entries(response.engineMeasuresCache).map(([engineId, measures]) => {
       const measureArray = measures as Array<MeasureContent>;
       this.historizeEngineMeasures(engineId, measureArray, { refresh });
     }));
 
-    // Asset
+    // Update measures of assets and update documents
     await Promise.all(Object.entries(response.assetMeasuresInEngineCache).map(async ([engineId, assetMeasuresRecord]) => {
       for (const { asset, measures } of Object.values(assetMeasuresRecord)) {
         asset.updateMeasures(measures);
@@ -153,8 +153,7 @@ export class MeasureService {
       );
     }));
 
-
-    // Device
+    // Update measures of devices and update documents
     const devices: Device[] = [];
 
     await Promise.all(Object.entries(response.deviceMeasuresInEngineCache).map(async ([engineId, deviceMeasuresRecord]) => {
@@ -199,6 +198,10 @@ export class MeasureService {
     };
   }
 
+  /**
+   * Takes all informations to craft a Measure and insert it in
+   * caching structures
+   */
   private async insertIntoSortingRecords (
     engineMeasuresCache: EngineMeasuresCache,
     assetMeasuresInEngineCache: EntityMeasuresInEngineCache<AssetCacheEntity>,
@@ -211,7 +214,7 @@ export class MeasureService {
     measurements: Measurement[],
     autoProvisionDevice: boolean,
   ) {
-    // Search for device
+    // Search device in cache or get in db
     const deviceId = Device.id(deviceModel, reference);
     let device = null;
     try {
@@ -246,7 +249,7 @@ export class MeasureService {
       deviceMeasuresInEngineCache[engineId] = deviceMeasuresInEngine;
     }
 
-    // Search for asset
+    // Search asset in cache or get in db
     let assetCacheEntity: AssetCacheEntity = null;
 
     if (assetId) {
@@ -268,7 +271,7 @@ export class MeasureService {
       }
     }
 
-    // Search for engine
+    // Search for engine in cache or see if index exist
     let engineMeasures = null;
     if (engineId !== this.config.adminIndex) {
       engineMeasures = engineMeasuresCache[engineId];
@@ -291,7 +294,6 @@ export class MeasureService {
           measurement.deviceMeasureName,
           assetCacheEntity);
 
-
         const measureContent: MeasureContent = {
           assetMeasureName,
           deviceMeasureName: measurement.deviceMeasureName,
@@ -308,7 +310,7 @@ export class MeasureService {
           values: measurement.values,
         };
 
-        // Insert measures in sort structs
+        // Insert measures in cache structs
         if (engineMeasures) {
           engineMeasures.push(measureContent);
         }
@@ -321,7 +323,6 @@ export class MeasureService {
       }
     }
   }
-
 
   /**
    * Register new measures from a device, updates :
