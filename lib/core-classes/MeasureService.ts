@@ -23,6 +23,19 @@ import { AssetService } from './AssetService';
 import { DeviceService } from './DeviceService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 
+type EngineMeasuresCache = Record<string, // engineId
+  Array<MeasureContent>>;
+
+type AssetCacheEntity = { asset: BaseAsset, measures: MeasureContent[] };
+
+type DeviceCacheEntity = { device: Device, measures: MeasureContent[] };
+
+type EntityMeasuresCache<Entity> = Record<string, // documentModel
+  Entity>;
+
+type EntityMeasuresInEngineCache<Entity> = Record<string, // engineId
+  EntityMeasuresCache<Entity>>;
+
 export class MeasureService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
@@ -85,33 +98,22 @@ export class MeasureService {
     const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
 
     // Sorting structs
-    const measuresByEngine: Record<string, // engineId
-      MeasureContent[]> = {};
+    const engineMeasuresCache: EngineMeasuresCache = {};
 
-    const assetMeasuresByEngineAndId: Record<string, // engineId
-      Record<string, // assetId
-      {
-        asset: BaseAsset, measures: MeasureContent[],
-      }>> = {};
+    const assetMeasuresInEngineCache: EntityMeasuresInEngineCache<AssetCacheEntity> = {};
 
-    const deviceMeasuresByEngineAndId: Record<string, // engineId
-      Record<string, // deviceId
-      {                 
-        device: Device, measures: MeasureContent[],
-      }>> = {};
+    const deviceMeasuresInEngineCache: EntityMeasuresInEngineCache<DeviceCacheEntity> = {};
 
-    const measurementsWithoutDevice: Record<string, // measureId
-      Measurement[]> = {};
-
+    const measurementsWithoutDevice: Record<string, Measurement[]> = {};
     const unknownTypeMeasurements: Measurement[] = [];
 
     // By device
-    // Don't know why, but a Promise.all will erase measures from sorting structs
+    // Need to be atomic (no Promise.all) because it would erase the array in `assetMeasuresInEngineCache` and `deviceMeasuresInEngineCache`
     for (const [reference, measurements] of Object.entries(decodedPayloads)) {
       await this.insertIntoSortingRecords(
-        measuresByEngine,
-        assetMeasuresByEngineAndId,
-        deviceMeasuresByEngineAndId,
+        engineMeasuresCache,
+        assetMeasuresInEngineCache,
+        deviceMeasuresInEngineCache,
         measurementsWithoutDevice,
         unknownTypeMeasurements,
         payloadUuids,
@@ -123,22 +125,21 @@ export class MeasureService {
     }
 
     const response = await this.app.trigger(`${eventId}:before`, {
-      assetMeasuresByEngineAndId,
-      deviceMeasuresByEngineAndId,
-      measurementsWithoutDevice,
-      measuresByEngine,
+      assetMeasuresInEngineCache,
+      deviceMeasuresInEngineCache,
+      engineMeasuresCache,
       unknownTypeMeasurements,
     });
 
     // Push measures
     // Engine
-    await Promise.all(Object.entries(response.measuresByEngine).map(([engineId, measures]) => {
+    await Promise.all(Object.entries(response.engineMeasuresCache).map(([engineId, measures]) => {
       const measureArray = measures as Array<MeasureContent>;
       this.historizeEngineMeasures(engineId, measureArray, { refresh });
     }));
 
     // Asset
-    await Promise.all(Object.entries(response.assetMeasuresByEngineAndId).map(async ([engineId, assetMeasuresRecord]) => {
+    await Promise.all(Object.entries(response.assetMeasuresInEngineCache).map(async ([engineId, assetMeasuresRecord]) => {
       for (const { asset, measures } of Object.values(assetMeasuresRecord)) {
         asset.updateMeasures(measures);
       }
@@ -156,7 +157,7 @@ export class MeasureService {
     // Device
     const devices: Device[] = [];
 
-    await Promise.all(Object.entries(response.deviceMeasuresByEngineAndId).map(async ([engineId, deviceMeasuresRecord]) => {
+    await Promise.all(Object.entries(response.deviceMeasuresInEngineCache).map(async ([engineId, deviceMeasuresRecord]) => {
       await Promise.all(Object.values(deviceMeasuresRecord).map(({ device, measures }) => {
         device.updateMeasures(measures);
         devices.push(device);
@@ -182,30 +183,26 @@ export class MeasureService {
     );
 
     await this.app.trigger(`${eventId}:after`, {
-      assetMeasuresByEngineAndId,
-      deviceMeasuresByEngineAndId,
-      measuresByEngine,
+      assetMeasuresInEngineCache,
+      deviceMeasuresInEngineCache,
+      engineMeasuresCache,
     });
 
     return {
       // TOSEE : What to return, how (serialization) ?
       // TOSEE : Stock updated assets, devices and measures for return result ?
-      // measuresByEngine,
-      // assetMeasuresByEngineAndId,
-      // deviceMeasuresByEngineAndId,
+      // engineMeasuresCache,
+      // assetMeasuresInEngineCache,
+      // deviceMeasuresInEngineCache,
       // unaivailableTypeMeasurements,
       // measurementsWithoutDevice,
     };
   }
 
   private async insertIntoSortingRecords (
-    measuresByEngine: Record<string, MeasureContent[]>,
-    assetMeasuresByEngineAndId : Record<string, Record<string, {
-      asset: BaseAsset, measures: MeasureContent[]
-    }>>,
-    deviceMeasuresByEngineAndId: Record<string, Record<string, {                 
-      device: Device, measures: MeasureContent[],
-    }>>,
+    engineMeasuresCache: EngineMeasuresCache,
+    assetMeasuresInEngineCache: EntityMeasuresInEngineCache<AssetCacheEntity>,
+    deviceMeasuresInEngineCache: EntityMeasuresInEngineCache<DeviceCacheEntity>,
     measurementsWithoutDevice: Record<string, Measurement[]>,
     unknownTypeMeasurements: Measurement[],
     payloadUuids: Array<string>,
@@ -242,41 +239,43 @@ export class MeasureService {
     const deviceMeasures: { device: Device, measures: MeasureContent[] }
       = { device, measures: [] };
 
-    let deviceMeasuresInEngine = deviceMeasuresByEngineAndId[engineId];
+    let deviceMeasuresInEngine = deviceMeasuresInEngineCache[engineId];
 
     if (! deviceMeasuresInEngine) {
       deviceMeasuresInEngine = { [deviceId]: deviceMeasures };
-      deviceMeasuresByEngineAndId[engineId] = deviceMeasuresInEngine;
+      deviceMeasuresInEngineCache[engineId] = deviceMeasuresInEngine;
     }
 
     // Search for asset
-    let assetMeasures: { asset: BaseAsset, measures: MeasureContent[] } = null;
+    let assetCacheEntity: AssetCacheEntity = null
+
     if (assetId) {
-      let assetMeasuresInEngine = assetMeasuresByEngineAndId[engineId];
+
+      let assetMeasuresInEngine = assetMeasuresInEngineCache[engineId];
 
       if (! assetMeasuresInEngine) {
         assetMeasuresInEngine = {};
-        assetMeasuresByEngineAndId[engineId] = assetMeasuresInEngine;
+        assetMeasuresInEngineCache[engineId] = assetMeasuresInEngine;
       }
 
-      assetMeasures = assetMeasuresInEngine[assetId];
-      if (! assetMeasures) {
-        assetMeasures = {
+      assetCacheEntity = assetMeasuresInEngine[assetId];
+      if (! assetCacheEntity) {
+        assetCacheEntity = {
           asset: await this.assetService.getAsset(engineId, assetId),
           measures: [],
         };
-        assetMeasuresInEngine[assetId] = assetMeasures;
+        assetMeasuresInEngine[assetId] = assetCacheEntity;
       }
     }
 
     // Search for engine
     let engineMeasures = null;
     if (engineId !== this.config.adminIndex) {
-      engineMeasures = measuresByEngine[engineId];
+      engineMeasures = engineMeasuresCache[engineId];
 
       if (! engineMeasures) {
         engineMeasures = [];
-        measuresByEngine[engineId] = engineMeasures;
+        engineMeasuresCache[engineId] = engineMeasures;
       }
     }
 
@@ -290,7 +289,7 @@ export class MeasureService {
         const assetMeasureName = this.findAssetMeasureName(
           deviceId,
           measurement.deviceMeasureName,
-          assetMeasures);
+          assetCacheEntity);
 
 
         const measureContent: MeasureContent = {
@@ -315,7 +314,7 @@ export class MeasureService {
         }
 
         if (assetMeasureName) {
-          assetMeasures.measures.push(measureContent);
+          assetCacheEntity.measures.push(measureContent);
         }
 
         deviceMeasures.measures.push(measureContent);
