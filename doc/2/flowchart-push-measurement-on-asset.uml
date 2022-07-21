@@ -1,0 +1,27 @@
+@startuml
+start
+:AssetMeasurements;
+
+:Push on asset;
+
+:Validate AssetMeasurements;
+
+if (Measurement is valid) then (no)
+end
+else (yes)
+    :Produce Measure with:
+    - measuredAt: `Date.now()` if not setted in the AssetMeasurement
+    - origin:
+        - type: "user"
+        - payloadUuid: null
+        - deviceModel: null
+        - id: "<kuid of the request>"
+        - assetId: "<id of the asset>";
+endif
+
+:Historize Measures in the engine index;
+
+:Update asset measures' with the new measure;
+
+stop
+@enduml
