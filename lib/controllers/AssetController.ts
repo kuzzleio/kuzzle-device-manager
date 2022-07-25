@@ -29,6 +29,11 @@ export class AssetController extends RelationalController {
       description: 'Metadata which are specified in AssetCategory as mandatory must be present',
       message: 'metadata %s is mandatory for the asset',
     });
+    global.app.errors.register('device-manager', 'assetController', 'EnumMetadata', {
+      class: 'BadRequestError',
+      description: 'Metadata must have one of the values specified in metadata valueList',
+      message: 'metadata %s cannot have %s value : value must have one of the value of metadata valueList ',
+    });
 
     this.assetCategoryService = assetCategoryService;
     this.assetService = assetService;

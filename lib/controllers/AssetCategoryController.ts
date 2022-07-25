@@ -2,6 +2,7 @@ import { KuzzleRequest, Plugin } from 'kuzzle';
 import { RelationalController } from './RelationalController';
 import { AssetCategoryContent, FormattedValue, ProcessedAssetCategoryContent } from '../types/AssetCategoryContent';
 import { AssetCategoryService } from '../core-classes/AssetCategoryService';
+import { MetadataContent } from '../types/MetadataContent';
 
 
 export class AssetCategoryController extends RelationalController {
@@ -22,7 +23,7 @@ export class AssetCategoryController extends RelationalController {
       actions: {
         get: {
           handler: this.get.bind(this),
-          http: [{ path: 'device-manager/:engineId/assetCategory', verb: 'get' }],
+          http: [{ path: 'device-manager/:engineId/assetCategory/:_id', verb: 'get' }],
         },
         create: {
           handler: this.create.bind(this),
@@ -73,7 +74,6 @@ export class AssetCategoryController extends RelationalController {
         metadataValuesTable.push({ key, value });
       }
       request.input.body.metadataValues = metadataValuesTable;
-
     }
     return super.create(request);
   }
@@ -125,7 +125,7 @@ export class AssetCategoryController extends RelationalController {
     const metadataId = request.getString('metadataId');
     const value = request.input.body?.value;
 
-    await this.sdk.document.get(engineId, 'metadata', metadataId); //existance verification
+    const metadataContent = await this.sdk.document.get<MetadataContent>(engineId, 'metadata', metadataId); 
     const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id);
     const metadata = category._source.assetMetadata ? category._source.assetMetadata : [];
     let metadataValues = category._source.metadataValues;
@@ -139,6 +139,11 @@ export class AssetCategoryController extends RelationalController {
     };
     let update = false;
     if (value) {
+
+      if (metadataContent._source.valueList && ! metadataContent._source.valueList.includes(value) ) {
+        throw global.app.errors.get('device-manager', 'assetController', 'EnumMetadata', metadataContent._source.name, value);
+
+      }
       const formattedValue : FormattedValue = await this.assetCategoryService.formatValue(value);
       if (metadataValues) {
         for (const metadataValue of metadataValues) {
@@ -154,6 +159,7 @@ export class AssetCategoryController extends RelationalController {
       if (! update) {
         metadataValues.push({ key: metadataId, value: formattedValue });
       }
+      
       request.input.body.metadataValues = metadataValues;
     }
     return this.update(request);

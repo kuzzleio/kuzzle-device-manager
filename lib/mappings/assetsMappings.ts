@@ -45,6 +45,7 @@ export const assetsMappings = {
         value: {
           properties: {
             boolean: { type: 'boolean' },
+            geo_point: { type: 'geo_point' },
             integer: { type: 'integer' },
             keyword: { type: 'keyword' },
           }
