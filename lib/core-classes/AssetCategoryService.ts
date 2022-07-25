@@ -122,7 +122,8 @@ export class AssetCategoryService {
     }
     else if (typeof value === 'boolean') {
       formattedValue.boolean = value;
-    } else if (value.lat){
+    }
+    else if (value.lat) {
       formattedValue.geo_point = value;
     }
     else {
