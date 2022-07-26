@@ -24,12 +24,12 @@ export class AssetController extends RelationalController {
   ) {
 
     super(plugin, 'assets');
-    global.app.errors.register('device-manager', 'assetController', 'MandatoryMetadata', {
+    global.app.errors.register('device-manager', 'asset_controller', 'mandatory_metadata', {
       class: 'BadRequestError',
       description: 'Metadata which are specified in AssetCategory as mandatory must be present',
       message: 'metadata %s is mandatory for the asset',
     });
-    global.app.errors.register('device-manager', 'assetController', 'EnumMetadata', {
+    global.app.errors.register('device-manager', 'asset_controller', 'enum_metadata', {
       class: 'BadRequestError',
       description: 'Metadata must have one of the values specified in metadata valueList',
       message: 'metadata %s cannot have %s value : value must have one of the value of metadata valueList ',
@@ -126,7 +126,7 @@ export class AssetController extends RelationalController {
     const categoryId = request.getString('categoryId');
     const document = await this.sdk.document.get(engineId, this.collection, id);
     if ( document._source.category !== categoryId && document._source.subCategory !== categoryId ) {
-      throw global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
+      throw global.app.errors.get('device-manager', 'relational_controller', 'remove_unexisting_link');
     }
     request.input.body = { category: null, subCategory: null };
     return this.update(request);
@@ -144,7 +144,7 @@ export class AssetController extends RelationalController {
       subCategory: null
     };
     if ( document._source.category) {
-      throw global.app.errors.get('device-manager', 'relational', 'alreadyLinked', 'asset', 'category');
+      throw global.app.errors.get('device-manager', 'relational_controller', 'already_linked', 'asset', 'category');
     }
     else if (categoryDocument._source.parent) {
       updateRequest.category = categoryDocument._source.parent;
