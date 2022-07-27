@@ -1,9 +1,16 @@
-import { KuzzleRequest, Plugin } from 'kuzzle';
+import { JSONObject, KuzzleRequest, Plugin } from 'kuzzle';
 import { RelationalController } from './RelationalController';
+import { MetadataContent, ProcessedMetadataContent } from '../types/MetadataContent';
+import { AssetCategoryService } from '../core-classes/AssetCategoryService';
 
 export class MetadataController extends RelationalController {
-  constructor (plugin: Plugin) {
+
+  private assetCategoryService: AssetCategoryService;
+
+
+  constructor (plugin: Plugin, assetCategoryService : AssetCategoryService) {
     super(plugin, 'metadata');
+    this.assetCategoryService = assetCategoryService;
 
     /* eslint-disable sort-keys */
     this.definition = {
@@ -16,6 +23,10 @@ export class MetadataController extends RelationalController {
           handler: this.delete.bind(this),
           http: [{ path: 'device-manager/:engineId/metadata/:_id', verb: 'delete' }],
         },
+        get: {
+          handler: this.get.bind(this),
+          http: [{ path: 'device-manager/:engineId/metadata/:_id', verb: 'get' }],
+        },
         update: {
           handler: this.update.bind(this),
           http: [{ path: 'device-manager/:engineId/metadata/:_id', verb: 'put' }],
@@ -26,8 +37,18 @@ export class MetadataController extends RelationalController {
 
   async create (request: KuzzleRequest) {
     request.input.args._id = request.input.body.name;
-    if (! request.input.body.mandatory) {
+    const mandatory = request.input.body.mandatory;
+    const objectValueList: JSONObject[] = request.input.body.objectValueList;
+    if (! mandatory) {
       request.input.body.mandatory = false;
+    }
+    if (objectValueList) {
+      const formattedMetadataValuesList = [];
+      for (const objectValue of objectValueList) {
+        const formattedMetadataValues = await this.assetCategoryService.formatMetadataForES(objectValue);
+        formattedMetadataValuesList.push({ object: formattedMetadataValues });
+      }
+      request.input.body.objectValueList = formattedMetadataValuesList;
     }
     return super.create(request);
   }
@@ -39,5 +60,21 @@ export class MetadataController extends RelationalController {
   async delete (request: KuzzleRequest) {
     const AssetCategory = this.getFieldPath(request, 'assetMetadata', null, 'asset-category');
     return super.genericDelete(request, [], [], [AssetCategory]);
+  }
+
+
+  async get (request: KuzzleRequest) {
+    const id = request.getId();
+    const engineId = request.getString('engineId');
+    const metadata = await this.sdk.document.get<MetadataContent>(engineId, this.collection, id);
+    const processedMetadata = JSON.parse(JSON.stringify(metadata._source)) as ProcessedMetadataContent;
+
+    if (metadata._source.objectValueList) {
+      processedMetadata.objectValueList = [];
+      for (const objectValue of metadata._source.objectValueList) {
+        processedMetadata.objectValueList.push(await this.assetCategoryService.formatMetadataForGet(objectValue.object));
+      }
+    }
+    return processedMetadata;
   }
 }

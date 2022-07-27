@@ -1,4 +1,6 @@
 import { KDocumentContent } from 'kuzzle-sdk';
+import { JSONObject } from 'kuzzle';
+import { FormattedMetadata } from './AssetCategoryContent';
 
 /* eslint-disable no-shadow, no-unused-vars */
 export enum metadataType {
@@ -6,7 +8,6 @@ export enum metadataType {
   number,
   date,
   boolean,
-  enum,
   object,
   geo_point,
 }
@@ -15,8 +16,18 @@ export interface MetadataContent extends KDocumentContent {
   name : string,
   valueType : metadataType,
   unit? : string,
-  internalProperties? : MetadataContent[], //Only object type
+  objectValueList? : {object : FormattedMetadata[]}[],
+  //internalProperties? : MetadataContent[], //Only object type //TODO!
   valueList? : string, //Only for enum type
   mandatory : boolean,
 }
 
+export interface ProcessedMetadataContent extends KDocumentContent {
+  name : string,
+  valueType : metadataType,
+  unit? : string,
+  objectValueList? : JSONObject[],
+  //internalProperties? : MetadataContent[], //Only object type //TODO!
+  valueList? : string, //Only for enum type
+  mandatory : boolean,
+}

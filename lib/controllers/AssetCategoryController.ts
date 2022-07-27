@@ -139,12 +139,8 @@ export class AssetCategoryController extends RelationalController {
     };
     let update = false;
     if (value) {
-
-      if (metadataContent._source.valueList && ! metadataContent._source.valueList.includes(value) ) {
-        throw global.app.errors.get('device-manager', 'assetController', 'EnumMetadata', metadataContent._source.name, value);
-
-      }
-      const formattedValue : FormattedValue = await this.assetCategoryService.formatValue(value);
+      this.assetCategoryService.validateEnumMetadata(metadataContent._source, value);
+      const formattedValue : FormattedValue = this.assetCategoryService.formatValue(value);
       if (metadataValues) {
         for (const metadataValue of metadataValues) {
           if (metadataValue.key === metadataId) {
@@ -175,8 +171,8 @@ export class AssetCategoryController extends RelationalController {
       this.assetCategoryService.getMetadataValues(source, engineId)
     ]
     );
+    const formattedAssetMetadata = this.assetCategoryService.formatMetadataForGet(metadataValues);
 
-    const formattedAssetMetadata = await this.assetCategoryService.formatMetadataForGet(metadataValues);
     const processedAssetCategoryContent :ProcessedAssetCategoryContent = {
       name: source.name,
       parent: source.parent,

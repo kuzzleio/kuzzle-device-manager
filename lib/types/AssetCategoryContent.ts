@@ -6,7 +6,8 @@ export interface FormattedValue {
   boolean? : boolean,
   integer? : number,
   keyword? : string,
-  geo_point? : {lat : number, lon : number}
+  geo_point? : {lat : number, lon : number},
+  object? : FormattedMetadata[]
 }
 
 export interface FormattedMetadata {

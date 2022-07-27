@@ -2,6 +2,7 @@ import { MetadataContent } from '../types/MetadataContent';
 import { AssetCategoryContent, FormattedMetadata, FormattedValue } from '../types/AssetCategoryContent';
 import { JSONObject, Plugin, PluginContext } from 'kuzzle';
 import { DeviceManagerConfiguration } from '../types';
+import isEqual from 'lodash.isequal';
 
 export class AssetCategoryService {
 
@@ -88,10 +89,26 @@ export class AssetCategoryService {
           throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
         }
       }
-      if (metadata.valueList) {
-        if (! metadata.valueList.includes(assetMetadata[metadata.name])) {
-          throw global.app.errors.get('device-manager', 'assetController', 'EnumMetadata', metadata.name, assetMetadata[metadata.name]);
+      this.validateEnumMetadata(metadata, assetMetadata[metadata.name]);
+    }
+  }
+
+  validateEnumMetadata (metadata, value) {
+    if (metadata.valueList) {
+      if (! metadata.valueList.includes(value)) {
+        throw global.app.errors.get('device-manager', 'assetController', 'EnumMetadata', metadata.name, value);
+      }
+    }
+    if (metadata.objectValueList) {
+      let find = false;
+      for (const objectValue of metadata.objectValueList) {
+        const fromattedObjectValue = this.formatMetadataForGet(objectValue.object);
+        if (isEqual(fromattedObjectValue, value)) {
+          find = true;
         }
+      }
+      if (! find) {
+        throw global.app.errors.get('device-manager', 'assetController', 'EnumMetadata', metadata.name, value);
       }
     }
   }
@@ -115,8 +132,8 @@ export class AssetCategoryService {
   }
   
   
-  async formatValue (value : any) {
-    let formattedValue : FormattedValue = {};
+  formatValue (value : any) {
+    const formattedValue : FormattedValue = {};
     if (typeof value === 'number' ) {
       formattedValue.integer = value;
     }
@@ -126,24 +143,27 @@ export class AssetCategoryService {
     else if (value.lat) {
       formattedValue.geo_point = value;
     }
+    else if (typeof value === 'object') {
+      formattedValue.object = this.formatMetadataForES(value);
+    }
     else {
       formattedValue.keyword = value;
     }
     return formattedValue;
   }
 
-  async formatMetadataForES (assetMetadata : JSONObject): Promise<FormattedMetadata[]> {
+  formatMetadataForES (assetMetadata : JSONObject): FormattedMetadata[] {
     if (! assetMetadata) {
       return [];
     }
     const formattedMetadata : FormattedMetadata[] = [];
     for ( const [key, value] of Object.entries(assetMetadata)) {
-      formattedMetadata.push({ key, value: await this.formatValue(value) });
+      formattedMetadata.push({ key, value: this.formatValue(value) });
     }
     return formattedMetadata;
   }
 
-  async formatMetadataForGet (assetMetadata : FormattedMetadata[]) {
+  formatMetadataForGet (assetMetadata : FormattedMetadata[]) {
     const formattedMetadata : JSONObject = {};
     for (const metadata of assetMetadata) {
       formattedMetadata[metadata.key] = this.getValue(metadata.value);
@@ -151,7 +171,7 @@ export class AssetCategoryService {
     return formattedMetadata;
   }
 
-  getValue (value: FormattedValue) {
+  getValue (value: FormattedValue, format = true) {
     if (value.keyword) {
       return value.keyword;
     }
@@ -160,6 +180,13 @@ export class AssetCategoryService {
     }
     else if (value.geo_point ) {
       return value.geo_point;
+    }
+    else if (value.object ) {
+      if (format) {
+        return this.formatMetadataForGet(value.object);
+      } 
+      return value.object;
+      
     }
     return value.boolean;
   }
