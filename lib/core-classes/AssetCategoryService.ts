@@ -84,15 +84,19 @@ export class AssetCategoryService {
     ]);
     for (const metadata of metadataList) {
       if (metadata.mandatory) {
-        // eslint-disable-next-line no-prototype-builtins
         if (! (assetMetadata[metadata.name]) && ! this.containsValue(metadataValues, metadata.name)) {
-          throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
+          throw global.app.errors.get('device-manager', 'asset_controller', 'mandatory_metadata', metadata.name);
+        }
+      }
+      if (metadata.valueList) {
+        if (! metadata.valueList.includes(assetMetadata[metadata.name])) {
+          throw global.app.errors.get('device-manager', 'asset_controller', 'enum_metadata', metadata.name, assetMetadata[metadata.name]);
         }
       }
     }
   }
 
-  containsValue (metadataValues : FormattedMetadata[], name : string) {
+  containsValue (metadataValues : FormattedMetadata[], name : string): Boolean {
     for (const metadata of metadataValues) {
       if (metadata.key === name) {
         return true;
@@ -100,15 +104,27 @@ export class AssetCategoryService {
     } 
     return false;
   }
+
+  getMetadataValue (metadataValues : FormattedMetadata[], name : string) : FormattedMetadata {
+    for (const metadata of metadataValues) {
+      if (metadata.key === name) {
+        return metadata;
+      }
+    }
+    return null;
+  }
   
   
-  async formatValue (value : string) {
+  async formatValue (value : any) {
     let formattedValue : FormattedValue = {};
     if (typeof value === 'number' ) {
       formattedValue.integer = value;
     }
     else if (typeof value === 'boolean') {
       formattedValue.boolean = value;
+    }
+    else if (value.lat) {
+      formattedValue.geo_point = value;
     }
     else {
       formattedValue.keyword = value;
@@ -141,7 +157,10 @@ export class AssetCategoryService {
     }
     else if (value.integer || value.integer === 0) {
       return value.integer;
-    } 
+    }
+    else if (value.geo_point ) {
+      return value.geo_point;
+    }
     return value.boolean;
   }
   
