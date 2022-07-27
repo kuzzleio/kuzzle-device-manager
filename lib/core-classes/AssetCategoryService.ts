@@ -86,7 +86,7 @@ export class AssetCategoryService {
     for (const metadata of metadataList) {
       if (metadata.mandatory) {
         if (! (assetMetadata[metadata.name]) && ! this.containsValue(metadataValues, metadata.name)) {
-          throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
+          throw global.app.errors.get('device-manager', 'asset_controller', 'mandatory_metadata', metadata.name);
         }
       }
       this.validateEnumMetadata(metadata, assetMetadata[metadata.name]);

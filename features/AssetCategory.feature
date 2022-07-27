@@ -306,18 +306,22 @@ Feature: AssetCategory
       | _id        | "coloredTruck" |
       | metadataId | "color"        |
       | body.value | "red"          |
+    Then The document "engine-ayse":"asset-category":"coloredTruck" content match:
+      | metadataValues[0].key           | "color" |
+      | metadataValues[0].value.keyword | "red"   |
     When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
-      | engineId   | "engine-ayse"  |
-      | _id        | "coloredTruck" |
-      | metadataId | "color"        |
+          | engineId   | "engine-ayse"  |
+          | _id        | "coloredTruck" |
+          | metadataId | "color"        |
+    Then The document "engine-ayse":"asset-category":"coloredTruck" content match:
+      | metadataValues | [] |
     When I execute the action "device-manager/assetCategory":"linkMetadata" with args:
       | engineId   | "engine-ayse"  |
       | _id        | "coloredTruck" |
       | metadataId | "color"        |
       | body.value | "black"        |
     Then I should receive an error matching:
-      | status | 400 |
-
+      | id | "device-manager.asset_controller.enum_metadata" |
 
   Scenario: Use metadata enum type link with assetCategory, and create asset with
     When I successfully execute the action "device-manager/assetCategory":"create" with args:
@@ -330,9 +334,9 @@ Feature: AssetCategory
       | body.valueList | ["big","small"] |
       | body.mandatory | true            |
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
-      | engineId   | "engine-ayse"  |
-      | _id        | "typedTruck" |
-      | metadataId | "truckType"        |
+      | engineId   | "engine-ayse" |
+      | _id        | "typedTruck"  |
+      | metadataId | "truckType"   |
     When I execute the action "device-manager/asset":"create" with args:
       | engineId                | "engine-ayse" |
       | body.type               | "truck"       |
@@ -341,7 +345,7 @@ Feature: AssetCategory
       | body.category           | "typedTruck"  |
       | body.metadata.truckType | "super"       |
     Then I should receive an error matching:
-      | status | 400 |
+      | id | "device-manager.asset_controller.enum_metadata" |
     When I successfully execute the action "device-manager/asset":"create" with args:
       | engineId                | "engine-ayse" |
       | body.type               | "truck"       |
@@ -349,6 +353,12 @@ Feature: AssetCategory
       | body.reference          | "asset_02"    |
       | body.category           | "typedTruck"  |
       | body.metadata.truckType | "big"         |
+    When I successfully execute the action "device-manager/asset":"get" with args:
+      | engineId | "engine-ayse"      |
+      | _id      | "truck-M-asset_02" |
+    Then I should receive a result matching:
+      | metadata.truckType | "big" |
+
 
   Scenario: Use geopoint
     When I successfully execute the action "device-manager/metadata":"create" with args:
