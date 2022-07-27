@@ -96,7 +96,7 @@ export class AssetCategoryService {
   validateEnumMetadata (metadata, value) {
     if (metadata.valueList) {
       if (! metadata.valueList.includes(value)) {
-        throw global.app.errors.get('device-manager', 'assetController', 'EnumMetadata', metadata.name, value);
+        throw global.app.errors.get('device-manager', 'asset_controller', 'enum_metadata', metadata.name, value);
       }
     }
     if (metadata.objectValueList) {
@@ -108,7 +108,7 @@ export class AssetCategoryService {
         }
       }
       if (! find) {
-        throw global.app.errors.get('device-manager', 'assetController', 'EnumMetadata', metadata.name, value);
+        throw global.app.errors.get('device-manager', 'asset_controller', 'enum_metadata', metadata.name, value);
       }
     }
   }

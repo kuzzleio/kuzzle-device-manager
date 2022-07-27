@@ -454,4 +454,4 @@ Feature: AssetCategory
       | metadataId | "trailer"                                           |
       | body.value | {'color' : 'red', 'size' : 'giant', 'maxLoad' : 60} |
     Then I should receive an error matching:
-      | id | "device-manager.assetController.EnumMetadata" |
+      | id | "device-manager.asset_controller.enum_metadata" |
