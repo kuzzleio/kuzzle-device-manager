@@ -8,6 +8,7 @@ export enum metadataType {
   number,
   date,
   boolean,
+  enum,
   object,
   geo_point,
 }
