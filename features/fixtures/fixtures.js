@@ -1,3 +1,24 @@
+// --- Categories -----------------------------------------
+
+const truckCategory =
+  {
+    'name': 'truck',
+    'assetMetadata': [],
+    'metadataValues': []
+  };
+
+const bigTruckCategory = {
+  'name': 'bigTruck',
+  'parent': 'truck'
+};
+
+const sizeMetadata = {
+  'name': 'size',
+  'valueType': 'integer',
+  'mandatory': false,
+};
+
+
 // --- Payloads -------------------------------------------
 
 const payload_0 = {
@@ -407,6 +428,16 @@ module.exports = {
     ]
   },
   'engine-ayse': {
+    'asset-category': [
+      { index: { _id: 'truck' } },
+      truckCategory,
+      { index: { _id: 'bigTruck' } },
+      bigTruckCategory,
+    ],
+    metadata: [
+      { index: { _id: 'size' } },
+      sizeMetadata,
+    ],
     assets: [
       { index: { _id: 'container-FRIDGE-linked' } },
       asset_Fridge_AttachedAyse_linked,

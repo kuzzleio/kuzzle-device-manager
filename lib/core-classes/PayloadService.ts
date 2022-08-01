@@ -2,13 +2,14 @@ import {
   Backend,
   BatchController,
   KuzzleRequest,
-  PluginContext,
+  PluginContext
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
-
-import { Decoder } from './Decoder';
-import { DeviceManagerConfiguration } from '../types';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import {
+  DeviceManagerConfiguration
+} from '../types';
+import { Decoder } from './Decoder';
 import { MeasureService } from './MeasureService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 
@@ -80,7 +81,7 @@ export class PayloadService {
         uuid);
     }
 
-    const decodedPayloads = await decoder.decode(payload, request);
+    const decodedPayload = await decoder.decode(payload, request);
 
 
     const pluginConfig = await this.batch.get(
@@ -92,6 +93,6 @@ export class PayloadService {
       = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
 
     return this.measureService.registerByDecodedPayload(
-      decoder.deviceModel, decodedPayloads, [ uuid ], { autoProvisionDevice, refresh });
+      decoder.deviceModel, decodedPayload, [ uuid ], { autoProvisionDevice, refresh });
   }
 }

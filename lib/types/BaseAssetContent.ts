@@ -1,6 +1,7 @@
-import { JSONObject, KDocumentContent } from 'kuzzle';
+import { KDocumentContent } from 'kuzzle';
 
 import { MeasureContent } from './measures/MeasureContent';
+import { FormattedMetadata } from './AssetCategoryContent';
 
 /**
  * A jointure link with a device and a match between
@@ -43,10 +44,13 @@ export interface BaseAssetContent extends KDocumentContent {
   /**
    * Asset metadata
    */
-  metadata?: JSONObject,
+  metadata: FormattedMetadata[],
 
   /**
    * Link with attached device
    */
   deviceLinks: DeviceLink[],
+
+  category: string,
+  subCategory: string,
 }

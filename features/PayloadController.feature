@@ -110,33 +110,6 @@ Feature: Payloads Controller
       | engineId                              | "_UNDEFINED_"             |
       | assetId                               | "_UNDEFINED_"             |
 
-
-      # TODO : Design good pipes (and returns)
-      # TOSEE : Keep test with pipes? Are they already well redesigned?
-  # Scenario: Propagate device measure to engine index
-  #   When I successfully receive a "dummy-multi-temp" payload with:
-  #     | payloads[0].deviceEUI    | "attached_ayse_unlinked_1" |
-  #     | payloads[0].registerInner    | 42.2                     |
-  #     | payloads[0].lvlBattery   | 0.4                      |
-  #   Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
-  #     | engineId                       | "engine-ayse"              |
-  #     | measures[0].values.temperature | 42.2                       |
-  #     | measures[2].values.battery     | 40                         |
-  #     # Enriched with the event "engine:engine-ayse:device:measures:new"
-  #     | metadata.enriched              | true                       |
-  #     | metadata.measureTypes          | ["temperature", "battery"] |
-  #   And The document "engine-ayse":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
-  #     | engineId                       | "engine-ayse"              |
-  #     | measures[0].values.temperature | 42.2                       |
-  #     | measures[2].values.battery     | 40                         |
-  #     # Enriched with the event "engine:engine-ayse:device:measures:new"
-  #     | metadata.enriched              | true                       |
-  #     | metadata.measureTypes          | ["temperature", "battery"] |
-  #   And I should receive a result matching:
-  #     | device._id | "DummyMultiTemp-attached_ayse_unlinked_1" |
-  #     | asset      | null                               |
-  #     | engineId   | "engine-ayse"                      |
-
   Scenario: Historize the measures with deviceId and assetId
     Given I successfully execute the action "device-manager/asset":"create" with args:
       | engineId        | "engine-kuzzle"                  |
