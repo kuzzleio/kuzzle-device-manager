@@ -1,23 +1,12 @@
+import { metadataValue } from './metadataMappings';
+
 export const assetCategoryMappings = {
   dynamic: 'strict',
   properties: {
     assetMetadata: {
       type: 'keyword',
     },
-    metadataValues: {
-      dynamic: 'strict',
-      properties: {
-        key: { type: 'keyword' },
-        value: {
-          properties: {
-            boolean: { type: 'boolean' },
-            geo_point: { type: 'geo_point' },
-            integer: { type: 'integer' },
-            keyword: { type: 'keyword' },
-          }
-        }
-      }
-    },
+    metadataValues: metadataValue,
     name: {
       fields: {
         text: { type: 'text' }

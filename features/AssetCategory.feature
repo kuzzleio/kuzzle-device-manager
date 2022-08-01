@@ -392,3 +392,66 @@ Feature: AssetCategory
       | metadata[0].key                 | "position" |
       | metadata[0].value.geo_point.lon | 10         |
       | metadata[0].value.geo_point.lat | 20         |
+
+  Scenario: Use objectEnum
+    When I successfully execute the action "device-manager/metadata":"create" with args:
+      | engineId             | "engine-ayse"                                                                                               |
+      | body.name            | "trailer"                                                                                                   |
+      | body.valueType       | "enum"                                                                                                      |
+      | body.mandatory       | true                                                                                                        |
+      | body.objectValueList | [{'color' : 'red', 'size' : 'giant', 'maxLoad' : 50}, {'color' : 'blue', 'size' : 'small', 'maxLoad' : 60}] |
+    When I successfully execute the action "device-manager/metadata":"get" with args:
+      | engineId | "engine-ayse" |
+      | _id      | "trailer"     |
+    Then I should receive a result matching:
+      | name            | "trailer"                                                                                                   |
+      | valueType       | "enum"                                                                                                      |
+      | mandatory       | true                                                                                                        |
+      | objectValueList | [{'color' : 'red', 'size' : 'giant', 'maxLoad' : 50}, {'color' : 'blue', 'size' : 'small', 'maxLoad' : 60}] |
+    And The document "engine-ayse":"metadata":"trailer" content match:
+      | objectValueList[0].object[0].key           | "color"   |
+      | objectValueList[0].object[0].value.keyword | "red"     |
+      | objectValueList[0].object[2].key           | "maxLoad" |
+      | objectValueList[0].object[2].value.integer | 50        |
+      | objectValueList[1].object[0].key           | "color"   |
+      | objectValueList[1].object[0].value.keyword | "blue"    |
+      | objectValueList[1].object[2].key           | "maxLoad" |
+      | objectValueList[1].object[2].value.integer | 60        |
+    When I successfully execute the action "device-manager/assetCategory":"create" with args:
+      | engineId  | "engine-ayse"  |
+      | body.name | "trailerTruck" |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+      | metadataId | "trailer"      |
+    When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+      | metadataId | "trailer"      |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+      | metadataId | "trailer"      |
+      | body.value | {'color' : 'red', 'size' : 'giant', 'maxLoad' : 50}         |
+    Then The document "engine-ayse":"asset-category":"trailerTruck" content match:
+      | metadataValues[0].key                           | "trailer" |
+      | metadataValues[0].value.object[0].key           | "color"   |
+      | metadataValues[0].value.object[0].value.keyword | "red"     |
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+    Then I should receive a result matching:
+      | metadataValues.trailer.color   | "red"   |
+      | metadataValues.trailer.size    | "giant" |
+      | metadataValues.trailer.maxLoad | 50      |
+    When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+      | metadataId | "trailer"      |
+    And I execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"                                       |
+      | _id        | "trailerTruck"                                      |
+      | metadataId | "trailer"                                           |
+      | body.value | {'color' : 'red', 'size' : 'giant', 'maxLoad' : 60} |
+    Then I should receive an error matching:
+      | id | "device-manager.asset_controller.enum_metadata" |

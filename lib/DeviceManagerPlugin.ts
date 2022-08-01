@@ -252,7 +252,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.decodersController = new DecodersController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
     this.assetCategoryController = new AssetCategoryController(this, this.assetCategoryService);
-    this.metadataController = new MetadataController(this);
+    this.metadataController = new MetadataController(this, this.assetCategoryService);
 
 
     this.api['device-manager/payload'] = this.decodersRegister.getPayloadController(this.payloadService);
