@@ -55,9 +55,7 @@ export interface MeasureContent extends KDocumentContent, AssetMeasurement {
    */
   origin: {
     /**
-     * From what the measure has been pushed. Can be :
-     * - 'asset'
-     * - 'device'
+     * From what the measure has been pushed.
      */
     type: OriginType;
 
@@ -74,7 +72,7 @@ export interface MeasureContent extends KDocumentContent, AssetMeasurement {
     /**
      * ID of the origin. Can be:
      * - device id if origin type is `device`
-     * - kuid of the request if origin type is `asset`
+     * - kuid of the request if origin type is `user`
      */
     id?: string;
 
