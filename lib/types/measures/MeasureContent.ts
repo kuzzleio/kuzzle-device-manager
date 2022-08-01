@@ -31,7 +31,7 @@ export interface Measurement {
   /**
    * Name given by the decoder to the measure.
    */
-  deviceMeasureName: string;
+  deviceMeasureName?: string;
 }
 
 export interface AssetMeasurement extends Measurement {

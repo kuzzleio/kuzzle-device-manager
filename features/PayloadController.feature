@@ -7,30 +7,30 @@ Feature: Payloads Controller
       | lvlBattery   | 0.8     |
     And I refresh the collection "device-manager":"devices"
     Then The document "device-manager":"devices":"DummyTemp-12345" content match:
-      | reference                      | "12345"           |
-      | model                          | "DummyTemp"       |
-      | measures[0].type               | "temperature"     |
-      | measures[0].measuredAt         | "_DATE_NOW_"      |
-      | measures[0].deviceMeasureName  | "theTemperature"  |
-      | measures[0].values.temperature | 23.3              |
-      | measures[0].origin.id          | "DummyTemp-12345" |
-      | measures[0].origin.deviceModel       | "DummyTemp"       |
-      | measures[0].origin.type        | "device"          |
-      | measures[0].unit.name          | "Degree"          |
-      | measures[0].unit.sign          | "°"               |
-      | measures[0].unit.type          | "number"          |
-      | measures[1].type               | "battery"         |
-      | measures[1].measuredAt         | "_DATE_NOW_"      |
-      | measures[1].deviceMeasureName  | "theBatteryLevel" |
-      | measures[1].values.battery     | 80                |
-      | measures[1].origin.id          | "DummyTemp-12345" |
-      | measures[1].origin.deviceModel       | "DummyTemp"       |
-      | measures[1].origin.type        | "device"          |
-      | measures[1].unit.name          | "Volt"            |
-      | measures[1].unit.sign          | "v"               |
-      | measures[1].unit.type          | "number"          |
-      | engineId                       | "_UNDEFINED_"     |
-      | assetId                        | "_UNDEFINED_"     |
+      | reference                      | "12345"            |
+      | model                          | "DummyTemp"        |
+      | measures[0].type               | "temperature"      |
+      | measures[0].measuredAt         | "_DATE_NOW_"       |
+      | measures[0].deviceMeasureName  | "temperature"      |
+      | measures[0].values.temperature | 23.3               |
+      | measures[0].origin.id          | "DummyTemp-12345"  |
+      | measures[0].origin.deviceModel | "DummyTemp"        |
+      | measures[0].origin.type        | "device"           |
+      | measures[0].unit.name          | "Degree"           |
+      | measures[0].unit.sign          | "°"                |
+      | measures[0].unit.type          | "number"           |
+      | measures[1].type               | "battery"          |
+      | measures[1].measuredAt         | "_DATE_NOW_"       |
+      | measures[1].deviceMeasureName  | "theBatteryLevel"  |
+      | measures[1].values.battery     | 80                 |
+      | measures[1].origin.id          | "DummyTemp-12345"  |
+      | measures[1].origin.deviceModel | "DummyTemp"        |
+      | measures[1].origin.type        | "device"           |
+      | measures[1].unit.name          | "Volt"             |
+      | measures[1].unit.sign          | "v"                |
+      | measures[1].unit.type          | "number"           |
+      | engineId                       | "_UNDEFINED_"      |
+      | assetId                        | "_UNDEFINED_"      |
 
   Scenario: Update a DummyTemp payload
     Given I successfully receive a "dummy-temp" payload with:

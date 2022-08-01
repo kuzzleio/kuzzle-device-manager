@@ -289,6 +289,8 @@ export class MeasureService {
       }
       else {
         // Refine measurements in measures
+        const deviceMeasureName = measurement.deviceMeasureName ?? measurement.type;
+
         const assetMeasureName = this.findAssetMeasureName(
           deviceId,
           measurement.deviceMeasureName,
@@ -296,7 +298,7 @@ export class MeasureService {
 
         const measureContent: MeasureContent = {
           assetMeasureName,
-          deviceMeasureName: measurement.deviceMeasureName,
+          deviceMeasureName: deviceMeasureName,
           measuredAt: measurement.measuredAt,
           origin: {
             assetId,

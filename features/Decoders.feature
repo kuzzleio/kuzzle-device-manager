@@ -3,7 +3,7 @@ Feature: Device Manager Decoders
   Scenario: List all registered decoders
     When When I successfully execute the action "device-manager/decoders":"list"
     Then I should receive a result matching:
-      | decoders[0] | {"deviceModel":"DummyTemp","decoderMeasures":{"theTemperature":"temperature","theBatteryLevel":"battery"}} |
+      | decoders[0] | {"deviceModel":"DummyTemp","decoderMeasures":{"theBatteryLevel":"battery"}} |
       | decoders[1] | {"deviceModel":"DummyMultiTemp","decoderMeasures":{"innerTemp":"temperature","outerTemp":"temperature","lvlBattery":"battery"}} |
       | decoders[2] | {"deviceModel":"DummyTempPosition","decoderMeasures":{"theTemperature":"temperature","theBattery":"battery","thePosition":"position"}} |
 
