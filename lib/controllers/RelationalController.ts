@@ -8,6 +8,7 @@ import {
   SearchResult
 } from 'kuzzle';
 import { User } from 'kuzzle/lib/types';
+import { KDocumentContent } from 'kuzzle-sdk';
 
 /**
  * interface to indicate a specific field in a specific document.
@@ -420,7 +421,7 @@ export abstract class RelationalController extends CRUDController {
     }
     else {
 
-      await this.as(user).document.update(
+      await this.sdk.document.update(
         index,
         collection,
         document,
@@ -428,7 +429,45 @@ export abstract class RelationalController extends CRUDController {
       );
     }
   }
-  
+
+  /**
+   * 
+   * @param index
+   * @param collection
+   * @param document
+    * @param nestedFields : contain field name in the document to get, collection name and index name of documents that are linked
+   */
+  protected async genericGet<TKDocumentContent extends KDocumentContent> (index: string, collection : string, documentId : string, nestedFields : FieldPath[] = []): Promise<KDocument<TKDocumentContent>> {
+    const document = await this.sdk.document.get<TKDocumentContent>(index, collection, documentId);
+    for (const nestedField of nestedFields) {
+      if (document._source[nestedField.field]) {
+        document._source[nestedField.field] = await this.getRequestRaw(nestedField.index, nestedField.collection, document._source[nestedField.field]);
+      }
+    }
+    return document;
+  }
+
+  private async getRequestRaw (index: string, collection : string, document : string) : Promise<KDocumentContent> {
+
+    const request = new KuzzleRequest({
+      _id: document,
+      collection,
+      engineId: index,
+      index,
+
+    }, {});
+    if (RelationalController.classMap && RelationalController.classMap.has(collection)) {
+      return RelationalController.classMap.get(collection).get(request);
+    }
+    return this.get(request);
+  }
+
+  protected async get (request): Promise<KDocumentContent> {
+    const document = await this.sdk.document.get(request.getString('index'), request.getString('collection'), request.getId());
+    return document._source;
+  }
+
+
 }
 
 

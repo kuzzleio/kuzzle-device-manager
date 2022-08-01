@@ -7,7 +7,7 @@ description: Deletes an asset-category
 
 # get
 
-Get an asset-category.
+Get an asset.
 
 You can also use [document:get](/core/2/api/controllers/document/get) API action if you have proper rights, but if you use this specific controller, the data is preprocessed and easier to use.
 
@@ -18,7 +18,7 @@ You can also use [document:get](/core/2/api/controllers/document/get) API action
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assetCategory/:_id
+URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id
 Method: GET
 ```
 
@@ -27,16 +27,16 @@ Method: GET
 ```js
 {
   "engineId": "<engineId>",
-  "controller": "device-manager/assetCategory",
+  "controller": "device-manager/assets",
   "action": "get",
-  "_id": "<assetCategoryId>"
+  "_id": "<assetId>"
 }
 ```
 
 ### Kourou
 
 ```bash
-kourou device-manager/assetCategory:get <engineId> --id <assetCategoryId>
+kourou device-manager/assets:get <engineId> --id <assetId>
 ```
 
 ---
@@ -49,32 +49,55 @@ kourou device-manager/assetCategory:get <engineId> --id <assetCategoryId>
 
 ```js
 {
-    "action": "get",
-    "controller": "device-manager/assetCategory",
+  "action": "get",
+    "controller": "device-manager/asset",
     "error": null,
     "headers": {},
-    "node": "knode-accessible-orwell-15416",
-    "requestId": "8fd1b8b5-1dfd-4fba-a12f-4b570622980e",
+    "node": "knode-goofy-tapir-79868",
+    "requestId": "40b528b5-1f89-4a96-9d73-f424652ffff7",
     "result": {
-        "name": "myCategory",
+      "type": "type",
+      "model": "model",
+      "reference": "REF1003",
+      "category": {
+        "name": "T3",
         "assetMetadata": [
-            {
-                "mandatory": true,
-                "name": "myMetadata",
-                "valueType": "string"
-            },
-            {
-                "mandatory": true,
-                "name": "myOtherMetadata",
-                "valueType": "string"
-            }
+          {
+            "mandatory": false,
+            "name": "position",
+            "valueType": "geo_point"
+          },
+          {
+            "mandatory": true,
+            "name": "color",
+            "valueList": [
+              "red",
+              "blue",
+              "green"
+            ],
+            "valueType": "enum"
+          }
         ],
-        "metadataValues": {
-            "myMetadata": "myValue"
-        }
-    },
-    "status": 200,
-    "volatile": null
+        "metadataValues": {}
+      },
+      "metadata": {
+        "position": {
+          "lon": 10, 
+          "lat": 20
+        },
+        "color": "red"
+      },
+      "measures": [],
+      "deviceLinks": [],
+      "_kuzzle_info": {
+      "author": "-1",
+      "createdAt": 1658999673193,
+      "updatedAt": null,
+      "updater": null
+    }
+  },
+  "status": 200,
+  "volatile": null
 }
 ```
 

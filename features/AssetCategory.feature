@@ -195,7 +195,7 @@ Feature: AssetCategory
       | type             | "truck"    |
       | model            | "M"        |
       | reference        | "asset_02" |
-      | category         | "bigTruck" |
+      | category.name    | "bigTruck" |
       | metadata.surname | "test"     |
 
   Scenario: Create an assetCategory, a mandatory metadata, link them statically and create an asset with
@@ -290,7 +290,7 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/metadata":"create" with args:
       | engineId       | "engine-ayse"          |
       | body.name      | "color"                |
-      | body.valueType | "string"               |
+      | body.valueType | "enum"                 |
       | body.valueList | ["red","blue","green"] |
       | body.mandatory | true                   |
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
