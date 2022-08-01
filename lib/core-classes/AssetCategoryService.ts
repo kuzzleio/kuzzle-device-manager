@@ -105,6 +105,7 @@ export class AssetCategoryService {
         const fromattedObjectValue = this.formatMetadataForGet(objectValue.object);
         if (isEqual(fromattedObjectValue, value)) {
           find = true;
+          break;
         }
       }
       if (! find) {
@@ -130,8 +131,7 @@ export class AssetCategoryService {
     }
     return null;
   }
-  
-  
+
   formatValue (value : any) {
     const formattedValue : FormattedValue = {};
     if (typeof value === 'number' ) {
@@ -186,9 +186,7 @@ export class AssetCategoryService {
         return this.formatMetadataForGet(value.object);
       } 
       return value.object;
-      
     }
     return value.boolean;
   }
-  
 }

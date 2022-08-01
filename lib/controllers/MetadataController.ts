@@ -72,7 +72,7 @@ export class MetadataController extends RelationalController {
     if (metadata._source.objectValueList) {
       processedMetadata.objectValueList = [];
       for (const objectValue of metadata._source.objectValueList) {
-        processedMetadata.objectValueList.push(await this.assetCategoryService.formatMetadataForGet(objectValue.object));
+        processedMetadata.objectValueList.push(this.assetCategoryService.formatMetadataForGet(objectValue.object));
       }
     }
     return processedMetadata;
