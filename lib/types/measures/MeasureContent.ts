@@ -26,7 +26,7 @@ export interface Measurement {
   /**
    * Micro Timestamp of the measurement time.
    */
-  measuredAt: number;
+  measuredAt?: number;
 
   /**
    * Name given by the decoder to the measure.
