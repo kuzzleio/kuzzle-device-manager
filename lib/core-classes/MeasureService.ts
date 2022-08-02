@@ -298,7 +298,7 @@ export class MeasureService {
 
         const measureContent: MeasureContent = {
           assetMeasureName,
-          deviceMeasureName: deviceMeasureName,
+          deviceMeasureName,
           measuredAt: measurement.measuredAt,
           origin: {
             assetId,
