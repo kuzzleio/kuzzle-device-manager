@@ -40,7 +40,7 @@ Feature: Device provisioning
       | body.model                            | "DummyTemp"  |
       | body.reference                        | "MATALE"     |
     Then I should receive an error matching:
-      | message | "The linkRequest provided is incorrectly formed\\nThis is probably not a Kuzzle error, but a problem with a plugin implementation." |
+      | message | "The linkRequest provided is not valid\\nThis is probably not a Kuzzle error, but a problem with a plugin implementation." |
 
   Scenario: Create by provisioning by a payload
     Given I successfully execute the action "document":"update" with args:
