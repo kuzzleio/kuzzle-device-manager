@@ -92,11 +92,11 @@ export class DeviceController extends CRUDController {
     const assetId = request.getBodyString('assetId', '');
     const measureNamesLinks = request.getBodyArray('measureNamesLinks', []);
 
-    if (assetId.length && (! this.validateMeasureNamesLinks(measureNamesLinks))) {
+    if (assetId.length && ! this.validateMeasureNamesLinks(measureNamesLinks)) {
       throw new PluginImplementationError('The linkRequest provided is not valid');
     }
 
-    if ((! assetId.length) && measureNamesLinks.length) {
+    if (! assetId.length && measureNamesLinks.length) {
       throw new PluginImplementationError('A link request is given without any assetId');
     }
 
