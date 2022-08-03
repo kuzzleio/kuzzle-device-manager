@@ -105,11 +105,11 @@ export class MeasureService {
     const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
 
     // Create caching structures
-    const engineMeasuresCache: EngineMeasuresCache = {};
+    const engineMeasures: EngineMeasuresCache = {};
 
-    const assetMeasuresInEngineCache: EntityMeasuresInEngineCache<AssetCacheEntity> = {};
+    const assetMeasuresInEngine: EntityMeasuresInEngineCache<AssetCacheEntity> = {};
 
-    const deviceMeasuresInEngineCache: EntityMeasuresInEngineCache<DeviceCacheEntity> = {};
+    const deviceMeasuresInEngine: EntityMeasuresInEngineCache<DeviceCacheEntity> = {};
 
     const measurementsWithoutDevice: Record<string, Measurement[]> = {};
     const unknownTypeMeasurements: Measurement[] = [];
@@ -118,9 +118,9 @@ export class MeasureService {
     // Need to be atomic (no Promise.all) because it would erase the array in `assetMeasuresInEngineCache` and `deviceMeasuresInEngineCache`
     for (const [reference, measurements] of Object.entries(decodedPayloads)) {
       await this.insertIntoSortingRecords(
-        engineMeasuresCache,
-        assetMeasuresInEngineCache,
-        deviceMeasuresInEngineCache,
+        engineMeasures,
+        assetMeasuresInEngine,
+        deviceMeasuresInEngine,
         measurementsWithoutDevice,
         unknownTypeMeasurements,
         payloadUuids,
@@ -132,9 +132,9 @@ export class MeasureService {
     }
 
     const response = await this.app.trigger(`${eventId}:before`, {
-      assetMeasuresInEngineCache,
-      deviceMeasuresInEngineCache,
-      engineMeasuresCache,
+      assetMeasuresInEngineCache: assetMeasuresInEngine,
+      deviceMeasuresInEngineCache: deviceMeasuresInEngine,
+      engineMeasuresCache: engineMeasures,
       unknownTypeMeasurements,
     });
 
@@ -189,9 +189,9 @@ export class MeasureService {
     );
 
     await this.app.trigger(`${eventId}:after`, {
-      assetMeasuresInEngineCache,
-      deviceMeasuresInEngineCache,
-      engineMeasuresCache,
+      assetMeasuresInEngineCache: assetMeasuresInEngine,
+      deviceMeasuresInEngineCache: deviceMeasuresInEngine,
+      engineMeasuresCache: engineMeasures,
     });
 
     return {
