@@ -30,7 +30,7 @@ Feature: Device provisioning
       | body.model                            | "DummyTemp"  |
       | body.reference                        | "MATALE"     |
     Then I should receive an error matching:
-      | message | "The linkRequest provided is incorrectly formed\\nThis is probably not a Kuzzle error, but a problem with a plugin implementation." |
+      | message | "A link request is given without any assetId\\nThis is probably not a Kuzzle error, but a problem with a plugin implementation." |
 
   Scenario: Create a device with an incorrect link request (no assetId) throw an error:
     When I execute the action "device-manager/device":"create" with args:
