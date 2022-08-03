@@ -190,21 +190,24 @@ export class AssetCategoryController extends RelationalController {
   async get (request: KuzzleRequest) : Promise<ProcessedAssetCategoryContent> {
     const id = request.getId();
     const engineId = request.getString('engineId');
-    const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id); //TODO : split assetCategorycontent with one for bdd mapping and one for get return 
-    const source = category._source;
+
+    const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id);
+    const categorySource = category._source;
     const [assetMetadata, metadataValues] = await Promise.all([
-      this.assetCategoryService.getMetadata(source, engineId),
-      this.assetCategoryService.getMetadataValues(source, engineId)
+      this.assetCategoryService.getMetadata(categorySource, engineId),
+      this.assetCategoryService.getMetadataValues(categorySource, engineId)
     ]
     );
     const formattedAssetMetadata = this.assetCategoryService.formatMetadataForGet(metadataValues);
-
+    const children = this.getFieldPath(request, 'parent');
+    const processedCategory = await this.genericGet<AssetCategoryContent>(engineId, this.collection, id, [children]);
     const processedAssetCategoryContent :ProcessedAssetCategoryContent = {
-      name: source.name,
-      parent: source.parent,
+      name: categorySource.name,
+      parent: processedCategory._source.parent,
       assetMetadata,
       metadataValues: formattedAssetMetadata
     };
+
     return processedAssetCategoryContent;
   }
 }

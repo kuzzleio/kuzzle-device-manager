@@ -111,7 +111,9 @@ export class AssetController extends RelationalController {
   async get (request: KuzzleRequest) {
     const id = request.getId();
     const engineId = request.getString('engineId');
-    const document = await this.sdk.document.get<BaseAssetContent>(engineId, this.collection, id);
+    const category = this.getFieldPath(request, 'category', null, 'asset-category');
+
+    const document = await this.genericGet<BaseAssetContent>(engineId, this.collection, id, [category]);
     const metadata = document._source.metadata;
     const asset = document._source as JSONObject;
     if (metadata) {
