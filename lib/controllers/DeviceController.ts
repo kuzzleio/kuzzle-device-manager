@@ -42,7 +42,7 @@ export class DeviceController extends CRUDController {
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ path: 'device-manager/devices/:_id/_link/:assetId', verb: 'put' }]
+          http: [{ path: 'device-manager/:engineId/devices/:_id/_link/:assetId', verb: 'put' }]
         },
         mAttachEngines: {
           handler: this.mAttachEngines.bind(this),
