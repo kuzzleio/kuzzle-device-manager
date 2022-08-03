@@ -11,9 +11,9 @@ import {
 export class DummyMultiTempDecoder extends Decoder {
   constructor (measuresRegister: MeasuresRegister) {
     super('DummyMultiTemp', {
-      'innerTemp': 'temperature',
-      'outerTemp': 'temperature',
-      'lvlBattery': 'battery',
+      innerTemp: 'temperature',
+      outerTemp: 'temperature',
+      lvlBattery: 'battery',
     },
       measuresRegister);
 

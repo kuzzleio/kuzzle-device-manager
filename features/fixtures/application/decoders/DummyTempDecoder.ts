@@ -11,7 +11,7 @@ import {
 export class DummyTempDecoder extends Decoder {
   constructor (measuresRegister: MeasuresRegister) {
     super('DummyTemp',
-      { 'theBatteryLevel': 'battery', }, // Wrong decoderMeasure list on purpose, avoid this please
+      { theBatteryLevel: 'battery', }, // Wrong decoderMeasure list on purpose, avoid this please
       measuresRegister);
 
     this.payloadsMappings = {

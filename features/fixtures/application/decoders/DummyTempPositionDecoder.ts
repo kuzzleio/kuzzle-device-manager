@@ -12,9 +12,9 @@ import {
 export class DummyTempPositionDecoder extends Decoder {
   constructor (measuresRegister: MeasuresRegister) {
     super('DummyTempPosition', {
-      'theTemperature': 'temperature',
-      'theBattery': 'battery',
-      'thePosition': 'position',
+      theTemperature: 'temperature',
+      theBattery: 'battery',
+      thePosition: 'position',
     },
     measuresRegister);
   }
