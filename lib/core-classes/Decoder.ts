@@ -88,7 +88,7 @@ export abstract class Decoder {
 
     for (const [measureName, measureType] of Object.entries(decoderMeasures)) {
       if (! measuresRegister.has(measureType)) {
-        throw new PluginImplementationError(`Attempted creation of the decoder for the devices of model"${deviceModel}" with unknown measure type "${measureType}" for the measure named "${measureName}".`);
+        throw new PluginImplementationError(`Decoder "${this.constructor.name}" cannot register unknown measure type "${measureType}"`);
       }
     }
 

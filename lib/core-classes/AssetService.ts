@@ -140,7 +140,7 @@ export class AssetService {
     const result = asset.removeMeasures(assetMeasureNames);
 
     if (strict && result.notFound.length) {
-      throw new NotFoundError(`AssetMeasureNames ${result.notFound} in asset ${assetId} of engine ${engineId}`);
+      throw new NotFoundError(`AssetMeasureNames "${result.notFound}" in asset "${assetId}" of engine "${engineId}"`);
     }
 
     await this.sdk.document.update(

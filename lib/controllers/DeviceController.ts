@@ -379,7 +379,7 @@ export class DeviceController extends CRUDController {
       return false;
     }
 
-    if (! (_.has(toValidate.deviceLink, 'measureNamesLink'))) {
+    if (! _.has(toValidate.deviceLink, 'measureNamesLink')) {
       return true;
     }
 

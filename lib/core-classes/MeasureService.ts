@@ -23,16 +23,23 @@ import { AssetService } from './AssetService';
 import { DeviceService } from './DeviceService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
 
-type EngineMeasuresCache = Record<string, // engineId
-  Array<MeasureContent>>;
+/**
+ * Record<engineId, MeasureContent[]>
+ */
+type EngineMeasuresCache = Record<string, MeasureContent[]>;
 
 type AssetCacheEntity = { asset: BaseAsset, measures: MeasureContent[] };
 
 type DeviceCacheEntity = { device: Device, measures: MeasureContent[] };
 
-type EntityMeasuresCache<Entity> = Record<string, // documentModel
-  Entity>;
+/**
+ * Record<documentModel, Entity[]>
+ */
+type EntityMeasuresCache<Entity> = Record<string, Entity>;
 
+/**
+ * Record<engineId, EntityMeasuresCache<Entity>>
+ */
 type EntityMeasuresInEngineCache<Entity> = Record<string, // engineId
   EntityMeasuresCache<Entity>>;
 
@@ -135,7 +142,7 @@ export class MeasureService {
     // In Engine measures
     await Promise.all(Object.entries(response.engineMeasuresCache).map(([engineId, measures]) => {
       const measureArray = measures as Array<MeasureContent>;
-      this.historizeEngineMeasures(engineId, measureArray, { refresh });
+      return this.historizeEngineMeasures(engineId, measureArray, { refresh });
     }));
 
     // Update measures of assets and update documents
@@ -163,7 +170,7 @@ export class MeasureService {
       }));
 
       if (engineId !== this.config.adminIndex) {
-        this.sdk.document.mUpdate(
+        await this.sdk.document.mUpdate(
           engineId,
           InternalCollection.DEVICES,
           Object.values(deviceMeasuresRecord).map(
