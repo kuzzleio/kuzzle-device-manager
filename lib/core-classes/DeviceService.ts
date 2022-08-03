@@ -21,7 +21,7 @@ import { mRequest, mResponse, writeToDatabase } from '../utils/';
 import { AssetService } from './AssetService';
 
 export type DeviceBulkContent = {
-  engineId?: string;
+  engineId: string;
   deviceId: string;
   assetId?: string;
 }
@@ -44,6 +44,8 @@ export type LinkRequest = {
 
   deviceId: string;
 
+  engineId: string;
+  
   /**
    * List of measures names when linked to the asset.
    * Default measure name is measure type.
@@ -119,7 +121,7 @@ export class DeviceService {
       return attachedDevice;
     }
 
-    const { device: linkedDevice } = await this.linkAsset({ assetId, deviceId }, { refresh });
+    const { device: linkedDevice } = await this.linkAsset({ assetId, deviceId, engineId }, { refresh });
 
     return linkedDevice;
   }
@@ -230,6 +232,10 @@ export class DeviceService {
 
     const engineId = device._source.engineId;
 
+    if (engineId !== linkRequest.engineId) {
+      throw new BadRequestError(`Device "${device._id}" is not attached to given engine.`);
+    }
+    
     if (! engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
@@ -239,6 +245,7 @@ export class DeviceService {
     }
 
     const asset = await this.assetService.getAsset(engineId, linkRequest.assetId);
+
 
     // Copy device measures and assign measures names
     const measures: MeasureContent[] = device._source.measures.map(measure => {

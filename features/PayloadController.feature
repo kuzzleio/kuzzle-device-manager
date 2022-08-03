@@ -181,3 +181,31 @@ Feature: Payloads Controller
       | "temperature" | "tools-MART-linked"    |
       | "battery"     | "tools-MART-linked"    |
 
+  Scenario: Receive a Payload from a know and an unknow device and verify payload documents
+    When I successfully execute the following HTTP request:
+      | method            | "post"                                 |
+      | path              | "/_/device-manager/payload/dummy-temp" |
+      | body.deviceEUI    | "777"                                  |
+      | body.temperature  | 3                                      |
+      | body.batteryLevel | 14                                     |
+    Then The document "device-manager":"devices":"DummyTemp-777" content match:
+      | reference | "777"       |
+      | model     | "DummyTemp" |
+    When I refresh the collection "device-manager":"payloads"
+    Then I successfully execute the action "document":"search" with args:
+      | index      | "device-manager" |
+      | collection | "payloads"    |
+    And I should receive a result matching:
+      | hits | [{_source : {deviceModel : "DummyTemp", payload : { deviceEUI : "777", temperature : 3}}}] |
+    When I successfully execute the following HTTP request:
+      | method            | "post"                                   |
+      | path              | "/_/device-manager/payload/unknowDevice" |
+      | body.deviceEUI    | "666"                                    |
+      | body.temperature  | 6                                        |
+      | body.batteryLevel | 66                                        |
+    And I refresh the collection "device-manager":"payloads"
+    And I successfully execute the action "document":"search" with args:
+      | index      | "device-manager" |
+      | collection | "payloads"    |
+    Then I should receive a result matching:
+      | hits | [{_source : {deviceModel : "unknowDevice", rawPayload : { deviceEUI : "666", temperature : 6}}}] |
