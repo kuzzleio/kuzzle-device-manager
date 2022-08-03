@@ -16,9 +16,9 @@ A basic metadata contain only tree informations : it's name, it's type, and if i
 **Example:** _Representation of a basic metadata_
 ```js
 {
-"name": "surname",
-"valueType": "string",
-"mandatory": true
+  "name": "surname",
+  "valueType": "string",
+  "mandatory": true
 }
 ```
 
@@ -29,8 +29,8 @@ These value can be string (like this example) :
 ```js
 {
   "name": "color",
-    "valueType": "enum",
-    "valueList": [
+  "valueType": "enum",
+  "valueList": [
     "red",
     "blue",
     "green"
@@ -45,9 +45,9 @@ These value can also be object (like this example) :
 ```js
 {
   "name": "trailer",
-    "valueType": "enum",
-    "mandatory": false,
-    "objectValueList": [
+  "valueType": "enum",
+  "mandatory": false,
+  "objectValueList": [
     {
       "object": [
         {

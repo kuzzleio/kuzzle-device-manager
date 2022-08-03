@@ -20,33 +20,32 @@ You can have a clean and complete representation of an assetCategory using the g
 **Example:** _Clean representation of an assetCategory given by a get_
 ```js
 {
-        "name": "example",
-        "assetMetadata": [
-            {
-                "mandatory": false,
-                "name": "position",
-                "valueType": "geo_point"
-            },
-            {
-                "mandatory": true,
-                "name": "color",
-                "valueList": [
-                    "red",
-                    "blue",
-                    "green"
-                ],
-                "valueType": "enum"
-            },
-            {
-                "mandatory": true,
-                "name": "surname",
-                "valueType": "string"
-            }
-        ],
-        "metadataValues": {
-            "surname": "test"
-        }
+  "name": "example",
+  "assetMetadata": [
+    {
+      "mandatory": false,
+      "name": "position",
+      "valueType": "geo_point"
+    },
+    {
+      "mandatory": true,
+      "name": "color",
+      "valueList": [
+        "red",
+        "blue",
+        "green"
+      ],
+      "valueType": "enum"
+    },
+    {
+      "mandatory": true,
+      "name": "surname",
+      "valueType": "string"
     }
+  ],
+  "metadataValues": {
+    "surname": "test"
+  }
 }
 ```
 
@@ -54,12 +53,12 @@ You can have a clean and complete representation of an assetCategory using the g
 ```js
 {
   "name": "T3",
-    "assetMetadata": [
+  "assetMetadata": [
     "position",
     "color",
     "surname"
   ],
-    "metadataValues": [
+  "metadataValues": [
     {
       "value": {
         "keyword": "test"

@@ -434,23 +434,34 @@ export abstract class RelationalController extends CRUDController {
    * 
    * @param index
    * @param collection
-   * @param document
+   * @param documentId
     * @param nestedFields : contain field name in the document to get, collection name and index name of documents that are linked
    */
   protected async genericGet<TKDocumentContent extends KDocumentContent> (index: string, collection : string, documentId : string, nestedFields : FieldPath[] = []): Promise<KDocument<TKDocumentContent>> {
     const document = await this.sdk.document.get<TKDocumentContent>(index, collection, documentId);
+    const promises : Promise<void>[] = [];
     for (const nestedField of nestedFields) {
-      if (document._source[nestedField.field]) {
-        document._source[nestedField.field] = await this.getRequestRaw(nestedField.index, nestedField.collection, document._source[nestedField.field]);
-      }
+      promises.push(this.replaceNestedFieldByContent(document, nestedField));
     }
+    await Promise.all(promises);
     return document;
   }
 
-  private async getRequestRaw (index: string, collection : string, document : string) : Promise<KDocumentContent> {
+  /**
+   * Edit the document : replace content of field given by nestedField with content pointed
+   * @param document : document to edit
+   * @param nestedField : : contain field name in the document to get, collection name and index name of documents that are linked
+   */
+  private async replaceNestedFieldByContent (document : KDocument<KDocumentContent>, nestedField : FieldPath ) {
+    if (document._source[nestedField.field]) {
+      document._source[nestedField.field] = await this.getRequestRaw(nestedField.index, nestedField.collection, document._source[nestedField.field]);
+    }
+  }
+
+  private async getRequestRaw (index: string, collection : string, documentId : string) : Promise<KDocumentContent> {
 
     const request = new KuzzleRequest({
-      _id: document,
+      _id: documentId,
       collection,
       engineId: index,
       index,
