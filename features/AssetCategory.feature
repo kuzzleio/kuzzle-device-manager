@@ -393,7 +393,7 @@ Feature: AssetCategory
       | metadata[0].value.geo_point.lon | 10         |
       | metadata[0].value.geo_point.lat | 20         |
 
-  Scenario: Use objectEnum
+  Scenario: Use objectEnum to create assetCategory, and asset
     When I successfully execute the action "device-manager/metadata":"create" with args:
       | engineId             | "engine-ayse"                                                                                               |
       | body.name            | "trailer"                                                                                                   |
@@ -453,5 +453,21 @@ Feature: AssetCategory
       | _id        | "trailerTruck"                                      |
       | metadataId | "trailer"                                           |
       | body.value | {'color' : 'red', 'size' : 'giant', 'maxLoad' : 60} |
+    Then I should receive an error matching:
+      | id | "device-manager.asset_controller.enum_metadata" |
+    When I successfully execute the action "device-manager/assetCategory":"create" with args:
+      | engineId  | "engine-ayse"         |
+      | body.name | "genericTrailerTruck" |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"         |
+      | _id        | "genericTrailerTruck" |
+      | metadataId | "trailer"             |
+    When I execute the action "device-manager/asset":"create" with args:
+      | engineId              | "engine-ayse"                                       |
+      | body.type             | "truck"                                             |
+      | body.model            | "M"                                                 |
+      | body.reference        | "myTrailerTruck"                                    |
+      | body.category         | "genericTrailerTruck"                               |
+      | body.metadata.trailer | {'color' : 'red', 'size' : 'giant', 'maxLoad' : 60} |
     Then I should receive an error matching:
       | id | "device-manager.asset_controller.enum_metadata" |
