@@ -303,7 +303,7 @@ export class DeviceService {
           });
     }
 
-    device.linkToAsset({ assetId, deviceLink,engineId });
+    device.linkToAsset({ assetId, deviceLink, engineId });
     asset.linkToDevice({ assetId, deviceLink, engineId });
 
     const response = await this.app.trigger(
