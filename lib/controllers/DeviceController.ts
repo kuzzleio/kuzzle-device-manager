@@ -303,7 +303,7 @@ export class DeviceController extends CRUDController {
     if (body.csv) {
       const lines = await csv({ delimiter: 'auto' }).fromString(body.csv);
 
-      bulkData = lines.map(({  deviceId, assetId }) => ({ //TODO : verify after remi merge!
+      bulkData = lines.map(({ deviceId, assetId }) => ({ //TODO : verify after remi merge!
         assetId,
         deviceId,
         engineId

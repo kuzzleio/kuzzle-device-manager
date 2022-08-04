@@ -25,7 +25,7 @@ export class AssetCategoryService {
         metadataList.push({
           'mandatory': metadataContent._source.mandatory,
           'name': metadataContent._source.name,
-          'objectValueList' : metadataContent._source.objectValueList,
+          'objectValueList': metadataContent._source.objectValueList,
           'unit': metadataContent._source.unit,
           'valueList': metadataContent._source.valueList,
           'valueType': metadataContent._source.valueType,
