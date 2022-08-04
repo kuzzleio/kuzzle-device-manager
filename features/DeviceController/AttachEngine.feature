@@ -42,6 +42,7 @@ Feature: Attach device to engine
       | body.records.0.deviceId | "DummyMultiTemp-detached"               |
       | body.records.1.engineId | "engine-kuzzle"                    |
       | body.records.1.deviceId | "DummyMultiTemp-attached_ayse_unlinked_1" |
+      | engineId | "engine-kuzzle" |
     Then The document "device-manager":"devices":"DummyMultiTemp-detached" content match:
       | engineId | "engine-kuzzle" |
     Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
@@ -52,6 +53,7 @@ Feature: Attach device to engine
   Scenario: Attach multiple device to an engine using CSV
     When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
       | body.csv | "engineId,deviceId\\nengine-kuzzle,DummyMultiTemp-detached\\nengine-kuzzle,DummyMultiTemp-attached_ayse_unlinked_1," |
+      | engineId | "engine-kuzzle"                                                                                          |
     Then The document "device-manager":"devices":"DummyMultiTemp-detached" content match:
       | engineId | "engine-kuzzle" |
     Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:

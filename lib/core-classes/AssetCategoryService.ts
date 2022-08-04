@@ -25,6 +25,7 @@ export class AssetCategoryService {
         metadataList.push({
           'mandatory': metadataContent._source.mandatory,
           'name': metadataContent._source.name,
+          'objectValueList': metadataContent._source.objectValueList,
           'unit': metadataContent._source.unit,
           'valueList': metadataContent._source.valueList,
           'valueType': metadataContent._source.valueType,
@@ -79,11 +80,14 @@ export class AssetCategoryService {
 
   async validateMetadata (assetMetadata : JSONObject, engineId : string, category : string) {
     const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
+
     const [metadataList, metadataValues] = await Promise.all([
       await this.getMetadata(assetCategory._source, engineId),
       await this.getMetadataValues(assetCategory._source, engineId)
     ]);
+
     for (const metadata of metadataList) {
+
       if (metadata.mandatory) {
         if (! (assetMetadata[metadata.name]) && ! this.containsValue(metadataValues, metadata.name)) {
           throw global.app.errors.get('device-manager', 'asset_controller', 'mandatory_metadata', metadata.name);
@@ -93,7 +97,7 @@ export class AssetCategoryService {
     }
   }
 
-  validateEnumMetadata (metadata, value) {
+  validateEnumMetadata (metadata : MetadataContent, value) {
     if (metadata.valueList) {
       if (! metadata.valueList.includes(value)) {
         throw global.app.errors.get('device-manager', 'asset_controller', 'enum_metadata', metadata.name, value);

@@ -27,6 +27,8 @@ Feature: DeviceManager asset controller
       | _id                     | "DummyMultiTemp-attached_ayse_unlinked_1"  |
       | assetId                 | "outils-PERFO-asset_02"             |
       | body.metadata.index     | "engine-ayse"         |
+      | engineId                | "engine-ayse"                                 |
+
     And I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-ayse"         |
       | _id      | "outils-PERFO-asset_02" |
@@ -156,11 +158,13 @@ Feature: DeviceManager asset controller
 
   Scenario: Get payloads from devices to multiple assets
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1"   |
-      | assetId                                     | "container-FRIDGE-unlinked_1"               |
-      | body.metadata.index                         | "engine-ayse"                               |
-      | body.measureNamesLinks[0].assetMeasureName  | "coreBatteryLevel"                          |
-      | body.measureNamesLinks[0].deviceMeasureName | "lvlBattery"                                |
+      | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1" |
+      | assetId                                     | "container-FRIDGE-unlinked_1"             |
+      | body.metadata.index                         | "engine-ayse"                             |
+      | body.measureNamesLinks[0].assetMeasureName  | "coreBatteryLevel"                        |
+      | body.measureNamesLinks[0].deviceMeasureName | "lvlBattery"                              |
+      | engineId                                    | "engine-ayse"         |
+
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI    | "attached_ayse_linked_1"   |
       | payloads[0].lvlBattery   | 0.12                       |

@@ -121,8 +121,9 @@ Feature: Payloads Controller
       | engineId | "engine-kuzzle"            |
     And I refresh the collection "engine-ayse":"assets"
     And I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id      | "DummyMultiTemp-detached"  |
-      | assetId  | "type1-model1-reference1"  |
+      | _id      | "DummyMultiTemp-detached" |
+      | assetId  | "type1-model1-reference1" |
+      | engineId | "engine-kuzzle"           |
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI     | "detached" |
       | payloads[0].registerInner | 42.2       |
@@ -135,3 +136,34 @@ Feature: Payloads Controller
       | _source.type  | _source.origin.id           | _source.origin.assetId    | _source.origin.type |
       | "temperature" | "DummyMultiTemp-detached"   | "type1-model1-reference1" | "device"            |
       | "battery"     | "DummyMultiTemp-detached"   | "type1-model1-reference1" | "device"            |
+
+  Scenario: Receive a Payload from a know and an unknow device and verify payload documents
+    When I successfully execute the following HTTP request:
+      | method            | "post"                                 |
+      | path              | "/_/device-manager/payload/dummy-temp" |
+      | body.deviceEUI    | "777"                                  |
+      | body.temperature  | 3                                      |
+      | body.batteryLevel | 14                                     |
+    Then The document "device-manager":"devices":"DummyTemp-777" content match:
+      | reference | "777"       |
+      | model     | "DummyTemp" |
+    When I refresh the collection "device-manager":"payloads"
+    Then I successfully execute the action "document":"search" with args:
+      | index            | "device-manager"             |
+      | collection       | "payloads"                   |
+      | body.query.match | {"payload.deviceEUI" :"777"} |
+    And I should receive a result matching:
+      | hits | [{_source : {deviceModel : "DummyTemp", payload : { deviceEUI : "777", temperature : 3}}}] |
+    When I successfully execute the following HTTP request:
+      | method            | "post"                                   |
+      | path              | "/_/device-manager/payload/unknowDevice" |
+      | body.deviceEUI    | "666"                                    |
+      | body.temperature  | 6                                        |
+      | body.batteryLevel | 66                                        |
+    And I refresh the collection "device-manager":"payloads"
+    And I successfully execute the action "document":"search" with args:
+      | index            | "device-manager"             |
+      | collection       | "payloads"                   |
+      | body.query.match | {deviceModel :"unknowDevice"} |
+    Then I should receive a result matching:
+      | hits | [{_source : {deviceModel : "unknowDevice", rawPayload : { deviceEUI : "666", temperature : 6}}}] |

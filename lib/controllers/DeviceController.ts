@@ -54,7 +54,7 @@ export class DeviceController extends CRUDController {
         },
         mLinkAssets: {
           handler: this.mLinkAssets.bind(this),
-          http: [{ path: 'device-manager/devices/_mLink', verb: 'put' }]
+          http: [{ path: 'device-manager/:engineId/devices/_mLink', verb: 'put' }]
         },
         mUnlinkAssets: {
           handler: this.mUnlinkAssets.bind(this),
@@ -110,7 +110,8 @@ export class DeviceController extends CRUDController {
     const linkRequest: LinkRequest = assetId.length
       ? {
         assetId,
-        deviceLink: { deviceId: Device.id(model, reference), measureNamesLinks }
+        deviceLink: { deviceId: Device.id(model, reference), measureNamesLinks },
+        engineId
       }
       : null;
 
@@ -211,6 +212,7 @@ export class DeviceController extends CRUDController {
    */
   async linkAsset (request: KuzzleRequest) {
     const deviceId = request.getId();
+    const engineId = request.getString('engineId');
     const assetId = request.getString('assetId');
     const refresh = request.getRefresh();
     const jsonMeasureNamesLinks = request.getBodyArray('measureNamesLinks', []);
@@ -223,7 +225,9 @@ export class DeviceController extends CRUDController {
 
     return this.deviceService.linkAsset({
       assetId,
-      deviceLink: { deviceId, measureNamesLinks }
+      deviceLink: { deviceId, measureNamesLinks },
+      engineId,
+
     }, { refresh });
   }
 
@@ -233,13 +237,15 @@ export class DeviceController extends CRUDController {
   async mLinkAssets (request: KuzzleRequest) {
     const jsonLinkRequests = request.getBodyArray('linkRequests');
     const refresh = request.getRefresh();
+    const engineId = request.getString('engineId');
+
 
     for (const jsonLinkRequest of jsonLinkRequests) {
       if (! this.validateLinkRequest(jsonLinkRequest)) {
         throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
       }
+      jsonLinkRequest.engineId = engineId;
     }
-
     const linkRequests = jsonLinkRequests as LinkRequest[];
 
     const valids = [];
@@ -344,30 +350,30 @@ export class DeviceController extends CRUDController {
 
   private async mParseRequest (request: KuzzleRequest) {
     const body = request.input.body;
+    const engineId = request.getString('engineId');
 
     let bulkData: DeviceBulkContent[];
 
     if (body.csv) {
       const lines = await csv({ delimiter: 'auto' }).fromString(body.csv);
 
-      bulkData = lines.map(({ engineId, deviceId, assetId }) => ({
+      bulkData = lines.map(({ deviceId, assetId }) => ({ //TODO : verify after remi merge!
         assetId,
         deviceId,
         engineId
       }));
     }
     else if (body.records) {
-      bulkData = body.records;
+      bulkData = body.records; //TODO : verify after remi merge!
     }
     else if (body.deviceIds) {
-      bulkData = body.deviceIds.map((deviceId: string) => ({ deviceId }));
+      bulkData = body.deviceIds.map((deviceId: string) => ({ deviceId, engineId }));
     }
     else {
       throw new BadRequestError('Malformed request missing property csv, records, deviceIds');
     }
 
     const strict = request.getBoolean('strict');
-
     return { bulkData, strict };
   }
 

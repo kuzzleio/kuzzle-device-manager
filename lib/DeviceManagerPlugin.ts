@@ -171,6 +171,17 @@ export class DeviceManagerPlugin extends Plugin {
     this.measures.register('battery', batteryMeasure);
   }
 
+  async unknowPayload (request: KuzzleRequest) {
+    const body = request.getBody();
+    const device = request.getString('device');
+    const documentContent = {
+      deviceModel: device,
+      rawPayload: body
+    };
+    this.sdk.document.create('device-manager', 'payloads', documentContent);
+  }
+
+
   /**
    * Init the plugin
    */
@@ -265,7 +276,10 @@ export class DeviceManagerPlugin extends Plugin {
     this.api['device-manager/assetCategory'] = this.assetCategoryController.definition;
     this.api['device-manager/metadata'] = this.metadataController.definition;
 
-
+    this.api['device-manager/payload'].actions.generic = {
+      handler: this.unknowPayload.bind(this),
+      http: [{ path: 'device-manager/payload/:device', verb: 'post' }]
+    };
     this.hooks = {
       'kuzzle:state:live': async () => {
         await this.decodersRegister.createDefaultRights();
