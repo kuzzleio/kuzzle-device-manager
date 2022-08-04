@@ -110,7 +110,8 @@ export class DeviceController extends CRUDController {
     const linkRequest: LinkRequest = assetId.length
       ? {
         assetId,
-        deviceLink: { deviceId: Device.id(model, reference), measureNamesLinks }
+        deviceLink: { deviceId: Device.id(model, reference), measureNamesLinks },
+        engineId
       }
       : null;
 

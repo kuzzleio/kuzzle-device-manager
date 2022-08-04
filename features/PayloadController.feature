@@ -121,8 +121,9 @@ Feature: Payloads Controller
       | engineId | "engine-kuzzle"            |
     And I refresh the collection "engine-ayse":"assets"
     And I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id      | "DummyMultiTemp-detached"  |
-      | assetId  | "type1-model1-reference1"  |
+      | _id      | "DummyMultiTemp-detached" |
+      | assetId  | "type1-model1-reference1" |
+      | engineId | "engine-kuzzle"           |
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI     | "detached" |
       | payloads[0].registerInner | 42.2       |

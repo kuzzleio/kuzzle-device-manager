@@ -303,8 +303,8 @@ export class DeviceService {
           });
     }
 
-    device.linkToAsset({ assetId, deviceLink });
-    asset.linkToDevice({ assetId, deviceLink });
+    device.linkToAsset({ assetId, deviceLink,engineId });
+    asset.linkToDevice({ assetId, deviceLink, engineId });
 
     const response = await this.app.trigger(
       `${eventId}:before`, { asset, device });
