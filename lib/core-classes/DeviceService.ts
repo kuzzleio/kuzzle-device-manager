@@ -1,10 +1,10 @@
 import {
+  Backend,
   BadRequestError,
+  BatchController,
   JSONObject,
   Plugin,
-  PluginContext,
-  BatchController,
-  KDocument 
+  PluginContext
 } from 'kuzzle';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,11 +14,17 @@ import { BaseAsset, Device } from '../models';
 import {
   DeviceContent,
   DeviceManagerConfiguration,
-  LinkedMeasureName,
-  MeasureContent
+  MeasureContent,
+  MeasureNamesLink
 } from '../types';
-import { mRequest, mResponse, writeToDatabase } from '../utils/';
+import { AttachRequest, LinkRequest } from '../types/Request';
+import {
+  mRequest,
+  mResponse,
+  writeToDatabase
+} from '../utils/';
 import { AssetService } from './AssetService';
+import { DecodersRegister } from './registers/DecodersRegister';
 
 export type DeviceBulkContent = {
   engineId: string;
@@ -26,59 +32,32 @@ export type DeviceBulkContent = {
   assetId?: string;
 }
 
-/**
- * Represents a request to link a device to an asset
- *
- * @example
- * {
- *   deviceId: 'Abeeway-4263232',
- *   assetId: 'container-xlarger-HSZJSZ',
- *   measuresNames: {
- *     temperature: 'External temperature',
- *     position: 'Lora Position'
- *   }
- * }
- */
-export type LinkRequest = {
-  assetId: string;
-
-  deviceId: string;
-
-  engineId: string;
-  
-  /**
-   * List of measures names when linked to the asset.
-   * Default measure name is measure type.
-   */
-  measuresNames?: {
-    [measureType: string]: string;
-  }
-}
-
-export type AttachRequest = {
-  deviceId: string;
-
-  engineId: string;
-}
-
 export class DeviceService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
   private assetService: AssetService;
+  private decodersRegister: DecodersRegister;
+  static eventId = 'device-manager:device';
 
   private get sdk () {
     return this.context.accessors.sdk;
   }
 
+  private get app (): Backend {
+    return global.app;
+  }
+
   constructor (
     plugin: Plugin,
     batchController: BatchController,
-    assetService: AssetService
+    assetService: AssetService,
+    decoderRegister: DecodersRegister,
   ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
     this.assetService = assetService;
+    this.decodersRegister = decoderRegister;
 
     this.batch = batchController;
   }
@@ -86,100 +65,157 @@ export class DeviceService {
   /**
    * Create a new device.
    *
-   * If the engineId is not the administration one, then the device will be
-   * automatically attached to the one provided.
-   *
-   * If an assetId is provided, then the device will be linked to this asset.
-   *
-   * @param engineId If it's not the admin engine, then the device will be attached to this one
    * @param deviceContent Content of the device to create
+   * @param {Object} options
+   * @param options.engineId If it's not the admin engine,
+   *  then the device will be attached to this one
+   * @param options.measures Measures to be pushed to the device.
+   *  They will be filtered by name and date like an update
+   * @param options.linkRequest If specified, link to an asset
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
    */
   async create (
-    engineId: string,
     deviceContent: DeviceContent,
-    assetId: string,
-    { refresh }: { refresh?: any },
-  ): Promise<KDocument<DeviceContent>> {
-    const deviceId = Device.id(deviceContent.model, deviceContent.reference);
+    { engineId, measures, linkRequest, refresh, strict }: {
+      engineId?: string,
+      measures?: MeasureContent[],
+      linkRequest?: LinkRequest,
+      refresh?: any,
+      strict?: boolean
+    } = {},
+  ): Promise<Device> {
+    const device = new Device(
+      deviceContent, Device.id(deviceContent.model, deviceContent.reference));
 
-    const device = await this.sdk.document.create<DeviceContent>(
+    if (measures) {
+      device.updateMeasures(measures);
+    }
+
+    let asset: BaseAsset;
+    if (linkRequest) {
+      try {
+        asset = await this.assetService.getAsset(engineId, linkRequest.assetId);
+        device.linkToAsset(linkRequest);
+        asset.linkToDevice(linkRequest);
+      }
+      catch (error) {
+        if (strict) {
+          throw error;
+        }
+      }
+    }
+
+    if (engineId && this.config.adminIndex !== engineId) {
+      if (! await this.tenantExists(engineId)) {
+        if (strict) {
+          throw new BadRequestError(`Engine "${engineId}" does not exists.`);
+        }
+      }
+      else {
+        device._source.engineId = engineId;
+
+        await this.sdk.document.create(
+          engineId,
+          InternalCollection.DEVICES,
+          device._source,
+          device._id,
+          { refresh });
+      }
+    }
+
+    await this.sdk.document.create(
       this.config.adminIndex,
-      'devices',
-      deviceContent,
-      deviceId,
+      InternalCollection.DEVICES,
+      device._source,
+      device._id,
       { refresh });
 
-    if (this.config.adminIndex === engineId) {
-      return device;
+    if (asset) {
+      await this.sdk.document.update(
+        engineId,
+        InternalCollection.ASSETS,
+        asset._id,
+        asset._source,
+        { refresh });
     }
 
-    const attachedDevice = await this.attachEngine(
-      { deviceId, engineId },
-      { refresh, strict: true });
-
-    if (! assetId) {
-      return attachedDevice;
-    }
-
-    const { device: linkedDevice } = await this.linkAsset({ assetId, deviceId, engineId }, { refresh });
-
-    return linkedDevice;
+    return device;
   }
 
+  /**
+   * Attach the device to an engine
+   * @param {object} attachRequest
+   * @param attachRequest.deviceId Device id to attach
+   * @param attachRequest.engineId Engine id to attach to
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
+   */
   async attachEngine (
-    attachRequest: AttachRequest,
+    { deviceId, engineId }: AttachRequest,
     { refresh, strict }: { refresh?: any, strict?: boolean },
   ): Promise<Device> {
-    const device = await this.getDevice(this.config, attachRequest.deviceId);
+    const eventId = `${DeviceService.eventId}:attach-engine`;
+    const device = await this.getDevice(this.config, deviceId);
+
+    if (! device) {
+      throw new BadRequestError(`Device "${device._id}" does not exist.`);
+    }
 
     if (strict && device._source.engineId) {
       throw new BadRequestError(`Device "${device._id}" is already attached to an engine.`);
     }
 
-    if (! await this.tenantExists(attachRequest.engineId)) {
-      throw new BadRequestError(`Engine "${attachRequest.engineId}" does not exists.`);
+    if (! await this.tenantExists(engineId)) {
+      throw new BadRequestError(`Engine "${engineId}" does not exists.`);
     }
 
-    device._source.engineId = attachRequest.engineId;
+    device._source.engineId = engineId;
 
+    const response = await this.app.trigger(`${eventId}:before`, { device });
 
-    const response = await global.app.trigger(
-      'device-manager:device:attach-engine:before',
-      {
-        device,
-        engineId: attachRequest.engineId,
-      });
     await Promise.all([
       this.sdk.document.update(
         this.config.adminIndex,
-        'devices',
+        InternalCollection.DEVICES,
         response.device._id,
         { engineId: response.device._source.engineId },
         { refresh }),
 
       this.sdk.document.createOrReplace(
         response.device._source.engineId,
-        'devices',
+        InternalCollection.DEVICES,
         response.device._id,
         response.device._source,
         { refresh }),
     ]);
 
-    await global.app.trigger('device-manager:device:attach-engine:after', {
-      device,
-      engineId: attachRequest.engineId,
-    });
+    await this.app.trigger(`${eventId}:after`, response );
 
     return device;
   }
 
+  /**
+   * Detach a device from its attached engine
+   *
+   * @param deviceId Device id
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
+   */
   async detachEngine (
     deviceId: string,
     { refresh, strict }: { refresh?: any, strict?: boolean }
   ): Promise<Device> {
+    const eventId = `${DeviceService.eventId}:detach-engine`;
     const device = await this.getDevice(this.config, deviceId);
 
     const engineId = device._source.engineId;
+
+    if (! device) {
+      throw new BadRequestError(`Device "${device._id}" does not exist.`);
+    }
 
     if (strict && ! engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
@@ -189,46 +225,49 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is still linked to an asset.`);
     }
 
-    const response = await global.app.trigger(
-      'device-manager:device:detach-engine:before',
-      {
-        device,
-        engineId,
-      });
+    const response = await this.app.trigger(
+      `${eventId}:before`, { device, engineId });
 
     await Promise.all([
       this.sdk.document.update(
         this.config.adminIndex,
-        'devices',
-        device._id,
+        InternalCollection.DEVICES,
+        response.device._id,
         { engineId: null },
         { refresh }),
 
       this.sdk.document.delete(
-        response.engineId,
-        'devices',
-        device._id,
+        engineId,
+        InternalCollection.DEVICES,
+        response.device._id,
         { refresh }),
     ]);
 
-    await global.app.trigger('device-manager:device:detach-engine:after', {
-      device,
-      engineId,
-    });
+    await this.app.trigger(`${eventId}:after`, response);
 
     return device;
   }
 
   /**
-   * Link a device to an asset and copy device measures into the asset.
+   * Link a device to an asset.
+   * If a match between `deviceMeasureName`s and `assetMeasureName` 
+   * isn't specified, it will be auto generated with the 
+   * `deviceMeasureNames` of the associated decoder
    *
-   * Each measures will be given a distinct name when copied into the asset
+   * @param {object} linkRequest Link request between an asset by Id and a device
+   * @param linkRequest.assetId Asset id to link to
+   * @param linkRequest.deviceLink The link with the device
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
    */
   async linkAsset (
-    linkRequest: LinkRequest,
+    { assetId, deviceLink }: LinkRequest,
     { refresh }: { refresh?: any }
   ): Promise<{ asset: BaseAsset, device: Device }> {
-    const device = await this.getDevice(this.config, linkRequest.deviceId);
+    const eventId = `${DeviceService.eventId}:link-asset`;
+
+    const device = await this.getDevice(this.config, deviceLink.deviceId);
 
     const engineId = device._source.engineId;
 
@@ -244,91 +283,81 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is already linked to an asset.`);
     }
 
-    const asset = await this.assetService.getAsset(engineId, linkRequest.assetId);
 
+    const asset = await this.assetService.getAsset(engineId, assetId);
 
-    // Copy device measures and assign measures names
-    const measures: MeasureContent[] = device._source.measures.map(measure => {
-      const name = _.get(linkRequest, `measuresNames.${measure.type}`, measure.type);
-
-      return { ...measure, name };
-    });
-
-
-    const listMeasures: LinkedMeasureName[] = []; // contain name and type of each measure to keep this data in device element
-    for (const measure of measures) {
-      listMeasures.push({ name: measure.name, type: measure.type });
-    } 
-
-    const newMeasuresNames = measures.map(m => m.name);
-
-    const duplicateMeasure = asset._source.measures.find(m => newMeasuresNames.includes(m.name));
-    if (duplicateMeasure) {
-      throw new BadRequestError(`Duplicate measure name "${duplicateMeasure.name}"`);
+    if (! asset) {
+      throw new BadRequestError(`Asset "${asset._id}" does not exist.`);
     }
 
-    // Keep previous asset measures of different types
-    for (const previousMeasure of asset._source.measures) {
-      if (! measures.find(m => m.name === previousMeasure.name)) {
-        measures.push(previousMeasure);
-      }
+    if (! deviceLink.measureNamesLinks.length) {
+      deviceLink.measureNamesLinks
+        = Object.keys(this.decodersRegister
+          .getByDeviceModel(device._source.model)
+          .decoderMeasures)
+          .map((deviceMeasureName: string): MeasureNamesLink => {
+            return {
+              assetMeasureName: deviceMeasureName,
+              deviceMeasureName,
+            };
+          });
     }
 
-    asset._source.measures = measures;
-    device._source.assetId = linkRequest.assetId;
+    device.linkToAsset({ assetId, deviceLink });
+    asset.linkToDevice({ assetId, deviceLink });
 
-
-    asset._source.deviceLinks.push({ deviceId: linkRequest.deviceId, measuresName: listMeasures }); 
-
-    const response = await global.app.trigger(
-      'device-manager:device:link-asset:before',
-      { asset, device },
-    );
+    const response = await this.app.trigger(
+      `${eventId}:before`, { asset, device });
 
     await Promise.all([
       this.sdk.document.update(
         this.config.adminIndex,
-        'devices',
+        InternalCollection.DEVICES,
         device._id,
-        {
-          assetId: response.device._source.assetId,
-          measuresName: listMeasures
-        },
-        { refresh }),
-      this.sdk.document.update(
-        engineId,
-        'devices',
-        device._id,
-        {
-          assetId: response.device._source.assetId,
-          measuresName: listMeasures
-        },
+        { assetId: response.device._source.assetId },
         { refresh }),
 
       this.sdk.document.update(
         engineId,
-        'assets',
+        InternalCollection.DEVICES,
+        device._id,
+        { assetId: response.device._source.assetId },
+        { refresh }),
+
+      this.sdk.document.update(
+        engineId,
+        InternalCollection.ASSETS,
         asset._id,
-        { 
-          deviceLinks: response.asset._source.deviceLinks,
-          measures: response.asset._source.measures
-        },
+        { deviceLinks: response.asset._source.deviceLinks },
         { refresh }),
     ]);
 
-    await global.app.trigger(
-      'device-manager:device:link-asset:after',
-      { asset, device },
+    await this.app.trigger(
+      `${eventId}:after`,
+      response,
     );
 
     return { asset, device };
   }
 
+  /**
+   * Unlink a device of an asset
+   *
+   * @param deviceId Id of the device
+   * @param {object} options
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
+   */
   async unlinkAsset (
     deviceId: string,
     { refresh, strict }: { refresh?: any, strict?: boolean }
   ): Promise<{ asset: BaseAsset, device: Device }> {
+    const eventId = `${DeviceService.eventId}:unlink-asset`;
     const device = await this.getDevice(this.config, deviceId);
+
+    if (! device) {
+      throw new BadRequestError(`Device "${device._id}" does not exist.`);
+    }
 
     const engineId = device._source.engineId;
 
@@ -342,38 +371,32 @@ export class DeviceService {
 
     const asset = await this.assetService.getAsset(engineId, device._source.assetId);
 
-    // @todo should be done by measure name and not type
-    asset._source.measures = asset._source.measures.filter(m => {
-      return ! device._source.measures.find(dm => dm.type === m.type);
-    });
-    device._source.assetId = null;
+    asset.unlinkDevice(device);
+    device.unlinkToAsset();
 
-    const filteredDeviceList = asset._source.deviceLinks.filter(linkedDevice => linkedDevice.deviceId !== deviceId);
-    asset._source.deviceLinks = filteredDeviceList;
-
-    const response = await global.app.trigger(
-      'device-manager:device:unlink-asset:before',
+    const response = await this.app.trigger(
+      `${eventId}:before`,
       { asset, device },
     );
 
     await Promise.all([
       this.sdk.document.update(
         this.config.adminIndex,
-        'devices',
+        InternalCollection.DEVICES,
         device._id,
-        { assetId: null },
+        { assetId: response.device._source.assetId },
         { refresh }),
 
       this.sdk.document.update(
         engineId,
-        'devices',
+        InternalCollection.DEVICES,
         device._id,
-        { assetId: null },
+        { assetId: response.device._source.assetId },
         { refresh }),
 
       this.sdk.document.update(
         engineId,
-        'assets',
+        InternalCollection.ASSETS,
         asset._id,
         { 
           deviceLinks: response.asset._source.deviceLinks,
@@ -382,57 +405,12 @@ export class DeviceService {
         { refresh }),
     ]);
 
-    await global.app.trigger(
-      'device-manager:device:unlink-asset:before',
-      { asset, device },
+    await this.app.trigger(
+      `${eventId}:after`,
+      response,
     );
 
     return { asset, device };
-  }
-
-  /**
-   * Updates a device with the new measures
-   *
-   * @returns Updated device
-   */
-  async updateMeasures (
-    device: Device,
-    newMeasures: MeasureContent[],
-  ) {
-    // dup array reference
-    const measures = newMeasures.map(m => m);
-
-    // Keep previous measures that were not updated
-    for (const previousMeasure of device._source.measures) {
-      if (! measures.find(m => m.type === previousMeasure.type)) {
-        measures.push(previousMeasure);
-      }
-    }
-
-    device._source.measures = measures;
-
-    const result = await global.app.trigger(
-      `engine:${device._source.engineId}:device:measures:new`,
-      { device, measures: newMeasures });
-
-    const deviceDocument = await this.batch.update<DeviceContent>(
-      this.config.adminIndex,
-      'devices',
-      result.device._id,
-      result.device._source,
-      { retryOnConflict: 10, source: true });
-
-    const engineId = device._source.engineId;
-    if (engineId) {
-      await this.batch.update<DeviceContent>(
-        engineId,
-        'devices',
-        result.device._id,
-        result.device._source,
-        { retryOnConflict: 10 });
-    }
-
-    return new Device(deviceDocument._source);
   }
 
   async importDevices (

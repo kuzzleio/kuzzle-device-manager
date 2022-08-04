@@ -5,11 +5,14 @@ import {
   DecodedPayload,
   TemperatureMeasurement,
   BatteryMeasurement,
+  MeasuresRegister,
 } from '../../../../index';
 
 export class DummyTempDecoder extends Decoder {
-  constructor () {
-    super('DummyTemp', ['temperature']);
+  constructor (measuresRegister: MeasuresRegister) {
+    super('DummyTemp',
+      { theBatteryLevel: 'battery', }, // Wrong decoderMeasure list on purpose, avoid this please
+      measuresRegister);
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }
@@ -31,26 +34,21 @@ export class DummyTempDecoder extends Decoder {
   async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
     const temperature: TemperatureMeasurement = {
       measuredAt: Date.now(),
+      type: 'temperature',
       values: {
         temperature: payload.register55,
-      }
-    };
-
-    const battery: BatteryMeasurement = {
-      measuredAt: Date.now(),
-      values: {
-        battery: payload.batteryLevel * 100,
-      }
-    };
-
-    const decodedPayload: DecodedPayload = {
-      reference: payload.deviceEUI,
-      measures: {
-        temperature,
-        battery,
       },
     };
 
-    return decodedPayload;
+    const battery: BatteryMeasurement = {
+      deviceMeasureName: 'theBatteryLevel',
+      measuredAt: Date.now(),
+      type: 'battery',
+      values: {
+        battery: payload.batteryLevel * 100,
+      },
+    };
+
+    return { [payload.deviceEUI]: [temperature, battery] };
   }
 }

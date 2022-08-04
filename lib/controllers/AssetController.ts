@@ -85,10 +85,35 @@ export class AssetController extends RelationalController {
         pushMeasures: {
           handler: this.pushMeasures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'post' }],
-        }
+        },
+        removeMeasure: {
+          handler: this.removeMeasure.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures/:assetMeasureName', verb: 'delete' }],
+        },
+        mRemoveMeasures: {
+          handler: this.mRemoveMeasures.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'delete' }],
+        },
       },
     };
     /* eslint-enable sort-keys */
+  }
+
+  async mRemoveMeasures (request: KuzzleRequest) {
+    const id = request.getId();
+    const strict = request.getBoolean('strict');
+    const engineId = request.getString('engineId');
+    const assetMeasureNames = request.getBodyArray('assetMeasureNames');
+
+    return this.assetService.removeMeasures(engineId, id, assetMeasureNames, { strict });
+  }
+
+  async removeMeasure (request: KuzzleRequest) {
+    const id = request.getId();
+    const engineId = request.getString('engineId');
+    const assetMeasureName = request.getString('assetMeasureName');
+
+    return this.assetService.removeMeasures(engineId, id, [assetMeasureName], { strict: true });
   }
 
   async getMeasures (request: KuzzleRequest) {
@@ -165,15 +190,14 @@ export class AssetController extends RelationalController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
     const measures = request.getBodyArray('measures');
+    const kuid = request.getKuid();
 
-    const { asset, errors } = await this.measureService.registerByAsset(
-      engineId,
-      assetId,
-      measures,
-      refresh,
-      strict);
+    const {
+      asset, invalids, valids
+    } = await this.measureService.registerByAsset(
+      engineId, assetId, measures, kuid, { refresh, strict });
 
-    return { asset, engineId, errors };
+    return { asset, engineId, invalids, valids };
   }
 
   async update (request: KuzzleRequest) {
@@ -257,6 +281,7 @@ export class AssetController extends RelationalController {
 
     if (Array.isArray(devicesLinks._source.deviceLinks)) {
       for (const deviceLink of devicesLinks._source.deviceLinks) {
+        // TODO : Refacto to only get the asset one time
         await this.deviceService.unlinkAsset(deviceLink.deviceId, { refresh, strict });
       }
     }

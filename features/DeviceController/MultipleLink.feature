@@ -1,23 +1,22 @@
 Feature: multipleLink
 
-    Scenario: Link two devices to an asset
-      When I successfully execute the action "device-manager/device":"linkAsset" with args:
-        | _id                            | "DummyTemp-attached_ayse_unlinked" |
-        | assetId                        | "tools-MART-linked"                |
-        | body.measuresNames.temperature | "External temperature"             |
-        | body.measuresNames.battery     | "Battery2"                         |
-        | engineId                       | "engine-ayse"                      |
-      Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-        | assetId | "tools-MART-linked" |
-      And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
-        | assetId | "tools-MART-linked" |
-      And The document "engine-ayse":"assets":"tools-MART-linked" content match:
-        | measures[0].type               | "temperature"                      |
-        | measures[1].type               | "battery"                          |
-        | measures[2].type               | "temperature"                      |
-        | measures[3].type               | "battery"                          |
-        | measures[0].name               | "External temperature"             |
-        | measures[1].name               | "Battery2"                         |
-        | measures[2].name               | "temperature"                      |
-        | measures[3].name               | "battery"                          |
 
+  Scenario: Link two devices to an asset
+    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
+      | body.linkRequests[0].assetId                | "container-FRIDGE-unlinked_1"           |
+      | body.linkRequests[0].deviceLink.deviceId    | "DummyMultiTemp-attached_ayse_unlinked_1"    |
+      | body.linkRequests[0].deviceLink.measureNamesLinks[0].assetMeasureName  | "shellTemp"  |
+      | body.linkRequests[0].deviceLink.measureNamesLinks[0].deviceMeasureName | "outerTemp"    |
+      | body.linkRequests[1].assetId                | "container-FRIDGE-unlinked_2"           |
+      | body.linkRequests[1].deviceLink.deviceId    | "DummyMultiTemp-attached_ayse_unlinked_2"    |
+      | body.linkRequests[1].deviceLink.measureNamesLinks[0].assetMeasureName  | "shellTemp"  |
+      | body.linkRequests[1].deviceLink.measureNamesLinks[0].deviceMeasureName | "outerTemp"    |
+      | engineId                       | "engine-ayse"                      |
+    Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
+      | assetId | "container-FRIDGE-unlinked_1" |
+    And The document "engine-ayse":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
+      | assetId | "container-FRIDGE-unlinked_1" |
+    And The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_2" content match:
+      | assetId | "container-FRIDGE-unlinked_2" |
+    And The document "engine-ayse":"devices":"DummyMultiTemp-attached_ayse_unlinked_2" content match:
+      | assetId | "container-FRIDGE-unlinked_2" |

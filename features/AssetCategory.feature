@@ -46,31 +46,31 @@ Feature: AssetCategory
 
   Scenario: Link and unlink an asset and a AssetCategory
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "truck"             |
       | engineId   | "engine-ayse"       |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category | 'truck' |
     When I successfully execute the action "device-manager/asset":"unlinkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "truck"             |
       | engineId   | "engine-ayse"       |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category | null |
 
   Scenario: Link and unlink an asset and a subcategory
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "bigTruck"             |
       | engineId   | "engine-ayse"       |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category    | 'truck'    |
       | subCategory | 'bigTruck' |
     When I successfully execute the action "device-manager/asset":"unlinkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "truck"             |
       | engineId   | "engine-ayse"       |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category    | null |
       | subCategory | null |
 
@@ -80,14 +80,14 @@ Feature: AssetCategory
       | engineId  | "engine-ayse" |
       | body.name | "tool"        |
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "tool"              |
       | engineId   | "engine-ayse"       |
     And I refresh the collection "engine-ayse":"assets"
     And I successfully execute the action "device-manager/assetCategory":"delete" with args:
       | engineId | "engine-ayse" |
       | _id      | "tool"        |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category | null |
 
 
