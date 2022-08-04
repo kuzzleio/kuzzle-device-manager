@@ -262,20 +262,20 @@ export class DeviceService {
    * @param options.strict If true, throw if an operation isn't possible
    */
   async linkAsset (
-    { assetId, deviceLink }: LinkRequest,
+    { assetId, deviceLink, engineId }: LinkRequest,
     { refresh }: { refresh?: any }
   ): Promise<{ asset: BaseAsset, device: Device }> {
     const eventId = `${DeviceService.eventId}:link-asset`;
 
     const device = await this.getDevice(this.config, deviceLink.deviceId);
 
-    const engineId = device._source.engineId;
+    const deviceEngineId = device._source.engineId;
 
-    if (! engineId) {
+    if (! deviceEngineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
 
-    if (engineId !== linkRequest.engineId) {
+    if (deviceEngineId !== engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to given engine.`);
     }
 
@@ -284,7 +284,7 @@ export class DeviceService {
     }
 
 
-    const asset = await this.assetService.getAsset(engineId, assetId);
+    const asset = await this.assetService.getAsset(deviceEngineId, assetId);
 
     if (! asset) {
       throw new BadRequestError(`Asset "${asset._id}" does not exist.`);
@@ -318,14 +318,14 @@ export class DeviceService {
         { refresh }),
 
       this.sdk.document.update(
-        engineId,
+        deviceEngineId,
         InternalCollection.DEVICES,
         device._id,
         { assetId: response.device._source.assetId },
         { refresh }),
 
       this.sdk.document.update(
-        engineId,
+        deviceEngineId,
         InternalCollection.ASSETS,
         asset._id,
         { deviceLinks: response.asset._source.deviceLinks },

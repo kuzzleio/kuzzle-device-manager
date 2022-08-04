@@ -25,4 +25,5 @@ export type AttachRequest = {
 export type LinkRequest = {
   assetId: string;
   deviceLink: DeviceLink;
+  engineId: string;
 }
