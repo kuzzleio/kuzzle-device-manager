@@ -371,8 +371,10 @@ export class MeasureService {
         && this.measuresRegister.has(jsonMeasurement.type)) {
         const measurement = jsonMeasurement as AssetMeasurement;
 
+        const assetMeasureName = measurement.assetMeasureName ?? measurement.type;
+
         validMeasures.push({
-          assetMeasureName: measurement.assetMeasureName,
+          assetMeasureName,
           deviceMeasureName: null,
           measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
           origin: {
@@ -456,7 +458,6 @@ export class MeasureService {
 
   private validateAssetMeasurement (toValidate: JSONObject): boolean {
     return _.has(toValidate, 'values')
-      && _.has(toValidate, 'assetMeasureName')
       && _.has(toValidate, 'type')
       && this.measuresRegister.has(toValidate.type);
   }

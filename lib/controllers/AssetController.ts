@@ -185,8 +185,6 @@ export class AssetController extends RelationalController {
     const measures = request.getBodyArray('measures');
     const kuid = request.getKuid();
 
-    // TODO : Throw if invalid measures
-
     const {
       asset, invalids, valids
     } = await this.measureService.registerByAsset(

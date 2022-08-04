@@ -102,6 +102,14 @@ Feature: DeviceManager asset controller
     Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
       | measures | [ { "assetMeasureName": "leftInnerTemp", "values": { "temperature": -3 } } ] |
 
+  Scenario: Register a nameless measure taking the type as name
+    When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
+      | engineId  | "engine-ayse"               |
+      | _id       | "container-FRIDGE-unlinked_1" |
+      | body      | { "measures": [ { "values": { "temperature": 70 }, "type": "temperature" } ] } |
+    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | measures | [ { "type": "temperature", "deviceMeasureName": null, "assetMeasureName": "temperature", "values": { "temperature": 70 }, "origin": { "type": "user" } } ] |
+
   Scenario: Get payloads from devices and register correctly
     When I successfully receive a "dummy-multi-temp" payload with:
       | payloads[0].deviceEUI    | "attached_ayse_linked_1"   |
