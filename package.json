@@ -34,6 +34,7 @@
     "@types/node": "^17.0.21",
     "@typescript-eslint/eslint-plugin": "^5.14.0",
     "@typescript-eslint/parser": "^5.14.0",
+    "axios": "^0.27.2",
     "cucumber": "^6.0.5",
     "ergol": "^1.0.2",
     "eslint": "^8.10.0",

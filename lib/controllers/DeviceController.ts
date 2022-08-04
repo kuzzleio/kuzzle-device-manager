@@ -50,7 +50,7 @@ export class DeviceController extends CRUDController {
         },
         mLinkAssets: {
           handler: this.mLinkAssets.bind(this),
-          http: [{ path: 'device-manager/devices/_mLink', verb: 'put' }]
+          http: [{ path: 'device-manager/:engineId/devices/_mLink', verb: 'put' }]
         },
         mUnlinkAssets: {
           handler: this.mUnlinkAssets.bind(this),
@@ -210,8 +210,9 @@ export class DeviceController extends CRUDController {
   async mLinkAssets (request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
     const refresh = request.getRefresh();
+    const engineId = request.getString('engineId');
 
-    for (const { deviceId, assetId, engineId } of bulkData) {
+    for (const { deviceId, assetId } of bulkData) {
       const linkRequest: LinkRequest = {
         assetId,
         deviceId,

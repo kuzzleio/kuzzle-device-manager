@@ -193,8 +193,9 @@ Feature: Payloads Controller
       | model     | "DummyTemp" |
     When I refresh the collection "device-manager":"payloads"
     Then I successfully execute the action "document":"search" with args:
-      | index      | "device-manager" |
-      | collection | "payloads"    |
+      | index            | "device-manager"             |
+      | collection       | "payloads"                   |
+      | body.query.match | {"payload.deviceEUI" :"777"} |
     And I should receive a result matching:
       | hits | [{_source : {deviceModel : "DummyTemp", payload : { deviceEUI : "777", temperature : 3}}}] |
     When I successfully execute the following HTTP request:
@@ -205,7 +206,8 @@ Feature: Payloads Controller
       | body.batteryLevel | 66                                        |
     And I refresh the collection "device-manager":"payloads"
     And I successfully execute the action "document":"search" with args:
-      | index      | "device-manager" |
-      | collection | "payloads"    |
+      | index            | "device-manager"             |
+      | collection       | "payloads"                   |
+      | body.query.match | {deviceModel :"unknowDevice"} |
     Then I should receive a result matching:
       | hits | [{_source : {deviceModel : "unknowDevice", rawPayload : { deviceEUI : "666", temperature : 6}}}] |

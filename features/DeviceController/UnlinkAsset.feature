@@ -8,10 +8,14 @@ Feature: UnlinkAsset
 
   Scenario: Unlink multiple device from multiple assets using JSON
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"             |
+      | _id      | "DummyTemp-attached_ayse_unlinked" |
+      | assetId  | "tools-PERFO-unlinked"             |
+      | engineId | "engine-ayse"                      |
+
     When I successfully execute the action "device-manager/device":"mUnlinkAssets" with args:
-      | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |  
+      | body.records.0.deviceId | "DummyTemp-attached_ayse_unlinked" |
+      | engineId                | "engine-ayse"                      |
+
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -22,10 +26,14 @@ Feature: UnlinkAsset
 
   Scenario: Unlink multiple device from multiple assets using CSV
     Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id     | "DummyTemp-attached_ayse_unlinked" |
-      | assetId | "tools-PERFO-unlinked"             |
+      | _id      | "DummyTemp-attached_ayse_unlinked" |
+      | assetId  | "tools-PERFO-unlinked"             |
+      | engineId | "engine-ayse"                      |
+
     When I successfully execute the action "device-manager/device":"mUnlinkAssets" with args:
       | body.csv | "deviceId\\nDummyTemp-attached_ayse_unlinked" |
+      | engineId | "engine-ayse"                                 |
+
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
       | assetId | null |
     Then The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -42,6 +50,7 @@ Feature: UnlinkAsset
       | body.records.0.assetId  | "tools-PERFO-unlinked"             |
       | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
       | body.records.1.assetId  | "tools-PERFO-unlinked"             |
+      | engineId                | "engine-ayse"                      |
     And The document "engine-ayse":"assets":"tools-PERFO-unlinked" content match:
       | measures[0].type                | "temperature"                      |
       | measures[0].measuredAt          | 1610793427950                      |

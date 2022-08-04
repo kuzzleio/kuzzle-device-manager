@@ -16,8 +16,10 @@ Feature: Detach device from engine
       | body.records.0.deviceId | "DummyTemp-detached"               |
       | body.records.1.engineId | "engine-kuzzle"                    |
       | body.records.1.deviceId | "DummyTemp-attached_ayse_unlinked" |
+      | engineId                | "engine-kuzzle"                    |
     When I successfully execute the action "device-manager/device":"mDetachEngines" with args:
       | body.deviceIds | ["DummyTemp-detached","DummyTemp-attached_ayse_unlinked"] |
+      | engineId                | "engine-kuzzle"                    |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | engineId | null |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
@@ -28,8 +30,10 @@ Feature: Detach device from engine
   Scenario: Detach multiple device to an engine using CSV
     When I successfully execute the action "device-manager/device":"mAttachEngines" with args:
       | body.csv | "engineId,deviceId\\nengine-kuzzle,DummyTemp-detached\\nengine-kuzzle,DummyTemp-attached_ayse_unlinked," |
+      | engineId                | "engine-kuzzle"                    |
     When I successfully execute the action "device-manager/device":"mDetachEngines" with args:
       | body.csv | "deviceId\\nDummyTemp-detached\\nDummyTemp-attached_ayse_unlinked," |
+      | engineId                | "engine-kuzzle"                    |
     Then The document "device-manager":"devices":"DummyTemp-detached" content match:
       | engineId | null |
     Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:

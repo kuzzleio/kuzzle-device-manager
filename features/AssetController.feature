@@ -24,9 +24,10 @@ Feature: DeviceManager asset controller
       | body.model     | "PERFO"         |
       | body.reference | "asset_02"      |
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id                            | "DummyTemp-attached_ayse_unlinked" |
-      | assetId                        | "outils-PERFO-asset_02"             |
-      | body.metadata.index  | "engine-ayse"         |
+      | _id                 | "DummyTemp-attached_ayse_unlinked" |
+      | assetId             | "outils-PERFO-asset_02"            |
+      | body.metadata.index | "engine-ayse"                      |
+      | engineId            | "engine-ayse"                                 |
     When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-ayse"         |
       | _id      | "outils-PERFO-asset_02" |

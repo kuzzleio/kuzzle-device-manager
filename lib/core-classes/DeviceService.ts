@@ -232,12 +232,12 @@ export class DeviceService {
 
     const engineId = device._source.engineId;
 
-    if (engineId !== linkRequest.engineId) {
-      throw new BadRequestError(`Device "${device._id}" is not attached to given engine.`);
-    }
-    
     if (! engineId) {
       throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
+    }
+
+    if (engineId !== linkRequest.engineId) {
+      throw new BadRequestError(`Device "${device._id}" is not attached to given engine.`);
     }
 
     if (device._source.assetId) {
