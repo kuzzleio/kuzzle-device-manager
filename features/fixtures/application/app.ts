@@ -1,7 +1,11 @@
 import { Backend, KuzzleRequest } from 'kuzzle';
 
 import { DeviceManagerPlugin } from '../../../index';
-import { DummyTempDecoder, DummyTempPositionDecoder } from './decoders';
+import {
+  DummyMultiTempDecoder,
+  DummyTempDecoder,
+  DummyTempPositionDecoder,
+} from './decoders';
 import { registerTestPipes } from './testPipes'
 import { TreeNodeController } from '../../fakeclasses/TreeNodeController';
 import { InvertTreeNodeController } from '../../fakeclasses/InvertTreeNodeController';
@@ -10,8 +14,9 @@ const app = new Backend('kuzzle');
 
 const deviceManager = new DeviceManagerPlugin();
 
-deviceManager.decoders.register(new DummyTempDecoder());
-deviceManager.decoders.register(new DummyTempPositionDecoder());
+deviceManager.decoders.register(new DummyTempDecoder(deviceManager.measures));
+deviceManager.decoders.register(new DummyMultiTempDecoder(deviceManager.measures));
+deviceManager.decoders.register(new DummyTempPositionDecoder(deviceManager.measures));
 
 deviceManager.devices.registerMetadata({
   group: {
@@ -21,6 +26,7 @@ deviceManager.devices.registerMetadata({
     }
   }
 });
+
 deviceManager.devices.registerMetadata({
   group2: {
     type: 'keyword',

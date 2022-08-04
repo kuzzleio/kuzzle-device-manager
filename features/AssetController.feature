@@ -20,19 +20,20 @@ Feature: DeviceManager asset controller
   Scenario: Delete a linked asset
     When I successfully execute the action "device-manager/asset":"create" with args:
       | engineId       | "engine-ayse" |
-      | body.type      | "outils"        |
-      | body.model     | "PERFO"         |
-      | body.reference | "asset_02"      |
-    When I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id                            | "DummyTemp-attached_ayse_unlinked" |
-      | assetId                        | "outils-PERFO-asset_02"             |
-      | body.metadata.index  | "engine-ayse"         |
-    When I successfully execute the action "device-manager/asset":"delete" with args:
+      | body.type      | "outils"      |
+      | body.model     | "PERFO"       |
+      | body.reference | "asset_02"    |
+    And I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id                     | "DummyMultiTemp-attached_ayse_unlinked_1"  |
+      | assetId                 | "outils-PERFO-asset_02"             |
+      | body.metadata.index     | "engine-ayse"         |
+    And I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-ayse"         |
       | _id      | "outils-PERFO-asset_02" |
-    Then The document "device-manager":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    Then The document "engine-ayse":"assets":"outils-PERFO-asset_02" does not exist:
+    And The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
       | assetId | null |
-    And The document "engine-ayse":"devices":"DummyTemp-attached_ayse_unlinked" content match:
+    And The document "engine-ayse":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
       | assetId | null |
 
   Scenario: Import assets using csv
@@ -47,44 +48,126 @@ Feature: DeviceManager asset controller
       | model     | "PERFO"    |
 
   Scenario: Retrieve asset measures history
-    Given I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "attached_ayse_linked" |
-      | register55   | 42.2                   |
-      | batteryLevel | 0.4                    |
-    Given I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "attached_ayse_linked" |
-      | register55   | 21.1                   |
-      | batteryLevel | 0.4                    |
-    Given I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "attached_ayse_linked" |
-      | register55   | 11.3                   |
-      | batteryLevel | 0.4                    |
-    Given I refresh the collection "engine-ayse":"measures"
+    Given I successfully receive a "dummy-multi-temp" payload with:
+      | payloads[0].deviceEUI    | "attached_ayse_linked_1" |
+      | payloads[0].registerInner    | 42.2                     |
+    And I successfully receive a "dummy-multi-temp" payload with:
+      | payloads[0].deviceEUI    | "attached_ayse_linked_1" |
+      | payloads[0].registerInner    | 42.1                     |
+    And I successfully receive a "dummy-multi-temp" payload with:
+      | payloads[0].deviceEUI    | "attached_ayse_linked_1" |
+      | payloads[0].registerInner    | 42.0                     |
+    And I refresh the collection "engine-ayse":"measures"
     When I successfully execute the action "device-manager/asset":"getMeasures" with args:
-      | engineId | "engine-ayse"       |
-      | _id      | "tools-MART-linked" |
-      | size     | 5                   |
+      | engineId | "engine-ayse"              |
+      | _id      | "container-FRIDGE-linked"  |
+      | size     | 3                          |
     Then I should receive a "measures" array of objects matching:
     # there is 6 measures with the 3 from fixtures
-      | _source.origin.assetId | _source.origin.id                |
-      | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
-      | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
-      | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
-      | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
-      | "tools-MART-linked"    | "DummyTemp-attached_ayse_linked" |
+      | _source.origin.assetId    | _source.origin.id                        |
+      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1"  |
+      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1"  |
+      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1"  |
 
-
-  Scenario: Add a measure
+  Scenario: Register a measures in the asset, an other with different name and an older one and delete one
     When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
-      | engineId | "engine-ayse"       |
-      | _id      | "tools-MART-linked" |
-      | body     | { "measures": [ { "values": { "temperature": 70 }, "type": "temperature" }, { "values": { "nothing": null }, "type": "nonValidType" } ] } |
+      | engineId  | "engine-ayse"               |
+      | _id       | "container-FRIDGE-unlinked_1" |
+      | body      | { "measures": [ { "values": { "temperature": 70 }, "type": "temperature", "assetMeasureName": "leftOuterTemp" }, { "values": { "nothing": null }, "type": "nonValidType" } ] } |
     Then I should receive a result matching:
-      | asset           | { "_source": { "measures": [ { "values": { "temperature": 70 } } ] } }  |
-      | engineId        | "engine-ayse"                                                           |
-      | errors          | [ { "values": { "nothing": null }, "type": "nonValidType" } ]           |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
-      | measures[0].type                | "temperature"           |
-      | measures[0].values.temperature  | 70                      |
-      | measures[0].origin.assetId      | "tools-MART-linked"     |
-      | measures[0].origin.type         | "asset"                 |
+      | engineId  | "engine-ayse"                                                 |
+      | invalids  | [ { "values": { "nothing": null }, "type": "nonValidType" } ] |
+      | valids    | [ { "values": { "temperature": 70 }, "type": "temperature", "assetMeasureName": "leftOuterTemp" } ] |
+    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | measures | [ { "type": "temperature", "deviceMeasureName": null, "assetMeasureName": "leftOuterTemp", "values": { "temperature": 70 }, "origin": { "type": "user" } } ] |
+    When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
+      | engineId  | "engine-ayse"             |
+      | _id       | "container-FRIDGE-unlinked_1" |
+      | body      | { "measures": [ { "values": { "temperature": -3 }, "type": "temperature", "assetMeasureName": "leftInnerTemp" }, { "values": { "nothing": null }, "type": "nonValidType" } ] } |
+    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | measures | [ { "assetMeasureName": "leftOuterTemp", "values": { "temperature": 70 } }, { "assetMeasureName": "leftInnerTemp", "values": { "temperature": -3 } } ] |
+    When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
+      | engineId  | "engine-ayse"             |
+      | _id       | "container-FRIDGE-unlinked_1" |
+      | body      | { "measures": [ { "measuredAt": 1, "values": { "temperature": 98 }, "type": "temperature", "assetMeasureName": "leftOuterTemp" } ] } |
+    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | measures | [ { "assetMeasureName": "leftOuterTemp", "values": { "temperature": 70 } }, { "assetMeasureName": "leftInnerTemp", "values": { "temperature": -3 } } ] |
+    And I refresh the collection "engine-ayse":"measures"
+    # 9 Existing measures from fixtures
+    And I count 12 documents in "engine-ayse":"measures"
+    When I successfully execute the action "device-manager/asset":"removeMeasure" with args:
+      | engineId                    | "engine-ayse"               |
+      | _id                         | "container-FRIDGE-unlinked_1" |
+      | assetMeasureName            | "leftOuterTemp"             |
+    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | measures | [ { "assetMeasureName": "leftInnerTemp", "values": { "temperature": -3 } } ] |
+
+  Scenario: Register a nameless measure taking the type as name
+    When I successfully execute the action "device-manager/asset":"pushMeasures" with args:
+      | engineId  | "engine-ayse"               |
+      | _id       | "container-FRIDGE-unlinked_1" |
+      | body      | { "measures": [ { "values": { "temperature": 70 }, "type": "temperature" } ] } |
+    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | measures | [ { "type": "temperature", "deviceMeasureName": null, "assetMeasureName": "temperature", "values": { "temperature": 70 }, "origin": { "type": "user" } } ] |
+
+  Scenario: Get payloads from devices and register correctly
+    When I successfully receive a "dummy-multi-temp" payload with:
+      | payloads[0].deviceEUI    | "attached_ayse_linked_1"   |
+      | payloads[0].registerInner    | -10                        |
+      | payloads[0].registerOuter    | 30                         |
+      | payloads[0].lvlBattery   | 0.9                        |
+      | payloads[1].deviceEUI    | "attached_ayse_linked_2"   |
+      | payloads[1].registerInner    | -20                        |
+      | payloads[1].registerOuter    | 40                         |
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
+      | measures[0].assetMeasureName    | "coreBatteryLevel"  |
+      | measures[0].values.battery      | 90                  |
+      | measures[1].assetMeasureName    | "leftOuterTemp"     |
+      | measures[1].values.temperature  | 30                  |
+      | measures[2].assetMeasureName    | "leftInnerTemp"     | 
+      | measures[2].values.temperature  | -10                 |
+      | measures[3].assetMeasureName    | "rightOuterTemp"    |
+      | measures[3].values.temperature  | 40                  |
+      | measures[4].assetMeasureName    | "rightInnerTemp"    |
+      | measures[4].values.temperature  | -20                 |
+    When I successfully receive a "dummy-multi-temp" payload with:
+      | payloads[0].deviceEUI       | "attached_ayse_linked_1"   |
+      | payloads[0].registerInner       | -11                        |
+      | payloads[0].measuredAtRegisterInner  | 100000                     |
+      | payloads[0].registerOuter       | 31                         |
+      | payloads[1].deviceEUI       | "attached_ayse_linked_2"   |
+      | payloads[1].registerInner       | -21                        |
+      | payloads[1].registerOuter       | 41                         |
+      | payloads[1].measuredAtRegisterOuter  | 100000                     |
+      | payloads[1].lvlBattery      | 0.91                       |
+      | payloads[1].measuredAtLvlBattery | 100000                     |
+    And I refresh the collection "engine-ayse":"assets"
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
+      | measures[0].assetMeasureName    | "coreBatteryLevel"  |
+      | measures[0].values.battery      | 90                  |
+      | measures[1].assetMeasureName    | "leftOuterTemp"     |
+      | measures[1].values.temperature  | 31                  |
+      | measures[2].assetMeasureName    | "leftInnerTemp"     | 
+      | measures[2].values.temperature  | -10                 |
+      | measures[3].assetMeasureName    | "rightOuterTemp"    |
+      | measures[3].values.temperature  | 40                  |
+      | measures[4].assetMeasureName    | "rightInnerTemp"    |
+      | measures[4].values.temperature  | -21                 |
+
+  Scenario: Get payloads from devices to multiple assets
+    Given I successfully execute the action "device-manager/device":"linkAsset" with args:
+      | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1"   |
+      | assetId                                     | "container-FRIDGE-unlinked_1"               |
+      | body.metadata.index                         | "engine-ayse"                               |
+      | body.measureNamesLinks[0].assetMeasureName  | "coreBatteryLevel"                          |
+      | body.measureNamesLinks[0].deviceMeasureName | "lvlBattery"                                |
+    When I successfully receive a "dummy-multi-temp" payload with:
+      | payloads[0].deviceEUI    | "attached_ayse_linked_1"   |
+      | payloads[0].lvlBattery   | 0.12                       |
+      | payloads[1].deviceEUI    | "attached_ayse_unlinked_1" |
+      | payloads[1].lvlBattery   | 0.11                       |
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
+      | measures[0].assetMeasureName    | "coreBatteryLevel"  |
+      | measures[0].values.battery      | 12                  |
+    And The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | measures[0].assetMeasureName    | "coreBatteryLevel"  |

@@ -1,21 +1,26 @@
 import {
   ControllerDefinition,
-  PluginImplementationError,
-  KuzzleRequest,
   Inflector,
+  KuzzleRequest,
   PluginContext,
+  PluginImplementationError,
 } from 'kuzzle';
+import { DecoderContent } from 'lib/types';
 
 import { Decoder } from '../Decoder';
-import { DecoderContent } from '../../types/DecoderContent';
 import { PayloadService } from '../PayloadService';
 
 export class DecodersRegister {
   private context: PluginContext;
-  private _decoders = new Map<string, Decoder>();
+  private _decoders = new Map<string, // DeviceModel
+    Decoder>();
 
   private get sdk () {
     return this.context.accessors.sdk;
+  }
+
+  public getByDeviceModel (deviceModel: string) {
+    return this._decoders.get(deviceModel);
   }
 
   get decoders (): Decoder[] {
@@ -26,7 +31,7 @@ export class DecodersRegister {
     this.context = context;
   }
 
-  async list (): Promise<DecoderContent[]> {
+  list (): DecoderContent[] {
     const decoders = this.decoders.map(decoder => decoder.serialize());
 
     return decoders;
@@ -34,6 +39,7 @@ export class DecodersRegister {
 
   /**
    * Registers a new decoder for a device model.
+   * Decoder and device models share a 1:1 relationship
    *
    * This will register a new API action:
    *  - controller: `device-manager/payload`
