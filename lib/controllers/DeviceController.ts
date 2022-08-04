@@ -243,7 +243,7 @@ export class DeviceController extends CRUDController {
       if (! this.validateLinkRequest(jsonLinkRequest)) {
         throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
       }
-      jsonLinkRequest.engineId=engineId;
+      jsonLinkRequest.engineId = engineId;
     }
     const linkRequests = jsonLinkRequests as LinkRequest[];
 
