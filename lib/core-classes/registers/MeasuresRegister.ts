@@ -55,6 +55,10 @@ export class MeasuresRegister {
     return this.measures.get(type);
   }
 
+  has (type: string): boolean {
+    return this.measures.has(type);
+  }
+
   getMappings (): JSONObject {
     return this.mappings;
   }

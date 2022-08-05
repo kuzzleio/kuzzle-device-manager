@@ -1,12 +1,14 @@
-import { JSONObject } from 'kuzzle';
-import { KDocumentContent } from 'kuzzle-sdk';
+import { JSONObject, KDocumentContent } from 'kuzzle';
 
-import { MeasurementUnit } from './MeasureDefinition';
+import { MeasureUnit } from './MeasureDefinition';
 
 /**
- * Represent the content of a measure document.
+ * Represents a measurement sent with a payload.
+ *
+ * This interface should be extended and the `values` property specialized
+ * to declare new measurement type.
  */
-export interface MeasureContent extends KDocumentContent {
+export interface Measurement {
   /**
    * Type of the measure. (e.g. "temperature")
    * The type name is also the name of the sub-property to look at
@@ -15,53 +17,76 @@ export interface MeasureContent extends KDocumentContent {
   type: string;
 
   /**
-   * A device may have different measures for the same type (e.g. measure temperature 2 times)
-   * Should be set when you link the device to the asset
-   */
-  name?: string;
-
-  /**
-   * Measurement self-description
-   */
-  unit: MeasurementUnit;
-
-  /**
-   * Mesured values
+   * Property containing the actual measurement.
+   *
+   * This should be specialized by child interfaces.
    */
   values: JSONObject;
 
   /**
-   * Micro Timestamp of the measure
+   * Micro Timestamp of the measurement time.
    */
-  measuredAt: number;
+  measuredAt?: number;
 
   /**
-   * Origin of the measure
+   * Name given by the decoder to the measure.
+   */
+  deviceMeasureName?: string;
+}
+
+export interface AssetMeasurement extends Measurement {
+  /**
+   * Name given by the `deviceLink` of the linked asset.
+   */
+  assetMeasureName: string;
+}
+
+/**
+ * Represent the full content of a measure document.
+ */
+export interface MeasureContent extends KDocumentContent, AssetMeasurement {
+  /**
+   * Measurement self-description.
+   */
+  unit: MeasureUnit;
+
+  /**
+   * Define the origin of the measure.
    */
   origin: {
     /**
-     * ID of the device (document _id)
+     * From what the measure has been pushed.
      */
-    id: string;
+    type: OriginType;
 
     /**
-     * E.g. "device"
+     * Payload uuid that was used to create this measure.
      */
-    type: string;
+    payloadUuids?: Array<string>;
 
     /**
-     * E.g. "AbeewayTemp"
+     * E.g. "AbeewayTemp".
      */
-    model: string;
+    deviceModel?: string;
 
     /**
-     * Array of payload uuids that were used to create this measure.
+     * ID of the origin. Can be:
+     * - device id if origin type is `device`
+     * - kuid of the request if origin type is `user`
      */
-    payloadUuids: string[];
+    id?: string;
 
     /**
      * Asset ID linked to the device when the measure was made
      */
     assetId?: string;
-  };
+  }
+}
+
+/**
+ * From where the measure has been pushed
+ */
+export enum OriginType {
+  USER = 'user',
+  DEVICE = 'device',
 }

@@ -27,12 +27,14 @@
     "csvtojson": "~2.0.10",
     "json-stable-stringify": "^1.0.1",
     "kuzzle-plugin-commons": "https://github.com/kuzzleio/kuzzle-plugin-commons/archive/refs/tags/1.0.4.tar.gz",
+    "lodash.isequal": "^4.5.0",
     "uuid": "~8.3.2"
   },
   "devDependencies": {
     "@types/node": "^17.0.21",
     "@typescript-eslint/eslint-plugin": "^5.14.0",
     "@typescript-eslint/parser": "^5.14.0",
+    "axios": "^0.27.2",
     "cucumber": "^6.0.5",
     "ergol": "^1.0.2",
     "eslint": "^8.10.0",

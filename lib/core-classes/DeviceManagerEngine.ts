@@ -1,4 +1,4 @@
-import { Plugin } from 'kuzzle';
+import { JSONObject, Plugin } from 'kuzzle';
 import { AbstractEngine, ConfigManager } from 'kuzzle-plugin-commons';
 
 import { DeviceManagerConfiguration } from '../types';
@@ -6,6 +6,8 @@ import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { AssetsRegister } from './registers/AssetsRegister';
 import { DevicesRegister } from './registers/DevicesRegister';
 import { MeasuresRegister } from './registers/MeasuresRegister';
+import { metadataMappings } from '../mappings/metadataMappings';
+import { assetCategoryMappings } from '../mappings/assetCategoryMappings';
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfiguration;
@@ -50,6 +52,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       mappings: this.measuresRegister.getMappings()
     }));
 
+    promises.push(this.sdk.collection.create(index, 'metadata', {
+      mappings: metadataMappings as JSONObject
+    }));
+
+    promises.push(this.sdk.collection.create(index, 'asset-category', {
+      mappings: assetCategoryMappings as JSONObject
+    }));
+
+
     promises.push(this.engineConfigManager.createCollection(index));
 
     await Promise.all(promises);
@@ -83,6 +94,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     promises.push(this.sdk.collection.delete(index, 'assets'));
     promises.push(this.sdk.collection.delete(index, 'devices'));
     promises.push(this.sdk.collection.delete(index, 'measures'));
+    promises.push(this.sdk.collection.delete(index, 'asset-category'));
+    promises.push(this.sdk.collection.delete(index, 'metadata'));
 
     await Promise.all(promises);
 

@@ -1,10 +1,11 @@
-import { JSONObject } from 'kuzzle';
-import { KDocumentContent } from 'kuzzle-sdk';
+import { JSONObject, KDocumentContent } from 'kuzzle';
 
 import { MeasureContent } from './measures/MeasureContent';
-import { LinkedMeasureName } from './measures/MeasureDefinition';
 
 
+/**
+ * Device document content
+ */
 export interface DeviceContent extends KDocumentContent {
   /**
    * Device model
@@ -18,7 +19,7 @@ export interface DeviceContent extends KDocumentContent {
   reference: string;
 
   /**
-   *
+   * Each most recent measures with a different `deviceMeasureName`
    */
   measures?: MeasureContent[];
 
@@ -31,11 +32,6 @@ export interface DeviceContent extends KDocumentContent {
    * Linked asset unique identifier
    */
   assetId?: string;
-
-  /**
-   * correspondence table between measures types and names
-   */
-  measuresName: LinkedMeasureName[];
 
   /**
    * Attached engine ID (index name)
