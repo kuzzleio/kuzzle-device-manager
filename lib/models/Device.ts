@@ -1,4 +1,4 @@
-import { LinkRequest } from 'lib/types/Request';
+import { LinkRequest } from '../types/Request';
 import { DeviceContent, MeasureContent } from '../types';
 
 export class Device {
