@@ -1,4 +1,4 @@
-import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+import { JSONObject, KuzzleRequest, PreconditionError } from "kuzzle";
 
 import {
   Decoder,
@@ -6,25 +6,30 @@ import {
   TemperatureMeasurement,
   BatteryMeasurement,
   MeasuresRegister,
-} from '../../../../index';
+} from "../../../../index";
 
 export class DummyMultiTempDecoder extends Decoder {
-  constructor (measuresRegister: MeasuresRegister) {
-    super('DummyMultiTemp', {
-      innerTemp: 'temperature',
-      outerTemp: 'temperature',
-      lvlBattery: 'battery',
-    },
-      measuresRegister);
+  constructor(measuresRegister: MeasuresRegister) {
+    super(
+      "DummyMultiTemp",
+      {
+        innerTemp: "temperature",
+        outerTemp: "temperature",
+        lvlBattery: "battery",
+      },
+      measuresRegister
+    );
 
     this.payloadsMappings = {
-      deviceEUI: { type: 'keyword' }
+      deviceEUI: { type: "keyword" },
     };
   }
 
-  async validate (payload: JSONObject, request: KuzzleRequest) {
-    if (payload.payloads.find(devicePayload => ! devicePayload.deviceEUI)) {
-      throw new PreconditionError('Invalid payload: missing "deviceEUI" in some devicePayload');
+  async validate(payload: JSONObject, request: KuzzleRequest) {
+    if (payload.payloads.find((devicePayload) => !devicePayload.deviceEUI)) {
+      throw new PreconditionError(
+        'Invalid payload: missing "deviceEUI" in some devicePayload'
+      );
     }
 
     if (payload.invalid) {
@@ -34,7 +39,10 @@ export class DummyMultiTempDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
+  async decode(
+    payload: JSONObject,
+    request: KuzzleRequest
+  ): Promise<DecodedPayload> {
     const decodedPayload: DecodedPayload = {};
 
     for (const devicePayload of payload.payloads) {
@@ -42,9 +50,9 @@ export class DummyMultiTempDecoder extends Decoder {
 
       if (devicePayload.registerInner) {
         deviceMeasurements.push({
-          deviceMeasureName: 'innerTemp',
+          deviceMeasureName: "innerTemp",
           measuredAt: devicePayload.measuredAtRegisterInner ?? Date.now(),
-          type: 'temperature',
+          type: "temperature",
           values: {
             temperature: devicePayload.registerInner,
           },
@@ -52,22 +60,21 @@ export class DummyMultiTempDecoder extends Decoder {
       }
 
       if (devicePayload.registerOuter) {
-        deviceMeasurements.push(
-          {
-            deviceMeasureName: 'outerTemp',
-            measuredAt: devicePayload.measuredAtRegisterOuter ?? Date.now(),
-            type: 'temperature',
-            values: {
-              temperature: devicePayload.registerOuter,
-            },
-          });
+        deviceMeasurements.push({
+          deviceMeasureName: "outerTemp",
+          measuredAt: devicePayload.measuredAtRegisterOuter ?? Date.now(),
+          type: "temperature",
+          values: {
+            temperature: devicePayload.registerOuter,
+          },
+        });
       }
 
       if (devicePayload.lvlBattery) {
         deviceMeasurements.push({
-          deviceMeasureName: 'lvlBattery',
+          deviceMeasureName: "lvlBattery",
           measuredAt: devicePayload.measuredAtLvlBattery ?? Date.now(),
-          type: 'battery',
+          type: "battery",
           values: {
             battery: devicePayload.lvlBattery * 100,
           },

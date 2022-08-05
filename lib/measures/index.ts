@@ -1,9 +1,9 @@
-export * from './MovementMeasure';
+export * from "./MovementMeasure";
 
-export * from './PositionMeasure';
+export * from "./PositionMeasure";
 
-export * from './TemperatureMeasure';
+export * from "./TemperatureMeasure";
 
-export * from './HumidityMeasure';
+export * from "./HumidityMeasure";
 
-export * from './BatteryMeasure';
+export * from "./BatteryMeasure";

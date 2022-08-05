@@ -1,4 +1,4 @@
-import { Measurement } from './measures/MeasureContent';
+import { Measurement } from "./measures/MeasureContent";
 
 /**
  * Result of the `Decoder.decode` method.
@@ -27,7 +27,7 @@ import { Measurement } from './measures/MeasureContent';
  *       values: { temperature: 39 },
  *     },
  *   ],
- * 
+ *
  *   'IS7L8HK': [
  *     {
  *       deviceMeasureName: 'battery',
@@ -50,5 +50,7 @@ import { Measurement } from './measures/MeasureContent';
  *   ],
  * };
  */
-export type DecodedPayload = Record<string, // deviceReference
-  Measurement[]>;
+export type DecodedPayload = Record<
+  string, // deviceReference
+  Measurement[]
+>;

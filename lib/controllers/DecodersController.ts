@@ -1,8 +1,8 @@
-import { ControllerDefinition, PluginContext } from 'kuzzle';
+import { ControllerDefinition, PluginContext } from "kuzzle";
 
-import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
-import { DecodersRegister } from '../core-classes';
-import { DeviceManagerConfiguration } from '../types';
+import { DeviceManagerPlugin } from "../DeviceManagerPlugin";
+import { DecodersRegister } from "../core-classes";
+import { DeviceManagerConfiguration } from "../types";
 
 export class DecodersController {
   private context: PluginContext;
@@ -11,7 +11,7 @@ export class DecodersController {
 
   public definition: ControllerDefinition;
 
-  constructor (plugin: DeviceManagerPlugin, decodersRegister: DecodersRegister) {
+  constructor(plugin: DeviceManagerPlugin, decodersRegister: DecodersRegister) {
     this.context = plugin.context;
     this.config = plugin.config;
     this.decodersRegister = decodersRegister;
@@ -20,16 +20,16 @@ export class DecodersController {
       actions: {
         list: {
           handler: this.list.bind(this),
-          http: [{ path: 'device-manager/decoders', verb: 'get' }],
-        }
-      }
+          http: [{ path: "device-manager/decoders", verb: "get" }],
+        },
+      },
     };
   }
 
   /**
    * List all available decoders
    */
-  async list () {
+  async list() {
     const decoders = this.decodersRegister.list();
 
     return { decoders };

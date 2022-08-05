@@ -1,15 +1,14 @@
 /* eslint-disable sort-keys */
 
 export const measuresMappings = {
-  dynamic: 'strict',
+  dynamic: "strict",
   properties: {
-
     /**
      * Type of the measure. (e.g. "temperature")
      * The type name is also the name of the sub-property to look at
      * in the "values" object to get the measure main value.
      */
-    type: { type: 'keyword' },
+    type: { type: "keyword" },
 
     /**
      * Property containing the actual measurement.
@@ -23,61 +22,59 @@ export const measuresMappings = {
     /**
      * Micro Timestamp of the measurement time.
      */
-    measuredAt: { type: 'double' },
+    measuredAt: { type: "double" },
 
     /**
      * Name given by the decoder to the measure.
      */
-    deviceMeasureName: { type: 'keyword' },
+    deviceMeasureName: { type: "keyword" },
 
     /**
      * Name given by the `deviceLink` of the linked asset.
      */
-    assetMeasureName: { type: 'keyword' },
+    assetMeasureName: { type: "keyword" },
 
     /**
      * Measurement self-description.
      */
     unit: {
-      dynamic: 'false',
-      properties: {}
+      dynamic: "false",
+      properties: {},
     },
-
 
     /**
      * Define the origin of the measure.
      */
     origin: {
-      type: 'nested',
+      type: "nested",
       properties: {
         /**
          * From what the measure has been pushed. Can be:
          * - 'asset'
          * - 'device'
          */
-        type: { type: 'keyword' },
+        type: { type: "keyword" },
 
         /**
          * Array of payloads uuids that were used to create this measure.
          */
-        payloadUuids: { type: 'keyword' },
+        payloadUuids: { type: "keyword" },
 
         // E.g. "AbeewayTemp"
-        deviceModel: { type: 'keyword' },
+        deviceModel: { type: "keyword" },
 
         /**
          * ID of the origin. Can be:
          * - device id if origin type is `device`
          * - user id if origin type is `asset`
          */
-        id: { type: 'keyword' },
+        id: { type: "keyword" },
 
         // Asset linked to the device when the measure was made
-        assetId: { type: 'keyword' },
-      }
+        assetId: { type: "keyword" },
+      },
     },
-
-  }
+  },
 };
 
 /* eslint-enable sort-keys */

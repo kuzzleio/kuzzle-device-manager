@@ -1,86 +1,100 @@
-import { Backend, KuzzleRequest } from 'kuzzle';
+import { Backend, KuzzleRequest } from "kuzzle";
 
-import { DeviceManagerPlugin } from '../../../index';
+import { DeviceManagerPlugin } from "../../../index";
 import {
   DummyMultiTempDecoder,
   DummyTempDecoder,
   DummyTempPositionDecoder,
-} from './decoders';
-import { registerTestPipes } from './testPipes'
-import { TreeNodeController } from '../../fakeclasses/TreeNodeController';
-import { InvertTreeNodeController } from '../../fakeclasses/InvertTreeNodeController';
+} from "./decoders";
+import { registerTestPipes } from "./testPipes";
+import { TreeNodeController } from "../../fakeclasses/TreeNodeController";
+import { InvertTreeNodeController } from "../../fakeclasses/InvertTreeNodeController";
 
-const app = new Backend('kuzzle');
+const app = new Backend("kuzzle");
 
 const deviceManager = new DeviceManagerPlugin();
 
 deviceManager.decoders.register(new DummyTempDecoder(deviceManager.measures));
-deviceManager.decoders.register(new DummyMultiTempDecoder(deviceManager.measures));
-deviceManager.decoders.register(new DummyTempPositionDecoder(deviceManager.measures));
+deviceManager.decoders.register(
+  new DummyMultiTempDecoder(deviceManager.measures)
+);
+deviceManager.decoders.register(
+  new DummyTempPositionDecoder(deviceManager.measures)
+);
 
 deviceManager.devices.registerMetadata({
   group: {
-    type: 'keyword',
+    type: "keyword",
     fields: {
-      text: { type: 'text' }
-    }
-  }
+      text: { type: "text" },
+    },
+  },
 });
 
 deviceManager.devices.registerMetadata({
   group2: {
-    type: 'keyword',
+    type: "keyword",
     fields: {
-      text: { type: 'text' }
-    }
-  }
+      text: { type: "text" },
+    },
+  },
 });
 
-deviceManager.assets.register('car', {
+deviceManager.assets.register("car", {
   warranty: {
-    type: 'keyword',
+    type: "keyword",
     fields: {
-      text: { type: 'text' }
-    }
-  }
+      text: { type: "text" },
+    },
+  },
 });
 
 // Register an asset for the "astronaut" group
 
-deviceManager.assets.register('rocket', {
-  stillAlive: { type: 'boolean' }
-}, { group: 'astronaut' });
+deviceManager.assets.register(
+  "rocket",
+  {
+    stillAlive: { type: "boolean" },
+  },
+  { group: "astronaut" }
+);
 
-deviceManager.assets.register('hevSuit', {
-  freezing: { type: 'boolean' }
-}, { group: 'astronaut' });
+deviceManager.assets.register(
+  "hevSuit",
+  {
+    freezing: { type: "boolean" },
+  },
+  { group: "astronaut" }
+);
 
 registerTestPipes(app); //TODO : move this line in another filer
 
 app.plugin.use(deviceManager);
 
-app.hook.register('request:onError', async (request: KuzzleRequest) => {
+app.hook.register("request:onError", async (request: KuzzleRequest) => {
   app.log.error(request.error);
 });
 
-app.config.set('plugins.kuzzle-plugin-logger.services.stdout.level', 'debug');
+app.config.set("plugins.kuzzle-plugin-logger.services.stdout.level", "debug");
 
 // Reduce writing latency since we won't have significant load
-app.config.set('plugins.device-manager.writerInterval', 1);
+app.config.set("plugins.device-manager.writerInterval", 1);
 
-app.config.set('limits.documentsWriteCount', 5000);
+app.config.set("limits.documentsWriteCount", 5000);
 
 const treeNodeController = new TreeNodeController(deviceManager);
 const invertTreeNodeController = new InvertTreeNodeController(deviceManager);
 
-deviceManager.api['device-manager/treeNode'] = treeNodeController.definition;
-deviceManager.api['device-manager/invertTreeNode'] = invertTreeNodeController.definition;
+deviceManager.api["device-manager/treeNode"] = treeNodeController.definition;
+deviceManager.api["device-manager/invertTreeNode"] =
+  invertTreeNodeController.definition;
 
-app.start()
+app
+  .start()
   .then(() => {
-    treeNodeController['context'] = deviceManager.context;
-    invertTreeNodeController['context'] = deviceManager.context;
+    treeNodeController["context"] = deviceManager.context;
+    invertTreeNodeController["context"] = deviceManager.context;
 
-    app.log.info('Application started');
+    app.log.info("Application started");
   })
   .catch(console.error);

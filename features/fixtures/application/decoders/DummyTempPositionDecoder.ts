@@ -1,4 +1,4 @@
-import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+import { JSONObject, KuzzleRequest, PreconditionError } from "kuzzle";
 
 import {
   Decoder,
@@ -7,19 +7,22 @@ import {
   TemperatureMeasurement,
   DecodedPayload,
   MeasuresRegister,
-} from '../../../../index';
+} from "../../../../index";
 
 export class DummyTempPositionDecoder extends Decoder {
-  constructor (measuresRegister: MeasuresRegister) {
-    super('DummyTempPosition', {
-      theTemperature: 'temperature',
-      theBattery: 'battery',
-      thePosition: 'position',
-    },
-    measuresRegister);
+  constructor(measuresRegister: MeasuresRegister) {
+    super(
+      "DummyTempPosition",
+      {
+        theTemperature: "temperature",
+        theBattery: "battery",
+        thePosition: "position",
+      },
+      measuresRegister
+    );
   }
 
-  async validate (payload: JSONObject, request: KuzzleRequest) {
+  async validate(payload: JSONObject, request: KuzzleRequest) {
     if (payload.deviceEUI === undefined) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
@@ -27,18 +30,21 @@ export class DummyTempPositionDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
+  async decode(
+    payload: JSONObject,
+    request: KuzzleRequest
+  ): Promise<DecodedPayload> {
     const temperature: TemperatureMeasurement = {
-      deviceMeasureName: 'theTemperature',
+      deviceMeasureName: "theTemperature",
       measuredAt: Date.now(),
-      type: 'temperature',
+      type: "temperature",
       values: { temperature: payload.register55 },
     };
 
     const position: PositionMeasurement = {
-      deviceMeasureName: 'thePositition',
+      deviceMeasureName: "thePositition",
       measuredAt: Date.now(),
-      type: 'position',
+      type: "position",
       values: {
         position: {
           lat: payload.location.lat,
@@ -49,14 +55,14 @@ export class DummyTempPositionDecoder extends Decoder {
     };
 
     const battery: BatteryMeasurement = {
-      deviceMeasureName: 'theBattery',
+      deviceMeasureName: "theBattery",
       measuredAt: Date.now(),
-      type: 'battery',
+      type: "battery",
       values: {
         battery: payload.batteryLevel * 100,
       },
     };
 
-    return {[payload.deviceEUI]: [temperature, position, battery]};
+    return { [payload.deviceEUI]: [temperature, position, battery] };
   }
 }

@@ -1,3 +1,3 @@
-export * from './Device';
+export * from "./Device";
 
-export * from './BaseAsset';
+export * from "./BaseAsset";

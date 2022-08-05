@@ -4,17 +4,18 @@ import {
   KuzzleRequest,
   PluginImplementationError,
   PreconditionError,
-} from 'kuzzle';
-import _ from 'lodash';
+} from "kuzzle";
+import _ from "lodash";
 
-import { DecodedPayload } from '../types/DecodedPayload';
-import { DecoderContent } from '../types';
-import { MeasuresRegister } from './registers/MeasuresRegister';
-
+import { DecodedPayload } from "../types/DecodedPayload";
+import { DecoderContent } from "../types";
+import { MeasuresRegister } from "./registers/MeasuresRegister";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-export type DecoderMeasures = Record<string, // deviceMeasureName
-  string>; // type
+export type DecoderMeasures = Record<
+  string, // deviceMeasureName
+  string
+>; // type
 
 /**
  * Base class to implement a decoder for a device model.
@@ -60,13 +61,15 @@ export abstract class Decoder {
    *
    * @param http HttpRoute array
    */
-  set http (http: HttpRoute[]) {
+  set http(http: HttpRoute[]) {
     this._http = http;
   }
 
-  get http (): HttpRoute[] {
-    if (! this._http) {
-      this._http = [{ path: `device-manager/payload/${this.action}`, verb: 'post' }];
+  get http(): HttpRoute[] {
+    if (!this._http) {
+      this._http = [
+        { path: `device-manager/payload/${this.action}`, verb: "post" },
+      ];
     }
 
     return this._http;
@@ -79,16 +82,18 @@ export abstract class Decoder {
    * @example
    * super('AbeewayGPS', ['position']);
    */
-  constructor (
+  constructor(
     deviceModel: string,
     decoderMeasures: DecoderMeasures,
-    measuresRegister: MeasuresRegister,
+    measuresRegister: MeasuresRegister
   ) {
     this.deviceModel = deviceModel;
 
     for (const [measureName, measureType] of Object.entries(decoderMeasures)) {
-      if (! measuresRegister.has(measureType)) {
-        throw new PluginImplementationError(`Decoder "${this.constructor.name}" cannot register unknown measure type "${measureType}"`);
+      if (!measuresRegister.has(measureType)) {
+        throw new PluginImplementationError(
+          `Decoder "${this.constructor.name}" cannot register unknown measure type "${measureType}"`
+        );
       }
     }
 
@@ -109,7 +114,10 @@ export abstract class Decoder {
    * @return A boolean indicating if the payload is valid
    */
   // eslint-disable-next-line no-unused-vars
-  async validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
+  async validate(
+    payload: JSONObject,
+    request: KuzzleRequest
+  ): Promise<boolean> | never {
     return true;
   }
 
@@ -124,7 +132,10 @@ export abstract class Decoder {
    * @returns Map of `Measurements` by device reference.
    */
   // eslint-disable-next-line no-unused-vars
-  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>;
+  abstract decode(
+    payload: JSONObject,
+    request: KuzzleRequest
+  ): Promise<DecodedPayload>;
 
   /**
    * Checks if the provided properties are present in the payload
@@ -134,15 +145,15 @@ export abstract class Decoder {
    *
    * @throws
    */
-  ensureProperties (payload: JSONObject, paths: string[]): void | never {
+  ensureProperties(payload: JSONObject, paths: string[]): void | never {
     for (const path of paths) {
-      if (! _.has(payload, path)) {
+      if (!_.has(payload, path)) {
         throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }
   }
 
-  serialize (): DecoderContent {
+  serialize(): DecoderContent {
     return {
       decoderMeasures: this.decoderMeasures,
       deviceModel: this.deviceModel,
