@@ -1,6 +1,6 @@
-import { KDocumentContent } from 'kuzzle-sdk';
+import { JSONObject, KDocumentContent } from 'kuzzle';
+
 import { MetadataContent } from './MetadataContent';
-import { JSONObject } from 'kuzzle';
 
 export interface FormattedValue {
   boolean? : boolean,

@@ -1,5 +1,5 @@
-import { KDocumentContent } from 'kuzzle-sdk';
-import { JSONObject } from 'kuzzle';
+import { JSONObject, KDocumentContent } from 'kuzzle';
+
 import { FormattedMetadata } from './AssetCategoryContent';
 
 /* eslint-disable no-shadow, no-unused-vars */
