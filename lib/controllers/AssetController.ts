@@ -24,10 +24,15 @@ export class AssetController extends RelationalController {
   ) {
 
     super(plugin, 'assets');
-    global.app.errors.register('device-manager', 'assetController', 'MandatoryMetadata', {
+    global.app.errors.register('device-manager', 'asset_controller', 'mandatory_metadata', {
       class: 'BadRequestError',
       description: 'Metadata which are specified in AssetCategory as mandatory must be present',
       message: 'metadata %s is mandatory for the asset',
+    });
+    global.app.errors.register('device-manager', 'asset_controller', 'enum_metadata', {
+      class: 'BadRequestError',
+      description: 'Metadata must have one of the values specified in metadata valueList',
+      message: 'metadata %s cannot have %s value : value must have one of the value of metadata valueList ',
     });
 
     this.assetCategoryService = assetCategoryService;
@@ -80,10 +85,35 @@ export class AssetController extends RelationalController {
         pushMeasures: {
           handler: this.pushMeasures.bind(this),
           http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'post' }],
-        }
+        },
+        removeMeasure: {
+          handler: this.removeMeasure.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures/:assetMeasureName', verb: 'delete' }],
+        },
+        mRemoveMeasures: {
+          handler: this.mRemoveMeasures.bind(this),
+          http: [{ path: 'device-manager/:engineId/assets/:_id/measures', verb: 'delete' }],
+        },
       },
     };
     /* eslint-enable sort-keys */
+  }
+
+  async mRemoveMeasures (request: KuzzleRequest) {
+    const id = request.getId();
+    const strict = request.getBoolean('strict');
+    const engineId = request.getString('engineId');
+    const assetMeasureNames = request.getBodyArray('assetMeasureNames');
+
+    return this.assetService.removeMeasures(engineId, id, assetMeasureNames, { strict });
+  }
+
+  async removeMeasure (request: KuzzleRequest) {
+    const id = request.getId();
+    const engineId = request.getString('engineId');
+    const assetMeasureName = request.getString('assetMeasureName');
+
+    return this.assetService.removeMeasures(engineId, id, [assetMeasureName], { strict: true });
   }
 
   async getMeasures (request: KuzzleRequest) {
@@ -106,7 +136,9 @@ export class AssetController extends RelationalController {
   async get (request: KuzzleRequest) {
     const id = request.getId();
     const engineId = request.getString('engineId');
-    const document = await this.sdk.document.get<BaseAssetContent>(engineId, this.collection, id);
+    const category = this.getFieldPath(request, 'category', null, 'asset-category');
+
+    const document = await this.genericGet<BaseAssetContent>(engineId, this.collection, id, [category]);
     const metadata = document._source.metadata;
     const asset = document._source as JSONObject;
     if (metadata) {
@@ -121,7 +153,7 @@ export class AssetController extends RelationalController {
     const categoryId = request.getString('categoryId');
     const document = await this.sdk.document.get(engineId, this.collection, id);
     if ( document._source.category !== categoryId && document._source.subCategory !== categoryId ) {
-      throw global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
+      throw global.app.errors.get('device-manager', 'relational_controller', 'remove_unexisting_link');
     }
     request.input.body = { category: null, subCategory: null };
     return this.update(request);
@@ -139,7 +171,7 @@ export class AssetController extends RelationalController {
       subCategory: null
     };
     if ( document._source.category) {
-      throw global.app.errors.get('device-manager', 'relational', 'alreadyLinked', 'asset', 'category');
+      throw global.app.errors.get('device-manager', 'relational_controller', 'already_linked', 'asset', 'category');
     }
     else if (categoryDocument._source.parent) {
       updateRequest.category = categoryDocument._source.parent;
@@ -158,15 +190,14 @@ export class AssetController extends RelationalController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
     const measures = request.getBodyArray('measures');
+    const kuid = request.getKuid();
 
-    const { asset, errors } = await this.measureService.registerByAsset(
-      engineId,
-      assetId,
-      measures,
-      refresh,
-      strict);
+    const {
+      asset, invalids, valids
+    } = await this.measureService.registerByAsset(
+      engineId, assetId, measures, kuid, { refresh, strict });
 
-    return { asset, engineId, errors };
+    return { asset, engineId, invalids, valids };
   }
 
   async update (request: KuzzleRequest) {
@@ -250,6 +281,7 @@ export class AssetController extends RelationalController {
 
     if (Array.isArray(devicesLinks._source.deviceLinks)) {
       for (const deviceLink of devicesLinks._source.deviceLinks) {
+        // TODO : Refacto to only get the asset one time
         await this.deviceService.unlinkAsset(deviceLink.deviceId, { refresh, strict });
       }
     }

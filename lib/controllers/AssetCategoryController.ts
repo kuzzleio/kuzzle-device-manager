@@ -1,7 +1,13 @@
 import { KuzzleRequest, Plugin } from 'kuzzle';
 import { RelationalController } from './RelationalController';
-import { AssetCategoryContent, FormattedValue, ProcessedAssetCategoryContent } from '../types/AssetCategoryContent';
+import {
+  AssetCategoryContent,
+  FormattedMetadata,
+  FormattedValue,
+  ProcessedAssetCategoryContent
+} from '../types/AssetCategoryContent';
 import { AssetCategoryService } from '../core-classes/AssetCategoryService';
+import { MetadataContent } from '../types/MetadataContent';
 
 
 export class AssetCategoryController extends RelationalController {
@@ -11,7 +17,7 @@ export class AssetCategoryController extends RelationalController {
     super(plugin, 'asset-category');
     this.assetCategoryService = assetCategoryService;
 
-    global.app.errors.register('device-manager', 'relational', 'forbiddenParent', {
+    global.app.errors.register('device-manager', 'relational_controller', 'forbidden_parent', {
       class: 'BadRequestError',
       description: 'you can\'t have a parent that is a subcategory',
       message: 'you can\'t have a parent that is a subcategory',
@@ -22,7 +28,7 @@ export class AssetCategoryController extends RelationalController {
       actions: {
         get: {
           handler: this.get.bind(this),
-          http: [{ path: 'device-manager/:engineId/assetCategory', verb: 'get' }],
+          http: [{ path: 'device-manager/:engineId/assetCategory/:_id', verb: 'get' }],
         },
         create: {
           handler: this.create.bind(this),
@@ -73,12 +79,31 @@ export class AssetCategoryController extends RelationalController {
         metadataValuesTable.push({ key, value });
       }
       request.input.body.metadataValues = metadataValuesTable;
-
     }
     return super.create(request);
   }
 
   async update (request: KuzzleRequest) {
+    const id = request.getId();
+    const engineId = request.getString('engineId');
+    const assetMetadata = request.input.body.assetMetadata as String[];
+    if (assetMetadata) {
+      //if elemets are removed in assetMetadata, we need to also remove the values associated in metadataValues
+      if (! request.input.body.metadataValues) {
+        const document = await this.sdk.document.get<AssetCategoryContent>(engineId, this.collection, id);
+        request.input.body.metadataValues = document._source.metadataValues;
+      }
+      let index = 0;
+      const metadataValues = request.input.body.metadataValues as FormattedMetadata[];
+      for (const values of metadataValues) {
+        if (! assetMetadata.includes(values.key)) {
+          metadataValues.splice(index);
+        }
+        else {
+          index++;
+        } 
+      }
+    }
     return super.genericUpdate(request);
   }
 
@@ -92,7 +117,7 @@ export class AssetCategoryController extends RelationalController {
     const parent = request.getString('parentId');
     const document = await this.sdk.document.get(request.getString('engineId'), 'asset-category', parent);
     if (document._source.parentId) {
-      throw global.app.errors.get('device-manager', 'assetController', 'forbiddenParent');
+      throw global.app.errors.get('device-manager', 'asset_controller', 'forbidden_parent');
     }
     request.input.body = {
       parent
@@ -125,13 +150,14 @@ export class AssetCategoryController extends RelationalController {
     const metadataId = request.getString('metadataId');
     const value = request.input.body?.value;
 
-    await this.sdk.document.get(engineId, 'metadata', metadataId); //existance verification
-    const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id);
+    const [metadataContent, category] = await Promise.all([
+      await this.sdk.document.get<MetadataContent>(engineId, 'metadata', metadataId),
+      await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id)]);
     const metadata = category._source.assetMetadata ? category._source.assetMetadata : [];
     let metadataValues = category._source.metadataValues;
 
     if (metadata.includes(metadataId)) {
-      throw global.app.errors.get('device-manager', 'relational', 'linkAlreadyExist');
+      throw global.app.errors.get('device-manager', 'relational_controller', 'link_already_exist');
     }
     metadata.push(metadataId);
     request.input.body = {
@@ -139,7 +165,8 @@ export class AssetCategoryController extends RelationalController {
     };
     let update = false;
     if (value) {
-      const formattedValue : FormattedValue = await this.assetCategoryService.formatValue(value);
+      this.assetCategoryService.validateEnumMetadata(metadataContent._source, value);
+      const formattedValue : FormattedValue = this.assetCategoryService.formatValue(value);
       if (metadataValues) {
         for (const metadataValue of metadataValues) {
           if (metadataValue.key === metadataId) {
@@ -154,6 +181,7 @@ export class AssetCategoryController extends RelationalController {
       if (! update) {
         metadataValues.push({ key: metadataId, value: formattedValue });
       }
+      
       request.input.body.metadataValues = metadataValues;
     }
     return this.update(request);
@@ -162,21 +190,24 @@ export class AssetCategoryController extends RelationalController {
   async get (request: KuzzleRequest) : Promise<ProcessedAssetCategoryContent> {
     const id = request.getId();
     const engineId = request.getString('engineId');
-    const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id); //TODO : split assetCategorycontent with one for bdd mapping and one for get return 
-    const source = category._source;
+
+    const category = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', id);
+    const categorySource = category._source;
     const [assetMetadata, metadataValues] = await Promise.all([
-      this.assetCategoryService.getMetadata(source, engineId),
-      this.assetCategoryService.getMetadataValues(source, engineId)
+      this.assetCategoryService.getMetadata(categorySource, engineId),
+      this.assetCategoryService.getMetadataValues(categorySource, engineId)
     ]
     );
-
-    const formattedAssetMetadata = await this.assetCategoryService.formatMetadataForGet(metadataValues);
+    const formattedAssetMetadata = this.assetCategoryService.formatMetadataForGet(metadataValues);
+    const children = this.getFieldPath(request, 'parent');
+    const processedCategory = await this.genericGet<AssetCategoryContent>(engineId, this.collection, id, [children]);
     const processedAssetCategoryContent :ProcessedAssetCategoryContent = {
-      name: source.name,
-      parent: source.parent,
+      name: categorySource.name,
+      parent: processedCategory._source.parent,
       assetMetadata,
       metadataValues: formattedAssetMetadata
     };
+
     return processedAssetCategoryContent;
   }
 }

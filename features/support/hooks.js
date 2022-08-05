@@ -1,5 +1,3 @@
-
-
 const _ = require('lodash');
 const { After, Before, BeforeAll } = require('cucumber');
 const { Kuzzle, WebSocket } = require('kuzzle-sdk');
@@ -80,14 +78,15 @@ Before({ timeout: 30 * 1000 }, async function () {
 
   await Promise.all([
     truncateCollection(this.sdk, 'device-manager', 'devices'),
+    truncateCollection(this.sdk, 'device-manager', 'payloads'),
     removeCatalogEntries(this.sdk, 'device-manager'),
 
     truncateCollection(this.sdk, 'engine-kuzzle', 'assets'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'measures'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'devices'),
+    removeCatalogEntries(this.sdk, 'engine-kuzzle'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'asset-category'),
     truncateCollection(this.sdk, 'engine-kuzzle', 'metadata'),
-
 
     truncateCollection(this.sdk, 'engine-ayse', 'assets'),
     truncateCollection(this.sdk, 'engine-ayse', 'measures'),
@@ -159,12 +158,29 @@ After({ tags: '@realtime' }, function () {
   return Promise.all(promises);
 });
 
-After({ tags: '@provisioning', timeout: 60 * 1000 }, async function () {
+After({ tags: '@manual-provisioning', timeout: 60 * 1000 }, async function () {
   await this.sdk.document.update('device-manager', 'config', 'plugin--device-manager', {
     'device-manager': {
       provisioningStrategy: 'auto',
     }
   });
+});
+
+// engine hooks ================================================================
+
+After({ tags: '@reset-engines', timeout: 60 * 1000 }, async function () {
+  const world = new World({});
+
+  world.sdk = new Kuzzle(
+    new WebSocket(world.host, { port: world.port })
+  );
+
+  await world.sdk.connect();
+
+  await Promise.all([
+    resetEngine(world.sdk, 'engine-ayse'),
+    resetEngine(world.sdk, 'engine-kuzzle'),
+  ]);
 });
 
 // cleaning hooks ==============================================================

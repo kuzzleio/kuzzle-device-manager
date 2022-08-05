@@ -46,31 +46,31 @@ Feature: AssetCategory
 
   Scenario: Link and unlink an asset and a AssetCategory
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "truck"             |
       | engineId   | "engine-ayse"       |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category | 'truck' |
     When I successfully execute the action "device-manager/asset":"unlinkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "truck"             |
       | engineId   | "engine-ayse"       |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category | null |
 
   Scenario: Link and unlink an asset and a subcategory
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "bigTruck"             |
       | engineId   | "engine-ayse"       |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category    | 'truck'    |
       | subCategory | 'bigTruck' |
     When I successfully execute the action "device-manager/asset":"unlinkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "truck"             |
       | engineId   | "engine-ayse"       |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category    | null |
       | subCategory | null |
 
@@ -80,14 +80,14 @@ Feature: AssetCategory
       | engineId  | "engine-ayse" |
       | body.name | "tool"        |
     When I successfully execute the action "device-manager/asset":"linkCategory" with args:
-      | _id        | "tools-MART-linked" |
+      | _id        | "container-FRIDGE-linked" |
       | categoryId | "tool"              |
       | engineId   | "engine-ayse"       |
     And I refresh the collection "engine-ayse":"assets"
     And I successfully execute the action "device-manager/assetCategory":"delete" with args:
       | engineId | "engine-ayse" |
       | _id      | "tool"        |
-    Then The document "engine-ayse":"assets":"tools-MART-linked" content match:
+    Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category | null |
 
 
@@ -195,7 +195,7 @@ Feature: AssetCategory
       | type             | "truck"    |
       | model            | "M"        |
       | reference        | "asset_02" |
-      | category         | "bigTruck" |
+      | category.name    | "bigTruck" |
       | metadata.surname | "test"     |
 
   Scenario: Create an assetCategory, a mandatory metadata, link them statically and create an asset with
@@ -215,7 +215,6 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/assetCategory":"get" with args:
       | engineId | "engine-ayse" |
       | _id      | "solarTruck"  |
-    Then I debug "result"
     Then I should receive a result matching:
       | name                   | "solarTruck" |
       | metadataValues.panelSurface | 101          |
@@ -284,4 +283,191 @@ Feature: AssetCategory
     Then The document "engine-ayse":"asset-category":"littleTruck" content match:
       | parent | null |
 
+  Scenario: Use metadata enum type and link with assetCategory
+    When I successfully execute the action "device-manager/assetCategory":"create" with args:
+      | engineId  | "engine-ayse"  |
+      | body.name | "coloredTruck" |
+    When I successfully execute the action "device-manager/metadata":"create" with args:
+      | engineId       | "engine-ayse"          |
+      | body.name      | "color"                |
+      | body.valueType | "enum"                 |
+      | body.valueList | ["red","blue","green"] |
+      | body.mandatory | true                   |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "coloredTruck" |
+      | metadataId | "color"        |
+    When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "coloredTruck" |
+      | metadataId | "color"        |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "coloredTruck" |
+      | metadataId | "color"        |
+      | body.value | "red"          |
+    Then The document "engine-ayse":"asset-category":"coloredTruck" content match:
+      | metadataValues[0].key           | "color" |
+      | metadataValues[0].value.keyword | "red"   |
+    When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
+          | engineId   | "engine-ayse"  |
+          | _id        | "coloredTruck" |
+          | metadataId | "color"        |
+    Then The document "engine-ayse":"asset-category":"coloredTruck" content match:
+      | metadataValues | [] |
+    When I execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "coloredTruck" |
+      | metadataId | "color"        |
+      | body.value | "black"        |
+    Then I should receive an error matching:
+      | id | "device-manager.asset_controller.enum_metadata" |
 
+  Scenario: Use metadata enum type link with assetCategory, and create asset with
+    When I successfully execute the action "device-manager/assetCategory":"create" with args:
+      | engineId  | "engine-ayse" |
+      | body.name | "typedTruck"      |
+    When I successfully execute the action "device-manager/metadata":"create" with args:
+      | engineId       | "engine-ayse"   |
+      | body.name      | "truckType"     |
+      | body.valueType | "string"        |
+      | body.valueList | ["big","small"] |
+      | body.mandatory | true            |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse" |
+      | _id        | "typedTruck"  |
+      | metadataId | "truckType"   |
+    When I execute the action "device-manager/asset":"create" with args:
+      | engineId                | "engine-ayse" |
+      | body.type               | "truck"       |
+      | body.model              | "M"           |
+      | body.reference          | "asset_02"    |
+      | body.category           | "typedTruck"  |
+      | body.metadata.truckType | "super"       |
+    Then I should receive an error matching:
+      | id | "device-manager.asset_controller.enum_metadata" |
+    When I successfully execute the action "device-manager/asset":"create" with args:
+      | engineId                | "engine-ayse" |
+      | body.type               | "truck"       |
+      | body.model              | "M"           |
+      | body.reference          | "asset_02"    |
+      | body.category           | "typedTruck"  |
+      | body.metadata.truckType | "big"         |
+    When I successfully execute the action "device-manager/asset":"get" with args:
+      | engineId | "engine-ayse"      |
+      | _id      | "truck-M-asset_02" |
+    Then I should receive a result matching:
+      | metadata.truckType | "big" |
+
+
+  Scenario: Use geopoint
+    When I successfully execute the action "device-manager/metadata":"create" with args:
+      | engineId       | "engine-ayse" |
+      | body.name      | "position"    |
+      | body.valueType | "geo_point"   |
+      | body.mandatory | true          |
+    When I successfully execute the action "device-manager/assetCategory":"create" with args:
+      | engineId  | "engine-ayse" |
+      | body.name | "positionTruck"      |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "positionTruck" |
+      | metadataId | "position"        |
+    When I successfully execute the action "device-manager/asset":"create" with args:
+      | engineId               | "engine-ayse"        |
+      | body.type              | "truck"              |
+      | body.model             | "M"                  |
+      | body.reference         | "asset_10"           |
+      | body.category          | "positionTruck"      |
+      | body.metadata.position | {lon : 10, lat : 20} |
+    When I successfully execute the action "device-manager/asset":"get" with args:
+      | engineId | "engine-ayse"      |
+      | _id      | "truck-M-asset_10" |
+    Then I should receive a result matching:
+      | type              | "truck"    |
+      | model             | "M"        |
+      | reference         | "asset_10" |
+      | metadata.position | {lon : 10, lat : 20}     |
+    And The document "engine-ayse":"assets":"truck-M-asset_10" content match:
+      | metadata[0].key                 | "position" |
+      | metadata[0].value.geo_point.lon | 10         |
+      | metadata[0].value.geo_point.lat | 20         |
+
+  Scenario: Use objectEnum to create assetCategory, and asset
+    When I successfully execute the action "device-manager/metadata":"create" with args:
+      | engineId             | "engine-ayse"                                                                                               |
+      | body.name            | "trailer"                                                                                                   |
+      | body.valueType       | "enum"                                                                                                      |
+      | body.mandatory       | true                                                                                                        |
+      | body.objectValueList | [{'color' : 'red', 'size' : 'giant', 'maxLoad' : 50}, {'color' : 'blue', 'size' : 'small', 'maxLoad' : 60}] |
+    When I successfully execute the action "device-manager/metadata":"get" with args:
+      | engineId | "engine-ayse" |
+      | _id      | "trailer"     |
+    Then I should receive a result matching:
+      | name            | "trailer"                                                                                                   |
+      | valueType       | "enum"                                                                                                      |
+      | mandatory       | true                                                                                                        |
+      | objectValueList | [{'color' : 'red', 'size' : 'giant', 'maxLoad' : 50}, {'color' : 'blue', 'size' : 'small', 'maxLoad' : 60}] |
+    And The document "engine-ayse":"metadata":"trailer" content match:
+      | objectValueList[0].object[0].key           | "color"   |
+      | objectValueList[0].object[0].value.keyword | "red"     |
+      | objectValueList[0].object[2].key           | "maxLoad" |
+      | objectValueList[0].object[2].value.integer | 50        |
+      | objectValueList[1].object[0].key           | "color"   |
+      | objectValueList[1].object[0].value.keyword | "blue"    |
+      | objectValueList[1].object[2].key           | "maxLoad" |
+      | objectValueList[1].object[2].value.integer | 60        |
+    When I successfully execute the action "device-manager/assetCategory":"create" with args:
+      | engineId  | "engine-ayse"  |
+      | body.name | "trailerTruck" |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+      | metadataId | "trailer"      |
+    When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+      | metadataId | "trailer"      |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+      | metadataId | "trailer"      |
+      | body.value | {'color' : 'red', 'size' : 'giant', 'maxLoad' : 50}         |
+    Then The document "engine-ayse":"asset-category":"trailerTruck" content match:
+      | metadataValues[0].key                           | "trailer" |
+      | metadataValues[0].value.object[0].key           | "color"   |
+      | metadataValues[0].value.object[0].value.keyword | "red"     |
+    When I successfully execute the action "device-manager/assetCategory":"get" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+    Then I should receive a result matching:
+      | metadataValues.trailer.color   | "red"   |
+      | metadataValues.trailer.size    | "giant" |
+      | metadataValues.trailer.maxLoad | 50      |
+    When I successfully execute the action "device-manager/assetCategory":"unlinkMetadata" with args:
+      | engineId   | "engine-ayse"  |
+      | _id        | "trailerTruck" |
+      | metadataId | "trailer"      |
+    And I execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"                                       |
+      | _id        | "trailerTruck"                                      |
+      | metadataId | "trailer"                                           |
+      | body.value | {'color' : 'red', 'size' : 'giant', 'maxLoad' : 60} |
+    Then I should receive an error matching:
+      | id | "device-manager.asset_controller.enum_metadata" |
+    When I successfully execute the action "device-manager/assetCategory":"create" with args:
+      | engineId  | "engine-ayse"         |
+      | body.name | "genericTrailerTruck" |
+    When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
+      | engineId   | "engine-ayse"         |
+      | _id        | "genericTrailerTruck" |
+      | metadataId | "trailer"             |
+    When I execute the action "device-manager/asset":"create" with args:
+      | engineId              | "engine-ayse"                                       |
+      | body.type             | "truck"                                             |
+      | body.model            | "M"                                                 |
+      | body.reference        | "myTrailerTruck"                                    |
+      | body.category         | "genericTrailerTruck"                               |
+      | body.metadata.trailer | {'color' : 'red', 'size' : 'giant', 'maxLoad' : 60} |
+    Then I should receive an error matching:
+      | id | "device-manager.asset_controller.enum_metadata" |

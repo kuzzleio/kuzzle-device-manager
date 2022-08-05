@@ -8,6 +8,7 @@ import {
   SearchResult
 } from 'kuzzle';
 import { User } from 'kuzzle/lib/types';
+import { KDocumentContent } from 'kuzzle-sdk';
 
 /**
  * interface to indicate a specific field in a specific document.
@@ -29,17 +30,17 @@ export abstract class RelationalController extends CRUDController {
   public static init () {
     if (! this.isInit) {
       this.isInit = true;
-      global.app.errors.register('device-manager', 'relational', 'removeUnexistingLink', {
+      global.app.errors.register('device-manager', 'relational_controller', 'remove_unexisting_link', {
         class: 'BadRequestError',
         description: 'you can\'t remove an unexisting link',
         message: 'you can\'t remove an unexisting link',
       });
-      global.app.errors.register('device-manager', 'relational', 'alreadyLinked', {
+      global.app.errors.register('device-manager', 'relational_controller', 'already_linked', {
         class: 'BadRequestError',
         description: 'Creation of multiple relation on a OneToMany relation',
         message: '%s cannot have multiple %s relation',
       });
-      global.app.errors.register('device-manager', 'relational', 'linkAlreadyExist', {
+      global.app.errors.register('device-manager', 'relational_controller', 'link_already_exist', {
         class: 'BadRequestError',
         description: 'the link already exist',
         message: 'the link already exist',
@@ -262,7 +263,7 @@ export abstract class RelationalController extends CRUDController {
     if (! manyToMany) {
       const containerDocument = await this.getDocumentContent(container);
       if (containerDocument[container.field]) {
-        throw global.app.errors.get('device-manager', 'relational', 'alreadyLinked', container.collection, container.field);
+        throw global.app.errors.get('device-manager', 'relational_controller', 'already_linked', container.collection, container.field);
       }
     }
     
@@ -301,7 +302,7 @@ export abstract class RelationalController extends CRUDController {
   verifyNotAlreadyLinked (listList: FieldPath[], link: FieldPath) {
     for (const fieldPath of listList) {
       if (this.equal(fieldPath, link)) {
-        throw global.app.errors.get('device-manager', 'relational', 'linkAlreadyExist');
+        throw global.app.errors.get('device-manager', 'relational_controller', 'link_already_exist');
       }
     }
   }
@@ -316,11 +317,11 @@ export abstract class RelationalController extends CRUDController {
   async genericUnlink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany :boolean) {
     const document = await this.getDocumentContent(embedded);
     if (! document[embedded.field]) {
-      global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
+      global.app.errors.get('device-manager', 'relational_controller', 'remove_unexisting_link');
     }
     const index = document[embedded.field].findIndex(fieldPath => this.equal(fieldPath, container));
     if (index === -1) {
-      global.app.errors.get('device-manager', 'relational', 'removeUnexistingLink');
+      global.app.errors.get('device-manager', 'relational_controller', 'remove_unexisting_link');
     }
     document[embedded.field].splice(index, 1);
     const updateMessage = {};
@@ -420,7 +421,7 @@ export abstract class RelationalController extends CRUDController {
     }
     else {
 
-      await this.as(user).document.update(
+      await this.sdk.document.update(
         index,
         collection,
         document,
@@ -428,7 +429,56 @@ export abstract class RelationalController extends CRUDController {
       );
     }
   }
-  
+
+  /**
+   * 
+   * @param index
+   * @param collection
+   * @param documentId
+    * @param nestedFields : contain field name in the document to get, collection name and index name of documents that are linked
+   */
+  protected async genericGet<TKDocumentContent extends KDocumentContent> (index: string, collection : string, documentId : string, nestedFields : FieldPath[] = []): Promise<KDocument<TKDocumentContent>> {
+    const document = await this.sdk.document.get<TKDocumentContent>(index, collection, documentId);
+    const promises : Promise<void>[] = [];
+    for (const nestedField of nestedFields) {
+      promises.push(this.replaceNestedFieldByContent(document, nestedField));
+    }
+    await Promise.all(promises);
+    return document;
+  }
+
+  /**
+   * Edit the document : replace content of field given by nestedField with content pointed
+   * @param document : document to edit
+   * @param nestedField : : contain field name in the document to get, collection name and index name of documents that are linked
+   */
+  private async replaceNestedFieldByContent (document : KDocument<KDocumentContent>, nestedField : FieldPath ) {
+    if (document._source[nestedField.field]) {
+      document._source[nestedField.field] = await this.getRequestRaw(nestedField.index, nestedField.collection, document._source[nestedField.field]);
+    }
+  }
+
+  private async getRequestRaw (index: string, collection : string, documentId : string) : Promise<KDocumentContent> {
+
+    const request = new KuzzleRequest({
+      _id: documentId,
+      collection,
+      engineId: index,
+      index,
+
+    }, {});
+    if (RelationalController.classMap && RelationalController.classMap.has(collection)) {
+      return RelationalController.classMap.get(collection).get(request);
+    }
+    return this.get(request);
+  }
+
+  protected async get (request): Promise<KDocumentContent> {
+    const document = await this.sdk.document.get(request.getString('index'), request.getString('collection'), request.getId());
+    return document._source;
+  }
+
+
 }
 
 

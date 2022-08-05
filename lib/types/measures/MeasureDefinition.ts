@@ -5,10 +5,10 @@ import { JSONObject } from 'kuzzle';
  *
  * @example
  * {
-     name: 'Degree',
-     sign: '°',
-     type: 'number',
-   }
+ *   name: 'Degree',
+ *   sign: '°',
+ *   type: 'number',
+ * }
  *
  */
 export interface MeasureUnit {
@@ -25,12 +25,12 @@ export interface MeasureUnit {
  * @example
  * {
  *   measurementMappings: { temperature: { type: 'float' } },
-     unit: {
-       name: 'Degree',
-       sign: '°',
-       type: 'number',
-     },
-   }
+ *   unit: {
+ *     name: 'Degree',
+ *     sign: '°',
+ *     type: 'number',
+ *   },
+ * }
  */
 export interface MeasureDefinition {
   /**
@@ -42,13 +42,4 @@ export interface MeasureDefinition {
    * Mappings for the measurement values in order to index the fields
    */
    valuesMappings: JSONObject;
-}
-
-
-/**
- * mapping between measure name and type (include in devices and assets)
- */
-export interface LinkedMeasureName {
-  name : string;
-  type : string;
 }

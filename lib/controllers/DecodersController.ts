@@ -30,7 +30,7 @@ export class DecodersController {
    * List all available decoders
    */
   async list () {
-    const decoders = await this.decodersRegister.list();
+    const decoders = this.decodersRegister.list();
 
     return { decoders };
   }

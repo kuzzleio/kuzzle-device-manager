@@ -2,6 +2,7 @@ import { MetadataContent } from '../types/MetadataContent';
 import { AssetCategoryContent, FormattedMetadata, FormattedValue } from '../types/AssetCategoryContent';
 import { JSONObject, Plugin, PluginContext } from 'kuzzle';
 import { DeviceManagerConfiguration } from '../types';
+import isEqual from 'lodash.isequal';
 
 export class AssetCategoryService {
 
@@ -24,6 +25,7 @@ export class AssetCategoryService {
         metadataList.push({
           'mandatory': metadataContent._source.mandatory,
           'name': metadataContent._source.name,
+          'objectValueList': metadataContent._source.objectValueList,
           'unit': metadataContent._source.unit,
           'valueList': metadataContent._source.valueList,
           'valueType': metadataContent._source.valueType,
@@ -78,21 +80,45 @@ export class AssetCategoryService {
 
   async validateMetadata (assetMetadata : JSONObject, engineId : string, category : string) {
     const assetCategory = await this.sdk.document.get<AssetCategoryContent>(engineId, 'asset-category', category);
+
     const [metadataList, metadataValues] = await Promise.all([
       await this.getMetadata(assetCategory._source, engineId),
       await this.getMetadataValues(assetCategory._source, engineId)
     ]);
+
     for (const metadata of metadataList) {
+
       if (metadata.mandatory) {
-        // eslint-disable-next-line no-prototype-builtins
         if (! (assetMetadata[metadata.name]) && ! this.containsValue(metadataValues, metadata.name)) {
-          throw global.app.errors.get('device-manager', 'assetController', 'MandatoryMetadata', metadata.name);
+          throw global.app.errors.get('device-manager', 'asset_controller', 'mandatory_metadata', metadata.name);
         }
+      }
+      this.validateEnumMetadata(metadata, assetMetadata[metadata.name]);
+    }
+  }
+
+  validateEnumMetadata (metadata : MetadataContent, value) {
+    if (metadata.valueList) {
+      if (! metadata.valueList.includes(value)) {
+        throw global.app.errors.get('device-manager', 'asset_controller', 'enum_metadata', metadata.name, value);
+      }
+    }
+    if (metadata.objectValueList) {
+      let find = false;
+      for (const objectValue of metadata.objectValueList) {
+        const fromattedObjectValue = this.formatMetadataForGet(objectValue.object);
+        if (isEqual(fromattedObjectValue, value)) {
+          find = true;
+          break;
+        }
+      }
+      if (! find) {
+        throw global.app.errors.get('device-manager', 'asset_controller', 'enum_metadata', metadata.name, value);
       }
     }
   }
 
-  containsValue (metadataValues : FormattedMetadata[], name : string) {
+  containsValue (metadataValues : FormattedMetadata[], name : string): Boolean {
     for (const metadata of metadataValues) {
       if (metadata.key === name) {
         return true;
@@ -100,15 +126,29 @@ export class AssetCategoryService {
     } 
     return false;
   }
-  
-  
-  async formatValue (value : string) {
-    let formattedValue : FormattedValue = {};
+
+  getMetadataValue (metadataValues : FormattedMetadata[], name : string) : FormattedMetadata {
+    for (const metadata of metadataValues) {
+      if (metadata.key === name) {
+        return metadata;
+      }
+    }
+    return null;
+  }
+
+  formatValue (value : any) {
+    const formattedValue : FormattedValue = {};
     if (typeof value === 'number' ) {
       formattedValue.integer = value;
     }
     else if (typeof value === 'boolean') {
       formattedValue.boolean = value;
+    }
+    else if (value.lat) {
+      formattedValue.geo_point = value;
+    }
+    else if (typeof value === 'object') {
+      formattedValue.object = this.formatMetadataForES(value);
     }
     else {
       formattedValue.keyword = value;
@@ -116,18 +156,18 @@ export class AssetCategoryService {
     return formattedValue;
   }
 
-  async formatMetadataForES (assetMetadata : JSONObject): Promise<FormattedMetadata[]> {
+  formatMetadataForES (assetMetadata : JSONObject): FormattedMetadata[] {
     if (! assetMetadata) {
       return [];
     }
     const formattedMetadata : FormattedMetadata[] = [];
     for ( const [key, value] of Object.entries(assetMetadata)) {
-      formattedMetadata.push({ key, value: await this.formatValue(value) });
+      formattedMetadata.push({ key, value: this.formatValue(value) });
     }
     return formattedMetadata;
   }
 
-  async formatMetadataForGet (assetMetadata : FormattedMetadata[]) {
+  formatMetadataForGet (assetMetadata : FormattedMetadata[]) {
     const formattedMetadata : JSONObject = {};
     for (const metadata of assetMetadata) {
       formattedMetadata[metadata.key] = this.getValue(metadata.value);
@@ -135,14 +175,22 @@ export class AssetCategoryService {
     return formattedMetadata;
   }
 
-  getValue (value: FormattedValue) {
+  getValue (value: FormattedValue, format = true) {
     if (value.keyword) {
       return value.keyword;
     }
     else if (value.integer || value.integer === 0) {
       return value.integer;
-    } 
+    }
+    else if (value.geo_point ) {
+      return value.geo_point;
+    }
+    else if (value.object ) {
+      if (format) {
+        return this.formatMetadataForGet(value.object);
+      } 
+      return value.object;
+    }
     return value.boolean;
   }
-  
 }
