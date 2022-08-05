@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject } from 'kuzzle';
 
 /**
  * Represents a measurement unit definition
@@ -41,5 +41,5 @@ export interface MeasureDefinition {
   /**
    * Mappings for the measurement values in order to index the fields
    */
-  valuesMappings: JSONObject;
+   valuesMappings: JSONObject;
 }

@@ -1,14 +1,14 @@
-import { KDocumentContent } from "kuzzle";
+import { KDocumentContent } from 'kuzzle';
 
-import { MeasureContent } from "./measures/MeasureContent";
-import { FormattedMetadata } from "./AssetCategoryContent";
+import { MeasureContent } from './measures/MeasureContent';
+import { FormattedMetadata } from './AssetCategoryContent';
 
 /**
  * A jointure link with a device and a match between
  * `deviceMeasureName` and generated `assetMeasureName`
  */
 export interface DeviceLink {
-  deviceId: string;
+  deviceId : string,
 
   /**
    * List of matches between `deviceMeasureName`
@@ -39,18 +39,18 @@ export interface BaseAssetContent extends KDocumentContent {
    * Each most recent measures attached to the asset
    * with a different `deviceMeasureName`
    */
-  measures: MeasureContent[];
+  measures: MeasureContent[],
 
   /**
    * Asset metadata
    */
-  metadata: FormattedMetadata[];
+  metadata: FormattedMetadata[],
 
   /**
    * Link with attached device
    */
-  deviceLinks: DeviceLink[];
+  deviceLinks: DeviceLink[],
 
-  category: string;
-  subCategory: string;
+  category: string,
+  subCategory: string,
 }

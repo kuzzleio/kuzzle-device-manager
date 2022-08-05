@@ -1,5 +1,5 @@
 module.exports = {
-  deviceEUI: "12345",
+  deviceEUI: '12345',
   register55: 23.3,
   location: {
     lat: 42.2,

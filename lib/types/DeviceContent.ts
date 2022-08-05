@@ -1,6 +1,7 @@
-import { JSONObject, KDocumentContent } from "kuzzle";
+import { JSONObject, KDocumentContent } from 'kuzzle';
 
-import { MeasureContent } from "./measures/MeasureContent";
+import { MeasureContent } from './measures/MeasureContent';
+
 
 /**
  * Device document content

@@ -1,17 +1,17 @@
 export const fieldPathMappings = {
-  dynamic: "strict",
+  dynamic: 'strict',
   properties: {
     collection: {
-      type: "keyword",
+      type: 'keyword'
     },
     document: {
-      type: "keyword",
+      type: 'keyword'
     },
     field: {
-      type: "keyword",
+      type: 'keyword'
     },
     index: {
-      type: "keyword",
+      type: 'keyword'
     },
-  },
+  }
 };

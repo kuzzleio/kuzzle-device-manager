@@ -1,6 +1,6 @@
-import { JSONObject, KDocumentContent } from "kuzzle";
+import { JSONObject, KDocumentContent } from 'kuzzle';
 
-import { MeasureUnit } from "./MeasureDefinition";
+import { MeasureUnit } from './MeasureDefinition';
 
 /**
  * Represents a measurement sent with a payload.
@@ -80,13 +80,13 @@ export interface MeasureContent extends KDocumentContent, AssetMeasurement {
      * Asset ID linked to the device when the measure was made
      */
     assetId?: string;
-  };
+  }
 }
 
 /**
  * From where the measure has been pushed
  */
 export enum OriginType {
-  USER = "user",
-  DEVICE = "device",
+  USER = 'user',
+  DEVICE = 'device',
 }

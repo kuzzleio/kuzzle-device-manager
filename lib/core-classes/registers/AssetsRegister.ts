@@ -1,8 +1,8 @@
-import _ from "lodash";
-import { JSONObject, PluginImplementationError } from "kuzzle";
+import _ from 'lodash';
+import { JSONObject, PluginImplementationError } from 'kuzzle';
 
-import { MeasuresRegister } from "./MeasuresRegister";
-import { assetsMappings } from "../../mappings";
+import { MeasuresRegister } from './MeasuresRegister';
+import { assetsMappings } from '../../mappings';
 
 type AssetDefinition = {
   /** Asset type */
@@ -23,8 +23,8 @@ type AssetDefinition = {
    *    serial: { type: 'keyword' },
    * }
    */
-  metadata: JSONObject;
-};
+  metadata:JSONObject;
+}
 
 export class AssetsRegister {
   private baseMappings: JSONObject;
@@ -33,11 +33,11 @@ export class AssetsRegister {
   private assetByName = new Map<string, AssetDefinition>();
   private assetByGroup = new Map<string, AssetDefinition[]>();
 
-  constructor(measuresRegister: MeasuresRegister) {
+  constructor (measuresRegister: MeasuresRegister) {
     this.baseMappings = JSON.parse(JSON.stringify(assetsMappings));
     this.measuresRegister = measuresRegister;
 
-    this.assetByGroup.set("commons", []);
+    this.assetByGroup.set('commons', []);
   }
 
   /**
@@ -57,15 +57,13 @@ export class AssetsRegister {
    * });
    * ```
    */
-  register(
+  register (
     type: string,
     metadata: JSONObject,
-    { group = "commons" }: { group?: string } = {}
+    { group = 'commons' }: { group?: string } = {}
   ) {
     if (this.assetByName.has(type)) {
-      throw new PluginImplementationError(
-        `Asset of type "${type}" has already been registered.`
-      );
+      throw new PluginImplementationError(`Asset of type "${type}" has already been registered.`);
     }
 
     const definition: AssetDefinition = {
@@ -76,37 +74,35 @@ export class AssetsRegister {
 
     this.assetByName.set(type, definition);
 
-    if (!this.assetByGroup.has(group)) {
+    if (! this.assetByGroup.has(group)) {
       this.assetByGroup.set(group, []);
     }
 
     this.assetByGroup.get(group).push(definition);
   }
 
-  getMappings(group = "commons"): JSONObject {
+  getMappings (group = 'commons'): JSONObject {
     const mappings = JSON.parse(JSON.stringify(this.baseMappings));
 
-    mappings.properties.measures.dynamic = "false";
+    mappings.properties.measures.dynamic = 'false';
 
     mappings.properties.measures = this.measuresRegister.getMappings();
 
-    if (this.assetByGroup.has("commons")) {
-      for (const definition of this.assetByGroup.get("commons")) {
+    if (this.assetByGroup.has('commons')) {
+      for (const definition of this.assetByGroup.get('commons')) {
         mappings.properties.metadata.properties = _.merge(
           {},
           mappings.properties.metadata.properties,
-          definition.metadata
-        );
+          definition.metadata);
       }
     }
 
-    if (group !== "commons" && this.assetByGroup.has(group)) {
+    if (group !== 'commons' && this.assetByGroup.has(group)) {
       for (const definition of this.assetByGroup.get(group)) {
         mappings.properties.metadata.properties = _.merge(
           {},
           mappings.properties.metadata.properties,
-          definition.metadata
-        );
+          definition.metadata);
       }
     }
 

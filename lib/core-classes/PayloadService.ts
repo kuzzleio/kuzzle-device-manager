@@ -1,10 +1,17 @@
-import { Backend, BatchController, KuzzleRequest, PluginContext } from "kuzzle";
-import { v4 as uuidv4 } from "uuid";
-import { DeviceManagerPlugin } from "../DeviceManagerPlugin";
-import { DeviceManagerConfiguration } from "../types";
-import { Decoder } from "./Decoder";
-import { MeasureService } from "./MeasureService";
-import { MeasuresRegister } from "./registers/MeasuresRegister";
+import {
+  Backend,
+  BatchController,
+  KuzzleRequest,
+  PluginContext
+} from 'kuzzle';
+import { v4 as uuidv4 } from 'uuid';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import {
+  DeviceManagerConfiguration
+} from '../types';
+import { Decoder } from './Decoder';
+import { MeasureService } from './MeasureService';
+import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class PayloadService {
   private config: DeviceManagerConfiguration;
@@ -13,15 +20,15 @@ export class PayloadService {
   private measuresRegister: MeasuresRegister;
   private measureService: MeasureService;
 
-  private get sdk() {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  private get app(): Backend {
+  private get app (): Backend {
     return global.app;
   }
 
-  constructor(
+  constructor (
     plugin: DeviceManagerPlugin,
     batchController: BatchController,
     measuresRegister: MeasuresRegister,
@@ -41,10 +48,9 @@ export class PayloadService {
    * - register the brut `Payload`
    * - redirect measurements to MeasureService
    */
-  async process(
-    request: KuzzleRequest,
+  async process (request: KuzzleRequest,
     decoder: Decoder,
-    { refresh }: { refresh?: "wait_for" | "false" } = {}
+    { refresh }: { refresh?: 'wait_for' | 'false' } = {}
   ) {
     const payload = request.getBody();
 
@@ -54,42 +60,39 @@ export class PayloadService {
     try {
       valid = await decoder.validate(payload, request);
 
-      if (!valid) {
+      if (! valid) {
         return { valid };
       }
-    } catch (error) {
+    }
+    catch (error) {
       valid = false;
       throw error;
-    } finally {
+    }
+    finally {
       await this.batch.create(
         this.config.adminIndex,
-        "payloads",
+        'payloads',
         {
           deviceModel: decoder.deviceModel,
           payload,
           uuid,
           valid,
         },
-        uuid
-      );
+        uuid);
     }
 
     const decodedPayload = await decoder.decode(payload, request);
 
+
     const pluginConfig = await this.batch.get(
       this.config.adminIndex,
       this.config.adminCollections.config.name,
-      "plugin--device-manager"
-    );
+      'plugin--device-manager');
 
-    const autoProvisionDevice =
-      pluginConfig._source["device-manager"].provisioningStrategy === "auto";
+    const autoProvisionDevice
+      = pluginConfig._source['device-manager'].provisioningStrategy === 'auto';
 
     return this.measureService.registerByDecodedPayload(
-      decoder.deviceModel,
-      decodedPayload,
-      [uuid],
-      { autoProvisionDevice, refresh }
-    );
+      decoder.deviceModel, decodedPayload, [ uuid ], { autoProvisionDevice, refresh });
   }
 }

@@ -1,1 +1,1 @@
-export * from "./writeMany";
+export * from './writeMany';

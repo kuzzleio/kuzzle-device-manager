@@ -1,15 +1,17 @@
-import { fieldPathMappings } from "../../lib/mappings/fieldpathMappings";
+import { fieldPathMappings } from '../../lib/mappings/fieldpathMappings';
 
 export const InvertTreeNodeMappings = {
-  dynamic: "strict",
+  dynamic: 'strict',
   properties: {
+
     children: fieldPathMappings,
     name: {
-      type: "keyword",
+      type: 'keyword'
     },
     parent: {
-      dynamic: "true",
-      properties: {},
-    },
-  },
-};
+      dynamic: 'true',
+      properties: {
+      }
+    }
+  }
+}

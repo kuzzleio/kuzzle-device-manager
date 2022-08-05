@@ -1,16 +1,16 @@
 export const payloadsMappings = {
-  dynamic: "strict",
+  dynamic: 'strict',
   properties: {
-    deviceModel: { type: "keyword" },
+    deviceModel: { type: 'keyword' },
     payload: {
-      dynamic: "false",
-      properties: {},
+      dynamic: 'false',
+      properties: {}
     },
     rawPayload: {
-      dynamic: "false",
-      properties: {},
+      dynamic: 'false',
+      properties: {}
     },
-    uuid: { type: "keyword" },
-    valid: { type: "boolean" },
-  },
+    uuid: { type: 'keyword' },
+    valid: { type: 'boolean' },
+  }
 };

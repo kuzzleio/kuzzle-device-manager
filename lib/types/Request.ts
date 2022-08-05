@@ -1,4 +1,4 @@
-import { DeviceLink } from "./BaseAssetContent";
+import { DeviceLink } from './BaseAssetContent';
 
 /**
  * Represents a request to link a device to an engine
@@ -7,7 +7,7 @@ export type AttachRequest = {
   deviceId: string;
 
   engineId: string;
-};
+}
 
 /**
  * Represents a request to link a device to an asset
@@ -26,4 +26,4 @@ export type LinkRequest = {
   assetId: string;
   deviceLink: DeviceLink;
   engineId: string;
-};
+}

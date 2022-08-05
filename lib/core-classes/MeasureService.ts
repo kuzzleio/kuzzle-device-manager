@@ -5,12 +5,12 @@ import {
   NotFoundError,
   PluginContext,
   PluginImplementationError,
-} from "kuzzle";
-import _ from "lodash";
+} from 'kuzzle';
+import _ from 'lodash';
 
-import { InternalCollection } from "../InternalCollection";
-import { DeviceManagerPlugin } from "../DeviceManagerPlugin";
-import { BaseAsset, Device } from "../models";
+import { InternalCollection } from '../InternalCollection';
+import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
+import { BaseAsset, Device } from '../models';
 import {
   AssetMeasurement,
   DecodedPayload,
@@ -18,19 +18,19 @@ import {
   MeasureContent,
   Measurement,
   OriginType,
-} from "../types";
-import { AssetService } from "./AssetService";
-import { DeviceService } from "./DeviceService";
-import { MeasuresRegister } from "./registers/MeasuresRegister";
+} from '../types';
+import { AssetService } from './AssetService';
+import { DeviceService } from './DeviceService';
+import { MeasuresRegister } from './registers/MeasuresRegister';
 
 /**
  * Record<engineId, MeasureContent[]>
  */
 type EngineMeasuresCache = Record<string, MeasureContent[]>;
 
-type AssetCacheEntity = { asset: BaseAsset; measures: MeasureContent[] };
+type AssetCacheEntity = { asset: BaseAsset, measures: MeasureContent[] };
 
-type DeviceCacheEntity = { device: Device; measures: MeasureContent[] };
+type DeviceCacheEntity = { device: Device, measures: MeasureContent[] };
 
 /**
  * Record<documentModel, Entity[]>
@@ -40,10 +40,8 @@ type EntityMeasuresCache<Entity> = Record<string, Entity>;
 /**
  * Record<engineId, EntityMeasuresCache<Entity>>
  */
-type EntityMeasuresInEngineCache<Entity> = Record<
-  string, // engineId
-  EntityMeasuresCache<Entity>
->;
+type EntityMeasuresInEngineCache<Entity> = Record<string, // engineId
+  EntityMeasuresCache<Entity>>;
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
@@ -52,17 +50,17 @@ export class MeasureService {
   private deviceService: DeviceService;
   private assetService: AssetService;
   private measuresRegister: MeasuresRegister;
-  private static eventId = "device-manager:measure";
+  private static eventId = 'device-manager:measure';
 
-  private get sdk() {
+  private get sdk () {
     return this.context.accessors.sdk;
   }
 
-  private get app(): Backend {
+  private get app (): Backend {
     return global.app;
   }
 
-  constructor(
+  constructor (
     plugin: DeviceManagerPlugin,
     batchController: BatchController,
     deviceService: DeviceService,
@@ -87,23 +85,21 @@ export class MeasureService {
    * - engine measures
    *
    * @param deviceModel Model of the device
-   * @param decodedPayloads `decodedPayload`
+   * @param decodedPayloads `decodedPayload` 
    * @param payloadUuids Payload Uuids that generated the measurements
    * @param {object} options
    * @param options.provisionDevice If true and a `decodedPayload`
    * reference a nonexisting device, create this device
    * @param options.refresh Wait for ES indexation
    */
-  public async registerByDecodedPayload(
+  public async registerByDecodedPayload (
     deviceModel: string,
     decodedPayloads: DecodedPayload,
     payloadUuids: Array<string>,
+    { autoProvisionDevice, refresh }:
     {
-      autoProvisionDevice,
-      refresh,
-    }: {
-      autoProvisionDevice?: boolean;
-      refresh?: "wait_for" | "false";
+      autoProvisionDevice?: boolean,
+      refresh?: 'wait_for' | 'false',
     } = {}
   ) {
     const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
@@ -111,11 +107,9 @@ export class MeasureService {
     // Create caching structures
     const engineMeasures: EngineMeasuresCache = {};
 
-    const assetMeasuresInEngine: EntityMeasuresInEngineCache<AssetCacheEntity> =
-      {};
+    const assetMeasuresInEngine: EntityMeasuresInEngineCache<AssetCacheEntity> = {};
 
-    const deviceMeasuresInEngine: EntityMeasuresInEngineCache<DeviceCacheEntity> =
-      {};
+    const deviceMeasuresInEngine: EntityMeasuresInEngineCache<DeviceCacheEntity> = {};
 
     const measurementsWithoutDevice: Record<string, Measurement[]> = {};
     const unknownTypeMeasurements: Measurement[] = [];
@@ -133,7 +127,7 @@ export class MeasureService {
         deviceModel,
         reference,
         measurements,
-        autoProvisionDevice
+        autoProvisionDevice,
       );
     }
 
@@ -146,72 +140,51 @@ export class MeasureService {
 
     // Push measures in db
     // In Engine measures
-    await Promise.all(
-      Object.entries(response.engineMeasuresCache).map(
-        ([engineId, measures]) => {
-          const measureArray = measures as Array<MeasureContent>;
-          return this.historizeEngineMeasures(engineId, measureArray, {
-            refresh,
-          });
-        }
-      )
-    );
+    await Promise.all(Object.entries(response.engineMeasuresCache).map(([engineId, measures]) => {
+      const measureArray = measures as Array<MeasureContent>;
+      return this.historizeEngineMeasures(engineId, measureArray, { refresh });
+    }));
 
     // Update measures of assets and update documents
-    await Promise.all(
-      Object.entries(response.assetMeasuresInEngineCache).map(
-        async ([engineId, assetMeasuresRecord]) => {
-          for (const { asset, measures } of Object.values(
-            assetMeasuresRecord
-          )) {
-            asset.updateMeasures(measures);
-          }
+    await Promise.all(Object.entries(response.assetMeasuresInEngineCache).map(async ([engineId, assetMeasuresRecord]) => {
+      for (const { asset, measures } of Object.values(assetMeasuresRecord)) {
+        asset.updateMeasures(measures);
+      }
 
-          await this.sdk.document.mUpdate(
-            engineId,
-            InternalCollection.ASSETS,
-            Object.values(assetMeasuresRecord).map(({ asset }) => ({
-              _id: asset._id,
-              body: asset._source,
-            })),
-            { refresh }
-          );
-        }
-      )
-    );
+      await this.sdk.document.mUpdate(
+        engineId,
+        InternalCollection.ASSETS,
+        Object.values(assetMeasuresRecord).map(
+          ({ asset }) => ({ _id: asset._id, body: asset._source })),
+        { refresh }
+      );
+    }));
 
     // Update measures of devices and update documents
     const devices: Device[] = [];
 
-    await Promise.all(
-      Object.entries(response.deviceMeasuresInEngineCache).map(
-        async ([engineId, deviceMeasuresRecord]) => {
-          await Promise.all(
-            Object.values(deviceMeasuresRecord).map(({ device, measures }) => {
-              device.updateMeasures(measures);
-              devices.push(device);
-            })
-          );
+    await Promise.all(Object.entries(response.deviceMeasuresInEngineCache).map(async ([engineId, deviceMeasuresRecord]) => {
+      await Promise.all(Object.values(deviceMeasuresRecord).map(({ device, measures }) => {
+        device.updateMeasures(measures);
+        devices.push(device);
+      }));
 
-          if (engineId !== this.config.adminIndex) {
-            await this.sdk.document.mUpdate(
-              engineId,
-              InternalCollection.DEVICES,
-              Object.values(deviceMeasuresRecord).map(({ device }) => ({
-                _id: device._id,
-                body: device._source,
-              })),
-              { refresh }
-            );
-          }
-        }
-      )
-    );
+      if (engineId !== this.config.adminIndex) {
+        await this.sdk.document.mUpdate(
+          engineId,
+          InternalCollection.DEVICES,
+          Object.values(deviceMeasuresRecord).map(
+            ({ device }) => ({ _id: device._id, body: device._source })),
+          { refresh }
+        );
+      }
+    }));
 
     await this.sdk.document.mUpdate(
       this.config.adminIndex,
       InternalCollection.DEVICES,
-      devices.map((device) => ({ _id: device._id, body: device._source })),
+      devices.map(
+        device => ({ _id: device._id, body: device._source })),
       { refresh }
     );
 
@@ -236,7 +209,7 @@ export class MeasureService {
    * Takes all informations to craft a Measure and insert it in
    * caching structures
    */
-  private async insertIntoSortingRecords(
+  private async insertIntoSortingRecords (
     engineMeasuresCache: EngineMeasuresCache,
     assetMeasuresInEngineCache: EntityMeasuresInEngineCache<AssetCacheEntity>,
     deviceMeasuresInEngineCache: EntityMeasuresInEngineCache<DeviceCacheEntity>,
@@ -246,39 +219,39 @@ export class MeasureService {
     deviceModel: string,
     reference: string,
     measurements: Measurement[],
-    autoProvisionDevice: boolean
+    autoProvisionDevice: boolean,
   ) {
     // Search device in cache or get in db
     const deviceId = Device.id(deviceModel, reference);
     let device = null;
     try {
       device = await this.deviceService.getDevice(this.config, deviceId);
-    } catch (error) {}
+    }
+    catch (error) {}
 
-    if (!device) {
+    if (! device) {
       if (autoProvisionDevice) {
         // TODO : Optimize, ES request to create and then update at end
         device = await this.deviceService.create({
           model: deviceModel,
           reference,
         });
-      } else {
+      }
+      else {
         measurementsWithoutDevice[reference] = measurements;
-        return;
+        return ;
       }
     }
 
     const engineId = device._source.engineId ?? this.config.adminIndex;
     const assetId = device._source.assetId;
 
-    const deviceMeasures: { device: Device; measures: MeasureContent[] } = {
-      device,
-      measures: [],
-    };
+    const deviceMeasures: { device: Device, measures: MeasureContent[] }
+      = { device, measures: [] };
 
     let deviceMeasuresInEngine = deviceMeasuresInEngineCache[engineId];
 
-    if (!deviceMeasuresInEngine) {
+    if (! deviceMeasuresInEngine) {
       deviceMeasuresInEngine = { [deviceId]: deviceMeasures };
       deviceMeasuresInEngineCache[engineId] = deviceMeasuresInEngine;
     }
@@ -287,15 +260,16 @@ export class MeasureService {
     let assetCacheEntity: AssetCacheEntity = null;
 
     if (assetId) {
+
       let assetMeasuresInEngine = assetMeasuresInEngineCache[engineId];
 
-      if (!assetMeasuresInEngine) {
+      if (! assetMeasuresInEngine) {
         assetMeasuresInEngine = {};
         assetMeasuresInEngineCache[engineId] = assetMeasuresInEngine;
       }
 
       assetCacheEntity = assetMeasuresInEngine[assetId];
-      if (!assetCacheEntity) {
+      if (! assetCacheEntity) {
         assetCacheEntity = {
           asset: await this.assetService.getAsset(engineId, assetId),
           measures: [],
@@ -309,7 +283,7 @@ export class MeasureService {
     if (engineId !== this.config.adminIndex) {
       engineMeasures = engineMeasuresCache[engineId];
 
-      if (!engineMeasures) {
+      if (! engineMeasures) {
         engineMeasures = [];
         engineMeasuresCache[engineId] = engineMeasures;
       }
@@ -317,18 +291,17 @@ export class MeasureService {
 
     for (const measurement of measurements) {
       // Get type
-      if (!this.measuresRegister.has(measurement.type)) {
+      if (! this.measuresRegister.has(measurement.type)) {
         unknownTypeMeasurements.push(measurement);
-      } else {
+      }
+      else {
         // Refine measurements in measures
-        const deviceMeasureName =
-          measurement.deviceMeasureName ?? measurement.type;
+        const deviceMeasureName = measurement.deviceMeasureName ?? measurement.type;
 
         const assetMeasureName = this.findAssetMeasureName(
           deviceId,
           measurement.deviceMeasureName,
-          assetCacheEntity
-        );
+          assetCacheEntity);
 
         const measureContent: MeasureContent = {
           assetMeasureName,
@@ -375,15 +348,12 @@ export class MeasureService {
    * @param options.refresh Wait for ES indexation
    * @param options.strict If true, throw if an operation isn't possible
    */
-  public async registerByAsset(
+  public async registerByAsset (
     engineId: string,
     assetId: string,
     jsonMeasurements: JSONObject[],
     kuid: string,
-    {
-      refresh,
-      strict,
-    }: { refresh?: "wait_for" | "false"; strict?: boolean } = {}
+    { refresh, strict }: { refresh?: 'wait_for' | 'false', strict?: boolean } = {}
   ) {
     const eventId = `${MeasureService.eventId}:registerByAsset`;
 
@@ -392,26 +362,21 @@ export class MeasureService {
 
     const asset = await this.assetService.getAsset(engineId, assetId);
 
-    if (!asset) {
+    if (! asset) {
       throw new NotFoundError(`Asset ${assetId} does not exist`);
     }
 
     for (const jsonMeasurement of jsonMeasurements) {
-      if (
-        this.validateAssetMeasurement(jsonMeasurement) &&
-        this.measuresRegister.has(jsonMeasurement.type)
-      ) {
+      if (this.validateAssetMeasurement(jsonMeasurement)
+        && this.measuresRegister.has(jsonMeasurement.type)) {
         const measurement = jsonMeasurement as AssetMeasurement;
 
-        const assetMeasureName =
-          measurement.assetMeasureName ?? measurement.type;
+        const assetMeasureName = measurement.assetMeasureName ?? measurement.type;
 
         validMeasures.push({
           assetMeasureName,
           deviceMeasureName: null,
-          measuredAt: measurement.measuredAt
-            ? measurement.measuredAt
-            : Date.now(),
+          measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
           origin: {
             assetId: null,
             id: kuid,
@@ -421,18 +386,17 @@ export class MeasureService {
           unit: this.measuresRegister.get(measurement.type).unit,
           values: measurement.values,
         });
-      } else {
+      }
+      else {
         invalidMeasurements.push(jsonMeasurement);
       }
     }
 
     if (strict && invalidMeasurements.length) {
-      throw new PluginImplementationError(
-        `Some measure pushed by asset ${assetId} are invalid, all has been blocked`
-      );
+      throw new PluginImplementationError(`Some measure pushed by asset ${assetId} are invalid, all has been blocked`);
     }
 
-    if (!validMeasures.length) {
+    if (! validMeasures.length) {
       return {
         asset: asset.serialize(),
         engineId,
@@ -477,46 +441,39 @@ export class MeasureService {
   /**
    * Register new measures in the engine
    */
-  private async historizeEngineMeasures(
+  private async historizeEngineMeasures (
     engineId: string,
     newMeasures: MeasureContent[],
-    { refresh }: { refresh?: "wait_for" | "false" } = {}
+    { refresh }: { refresh?: 'wait_for' | 'false' } = {}
   ) {
-    await Promise.all(
-      newMeasures.map((measure) => {
-        return this.batch.create<MeasureContent>(
-          engineId,
-          InternalCollection.MEASURES,
-          measure,
-          null,
-          { refresh }
-        );
-      })
-    );
+    await Promise.all(newMeasures.map(measure => {
+      return this.batch.create<MeasureContent>(
+        engineId,
+        InternalCollection.MEASURES,
+        measure,
+        null,
+        { refresh });
+    }));
   }
 
-  private validateAssetMeasurement(toValidate: JSONObject): boolean {
-    return (
-      _.has(toValidate, "values") &&
-      _.has(toValidate, "type") &&
-      this.measuresRegister.has(toValidate.type)
-    );
+  private validateAssetMeasurement (toValidate: JSONObject): boolean {
+    return _.has(toValidate, 'values')
+      && _.has(toValidate, 'type')
+      && this.measuresRegister.has(toValidate.type);
   }
 
-  private findAssetMeasureName(
+  private findAssetMeasureName (
     deviceId: string,
     deviceMeasureName: string,
-    assetMeasures: { asset: BaseAsset; measures: MeasureContent[] }
+    assetMeasures: { asset: BaseAsset, measures: MeasureContent[] }
   ): string {
     if (assetMeasures) {
       const link = assetMeasures.asset._source.deviceLinks.find(
-        (deviceLink) => deviceLink.deviceId === deviceId
-      );
+        deviceLink => deviceLink.deviceId === deviceId);
 
       if (link) {
         const measureNameLink = link.measureNamesLinks.find(
-          (nameLink) => nameLink.deviceMeasureName === deviceMeasureName
-        );
+          nameLink => nameLink.deviceMeasureName === deviceMeasureName);
 
         if (measureNameLink) {
           return measureNameLink.assetMeasureName;

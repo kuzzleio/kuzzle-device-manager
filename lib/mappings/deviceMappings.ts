@@ -1,38 +1,38 @@
 export const devicesMappings = {
-  dynamic: "strict",
+  dynamic: 'strict',
   properties: {
     assetId: {
       fields: {
-        text: { type: "text" },
+        text: { type: 'text' }
       },
-      type: "keyword",
-    },
+      type: 'keyword'
+    },  
     engineId: {
       fields: {
-        text: { type: "text" },
+        text: { type: 'text' }
       },
-      type: "keyword",
+      type: 'keyword'
     },
     measures: {
       properties: {
         // measures mappings will be injected by the plugin
-      },
+      }
     },
     metadata: {
-      dynamic: "false",
+      dynamic: 'false',
       properties: {},
     },
     model: {
       fields: {
-        text: { type: "text" },
+        text: { type: 'text' },
       },
-      type: "keyword",
+      type: 'keyword'
     },
     reference: {
       fields: {
-        text: { type: "text" },
+        text: { type: 'text' },
       },
-      type: "keyword",
-    },
-  },
+      type: 'keyword'
+    }
+  }
 };

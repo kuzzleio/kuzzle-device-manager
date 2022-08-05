@@ -1,43 +1,41 @@
-import { JSONObject } from "kuzzle";
-import { LinkRequest } from "../types/Request";
+import { JSONObject } from 'kuzzle';
+import { LinkRequest } from '../types/Request';
 
-import { BaseAssetContent, DeviceLink, MeasureContent } from "../types";
-import { Device } from "./Device";
+import { BaseAssetContent, DeviceLink, MeasureContent } from '../types';
+import { Device } from './Device';
 
 export class BaseAsset {
-  static id(type: string, model: string, reference: string) {
+  static id (type: string, model: string, reference: string) {
     return `${type}-${model}-${reference}`;
   }
 
   public _id: string;
   public _source: BaseAssetContent;
 
-  constructor(content: BaseAssetContent, _id?: string) {
-    this._id =
-      _id || BaseAsset.id(content.type, content.model, content.reference);
+  constructor (content: BaseAssetContent, _id?: string) {
+    this._id = _id || BaseAsset.id(content.type, content.model, content.reference);
 
     this._source = content;
 
-    if (!Array.isArray(this._source.measures)) {
+    if (! Array.isArray(this._source.measures)) {
       this._source.measures = [];
     }
   }
 
-  public linkToDevice(linkRequest: LinkRequest) {
+  public linkToDevice (linkRequest: LinkRequest) {
     this._source.deviceLinks.push(linkRequest.deviceLink);
   }
 
-  public unlinkDevice(device: Device) {
+  public unlinkDevice (device: Device) {
     // TOSEE : Iterate over all or assert there is
     // only one link and remove first match?
     const linkToKeep = this._source.deviceLinks.filter(
-      (deviceLink: DeviceLink) => deviceLink.deviceId !== device._id
-    );
+      (deviceLink: DeviceLink) => deviceLink.deviceId !== device._id);
 
     this._source.deviceLinks = linkToKeep;
   }
 
-  public updateMeasures(measures: MeasureContent[]) {
+  public updateMeasures (measures: MeasureContent[]) {
     const measuresByName = new Map<string, MeasureContent>();
 
     for (const existingMeasure of this._source.measures) {
@@ -47,7 +45,7 @@ export class BaseAsset {
     for (const measure of measures) {
       const existingMeasure = measuresByName.get(measure.assetMeasureName);
 
-      if (!existingMeasure || existingMeasure.measuredAt < measure.measuredAt) {
+      if (! existingMeasure || existingMeasure.measuredAt < measure.measuredAt) {
         measuresByName.set(measure.assetMeasureName, measure);
       }
     }
@@ -55,7 +53,7 @@ export class BaseAsset {
     this._source.measures = Array.from(measuresByName.values());
   }
 
-  public removeMeasures(assetMeasureNames: string[]) {
+  public removeMeasures (assetMeasureNames: string[]) {
     const removed = [];
     const toKeep = [];
 
@@ -64,7 +62,8 @@ export class BaseAsset {
       if (0 <= index) {
         removed.push(measure);
         assetMeasureNames.splice(index, 1);
-      } else {
+      }
+      else {
         toKeep.push(measure);
       }
     }
@@ -77,10 +76,10 @@ export class BaseAsset {
     };
   }
 
-  serialize(): JSONObject {
+  serialize (): JSONObject {
     return {
       _id: this._id,
-      _source: this._source,
+      _source: this._source
     };
   }
 }

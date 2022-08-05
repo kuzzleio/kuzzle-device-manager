@@ -1,20 +1,20 @@
-import { metadataValue } from "./metadataMappings";
+import { metadataValue } from './metadataMappings';
 
 export const assetCategoryMappings = {
-  dynamic: "strict",
+  dynamic: 'strict',
   properties: {
     assetMetadata: {
-      type: "keyword",
+      type: 'keyword',
     },
     metadataValues: metadataValue,
     name: {
       fields: {
-        text: { type: "text" },
+        text: { type: 'text' }
       },
-      type: "keyword",
+      type: 'keyword'
     },
     parent: {
-      type: "keyword",
+      type: 'keyword'
     },
-  },
+  }
 };

@@ -2,30 +2,30 @@ module.exports = {
   roles: {
     anonymous: {
       controllers: {
-        "*": {
+        '*': {
           actions: {
-            "*": true,
-          },
+            '*': true
+          }
         },
         server: {
           actions: {
-            now: false,
-          },
-        },
-      },
+            now: false
+          }
+        }
+      }
     },
   },
   users: {
     melis: {
       content: {
-        profileIds: ["default"],
+        profileIds: ['default']
       },
       credentials: {
         local: {
-          username: "melis",
-          password: "password",
-        },
-      },
-    },
-  },
+          username: 'melis',
+          password: 'password'
+        }
+      }
+    }
+  }
 };
