@@ -39,7 +39,7 @@ export class MeasuresRegister {
 
     for (const [field, definition] of Object.entries(measure.valuesMappings)) {
       if (this.mappings.properties.values.properties[field] && ! _.isEqual(this.mappings.properties.values.properties[field], definition)) {
-        throw new PluginImplementationError(`Measure "${type}" register a different mappings for value "${field}".`);
+        throw new PluginImplementationError(`Measure "${type}" register a different type for value "${field}".`);
       }
 
       this.mappings.properties.values.properties[field] = definition;
