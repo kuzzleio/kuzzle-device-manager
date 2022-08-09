@@ -1,6 +1,6 @@
 {
   "name": "kuzzle-device-manager",
-  "version": "2.0.0-rc7",
+  "version": "2.0.0-rc8",
   "description": "Manage your IoT devices and assets. Choose a provisioning strategy, receive and decode payload, handle your IoT business logic.",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
@@ -27,8 +27,8 @@
     "csvtojson": "~2.0.10",
     "json-stable-stringify": "^1.0.1",
     "kuzzle-plugin-commons": "https://github.com/kuzzleio/kuzzle-plugin-commons/archive/refs/tags/1.0.4.tar.gz",
-    "lodash.isequal": "^4.5.0",
-    "uuid": "~8.3.2"
+    "uuid": "~8.3.2",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/node": "^17.0.21",
@@ -40,7 +40,6 @@
     "eslint": "^8.10.0",
     "kuzzle": "^2.18.1",
     "kuzzle-sdk": "^7.9.1",
-    "lodash": "^4.17.21",
     "should": "^13.2.3",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.2"
