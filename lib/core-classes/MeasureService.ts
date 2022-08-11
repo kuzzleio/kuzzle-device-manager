@@ -22,41 +22,12 @@ import {
   DeviceContent,
 } from '../types';
 import { AssetService } from './AssetService';
-import { DeviceService } from './DeviceService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
-
-/**
- * Record<engineId, MeasureContent[]>
- */
-type EngineMeasuresCache = Record<string, MeasureContent[]>;
-
-type AssetCacheEntity = { asset: BaseAsset, measures: MeasureContent[] };
-
-type DeviceCacheEntity = { device: Device, measures: MeasureContent[] };
-
-/**
- * Record<documentModel, Entity[]>
- */
-type EntityMeasuresCache<Entity> = Record<string, Entity>;
-
-/**
- * Record<engineId, EntityMeasuresCache<Entity>>
- */
-type EntityMeasuresInEngineCache<Entity> = Record<string, // engineId
-  EntityMeasuresCache<Entity>>;
-
-
-type Item = {
-  device: Device,
-  asset: BaseAsset,
-  measures: MeasureContent[]
-}
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
-  private deviceService: DeviceService;
   private assetService: AssetService;
   private measuresRegister: MeasuresRegister;
 
@@ -71,14 +42,12 @@ export class MeasureService {
   constructor (
     plugin: DeviceManagerPlugin,
     batchController: BatchController,
-    deviceService: DeviceService,
     assetService: AssetService,
     measuresRegister: MeasuresRegister
   ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
 
-    this.deviceService = deviceService;
     this.assetService = assetService;
     this.measuresRegister = measuresRegister;
 
@@ -126,7 +95,7 @@ export class MeasureService {
           asset = new BaseAsset(_source, _id);
         }
         catch (error) {
-          this.app.log.error(`[${device._source.engineId}] Cannot find asset "${device._source.assetId}" linked to device "${device._id}".`)
+          this.app.log.error(`[${device._source.engineId}] Cannot find asset "${device._source.assetId}" linked to device "${device._id}".`);
         }
       }
 
@@ -252,7 +221,7 @@ export class MeasureService {
         devices.push(...newDevices);
       }
       else {
-        this.app.log.info(`Skipping new devices "${errors.join(', ')}". Auto-provisioning is disabled.`)
+        this.app.log.info(`Skipping new devices "${errors.join(', ')}". Auto-provisioning is disabled.`);
       }
     }
 
@@ -268,11 +237,11 @@ export class MeasureService {
       return {
         _id: Device.id(deviceModel, reference),
         body: {
+          measures: [],
           model: deviceModel,
           reference,
-          measures: [],
         }
-      }
+      };
     });
 
     // @todo replace with batch.mCreate when available
@@ -280,9 +249,9 @@ export class MeasureService {
       this.config.adminIndex,
       InternalCollection.DEVICES,
       newDevices,
-      { strict: true, refresh });
+      { refresh, strict: true, });
 
-    return successes.map(({ _source, _id }) => new Device(_source as any, _id))
+    return successes.map(({ _source, _id }) => new Device(_source as any, _id));
   }
 
   /**
@@ -404,7 +373,7 @@ export class MeasureService {
     deviceMeasureName: string,
   ): string {
     const deviceLink = asset._source.deviceLinks.find(
-      deviceLink => deviceLink.deviceId === device._id);
+      link => link.deviceId === device._id);
 
     const measureLink = deviceLink.measureNamesLinks.find(
       nameLink => nameLink.deviceMeasureName === deviceMeasureName);
