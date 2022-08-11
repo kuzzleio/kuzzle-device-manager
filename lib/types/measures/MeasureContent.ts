@@ -30,6 +30,8 @@ export interface Measurement {
 
   /**
    * Name given by the decoder to the measure.
+   *
+   * By default, it's the type of the measure
    */
   deviceMeasureName?: string;
 }

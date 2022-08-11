@@ -37,21 +37,16 @@ export class Device {
     this._source.assetId = linkRequest.assetId;
   }
 
-  public updateMeasures (measures: MeasureContent[]) {
-    const measuresByName = new Map<string, MeasureContent>();
+  public updateMeasures (newMeasures: MeasureContent[]) {
+    for (const newMeasure of newMeasures) {
+      const idx = this._source.measures.findIndex(measure => measure.deviceMeasureName === newMeasure.deviceMeasureName);
 
-    for (const existingMeasure of this._source.measures) {
-      measuresByName.set(existingMeasure.deviceMeasureName, existingMeasure);
-    }
-
-    for (const measure of measures) {
-      const existingMeasure = measuresByName.get(measure.deviceMeasureName);
-
-      if (! existingMeasure || existingMeasure.measuredAt < measure.measuredAt) {
-        measuresByName.set(measure.deviceMeasureName, measure);
+      if (idx === -1) {
+        this._source.measures.push(newMeasure);
+      }
+      else {
+        this._source.measures[idx] = newMeasure;
       }
     }
-
-    this._source.measures = Array.from(measuresByName.values());
   }
 }

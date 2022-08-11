@@ -1,40 +1,21 @@
 import { Measurement } from './measures/MeasureContent';
 
 /**
- * Result of the `Decoder.decode` method.
+ * Record containing decoded measurements for each device.
  *
- * Contains the decoded measurements.
+ * Record<deviceReference, Measurement[]>
  *
  * @example
  * const decodedPayload: DecodedPayload = {
  *   'BZH42AZF': [
  *     {
  *       deviceMeasureName: 'battery',
- *       measuredAt: Date.now(),
+ *       measuredAt: 1655379939496,
  *       type: 'battery',
  *       values: { battery: 32 },
  *     },
- *     {
- *       deviceMeasureName: 'internal_temperature',
- *       measuredAt: Date.now(),
- *       type: 'temperature',
- *       values: { temperature: -3 },
- *     },
- *     {
- *       deviceMeasureName: 'external_temperature',
- *       measuredAt: Date.now(),
- *       type: 'temperature',
- *       values: { temperature: 39 },
- *     },
  *   ],
- * 
  *   'IS7L8HK': [
- *     {
- *       deviceMeasureName: 'battery',
- *       measuredAt: 1655379939496,
- *       type: 'battery',
- *       values: { battery: 92 },
- *     },
  *     {
  *       deviceMeasureName: 'internal_temperature',
  *       measuredAt: 1655379939496,
@@ -50,5 +31,4 @@ import { Measurement } from './measures/MeasureContent';
  *   ],
  * };
  */
-export type DecodedPayload = Record<string, // deviceReference
-  Measurement[]>;
+export type DecodedPayload = Record<string, Measurement[]>;
