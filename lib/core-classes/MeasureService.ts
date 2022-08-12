@@ -232,7 +232,7 @@ export class MeasureService {
     const newDevices = deviceIds.map(deviceId => {
       // Reference may contains a "-"
       const [, ...rest ] = deviceId.split('-');
-      const reference = rest.join('');
+      const reference = rest.join('-');
 
       return {
         _id: Device.id(deviceModel, reference),
