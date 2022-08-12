@@ -37,6 +37,11 @@ export class Device {
     this._source.assetId = linkRequest.assetId;
   }
 
+  /**
+   * Updates the asset measures.
+   *
+   * Only keep the latest measures
+   */
   public updateMeasures (newMeasures: MeasureContent[]) {
     for (const newMeasure of newMeasures) {
       const idx = this._source.measures.findIndex(measure => measure.deviceMeasureName === newMeasure.deviceMeasureName);
@@ -44,7 +49,7 @@ export class Device {
       if (idx === -1) {
         this._source.measures.push(newMeasure);
       }
-      else {
+      else if (newMeasure.measuredAt > this._source.measures[idx].measuredAt) {
         this._source.measures[idx] = newMeasure;
       }
     }

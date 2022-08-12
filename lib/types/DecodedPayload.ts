@@ -32,3 +32,4 @@ import { Measurement } from './measures/MeasureContent';
  * };
  */
 export type DecodedPayload = Record<string, Measurement[]>;
+// @todo we should have an intermediary object
