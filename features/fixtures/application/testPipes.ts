@@ -19,7 +19,7 @@ export function registerTestPipes (app: Backend) {
    * Checks the "device-manager:measures:receive" event.
    */
   app.pipe.register(
-  'device-manager:measures:receive',
+  'device-manager:measures:process:before',
   async (measures: MeasureContent[], { asset, device }: { asset: BaseAsset, device: Device }) => {
     if (device._id !== 'DummyMultiTemp-enrich_me_master') {
       return measures;

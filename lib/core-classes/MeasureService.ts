@@ -106,6 +106,11 @@ export class MeasureService {
         payloadUuids,
       );
 
+      /**
+       * Event before starting to process new measures.
+       *
+       * Useful to enrich measures before they are saved.
+       */
       const updatedMeasures = await this.app.trigger(
         'device-manager:measures:process:before',
         measures,
@@ -144,6 +149,13 @@ export class MeasureService {
         }
       }
 
+      /**
+       * Event at the end of the measure process pipeline.
+       *
+       * Useful to trigger alerts.
+       *
+       * @todo test this
+       */
       await this.app.trigger(
         'device-manager:measures:process:after',
         measures,
