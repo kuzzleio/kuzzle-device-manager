@@ -107,7 +107,7 @@ export class MeasureService {
       );
 
       const updatedMeasures = await this.app.trigger(
-        'device-manager:measures:receive',
+        'device-manager:measures:process:before',
         measures,
         { asset, device });
 
@@ -143,6 +143,11 @@ export class MeasureService {
             { measures: asset._source.measures });
         }
       }
+
+      await this.app.trigger(
+        'device-manager:measures:process:after',
+        measures,
+        { asset, device });
     }
   }
 
