@@ -327,7 +327,7 @@ export class MeasureService {
           deviceMeasureName: null,
           measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
           origin: {
-            assetId: null,
+            assetId,
             id: kuid,
             type: OriginType.USER,
           },
