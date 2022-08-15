@@ -111,10 +111,9 @@ export class MeasureService {
        *
        * Useful to enrich measures before they are saved.
        */
-      const updatedMeasures = await this.app.trigger(
+      const { measures: updatedMeasures } = await this.app.trigger(
         'device-manager:measures:process:before',
-        measures,
-        { asset, device });
+        { asset, device, measures });
 
       device.updateMeasures(updatedMeasures);
 
@@ -158,8 +157,7 @@ export class MeasureService {
        */
       await this.app.trigger(
         'device-manager:measures:process:after',
-        measures,
-        { asset, device });
+        { asset, device, measures });
     }
   }
 
@@ -262,11 +260,15 @@ export class MeasureService {
     });
 
     // @todo replace with batch.mCreate when available
-    const { successes } = await this.sdk.document.mCreate<DeviceContent>(
+    const { successes, errors } = await this.sdk.document.mCreate<DeviceContent>(
       this.config.adminIndex,
       InternalCollection.DEVICES,
       newDevices,
-      { refresh, strict: true, });
+      { refresh });
+
+    for (const error of errors) {
+      this.app.log.error(`Cannot create device "${error.document._id}": ${error.reason}`);
+    }
 
     return successes.map(({ _source, _id }) => new Device(_source as any, _id));
   }

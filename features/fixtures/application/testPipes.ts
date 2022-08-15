@@ -15,21 +15,18 @@ function checkEventWithDocument (app: Backend, event: string) {
 }
 
 export function registerTestPipes (app: Backend) {
-  /**
-   * Checks the "device-manager:measures:receive" event.
-   */
   app.pipe.register(
   'device-manager:measures:process:before',
-  async (measures: MeasureContent[], { asset, device }: { asset: BaseAsset, device: Device }) => {
+  async ({ asset, device, measures }: { asset: BaseAsset, device: Device, measures: MeasureContent[] }) => {
     if (device._id !== 'DummyMultiTemp-enrich_me_master') {
-      return measures;
+      return { asset, device, measures };
     }
 
     for (const measure of measures) {
       measure.origin.id += `+${asset?._id}`;
     }
 
-    return measures;
+    return { asset, device, measures };
   });
 
   checkEventWithDocument(app, 'device-manager:device:provisioning:before');
