@@ -19,7 +19,7 @@ export class AssetController extends RelationalController {
   private assetCategoryService: AssetCategoryService;
   private measureService: MeasureService;
 
-  
+
   constructor (plugin: Plugin, assetService: AssetService, deviceService : DeviceService, assetCategoryService : AssetCategoryService, measureService: MeasureService
   ) {
 
@@ -166,7 +166,7 @@ export class AssetController extends RelationalController {
     const categoryId = request.getString('categoryId');
     const document = await this.sdk.document.get<BaseAssetContent>(engineId, this.collection, id);
     const categoryDocument = await this.sdk.document.get(engineId, 'asset-category', categoryId);
-    const updateRequest = { 
+    const updateRequest = {
       category: null,
       subCategory: null
     };
@@ -179,11 +179,11 @@ export class AssetController extends RelationalController {
     }
     else {
       updateRequest.category = request.getString('categoryId');
-    } 
+    }
     request.input.body = updateRequest;
     return this.update(request);
   }
-  
+
   async pushMeasures (request: KuzzleRequest) {
     const engineId = request.getString('engineId');
     const assetId = request.getId();
@@ -206,7 +206,9 @@ export class AssetController extends RelationalController {
     const body = request.getBody();
     const asset = await this.sdk.document.get(engineId, this.collection, id);
     let assetMetadata = request.input.body.metadata;
-    request.input.body.metadata = await this.assetCategoryService.formatMetadataForES(assetMetadata);
+    const previousMetadata = asset._source.metadata.filter(m => ! Object.keys(assetMetadata).includes(m.key))
+    const updatedMetadata = this.assetCategoryService.formatMetadataForES(assetMetadata);
+    request.input.body.metadata = [...updatedMetadata, ...previousMetadata]
 
     const response = await global.app.trigger(
       'device-manager:asset:update:before', {
