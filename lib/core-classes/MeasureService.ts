@@ -115,6 +115,12 @@ export class MeasureService {
         'device-manager:measures:process:before',
         { asset, device, measures });
 
+      if (device._source.engineId) {
+        await this.app.trigger(
+          `engine:${device._source.engineId}:device-manager:measures:process:before`,
+          { asset, device, measures });
+      }
+
       device.updateMeasures(updatedMeasures);
 
       await this.sdk.document.update<DeviceContent>(
@@ -158,6 +164,12 @@ export class MeasureService {
       await this.app.trigger(
         'device-manager:measures:process:after',
         { asset, device, measures });
+
+      if (device._source.engineId) {
+        await this.app.trigger(
+          `engine:${device._source.engineId}:device-manager:measures:process:after`,
+          { asset, device, measures });
+      }
     }
   }
 
