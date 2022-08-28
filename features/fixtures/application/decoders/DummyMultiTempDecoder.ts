@@ -1,4 +1,4 @@
-import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+import { JSONObject, PreconditionError } from 'kuzzle';
 
 import {
   Decoder,
@@ -9,20 +9,21 @@ import {
 } from '../../../../index';
 
 export class DummyMultiTempDecoder extends Decoder {
-  constructor (measuresRegister: MeasuresRegister) {
-    super('DummyMultiTemp', {
-      innerTemp: 'temperature',
-      outerTemp: 'temperature',
-      lvlBattery: 'battery',
-    },
-      measuresRegister);
+  constructor () {
+    super();
+
+    this.measures = [
+      { name: 'innerTemp', type: 'temperature' },
+      { name: 'outerTemp', type: 'temperature' },
+      { name: 'lvlBattery', type: 'battery' },
+    ];
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }
     };
   }
 
-  async validate (payload: JSONObject, request: KuzzleRequest) {
+  async validate (payload: JSONObject) {
     if (payload.payloads.find(devicePayload => ! devicePayload.deviceEUI)) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI" in some devicePayload');
     }
@@ -34,47 +35,48 @@ export class DummyMultiTempDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
-    const decodedPayload: DecodedPayload = {};
+  async decode (payload: JSONObject): Promise<DecodedPayload> {
+    const decodedPayload = new DecodedPayload();
 
     for (const devicePayload of payload.payloads) {
-      const deviceMeasurements = [];
-
       if (devicePayload.registerInner) {
-        deviceMeasurements.push({
+        const innerTemp: TemperatureMeasurement = {
           deviceMeasureName: 'innerTemp',
           measuredAt: devicePayload.measuredAtRegisterInner ?? Date.now(),
           type: 'temperature',
           values: {
             temperature: devicePayload.registerInner,
           },
-        });
+        }
+
+        decodedPayload.addMeasurement(devicePayload.deviceEUI, innerTemp);
       }
 
       if (devicePayload.registerOuter) {
-        deviceMeasurements.push(
-          {
-            deviceMeasureName: 'outerTemp',
-            measuredAt: devicePayload.measuredAtRegisterOuter ?? Date.now(),
-            type: 'temperature',
-            values: {
-              temperature: devicePayload.registerOuter,
-            },
-          });
+        const outerTemp: TemperatureMeasurement = {
+          deviceMeasureName: 'outerTemp',
+          measuredAt: devicePayload.measuredAtRegisterOuter ?? Date.now(),
+          type: 'temperature',
+          values: {
+            temperature: devicePayload.registerOuter,
+          },
+        };
+
+        decodedPayload.addMeasurement(devicePayload.deviceEUI, outerTemp);
       }
 
       if (devicePayload.lvlBattery) {
-        deviceMeasurements.push({
+        const battery: BatteryMeasurement = {
           deviceMeasureName: 'lvlBattery',
           measuredAt: devicePayload.measuredAtLvlBattery ?? Date.now(),
           type: 'battery',
           values: {
             battery: devicePayload.lvlBattery * 100,
           },
-        });
-      }
+        }
 
-      decodedPayload[devicePayload.deviceEUI] = deviceMeasurements;
+        decodedPayload.addMeasurement(devicePayload.deviceEUI, battery);
+      }
     }
 
     return decodedPayload;

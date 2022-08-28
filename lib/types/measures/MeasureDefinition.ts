@@ -24,7 +24,7 @@ export interface MeasureUnit {
  *
  * @example
  * {
- *   measurementMappings: { temperature: { type: 'float' } },
+ *   valuesMappings: { temperature: { type: 'float' } },
  *   unit: {
  *     name: 'Degree',
  *     sign: '°',
@@ -41,5 +41,5 @@ export interface MeasureDefinition {
   /**
    * Mappings for the measurement values in order to index the fields
    */
-   valuesMappings: JSONObject;
+  valuesMappings: JSONObject;
 }

@@ -11,3 +11,7 @@ export * from './DecoderContent';
 export * from './DecodedPayload';
 
 export * from './DeviceManagerConfiguration';
+
+export * from './MetadataContent';
+
+export * from './AssetCategoryContent';

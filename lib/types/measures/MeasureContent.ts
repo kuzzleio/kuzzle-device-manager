@@ -7,8 +7,10 @@ import { MeasureUnit } from './MeasureDefinition';
  *
  * This interface should be extended and the `values` property specialized
  * to declare new measurement type.
+ *
+ * @todo cannot use type when iterating on measure of the pipe event
  */
-export interface Measurement {
+export interface Measurement<TMeasurementValues extends JSONObject = JSONObject> {
   /**
    * Type of the measure. (e.g. "temperature")
    * The type name is also the name of the sub-property to look at
@@ -21,7 +23,7 @@ export interface Measurement {
    *
    * This should be specialized by child interfaces.
    */
-  values: JSONObject;
+  values: TMeasurementValues;
 
   /**
    * Micro Timestamp of the measurement time.
@@ -32,13 +34,15 @@ export interface Measurement {
    * Name given by the decoder to the measure.
    *
    * By default, it's the type of the measure
+   * @todo device.name
    */
   deviceMeasureName?: string;
 }
 
-export interface AssetMeasurement extends Measurement {
+export interface AssetMeasurement<TMeasurementValues extends JSONObject = JSONObject> extends Measurement<TMeasurementValues> {
   /**
    * Name given by the `deviceLink` of the linked asset.
+   * @todo asset.name
    */
   assetMeasureName: string;
 }
@@ -46,7 +50,7 @@ export interface AssetMeasurement extends Measurement {
 /**
  * Represent the full content of a measure document.
  */
-export interface MeasureContent extends KDocumentContent, AssetMeasurement {
+export interface MeasureContent<TMeasurementValues extends JSONObject = JSONObject> extends KDocumentContent, AssetMeasurement<TMeasurementValues> {
   /**
    * Measurement self-description.
    */
@@ -59,7 +63,7 @@ export interface MeasureContent extends KDocumentContent, AssetMeasurement {
     /**
      * From what the measure has been pushed.
      */
-    type: OriginType;
+    type: 'user' | 'device';
 
     /**
      * Payload uuid that was used to create this measure.
@@ -83,12 +87,4 @@ export interface MeasureContent extends KDocumentContent, AssetMeasurement {
      */
     assetId?: string;
   }
-}
-
-/**
- * From where the measure has been pushed
- */
-export enum OriginType {
-  USER = 'user',
-  DEVICE = 'device',
 }

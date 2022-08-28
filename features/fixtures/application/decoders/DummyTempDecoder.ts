@@ -1,25 +1,27 @@
-import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+import { JSONObject, PreconditionError } from 'kuzzle';
 
 import {
   Decoder,
   DecodedPayload,
   TemperatureMeasurement,
   BatteryMeasurement,
-  MeasuresRegister,
 } from '../../../../index';
 
 export class DummyTempDecoder extends Decoder {
-  constructor (measuresRegister: MeasuresRegister) {
-    super('DummyTemp',
-      { theBatteryLevel: 'battery', }, // Wrong decoderMeasure list on purpose, avoid this please
-      measuresRegister);
+  constructor () {
+    super();
+
+    // The list is missing the temperature measure on purpose
+    this.measures = [
+      { name: 'theBatteryLevel', type: 'battery' },
+    ];
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }
     };
   }
 
-  async validate (payload: JSONObject, request: KuzzleRequest) {
+  async validate (payload: JSONObject) {
     if (! payload.deviceEUI) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
@@ -31,24 +33,30 @@ export class DummyTempDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
-    const temperature: TemperatureMeasurement = {
-      measuredAt: Date.now(),
-      type: 'temperature',
-      values: {
-        temperature: payload.register55,
-      },
-    };
+  async decode (payload: JSONObject): Promise<DecodedPayload> {
+    const decodedPayload = new DecodedPayload();
 
-    const battery: BatteryMeasurement = {
-      deviceMeasureName: 'theBatteryLevel',
-      measuredAt: Date.now(),
-      type: 'battery',
-      values: {
-        battery: payload.batteryLevel * 100,
-      },
-    };
+    decodedPayload.addMeasurement<TemperatureMeasurement>(
+      payload.deviceEUI,
+      {
+        measuredAt: Date.now(),
+        type: 'temperature',
+        values: {
+          temperature: payload.register55,
+        },
+      });
 
-    return { [payload.deviceEUI]: [temperature, battery] };
+    decodedPayload.addMeasurement<BatteryMeasurement>(
+      payload.deviceEUI,
+      {
+        deviceMeasureName: 'theBatteryLevel',
+        measuredAt: Date.now(),
+        type: 'battery',
+        values: {
+          battery: payload.batteryLevel * 100,
+        },
+      });
+
+    return decodedPayload;
   }
 }

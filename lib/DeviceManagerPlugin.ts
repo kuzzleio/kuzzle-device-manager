@@ -14,7 +14,7 @@ import { ConfigManager, EngineController } from 'kuzzle-plugin-commons';
 import {
   AssetController,
   DeviceController,
-  DecodersController
+  DecoderController
 } from './controllers';
 import {
   DeviceManagerEngine,
@@ -51,7 +51,7 @@ export class DeviceManagerPlugin extends Plugin {
 
   private assetController: AssetController;
   private deviceController: DeviceController;
-  private decodersController: DecodersController;
+  private decodersController: DecoderController;
   private engineController: EngineController<DeviceManagerPlugin>;
   private assetCategoryController : AssetCategoryController;
   private metadataController: MetadataController;
@@ -66,10 +66,10 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceService: DeviceService;
   private measuresService: MeasureService;
 
-  private decodersRegister = new DecodersRegister();
-  private measuresRegister = new MeasuresRegister();
-  private devicesRegister = new DevicesRegister(this.measuresRegister);
-  private assetsRegister = new AssetsRegister(this.measuresRegister);
+  private decodersRegister;
+  private measuresRegister;
+  private devicesRegister;
+  private assetsRegister;
 
   private adminConfigManager: ConfigManager;
   private engineConfigManager: ConfigManager;
@@ -164,6 +164,11 @@ export class DeviceManagerPlugin extends Plugin {
     };
     /* eslint-enable sort-keys */
 
+    this.measuresRegister = new MeasuresRegister();
+    this.decodersRegister = new DecodersRegister(this.measuresRegister);
+    this.devicesRegister = new DevicesRegister(this.measuresRegister);
+    this.assetsRegister = new AssetsRegister(this.measuresRegister);
+
     this.measures.register('temperature', temperatureMeasure);
     this.measures.register('position', positionMeasure);
     this.measures.register('movement', movementMeasure);
@@ -241,7 +246,6 @@ export class DeviceManagerPlugin extends Plugin {
     this.payloadService = new PayloadService(
       this,
       this.batchController,
-      this.measuresRegister,
       this.measuresService);
 
     this.deviceManagerEngine = new DeviceManagerEngine(
@@ -262,16 +266,15 @@ export class DeviceManagerPlugin extends Plugin {
       this.measuresService);
 
     this.deviceController = new DeviceController(this, this.deviceService);
-    this.decodersController = new DecodersController(this, this.decodersRegister);
+    this.decodersController = new DecoderController(this, this.decodersRegister);
     this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
     this.assetCategoryController = new AssetCategoryController(this, this.assetCategoryService);
     this.metadataController = new MetadataController(this, this.assetCategoryService);
 
-
     this.api['device-manager/payload'] = this.decodersRegister.getPayloadController(this.payloadService);
     this.api['device-manager/asset'] = this.assetController.definition;
     this.api['device-manager/device'] = this.deviceController.definition;
-    this.api['device-manager/decoders'] = this.decodersController.definition;
+    this.api['device-manager/decoder'] = this.decodersController.definition;
     this.api['device-manager/assetCategory'] = this.assetCategoryController.definition;
     this.api['device-manager/metadata'] = this.metadataController.definition;
 
@@ -279,6 +282,7 @@ export class DeviceManagerPlugin extends Plugin {
       handler: this.unknowPayload.bind(this),
       http: [{ path: 'device-manager/payload/:device', verb: 'post' }]
     };
+
     this.hooks = {
       'kuzzle:state:live': async () => {
         await this.decodersRegister.createDefaultRights();
