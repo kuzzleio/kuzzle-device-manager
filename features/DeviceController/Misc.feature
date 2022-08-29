@@ -39,17 +39,15 @@ Feature: Device Controller actions
     Then I should receive a result matching:
       | total | 1 |
 
-  Scenario: Get measure without deviceMeasureName
+  Scenario: Throw an error when decoding unknown measure name
     Given I successfully execute the action "device-manager/device":"create" with args:
-      | engineId        | "device-manager"  |
-      | body.model      | "DummyTemp"      |
-      | body.reference  | "test"           |
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI     | "test"  |
-      | register55    | 100     |
-      | batteryLevel  | 1       |
+      | engineId       | "device-manager" |
+      | body.model     | "DummyTemp"      |
+      | body.reference | "test"           |
+    When I receive a "dummy-temp" payload with:
+      | deviceEUI      | "test" |
+      | register55     | 100    |
+      | unknownMeasure | 100    |
+      | batteryLevel   | 1      |
     Then The document "device-manager":"devices":"DummyTemp-test" content match:
-      | measures[0].type              | "temperature"     |
-      | measures[0].deviceMeasureName | "temperature"     |
-      | measures[1].type              | "battery"         |
-      | measures[1].deviceMeasureName | "theBatteryLevel" |
+      | measures | [] |

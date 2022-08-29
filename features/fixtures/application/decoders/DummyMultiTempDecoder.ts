@@ -36,12 +36,11 @@ export class DummyMultiTempDecoder extends Decoder {
   }
 
   async decode (payload: JSONObject): Promise<DecodedPayload> {
-    const decodedPayload = new DecodedPayload();
+    const decodedPayload = new DecodedPayload(this);
 
     for (const devicePayload of payload.payloads) {
       if (devicePayload.registerInner) {
         const innerTemp: TemperatureMeasurement = {
-          deviceMeasureName: 'innerTemp',
           measuredAt: devicePayload.measuredAtRegisterInner ?? Date.now(),
           type: 'temperature',
           values: {
@@ -49,12 +48,11 @@ export class DummyMultiTempDecoder extends Decoder {
           },
         }
 
-        decodedPayload.addMeasurement(devicePayload.deviceEUI, innerTemp);
+        decodedPayload.addMeasurement(devicePayload.deviceEUI, 'innerTemp', innerTemp);
       }
 
       if (devicePayload.registerOuter) {
         const outerTemp: TemperatureMeasurement = {
-          deviceMeasureName: 'outerTemp',
           measuredAt: devicePayload.measuredAtRegisterOuter ?? Date.now(),
           type: 'temperature',
           values: {
@@ -62,12 +60,11 @@ export class DummyMultiTempDecoder extends Decoder {
           },
         };
 
-        decodedPayload.addMeasurement(devicePayload.deviceEUI, outerTemp);
+        decodedPayload.addMeasurement(devicePayload.deviceEUI, 'outerTemp', outerTemp);
       }
 
       if (devicePayload.lvlBattery) {
         const battery: BatteryMeasurement = {
-          deviceMeasureName: 'lvlBattery',
           measuredAt: devicePayload.measuredAtLvlBattery ?? Date.now(),
           type: 'battery',
           values: {
@@ -75,7 +72,7 @@ export class DummyMultiTempDecoder extends Decoder {
           },
         }
 
-        decodedPayload.addMeasurement(devicePayload.deviceEUI, battery);
+        decodedPayload.addMeasurement(devicePayload.deviceEUI, 'lvlBattery', battery);
       }
     }
 

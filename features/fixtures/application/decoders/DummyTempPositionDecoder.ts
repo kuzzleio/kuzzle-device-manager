@@ -28,42 +28,42 @@ export class DummyTempPositionDecoder extends Decoder {
   }
 
   async decode (payload: JSONObject): Promise<DecodedPayload> {
-    const decodedPayload = new DecodedPayload();
+    const decodedPayload = new DecodedPayload(this);
 
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,
+      'theTemperature',
       {
-      deviceMeasureName: 'theTemperature',
-      measuredAt: Date.now(),
-      type: 'temperature',
-      values: { temperature: payload.register55 },
-    });
+        measuredAt: Date.now(),
+        type: 'temperature',
+        values: { temperature: payload.register55 },
+      });
 
     decodedPayload.addMeasurement<PositionMeasurement>(
       payload.deviceEUI,
+      'thePosition',
       {
-      deviceMeasureName: 'thePositition',
-      measuredAt: Date.now(),
-      type: 'position',
-      values: {
-        position: {
-          lat: payload.location.lat,
-          lon: payload.location.lon,
+        measuredAt: Date.now(),
+        type: 'position',
+        values: {
+          position: {
+            lat: payload.location.lat,
+            lon: payload.location.lon,
+          },
+          accuracy: payload.location.accu,
         },
-        accuracy: payload.location.accu,
-      },
-    });
+      });
 
     decodedPayload.addMeasurement<BatteryMeasurement>(
       payload.deviceEUI,
+      'theBattery',
       {
-      deviceMeasureName: 'theBattery',
-      measuredAt: Date.now(),
-      type: 'battery',
-      values: {
-        battery: payload.batteryLevel * 100,
-      },
-    });
+        measuredAt: Date.now(),
+        type: 'battery',
+        values: {
+          battery: payload.batteryLevel * 100,
+        },
+      });
 
     return decodedPayload;
   }

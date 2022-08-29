@@ -11,9 +11,9 @@ export class DummyTempDecoder extends Decoder {
   constructor () {
     super();
 
-    // The list is missing the temperature measure on purpose
     this.measures = [
       { name: 'theBatteryLevel', type: 'battery' },
+      { name: 'temperature', type: 'temperature' },
     ];
 
     this.payloadsMappings = {
@@ -34,10 +34,11 @@ export class DummyTempDecoder extends Decoder {
   }
 
   async decode (payload: JSONObject): Promise<DecodedPayload> {
-    const decodedPayload = new DecodedPayload();
+    const decodedPayload = new DecodedPayload(this);
 
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,
+      'temperature',
       {
         measuredAt: Date.now(),
         type: 'temperature',
@@ -48,14 +49,27 @@ export class DummyTempDecoder extends Decoder {
 
     decodedPayload.addMeasurement<BatteryMeasurement>(
       payload.deviceEUI,
+      'theBatteryLevel',
       {
-        deviceMeasureName: 'theBatteryLevel',
         measuredAt: Date.now(),
         type: 'battery',
         values: {
           battery: payload.batteryLevel * 100,
         },
       });
+
+    if (payload.unknownMeasure) {
+      decodedPayload.addMeasurement<TemperatureMeasurement>(
+        payload.deviceEUI,
+        'unknownMeasureName',
+        {
+          measuredAt: Date.now(),
+          type: 'temperature',
+          values: {
+            temperature: payload.unknownMeasure,
+          },
+        });
+    }
 
     return decodedPayload;
   }
