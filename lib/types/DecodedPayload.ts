@@ -1,37 +1,7 @@
 import { Measurement } from './measures/MeasureContent';
 
 /**
- * Record containing decoded measurements for each device.
- *
- * Record<deviceReference, Measurement[]>
- *
- * @example
- * const decodedPayload: DecodedPayload = {
- *   devices: {
- *     'BZH42AZF': [
- *       {
- *         deviceMeasureName: 'battery',
- *         measuredAt: 1655379939496,
- *         type: 'battery',
- *         values: { battery: 32 },
- *       },
- *     ],
- *     'IS7L8HK': [
- *       {
- *         deviceMeasureName: 'internal_temperature',
- *         measuredAt: 1655379939496,
- *         type: 'temperature',
- *         values: { temperature: -3 },
- *       },
- *       {
- *         deviceMeasureName: 'external_temperature',
- *         measuredAt: 1655379939496,
- *         type: 'temperature',
- *         values: { temperature: 39 },
- *       },
- *     ],
- *   }
- * };
+ * Class containing the decoded measures.
  */
 export class DecodedPayload {
   /**
@@ -45,6 +15,12 @@ export class DecodedPayload {
     return Object.keys(this.measurementsByDevice);
   }
 
+  /**
+   * Add a new measure into the decoded payload
+   *
+   * @param deviceReference Device reference
+   * @param measurement Measurement object
+   */
   addMeasurement<TMeasurement extends Measurement = Measurement> (
     deviceReference: string,
     measurement: TMeasurement,
@@ -56,6 +32,9 @@ export class DecodedPayload {
     this.measurementsByDevice[deviceReference].push(measurement);
   }
 
+  /**
+   * Gets the measurements decoded for a device
+   */
   getMeasurements (deviceReference: string): Measurement[] {
     return this.measurementsByDevice[deviceReference];
   }
