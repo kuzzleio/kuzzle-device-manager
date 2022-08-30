@@ -9,14 +9,14 @@ import {
 } from '../../../../index';
 
 export class DummyMultiTempDecoder extends Decoder {
+  public measures = [
+    { name: 'innerTemp', type: 'temperature' },
+    { name: 'outerTemp', type: 'temperature' },
+    { name: 'lvlBattery', type: 'battery' },
+  ] as const;
+
   constructor () {
     super();
-
-    this.measures = [
-      { name: 'innerTemp', type: 'temperature' },
-      { name: 'outerTemp', type: 'temperature' },
-      { name: 'lvlBattery', type: 'battery' },
-    ];
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }
@@ -35,8 +35,8 @@ export class DummyMultiTempDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject): Promise<DecodedPayload> {
-    const decodedPayload = new DecodedPayload(this);
+  async decode (payload: JSONObject): Promise<DecodedPayload<Decoder>> {
+    const decodedPayload = new DecodedPayload<DummyMultiTempDecoder>(this);
 
     for (const devicePayload of payload.payloads) {
       if (devicePayload.registerInner) {

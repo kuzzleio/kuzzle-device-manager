@@ -9,14 +9,15 @@ import {
 } from '../../../../index';
 
 export class DummyTempPositionDecoder extends Decoder {
+  public measures = [
+    { name: 'theTemperature', type: 'temperature' },
+    { name: 'theBattery', type: 'battery' },
+    { name: 'thePosition', type: 'position' },
+  ] as const;
+
   constructor () {
     super();
 
-    this.measures = [
-      { name: 'theTemperature', type: 'temperature' },
-      { name: 'theBattery', type: 'battery' },
-      { name: 'thePosition', type: 'position' },
-    ];
   }
 
   async validate (payload: JSONObject) {
@@ -27,8 +28,8 @@ export class DummyTempPositionDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject): Promise<DecodedPayload> {
-    const decodedPayload = new DecodedPayload(this);
+  async decode (payload: JSONObject): Promise<DecodedPayload<Decoder>> {
+    const decodedPayload = new DecodedPayload<DummyTempPositionDecoder>(this);
 
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,

@@ -8,13 +8,13 @@ import {
 } from '../../../../index';
 
 export class DummyTempDecoder extends Decoder {
+  public measures = [
+    { name: 'theBatteryLevel', type: 'battery' },
+    { name: 'temperature', type: 'temperature' },
+  ] as const;
+
   constructor () {
     super();
-
-    this.measures = [
-      { name: 'theBatteryLevel', type: 'battery' },
-      { name: 'temperature', type: 'temperature' },
-    ];
 
     this.payloadsMappings = {
       deviceEUI: { type: 'keyword' }
@@ -33,8 +33,8 @@ export class DummyTempDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject): Promise<DecodedPayload> {
-    const decodedPayload = new DecodedPayload(this);
+  async decode (payload: JSONObject): Promise<DecodedPayload<Decoder>> {
+    const decodedPayload = new DecodedPayload<DummyTempDecoder>(this);
 
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,
@@ -61,6 +61,7 @@ export class DummyTempDecoder extends Decoder {
     if (payload.unknownMeasure) {
       decodedPayload.addMeasurement<TemperatureMeasurement>(
         payload.deviceEUI,
+        // @ts-expect-error
         'unknownMeasureName',
         {
           measuredAt: Date.now(),

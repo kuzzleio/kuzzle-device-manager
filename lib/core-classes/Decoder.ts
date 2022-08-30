@@ -14,10 +14,10 @@ import { DecoderContent } from '../types';
 /**
  * Array of measures declaration
  */
-export type DecoderMeasures = Array<{
-  type: string;
+export type DecoderMeasures<T = string> = ReadonlyArray<{
+  name: T;
 
-  name: string;
+  type: string;
 }>;
 
 /**
@@ -125,7 +125,7 @@ export abstract class Decoder {
    * @returns Map of `Measurements` by device reference.
    */
   // eslint-disable-next-line no-unused-vars
-  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload>;
+  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload<Decoder>>;
 
   /**
    * Checks if the provided properties are present in the payload

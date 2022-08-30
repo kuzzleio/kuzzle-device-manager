@@ -5,8 +5,8 @@ import { Measurement } from './measures/MeasureContent';
 /**
  * Class containing the decoded measures.
  */
-export class DecodedPayload {
-  private decoder: Decoder;
+export class DecodedPayload<TDecoder extends Decoder = Decoder> {
+  public decoder: TDecoder;
 
   /**
    * Measurements per device.
@@ -15,7 +15,7 @@ export class DecodedPayload {
    */
   private measurementsByDevice: Record<string, Measurement[]> = {};
 
-  constructor (decoder: Decoder) {
+  constructor (decoder: TDecoder) {
     this.decoder = decoder;
   }
 
@@ -32,7 +32,7 @@ export class DecodedPayload {
    */
   addMeasurement<TMeasurement extends Measurement = Measurement> (
     deviceReference: string,
-    measureName: string,
+    measureName: TDecoder['measures'][number]['name'],
     measurement: TMeasurement,
   ) {
     if (! this.decoder.measureNames.includes(measureName)) {
