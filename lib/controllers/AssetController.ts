@@ -1,6 +1,6 @@
 import csv from 'csvtojson';
 import {
-  BadRequestError, JSONObject,
+  BadRequestError, 
   KuzzleRequest,
   Plugin,
 } from 'kuzzle';
