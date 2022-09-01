@@ -173,8 +173,8 @@ export class AssetCategoryService {
    */
   formatDocumentMetadata (document : KDocument<BaseAssetContent>): KDocument<BaseAssetContent> {
     const metadata = document._source.metadata;
-    const asset = document._source as JSONObject;
     if (metadata) {
+      const asset = document._source as JSONObject;
       asset.metadata = this.formatMetadataForGet(metadata);
     }
     return document;

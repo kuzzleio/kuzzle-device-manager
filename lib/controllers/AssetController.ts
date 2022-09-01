@@ -1,6 +1,6 @@
 import csv from 'csvtojson';
 import {
-  BadRequestError, 
+  BadRequestError,
   KuzzleRequest,
   Plugin,
 } from 'kuzzle';
@@ -298,12 +298,10 @@ export class AssetController extends RelationalController {
    */
   async search (request: KuzzleRequest) {
     const engineId = request.getString('engineId');
-    request.input.args.index = engineId;
-    const index = request.getIndex();
     const { searchBody } = request.getSearchParams();
     const category = this.getFieldPath(request, 'category', null, 'asset-category');
 
-    const res = await this.sdk.document.search<BaseAssetContent>(index, this.collection, searchBody);
+    const res = await this.sdk.document.search<BaseAssetContent>(engineId, this.collection, searchBody);
     for (const hit of res.hits) {
       const document = await this.esDocumentToFormatted<BaseAssetContent>(engineId, this.collection, hit, [category]);
       this.assetCategoryService.formatDocumentMetadata(document);

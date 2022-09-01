@@ -443,7 +443,6 @@ export abstract class RelationalController extends CRUDController {
   }
 
   /**
-   *
    * @param index
    * @param collection
    * @param documentId
