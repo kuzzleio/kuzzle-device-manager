@@ -1,4 +1,5 @@
 import { JSONObject, PluginImplementationError } from 'kuzzle';
+import _ from 'lodash';
 
 import { measuresMappings } from '../../mappings';
 import { MeasureDefinition } from '../../types';
@@ -27,7 +28,7 @@ export class MeasuresRegister {
    *     sign: '%',
    *     type: 'number',
    *   },
-   *   mappings: { humidity: { type: 'float' } },
+   *   valuesMappings: { humidity: { type: 'float' } },
    * });
    * ```
    */
@@ -37,8 +38,8 @@ export class MeasuresRegister {
     }
 
     for (const [field, definition] of Object.entries(measure.valuesMappings)) {
-      if (this.mappings.properties.values.properties[field]) {
-        throw new PluginImplementationError(`Field "${type}" already exists in measures mappings.`);
+      if (this.mappings.properties.values.properties[field] && ! _.isEqual(this.mappings.properties.values.properties[field], definition)) {
+        throw new PluginImplementationError(`Measure "${type}" register a different type for value "${field}".`);
       }
 
       this.mappings.properties.values.properties[field] = definition;

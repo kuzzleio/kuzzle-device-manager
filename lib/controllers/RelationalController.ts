@@ -47,7 +47,7 @@ export abstract class RelationalController extends CRUDController {
       });
     }
   }
-  
+
   protected constructor (plugin: Plugin, name : string) {
     super(plugin, name);
     RelationalController.classMap.set(name, this);
@@ -70,7 +70,7 @@ export abstract class RelationalController extends CRUDController {
       index: indexKey ? request.getString(indexKey) : null,
     };
   }
-  
+
   async create (request: KuzzleRequest) {
     request.input.args.index = request.getString('engineId');
     return super.create(request);
@@ -160,8 +160,8 @@ export abstract class RelationalController extends CRUDController {
     const promises : Promise<void>[] = [];
 
     promises.push(this.deleteNested(request, nestedFields));
-    
-    if (manyToManyLinkedFields !== [] || oneToManyLinkedFields !== [] ) {
+
+    if (manyToManyLinkedFields.length > 0 || oneToManyLinkedFields.length > 0) {
       const document = await this.sdk.document.get(request.getString('engineId'), this.collection, request.getId());
       for (const childrenField of manyToManyLinkedFields) {
         promises.push(this.propagateDelete(document._source[childrenField], childrenField, true, request));
@@ -244,7 +244,7 @@ export abstract class RelationalController extends CRUDController {
     for (const container of listContainer) {
       promises.push( this.genericUnlink(request,
         { collection: this.collection, document: removedObjectId, field: childrenField, index: engineId, },
-        container, manyToMany)); 
+        container, manyToMany));
     }
     await Promise.all(promises);
   }
@@ -258,7 +258,7 @@ export abstract class RelationalController extends CRUDController {
    * @param manyToMany : is it manyToMany relation (or one to many?)
    */
   async genericLink (request : KuzzleRequest, embedded : FieldPath, container : FieldPath, manyToMany : boolean) {
-    
+
     // before alteration, we verify that a document with OneToMany relation is not already linked
     if (! manyToMany) {
       const containerDocument = await this.getDocumentContent(container);
@@ -266,7 +266,7 @@ export abstract class RelationalController extends CRUDController {
         throw global.app.errors.get('device-manager', 'relational_controller', 'already_linked', container.collection, container.field);
       }
     }
-    
+
     //First we update embedded document by adding link to container document
     const document = await this.getDocumentContent(embedded);
     if (! document[embedded.field]) {
@@ -354,7 +354,7 @@ export abstract class RelationalController extends CRUDController {
     catch (err) {
       if (err.id === 'services.storage.not_found' && ! throwError) {
         return null;
-      } 
+      }
       throw err;
     }
   }
@@ -431,7 +431,7 @@ export abstract class RelationalController extends CRUDController {
   }
 
   /**
-   * 
+   *
    * @param index
    * @param collection
    * @param documentId

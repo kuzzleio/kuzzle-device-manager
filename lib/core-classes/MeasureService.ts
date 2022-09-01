@@ -18,39 +18,18 @@ import {
   MeasureContent,
   Measurement,
   OriginType,
+  BaseAssetContent,
+  DeviceContent,
 } from '../types';
 import { AssetService } from './AssetService';
-import { DeviceService } from './DeviceService';
 import { MeasuresRegister } from './registers/MeasuresRegister';
-
-/**
- * Record<engineId, MeasureContent[]>
- */
-type EngineMeasuresCache = Record<string, MeasureContent[]>;
-
-type AssetCacheEntity = { asset: BaseAsset, measures: MeasureContent[] };
-
-type DeviceCacheEntity = { device: Device, measures: MeasureContent[] };
-
-/**
- * Record<documentModel, Entity[]>
- */
-type EntityMeasuresCache<Entity> = Record<string, Entity>;
-
-/**
- * Record<engineId, EntityMeasuresCache<Entity>>
- */
-type EntityMeasuresInEngineCache<Entity> = Record<string, // engineId
-  EntityMeasuresCache<Entity>>;
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
-  private deviceService: DeviceService;
   private assetService: AssetService;
   private measuresRegister: MeasuresRegister;
-  private static eventId = 'device-manager:measure';
 
   private get sdk () {
     return this.context.accessors.sdk;
@@ -63,14 +42,12 @@ export class MeasureService {
   constructor (
     plugin: DeviceManagerPlugin,
     batchController: BatchController,
-    deviceService: DeviceService,
     assetService: AssetService,
     measuresRegister: MeasuresRegister
   ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
 
-    this.deviceService = deviceService;
     this.assetService = assetService;
     this.measuresRegister = measuresRegister;
 
@@ -85,252 +62,227 @@ export class MeasureService {
    * - engine measures
    *
    * @param deviceModel Model of the device
-   * @param decodedPayloads `decodedPayload` 
+   * @param decodedPayloads `decodedPayload`
    * @param payloadUuids Payload Uuids that generated the measurements
    * @param {object} options
    * @param options.provisionDevice If true and a `decodedPayload`
    * reference a nonexisting device, create this device
    * @param options.refresh Wait for ES indexation
    */
-  public async registerByDecodedPayload (
+  public async processDecodedPayload (
     deviceModel: string,
     decodedPayloads: DecodedPayload,
-    payloadUuids: Array<string>,
-    { autoProvisionDevice, refresh }:
+    payloadUuids: string[],
+    options:
     {
-      autoProvisionDevice?: boolean,
-      refresh?: 'wait_for' | 'false',
-    } = {}
-  ) {
-    const eventId = `${MeasureService.eventId}:registerByDecodedPayload`;
-
-    // Create caching structures
-    const engineMeasures: EngineMeasuresCache = {};
-
-    const assetMeasuresInEngine: EntityMeasuresInEngineCache<AssetCacheEntity> = {};
-
-    const deviceMeasuresInEngine: EntityMeasuresInEngineCache<DeviceCacheEntity> = {};
-
-    const measurementsWithoutDevice: Record<string, Measurement[]> = {};
-    const unknownTypeMeasurements: Measurement[] = [];
-
-    // Craft and insert measures in cache by each device
-    // Need to be atomic (no Promise.all) because it would erase the array in `assetMeasuresInEngineCache` and `deviceMeasuresInEngineCache`
-    for (const [reference, measurements] of Object.entries(decodedPayloads)) {
-      await this.insertIntoSortingRecords(
-        engineMeasures,
-        assetMeasuresInEngine,
-        deviceMeasuresInEngine,
-        measurementsWithoutDevice,
-        unknownTypeMeasurements,
-        payloadUuids,
-        deviceModel,
-        reference,
-        measurements,
-        autoProvisionDevice,
-      );
+      refresh?: string,
     }
+  ) {
+    const references = Object.keys(decodedPayloads);
 
-    const response = await this.app.trigger(`${eventId}:before`, {
-      assetMeasuresInEngineCache: assetMeasuresInEngine,
-      deviceMeasuresInEngineCache: deviceMeasuresInEngine,
-      engineMeasuresCache: engineMeasures,
-      unknownTypeMeasurements,
-    });
+    const devices = await this.getDevices(deviceModel, references, options);
 
-    // Push measures in db
-    // In Engine measures
-    await Promise.all(Object.entries(response.engineMeasuresCache).map(([engineId, measures]) => {
-      const measureArray = measures as Array<MeasureContent>;
-      return this.historizeEngineMeasures(engineId, measureArray, { refresh });
-    }));
+    for (const device of devices) {
+      let asset: BaseAsset = null;
 
-    // Update measures of assets and update documents
-    await Promise.all(Object.entries(response.assetMeasuresInEngineCache).map(async ([engineId, assetMeasuresRecord]) => {
-      for (const { asset, measures } of Object.values(assetMeasuresRecord)) {
-        asset.updateMeasures(measures);
+      if (device._source.assetId) {
+        try {
+          const { _source, _id } = await this.batch.get<BaseAssetContent>(
+            device._source.engineId,
+            InternalCollection.ASSETS,
+            device._source.assetId);
+
+          asset = new BaseAsset(_source, _id);
+        }
+        catch (error) {
+          this.app.log.error(`[${device._source.engineId}] Cannot find asset "${device._source.assetId}" linked to device "${device._id}".`);
+        }
       }
 
-      await this.sdk.document.mUpdate(
-        engineId,
-        InternalCollection.ASSETS,
-        Object.values(assetMeasuresRecord).map(
-          ({ asset }) => ({ _id: asset._id, body: asset._source })),
-        { refresh }
+      const measures = this.buildMeasures(
+        device,
+        asset,
+        decodedPayloads[device._source.reference],
+        payloadUuids,
       );
-    }));
 
-    // Update measures of devices and update documents
-    const devices: Device[] = [];
+      /**
+       * Event before starting to process new measures.
+       *
+       * Useful to enrich measures before they are saved.
+       */
+      const { measures: updatedMeasures } = await this.app.trigger(
+        'device-manager:measures:process:before',
+        { asset, device, measures });
 
-    await Promise.all(Object.entries(response.deviceMeasuresInEngineCache).map(async ([engineId, deviceMeasuresRecord]) => {
-      await Promise.all(Object.values(deviceMeasuresRecord).map(({ device, measures }) => {
-        device.updateMeasures(measures);
-        devices.push(device);
-      }));
-
-      if (engineId !== this.config.adminIndex) {
-        await this.sdk.document.mUpdate(
-          engineId,
-          InternalCollection.DEVICES,
-          Object.values(deviceMeasuresRecord).map(
-            ({ device }) => ({ _id: device._id, body: device._source })),
-          { refresh }
-        );
+      if (device._source.engineId) {
+        await this.app.trigger(
+          `engine:${device._source.engineId}:device-manager:measures:process:before`,
+          { asset, device, measures });
       }
-    }));
 
-    await this.sdk.document.mUpdate(
-      this.config.adminIndex,
-      InternalCollection.DEVICES,
-      devices.map(
-        device => ({ _id: device._id, body: device._source })),
-      { refresh }
-    );
+      device.updateMeasures(updatedMeasures);
 
-    await this.app.trigger(`${eventId}:after`, {
-      assetMeasuresInEngineCache: assetMeasuresInEngine,
-      deviceMeasuresInEngineCache: deviceMeasuresInEngine,
-      engineMeasuresCache: engineMeasures,
-    });
+      await this.sdk.document.update<DeviceContent>(
+        this.config.adminIndex,
+        InternalCollection.DEVICES,
+        device._id,
+        { measures: device._source.measures });
 
-    return {
-      // TOSEE : What to return, how (serialization) ?
-      // TOSEE : Stock updated assets, devices and measures for return result ?
-      // engineMeasuresCache,
-      // assetMeasuresInEngineCache,
-      // deviceMeasuresInEngineCache,
-      // unaivailableTypeMeasurements,
-      // measurementsWithoutDevice,
-    };
+      if (device._source.engineId) {
+        await this.sdk.document.update<DeviceContent>(
+          device._source.engineId,
+          InternalCollection.DEVICES,
+          device._id,
+          { measures: device._source.measures });
+
+        // @todo replace by batch.mCreate when available
+        await this.sdk.document.mCreate<MeasureContent>(
+          device._source.engineId,
+          InternalCollection.MEASURES,
+          updatedMeasures.map(measure => ({ body: measure })),
+          { strict: true });
+
+        if (asset) {
+          asset.updateMeasures(updatedMeasures);
+
+          await this.sdk.document.update<BaseAssetContent>(
+            device._source.engineId,
+            InternalCollection.ASSETS,
+            asset._id,
+            { measures: asset._source.measures });
+        }
+      }
+
+      /**
+       * Event at the end of the measure process pipeline.
+       *
+       * Useful to trigger alerts.
+       *
+       * @todo test this
+       */
+      await this.app.trigger(
+        'device-manager:measures:process:after',
+        { asset, device, measures });
+
+      if (device._source.engineId) {
+        await this.app.trigger(
+          `engine:${device._source.engineId}:device-manager:measures:process:after`,
+          { asset, device, measures });
+      }
+    }
   }
 
-  /**
-   * Takes all informations to craft a Measure and insert it in
-   * caching structures
-   */
-  private async insertIntoSortingRecords (
-    engineMeasuresCache: EngineMeasuresCache,
-    assetMeasuresInEngineCache: EntityMeasuresInEngineCache<AssetCacheEntity>,
-    deviceMeasuresInEngineCache: EntityMeasuresInEngineCache<DeviceCacheEntity>,
-    measurementsWithoutDevice: Record<string, Measurement[]>,
-    unknownTypeMeasurements: Measurement[],
-    payloadUuids: Array<string>,
-    deviceModel: string,
-    reference: string,
+  private buildMeasures (
+    device: Device,
+    asset: BaseAsset,
     measurements: Measurement[],
-    autoProvisionDevice: boolean,
-  ) {
-    // Search device in cache or get in db
-    const deviceId = Device.id(deviceModel, reference);
-    let device = null;
-    try {
-      device = await this.deviceService.getDevice(this.config, deviceId);
-    }
-    catch (error) {}
-
-    if (! device) {
-      if (autoProvisionDevice) {
-        // TODO : Optimize, ES request to create and then update at end
-        device = await this.deviceService.create({
-          model: deviceModel,
-          reference,
-        });
-      }
-      else {
-        measurementsWithoutDevice[reference] = measurements;
-        return ;
-      }
-    }
-
-    const engineId = device._source.engineId ?? this.config.adminIndex;
-    const assetId = device._source.assetId;
-
-    const deviceMeasures: { device: Device, measures: MeasureContent[] }
-      = { device, measures: [] };
-
-    let deviceMeasuresInEngine = deviceMeasuresInEngineCache[engineId];
-
-    if (! deviceMeasuresInEngine) {
-      deviceMeasuresInEngine = { [deviceId]: deviceMeasures };
-      deviceMeasuresInEngineCache[engineId] = deviceMeasuresInEngine;
-    }
-
-    // Search asset in cache or get in db
-    let assetCacheEntity: AssetCacheEntity = null;
-
-    if (assetId) {
-
-      let assetMeasuresInEngine = assetMeasuresInEngineCache[engineId];
-
-      if (! assetMeasuresInEngine) {
-        assetMeasuresInEngine = {};
-        assetMeasuresInEngineCache[engineId] = assetMeasuresInEngine;
-      }
-
-      assetCacheEntity = assetMeasuresInEngine[assetId];
-      if (! assetCacheEntity) {
-        assetCacheEntity = {
-          asset: await this.assetService.getAsset(engineId, assetId),
-          measures: [],
-        };
-        assetMeasuresInEngine[assetId] = assetCacheEntity;
-      }
-    }
-
-    // Search for engine in cache or see if index exist
-    let engineMeasures = null;
-    if (engineId !== this.config.adminIndex) {
-      engineMeasures = engineMeasuresCache[engineId];
-
-      if (! engineMeasures) {
-        engineMeasures = [];
-        engineMeasuresCache[engineId] = engineMeasures;
-      }
-    }
+    payloadUuids: string[],
+  ): MeasureContent[] {
+    const measures: MeasureContent[] = [];
 
     for (const measurement of measurements) {
-      // Get type
       if (! this.measuresRegister.has(measurement.type)) {
-        unknownTypeMeasurements.push(measurement);
+        this.app.log.warn(`Unknown measurement "${measurement.type}" from Decoder "${device._source.model}"`);
+        continue;
+      }
+
+      const deviceMeasureName = measurement.deviceMeasureName || measurement.type;
+
+      const assetMeasureName = asset === null ? undefined : this.findAssetMeasureName(
+        device,
+        asset,
+        deviceMeasureName);
+
+      const measureContent: MeasureContent = {
+        assetMeasureName,
+        deviceMeasureName,
+        measuredAt: measurement.measuredAt,
+        origin: {
+          assetId: asset ? asset._id : undefined,
+          deviceModel: device._source.model,
+          id: device._id,
+          payloadUuids,
+          type: OriginType.DEVICE,
+        },
+        type: measurement.type,
+        unit: this.measuresRegister.get(measurement.type).unit,
+        values: measurement.values,
+      };
+
+      measures.push(measureContent);
+    }
+
+    return measures;
+  }
+
+  private async getDevices (
+    deviceModel: string,
+    references: string[],
+    { refresh }:
+    {
+      refresh?: any,
+    }
+  ) {
+    let devices: Device[] = [];
+
+    // @todo replace with batch.mGet when available
+    const { successes, errors } = await this.sdk.document.mGet<DeviceContent>(
+      this.config.adminIndex,
+      InternalCollection.DEVICES,
+      references.map(reference => Device.id(deviceModel, reference)));
+
+    for (const { _source, _id } of successes) {
+      devices.push(new Device(_source, _id));
+    }
+
+    // If we have unknown devices, let's check if we should register them
+    if (errors.length > 0) {
+      const { _source } = await this.batch.get(
+        this.config.adminIndex,
+        this.config.adminCollections.config.name,
+        'plugin--device-manager');
+
+      if (_source['device-manager'].provisioningStrategy === 'auto') {
+        const newDevices = await this.provisionDevices(deviceModel, errors, { refresh });
+        devices.push(...newDevices);
       }
       else {
-        // Refine measurements in measures
-        const deviceMeasureName = measurement.deviceMeasureName ?? measurement.type;
-
-        const assetMeasureName = this.findAssetMeasureName(
-          deviceId,
-          measurement.deviceMeasureName,
-          assetCacheEntity);
-
-        const measureContent: MeasureContent = {
-          assetMeasureName,
-          deviceMeasureName,
-          measuredAt: measurement.measuredAt,
-          origin: {
-            assetId,
-            deviceModel,
-            id: deviceId,
-            payloadUuids,
-            type: OriginType.DEVICE,
-          },
-          type: measurement.type,
-          unit: this.measuresRegister.get(measurement.type).unit,
-          values: measurement.values,
-        };
-
-        // Insert measures in cache structs
-        if (engineMeasures) {
-          engineMeasures.push(measureContent);
-        }
-
-        if (assetMeasureName) {
-          assetCacheEntity.measures.push(measureContent);
-        }
-
-        deviceMeasures.measures.push(measureContent);
+        this.app.log.info(`Skipping new devices "${errors.join(', ')}". Auto-provisioning is disabled.`);
       }
     }
+
+    return devices;
+  }
+
+  private async provisionDevices (deviceModel: string, deviceIds: string[], { refresh }: { refresh: any }): Promise<Device[]> {
+    const newDevices = deviceIds.map(deviceId => {
+      // Reference may contains a "-"
+      const [, ...rest ] = deviceId.split('-');
+      const reference = rest.join('-');
+
+      return {
+        _id: Device.id(deviceModel, reference),
+        body: {
+          measures: [],
+          model: deviceModel,
+          reference,
+        }
+      };
+    });
+
+    // @todo replace with batch.mCreate when available
+    const { successes, errors } = await this.sdk.document.mCreate<DeviceContent>(
+      this.config.adminIndex,
+      InternalCollection.DEVICES,
+      newDevices,
+      { refresh });
+
+    for (const error of errors) {
+      this.app.log.error(`Cannot create device "${error.document._id}": ${error.reason}`);
+    }
+
+    return successes.map(({ _source, _id }) => new Device(_source as any, _id));
   }
 
   /**
@@ -344,7 +296,6 @@ export class MeasureService {
    * @param assetId Asset id
    * @param jsonMeasurements `AssetMeasurement` array from a request
    * @param kuid Kuid of the user pushing the measurements
-   * @param {object} options
    * @param options.refresh Wait for ES indexation
    * @param options.strict If true, throw if an operation isn't possible
    */
@@ -355,8 +306,6 @@ export class MeasureService {
     kuid: string,
     { refresh, strict }: { refresh?: 'wait_for' | 'false', strict?: boolean } = {}
   ) {
-    const eventId = `${MeasureService.eventId}:registerByAsset`;
-
     const invalidMeasurements: JSONObject[] = [];
     const validMeasures: MeasureContent[] = [];
 
@@ -378,7 +327,7 @@ export class MeasureService {
           deviceMeasureName: null,
           measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
           origin: {
-            assetId: null,
+            assetId,
             id: kuid,
             type: OriginType.USER,
           },
@@ -407,28 +356,15 @@ export class MeasureService {
 
     asset.updateMeasures(validMeasures);
 
-    const response = await this.app.trigger(`${eventId}:before`, {
-      asset,
-      engineId,
-      invalidMeasurements,
-      validMeasures,
-    });
 
     await this.sdk.document.update(
       engineId,
       InternalCollection.ASSETS,
       asset._id,
-      { measures: response.asset._source.measures }
+      { measures: asset._source.measures }
     );
 
     await this.historizeEngineMeasures(engineId, validMeasures, { refresh });
-
-    await this.app.trigger(`${eventId}:after`, {
-      asset,
-      engineId,
-      invalidMeasurements,
-      validMeasures,
-    });
 
     return {
       asset: asset.serialize,
@@ -463,24 +399,16 @@ export class MeasureService {
   }
 
   private findAssetMeasureName (
-    deviceId: string,
+    device: Device,
+    asset: BaseAsset,
     deviceMeasureName: string,
-    assetMeasures: { asset: BaseAsset, measures: MeasureContent[] }
   ): string {
-    if (assetMeasures) {
-      const link = assetMeasures.asset._source.deviceLinks.find(
-        deviceLink => deviceLink.deviceId === deviceId);
+    const deviceLink = asset._source.deviceLinks.find(
+      link => link.deviceId === device._id);
 
-      if (link) {
-        const measureNameLink = link.measureNamesLinks.find(
-          nameLink => nameLink.deviceMeasureName === deviceMeasureName);
+    const measureLink = deviceLink.measureNamesLinks.find(
+      nameLink => nameLink.deviceMeasureName === deviceMeasureName);
 
-        if (measureNameLink) {
-          return measureNameLink.assetMeasureName;
-        }
-      }
-    }
-
-    return null;
+    return measureLink.assetMeasureName;
   }
 }
