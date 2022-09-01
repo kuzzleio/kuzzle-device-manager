@@ -201,7 +201,6 @@ Feature: AssetCategory
     When I successfully execute the action "device-manager/asset":"search" with args:
       | engineId                | "engine-ayse"      |
       | body.query.match.reference | "asset_02" |
-    Then I debug "result"
     Then I should receive a result matching:
       | hits[0]._source.type             | "truck"    |
       | hits[0]._source.model            | "M"        |

@@ -300,12 +300,7 @@ export class AssetController extends RelationalController {
     const res = await this.sdk.document.search<BaseAssetContent>(index, this.collection, searchBody);
     for (const hit of res.hits) {
       const document = await this.esDocumentToFormatted<BaseAssetContent>(engineId, this.collection, hit, [category]);
-      const metadata = document._source.metadata;
-      const asset = document._source as JSONObject;
-      if (metadata) {
-        asset.metadata = await this.assetCategoryService.formatMetadataForGet(metadata);
-      }
-      hit._source = asset as BaseAssetContent;
+      this.assetCategoryService.formatDocumentMetadata(document);
     }
     return res;
 

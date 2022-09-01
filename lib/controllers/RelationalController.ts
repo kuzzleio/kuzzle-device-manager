@@ -439,6 +439,17 @@ export abstract class RelationalController extends CRUDController {
    */
   protected async genericGet<TKDocumentContent extends KDocumentContent> (index: string, collection : string, documentId : string, nestedFields : FieldPath[] = []): Promise<KDocument<TKDocumentContent>> {
     const document = await this.sdk.document.get<TKDocumentContent>(index, collection, documentId);
+    return this.esDocumentToFormatted(index, collection, document, nestedFields);
+  }
+
+  /**
+   *
+   * @param index
+   * @param collection
+   * @param documentId
+   * @param nestedFields : contain field name in the document to get, collection name and index name of documents that are linked
+   */
+  protected async esDocumentToFormatted<TKDocumentContent extends KDocumentContent> (index: string, collection : string, document : KDocument<TKDocumentContent>, nestedFields : FieldPath[] = []): Promise<KDocument<TKDocumentContent>> {
     const promises : Promise<void>[] = [];
     for (const nestedField of nestedFields) {
       promises.push(this.replaceNestedFieldByContent(document, nestedField));
