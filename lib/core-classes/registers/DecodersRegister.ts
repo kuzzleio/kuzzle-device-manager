@@ -5,8 +5,8 @@ import {
   PluginContext,
   PluginImplementationError,
 } from 'kuzzle';
-import { DecoderContent } from 'lib/types';
 
+import { DecoderContent } from '../../types';
 import { Decoder } from '../Decoder';
 import { PayloadService } from '../PayloadService';
 

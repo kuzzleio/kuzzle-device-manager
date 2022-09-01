@@ -48,7 +48,6 @@ export const measuresMappings = {
      * Define the origin of the measure.
      */
     origin: {
-      type: 'nested',
       properties: {
         /**
          * From what the measure has been pushed. Can be:

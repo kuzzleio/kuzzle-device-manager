@@ -2,7 +2,7 @@ import { MetadataContent } from '../types/MetadataContent';
 import { AssetCategoryContent, FormattedMetadata, FormattedValue } from '../types/AssetCategoryContent';
 import { JSONObject, KDocument, Plugin, PluginContext } from 'kuzzle';
 import { BaseAssetContent, DeviceManagerConfiguration } from '../types';
-import isEqual from 'lodash.isequal';
+import _ from 'lodash';
 
 export class AssetCategoryService {
 
@@ -33,7 +33,7 @@ export class AssetCategoryService {
       }
     }
   }
-  
+
   async getMetadata (assetCategory : AssetCategoryContent, engineId : string) : Promise<MetadataContent[]> {
     let metadataList;
     metadataList = [];
@@ -107,7 +107,7 @@ export class AssetCategoryService {
       let find = false;
       for (const objectValue of metadata.objectValueList) {
         const fromattedObjectValue = this.formatMetadataForGet(objectValue.object);
-        if (isEqual(fromattedObjectValue, value)) {
+        if (_.isEqual(fromattedObjectValue, value)) {
           find = true;
           break;
         }
@@ -123,7 +123,7 @@ export class AssetCategoryService {
       if (metadata.key === name) {
         return true;
       }
-    } 
+    }
     return false;
   }
 
@@ -201,7 +201,7 @@ export class AssetCategoryService {
     else if (value.object ) {
       if (format) {
         return this.formatMetadataForGet(value.object);
-      } 
+      }
       return value.object;
     }
     return value.boolean;

@@ -13,8 +13,11 @@ import { MeasuresRegister } from './registers/MeasuresRegister';
 
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-export type DecoderMeasures = Record<string, // deviceMeasureName
-  string>; // type
+
+/**
+ * Record<deviceMeasureName, type>
+ */
+export type DecoderMeasures = Record<string, string>;
 
 /**
  * Base class to implement a decoder for a device model.
