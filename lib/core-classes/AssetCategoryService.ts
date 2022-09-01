@@ -1,7 +1,7 @@
 import { MetadataContent } from '../types/MetadataContent';
 import { AssetCategoryContent, FormattedMetadata, FormattedValue } from '../types/AssetCategoryContent';
-import { JSONObject, Plugin, PluginContext } from 'kuzzle';
-import { DeviceManagerConfiguration } from '../types';
+import { JSONObject, KDocument, Plugin, PluginContext } from 'kuzzle';
+import { BaseAssetContent, DeviceManagerConfiguration } from '../types';
 import isEqual from 'lodash.isequal';
 
 export class AssetCategoryService {
@@ -165,6 +165,19 @@ export class AssetCategoryService {
       formattedMetadata.push({ key, value: this.formatValue(value) });
     }
     return formattedMetadata;
+  }
+
+  /**
+   * edit the document to format metadata
+   * @param document
+   */
+  formatDocumentMetadata (document : KDocument<BaseAssetContent>): KDocument<BaseAssetContent> {
+    const metadata = document._source.metadata;
+    const asset = document._source as JSONObject;
+    if (metadata) {
+      asset.metadata = this.formatMetadataForGet(metadata);
+    }
+    return document;
   }
 
   formatMetadataForGet (assetMetadata : FormattedMetadata[]) {
