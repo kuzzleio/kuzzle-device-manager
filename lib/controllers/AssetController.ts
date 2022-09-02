@@ -181,7 +181,6 @@ export class AssetController extends RelationalController {
       updateRequest.category = request.getString('categoryId');
     }
     request.input.body = updateRequest;
-    console.log("linkCategory : " + JSON.stringify(request) );
     return this.update(request);
   }
 
