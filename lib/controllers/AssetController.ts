@@ -181,6 +181,7 @@ export class AssetController extends RelationalController {
       updateRequest.category = request.getString('categoryId');
     }
     request.input.body = updateRequest;
+    console.log("linkCategory : " + JSON.stringify(request) );
     return this.update(request);
   }
 
@@ -208,12 +209,14 @@ export class AssetController extends RelationalController {
     const asset = await this.sdk.document.get(engineId, this.collection, id);
 
     let assetMetadata = request.input.body.metadata;
-    const previousMetadata = asset._source.metadata
-      ? asset._source.metadata.filter(m => ! Object.keys(assetMetadata).includes(m.key))
-      : [];
-    const updatedMetadata = this.assetCategoryService.formatMetadataForES(assetMetadata);
-    request.input.body.metadata = [...updatedMetadata, ...previousMetadata];
-
+    if (assetMetadata) {
+      const previousMetadata = asset._source.metadata
+        ? asset._source.metadata.filter(m => ! Object.keys(assetMetadata).includes(m.key))
+        : [];
+      const updatedMetadata = this.assetCategoryService.formatMetadataForES(assetMetadata);
+      request.input.body.metadata = [...updatedMetadata, ...previousMetadata];
+    }
+    
     const response = await global.app.trigger(
       'device-manager:asset:update:before', {
         asset,
