@@ -16,7 +16,7 @@ List available registered decoders.
 ### HTTP
 
 ```http
-URL: http://localhost:7512/_/device-manager/decoders/_list
+URL: http://localhost:7512/_/device-manager/decoder/_list
 Method: GET
 ```
 
@@ -24,7 +24,7 @@ Method: GET
 
 ```js
 {
-  "controller": "device-manager/decoders",
+  "controller": "device-manager/decoder",
   "action": "list",
 }
 ```
@@ -32,7 +32,7 @@ Method: GET
 ### Kourou
 
 ```bash
-kourou device-manager/decoders:list
+kourou device-manager/decoder:list
 ```
 ---
 
@@ -41,7 +41,7 @@ kourou device-manager/decoders:list
 ```js
 {
   "action": "list",
-  "controller": "device-manager/decoders",
+  "controller": "device-manager/decoder",
   "error": null,
   "node": "knode-nine-hydra-22631",
   "requestId": "d888a8e1-2f80-4849-99d0-86ea70fe91e4",

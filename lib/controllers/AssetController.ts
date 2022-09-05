@@ -283,15 +283,20 @@ export class AssetController extends RelationalController {
     const assetId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean('strict');
-    const devicesLinks = await this.assetService.getAsset(engineId, assetId);
 
-    if (Array.isArray(devicesLinks._source.deviceLinks)) {
-      for (const deviceLink of devicesLinks._source.deviceLinks) {
-        // TODO : Refacto to only get the asset one time
-        await this.deviceService.unlinkAsset(deviceLink.deviceId, { refresh, strict });
-      }
+    const asset = await this.assetService.get(engineId, assetId);
+
+    for (const deviceLink of asset._source.deviceLinks) {
+      // TODO : Refacto to only get the asset one time
+      await this.deviceService.unlinkAsset(deviceLink.deviceId, { refresh, strict });
     }
+
     return super.delete(request);
   }
 
+  async search (request: KuzzleRequest) {
+    request.input.args.index = request.getString('engineId');
+
+    return super.search(request);
+  }
 }

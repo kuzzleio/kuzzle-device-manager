@@ -1,4 +1,5 @@
 import {
+  BadRequestError,
   ControllerDefinition,
   Inflector,
   KuzzleRequest,
@@ -6,29 +7,42 @@ import {
   PluginImplementationError,
 } from 'kuzzle';
 
+import { MeasuresRegister } from './MeasuresRegister';
 import { DecoderContent } from '../../types';
 import { Decoder } from '../Decoder';
 import { PayloadService } from '../PayloadService';
 
 export class DecodersRegister {
+  private measuresRegister: MeasuresRegister;
   private context: PluginContext;
-  private _decoders = new Map<string, // DeviceModel
-    Decoder>();
+
+  /**
+   * Map<deviceModel, Decoder>
+   */
+  private _decoders = new Map<string, Decoder>();
 
   private get sdk () {
     return this.context.accessors.sdk;
-  }
-
-  public getByDeviceModel (deviceModel: string) {
-    return this._decoders.get(deviceModel);
   }
 
   get decoders (): Decoder[] {
     return Array.from(this._decoders.values());
   }
 
+  constructor (measuresRegister: MeasuresRegister) {
+    this.measuresRegister = measuresRegister;
+  }
+
   init (context: PluginContext) {
     this.context = context;
+  }
+
+  get (deviceModel: string): Decoder {
+    if (! this._decoders.has(deviceModel)) {
+      throw new BadRequestError(`Cannot find decoder for "${deviceModel}"`);
+    }
+
+    return this._decoders.get(deviceModel);
   }
 
   list (): DecoderContent[] {
@@ -50,7 +64,21 @@ export class DecodersRegister {
    * @returns Corresponding API action requestPayload
    */
   register (decoder: Decoder) {
+    if (! decoder.deviceModel) {
+      decoder.deviceModel = decoder.constructor.name.replace('Decoder', '');
+    }
+
     decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
+
+    if (decoder.measures.length === 0) {
+      throw new PluginImplementationError(`Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property.`);
+    }
+
+    for (const measureDeclaration of decoder.measures) {
+      if (! this.measuresRegister.has(measureDeclaration.type)) {
+        throw new PluginImplementationError(`Decoder "${decoder.deviceModel}" cannot register unknown measure type "${measureDeclaration.type}"`);
+      }
+    }
 
     if (this._decoders.has(decoder.deviceModel)) {
       throw new PluginImplementationError(`Decoder for device model "${decoder.deviceModel}" already registered`);

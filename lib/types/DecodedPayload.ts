@@ -1,35 +1,57 @@
+import { PluginImplementationError } from 'kuzzle';
+import { Decoder } from '../core-classes/Decoder';
 import { Measurement } from './measures/MeasureContent';
 
 /**
- * Record containing decoded measurements for each device.
- *
- * Record<deviceReference, Measurement[]>
- *
- * @example
- * const decodedPayload: DecodedPayload = {
- *   'BZH42AZF': [
- *     {
- *       deviceMeasureName: 'battery',
- *       measuredAt: 1655379939496,
- *       type: 'battery',
- *       values: { battery: 32 },
- *     },
- *   ],
- *   'IS7L8HK': [
- *     {
- *       deviceMeasureName: 'internal_temperature',
- *       measuredAt: 1655379939496,
- *       type: 'temperature',
- *       values: { temperature: -3 },
- *     },
- *     {
- *       deviceMeasureName: 'external_temperature',
- *       measuredAt: 1655379939496,
- *       type: 'temperature',
- *       values: { temperature: 39 },
- *     },
- *   ],
- * };
+ * Class containing the decoded measures.
  */
-export type DecodedPayload = Record<string, Measurement[]>;
-// @todo we should have an intermediary object
+export class DecodedPayload<TDecoder extends Decoder = Decoder> {
+  public decoder: TDecoder;
+
+  /**
+   * Measurements per device.
+   *
+   * Record<deviceReference, Measurement[]>
+   */
+  private measurementsByDevice: Record<string, Measurement[]> = {};
+
+  constructor (decoder: TDecoder) {
+    this.decoder = decoder;
+  }
+
+  get references () {
+    return Object.keys(this.measurementsByDevice);
+  }
+
+  /**
+   * Add a new measure into the decoded payload
+   *
+   * @param deviceReference Device reference
+   * @param measureName Name of the decoded measure
+   * @param measurement Measurement object
+   */
+  addMeasurement<TMeasurement extends Measurement = Measurement> (
+    deviceReference: string,
+    measureName: TDecoder['measures'][number]['name'],
+    measurement: TMeasurement,
+  ) {
+    if (! this.decoder.measureNames.includes(measureName)) {
+      throw new PluginImplementationError(`Decoder "${this.decoder.deviceModel}" has no measure named "${measureName}"`);
+    }
+
+    if (! this.measurementsByDevice[deviceReference]) {
+      this.measurementsByDevice[deviceReference] = [];
+    }
+
+    measurement.deviceMeasureName = measureName;
+
+    this.measurementsByDevice[deviceReference].push(measurement);
+  }
+
+  /**
+   * Gets the measurements decoded for a device
+   */
+  getMeasurements (deviceReference: string): Measurement[] {
+    return this.measurementsByDevice[deviceReference];
+  }
+}

@@ -74,6 +74,18 @@ export class DeviceController extends CRUDController {
           handler: this.create.bind(this),
           http: [{ path: 'device-manager/:engineId/devices', verb: 'post' }]
         },
+        update: {
+          handler: this.update.bind(this),
+          http: [{ path: 'device-manager/:engineId/device/:deviceId', verb: 'post' }]
+        },
+        search: {
+          handler: this.search.bind(this),
+          http: [{ path: 'device-manager/:engineId/devices/_search', verb: 'post' }]
+        },
+        delete: {
+          handler: this.delete.bind(this),
+          http: [{ path: 'device-manager/:engineId/device/:deviceId', verb: 'delete' }]
+        },
       }
     };
     /* eslint-enable sort-keys */
@@ -124,19 +136,22 @@ export class DeviceController extends CRUDController {
     return device;
   }
 
-  // @todo to be implemented
-  async update (): Promise<any> {
-    throw new PluginImplementationError('Not available');
+  async update (request: KuzzleRequest) {
+    request.input.args.index = request.getString('engineId');
+
+    return super.update(request);
   }
 
-  // @todo to be implemented
-  async search () {
-    throw new PluginImplementationError('Not available');
+  async search (request: KuzzleRequest) {
+    request.input.args.index = request.getString('engineId');
+
+    return super.search(request);
   }
 
-  // @todo to be implemented
-  async delete (): Promise<any> {
-    throw new PluginImplementationError('Not available');
+  async delete (request: KuzzleRequest) {
+    request.input.args.index = request.getString('engineId');
+
+    return super.delete(request);
   }
 
   /**

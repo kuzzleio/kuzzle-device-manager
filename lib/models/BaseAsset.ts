@@ -1,7 +1,7 @@
 import { JSONObject } from 'kuzzle';
 import { LinkRequest } from '../types/Request';
 
-import { BaseAssetContent, DeviceLink, MeasureContent } from '../types';
+import { BaseAssetContent, MeasureContent } from '../types';
 import { Device } from './Device';
 
 export class BaseAsset {
@@ -20,6 +20,10 @@ export class BaseAsset {
     if (! Array.isArray(this._source.measures)) {
       this._source.measures = [];
     }
+
+    if (! Array.isArray(this._source.deviceLinks)) {
+      this._source.deviceLinks = [];
+    }
   }
 
   public linkToDevice (linkRequest: LinkRequest) {
@@ -29,8 +33,7 @@ export class BaseAsset {
   public unlinkDevice (device: Device) {
     // TOSEE : Iterate over all or assert there is
     // only one link and remove first match?
-    const linkToKeep = this._source.deviceLinks.filter(
-      (deviceLink: DeviceLink) => deviceLink.deviceId !== device._id);
+    const linkToKeep = this._source.deviceLinks.filter(link => link.deviceId !== device._id);
 
     this._source.deviceLinks = linkToKeep;
   }

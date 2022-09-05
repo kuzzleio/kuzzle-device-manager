@@ -2,11 +2,9 @@ import { Measurement, MeasureDefinition } from '../types';
 
 /* eslint-disable sort-keys */
 
-export interface MovementMeasurement extends Measurement {
-  values: {
-    movement: boolean;
-  }
-}
+export type MovementMeasurement = Measurement<{
+  movement: boolean;
+}>;
 
 export const movementMeasure: MeasureDefinition = {
   valuesMappings: { movement: { type: 'boolean' } },
