@@ -186,9 +186,9 @@ Feature: Payloads Controller
       | payloads[0].lvlBattery    | 0.8                |
     And I refresh the collection "engine-ayse":"measures"
     Then When I successfully execute the action "document":"search" with args:
-      | index      | "engine-ayse"                                                                                    |
-      | collection | "measures"                                                                                       |
-      | body       | { query: {nested:{path:"origin",query:{term:{"origin.assetId":"container-FRIDGE-unlinked_1"}}}}} |
+      | index      | "engine-ayse"                                                      |
+      | collection | "measures"                                                         |
+      | body       | { query: { term:{"origin.assetId":"container-FRIDGE-unlinked_1"}}} |
     And I should receive a "hits" array of objects matching:
       | _source.type  | _source.origin.id                                             |
       | "temperature" | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
