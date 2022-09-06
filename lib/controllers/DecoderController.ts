@@ -4,7 +4,7 @@ import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { DecodersRegister } from '../core-classes';
 import { DeviceManagerConfiguration } from '../types';
 
-export class DecodersController {
+export class DecoderController {
   private context: PluginContext;
   private config: DeviceManagerConfiguration;
   private decodersRegister: DecodersRegister;

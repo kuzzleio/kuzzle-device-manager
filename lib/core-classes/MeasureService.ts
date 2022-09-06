@@ -17,7 +17,6 @@ import {
   DeviceManagerConfiguration,
   MeasureContent,
   Measurement,
-  OriginType,
   BaseAssetContent,
   DeviceContent,
 } from '../types';
@@ -64,23 +63,19 @@ export class MeasureService {
    * @param deviceModel Model of the device
    * @param decodedPayloads `decodedPayload`
    * @param payloadUuids Payload Uuids that generated the measurements
-   * @param {object} options
-   * @param options.provisionDevice If true and a `decodedPayload`
-   * reference a nonexisting device, create this device
+   * @param options.provisionDevice If true and a `decodedPayload` reference a nonexisting device, create this device
    * @param options.refresh Wait for ES indexation
    */
   public async processDecodedPayload (
     deviceModel: string,
-    decodedPayloads: DecodedPayload,
+    decodedPayload: DecodedPayload,
     payloadUuids: string[],
     options:
     {
       refresh?: string,
     }
   ) {
-    const references = Object.keys(decodedPayloads);
-
-    const devices = await this.getDevices(deviceModel, references, options);
+    const devices = await this.getDevices(deviceModel, decodedPayload.references, options);
 
     for (const device of devices) {
       let asset: BaseAsset = null;
@@ -102,7 +97,7 @@ export class MeasureService {
       const measures = this.buildMeasures(
         device,
         asset,
-        decodedPayloads[device._source.reference],
+        decodedPayload.getMeasurements(device._source.reference),
         payloadUuids,
       );
 
@@ -199,11 +194,11 @@ export class MeasureService {
         deviceMeasureName,
         measuredAt: measurement.measuredAt,
         origin: {
-          assetId: asset ? asset._id : undefined,
+          assetId: asset?._id,
           deviceModel: device._source.model,
           id: device._id,
           payloadUuids,
-          type: OriginType.DEVICE,
+          type: 'device',
         },
         type: measurement.type,
         unit: this.measuresRegister.get(measurement.type).unit,
@@ -216,6 +211,9 @@ export class MeasureService {
     return measures;
   }
 
+  /**
+   * Get devices or create missing ones (when auto-provisionning is enabled)
+   */
   private async getDevices (
     deviceModel: string,
     references: string[],
@@ -224,7 +222,7 @@ export class MeasureService {
       refresh?: any,
     }
   ) {
-    let devices: Device[] = [];
+    const devices: Device[] = [];
 
     // @todo replace with batch.mGet when available
     const { successes, errors } = await this.sdk.document.mGet<DeviceContent>(
@@ -309,7 +307,7 @@ export class MeasureService {
     const invalidMeasurements: JSONObject[] = [];
     const validMeasures: MeasureContent[] = [];
 
-    const asset = await this.assetService.getAsset(engineId, assetId);
+    const asset = await this.assetService.get(engineId, assetId);
 
     if (! asset) {
       throw new NotFoundError(`Asset ${assetId} does not exist`);
@@ -325,11 +323,11 @@ export class MeasureService {
         validMeasures.push({
           assetMeasureName,
           deviceMeasureName: null,
-          measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
+          measuredAt: measurement.measuredAt || Date.now(),
           origin: {
             assetId,
             id: kuid,
-            type: OriginType.USER,
+            type: 'user',
           },
           type: measurement.type,
           unit: this.measuresRegister.get(measurement.type).unit,
