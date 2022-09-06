@@ -1,6 +1,6 @@
 import csv from 'csvtojson';
 import {
-  BadRequestError, JSONObject,
+  BadRequestError,
   KuzzleRequest,
   Plugin,
 } from 'kuzzle';
@@ -139,13 +139,10 @@ export class AssetController extends RelationalController {
     const category = this.getFieldPath(request, 'category', null, 'asset-category');
 
     const document = await this.genericGet<BaseAssetContent>(engineId, this.collection, id, [category]);
-    const metadata = document._source.metadata;
-    const asset = document._source as JSONObject;
-    if (metadata) {
-      asset.metadata = await this.assetCategoryService.formatMetadataForGet(metadata);
-    }
-    return asset;
+    this.assetCategoryService.formatDocumentMetadata(document);
+    return document._source;
   }
+
 
   async unlinkCategory (request: KuzzleRequest) {
     const id = request.getId();
@@ -294,9 +291,22 @@ export class AssetController extends RelationalController {
     return super.delete(request);
   }
 
+  /**
+   * search assets or devices depending on the collection.
+   *
+   * @param request
+   */
   async search (request: KuzzleRequest) {
-    request.input.args.index = request.getString('engineId');
+    const engineId = request.getString('engineId');
+    const { searchBody } = request.getSearchParams();
+    const category = this.getFieldPath(request, 'category', null, 'asset-category');
 
-    return super.search(request);
+    const res = await this.sdk.document.search<BaseAssetContent>(engineId, this.collection, searchBody);
+    for (const hit of res.hits) {
+      const document = await this.esDocumentToFormatted<BaseAssetContent>(engineId, this.collection, hit, [category]);
+      this.assetCategoryService.formatDocumentMetadata(document);
+    }
+    return res;
+
   }
 }
