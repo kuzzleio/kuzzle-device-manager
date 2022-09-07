@@ -404,9 +404,14 @@ export class MeasureService {
     const deviceLink = asset._source.deviceLinks.find(
       link => link.deviceId === device._id);
 
+    // TOSEE Convert to assert ?
+    if (! deviceLink) {
+      throw new PluginImplementationError(`The device "${device._id}" is not linked to the asset "${asset._id}"`);
+    }
+
     const measureLink = deviceLink.measureNamesLinks.find(
       nameLink => nameLink.deviceMeasureName === deviceMeasureName);
 
-    return measureLink.assetMeasureName;
+    return measureLink ? measureLink.assetMeasureName : undefined;
   }
 }
