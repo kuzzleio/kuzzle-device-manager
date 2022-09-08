@@ -95,7 +95,7 @@ export interface MeasureContent extends KDocumentContent, AssetMeasurement {
  * From where the measure has been pushed
  */
 export enum OriginType {
-  ASSET = 'asset',
+  USER = "user",
   DEVICE = 'device',
 }
 ```
