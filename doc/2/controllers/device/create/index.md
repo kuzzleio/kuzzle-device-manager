@@ -7,9 +7,11 @@ description: Creates a new asset
 
 # create
 
-Creates a new asset inside a tenant index.
+Creates a new device inside a tenant index.
 
 Returns an error if the document already exists.
+
+A link request to an asset can be embedded in the querry with the body fields `assetId` and `measureNamesLinks`.
 
 See also the [document:create](/core/2/api/controllers/document/create) API action.
 
@@ -20,14 +22,22 @@ See also the [document:create](/core/2/api/controllers/document/create) API acti
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:index/assets[?refresh=wait_for]
+URL: http://kuzzle:7512/_/device-manager/:engineId/devices[?refresh=wait_for]
 Method: POST
 Body:
 ```
 
 ```js
 {
-  // asset content
+  model: "DummyMultiTemp",
+  reference: "ref1",
+  metadata: {
+    // optional
+  },
+  assetId: "<assetIdToLink>",  // optional
+  measureNamesLinks: [
+    // optional
+  ]
 }
 ```
 
@@ -39,7 +49,7 @@ Body:
   "controller": "device-manager/asset",
   "action": "create",
   "body": {
-    // asset content
+    // device content
   }
 }
 ```
@@ -48,9 +58,7 @@ Body:
 
 ```bash
 kourou device-manager/asset:create <index> --body '{ 
-  type: "<asset type>", 
-  model: "<asset model>", 
-  reference: "<asset reference>" 
+  // device content
 }'
 ```
 
@@ -69,14 +77,13 @@ kourou device-manager/asset:create <index> --body '{
 
 ## Body properties
 
-Asset content to create.
+Device content to create.
 
-Assets must contains at least the following properties:
-  - `type`: Asset type
+Devices must contains at least the following properties:
   - `model`: Asset model designation
   - `reference`: Unique identifier scoped to a model
 
-Assets can contain custom values in the `metadata` property.
+Devices can contain custom values in the `metadata` property.
 
 ---
 
