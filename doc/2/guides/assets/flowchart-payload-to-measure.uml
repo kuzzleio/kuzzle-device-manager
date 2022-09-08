@@ -1,0 +1,49 @@
+@startuml
+start
+:payload;
+:decoder;
+split
+  :Historize payload in `device-manager`:`payloads`;
+  detach
+split again
+  :Produce `Measurement` array in a `decodedPayload` with:
+  - type = 'device'
+  - values
+  - measuredAt
+  - deviceMeasureName;
+end split
+
+if (device exist) then (yes)
+else (no)
+    if (provision device setting is true) then (yes)
+        :Create the unattached and unlinked device;
+    else (no)
+        stop
+    endif
+endif
+
+:produce `Measure` from the `Measurement` array adding:
+- unit
+- origin:
+  - type: 'device'
+  - deviceModel: '<model of the device>'
+  - id: '<id of the device>'
+  - payloadUuids: ['<payloadUuid>']
+- ...;
+
+if (device linked to an asset and `deviceMeasureName` specified in the `deviceLink` of the asset) then (yes)
+  :Add to measure:
+  - origin:
+    - assetId: '<id of linked asset>'
+    - assetMeasureName: '<name specified in the deviceLink>';
+  :Update asset measures' with the new measure;
+endif
+
+:Update device measures' with the new measure;
+
+if (device attached to engine) then (yes)
+    :Historize measures in the engine;
+endif
+
+stop
+@enduml
