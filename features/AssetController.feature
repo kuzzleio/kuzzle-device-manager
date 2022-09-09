@@ -146,7 +146,7 @@ Feature: DeviceManager asset controller
     And I refresh the collection "engine-ayse":"assets"
     Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | measures[0].assetMeasureName    | "coreBatteryLevel"  |
-      | measures[0].values.battery      | 91                  |
+      | measures[0].values.battery      | 90                  |
       | measures[1].assetMeasureName    | "leftOuterTemp"     |
       | measures[1].values.temperature  | 31                  |
       | measures[2].assetMeasureName    | "leftInnerTemp"     | 
