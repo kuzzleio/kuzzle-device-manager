@@ -35,7 +35,7 @@ Feature: LinkAsset
       | deviceLinks[0].measureNamesLinks[2].assetMeasureName  | "lvlBattery"                              |
       | deviceLinks[0].measureNamesLinks[2].deviceMeasureName | "lvlBattery"                              |
 
-  Scenario: Link device to an asset with measureNamesLinks
+  Scenario: Link device to an asset with partial measureNamesLinks and receive a payload
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId                                     | "container-FRIDGE-unlinked_1"             |
@@ -50,6 +50,19 @@ Feature: LinkAsset
       | deviceLinks[0].deviceId                               | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | deviceLinks[0].measureNamesLinks[0].assetMeasureName  | "coreInnerTemp"                           |
       | deviceLinks[0].measureNamesLinks[0].deviceMeasureName | "innerTemp"                               |
+    When I successfully receive a "dummy-multi-temp" payload with:
+      | payloads[0].deviceEUI     | "attached_ayse_unlinked_1" |
+      | payloads[0].registerInner | 1                          |
+      | payloads[0].registerOuter | 2                          |
+      | payloads[0].lvlBattery    | 1                          |
+    And I refresh the collection "engine-ayse":"assets"
+    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
+      | measures[0].type                | "temperature"                             |
+      | measures[0].values.temperature  | 1                                         |
+      | measures[0].deviceMeasureName   | "innerTemp"                               |
+      | measures[0].assetMeasureName    | "coreInnerTemp"                           |
+      | measures[0].origin.assetId      | "container-FRIDGE-unlinked_1"             |
+      | measures[0].origin.id           | "DummyMultiTemp-attached_ayse_unlinked_1" |
 
   Scenario: Link device to an asset and enriching the asset with before event
     When I successfully execute the action "device-manager/device":"linkAsset" with args:

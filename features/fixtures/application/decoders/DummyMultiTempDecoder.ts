@@ -41,7 +41,7 @@ export class DummyMultiTempDecoder extends Decoder {
     for (const devicePayload of payload.payloads) {
       if (devicePayload.registerInner) {
         const innerTemp: TemperatureMeasurement = {
-          measuredAt: devicePayload.measuredAtRegisterInner ?? Date.now(),
+          measuredAt: devicePayload.measuredAt ?? Date.now(),
           type: 'temperature',
           values: {
             temperature: devicePayload.registerInner,
@@ -53,7 +53,7 @@ export class DummyMultiTempDecoder extends Decoder {
 
       if (devicePayload.registerOuter) {
         const outerTemp: TemperatureMeasurement = {
-          measuredAt: devicePayload.measuredAtRegisterOuter ?? Date.now(),
+          measuredAt: devicePayload.measuredAt ?? Date.now(),
           type: 'temperature',
           values: {
             temperature: devicePayload.registerOuter,
@@ -65,7 +65,7 @@ export class DummyMultiTempDecoder extends Decoder {
 
       if (devicePayload.lvlBattery) {
         const battery: BatteryMeasurement = {
-          measuredAt: devicePayload.measuredAtLvlBattery ?? Date.now(),
+          measuredAt: devicePayload.measuredAt ?? Date.now(),
           type: 'battery',
           values: {
             battery: devicePayload.lvlBattery * 100,
