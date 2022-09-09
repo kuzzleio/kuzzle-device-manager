@@ -8,11 +8,25 @@ Feature: DeviceManager asset controller
       | body.reference | "asset_01"      |
     Then The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" exists
     When I successfully execute the action "device-manager/asset":"update" with args:
+      | engineId   | "engine-kuzzle"         |
+      | _id        | "outils-PERFO-asset_01" |
+      | body.model | "ALTMODEL"              |
+    Then The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" content match:
+      | model | "ALTMODEL" |
+    When I successfully execute the action "device-manager/asset":"update" with args:
       | engineId             | "engine-kuzzle"         |
       | _id                  | "outils-PERFO-asset_01" |
       | body.metadata.foobar | 42                      |
       | body.metadata.index  | "engine-kuzzle"         |
-    And I successfully execute the action "device-manager/asset":"delete" with args:
+      | body.model           | "PERFO"                 |
+    When I successfully execute the action "device-manager/asset":"get" with args:
+      | engineId | "engine-kuzzle" |
+      | _id      | "outils-PERFO-asset_01" |
+    Then I should receive a result matching:
+      | model           | "PERFO"         |
+      | metadata.foobar | 42              |
+      | metadata.index  | "engine-kuzzle" |
+    When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-kuzzle"         |
       | _id      | "outils-PERFO-asset_01" |
     Then The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" does not exists
