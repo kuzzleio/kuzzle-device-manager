@@ -94,12 +94,21 @@ export class MeasureService {
         }
       }
 
+      const measurements = decodedPayload.getMeasurements(device._source.reference);
+
+      if (! measurements) {
+        this.app.log.warn(`Cannot find measurements for device "${device._source.reference}"`);
+        continue;
+      }
+
       const measures = this.buildMeasures(
         device,
         asset,
-        decodedPayload.getMeasurements(device._source.reference),
+        measurements,
         payloadUuids,
       );
+
+      device.updateMetadata(decodedPayload.getMetadata(device._source.reference));
 
       /**
        * Event before starting to process new measures.
@@ -122,14 +131,14 @@ export class MeasureService {
         this.config.adminIndex,
         InternalCollection.DEVICES,
         device._id,
-        { measures: device._source.measures });
+        device._source);
 
       if (device._source.engineId) {
         await this.sdk.document.update<DeviceContent>(
           device._source.engineId,
           InternalCollection.DEVICES,
           device._id,
-          { measures: device._source.measures });
+          device._source);
 
         // @todo replace by batch.mCreate when available
         await this.sdk.document.mCreate<MeasureContent>(
@@ -145,7 +154,7 @@ export class MeasureService {
             device._source.engineId,
             InternalCollection.ASSETS,
             asset._id,
-            { measures: asset._source.measures });
+            asset._source);
         }
       }
 
@@ -184,10 +193,9 @@ export class MeasureService {
 
       const deviceMeasureName = measurement.deviceMeasureName || measurement.type;
 
-      const assetMeasureName = asset === null ? undefined : this.findAssetMeasureName(
-        device,
-        asset,
-        deviceMeasureName);
+      const assetMeasureName = asset === null
+        ? undefined
+        : this.findAssetMeasureName(device, asset, deviceMeasureName);
 
       const measureContent: MeasureContent = {
         assetMeasureName,

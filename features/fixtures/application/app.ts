@@ -19,6 +19,10 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.measures.register('acceleration3d', acceleration3dMeasure);
 
 deviceManager.decoders.register(new DummyTempDecoder());
+deviceManager.devices.registerMetadata({
+  color: { type: 'keyword' }
+});
+
 deviceManager.decoders.register(new DummyMultiTempDecoder());
 deviceManager.decoders.register(new DummyTempPositionDecoder());
 deviceManager.decoders.register(new DummyAccelerometer3dDecoder());

@@ -203,3 +203,14 @@ Feature: Payloads Controller
       | measures[0].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
       | measures[1].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
 
+  Scenario: Decode Device metadata from payload
+    When I successfully receive a "dummy-temp" payload with:
+      | deviceEUI      | "12345" |
+      | register55     | 23.3    |
+      | lvlBattery     | 0.8     |
+      | metadata.color | "RED"   |
+    And I refresh the collection "device-manager":"devices"
+    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
+      | reference      | "12345"     |
+      | model          | "DummyTemp" |
+      | metadata.color | "RED"       |

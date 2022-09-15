@@ -1,4 +1,5 @@
-import { PluginImplementationError } from 'kuzzle';
+import { PluginImplementationError, JSONObject } from 'kuzzle';
+
 import { Decoder } from '../core-classes/Decoder';
 import { Measurement } from './measures/MeasureContent';
 
@@ -14,6 +15,11 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    * Record<deviceReference, Measurement[]>
    */
   private measurementsByDevice: Record<string, Measurement[]> = {};
+
+  /**
+   * Metadata per device.
+   */
+  private metadataByDevice: JSONObject = {};
 
   constructor (decoder: TDecoder) {
     this.decoder = decoder;
@@ -49,9 +55,35 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
   }
 
   /**
+   * Add metadata values for a Device.
+   *
+   * Metadata should have been declared on the plugin to be used.
+   *
+   * @param deviceReference Device reference
+   * @param metadata Object containing metadata values
+   */
+  addMetadata (deviceReference: string, metadata: JSONObject) {
+    if (! this.metadataByDevice[deviceReference]) {
+      this.metadataByDevice[deviceReference] = {};
+    }
+
+    this.metadataByDevice[deviceReference] = {
+      ...this.metadataByDevice[deviceReference],
+      ...metadata,
+    };
+  }
+
+  /**
    * Gets the measurements decoded for a device
    */
   getMeasurements (deviceReference: string): Measurement[] {
     return this.measurementsByDevice[deviceReference];
+  }
+
+  /**
+   * Get the metadata for a device
+   */
+  getMetadata (deviceReference: string): JSONObject {
+    return this.metadataByDevice[deviceReference];
   }
 }
