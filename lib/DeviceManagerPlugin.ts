@@ -178,7 +178,7 @@ export class DeviceManagerPlugin extends Plugin {
       deviceModel: device,
       rawPayload: body
     };
-    this.sdk.document.create('device-manager', 'payloads', documentContent);
+    this.sdk.document.create(this.config.adminIndex, 'payloads', documentContent);
   }
 
 
