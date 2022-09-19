@@ -1,3 +1,6 @@
+import { JSONObject } from 'kuzzle-sdk';
+import _ from 'lodash';
+
 import { LinkRequest } from '../types/Request';
 import { DeviceContent, MeasureContent } from '../types';
 
@@ -53,5 +56,9 @@ export class Device {
         this._source.measures[idx] = newMeasure;
       }
     }
+  }
+
+  public updateMetadata (metadata: JSONObject) {
+    this._source.metadata = _.merge(this._source.metadata, metadata);
   }
 }

@@ -48,7 +48,7 @@ export class AssetService {
     assetId: string,
     { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
   ): Promise<KDocument<MeasureContent>[]> {
-    await this.getAsset(engineId, assetId);
+    await this.get(engineId, assetId);
 
     const query = {
       range: {
@@ -118,10 +118,7 @@ export class AssetService {
     return results;
   }
 
-  public async getAsset (
-    engineId: string,
-    assetId: string
-  ): Promise<BaseAsset> {
+  public async get (engineId: string, assetId: string): Promise<BaseAsset> {
     const document = await this.sdk.document.get<BaseAssetContent>(
       engineId,
       InternalCollection.ASSETS,
@@ -136,7 +133,7 @@ export class AssetService {
     assetMeasureNames: string[],
     { strict }: { strict?: boolean }
   ) {
-    const asset = await this.getAsset(engineId, assetId);
+    const asset = await this.get(engineId, assetId);
     const result = asset.removeMeasures(assetMeasureNames);
 
     if (strict && result.notFound.length) {

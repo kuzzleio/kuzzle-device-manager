@@ -17,7 +17,6 @@ import {
   DeviceManagerConfiguration,
   MeasureContent,
   Measurement,
-  OriginType,
   BaseAssetContent,
   DeviceContent,
 } from '../types';
@@ -64,23 +63,19 @@ export class MeasureService {
    * @param deviceModel Model of the device
    * @param decodedPayloads `decodedPayload`
    * @param payloadUuids Payload Uuids that generated the measurements
-   * @param {object} options
-   * @param options.provisionDevice If true and a `decodedPayload`
-   * reference a nonexisting device, create this device
+   * @param options.provisionDevice If true and a `decodedPayload` reference a nonexisting device, create this device
    * @param options.refresh Wait for ES indexation
    */
   public async processDecodedPayload (
     deviceModel: string,
-    decodedPayloads: DecodedPayload,
+    decodedPayload: DecodedPayload,
     payloadUuids: string[],
     options:
     {
       refresh?: string,
     }
   ) {
-    const references = Object.keys(decodedPayloads);
-
-    const devices = await this.getDevices(deviceModel, references, options);
+    const devices = await this.getDevices(deviceModel, decodedPayload.references, options);
 
     for (const device of devices) {
       let asset: BaseAsset = null;
@@ -99,12 +94,21 @@ export class MeasureService {
         }
       }
 
+      const measurements = decodedPayload.getMeasurements(device._source.reference);
+
+      if (! measurements) {
+        this.app.log.warn(`Cannot find measurements for device "${device._source.reference}"`);
+        continue;
+      }
+
       const measures = this.buildMeasures(
         device,
         asset,
-        decodedPayloads[device._source.reference],
+        measurements,
         payloadUuids,
       );
+
+      device.updateMetadata(decodedPayload.getMetadata(device._source.reference));
 
       /**
        * Event before starting to process new measures.
@@ -127,14 +131,14 @@ export class MeasureService {
         this.config.adminIndex,
         InternalCollection.DEVICES,
         device._id,
-        { measures: device._source.measures });
+        device._source);
 
       if (device._source.engineId) {
         await this.sdk.document.update<DeviceContent>(
           device._source.engineId,
           InternalCollection.DEVICES,
           device._id,
-          { measures: device._source.measures });
+          device._source);
 
         // @todo replace by batch.mCreate when available
         await this.sdk.document.mCreate<MeasureContent>(
@@ -150,7 +154,7 @@ export class MeasureService {
             device._source.engineId,
             InternalCollection.ASSETS,
             asset._id,
-            { measures: asset._source.measures });
+            asset._source);
         }
       }
 
@@ -189,21 +193,20 @@ export class MeasureService {
 
       const deviceMeasureName = measurement.deviceMeasureName || measurement.type;
 
-      const assetMeasureName = asset === null ? undefined : this.findAssetMeasureName(
-        device,
-        asset,
-        deviceMeasureName);
+      const assetMeasureName = asset === null
+        ? undefined
+        : this.findAssetMeasureName(device, asset, deviceMeasureName);
 
       const measureContent: MeasureContent = {
         assetMeasureName,
         deviceMeasureName,
         measuredAt: measurement.measuredAt,
         origin: {
-          assetId: asset ? asset._id : undefined,
+          assetId: asset?._id,
           deviceModel: device._source.model,
           id: device._id,
           payloadUuids,
-          type: OriginType.DEVICE,
+          type: 'device',
         },
         type: measurement.type,
         unit: this.measuresRegister.get(measurement.type).unit,
@@ -216,6 +219,9 @@ export class MeasureService {
     return measures;
   }
 
+  /**
+   * Get devices or create missing ones (when auto-provisionning is enabled)
+   */
   private async getDevices (
     deviceModel: string,
     references: string[],
@@ -224,7 +230,7 @@ export class MeasureService {
       refresh?: any,
     }
   ) {
-    let devices: Device[] = [];
+    const devices: Device[] = [];
 
     // @todo replace with batch.mGet when available
     const { successes, errors } = await this.sdk.document.mGet<DeviceContent>(
@@ -309,7 +315,7 @@ export class MeasureService {
     const invalidMeasurements: JSONObject[] = [];
     const validMeasures: MeasureContent[] = [];
 
-    const asset = await this.assetService.getAsset(engineId, assetId);
+    const asset = await this.assetService.get(engineId, assetId);
 
     if (! asset) {
       throw new NotFoundError(`Asset ${assetId} does not exist`);
@@ -325,11 +331,11 @@ export class MeasureService {
         validMeasures.push({
           assetMeasureName,
           deviceMeasureName: null,
-          measuredAt: measurement.measuredAt ? measurement.measuredAt : Date.now(),
+          measuredAt: measurement.measuredAt || Date.now(),
           origin: {
             assetId,
             id: kuid,
-            type: OriginType.USER,
+            type: 'user',
           },
           type: measurement.type,
           unit: this.measuresRegister.get(measurement.type).unit,
@@ -406,9 +412,14 @@ export class MeasureService {
     const deviceLink = asset._source.deviceLinks.find(
       link => link.deviceId === device._id);
 
+    // TOSEE Convert to assert ?
+    if (! deviceLink) {
+      throw new PluginImplementationError(`The device "${device._id}" is not linked to the asset "${asset._id}"`);
+    }
+
     const measureLink = deviceLink.measureNamesLinks.find(
       nameLink => nameLink.deviceMeasureName === deviceMeasureName);
 
-    return measureLink.assetMeasureName;
+    return measureLink ? measureLink.assetMeasureName : undefined;
   }
 }

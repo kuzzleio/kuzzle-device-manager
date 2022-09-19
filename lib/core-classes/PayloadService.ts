@@ -1,23 +1,20 @@
 import {
   Backend,
   BatchController,
+  JSONObject,
   KuzzleRequest,
   PluginContext
 } from 'kuzzle';
 import { v4 as uuidv4 } from 'uuid';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
-import {
-  DeviceManagerConfiguration
-} from '../types';
+import { DeviceManagerConfiguration } from '../types';
 import { Decoder } from './Decoder';
 import { MeasureService } from './MeasureService';
-import { MeasuresRegister } from './registers/MeasuresRegister';
 
 export class PayloadService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
-  private measuresRegister: MeasuresRegister;
   private measureService: MeasureService;
 
   private get sdk () {
@@ -31,13 +28,11 @@ export class PayloadService {
   constructor (
     plugin: DeviceManagerPlugin,
     batchController: BatchController,
-    measuresRegister: MeasuresRegister,
     measureService: MeasureService
   ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
     this.measureService = measureService;
-    this.measuresRegister = measuresRegister;
 
     this.batch = batchController;
   }
@@ -50,7 +45,7 @@ export class PayloadService {
    */
   async process (request: KuzzleRequest,
     decoder: Decoder,
-    { refresh }: { refresh?: 'wait_for' | 'false' } = {}
+    { refresh }: { refresh?: 'wait_for' | 'false' } = {},
   ) {
     const payload = request.getBody();
 
@@ -69,22 +64,35 @@ export class PayloadService {
       throw error;
     }
     finally {
-      await this.batch.create(
-        this.config.adminIndex,
-        'payloads',
-        {
-          deviceModel: decoder.deviceModel,
-          payload,
-          uuid,
-          valid,
-        },
-        uuid);
+      await this.savePayload(decoder.deviceModel, uuid, valid, payload);
     }
 
     const decodedPayload = await decoder.decode(payload, request);
 
-
     return this.measureService.processDecodedPayload(
       decoder.deviceModel, decodedPayload, [ uuid ], { refresh });
+  }
+
+  /**
+   * Method used to save the payload and catch + log the error if any.
+   *
+   * This method never returns a rejected promise.
+   */
+  private async savePayload (
+    deviceModel: string,
+    uuid: string,
+    valid: boolean,
+    payload: JSONObject,
+  ) {
+    try {
+      await this.batch.create(
+        this.config.adminIndex,
+        'payloads',
+        { deviceModel, payload, uuid, valid },
+        uuid);
+    }
+    catch (error) {
+      this.app.log.error(`Cannot save the payload from "${deviceModel}": ${error}`);
+    }
   }
 }

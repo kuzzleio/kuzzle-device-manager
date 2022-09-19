@@ -15,7 +15,6 @@ import {
   DeviceContent,
   DeviceManagerConfiguration,
   MeasureContent,
-  MeasureNamesLink
 } from '../types';
 import { AttachRequest, LinkRequest } from '../types/Request';
 import {
@@ -95,7 +94,7 @@ export class DeviceService {
     let asset: BaseAsset;
     if (linkRequest) {
       try {
-        asset = await this.assetService.getAsset(engineId, linkRequest.assetId);
+        asset = await this.assetService.get(engineId, linkRequest.assetId);
         device.linkToAsset(linkRequest);
         asset.linkToDevice(linkRequest);
       }
@@ -250,14 +249,12 @@ export class DeviceService {
 
   /**
    * Link a device to an asset.
-   * If a match between `deviceMeasureName`s and `assetMeasureName` 
-   * isn't specified, it will be auto generated with the 
+   * If a match between `deviceMeasureName`s and `assetMeasureName`
+   * isn't specified, it will be auto generated with the
    * `deviceMeasureNames` of the associated decoder
    *
-   * @param {object} linkRequest Link request between an asset by Id and a device
    * @param linkRequest.assetId Asset id to link to
    * @param linkRequest.deviceLink The link with the device
-   * @param {object} options
    * @param options.refresh Wait for ES indexation
    * @param options.strict If true, throw if an operation isn't possible
    */
@@ -283,24 +280,19 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is already linked to an asset.`);
     }
 
-
-    const asset = await this.assetService.getAsset(deviceEngineId, assetId);
+    const asset = await this.assetService.get(deviceEngineId, assetId);
 
     if (! asset) {
       throw new BadRequestError(`Asset "${asset._id}" does not exist.`);
     }
 
     if (! deviceLink.measureNamesLinks.length) {
-      deviceLink.measureNamesLinks
-        = Object.keys(this.decodersRegister
-          .getByDeviceModel(device._source.model)
-          .decoderMeasures)
-          .map((deviceMeasureName: string): MeasureNamesLink => {
-            return {
-              assetMeasureName: deviceMeasureName,
-              deviceMeasureName,
-            };
-          });
+      const decoder = this.decodersRegister.get(device._source.model);
+
+      deviceLink.measureNamesLinks = decoder.measureNames.map(name => ({
+        assetMeasureName: name,
+        deviceMeasureName: name,
+      }));
     }
 
     device.linkToAsset({ assetId, deviceLink, engineId });
@@ -369,7 +361,7 @@ export class DeviceService {
       throw new BadRequestError(`Device "${device._id}" is not linked to an asset.`);
     }
 
-    const asset = await this.assetService.getAsset(engineId, device._source.assetId);
+    const asset = await this.assetService.get(engineId, device._source.assetId);
 
     asset.unlinkDevice(device);
     device.unlinkToAsset();
@@ -398,9 +390,9 @@ export class DeviceService {
         engineId,
         InternalCollection.ASSETS,
         asset._id,
-        { 
+        {
           deviceLinks: response.asset._source.deviceLinks,
-          measures: response.asset._source.measures 
+          measures: response.asset._source.measures
         },
         { refresh }),
     ]);

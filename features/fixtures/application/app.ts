@@ -5,18 +5,27 @@ import {
   DummyMultiTempDecoder,
   DummyTempDecoder,
   DummyTempPositionDecoder,
+  DummyAccelerometer3dDecoder,
 } from './decoders';
 import { registerTestPipes } from './testPipes'
 import { TreeNodeController } from '../../fakeclasses/TreeNodeController';
 import { InvertTreeNodeController } from '../../fakeclasses/InvertTreeNodeController';
+import { acceleration3dMeasure } from './measures/Acceleration3dMeasure';
 
 const app = new Backend('kuzzle');
 
 const deviceManager = new DeviceManagerPlugin();
 
-deviceManager.decoders.register(new DummyTempDecoder(deviceManager.measures));
-deviceManager.decoders.register(new DummyMultiTempDecoder(deviceManager.measures));
-deviceManager.decoders.register(new DummyTempPositionDecoder(deviceManager.measures));
+deviceManager.measures.register('acceleration3d', acceleration3dMeasure);
+
+deviceManager.decoders.register(new DummyTempDecoder());
+deviceManager.devices.registerMetadata({
+  color: { type: 'keyword' }
+});
+
+deviceManager.decoders.register(new DummyMultiTempDecoder());
+deviceManager.decoders.register(new DummyTempPositionDecoder());
+deviceManager.decoders.register(new DummyAccelerometer3dDecoder());
 
 deviceManager.devices.registerMetadata({
   group: {

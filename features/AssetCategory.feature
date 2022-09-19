@@ -173,7 +173,7 @@ Feature: AssetCategory
       | status | 400 |
 
 
-  Scenario: Create an asset with AssetCategory and present mandatory metadata
+  Scenario: Create an asset with AssetCategory and present mandatory metadata, then verify content given by get and search method
     When I successfully execute the action "device-manager/asset":"create" with args:
       | engineId              | "engine-ayse" |
       | body.type             | "truck"       |
@@ -197,6 +197,16 @@ Feature: AssetCategory
       | reference        | "asset_02" |
       | category.name    | "bigTruck" |
       | metadata.surname | "test"     |
+    Then I refresh the collection "engine-ayse":"assets"
+    When I successfully execute the action "device-manager/asset":"search" with args:
+      | engineId                | "engine-ayse"      |
+      | body.query.match.reference | "asset_02" |
+    Then I should receive a result matching:
+      | hits[0]._source.type             | "truck"    |
+      | hits[0]._source.model            | "M"        |
+      | hits[0]._source.reference        | "asset_02" |
+      | hits[0]._source.category.name    | "bigTruck" |
+      | hits[0]._source.metadata.surname | "test"     |
 
   Scenario: Create an assetCategory, a mandatory metadata, link them statically and create an asset with
     When I successfully execute the action "device-manager/assetCategory":"create" with args:

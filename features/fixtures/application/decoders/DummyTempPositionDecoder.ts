@@ -1,4 +1,4 @@
-import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+import { JSONObject, PreconditionError } from 'kuzzle';
 
 import {
   Decoder,
@@ -6,20 +6,21 @@ import {
   PositionMeasurement,
   TemperatureMeasurement,
   DecodedPayload,
-  MeasuresRegister,
 } from '../../../../index';
 
 export class DummyTempPositionDecoder extends Decoder {
-  constructor (measuresRegister: MeasuresRegister) {
-    super('DummyTempPosition', {
-      theTemperature: 'temperature',
-      theBattery: 'battery',
-      thePosition: 'position',
-    },
-    measuresRegister);
+  public measures = [
+    { name: 'theTemperature', type: 'temperature' },
+    { name: 'theBattery', type: 'battery' },
+    { name: 'thePosition', type: 'position' },
+  ] as const;
+
+  constructor () {
+    super();
+
   }
 
-  async validate (payload: JSONObject, request: KuzzleRequest) {
+  async validate (payload: JSONObject) {
     if (payload.deviceEUI === undefined) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
@@ -27,36 +28,44 @@ export class DummyTempPositionDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload> {
-    const temperature: TemperatureMeasurement = {
-      deviceMeasureName: 'theTemperature',
-      measuredAt: Date.now(),
-      type: 'temperature',
-      values: { temperature: payload.register55 },
-    };
+  async decode (payload: JSONObject): Promise<DecodedPayload<Decoder>> {
+    const decodedPayload = new DecodedPayload<DummyTempPositionDecoder>(this);
 
-    const position: PositionMeasurement = {
-      deviceMeasureName: 'thePositition',
-      measuredAt: Date.now(),
-      type: 'position',
-      values: {
-        position: {
-          lat: payload.location.lat,
-          lon: payload.location.lon,
+    decodedPayload.addMeasurement<TemperatureMeasurement>(
+      payload.deviceEUI,
+      'theTemperature',
+      {
+        measuredAt: Date.now(),
+        type: 'temperature',
+        values: { temperature: payload.register55 },
+      });
+
+    decodedPayload.addMeasurement<PositionMeasurement>(
+      payload.deviceEUI,
+      'thePosition',
+      {
+        measuredAt: Date.now(),
+        type: 'position',
+        values: {
+          position: {
+            lat: payload.location.lat,
+            lon: payload.location.lon,
+          },
+          accuracy: payload.location.accu,
         },
-        accuracy: payload.location.accu,
-      },
-    };
+      });
 
-    const battery: BatteryMeasurement = {
-      deviceMeasureName: 'theBattery',
-      measuredAt: Date.now(),
-      type: 'battery',
-      values: {
-        battery: payload.batteryLevel * 100,
-      },
-    };
+    decodedPayload.addMeasurement<BatteryMeasurement>(
+      payload.deviceEUI,
+      'theBattery',
+      {
+        measuredAt: Date.now(),
+        type: 'battery',
+        values: {
+          battery: payload.batteryLevel * 100,
+        },
+      });
 
-    return {[payload.deviceEUI]: [temperature, position, battery]};
+    return decodedPayload;
   }
 }
