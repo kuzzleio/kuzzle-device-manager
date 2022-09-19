@@ -36,7 +36,7 @@ export class DummyTempDecoder extends Decoder {
   async decode (payload: JSONObject): Promise<DecodedPayload<Decoder>> {
     const decodedPayload = new DecodedPayload<DummyTempDecoder>(this);
 
-    if (payload.metadata.color) {
+    if (payload?.metadata?.color) {
       decodedPayload.addMetadata(payload.deviceEUI, {
         color: payload.metadata.color
       });
