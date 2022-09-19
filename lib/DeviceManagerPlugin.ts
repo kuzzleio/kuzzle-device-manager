@@ -66,10 +66,10 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceService: DeviceService;
   private measuresService: MeasureService;
 
-  private decodersRegister;
-  private measuresRegister;
-  private devicesRegister;
-  private assetsRegister;
+  private decodersRegister: DecodersRegister;
+  private measuresRegister: MeasuresRegister;
+  private devicesRegister: DevicesRegister;
+  private assetsRegister: AssetsRegister;
 
   private adminConfigManager: ConfigManager;
   private engineConfigManager: ConfigManager;
