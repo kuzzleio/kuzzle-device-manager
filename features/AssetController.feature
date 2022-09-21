@@ -32,9 +32,9 @@ Feature: DeviceManager asset controller
       | size      | "1" |
       | lang      | "koncorde" |
     Then I should receive a result matching:
-      | hits[0].model           | "PERFO"         |
-      | hits[0].metadata.foobar | 42              |
-      | hits[0].metadata.index  | "engine-kuzzle" |
+      | hits[0]._source.model           | "PERFO"         |
+      | hits[0]._source.metadata.foobar | 42              |
+      | hits[0]._source.metadata.index  | "engine-kuzzle" |
     When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-kuzzle"         |
       | _id      | "outils-PERFO-asset_01" |
