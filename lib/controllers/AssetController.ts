@@ -212,7 +212,7 @@ export class AssetController extends RelationalController {
       const updatedMetadata = this.assetCategoryService.formatMetadataForES(assetMetadata);
       request.input.body.metadata = [...updatedMetadata, ...previousMetadata];
     }
-    
+
     const response = await global.app.trigger(
       'device-manager:asset:update:before', {
         asset,
@@ -300,10 +300,20 @@ export class AssetController extends RelationalController {
    */
   async search (request: KuzzleRequest) {
     const engineId = request.getString('engineId');
-    const { searchBody } = request.getSearchParams();
+    const { searchBody, from, size, scrollTTL: scroll } = request.getSearchParams();
     const category = this.getFieldPath(request, 'category', null, 'asset-category');
 
-    const res = await this.sdk.document.search<BaseAssetContent>(engineId, this.collection, searchBody);
+    const res = await this.sdk.document.search<BaseAssetContent>(
+      engineId,
+      this.collection,
+      searchBody,
+      {
+        from,
+        lang: request.getLangParam(),
+        scroll,
+        size,
+      }
+    );
     for (const hit of res.hits) {
       const document = await this.esDocumentToFormatted<BaseAssetContent>(engineId, this.collection, hit, [category]);
       this.assetCategoryService.formatDocumentMetadata(document);
