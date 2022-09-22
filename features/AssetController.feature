@@ -26,12 +26,15 @@ Feature: DeviceManager asset controller
       | model           | "PERFO"         |
       | metadata.foobar | 42              |
       | metadata.index  | "engine-kuzzle" |
+    Then I refresh the collection "engine-kuzzle":"assets"
     When I successfully execute the action "device-manager/asset":"search" with args:
       | engineId | "engine-kuzzle" |
-      | body      | {"query":{"equals":{"_id":"outils-PERFO-asset_01"}}} |
-      | size      | "1" |
+      | body      | {"query":{"equals": { "_id": "outils-PERFO-asset_01" }}} |
+      | size      | 1 |
       | lang      | "koncorde" |
-    Then I debug "result"
+    Then I should receive a "hits" array of objects matching:
+      | _id                     | _source.model    |
+      | "outils-PERFO-asset_01" | "PERFO"          |
     When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-kuzzle"         |
       | _id      | "outils-PERFO-asset_01" |
