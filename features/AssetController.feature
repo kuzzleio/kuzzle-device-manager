@@ -31,10 +31,10 @@ Feature: DeviceManager asset controller
       | body      | {"query":{"equals":{"_id":"outils-PERFO-asset_01"}}} |
       | size      | "1" |
       | lang      | "koncorde" |
-    Then I should receive a result matching:
-      | hits[0]._source.model           | "PERFO"         |
-      | hits[0]._source.metadata.foobar | 42              |
-      | hits[0]._source.metadata.index  | "engine-kuzzle" |
+    Then I should receive a "hits" array of objects matching:
+      | model           | "PERFO"         |
+      | metadata.foobar | 42              |
+      | metadata.index  | "engine-kuzzle" |
     When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-kuzzle"         |
       | _id      | "outils-PERFO-asset_01" |
