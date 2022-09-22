@@ -31,10 +31,7 @@ Feature: DeviceManager asset controller
       | body      | {"query":{"equals":{"_id":"outils-PERFO-asset_01"}}} |
       | size      | "1" |
       | lang      | "koncorde" |
-    Then I should receive a "hits" array of objects matching:
-      | model           | "PERFO"         |
-      | metadata.foobar | 42              |
-      | metadata.index  | "engine-kuzzle" |
+    Then I debug "result"
     When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-kuzzle"         |
       | _id      | "outils-PERFO-asset_01" |
