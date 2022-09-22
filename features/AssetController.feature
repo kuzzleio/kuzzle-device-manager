@@ -26,6 +26,15 @@ Feature: DeviceManager asset controller
       | model           | "PERFO"         |
       | metadata.foobar | 42              |
       | metadata.index  | "engine-kuzzle" |
+    Then I refresh the collection "engine-kuzzle":"assets"
+    When I successfully execute the action "device-manager/asset":"search" with args:
+      | engineId | "engine-kuzzle" |
+      | body      | {"query":{"equals": { "_id": "outils-PERFO-asset_01" }}} |
+      | size      | 1 |
+      | lang      | "koncorde" |
+    Then I should receive a "hits" array of objects matching:
+      | _id                     | _source.model    |
+      | "outils-PERFO-asset_01" | "PERFO"          |
     When I successfully execute the action "device-manager/asset":"delete" with args:
       | engineId | "engine-kuzzle"         |
       | _id      | "outils-PERFO-asset_01" |
@@ -140,7 +149,7 @@ Feature: DeviceManager asset controller
       | measures[0].values.battery      | 90                  |
       | measures[1].assetMeasureName    | "leftOuterTemp"     |
       | measures[1].values.temperature  | 30                  |
-      | measures[2].assetMeasureName    | "leftInnerTemp"     | 
+      | measures[2].assetMeasureName    | "leftInnerTemp"     |
       | measures[2].values.temperature  | -10                 |
       | measures[3].assetMeasureName    | "rightOuterTemp"    |
       | measures[3].values.temperature  | 40                  |
@@ -163,7 +172,7 @@ Feature: DeviceManager asset controller
       | measures[0].values.battery      | 90                  |
       | measures[1].assetMeasureName    | "leftOuterTemp"     |
       | measures[1].values.temperature  | 31                  |
-      | measures[2].assetMeasureName    | "leftInnerTemp"     | 
+      | measures[2].assetMeasureName    | "leftInnerTemp"     |
       | measures[2].values.temperature  | -10                 |
       | measures[3].assetMeasureName    | "rightOuterTemp"    |
       | measures[3].values.temperature  | 40                  |
