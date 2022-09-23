@@ -105,8 +105,8 @@ export class AssetCategoryController extends RelationalController {
 
   async create(request: KuzzleRequest) {
     request.input.resource._id = request.input.body.name;
-    let metadataValues = request.input.body.metadataValues;
-    let assetMetadata = request.input.body.assetMetadata;
+    const metadataValues = request.input.body.metadataValues;
+    const assetMetadata = request.input.body.assetMetadata;
     if (!assetMetadata) {
       request.input.body.assetMetadata = [];
     }
@@ -125,7 +125,7 @@ export class AssetCategoryController extends RelationalController {
   async update(request: KuzzleRequest) {
     const id = request.getId();
     const engineId = request.getString("engineId");
-    const assetMetadata = request.input.body.assetMetadata as String[];
+    const assetMetadata = request.input.body.assetMetadata as string[];
     if (assetMetadata) {
       //if elemets are removed in assetMetadata, we need to also remove the values associated in metadataValues
       if (!request.input.body.metadataValues) {

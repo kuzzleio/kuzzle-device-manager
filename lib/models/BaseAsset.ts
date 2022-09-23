@@ -68,7 +68,7 @@ export class BaseAsset {
 
     for (const measure of this._source.measures) {
       const index = assetMeasureNames.indexOf(measure.assetMeasureName);
-      if (0 <= index) {
+      if (index >= 0) {
         removed.push(measure);
         assetMeasureNames.splice(index, 1);
       } else {

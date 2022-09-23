@@ -49,8 +49,7 @@ export class AssetCategoryService {
     assetCategory: AssetCategoryContent,
     engineId: string
   ): Promise<MetadataContent[]> {
-    let metadataList;
-    metadataList = [];
+    const metadataList = [];
     await this.getMetadataFromId(assetCategory, engineId, metadataList);
 
     let assetCategoryTmp = assetCategory;
@@ -172,7 +171,7 @@ export class AssetCategoryService {
     }
   }
 
-  containsValue(metadataValues: FormattedMetadata[], name: string): Boolean {
+  containsValue(metadataValues: FormattedMetadata[], name: string): boolean {
     for (const metadata of metadataValues) {
       if (metadata.key === name) {
         return true;

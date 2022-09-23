@@ -289,7 +289,7 @@ export class AssetController extends RelationalController {
 
     const asset = await this.sdk.document.get(engineId, this.collection, id);
 
-    let assetMetadata = request.input.body.metadata;
+    const assetMetadata = request.input.body.metadata;
     if (assetMetadata) {
       const previousMetadata = asset._source.metadata
         ? asset._source.metadata.filter(
@@ -327,7 +327,7 @@ export class AssetController extends RelationalController {
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const category = request.getBody().category;
-    let assetMetadata = request.getBodyObject("metadata", {});
+    const assetMetadata = request.getBodyObject("metadata", {});
 
     if (category) {
       await this.assetCategoryService.validateMetadata(

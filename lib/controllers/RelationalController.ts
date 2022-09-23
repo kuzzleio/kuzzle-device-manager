@@ -11,7 +11,7 @@ import { User } from "kuzzle/lib/types";
 import { KDocumentContent } from "kuzzle-sdk";
 
 /**
- * interface to indicate a specific field in a specific document.
+ * interface to indicate a specific field in a spe<= cific document.
  * Used to indicate field used to represent relation
  */
 export interface FieldPath {
@@ -81,9 +81,9 @@ export abstract class RelationalController extends CRUDController {
   protected getFieldPath(
     request: KuzzleRequest,
     fieldName: string,
-    documentKey: string = "_id",
+    documentKey = "_id",
     collectionName: string = this.collection,
-    indexKey: string = "engineId"
+    indexKey = "engineId"
   ): FieldPath {
     return {
       collection: collectionName,
