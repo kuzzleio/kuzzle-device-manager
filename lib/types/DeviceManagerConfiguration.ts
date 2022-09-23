@@ -1,4 +1,4 @@
-import { JSONObject } from 'kuzzle';
+import { JSONObject } from "kuzzle";
 
 export type DeviceManagerConfiguration = {
   /**
@@ -11,31 +11,31 @@ export type DeviceManagerConfiguration = {
    */
   adminCollections: {
     config: {
-      name: string,
-      mappings: JSONObject,
-      settings: JSONObject,
+      name: string;
+      mappings: JSONObject;
+      settings: JSONObject;
     };
 
     devices: {
-      name: string,
-      mappings: JSONObject,
-      settings: JSONObject,
+      name: string;
+      mappings: JSONObject;
+      settings: JSONObject;
     };
 
     payloads: {
-      name: string,
-      mappings: JSONObject,
-      settings: JSONObject,
+      name: string;
+      mappings: JSONObject;
+      settings: JSONObject;
     };
-  },
+  };
 
   engineCollections: {
     config: {
-      name: string,
-      mappings: JSONObject,
-      settings: JSONObject,
+      name: string;
+      mappings: JSONObject;
+      settings: JSONObject;
     };
-  },
+  };
 
   /**
    * Interval to write documents from the buffer
@@ -43,4 +43,4 @@ export type DeviceManagerConfiguration = {
    * @see https://docs.kuzzle.io/sdk/js/7/essentials/batch-processing/
    */
   batchInterval: number;
-}
+};

@@ -1,6 +1,6 @@
-import { JSONObject, KDocumentContent } from 'kuzzle';
+import { JSONObject, KDocumentContent } from "kuzzle";
 
-import { MeasureUnit } from './MeasureDefinition';
+import { MeasureUnit } from "./MeasureDefinition";
 
 /**
  * Represents a measurement sent with a payload.
@@ -10,7 +10,9 @@ import { MeasureUnit } from './MeasureDefinition';
  *
  * @todo cannot use type when iterating on measure of the pipe event
  */
-export interface Measurement<TMeasurementValues extends JSONObject = JSONObject> {
+export interface Measurement<
+  TMeasurementValues extends JSONObject = JSONObject
+> {
   /**
    * Type of the measure. (e.g. "temperature")
    * The type name is also the name of the sub-property to look at
@@ -39,7 +41,9 @@ export interface Measurement<TMeasurementValues extends JSONObject = JSONObject>
   deviceMeasureName?: string;
 }
 
-export interface AssetMeasurement<TMeasurementValues extends JSONObject = JSONObject> extends Measurement<TMeasurementValues> {
+export interface AssetMeasurement<
+  TMeasurementValues extends JSONObject = JSONObject
+> extends Measurement<TMeasurementValues> {
   /**
    * Name given by the `deviceLink` of the linked asset.
    * @todo asset.name
@@ -50,7 +54,10 @@ export interface AssetMeasurement<TMeasurementValues extends JSONObject = JSONOb
 /**
  * Represent the full content of a measure document.
  */
-export interface MeasureContent<TMeasurementValues extends JSONObject = JSONObject> extends KDocumentContent, AssetMeasurement<TMeasurementValues> {
+export interface MeasureContent<
+  TMeasurementValues extends JSONObject = JSONObject
+> extends KDocumentContent,
+    AssetMeasurement<TMeasurementValues> {
   /**
    * Measurement self-description.
    */
@@ -63,7 +70,7 @@ export interface MeasureContent<TMeasurementValues extends JSONObject = JSONObje
     /**
      * From what the measure has been pushed.
      */
-    type: 'user' | 'device';
+    type: "user" | "device";
 
     /**
      * Payload uuid that was used to create this measure.
@@ -86,5 +93,5 @@ export interface MeasureContent<TMeasurementValues extends JSONObject = JSONObje
      * Asset ID linked to the device when the measure was made
      */
     assetId?: string;
-  }
+  };
 }

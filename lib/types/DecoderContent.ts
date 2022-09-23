@@ -1,7 +1,7 @@
-import { DecoderMeasures } from '../core-classes/Decoder';
+import { DecoderMeasures } from "../core-classes/Decoder";
 
 export interface DecoderContent {
-  deviceModel: string,
+  deviceModel: string;
 
-  measures: DecoderMeasures,
+  measures: DecoderMeasures;
 }
