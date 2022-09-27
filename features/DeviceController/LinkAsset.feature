@@ -57,12 +57,12 @@ Feature: LinkAsset
       | payloads[0].lvlBattery    | 1                          |
     And I refresh the collection "engine-ayse":"assets"
     Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
-      | measures[0].type                | "temperature"                             |
-      | measures[0].values.temperature  | 1                                         |
-      | measures[0].deviceMeasureName   | "innerTemp"                               |
-      | measures[0].assetMeasureName    | "coreInnerTemp"                           |
-      | measures[0].origin.assetId      | "container-FRIDGE-unlinked_1"             |
-      | measures[0].origin.id           | "DummyMultiTemp-attached_ayse_unlinked_1" |
+      | measures[0].type               | "temperature"                             |
+      | measures[0].values.temperature | 1                                         |
+      | measures[0].deviceMeasureName  | "innerTemp"                               |
+      | measures[0].assetMeasureName   | "coreInnerTemp"                           |
+      | measures[0].asset._id          | "container-FRIDGE-unlinked_1"             |
+      | measures[0].origin.id          | "DummyMultiTemp-attached_ayse_unlinked_1" |
 
   Scenario: Link device to an asset and enriching the asset with before event
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
