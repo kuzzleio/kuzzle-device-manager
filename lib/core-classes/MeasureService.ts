@@ -213,7 +213,6 @@ export class MeasureService {
 
       const deviceMeasureName = measurement.deviceMeasureName || measurement.type;
 
-      console.log('asset : ' + JSON.stringify(asset));
 
       const assetMeasureName = asset === null
         ? undefined

@@ -1,6 +1,5 @@
 /* eslint-disable sort-keys */
 
-import { JSONObject } from 'kuzzle';
 import { metadataValue } from './metadataMappings';
 
 export const measuresMappings = {
