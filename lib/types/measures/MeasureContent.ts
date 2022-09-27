@@ -58,7 +58,7 @@ export interface MeasureContent<TMeasurementValues extends JSONObject = JSONObje
   unit: MeasureUnit;
 
   /**
-   * Asset ID linked to the device when the measure was made
+   * Asset linked to the device when the measure was made
    */
   asset?: {
     _id: string,

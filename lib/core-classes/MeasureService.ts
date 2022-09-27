@@ -358,7 +358,6 @@ export class MeasureService {
           deviceMeasureName: null,
           measuredAt: measurement.measuredAt || Date.now(),
           origin: {
-            //assetId, //TODO : remettre et corriger
             id: kuid,
             type: 'user',
           },

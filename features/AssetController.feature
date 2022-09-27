@@ -80,10 +80,11 @@ Feature: DeviceManager asset controller
       | size     | 3                          |
     Then I should receive a "measures" array of objects matching:
     # there is 6 measures with the 3 from fixtures
-      | _source.asset._id         | _source.origin.id                       |
-      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1" |
-      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1" |
-      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1" |
+      | _source.asset._id         | _source.origin.id                       | _source.asset._source.model |
+      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1" | "FRIDGE"                    |
+      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1" | "FRIDGE"                    |
+      | "container-FRIDGE-linked" | "DummyMultiTemp-attached_ayse_linked_1" | "FRIDGE"                    |
+
 
   Scenario: Register a measures in the asset, an other with different name and an older one and delete one
     When I successfully execute the action "device-manager/asset":"pushMeasures" with args:

@@ -44,9 +44,6 @@ export const measuresMappings = {
       dynamic: 'false',
       properties: {}
     },
-
-    // Asset linked to the device when the measure was made
-    //assetId: { type: 'keyword' },
     asset: {
       properties: {
         _id: { type: 'keyword' },
