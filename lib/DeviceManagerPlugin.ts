@@ -242,7 +242,8 @@ export class DeviceManagerPlugin extends Plugin {
       this,
       this.batchController,
       this.assetService,
-      this.measuresRegister);
+      this.measuresRegister,
+      this.assetCategoryService);
     this.payloadService = new PayloadService(
       this,
       this.batchController,

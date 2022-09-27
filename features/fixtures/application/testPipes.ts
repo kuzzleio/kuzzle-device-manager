@@ -16,18 +16,18 @@ function checkEventWithDocument (app: Backend, event: string) {
 
 export function registerTestPipes (app: Backend) {
   app.pipe.register(
-  'device-manager:measures:process:before',
-  async ({ asset, device, measures }: { asset: BaseAsset, device: Device, measures: MeasureContent[] }) => {
-    if (device._id !== 'DummyMultiTemp-enrich_me_master') {
+    'device-manager:measures:process:before',
+    async ({ asset, device, measures }: { asset: BaseAsset, device: Device, measures: MeasureContent[] }) => {
+      if (device._id !== 'DummyMultiTemp-enrich_me_master') {
+        return { asset, device, measures };
+      }
+
+      for (const measure of measures) {
+        measure.origin.id += `+${asset?._id}`;
+      }
+
       return { asset, device, measures };
-    }
-
-    for (const measure of measures) {
-      measure.origin.id += `+${asset?._id}`;
-    }
-
-    return { asset, device, measures };
-  });
+    });
 
   checkEventWithDocument(app, 'device-manager:device:provisioning:before');
   checkEventWithDocument(app, 'device-manager:device:provisioning:after');
