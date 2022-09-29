@@ -1,27 +1,31 @@
-import csv from 'csvtojson';
-import { CRUDController } from 'kuzzle-plugin-commons';
+import csv from "csvtojson";
+import { CRUDController } from "kuzzle-plugin-commons";
 import {
   BadRequestError,
   JSONObject,
   KuzzleRequest,
   PluginImplementationError,
-} from 'kuzzle';
-import _ from 'lodash';
+} from "kuzzle";
+import _ from "lodash";
 
-import { DeviceBulkContent } from '../core-classes';
-import { DeviceService } from '../core-classes';
-import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
-import { DeviceContent, DeviceManagerConfiguration, MeasureNamesLink } from '../types';
-import { AttachRequest, LinkRequest } from '../types/Request';
-import { Device } from '../models';
+import { DeviceBulkContent } from "../core-classes";
+import { DeviceService } from "../core-classes";
+import { DeviceManagerPlugin } from "../DeviceManagerPlugin";
+import {
+  DeviceContent,
+  DeviceManagerConfiguration,
+  MeasureNamesLink,
+} from "../types";
+import { AttachRequest, LinkRequest } from "../types/Request";
+import { Device } from "../models";
 
 export class DeviceController extends CRUDController {
   protected config: DeviceManagerConfiguration;
 
   private deviceService: DeviceService;
 
-  constructor (plugin: DeviceManagerPlugin, deviceService: DeviceService) {
-    super(plugin, 'devices');
+  constructor(plugin: DeviceManagerPlugin, deviceService: DeviceService) {
+    super(plugin, "devices");
 
     this.deviceService = deviceService;
 
@@ -30,63 +34,93 @@ export class DeviceController extends CRUDController {
       actions: {
         attachEngine: {
           handler: this.attachEngine.bind(this),
-          http: [{ path: 'device-manager/:engineId/devices/:_id/_attach', verb: 'put' }]
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/_attach",
+              verb: "put",
+            },
+          ],
         },
         detachEngine: {
           handler: this.detachEngine.bind(this),
-          http: [{ path: 'device-manager/devices/:_id/_detach', verb: 'delete' }]
+          http: [
+            { path: "device-manager/devices/:_id/_detach", verb: "delete" },
+          ],
         },
         importDevices: {
           handler: this.importDevices.bind(this),
-          http: [{ path: 'device-manager/devices/_import', verb: 'post' }]
+          http: [{ path: "device-manager/devices/_import", verb: "post" }],
         },
         linkAsset: {
           handler: this.linkAsset.bind(this),
-          http: [{ path: 'device-manager/:engineId/devices/:_id/_link/:assetId', verb: 'put' }]
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/_link/:assetId",
+              verb: "put",
+            },
+          ],
         },
         mAttachEngines: {
           handler: this.mAttachEngines.bind(this),
-          http: [{ path: 'device-manager/devices/_mAttach', verb: 'put' }]
+          http: [{ path: "device-manager/devices/_mAttach", verb: "put" }],
         },
         mDetachEngines: {
           handler: this.mDetachEngines.bind(this),
-          http: [{ path: 'device-manager/devices/_mDetach', verb: 'put' }]
+          http: [{ path: "device-manager/devices/_mDetach", verb: "put" }],
         },
         mLinkAssets: {
           handler: this.mLinkAssets.bind(this),
-          http: [{ path: 'device-manager/:engineId/devices/_mLink', verb: 'put' }]
+          http: [
+            { path: "device-manager/:engineId/devices/_mLink", verb: "put" },
+          ],
         },
         mUnlinkAssets: {
           handler: this.mUnlinkAssets.bind(this),
-          http: [{ path: 'device-manager/devices/_mUnlink', verb: 'put' }]
+          http: [{ path: "device-manager/devices/_mUnlink", verb: "put" }],
         },
         prunePayloads: {
           handler: this.prunePayloads.bind(this),
-          http: [{ path: 'device-manager/devices/_prunePayloads', verb: 'delete' }]
+          http: [
+            { path: "device-manager/devices/_prunePayloads", verb: "delete" },
+          ],
         },
         unlinkAsset: {
           handler: this.unlinkAsset.bind(this),
-          http: [{ path: 'device-manager/:engineId/devices/:_id/_unlink', verb: 'delete' }]
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/_unlink",
+              verb: "delete",
+            },
+          ],
         },
 
         // CRUD Controller
         create: {
           handler: this.create.bind(this),
-          http: [{ path: 'device-manager/:engineId/devices', verb: 'post' }]
+          http: [{ path: "device-manager/:engineId/devices", verb: "post" }],
         },
         update: {
           handler: this.update.bind(this),
-          http: [{ path: 'device-manager/:engineId/device/:deviceId', verb: 'post' }]
+          http: [
+            { path: "device-manager/:engineId/device/:deviceId", verb: "post" },
+          ],
         },
         search: {
           handler: this.search.bind(this),
-          http: [{ path: 'device-manager/:engineId/devices/_search', verb: 'post' }]
+          http: [
+            { path: "device-manager/:engineId/devices/_search", verb: "post" },
+          ],
         },
         delete: {
           handler: this.delete.bind(this),
-          http: [{ path: 'device-manager/:engineId/device/:deviceId', verb: 'delete' }]
+          http: [
+            {
+              path: "device-manager/:engineId/device/:deviceId",
+              verb: "delete",
+            },
+          ],
         },
-      }
+      },
     };
     /* eslint-enable sort-keys */
   }
@@ -94,22 +128,26 @@ export class DeviceController extends CRUDController {
   /**
    * Create and provision a new device
    */
-  async create (request: KuzzleRequest) {
-    const engineId = request.getString('engineId');
-    const model = request.getBodyString('model');
-    const reference = request.getBodyString('reference');
-    const metadata = request.getBodyObject('metadata', {});
+  async create(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
+    const model = request.getBodyString("model");
+    const reference = request.getBodyString("reference");
+    const metadata = request.getBodyObject("metadata", {});
     const refresh = request.getRefresh();
 
-    const assetId = request.getBodyString('assetId', '');
-    const measureNamesLinks = request.getBodyArray('measureNamesLinks', []);
+    const assetId = request.getBodyString("assetId", "");
+    const measureNamesLinks = request.getBodyArray("measureNamesLinks", []);
 
-    if (assetId.length && ! this.validateMeasureNamesLinks(measureNamesLinks)) {
-      throw new PluginImplementationError('The linkRequest provided is not valid');
+    if (assetId.length && !this.validateMeasureNamesLinks(measureNamesLinks)) {
+      throw new PluginImplementationError(
+        "The linkRequest provided is not valid"
+      );
     }
 
-    if (! assetId.length && measureNamesLinks.length) {
-      throw new PluginImplementationError('A link request is given without any assetId');
+    if (!assetId.length && measureNamesLinks.length) {
+      throw new PluginImplementationError(
+        "A link request is given without any assetId"
+      );
     }
 
     const deviceContent: DeviceContent = {
@@ -121,10 +159,13 @@ export class DeviceController extends CRUDController {
 
     const linkRequest: LinkRequest = assetId.length
       ? {
-        assetId,
-        deviceLink: { deviceId: Device.id(model, reference), measureNamesLinks },
-        engineId
-      }
+          assetId,
+          deviceLink: {
+            deviceId: Device.id(model, reference),
+            measureNamesLinks,
+          },
+          engineId,
+        }
       : null;
 
     const device = await this.deviceService.create(deviceContent, {
@@ -136,20 +177,20 @@ export class DeviceController extends CRUDController {
     return device;
   }
 
-  async update (request: KuzzleRequest) {
-    request.input.args.index = request.getString('engineId');
+  async update(request: KuzzleRequest) {
+    request.input.args.index = request.getString("engineId");
 
     return super.update(request);
   }
 
-  async search (request: KuzzleRequest) {
-    request.input.args.index = request.getString('engineId');
+  async search(request: KuzzleRequest) {
+    request.input.args.index = request.getString("engineId");
 
     return super.search(request);
   }
 
-  async delete (request: KuzzleRequest) {
-    request.input.args.index = request.getString('engineId');
+  async delete(request: KuzzleRequest) {
+    request.input.args.index = request.getString("engineId");
 
     return super.delete(request);
   }
@@ -157,11 +198,11 @@ export class DeviceController extends CRUDController {
   /**
    * Attach a device to a tenant
    */
-  async attachEngine (request: KuzzleRequest) {
-    const engineId = request.getString('engineId');
+  async attachEngine(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
     const deviceId = request.getId();
     const refresh = request.getRefresh();
-    const strict = request.getBoolean('strict');
+    const strict = request.getBoolean("strict");
 
     const attacheRequest: AttachRequest = {
       deviceId,
@@ -174,10 +215,10 @@ export class DeviceController extends CRUDController {
   /**
    * Attach multiple devices to multiple tenants
    */
-  async mAttachEngines (request: KuzzleRequest) {
+  async mAttachEngines(request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
     const refresh = request.getRefresh();
-    const strict = request.getBoolean('strict');
+    const strict = request.getBoolean("strict");
 
     const promises = [];
 
@@ -188,7 +229,8 @@ export class DeviceController extends CRUDController {
       };
 
       promises.push(
-        this.deviceService.attachEngine(attacheRequest, { refresh, strict }));
+        this.deviceService.attachEngine(attacheRequest, { refresh, strict })
+      );
     }
 
     return await Promise.all(promises);
@@ -197,10 +239,10 @@ export class DeviceController extends CRUDController {
   /**
    * Detach a device from it's tenant
    */
-  async detachEngine (request: KuzzleRequest) {
+  async detachEngine(request: KuzzleRequest) {
     const deviceId = request.getId();
     const refresh = request.getRefresh();
-    const strict = request.getBoolean('strict');
+    const strict = request.getBoolean("strict");
 
     await this.deviceService.detachEngine(deviceId, { refresh, strict });
   }
@@ -208,14 +250,15 @@ export class DeviceController extends CRUDController {
   /**
    * Detach multiple devices from multiple tenants
    */
-  async mDetachEngines (request: KuzzleRequest) {
+  async mDetachEngines(request: KuzzleRequest) {
     const { bulkData } = await this.mParseRequest(request);
 
     const promises = [];
 
     for (const { deviceId } of bulkData) {
       promises.push(
-        this.deviceService.detachEngine(deviceId, request.input.args));
+        this.deviceService.detachEngine(deviceId, request.input.args)
+      );
     }
 
     return await Promise.all(promises);
@@ -225,39 +268,44 @@ export class DeviceController extends CRUDController {
    * Link a device to an asset.
    * @todo there is no restriction according to tenant index?
    */
-  async linkAsset (request: KuzzleRequest) {
+  async linkAsset(request: KuzzleRequest) {
     const deviceId = request.getId();
-    const engineId = request.getString('engineId');
-    const assetId = request.getString('assetId');
+    const engineId = request.getString("engineId");
+    const assetId = request.getString("assetId");
     const refresh = request.getRefresh();
-    const jsonMeasureNamesLinks = request.getBodyArray('measureNamesLinks', []);
+    const jsonMeasureNamesLinks = request.getBodyArray("measureNamesLinks", []);
 
-    if (! this.validateMeasureNamesLinks(jsonMeasureNamesLinks)) {
-      throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
+    if (!this.validateMeasureNamesLinks(jsonMeasureNamesLinks)) {
+      throw new PluginImplementationError(
+        "The linkRequest provided is incorrectly formed"
+      );
     }
 
     const measureNamesLinks = jsonMeasureNamesLinks as MeasureNamesLink[];
 
-    return this.deviceService.linkAsset({
-      assetId,
-      deviceLink: { deviceId, measureNamesLinks },
-      engineId,
-
-    }, { refresh });
+    return this.deviceService.linkAsset(
+      {
+        assetId,
+        deviceLink: { deviceId, measureNamesLinks },
+        engineId,
+      },
+      { refresh }
+    );
   }
 
   /**
    * Link multiple devices to multiple assets.
    */
-  async mLinkAssets (request: KuzzleRequest) {
-    const jsonLinkRequests = request.getBodyArray('linkRequests');
+  async mLinkAssets(request: KuzzleRequest) {
+    const jsonLinkRequests = request.getBodyArray("linkRequests");
     const refresh = request.getRefresh();
-    const engineId = request.getString('engineId');
-
+    const engineId = request.getString("engineId");
 
     for (const jsonLinkRequest of jsonLinkRequests) {
-      if (! this.validateLinkRequest(jsonLinkRequest)) {
-        throw new PluginImplementationError('The linkRequest provided is incorrectly formed');
+      if (!this.validateLinkRequest(jsonLinkRequest)) {
+        throw new PluginImplementationError(
+          "The linkRequest provided is incorrectly formed"
+        );
       }
       jsonLinkRequest.engineId = engineId;
     }
@@ -269,13 +317,14 @@ export class DeviceController extends CRUDController {
     for (const linkRequest of linkRequests) {
       // Cannot be done in parallel because we need to keep previous measures
       try {
-        linkRequest.deviceLink.measureNamesLinks
-          = linkRequest.deviceLink.measureNamesLinks ?? [];
+        linkRequest.deviceLink.measureNamesLinks =
+          linkRequest.deviceLink.measureNamesLinks ?? [];
 
-        const result = await this.deviceService.linkAsset(linkRequest, { refresh });
+        const result = await this.deviceService.linkAsset(linkRequest, {
+          refresh,
+        });
         valids.push(result);
-      }
-      catch (error) {
+      } catch (error) {
         invalids.push({ error, linkRequest });
       }
     }
@@ -286,10 +335,10 @@ export class DeviceController extends CRUDController {
   /**
    * Unlink a device from an asset.
    */
-  async unlinkAsset (request: KuzzleRequest) {
+  async unlinkAsset(request: KuzzleRequest) {
     const deviceId = request.getId();
     const refresh = request.getRefresh();
-    const strict = request.getBoolean('strict');
+    const strict = request.getBoolean("strict");
 
     return this.deviceService.unlinkAsset(deviceId, { refresh, strict });
   }
@@ -297,10 +346,10 @@ export class DeviceController extends CRUDController {
   /**
    * Unlink multiple device from multiple assets.
    */
-  async mUnlinkAssets (request: KuzzleRequest) {
-    const deviceIds = request.getBodyArray('deviceIds');
+  async mUnlinkAssets(request: KuzzleRequest) {
+    const deviceIds = request.getBodyArray("deviceIds");
     const refresh = request.getRefresh();
-    const strict = request.getBoolean('strict');
+    const strict = request.getBoolean("strict");
 
     const valids = [];
     const invalids = [];
@@ -308,10 +357,12 @@ export class DeviceController extends CRUDController {
     for (const deviceId of deviceIds) {
       // Cannot be done in parallel because we need to keep previous measures
       try {
-        const result = await this.deviceService.unlinkAsset(deviceId, { refresh, strict });
+        const result = await this.deviceService.unlinkAsset(deviceId, {
+          refresh,
+          strict,
+        });
         valids.push(result);
-      }
-      catch (error) {
+      } catch (error) {
         invalids.push({ error, linkRequest: deviceId });
       }
     }
@@ -322,17 +373,17 @@ export class DeviceController extends CRUDController {
   /**
    * Clean payload collection for a time period
    */
-  async prunePayloads (request: KuzzleRequest) {
+  async prunePayloads(request: KuzzleRequest) {
     const body = request.getBody();
 
     const date = new Date().setDate(new Date().getDate() - body.days || 7);
     const filter = [];
     filter.push({
       range: {
-        '_kuzzle_info.createdAt': {
-          lt: date
-        }
-      }
+        "_kuzzle_info.createdAt": {
+          lt: date,
+        },
+      },
     });
 
     if (body.deviceModel) {
@@ -345,78 +396,89 @@ export class DeviceController extends CRUDController {
 
     return this.as(request.context.user).bulk.deleteByQuery(
       this.config.adminIndex,
-      'payloads',
-      { query: { bool: { filter } } });
+      "payloads",
+      { query: { bool: { filter } } }
+    );
   }
 
-  async importDevices (request: KuzzleRequest) {
-    const content = request.getBodyString('csv');
+  async importDevices(request: KuzzleRequest) {
+    const content = request.getBodyString("csv");
     const refresh = request.getRefresh();
 
-    const devices = await csv({ delimiter: 'auto' }).fromString(content);
+    const devices = await csv({ delimiter: "auto" }).fromString(content);
 
-    return this.deviceService.importDevices(
-      devices,
-      {
-        refresh,
-        strict: true
-      });
+    return this.deviceService.importDevices(devices, {
+      refresh,
+      strict: true,
+    });
   }
 
-  private async mParseRequest (request: KuzzleRequest) {
+  private async mParseRequest(request: KuzzleRequest) {
     const body = request.input.body;
-    const engineId = request.getString('engineId');
+    const engineId = request.getString("engineId");
 
     let bulkData: DeviceBulkContent[];
 
     if (body.csv) {
-      const lines = await csv({ delimiter: 'auto' }).fromString(body.csv);
+      const lines = await csv({ delimiter: "auto" }).fromString(body.csv);
 
-      bulkData = lines.map(({ deviceId, assetId }) => ({ //TODO : verify after remi merge!
+      bulkData = lines.map(({ deviceId, assetId }) => ({
+        //TODO : verify after remi merge!
         assetId,
         deviceId,
-        engineId
+        engineId,
       }));
-    }
-    else if (body.records) {
+    } else if (body.records) {
       bulkData = body.records; //TODO : verify after remi merge!
-    }
-    else if (body.deviceIds) {
-      bulkData = body.deviceIds.map((deviceId: string) => ({ deviceId, engineId }));
-    }
-    else {
-      throw new BadRequestError('Malformed request missing property csv, records, deviceIds');
+    } else if (body.deviceIds) {
+      bulkData = body.deviceIds.map((deviceId: string) => ({
+        deviceId,
+        engineId,
+      }));
+    } else {
+      throw new BadRequestError(
+        "Malformed request missing property csv, records, deviceIds"
+      );
     }
 
-    const strict = request.getBoolean('strict');
+    const strict = request.getBoolean("strict");
     return { bulkData, strict };
   }
 
-  private validateLinkRequest (toValidate: JSONObject) {
-    if (! (_.has(toValidate, 'assetId')
-      && _.has(toValidate, 'deviceLink')
-      && _.has(toValidate.deviceLink, 'deviceId')
-    )) {
+  private validateLinkRequest(toValidate: JSONObject) {
+    if (
+      !(
+        _.has(toValidate, "assetId") &&
+        _.has(toValidate, "deviceLink") &&
+        _.has(toValidate.deviceLink, "deviceId")
+      )
+    ) {
       return false;
     }
 
-    if (! _.has(toValidate.deviceLink, 'measureNamesLink')) {
+    if (!_.has(toValidate.deviceLink, "measureNamesLink")) {
       return true;
     }
 
-    return this.validateMeasureNamesLinks(toValidate.deviceLink.measureNamesLinks);
+    return this.validateMeasureNamesLinks(
+      toValidate.deviceLink.measureNamesLinks
+    );
   }
 
-  private validateMeasureNamesLinks (toValidate: JSONObject) {
-    if (toValidate && ! Array.isArray(toValidate)) {
+  private validateMeasureNamesLinks(toValidate: JSONObject) {
+    if (toValidate && !Array.isArray(toValidate)) {
       return false;
     }
 
     const measureNamesLinks = toValidate as MeasureNamesLink[];
 
     for (const measureNamesLink of measureNamesLinks) {
-      if (! (_.has(measureNamesLink, 'assetMeasureName')
-        && _.has(measureNamesLink, 'deviceMeasureName'))) {
+      if (
+        !(
+          _.has(measureNamesLink, "assetMeasureName") &&
+          _.has(measureNamesLink, "deviceMeasureName")
+        )
+      ) {
         return false;
       }
     }

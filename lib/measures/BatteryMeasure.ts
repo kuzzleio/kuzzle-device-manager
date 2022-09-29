@@ -1,4 +1,4 @@
-import { Measurement, MeasureDefinition } from '../types';
+import { Measurement, MeasureDefinition } from "../types";
 
 /* eslint-disable sort-keys */
 
@@ -7,10 +7,10 @@ export type BatteryMeasurement = Measurement<{
 }>;
 
 export const batteryMeasure: MeasureDefinition = {
-  valuesMappings: { battery: { type: 'integer' } },
+  valuesMappings: { battery: { type: "integer" } },
   unit: {
-    name: 'Volt',
-    sign: 'v',
-    type: 'number',
+    name: "Volt",
+    sign: "v",
+    type: "number",
   },
 };

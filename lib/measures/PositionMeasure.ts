@@ -1,4 +1,4 @@
-import { Measurement, MeasureDefinition } from '../types';
+import { Measurement, MeasureDefinition } from "../types";
 
 /* eslint-disable sort-keys */
 
@@ -13,13 +13,13 @@ export type PositionMeasurement = Measurement<{
 
 export const positionMeasure: MeasureDefinition = {
   valuesMappings: {
-    accuracy: { type: 'float' },
-    altitude: { type: 'float' },
-    position: { type: 'geo_point' },
+    accuracy: { type: "float" },
+    altitude: { type: "float" },
+    position: { type: "geo_point" },
   },
   unit: {
-    name: 'GPS',
+    name: "GPS",
     sign: null,
-    type: 'geo_point',
+    type: "geo_point",
   },
 };

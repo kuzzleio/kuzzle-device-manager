@@ -10,13 +10,13 @@ export type Acceleration3dMeasurement = Measurement<{
 
 export const acceleration3dMeasure: MeasureDefinition = {
   valuesMappings: {
-    x: { type: 'float' },
-    y: { type: 'float' },
-    z: { type: 'float' },
+    x: { type: "float" },
+    y: { type: "float" },
+    z: { type: "float" },
   },
   unit: {
-    name: 'Acceleration',
-    sign: 'm/s^2',
-    type: 'number',
+    name: "Acceleration",
+    sign: "m/s^2",
+    type: "number",
   },
 };

@@ -1,7 +1,7 @@
-export * from './DummyMultiTempDecoder';
+export * from "./DummyMultiTempDecoder";
 
-export * from './DummyTempDecoder';
+export * from "./DummyTempDecoder";
 
-export * from './DummyTempPositionDecoder';
+export * from "./DummyTempPositionDecoder";
 
-export * from './DummyAccelerometer3d';
+export * from "./DummyAccelerometer3d";

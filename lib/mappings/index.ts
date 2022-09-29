@@ -1,7 +1,7 @@
-export * from './assetsMappings';
+export * from "./assetsMappings";
 
-export * from './deviceMappings';
+export * from "./deviceMappings";
 
-export * from './measuresMappings';
+export * from "./measuresMappings";
 
-export * from './payloadsMappings';
+export * from "./payloadsMappings";
