@@ -16,11 +16,22 @@ Then('The document {string} content match:', async function (documentId, dataTab
   should(document._source).matchObject(expectedContent);
 });
 
-Then('The document {string}:{string}:{string} content match:', async function (index, collection, documentId, dataTable) {
+Then('The document {string}:{string}:{string} content match:', async function (index, collection, _id, dataTable) {
   const expectedContent = this.parseObject(dataTable);
 
-  const document = await this.sdk.document.get(index, collection, documentId);
-
+  //const document = await this.sdk.document.get(index, collection, _id);
+  const response = await this.sdk.query({
+    'controller': 'document',
+    'action': 'get',
+    'body': {},
+    index,
+    collection,
+    _id,
+    'options': {
+      'raw': true
+    }
+  });
+  const document = response.result;
   should(document._source).matchObject(expectedContent);
 });
 
@@ -137,7 +148,7 @@ Then(/The document "(.*?)":"(.*?)":"(.*?)"( does not)? exist/, async function (i
     throw new Error(`Document ${id} exists, but it shouldn't`);
   }
 
-  if (!not && !exists) {
+  if (! not && ! exists) {
     throw new Error(`Expected document ${id} to exist`);
   }
 });
@@ -190,7 +201,7 @@ Then('The last document from {string}:{string} content match:', async function (
     {
       sort: { '_kuzzle_info.createdAt': 'desc' }
     },
-     { size: 1 });
+    { size: 1 });
 
   if (result.hits.length === 0) {
     throw new Error('No document found');

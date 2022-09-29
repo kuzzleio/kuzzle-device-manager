@@ -7,7 +7,7 @@ import {
   Mutex,
   KuzzleRequest,
   BadRequestError,
-  BatchController
+  BatchController, Request
 } from 'kuzzle';
 import { ConfigManager, EngineController } from 'kuzzle-plugin-commons';
 
@@ -195,6 +195,9 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.context = context;
 
+    this.assetCategoryService = new AssetCategoryService(this);
+
+
     /* eslint-disable sort-keys */
     this.pipes = {
       'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
@@ -202,6 +205,22 @@ export class DeviceManagerPlugin extends Plugin {
       'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
       'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
       'generic:document:beforeWrite': [],
+      'core:realtime:notification:dispatch:before': async (myObject) => {
+        console.log('core:realtime:notification:dispatch:before : ' + JSON.stringify(myObject));
+        if (myObject.notification.collection === 'assets' ) {
+          myObject.notification.result._source.metadata = this.assetCategoryService.formatMetadataForGet(myObject.notification.result._source.metadata);
+        }
+        return myObject;
+      },
+      'generic:document:afterGet': async (documents, request : Request) => {
+        console.log('generic:document:afterGet :  ' + JSON.stringify(documents) + ' / ' + JSON.stringify(request));
+        if (request.input.args.collection === 'assets' && ! request.input.args.options?.raw && documents._source?.metadata ) {
+          for (const document of documents) {
+            document._source.metadata = this.assetCategoryService.formatMetadataForGet(document._source.metadata);
+          }
+        }
+        return documents;
+      }
     };
     /* eslint-enable sort-keys */
 
@@ -228,7 +247,6 @@ export class DeviceManagerPlugin extends Plugin {
       settings: this.config.engineCollections.config.settings,
     });
 
-    this.assetCategoryService = new AssetCategoryService(this);
     this.batchController = new BatchController(this.sdk as any, {
       interval: this.config.batchInterval
     });
