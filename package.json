@@ -32,11 +32,11 @@
   },
   "devDependencies": {
     "@types/node": "^18.7.14",
-    "eslint-plugin-kuzzle": "^0.0.6",
     "axios": "^0.27.2",
     "cucumber": "^6.0.5",
     "ergol": "^1.0.2",
-    "kuzzle": "^2.19.3",
+    "eslint-plugin-kuzzle": "^0.0.6",
+    "kuzzle": "^2.19.5",
     "kuzzle-sdk": "^7.10.0",
     "should": "^13.2.3",
     "ts-node": "^10.9.1",
