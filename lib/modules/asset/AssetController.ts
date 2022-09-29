@@ -1,17 +1,17 @@
 import csv from "csvtojson";
 import { BadRequestError, KuzzleRequest, Plugin } from "kuzzle";
 
-import { MeasureService } from '../measure';
-import { AssetCategoryService, AssetCategoryContent } from '../asset-category';
-import { DeviceService } from '../device';
+import { MeasureService } from "../measure";
+import { AssetCategoryService, AssetCategoryContent } from "../asset-category";
+import { DeviceService } from "../device";
 import { RelationalController } from "../metadata";
 
-import { BaseAsset } from './BaseAsset';
-import { AssetService } from './AssetService';
-import { BaseAssetContent } from './types/BaseAssetContent';
+import { BaseAsset } from "./BaseAsset";
+import { AssetService } from "./AssetService";
+import { BaseAssetContent } from "./types/BaseAssetContent";
 
 export class AssetController extends RelationalController {
-  private assetService: AssetService
+  private assetService: AssetService;
   private deviceService: DeviceService;
   private assetCategoryService: AssetCategoryService;
   private measureService: MeasureService;

@@ -1,6 +1,6 @@
 import { JSONObject, KDocumentContent } from "kuzzle";
 
-import { FormattedMetadata } from './../../asset-category';
+import { FormattedMetadata } from "./../../asset-category";
 
 import { MeasureUnit } from "./MeasureDefinition";
 

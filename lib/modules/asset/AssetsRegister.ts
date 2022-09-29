@@ -1,9 +1,9 @@
 import _ from "lodash";
 import { JSONObject, PluginImplementationError } from "kuzzle";
 
-import { MeasuresRegister } from '../measure';
+import { MeasuresRegister } from "../measure";
 
-import { assetsMappings } from './collections/assetsMappings';
+import { assetsMappings } from "./collections/assetsMappings";
 
 type AssetDefinition = {
   /** Asset type */

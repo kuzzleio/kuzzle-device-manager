@@ -9,15 +9,20 @@ import {
 import _ from "lodash";
 import { v4 as uuidv4 } from "uuid";
 
-import { AttachRequest, LinkRequest, BaseAsset, AssetService } from './../asset';
-import { MeasureContent } from './../measure';
-import { DeviceManagerConfiguration } from './../engine';
+import {
+  AttachRequest,
+  LinkRequest,
+  BaseAsset,
+  AssetService,
+} from "./../asset";
+import { MeasureContent } from "./../measure";
+import { DeviceManagerConfiguration } from "./../engine";
 import { InternalCollection } from "../../InternalCollection";
 import { mRequest, mResponse, writeToDatabase } from "../../utils";
 import { DecodersRegister } from "../measure";
 
-import { Device } from './Device';
-import { DeviceContent } from './types/DeviceContent';
+import { Device } from "./Device";
+import { DeviceContent } from "./types/DeviceContent";
 
 export type DeviceBulkContent = {
   engineId: string;

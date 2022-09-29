@@ -1,2 +1,2 @@
-export * from './types/DeviceManagerConfiguration';
-export * from './DeviceManagerEngine';
+export * from "./types/DeviceManagerConfiguration";
+export * from "./DeviceManagerEngine";

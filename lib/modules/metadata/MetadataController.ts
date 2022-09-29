@@ -1,6 +1,6 @@
 import { JSONObject, KuzzleRequest, Plugin } from "kuzzle";
 
-import { AssetCategoryService } from './../asset-category';
+import { AssetCategoryService } from "./../asset-category";
 
 import { RelationalController } from "./RelationalController";
 import {

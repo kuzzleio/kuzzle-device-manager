@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 
-import { metadataValue } from './../../metadata';
+import { metadataValue } from "./../../metadata";
 
 export const measuresMappings = {
   dynamic: "strict",

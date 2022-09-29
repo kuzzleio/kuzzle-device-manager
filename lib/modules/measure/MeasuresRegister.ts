@@ -1,8 +1,8 @@
 import { JSONObject, PluginImplementationError } from "kuzzle";
 import _ from "lodash";
 
-import { measuresMappings } from './collections/measuresMappings';
-import { MeasureDefinition } from './types/MeasureDefinition';
+import { measuresMappings } from "./collections/measuresMappings";
+import { MeasureDefinition } from "./types/MeasureDefinition";
 
 export class MeasuresRegister {
   private mappings: JSONObject;

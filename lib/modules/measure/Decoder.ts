@@ -6,8 +6,8 @@ import {
 } from "kuzzle";
 import _ from "lodash";
 
-import { DecodedPayload } from "../types/DecodedPayload";
-import { DecoderContent } from "../types";
+import { DecodedPayload } from "./DecodedPayload";
+import { DecoderContent } from "./types/DecoderContent";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 

@@ -1,9 +1,9 @@
 import { ControllerDefinition, PluginContext } from "kuzzle";
 
-import { DeviceManagerPlugin } from './../../DeviceManagerPlugin';
-import { DeviceManagerConfiguration } from './../engine';
+import { DeviceManagerPlugin } from "./../../DeviceManagerPlugin";
+import { DeviceManagerConfiguration } from "./../engine";
 
-import { DecodersRegister } from './DecodersRegister';
+import { DecodersRegister } from "./DecodersRegister";
 
 export class DecoderController {
   private context: PluginContext;

@@ -8,14 +8,13 @@ import {
 } from "kuzzle";
 import _ from "lodash";
 
-import { MeasureNamesLink, LinkRequest, AttachRequest } from './../asset';
-import { DeviceManagerPlugin } from './../../DeviceManagerPlugin';
-import { DeviceManagerConfiguration } from './../engine';
+import { MeasureNamesLink, LinkRequest, AttachRequest } from "./../asset";
+import { DeviceManagerPlugin } from "./../../DeviceManagerPlugin";
+import { DeviceManagerConfiguration } from "./../engine";
 
-import { DeviceService, DeviceBulkContent } from './DeviceService';
-import { Device } from './Device';
-import { DeviceContent } from './types/DeviceContent';
-
+import { DeviceService, DeviceBulkContent } from "./DeviceService";
+import { Device } from "./Device";
+import { DeviceContent } from "./types/DeviceContent";
 
 export class DeviceController extends CRUDController {
   protected config: DeviceManagerConfiguration;

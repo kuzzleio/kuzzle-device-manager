@@ -8,15 +8,15 @@ import {
   Plugin,
   PluginContext,
 } from "kuzzle";
-import { writeToDatabase } from 'lib/utils';
 
-import { InternalCollection } from '../../InternalCollection';
-import { mResponse, mRequest } from '../../utils/writeMany';
-import { MeasureContent } from '../measure/';
-import { DeviceManagerConfiguration } from '../engine';
+import { writeToDatabase } from "../../utils";
+import { InternalCollection } from "../../InternalCollection";
+import { mResponse, mRequest } from "../../utils/writeMany";
+import { MeasureContent } from "../measure/";
+import { DeviceManagerConfiguration } from "../engine";
 
-import { BaseAsset } from './BaseAsset';
-import { BaseAssetContent } from './types/BaseAssetContent';
+import { BaseAsset } from "./BaseAsset";
+import { BaseAssetContent } from "./types/BaseAssetContent";
 
 export class AssetService {
   private config: DeviceManagerConfiguration;

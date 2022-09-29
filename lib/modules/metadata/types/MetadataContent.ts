@@ -1,6 +1,6 @@
 import { JSONObject, KDocumentContent } from "kuzzle";
 
-import { FormattedMetadata } from './../../asset-category/types/AssetCategoryContent';
+import { FormattedMetadata } from "./../../asset-category/types/AssetCategoryContent";
 
 /* eslint-disable no-shadow, no-unused-vars */
 export enum metadataType {

@@ -1,9 +1,14 @@
 import { KuzzleRequest, Plugin } from "kuzzle";
 
-import { RelationalController, MetadataContent } from '../metadata';
+import { RelationalController, MetadataContent } from "../metadata";
 
-import { AssetCategoryContent, FormattedMetadata, FormattedValue, ProcessedAssetCategoryContent } from './types/AssetCategoryContent';
-import { AssetCategoryService } from './AssetCategoryService';
+import {
+  AssetCategoryContent,
+  FormattedMetadata,
+  FormattedValue,
+  ProcessedAssetCategoryContent,
+} from "./types/AssetCategoryContent";
+import { AssetCategoryService } from "./AssetCategoryService";
 
 export class AssetCategoryController extends RelationalController {
   private assetCategoryService: AssetCategoryService;

@@ -1,11 +1,15 @@
 import { JSONObject, KDocument, Plugin, PluginContext } from "kuzzle";
 import _ from "lodash";
 
-import { BaseAssetContent } from './../asset';
-import { MetadataContent } from './../metadata';
-import { DeviceManagerConfiguration } from './../engine';
+import { BaseAssetContent } from "./../asset";
+import { MetadataContent } from "./../metadata";
+import { DeviceManagerConfiguration } from "./../engine";
 
-import { AssetCategoryContent, FormattedMetadata, FormattedValue } from './types/AssetCategoryContent';
+import {
+  AssetCategoryContent,
+  FormattedMetadata,
+  FormattedValue,
+} from "./types/AssetCategoryContent";
 
 export class AssetCategoryService {
   private config: DeviceManagerConfiguration;

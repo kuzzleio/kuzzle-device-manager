@@ -1,6 +1,6 @@
 import { KDocumentContent } from "kuzzle";
 
-import { MeasureContent } from './../../measure';
+import { MeasureContent } from "./../../measure";
 import { FormattedMetadata } from "../../asset-category";
 
 /**

@@ -12,20 +12,22 @@ import {
 import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 
 import { TreeNodeController } from "../features/fakeclasses/TreeNodeController";
-import { AssetCategoryController, AssetCategoryService } from './modules/asset-category';
-import { MetadataController } from './modules/metadata';
+import {
+  AssetCategoryController,
+  AssetCategoryService,
+} from "./modules/asset-category";
+import { MetadataController } from "./modules/metadata";
 import {
   devicesMappings,
   DevicesRegister,
   DeviceService,
   DeviceController,
-} from './modules/device';
+} from "./modules/device";
+import { AssetsRegister, AssetService, AssetController } from "./modules/asset";
 import {
-  AssetsRegister,
-  AssetService,
-  AssetController,
-} from './modules/asset';
-import { DeviceManagerEngine, DeviceManagerConfiguration } from './modules/engine';
+  DeviceManagerEngine,
+  DeviceManagerConfiguration,
+} from "./modules/engine";
 import {
   payloadsMappings,
   MeasuresRegister,

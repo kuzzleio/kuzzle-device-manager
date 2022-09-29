@@ -6,8 +6,10 @@ import {
   PluginContext,
 } from "kuzzle";
 import { v4 as uuidv4 } from "uuid";
+
 import { DeviceManagerPlugin } from "../../DeviceManagerPlugin";
-import { DeviceManagerConfiguration } from "../../types";
+import { DeviceManagerConfiguration } from "../engine";
+
 import { Decoder } from "./Decoder";
 import { MeasureService } from "./MeasureService";
 

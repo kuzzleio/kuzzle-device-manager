@@ -1,7 +1,7 @@
 import { PluginImplementationError, JSONObject } from "kuzzle";
 
-import { Decoder } from "../core-classes/Decoder";
-import { Measurement } from "./measures/MeasureContent";
+import { Decoder } from "./Decoder";
+import { Measurement } from "./types/MeasureContent";
 
 /**
  * Class containing the decoded measures.

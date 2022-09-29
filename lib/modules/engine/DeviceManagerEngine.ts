@@ -1,14 +1,14 @@
 import { JSONObject, Plugin } from "kuzzle";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 
-import { assetCategoryMappings } from './../asset-category';
-import { metadataMappings } from './../metadata';
-import { MeasuresRegister } from './../measure';
-import { DevicesRegister } from './../device';
-import { AssetsRegister } from './../asset';
-import { DeviceManagerPlugin } from './../../DeviceManagerPlugin';
+import { assetCategoryMappings } from "./../asset-category";
+import { metadataMappings } from "./../metadata";
+import { MeasuresRegister } from "./../measure";
+import { DevicesRegister } from "./../device";
+import { AssetsRegister } from "./../asset";
+import { DeviceManagerPlugin } from "./../../DeviceManagerPlugin";
 
-import { DeviceManagerConfiguration } from './types/DeviceManagerConfiguration';
+import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfiguration;

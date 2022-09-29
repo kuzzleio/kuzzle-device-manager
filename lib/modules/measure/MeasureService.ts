@@ -10,13 +10,17 @@ import _ from "lodash";
 
 import { InternalCollection } from "../../InternalCollection";
 import { DeviceManagerPlugin } from "../../DeviceManagerPlugin";
-import { Device, DeviceContent } from './../device';
-import { BaseAsset, BaseAssetContent, AssetService } from './../asset';
-import { AssetCategoryService } from './../asset-category';
-import { DeviceManagerConfiguration } from './../engine';
+import { Device, DeviceContent } from "./../device";
+import { BaseAsset, BaseAssetContent, AssetService } from "./../asset";
+import { AssetCategoryService } from "./../asset-category";
+import { DeviceManagerConfiguration } from "./../engine";
 
-import { MeasureContent, AssetMeasurement, Measurement } from './types/MeasureContent';
-import { DecodedPayload } from './DecodedPayload';
+import {
+  MeasureContent,
+  AssetMeasurement,
+  Measurement,
+} from "./types/MeasureContent";
+import { DecodedPayload } from "./DecodedPayload";
 import { MeasuresRegister } from "./MeasuresRegister";
 
 export class MeasureService {

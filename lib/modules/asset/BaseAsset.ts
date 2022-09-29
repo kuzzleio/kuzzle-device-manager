@@ -1,10 +1,10 @@
 import { JSONObject } from "kuzzle";
 
-import { MeasureContent } from '../measure/';
-import { Device } from '../device';
+import { MeasureContent } from "../measure/";
+import { Device } from "../device";
 
-import { LinkRequest } from './types/LinkRequest';
-import { BaseAssetContent } from './types/BaseAssetContent';
+import { LinkRequest } from "./types/LinkRequest";
+import { BaseAssetContent } from "./types/BaseAssetContent";
 
 export class BaseAsset {
   static id(type: string, model: string, reference: string) {

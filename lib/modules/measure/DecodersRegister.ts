@@ -8,7 +8,7 @@ import {
 } from "kuzzle";
 
 import { Decoder } from "./Decoder";
-import { DecoderContent } from './types/DecoderContent';
+import { DecoderContent } from "./types/DecoderContent";
 import { MeasuresRegister } from "./MeasuresRegister";
 import { PayloadService } from "./PayloadService";
 
