@@ -1,5 +1,7 @@
 /* eslint-disable sort-keys */
 
+import { metadataValue } from "./metadataMappings";
+
 export const measuresMappings = {
   dynamic: "strict",
   properties: {
@@ -22,7 +24,7 @@ export const measuresMappings = {
     /**
      * Micro Timestamp of the measurement time.
      */
-    measuredAt: { type: "double" },
+    measuredAt: { type: "date" },
 
     /**
      * Name given by the decoder to the measure.
@@ -40,6 +42,20 @@ export const measuresMappings = {
     unit: {
       dynamic: "false",
       properties: {},
+    },
+    asset: {
+      properties: {
+        _id: { type: "keyword" },
+        _source: {
+          properties: {
+            category: { type: "keyword" },
+            metadata: metadataValue,
+            model: { type: "keyword" },
+            reference: { type: "keyword" },
+            type: { type: "keyword" },
+          },
+        },
+      },
     },
 
     /**
@@ -68,9 +84,6 @@ export const measuresMappings = {
          * - user id if origin type is `asset`
          */
         id: { type: "keyword" },
-
-        // Asset linked to the device when the measure was made
-        assetId: { type: "keyword" },
       },
     },
   },

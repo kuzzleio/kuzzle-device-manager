@@ -22,6 +22,7 @@ import {
 } from "../types";
 import { AssetService } from "./AssetService";
 import { MeasuresRegister } from "./registers/MeasuresRegister";
+import { AssetCategoryService } from "./AssetCategoryService";
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
@@ -29,7 +30,7 @@ export class MeasureService {
   private batch: BatchController;
   private assetService: AssetService;
   private measuresRegister: MeasuresRegister;
-
+  private assetCategoryService: AssetCategoryService;
   private get sdk() {
     return this.context.accessors.sdk;
   }
@@ -42,8 +43,10 @@ export class MeasureService {
     plugin: DeviceManagerPlugin,
     batchController: BatchController,
     assetService: AssetService,
-    measuresRegister: MeasuresRegister
+    measuresRegister: MeasuresRegister,
+    assetCategoryService: AssetCategoryService
   ) {
+    this.assetCategoryService = assetCategoryService;
     this.config = plugin.config as any;
     this.context = plugin.context;
 
@@ -197,6 +200,22 @@ export class MeasureService {
     }
   }
 
+  public getAssetInfos(asset: BaseAsset) {
+    if (asset === null) {
+      return undefined;
+    }
+    return {
+      _id: asset._id,
+      _source: {
+        category: asset._source.category,
+        metadata: asset._source.metadata,
+        model: asset._source.model,
+        reference: asset._source.reference,
+        type: asset._source.type,
+      },
+    };
+  }
+
   private buildMeasures(
     device: Device,
     asset: BaseAsset,
@@ -221,12 +240,14 @@ export class MeasureService {
           ? undefined
           : this.findAssetMeasureName(device, asset, deviceMeasureName);
 
+      const assetInfos = this.getAssetInfos(asset);
+
       const measureContent: MeasureContent = {
+        asset: assetInfos,
         assetMeasureName,
         deviceMeasureName,
         measuredAt: measurement.measuredAt,
         origin: {
-          assetId: asset?._id,
           deviceModel: device._source.model,
           id: device._id,
           payloadUuids,
@@ -373,13 +394,13 @@ export class MeasureService {
 
         const assetMeasureName =
           measurement.assetMeasureName ?? measurement.type;
-
+        const assetInfos = this.getAssetInfos(asset);
         validMeasures.push({
+          asset: assetInfos,
           assetMeasureName,
           deviceMeasureName: null,
           measuredAt: measurement.measuredAt || Date.now(),
           origin: {
-            assetId,
             id: kuid,
             type: "user",
           },
