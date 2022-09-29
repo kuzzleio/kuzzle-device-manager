@@ -13,7 +13,7 @@ Feature: AssetCategory
       | engineId   | "engine-ayse" |
       | _id        | "smallTruck"  |
       | metadataId | "length"      |
-    Then The document "engine-ayse":"asset-category":"smallTruck" content match:
+    Then The raw document "engine-ayse":"asset-category":"smallTruck" content match:
       | name             | "smallTruck" |
       | assetMetadata[0] | "length"     |
     When I successfully execute the action "device-manager/assetCategory":"get" with args:
@@ -181,7 +181,7 @@ Feature: AssetCategory
       | body.reference        | "asset_02"    |
       | body.category         | "bigTruck"    |
       | body.metadata.surname | "test"        |
-    Then The document "engine-ayse":"assets":"truck-M-asset_02" content match:
+    Then The raw document "engine-ayse":"assets":"truck-M-asset_02" content match:
       | type                      | "truck"    |
       | model                     | "M"        |
       | reference                 | "asset_02" |
@@ -398,7 +398,7 @@ Feature: AssetCategory
       | model             | "M"        |
       | reference         | "asset_10" |
       | metadata.position | {lon : 10, lat : 20}     |
-    And The document "engine-ayse":"assets":"truck-M-asset_10" content match:
+    And The raw document "engine-ayse":"assets":"truck-M-asset_10" content match:
       | metadata[0].key                 | "position" |
       | metadata[0].value.geo_point.lon | 10         |
       | metadata[0].value.geo_point.lat | 20         |

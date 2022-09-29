@@ -14,15 +14,17 @@ import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
 import { DeviceContent, DeviceManagerConfiguration, MeasureNamesLink } from '../types';
 import { AttachRequest, LinkRequest } from '../types/Request';
 import { Device } from '../models';
+import { AssetCategoryService } from '../core-classes/AssetCategoryService';
 
 export class DeviceController extends CRUDController {
   protected config: DeviceManagerConfiguration;
 
   private deviceService: DeviceService;
+  private assetCategoryService : AssetCategoryService;
 
-  constructor (plugin: DeviceManagerPlugin, deviceService: DeviceService) {
+  constructor (plugin: DeviceManagerPlugin, deviceService: DeviceService, assetCategoryService : AssetCategoryService) {
     super(plugin, 'devices');
-
+    this.assetCategoryService = assetCategoryService;
     this.deviceService = deviceService;
 
     /* eslint-disable sort-keys */
@@ -98,7 +100,8 @@ export class DeviceController extends CRUDController {
     const engineId = request.getString('engineId');
     const model = request.getBodyString('model');
     const reference = request.getBodyString('reference');
-    const metadata = request.getBodyObject('metadata', {});
+    const rawMetadata = request.getBodyObject('metadata', {});
+    const metadata = this.assetCategoryService.formatMetadataForES(rawMetadata);
     const refresh = request.getRefresh();
 
     const assetId = request.getBodyString('assetId', '');

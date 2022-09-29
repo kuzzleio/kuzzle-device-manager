@@ -9,7 +9,6 @@ Feature: Observer
     And I observe document "engine-ayse":"assets":"truck-M-asset_11"
     Then I should receive a result matching:
       | _source.reference | "asset_11" |
-    Then I debug "result"
     When I successfully execute the action "device-manager/asset":"update" with args:
       | engineId       | "engine-ayse"      |
       | _id            | "truck-M-asset_11" |

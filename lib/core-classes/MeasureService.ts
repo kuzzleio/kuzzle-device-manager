@@ -110,8 +110,8 @@ export class MeasureService {
         measurements,
         payloadUuids,
       );
-
-      device.updateMetadata(decodedPayload.getMetadata(device._source.reference));
+      const deviceMetadata = this.assetCategoryService.formatMetadataForES(decodedPayload.getMetadata(device._source.reference));
+      device.updateMetadata(deviceMetadata);
 
       /**
        * Event before starting to process new measures.

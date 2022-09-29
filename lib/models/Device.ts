@@ -16,7 +16,7 @@ export class Device {
     this._id = _id || Device.id(content.model, content.reference);
 
     this._source = {
-      metadata: {},
+      metadata: [],
       ...content
     };
 
@@ -59,6 +59,6 @@ export class Device {
   }
 
   public updateMetadata (metadata: JSONObject) {
-    this._source.metadata = _.merge(this._source.metadata, metadata);
+    this._source.metadata =  this._source.metadata.concat(metadata);
   }
 }

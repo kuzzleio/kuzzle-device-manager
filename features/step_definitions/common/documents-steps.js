@@ -16,10 +16,8 @@ Then('The document {string} content match:', async function (documentId, dataTab
   should(document._source).matchObject(expectedContent);
 });
 
-Then('The document {string}:{string}:{string} content match:', async function (index, collection, _id, dataTable) {
+Then('The raw document {string}:{string}:{string} content match:', async function (index, collection, _id, dataTable) {
   const expectedContent = this.parseObject(dataTable);
-
-  //const document = await this.sdk.document.get(index, collection, _id);
   const response = await this.sdk.query({
     'controller': 'document',
     'action': 'get',
@@ -34,6 +32,13 @@ Then('The document {string}:{string}:{string} content match:', async function (i
   const document = response.result;
   should(document._source).matchObject(expectedContent);
 });
+
+Then('The document {string}:{string}:{string} content match:', async function (index, collection, _id, dataTable) {
+  const expectedContent = this.parseObject(dataTable);
+  const document = await this.sdk.document.get(index, collection, _id);
+  should(document._source).matchObject(expectedContent);
+});
+
 
 Then('I {string} the following documents:', async function (action, dataTable) {
   action = `m${action[0].toUpperCase() + action.slice(1)}`;
