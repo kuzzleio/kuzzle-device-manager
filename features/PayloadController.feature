@@ -133,7 +133,7 @@ Feature: Payloads Controller
       | index      | "engine-kuzzle" |
       | collection | "measures"      |
     And I should receive a "hits" array of objects matching:
-      | _source.type  | _source.origin.id         | _source.origin.assetId    | _source.origin.type |
+      | _source.type  | _source.origin.id         | _source.asset._id         | _source.origin.type |
       | "temperature" | "DummyMultiTemp-detached" | "type1-model1-reference1" | "device"            |
       | "battery"     | "DummyMultiTemp-detached" | "type1-model1-reference1" | "device"            |
 
@@ -186,13 +186,13 @@ Feature: Payloads Controller
       | payloads[0].lvlBattery    | 0.8                |
     And I refresh the collection "engine-ayse":"measures"
     Then When I successfully execute the action "document":"search" with args:
-      | index      | "engine-ayse"                                                      |
-      | collection | "measures"                                                         |
-      | body       | { query: { term:{"origin.assetId":"container-FRIDGE-unlinked_1"}}} |
+      | index      | "engine-ayse"                                                 |
+      | collection | "measures"                                                    |
+      | body       | { query: { term:{"asset._id":"container-FRIDGE-unlinked_1"}}} |
     And I should receive a "hits" array of objects matching:
-      | _source.type  | _source.origin.id                                             |
-      | "temperature" | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
-      | "battery"     | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
+      | _source.type  | _source.origin.id                                             | _source.asset._source.model |
+      | "temperature" | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" | "FRIDGE"                    |
+      | "battery"     | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" | "FRIDGE"                    |
     Then The document "device-manager":"devices":"DummyMultiTemp-enrich_me_master" content match:
       | measures[0].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
       | measures[1].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |

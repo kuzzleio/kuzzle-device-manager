@@ -1,6 +1,7 @@
 import { JSONObject, KDocumentContent } from 'kuzzle';
 
 import { MeasureUnit } from './MeasureDefinition';
+import { FormattedMetadata } from '../AssetCategoryContent';
 
 /**
  * Represents a measurement sent with a payload.
@@ -57,6 +58,20 @@ export interface MeasureContent<TMeasurementValues extends JSONObject = JSONObje
   unit: MeasureUnit;
 
   /**
+   * Asset linked to the device when the measure was made
+   */
+  asset?: {
+    _id: string,
+    _source: {
+      category: string,
+      metadata: FormattedMetadata[],
+      model: string,
+      reference: string,
+      type: string
+    }
+  }
+
+  /**
    * Define the origin of the measure.
    */
   origin: {
@@ -82,9 +97,6 @@ export interface MeasureContent<TMeasurementValues extends JSONObject = JSONObje
      */
     id?: string;
 
-    /**
-     * Asset ID linked to the device when the measure was made
-     */
-    assetId?: string;
+
   }
 }
