@@ -6,7 +6,7 @@ for (let i = 0; i < 50; i++) {
     reference: `detached-${i}`,
     model: 'DummyTemp',
     measures: [],
-    metadata: {},
+    metadata: [],
     engineId: null,
     assetId: null
   });

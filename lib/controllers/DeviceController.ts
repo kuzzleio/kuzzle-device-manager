@@ -11,7 +11,13 @@ import _ from 'lodash';
 import { DeviceBulkContent } from '../core-classes';
 import { DeviceService } from '../core-classes';
 import { DeviceManagerPlugin } from '../DeviceManagerPlugin';
-import { DeviceContent, DeviceManagerConfiguration, MeasureNamesLink } from '../types';
+import {
+  BaseAssetContent,
+  DeviceContent,
+  DeviceManagerConfiguration,
+  EsDeviceContent,
+  MeasureNamesLink
+} from '../types';
 import { AttachRequest, LinkRequest } from '../types/Request';
 import { Device } from '../models';
 import { AssetCategoryService } from '../core-classes/AssetCategoryService';
@@ -37,6 +43,10 @@ export class DeviceController extends CRUDController {
         detachEngine: {
           handler: this.detachEngine.bind(this),
           http: [{ path: 'device-manager/devices/:_id/_detach', verb: 'delete' }]
+        },
+        get: {
+          handler: this.get.bind(this),
+          http: [{ path: 'device-manager/:engineId/devices/:_id', verb: 'get' }]
         },
         importDevices: {
           handler: this.importDevices.bind(this),
@@ -93,6 +103,14 @@ export class DeviceController extends CRUDController {
     /* eslint-enable sort-keys */
   }
 
+  async get (request: KuzzleRequest) {
+    const id = request.getId();
+    const engineId = request.getString('engineId');
+    const document = await this.sdk.document.get<EsDeviceContent>(engineId, this.collection, id,);
+    this.assetCategoryService.formatDocumentMetadata(document);
+    return document._source;
+  }
+  
   /**
    * Create and provision a new device
    */
@@ -141,7 +159,9 @@ export class DeviceController extends CRUDController {
 
   async update (request: KuzzleRequest) {
     request.input.args.index = request.getString('engineId');
-
+    const rawMetadata = request.getBodyObject('metadata', {});
+    const metadata = this.assetCategoryService.formatMetadataForES(rawMetadata);
+    request.input.body.metadata = metadata;
     return super.update(request);
   }
 
