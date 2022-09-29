@@ -11,36 +11,34 @@ import {
 } from "kuzzle";
 import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 
+import { TreeNodeController } from "../features/fakeclasses/TreeNodeController";
+import { AssetCategoryController, AssetCategoryService } from './modules/asset-category';
+import { MetadataController } from './modules/metadata';
 import {
-  AssetController,
-  DeviceController,
-  DecoderController,
-} from "./controllers";
-import {
-  DeviceManagerEngine,
-  PayloadService,
-  DeviceService,
-  AssetsRegister,
+  devicesMappings,
   DevicesRegister,
+  DeviceService,
+  DeviceController,
+} from './modules/device';
+import {
+  AssetsRegister,
   AssetService,
+  AssetController,
+} from './modules/asset';
+import { DeviceManagerEngine, DeviceManagerConfiguration } from './modules/engine';
+import {
+  payloadsMappings,
   MeasuresRegister,
   DecodersRegister,
-} from "./core-classes";
-import {} from "./models";
-import {
+  PayloadService,
+  DecoderController,
+  MeasureService,
   batteryMeasure,
   humidityMeasure,
   movementMeasure,
   positionMeasure,
   temperatureMeasure,
-} from "./measures";
-import { payloadsMappings, devicesMappings } from "./mappings";
-import { DeviceManagerConfiguration } from "./types";
-import { AssetCategoryController } from "./controllers/AssetCategoryController";
-import { MetadataController } from "./controllers/MetadataController";
-import { AssetCategoryService } from "./core-classes/AssetCategoryService";
-import { TreeNodeController } from "../features/fakeclasses/TreeNodeController";
-import { MeasureService } from "./core-classes/MeasureService";
+} from "./modules/measure";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
