@@ -28,6 +28,10 @@ export class DeviceController extends CRUDController {
   private deviceService: DeviceService;
   private assetCategoryService : AssetCategoryService;
 
+  protected get sdk () {
+    return this.context.accessors.sdk;
+  }
+
   constructor (plugin: DeviceManagerPlugin, deviceService: DeviceService, assetCategoryService : AssetCategoryService) {
     super(plugin, 'devices');
     this.assetCategoryService = assetCategoryService;
