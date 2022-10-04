@@ -3,6 +3,7 @@ import { AssetCategoryContent, FormattedMetadata, FormattedValue } from '../type
 import { JSONObject, KDocument, Plugin, PluginContext } from 'kuzzle';
 import { BaseAssetContent, DeviceContent, DeviceManagerConfiguration, EsDeviceContent } from '../types';
 import _ from 'lodash';
+import { isArray } from 'util';
 
 export class AssetCategoryService {
 
@@ -182,13 +183,16 @@ export class AssetCategoryService {
 
   formatMetadataForGet (assetMetadata : FormattedMetadata[]) {
     if (assetMetadata) {
+      if (! Array.isArray(assetMetadata)) {
+        return assetMetadata;
+      }
       const formattedMetadata: JSONObject = {};
       for (const metadata of assetMetadata) {
         formattedMetadata[metadata.key] = this.getValue(metadata.value);
       }
       return formattedMetadata;
     } 
-    return [];
+    return {};
   }
 
   getValue (value: FormattedValue, format = true) {
