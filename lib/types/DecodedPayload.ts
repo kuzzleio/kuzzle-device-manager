@@ -1,7 +1,7 @@
-import { PluginImplementationError, JSONObject } from 'kuzzle';
+import { PluginImplementationError, JSONObject } from "kuzzle";
 
-import { Decoder } from '../core-classes/Decoder';
-import { Measurement } from './measures/MeasureContent';
+import { Decoder } from "../core-classes/Decoder";
+import { Measurement } from "./measures/MeasureContent";
 
 /**
  * Class containing the decoded measures.
@@ -21,11 +21,11 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    */
   private metadataByDevice: JSONObject = {};
 
-  constructor (decoder: TDecoder) {
+  constructor(decoder: TDecoder) {
     this.decoder = decoder;
   }
 
-  get references () {
+  get references() {
     return Object.keys(this.measurementsByDevice);
   }
 
@@ -36,16 +36,18 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    * @param measureName Name of the decoded measure
    * @param measurement Measurement object
    */
-  addMeasurement<TMeasurement extends Measurement = Measurement> (
+  addMeasurement<TMeasurement extends Measurement = Measurement>(
     deviceReference: string,
-    measureName: TDecoder['measures'][number]['name'],
-    measurement: TMeasurement,
+    measureName: TDecoder["measures"][number]["name"],
+    measurement: TMeasurement
   ) {
-    if (! this.decoder.measureNames.includes(measureName)) {
-      throw new PluginImplementationError(`Decoder "${this.decoder.deviceModel}" has no measure named "${measureName}"`);
+    if (!this.decoder.measureNames.includes(measureName)) {
+      throw new PluginImplementationError(
+        `Decoder "${this.decoder.deviceModel}" has no measure named "${measureName}"`
+      );
     }
 
-    if (! this.measurementsByDevice[deviceReference]) {
+    if (!this.measurementsByDevice[deviceReference]) {
       this.measurementsByDevice[deviceReference] = [];
     }
 
@@ -62,8 +64,8 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    * @param deviceReference Device reference
    * @param metadata Object containing metadata values
    */
-  addMetadata (deviceReference: string, metadata: JSONObject) {
-    if (! this.metadataByDevice[deviceReference]) {
+  addMetadata(deviceReference: string, metadata: JSONObject) {
+    if (!this.metadataByDevice[deviceReference]) {
       this.metadataByDevice[deviceReference] = {};
     }
 
@@ -76,14 +78,14 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
   /**
    * Gets the measurements decoded for a device
    */
-  getMeasurements (deviceReference: string): Measurement[] {
+  getMeasurements(deviceReference: string): Measurement[] {
     return this.measurementsByDevice[deviceReference];
   }
 
   /**
    * Get the metadata for a device
    */
-  getMetadata (deviceReference: string): JSONObject {
+  getMetadata(deviceReference: string): JSONObject {
     return this.metadataByDevice[deviceReference];
   }
 }

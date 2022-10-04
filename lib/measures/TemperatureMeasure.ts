@@ -1,4 +1,4 @@
-import { MeasureDefinition, Measurement } from '../types';
+import { MeasureDefinition, Measurement } from "../types";
 
 /* eslint-disable sort-keys */
 
@@ -7,10 +7,10 @@ export type TemperatureMeasurement = Measurement<{
 }>;
 
 export const temperatureMeasure: MeasureDefinition = {
-  valuesMappings: { temperature: { type: 'float' } },
+  valuesMappings: { temperature: { type: "float" } },
   unit: {
-    name: 'Degree',
-    sign: '°',
-    type: 'number',
+    name: "Degree",
+    sign: "°",
+    type: "number",
   },
 };

@@ -3,11 +3,11 @@ import {
   JSONObject,
   KuzzleRequest,
   PreconditionError,
-} from 'kuzzle';
-import _ from 'lodash';
+} from "kuzzle";
+import _ from "lodash";
 
-import { DecodedPayload } from '../types/DecodedPayload';
-import { DecoderContent } from '../types';
+import { DecodedPayload } from "../types/DecodedPayload";
+import { DecoderContent } from "../types";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -76,23 +76,25 @@ export abstract class Decoder {
    *
    * @param http HttpRoute array
    */
-  set http (http: HttpRoute[]) {
+  set http(http: HttpRoute[]) {
     this._http = http;
   }
 
-  get http (): HttpRoute[] {
-    if (! this._http) {
-      this._http = [{ path: `device-manager/payload/${this.action}`, verb: 'post' }];
+  get http(): HttpRoute[] {
+    if (!this._http) {
+      this._http = [
+        { path: `device-manager/payload/${this.action}`, verb: "post" },
+      ];
     }
 
     return this._http;
   }
 
-  get measureNames (): string[] {
+  get measureNames(): string[] {
     return this.measures.map(({ name }) => name);
   }
 
-  get measureTypes (): string[] {
+  get measureTypes(): string[] {
     return this.measures.map(({ type }) => type);
   }
 
@@ -110,7 +112,10 @@ export abstract class Decoder {
    * @return A boolean indicating if the payload is valid
    */
   // eslint-disable-next-line no-unused-vars
-  async validate (payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
+  async validate(
+    payload: JSONObject,
+    request: KuzzleRequest
+  ): Promise<boolean> | never {
     return true;
   }
 
@@ -125,7 +130,10 @@ export abstract class Decoder {
    * @returns Map of `Measurements` by device reference.
    */
   // eslint-disable-next-line no-unused-vars
-  abstract decode (payload: JSONObject, request: KuzzleRequest): Promise<DecodedPayload<Decoder>>;
+  abstract decode(
+    payload: JSONObject,
+    request: KuzzleRequest
+  ): Promise<DecodedPayload<Decoder>>;
 
   /**
    * Checks if the provided properties are present in the payload
@@ -135,15 +143,15 @@ export abstract class Decoder {
    *
    * @throws
    */
-  ensureProperties (payload: JSONObject, paths: string[]): void | never {
+  ensureProperties(payload: JSONObject, paths: string[]): void | never {
     for (const path of paths) {
-      if (! _.has(payload, path)) {
+      if (!_.has(payload, path)) {
         throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }
   }
 
-  serialize (): DecoderContent {
+  serialize(): DecoderContent {
     return {
       deviceModel: this.deviceModel,
       measures: this.measures,

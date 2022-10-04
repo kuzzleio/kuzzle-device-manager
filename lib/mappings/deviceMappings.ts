@@ -1,37 +1,38 @@
-import { metadataValue } from './metadataMappings';
+import { metadataValue } from "./metadataMappings";
 
 export const devicesMappings = {
-  dynamic: 'strict',
+  dynamic: "strict",
   properties: {
     assetId: {
       fields: {
-        text: { type: 'text' }
+        text: { type: "text" },
       },
-      type: 'keyword'
-    },  
+      type: "keyword",
+    },
     engineId: {
       fields: {
-        text: { type: 'text' }
+        text: { type: "text" },
       },
-      type: 'keyword'
+      type: "keyword",
     },
     measures: {
       properties: {
         // measures mappings will be injected by the plugin
-      }
+      },
     },
     metadata: metadataValue,
+
     model: {
       fields: {
-        text: { type: 'text' },
+        text: { type: "text" },
       },
-      type: 'keyword'
+      type: "keyword",
     },
     reference: {
       fields: {
-        text: { type: 'text' },
+        text: { type: "text" },
       },
-      type: 'keyword'
-    }
-  }
+      type: "keyword",
+    },
+  },
 };

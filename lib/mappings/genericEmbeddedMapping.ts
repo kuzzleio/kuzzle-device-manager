@@ -1,11 +1,10 @@
-
 //eslint-disable-next-line
-function embedded (mapping) {
+function embedded(mapping) {
   mapping.properties._kuzzleId = {
     fields: {
-      text: { type: 'text' }
+      text: { type: "text" },
     },
-    type: 'keyword'
+    type: "keyword",
   };
   return mapping;
 }

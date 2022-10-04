@@ -1,4 +1,4 @@
-import { JSONObject, PreconditionError } from 'kuzzle';
+import { JSONObject, PreconditionError } from "kuzzle";
 
 import {
   Decoder,
@@ -6,21 +6,20 @@ import {
   PositionMeasurement,
   TemperatureMeasurement,
   DecodedPayload,
-} from '../../../../index';
+} from "../../../../index";
 
 export class DummyTempPositionDecoder extends Decoder {
   public measures = [
-    { name: 'theTemperature', type: 'temperature' },
-    { name: 'theBattery', type: 'battery' },
-    { name: 'thePosition', type: 'position' },
+    { name: "theTemperature", type: "temperature" },
+    { name: "theBattery", type: "battery" },
+    { name: "thePosition", type: "position" },
   ] as const;
 
-  constructor () {
+  constructor() {
     super();
-
   }
 
-  async validate (payload: JSONObject) {
+  async validate(payload: JSONObject) {
     if (payload.deviceEUI === undefined) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
@@ -28,24 +27,25 @@ export class DummyTempPositionDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject): Promise<DecodedPayload<Decoder>> {
+  async decode(payload: JSONObject): Promise<DecodedPayload<Decoder>> {
     const decodedPayload = new DecodedPayload<DummyTempPositionDecoder>(this);
 
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,
-      'theTemperature',
+      "theTemperature",
       {
         measuredAt: Date.now(),
-        type: 'temperature',
+        type: "temperature",
         values: { temperature: payload.register55 },
-      });
+      }
+    );
 
     decodedPayload.addMeasurement<PositionMeasurement>(
       payload.deviceEUI,
-      'thePosition',
+      "thePosition",
       {
         measuredAt: Date.now(),
-        type: 'position',
+        type: "position",
         values: {
           position: {
             lat: payload.location.lat,
@@ -53,18 +53,20 @@ export class DummyTempPositionDecoder extends Decoder {
           },
           accuracy: payload.location.accu,
         },
-      });
+      }
+    );
 
     decodedPayload.addMeasurement<BatteryMeasurement>(
       payload.deviceEUI,
-      'theBattery',
+      "theBattery",
       {
         measuredAt: Date.now(),
-        type: 'battery',
+        type: "battery",
         values: {
           battery: payload.batteryLevel * 100,
         },
-      });
+      }
+    );
 
     return decodedPayload;
   }

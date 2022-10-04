@@ -1,17 +1,16 @@
 /* eslint-disable sort-keys */
 
-import { metadataValue } from './metadataMappings';
+import { metadataValue } from "./metadataMappings";
 
 export const measuresMappings = {
-  dynamic: 'strict',
+  dynamic: "strict",
   properties: {
-
     /**
      * Type of the measure. (e.g. "temperature")
      * The type name is also the name of the sub-property to look at
      * in the "values" object to get the measure main value.
      */
-    type: { type: 'keyword' },
+    type: { type: "keyword" },
 
     /**
      * Property containing the actual measurement.
@@ -25,38 +24,52 @@ export const measuresMappings = {
     /**
      * Micro Timestamp of the measurement time.
      */
-    measuredAt: { type: 'date' },
+    measuredAt: { type: "date" },
 
     /**
      * Name given by the decoder to the measure.
      */
-    deviceMeasureName: { type: 'keyword' },
+    deviceMeasureName: { type: "keyword" },
 
     /**
      * Name given by the `deviceLink` of the linked asset.
      */
-    assetMeasureName: { type: 'keyword' },
+    assetMeasureName: { type: "keyword" },
 
     /**
      * Measurement self-description.
      */
     unit: {
-      dynamic: 'false',
-      properties: {}
+      dynamic: "false",
+      properties: {},
     },
     asset: {
       properties: {
-        _id: { type: 'keyword' },
+        _id: { type: "keyword" },
         _source: {
           properties: {
-            category: { type: 'keyword' },
+            category: { type: "keyword" },
             metadata: metadataValue,
-            model: { type: 'keyword' },
-            reference: { type: 'keyword' },
-            type: { type: 'keyword' },
-          }
-        }
-      }
+            model: { type: "keyword" },
+            reference: { type: "keyword" },
+            type: { type: "keyword" },
+          },
+        },
+      },
+    },
+    asset: {
+      properties: {
+        _id: { type: "keyword" },
+        _source: {
+          properties: {
+            category: { type: "keyword" },
+            metadata: metadataValue,
+            model: { type: "keyword" },
+            reference: { type: "keyword" },
+            type: { type: "keyword" },
+          },
+        },
+      },
     },
 
     /**
@@ -69,27 +82,25 @@ export const measuresMappings = {
          * - 'asset'
          * - 'device'
          */
-        type: { type: 'keyword' },
+        type: { type: "keyword" },
 
         /**
          * Array of payloads uuids that were used to create this measure.
          */
-        payloadUuids: { type: 'keyword' },
+        payloadUuids: { type: "keyword" },
 
         // E.g. "AbeewayTemp"
-        deviceModel: { type: 'keyword' },
+        deviceModel: { type: "keyword" },
 
         /**
          * ID of the origin. Can be:
          * - device id if origin type is `device`
          * - user id if origin type is `asset`
          */
-        id: { type: 'keyword' },
-
-
-      }
+        id: { type: "keyword" },
+      },
     },
-  }
+  },
 };
 
 /* eslint-enable sort-keys */

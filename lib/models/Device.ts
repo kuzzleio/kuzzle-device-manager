@@ -1,42 +1,41 @@
-import { JSONObject } from 'kuzzle-sdk';
-import _ from 'lodash';
+import { JSONObject } from "kuzzle-sdk";
 
-import { LinkRequest } from '../types/Request';
-import { DeviceContent, MeasureContent } from '../types';
+import { LinkRequest } from "../types/Request";
+import { DeviceContent, MeasureContent } from "../types";
 
 export class Device {
-  static id (model: string, reference: string) {
+  static id(model: string, reference: string) {
     return `${model}-${reference}`;
   }
 
   public _id: string;
   public _source: DeviceContent;
 
-  constructor (content: DeviceContent, _id?: string) {
+  constructor(content: DeviceContent, _id?: string) {
     this._id = _id || Device.id(content.model, content.reference);
 
     this._source = {
       metadata: [],
-      ...content
+      ...content,
     };
 
-    if (! Array.isArray(this._source.measures)) {
+    if (!Array.isArray(this._source.measures)) {
       this._source.measures = [];
     }
   }
 
-  serialize (): { _id: string, _source: DeviceContent } {
+  serialize(): { _id: string; _source: DeviceContent } {
     return {
       _id: this._id,
-      _source: this._source
+      _source: this._source,
     };
   }
 
-  public unlinkToAsset () {
+  public unlinkToAsset() {
     this._source.assetId = null;
   }
 
-  public linkToAsset (linkRequest: LinkRequest) {
+  public linkToAsset(linkRequest: LinkRequest) {
     this._source.assetId = linkRequest.assetId;
   }
 
@@ -45,20 +44,23 @@ export class Device {
    *
    * Only keep the latest measures
    */
-  public updateMeasures (newMeasures: MeasureContent[]) {
+  public updateMeasures(newMeasures: MeasureContent[]) {
     for (const newMeasure of newMeasures) {
-      const idx = this._source.measures.findIndex(measure => measure.deviceMeasureName === newMeasure.deviceMeasureName);
+      const idx = this._source.measures.findIndex(
+        (measure) => measure.deviceMeasureName === newMeasure.deviceMeasureName
+      );
 
       if (idx === -1) {
         this._source.measures.push(newMeasure);
-      }
-      else if (newMeasure.measuredAt > this._source.measures[idx].measuredAt) {
+      } else if (
+        newMeasure.measuredAt > this._source.measures[idx].measuredAt
+      ) {
         this._source.measures[idx] = newMeasure;
       }
     }
   }
 
-  public updateMetadata (metadata: JSONObject) {
-    this._source.metadata =  this._source.metadata.concat(metadata);
+  public updateMetadata(metadata: JSONObject) {
+    this._source.metadata = this._source.metadata.concat(metadata);
   }
 }

@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from "lodash";
 import {
   Plugin,
   PluginContext,
@@ -7,15 +7,16 @@ import {
   Mutex,
   KuzzleRequest,
   BadRequestError,
-  BatchController, Request
-} from 'kuzzle';
-import { ConfigManager, EngineController } from 'kuzzle-plugin-commons';
+  BatchController,
+  Request,
+} from "kuzzle";
+import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 
 import {
   AssetController,
   DeviceController,
-  DecoderController
-} from './controllers';
+  DecoderController,
+} from "./controllers";
 import {
   DeviceManagerEngine,
   PayloadService,
@@ -25,26 +26,22 @@ import {
   AssetService,
   MeasuresRegister,
   DecodersRegister,
-} from './core-classes';
-import {
-} from './models';
+} from "./core-classes";
+import {} from "./models";
 import {
   batteryMeasure,
   humidityMeasure,
   movementMeasure,
   positionMeasure,
   temperatureMeasure,
-} from './measures';
-import {
-  payloadsMappings,
-  devicesMappings,
-} from './mappings';
-import { DeviceManagerConfiguration } from './types';
-import { AssetCategoryController } from './controllers/AssetCategoryController';
-import { MetadataController } from './controllers/MetadataController';
-import { AssetCategoryService } from './core-classes/AssetCategoryService';
-import { TreeNodeController } from '../features/fakeclasses/TreeNodeController';
-import { MeasureService } from './core-classes/MeasureService';
+} from "./measures";
+import { payloadsMappings, devicesMappings } from "./mappings";
+import { DeviceManagerConfiguration } from "./types";
+import { AssetCategoryController } from "./controllers/AssetCategoryController";
+import { MetadataController } from "./controllers/MetadataController";
+import { AssetCategoryService } from "./core-classes/AssetCategoryService";
+import { TreeNodeController } from "../features/fakeclasses/TreeNodeController";
+import { MeasureService } from "./core-classes/MeasureService";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -53,11 +50,10 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceController: DeviceController;
   private decodersController: DecoderController;
   private engineController: EngineController<DeviceManagerPlugin>;
-  private assetCategoryController : AssetCategoryController;
+  private assetCategoryController: AssetCategoryController;
   private metadataController: MetadataController;
   private treeNodeController: TreeNodeController;
   private batchController: BatchController;
-
 
   private assetService: AssetService;
   private assetCategoryService: AssetCategoryService;
@@ -74,7 +70,7 @@ export class DeviceManagerPlugin extends Plugin {
   private adminConfigManager: ConfigManager;
   private engineConfigManager: ConfigManager;
 
-  private get sdk () {
+  private get sdk() {
     return this.context.accessors.sdk;
   }
 
@@ -83,7 +79,7 @@ export class DeviceManagerPlugin extends Plugin {
    *
    * @method register
    */
-  get assets () {
+  get assets() {
     return this.assetsRegister;
   }
 
@@ -92,7 +88,7 @@ export class DeviceManagerPlugin extends Plugin {
    *
    * @method registerMetadata
    */
-  get devices () {
+  get devices() {
     return this.devicesRegister;
   }
 
@@ -102,7 +98,7 @@ export class DeviceManagerPlugin extends Plugin {
    * @method register
    * @method get
    */
-  get measures () {
+  get measures() {
     return this.measuresRegister;
   }
 
@@ -112,55 +108,55 @@ export class DeviceManagerPlugin extends Plugin {
    * @method register
    * @method list
    */
-  get decoders () {
+  get decoders() {
     return this.decodersRegister;
   }
 
-  constructor () {
+  constructor() {
     super({
-      kuzzleVersion: '>=2.16.8 <3'
+      kuzzleVersion: ">=2.16.8 <3",
     });
 
     this.api = {
-      'device-manager/payload': {
-        actions: {}
-      }
+      "device-manager/payload": {
+        actions: {},
+      },
     };
 
     /* eslint-disable sort-keys */
     this.config = {
-      adminIndex: 'device-manager',
+      adminIndex: "device-manager",
       adminCollections: {
         config: {
-          name: 'config',
+          name: "config",
           mappings: {
-            dynamic: 'strict',
-            properties: {}
+            dynamic: "strict",
+            properties: {},
           },
           settings: {},
         },
         devices: {
-          name: 'devices',
+          name: "devices",
           mappings: devicesMappings,
           settings: {},
         },
         payloads: {
-          name: 'payloads',
+          name: "payloads",
           mappings: payloadsMappings,
           settings: {},
-        }
+        },
       },
       engineCollections: {
         config: {
-          name: 'config',
+          name: "config",
           mappings: {
-            dynamic: 'strict',
-            properties: {}
+            dynamic: "strict",
+            properties: {},
           },
-          settings: {}
-        }
+          settings: {},
+        },
       },
-      batchInterval: 10
+      batchInterval: 10,
     };
     /* eslint-enable sort-keys */
 
@@ -169,60 +165,74 @@ export class DeviceManagerPlugin extends Plugin {
     this.devicesRegister = new DevicesRegister(this.measuresRegister);
     this.assetsRegister = new AssetsRegister(this.measuresRegister);
 
-    this.measures.register('temperature', temperatureMeasure);
-    this.measures.register('position', positionMeasure);
-    this.measures.register('movement', movementMeasure);
-    this.measures.register('humidity', humidityMeasure);
-    this.measures.register('battery', batteryMeasure);
+    this.measures.register("temperature", temperatureMeasure);
+    this.measures.register("position", positionMeasure);
+    this.measures.register("movement", movementMeasure);
+    this.measures.register("humidity", humidityMeasure);
+    this.measures.register("battery", batteryMeasure);
   }
 
-  async unknowPayload (request: KuzzleRequest) {
+  async unknowPayload(request: KuzzleRequest) {
     const body = request.getBody();
-    const device = request.getString('device');
+    const device = request.getString("device");
     const documentContent = {
       deviceModel: device,
-      rawPayload: body
+      rawPayload: body,
     };
-    this.sdk.document.create(this.config.adminIndex, 'payloads', documentContent);
+    this.sdk.document.create(
+      this.config.adminIndex,
+      "payloads",
+      documentContent
+    );
   }
-
 
   /**
    * Init the plugin
    */
-  async init (config: JSONObject, context: PluginContext) {
+  async init(config: JSONObject, context: PluginContext) {
     this.config = _.merge({}, this.config, config);
 
     this.context = context;
 
     this.assetCategoryService = new AssetCategoryService(this);
 
-
     /* eslint-disable sort-keys */
     this.pipes = {
-      'device-manager/asset:before*': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeAttachEngine': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeSearch': this.pipeCheckEngine.bind(this),
-      'device-manager/device:beforeUpdate': this.pipeCheckEngine.bind(this),
-      'generic:document:beforeWrite': [],
-      'core:realtime:notification:dispatch:before': async (myObject) => {
-        console.log('core:realtime:notification:dispatch:before : ' + JSON.stringify(myObject));
-        if (myObject.notification.collection === 'assets' || myObject.notification.collection === 'devices' ) {
-          myObject.notification.result._source.metadata = this.assetCategoryService.formatMetadataForGet(myObject.notification.result._source.metadata);
+      "device-manager/asset:before*": this.pipeCheckEngine.bind(this),
+      "device-manager/device:beforeAttachEngine":
+        this.pipeCheckEngine.bind(this),
+      "device-manager/device:beforeSearch": this.pipeCheckEngine.bind(this),
+      "device-manager/device:beforeUpdate": this.pipeCheckEngine.bind(this),
+      "generic:document:beforeWrite": [],
+      "core:realtime:notification:dispatch:before": async (myObject) => {
+        if (
+          myObject.notification.collection === "assets" ||
+          myObject.notification.collection === "devices"
+        ) {
+          myObject.notification.result._source.metadata =
+            this.assetCategoryService.formatMetadataForGet(
+              myObject.notification.result._source.metadata
+            );
         }
         return myObject;
       },
-      'generic:document:afterGet': async (documents, request : Request) => {
-        console.log('generic:document:afterGet :  ' + JSON.stringify(documents) + ' / ' + JSON.stringify(request));
-        if ((request.input.args.collection === 'assets' || request.input.args.collection === 'devices' ) && ! request.input.args.options?.raw ) {
+      "generic:document:afterGet": async (documents, request: Request) => {
+        if (
+          (request.input.args.collection === "assets" ||
+            request.input.args.collection === "devices") &&
+          !request.input.args.options?.raw
+        ) {
           for (const document of documents) {
             if (document._source?.metadata) {
-              document._source.metadata = this.assetCategoryService.formatMetadataForGet(document._source.metadata);
+              document._source.metadata =
+                this.assetCategoryService.formatMetadataForGet(
+                  document._source.metadata
+                );
             }
           }
         }
         return documents;
-      }
+      },
     };
     /* eslint-enable sort-keys */
 
@@ -230,18 +240,18 @@ export class DeviceManagerPlugin extends Plugin {
       mappings: this.config.adminCollections.config.mappings,
       settings: this.config.adminCollections.config.settings,
     });
-    this.adminConfigManager.register('device-manager', {
+    this.adminConfigManager.register("device-manager", {
       properties: {
-        provisioningStrategy: { type: 'keyword' },
-      }
+        provisioningStrategy: { type: "keyword" },
+      },
     });
 
-    this.adminConfigManager.register('engine', {
+    this.adminConfigManager.register("engine", {
       properties: {
-        group: { type: 'keyword' },
-        index: { type: 'keyword' },
-        name: { type: 'keyword' },
-      }
+        group: { type: "keyword" },
+        index: { type: "keyword" },
+        name: { type: "keyword" },
+      },
     });
 
     this.engineConfigManager = new ConfigManager(this, {
@@ -250,24 +260,29 @@ export class DeviceManagerPlugin extends Plugin {
     });
 
     this.batchController = new BatchController(this.sdk as any, {
-      interval: this.config.batchInterval
+      interval: this.config.batchInterval,
     });
 
     this.assetService = new AssetService(this, this.batchController);
-    this.deviceService = new DeviceService(this,
+    this.deviceService = new DeviceService(
+      this,
       this.batchController,
       this.assetService,
-      this.decodersRegister);
+      this.decodersRegister
+    );
     this.measuresService = new MeasureService(
       this,
       this.batchController,
       this.assetService,
       this.measuresRegister,
-      this.assetCategoryService);
+      this.assetCategoryService
+    );
+
     this.payloadService = new PayloadService(
       this,
       this.batchController,
-      this.measuresService);
+      this.measuresService
+    );
 
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
@@ -275,7 +290,8 @@ export class DeviceManagerPlugin extends Plugin {
       this.devicesRegister,
       this.measuresRegister,
       this.adminConfigManager,
-      this.engineConfigManager);
+      this.engineConfigManager
+    );
 
     this.decodersRegister.init(this.context);
 
@@ -284,31 +300,53 @@ export class DeviceManagerPlugin extends Plugin {
       this.assetService,
       this.deviceService,
       this.assetCategoryService,
-      this.measuresService);
+      this.measuresService
+    );
 
-    this.deviceController = new DeviceController(this, this.deviceService, this.assetCategoryService);
-    this.decodersController = new DecoderController(this, this.decodersRegister);
-    this.engineController = new EngineController('device-manager', this, this.deviceManagerEngine);
-    this.assetCategoryController = new AssetCategoryController(this, this.assetCategoryService);
-    this.metadataController = new MetadataController(this, this.assetCategoryService);
+    this.deviceController = new DeviceController(
+      this,
+      this.deviceService,
+      this.assetCategoryService
+    );
+    this.decodersController = new DecoderController(
+      this,
+      this.decodersRegister
+    );
+    this.engineController = new EngineController(
+      "device-manager",
+      this,
+      this.deviceManagerEngine
+    );
+    this.assetCategoryController = new AssetCategoryController(
+      this,
+      this.assetCategoryService
+    );
+    this.metadataController = new MetadataController(
+      this,
+      this.assetCategoryService
+    );
 
-    this.api['device-manager/payload'] = this.decodersRegister.getPayloadController(this.payloadService);
-    this.api['device-manager/asset'] = this.assetController.definition;
-    this.api['device-manager/device'] = this.deviceController.definition;
-    this.api['device-manager/decoder'] = this.decodersController.definition;
-    this.api['device-manager/assetCategory'] = this.assetCategoryController.definition;
-    this.api['device-manager/metadata'] = this.metadataController.definition;
+    this.api["device-manager/payload"] =
+      this.decodersRegister.getPayloadController(this.payloadService);
+    this.api["device-manager/asset"] = this.assetController.definition;
+    this.api["device-manager/device"] = this.deviceController.definition;
+    this.api["device-manager/decoder"] = this.decodersController.definition;
+    this.api["device-manager/assetCategory"] =
+      this.assetCategoryController.definition;
+    this.api["device-manager/metadata"] = this.metadataController.definition;
 
-    this.api['device-manager/payload'].actions.generic = {
+    this.api["device-manager/payload"].actions.generic = {
       handler: this.unknowPayload.bind(this),
-      http: [{ path: 'device-manager/payload/:device', verb: 'post' }]
+      http: [{ path: "device-manager/payload/:device", verb: "post" }],
     };
 
     this.hooks = {
-      'kuzzle:state:live': async () => {
+      "kuzzle:state:live": async () => {
         await this.decodersRegister.createDefaultRights();
-        this.context.log.info('Default rights for payload controller has been registered.');
-      }
+        this.context.log.info(
+          "Default rights for payload controller has been registered."
+        );
+      },
     };
 
     this.decodersRegister.printDecoders();
@@ -319,44 +357,59 @@ export class DeviceManagerPlugin extends Plugin {
   /**
    * Initialize the administration index of the plugin
    */
-  private async initDatabase () {
-    const mutex = new Mutex('device-manager/initDatabase');
+  private async initDatabase() {
+    const mutex = new Mutex("device-manager/initDatabase");
 
     await mutex.lock();
 
     try {
-      if (! await this.sdk.index.exists(this.config.adminIndex)) {
+      if (!(await this.sdk.index.exists(this.config.adminIndex))) {
         // Possible race condition because of index cache propagation.
         // The index has been created but the node didn't receive the index
         // cache update message yet, causing index:exists to returns false
         try {
           await this.sdk.index.create(this.config.adminIndex);
-        }
-        catch (error) {
-          if (! error.message.includes('already exists')) {
+        } catch (error) {
+          if (!error.message.includes("already exists")) {
             throw error;
           }
         }
       }
 
       await Promise.all([
-        this.adminConfigManager.createCollection(this.config.adminIndex)
-          .catch(error => {
-            throw new PluginImplementationError(`Cannot create admin "config" collection: ${error}`);
+        this.adminConfigManager
+          .createCollection(this.config.adminIndex)
+          .catch((error) => {
+            throw new PluginImplementationError(
+              `Cannot create admin "config" collection: ${error}`
+            );
           }),
-        this.sdk.collection.create(this.config.adminIndex, 'devices', this.devicesRegister.getMappings())
-          .catch(error => {
-            throw new PluginImplementationError(`Cannot create admin "devices" collection: ${error}`);
+        this.sdk.collection
+          .create(
+            this.config.adminIndex,
+            "devices",
+            this.devicesRegister.getMappings()
+          )
+          .catch((error) => {
+            throw new PluginImplementationError(
+              `Cannot create admin "devices" collection: ${error}`
+            );
           }),
-        this.sdk.collection.create(this.config.adminIndex, 'payloads', this.getPayloadsMappings())
-          .catch(error => {
-            throw new PluginImplementationError(`Cannot create admin "payloads" collection: ${error}`);
+        this.sdk.collection
+          .create(
+            this.config.adminIndex,
+            "payloads",
+            this.getPayloadsMappings()
+          )
+          .catch((error) => {
+            throw new PluginImplementationError(
+              `Cannot create admin "payloads" collection: ${error}`
+            );
           }),
       ]);
 
       await this.initializeConfig();
-    }
-    finally {
+    } finally {
       await mutex.unlock();
     }
   }
@@ -367,13 +420,15 @@ export class DeviceManagerPlugin extends Plugin {
    *
    * Those custom mappings allow to search raw payloads more efficiently.
    */
-  private getPayloadsMappings (): JSONObject {
-    const { mappings } = JSON.parse(JSON.stringify(this.config.adminCollections.payloads));
+  private getPayloadsMappings(): JSONObject {
+    const { mappings } = JSON.parse(
+      JSON.stringify(this.config.adminCollections.payloads)
+    );
 
     for (const decoder of this.decodersRegister.decoders) {
       mappings.properties.payload.properties = {
         ...mappings.properties.payload.properties,
-        ...decoder.payloadsMappings
+        ...decoder.payloadsMappings,
       };
     }
 
@@ -383,36 +438,42 @@ export class DeviceManagerPlugin extends Plugin {
   /**
    * Initialize the config document if it does not exists
    */
-  private async initializeConfig () {
+  private async initializeConfig() {
     const exists = await this.sdk.document.exists(
       this.config.adminIndex,
       this.adminConfigManager.collection,
-      'plugin--device-manager');
+      "plugin--device-manager"
+    );
 
-    if (! exists) {
+    if (!exists) {
       await this.sdk.document.create(
         this.config.adminIndex,
         this.adminConfigManager.collection,
         {
-          'device-manager': { provisioningStrategy: 'auto' },
-          type: 'device-manager'
+          "device-manager": { provisioningStrategy: "auto" },
+          type: "device-manager",
         },
-        'plugin--device-manager');
+        "plugin--device-manager"
+      );
     }
   }
 
-  private async pipeCheckEngine (request: KuzzleRequest) {
-    const engineId = request.getString('engineId');
+  private async pipeCheckEngine(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
 
     if (engineId !== this.config.adminIndex) {
-      const { result: { exists } } = await this.sdk.query({
-        action: 'exists',
-        controller: 'device-manager/engine',
+      const {
+        result: { exists },
+      } = await this.sdk.query({
+        action: "exists",
+        controller: "device-manager/engine",
         index: engineId,
       });
 
-      if (! exists) {
-        throw new BadRequestError(`Tenant "${engineId}" does not have a device-manager engine`);
+      if (!exists) {
+        throw new BadRequestError(
+          `Tenant "${engineId}" does not have a device-manager engine`
+        );
       }
     }
 

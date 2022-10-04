@@ -5,12 +5,12 @@ import {
   KuzzleRequest,
   PluginContext,
   PluginImplementationError,
-} from 'kuzzle';
+} from "kuzzle";
 
-import { MeasuresRegister } from './MeasuresRegister';
-import { DecoderContent } from '../../types';
-import { Decoder } from '../Decoder';
-import { PayloadService } from '../PayloadService';
+import { MeasuresRegister } from "./MeasuresRegister";
+import { DecoderContent } from "../../types";
+import { Decoder } from "../Decoder";
+import { PayloadService } from "../PayloadService";
 
 export class DecodersRegister {
   private measuresRegister: MeasuresRegister;
@@ -21,32 +21,32 @@ export class DecodersRegister {
    */
   private _decoders = new Map<string, Decoder>();
 
-  private get sdk () {
+  private get sdk() {
     return this.context.accessors.sdk;
   }
 
-  get decoders (): Decoder[] {
+  get decoders(): Decoder[] {
     return Array.from(this._decoders.values());
   }
 
-  constructor (measuresRegister: MeasuresRegister) {
+  constructor(measuresRegister: MeasuresRegister) {
     this.measuresRegister = measuresRegister;
   }
 
-  init (context: PluginContext) {
+  init(context: PluginContext) {
     this.context = context;
   }
 
-  get (deviceModel: string): Decoder {
-    if (! this._decoders.has(deviceModel)) {
+  get(deviceModel: string): Decoder {
+    if (!this._decoders.has(deviceModel)) {
       throw new BadRequestError(`Cannot find decoder for "${deviceModel}"`);
     }
 
     return this._decoders.get(deviceModel);
   }
 
-  list (): DecoderContent[] {
-    const decoders = this.decoders.map(decoder => decoder.serialize());
+  list(): DecoderContent[] {
+    const decoders = this.decoders.map((decoder) => decoder.serialize());
 
     return decoders;
   }
@@ -63,32 +63,38 @@ export class DecodersRegister {
    *
    * @returns Corresponding API action requestPayload
    */
-  register (decoder: Decoder) {
-    if (! decoder.deviceModel) {
-      decoder.deviceModel = decoder.constructor.name.replace('Decoder', '');
+  register(decoder: Decoder) {
+    if (!decoder.deviceModel) {
+      decoder.deviceModel = decoder.constructor.name.replace("Decoder", "");
     }
 
     decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
 
     if (decoder.measures.length === 0) {
-      throw new PluginImplementationError(`Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property.`);
+      throw new PluginImplementationError(
+        `Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property.`
+      );
     }
 
     for (const measureDeclaration of decoder.measures) {
-      if (! this.measuresRegister.has(measureDeclaration.type)) {
-        throw new PluginImplementationError(`Decoder "${decoder.deviceModel}" cannot register unknown measure type "${measureDeclaration.type}"`);
+      if (!this.measuresRegister.has(measureDeclaration.type)) {
+        throw new PluginImplementationError(
+          `Decoder "${decoder.deviceModel}" cannot register unknown measure type "${measureDeclaration.type}"`
+        );
       }
     }
 
     if (this._decoders.has(decoder.deviceModel)) {
-      throw new PluginImplementationError(`Decoder for device model "${decoder.deviceModel}" already registered`);
+      throw new PluginImplementationError(
+        `Decoder for device model "${decoder.deviceModel}" already registered`
+      );
     }
 
     this._decoders.set(decoder.deviceModel, decoder);
 
     return {
       action: decoder.action,
-      controller: 'device-manager/payload',
+      controller: "device-manager/payload",
     };
   }
 
@@ -99,13 +105,13 @@ export class DecodersRegister {
    *
    * @internal
    */
-  getPayloadController (payloadService: PayloadService): ControllerDefinition {
+  getPayloadController(payloadService: PayloadService): ControllerDefinition {
     const controllers: ControllerDefinition = { actions: {} };
 
     for (const decoder of this.decoders) {
       controllers.actions[decoder.action] = {
         handler: async (request: KuzzleRequest) => {
-          const source = request.getBoolean('source');
+          const source = request.getBoolean("source");
 
           const ret = await payloadService.process(request, decoder);
 
@@ -118,7 +124,7 @@ export class DecodersRegister {
     return controllers;
   }
 
-  printDecoders () {
+  printDecoders() {
     for (const decoder of this.decoders) {
       this.context.log.info(`Decoder for "${decoder.deviceModel}" registered`);
     }
@@ -130,37 +136,40 @@ export class DecodersRegister {
    *
    * This method never returns a rejected promise.
    */
-  async createDefaultRights () {
+  async createDefaultRights() {
     try {
       await this.createDefaultRoles();
-    }
-    catch (error) {
-      this.context.log.error(`Cannot register default decoders roles: ${error}${error.stack}`);
+    } catch (error) {
+      this.context.log.error(
+        `Cannot register default decoders roles: ${error}${error.stack}`
+      );
       return;
     }
 
     try {
       await this.createDefaultProfiles();
-    }
-    catch (error) {
-      this.context.log.error(`Cannot register default decoders profiles: ${error}${error.stack}`);
+    } catch (error) {
+      this.context.log.error(
+        `Cannot register default decoders profiles: ${error}${error.stack}`
+      );
       return;
     }
 
     try {
       await this.createDefaultUsers();
-    }
-    catch (error) {
-      this.context.log.error(`Cannot register default decoders users: ${error}${error.stack}`);
+    } catch (error) {
+      this.context.log.error(
+        `Cannot register default decoders users: ${error}${error.stack}`
+      );
     }
   }
 
-  private async createDefaultUsers () {
+  private async createDefaultUsers() {
     const promises = [];
     const gatewayUser = {
       content: {
-        profileIds: []
-      }
+        profileIds: [],
+      },
     };
 
     for (const decoder of this.decoders) {
@@ -168,71 +177,78 @@ export class DecodersRegister {
       const user = {
         content: {
           // each created user has only the profile of the same name
-          profileIds: [userId]
-        }
+          profileIds: [userId],
+        },
       };
 
       gatewayUser.content.profileIds.push(userId);
 
       promises.push(
-        this.sdk.security.createUser(userId, user)
-          .catch(error => {
-            if (error.id !== 'security.user.already_exists') {
-              throw error;
-            }
-            return this.sdk.security.updateUser(userId, user);
-          })
+        this.sdk.security.createUser(userId, user).catch((error) => {
+          if (error.id !== "security.user.already_exists") {
+            throw error;
+          }
+          return this.sdk.security.updateUser(userId, user);
+        })
       );
     }
 
     promises.push(
-      this.sdk.security.createUser('payload-gateway', gatewayUser)
-        .catch(error => {
-          if (error.id !== 'security.user.already_exists') {
+      this.sdk.security
+        .createUser("payload-gateway", gatewayUser)
+        .catch((error) => {
+          if (error.id !== "security.user.already_exists") {
             throw error;
           }
-          return this.sdk.security.updateUser('payload-gateway', gatewayUser);
+          return this.sdk.security.updateUser("payload-gateway", gatewayUser);
         })
     );
 
     await Promise.all(promises);
   }
 
-  private async createDefaultProfiles () {
+  private async createDefaultProfiles() {
     const promises = [];
     const gatewayProfile = {
-      policies: []
+      policies: [],
     };
 
     for (const decoder of this.decoders) {
       const profileId = `payload-gateway.${decoder.action}`;
       const profile = {
         // each created profile has only the role of the same name
-        policies: [ { roleId: profileId } ]
+        policies: [{ roleId: profileId }],
       };
 
       gatewayProfile.policies.push({ roleId: profileId });
-      promises.push(this.sdk.security.createOrReplaceProfile(profileId, profile));
+      promises.push(
+        this.sdk.security.createOrReplaceProfile(profileId, profile)
+      );
     }
 
-    promises.push(this.sdk.security.createOrReplaceProfile('payload-gateway', gatewayProfile));
+    promises.push(
+      this.sdk.security.createOrReplaceProfile(
+        "payload-gateway",
+        gatewayProfile
+      )
+    );
 
     await Promise.all(promises);
   }
 
-  private async createDefaultRoles () {
+  private async createDefaultRoles() {
     const promises = [];
 
     for (const decoder of this.decoders) {
       const roleId = `payload-gateway.${decoder.action}`;
       const role = {
         controllers: {
-          'device-manager/payload': {
+          "device-manager/payload": {
             actions: {
-              [decoder.action]: true
-            }
-          }
-        }
+              [decoder.action]: true,
+            },
+          },
+        },
       };
 
       promises.push(this.sdk.security.createOrReplaceRole(roleId, role));

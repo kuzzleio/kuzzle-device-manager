@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from "lodash";
 import {
   BadRequestError,
   BatchController,
@@ -7,27 +7,27 @@ import {
   NotFoundError,
   Plugin,
   PluginContext,
-} from 'kuzzle';
+} from "kuzzle";
 
-import { InternalCollection } from '../InternalCollection';
-import { mRequest, mResponse, writeToDatabase } from '../utils/writeMany';
-import { BaseAsset } from '../models/BaseAsset';
+import { InternalCollection } from "../InternalCollection";
+import { mRequest, mResponse, writeToDatabase } from "../utils/writeMany";
+import { BaseAsset } from "../models/BaseAsset";
 import {
   BaseAssetContent,
   DeviceManagerConfiguration,
-  MeasureContent
-} from '../types';
+  MeasureContent,
+} from "../types";
 
 export class AssetService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
   private batch: BatchController;
 
-  private get sdk () {
+  private get sdk() {
     return this.context.accessors.sdk;
   }
 
-  constructor (plugin: Plugin, batchController: BatchController) {
+  constructor(plugin: Plugin, batchController: BatchController) {
     this.config = plugin.config as any;
     this.context = plugin.context;
 
@@ -43,10 +43,14 @@ export class AssetService {
    * @param options.startAt Returns measures starting from this date (ISO8601)
    * @param options.endAt Returns measures until this date (ISO8601)
    */
-  async measureHistory (
+  async measureHistory(
     engineId: string,
     assetId: string,
-    { size = 25, startAt, endAt }: { size?: number, startAt?: string, endAt?: string },
+    {
+      size = 25,
+      startAt,
+      endAt,
+    }: { size?: number; startAt?: string; endAt?: string }
   ): Promise<KDocument<MeasureContent>[]> {
     await this.get(engineId, assetId);
 
@@ -55,30 +59,31 @@ export class AssetService {
         measuredAt: {
           gte: 0,
           lte: Number.MAX_SAFE_INTEGER,
-        }
-      }
+        },
+      },
     };
 
     if (startAt) {
-      query.range.measuredAt.gte = this.iso8601(startAt, 'startAt').getTime();
+      query.range.measuredAt.gte = this.iso8601(startAt, "startAt").getTime();
     }
 
     if (endAt) {
-      query.range.measuredAt.lte = this.iso8601(startAt, 'endAt').getTime();
+      query.range.measuredAt.lte = this.iso8601(startAt, "endAt").getTime();
     }
 
-    const sort = { 'measuredAt': 'desc' };
+    const sort = { measuredAt: "desc" };
 
     const measures = await this.sdk.document.search<MeasureContent>(
       engineId,
-      'measures',
+      "measures",
       { query, sort },
-      { size: size || 25 });
+      { size: size || 25 }
+    );
 
     return measures.hits;
   }
 
-  async importAssets (
+  async importAssets(
     index: string,
     assets: JSONObject,
     { strict, options }: { strict?: boolean; options?: JSONObject }
@@ -93,17 +98,16 @@ export class AssetService {
 
       return {
         _id: _asset._id,
-        body: _.omit(asset, ['_id']),
+        body: _.omit(asset, ["_id"]),
       };
     });
 
     await writeToDatabase(
       assetDocuments,
       async (result: mRequest[]): Promise<mResponse> => {
-
         const created = await this.sdk.document.mCreate(
           index,
-          'assets',
+          "assets",
           result,
           { strict, ...options }
         );
@@ -118,16 +122,17 @@ export class AssetService {
     return results;
   }
 
-  public async get (engineId: string, assetId: string): Promise<BaseAsset> {
+  public async get(engineId: string, assetId: string): Promise<BaseAsset> {
     const document = await this.sdk.document.get<BaseAssetContent>(
       engineId,
       InternalCollection.ASSETS,
-      assetId);
+      assetId
+    );
 
     return new BaseAsset(document._source, document._id);
   }
 
-  public async removeMeasures (
+  public async removeMeasures(
     engineId: string,
     assetId: string,
     assetMeasureNames: string[],
@@ -137,7 +142,9 @@ export class AssetService {
     const result = asset.removeMeasures(assetMeasureNames);
 
     if (strict && result.notFound.length) {
-      throw new NotFoundError(`AssetMeasureNames "${result.notFound}" in asset "${assetId}" of engine "${engineId}"`);
+      throw new NotFoundError(
+        `AssetMeasureNames "${result.notFound}" in asset "${assetId}" of engine "${engineId}"`
+      );
     }
 
     await this.sdk.document.update(
@@ -145,16 +152,17 @@ export class AssetService {
       InternalCollection.ASSETS,
       asset._id,
       asset._source,
-      { strict });
+      { strict }
+    );
 
     return {
       asset,
-      ... result,
+      ...result,
     };
   }
 
   // @todo remove when we have the date extractor in the core
-  private iso8601 (value: string, name: string): Date {
+  private iso8601(value: string, name: string): Date {
     const parsed: any = new Date(value);
 
     if (isNaN(parsed)) {

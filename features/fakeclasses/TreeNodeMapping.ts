@@ -1,17 +1,15 @@
-import { fieldPathMappings } from '../../lib/mappings/fieldpathMappings';
+import { fieldPathMappings } from "../../lib/mappings/fieldpathMappings";
 
 export const TreeNodeMappings = {
-  dynamic: 'strict',
+  dynamic: "strict",
   properties: {
-
     children: {
-      dynamic: 'true',
-      properties: {
-      }
+      dynamic: "true",
+      properties: {},
     },
     name: {
-      type: 'keyword'
+      type: "keyword",
     },
-    parent: fieldPathMappings
-  }
-}
+    parent: fieldPathMappings,
+  },
+};

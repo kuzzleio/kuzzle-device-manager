@@ -1,16 +1,16 @@
-import { JSONObject } from 'kuzzle';
+import { JSONObject } from "kuzzle";
 
 export type mRequest = {
   _id: string;
   body: JSONObject;
-}
+};
 
 export type mResponse = {
   successes: JSONObject[];
   errors: JSONObject[];
-}
+};
 
-export async function writeToDatabase ( 
+export async function writeToDatabase(
   documents: mRequest[],
   // eslint-disable-next-line no-unused-vars
   writer: (docs: mRequest[]) => Promise<mResponse>
@@ -42,7 +42,7 @@ export async function writeToDatabase (
   let offsetLimit = limit;
   let done = false;
 
-  while (! done) {
+  while (!done) {
     await writeMany(offset, offsetLimit);
 
     offset += limit;
