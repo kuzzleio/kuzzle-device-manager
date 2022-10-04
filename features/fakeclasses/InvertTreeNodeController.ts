@@ -1,4 +1,4 @@
-import { RelationalController } from "../../lib/controllers/RelationalController";
+import { RelationalController } from "../../lib/modules/metadata/RelationalController";
 import { KuzzleRequest, Plugin } from "kuzzle";
 
 export class InvertTreeNodeController extends RelationalController {

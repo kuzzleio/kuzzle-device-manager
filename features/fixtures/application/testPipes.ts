@@ -1,8 +1,9 @@
 import _ from "lodash";
 import { Backend } from "kuzzle";
 
-import { MeasureContent } from "../../../lib/types";
-import { BaseAsset, Device } from "../../../lib/models";
+import { BaseAsset } from "../../../lib/modules/asset";
+import { Device } from "../../../lib/modules/device";
+import { MeasureContent } from "../../../lib/modules/measure";
 
 function checkEventWithDocument(app: Backend, event: string) {
   app.pipe.register(event, async (payload) => {
