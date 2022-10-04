@@ -217,22 +217,6 @@ export class MeasureService {
     };
   }
 
-  public getAssetInfos(asset: BaseAsset) {
-    if (asset === null) {
-      return undefined;
-    }
-    return {
-      _id: asset._id,
-      _source: {
-        category: asset._source.category,
-        metadata: asset._source.metadata,
-        model: asset._source.model,
-        reference: asset._source.reference,
-        type: asset._source.type,
-      },
-    };
-  }
-
   private buildMeasures(
     device: Device,
     asset: BaseAsset,

@@ -57,20 +57,6 @@ export const measuresMappings = {
         },
       },
     },
-    asset: {
-      properties: {
-        _id: { type: "keyword" },
-        _source: {
-          properties: {
-            category: { type: "keyword" },
-            metadata: metadataValue,
-            model: { type: "keyword" },
-            reference: { type: "keyword" },
-            type: { type: "keyword" },
-          },
-        },
-      },
-    },
 
     /**
      * Define the origin of the measure.
