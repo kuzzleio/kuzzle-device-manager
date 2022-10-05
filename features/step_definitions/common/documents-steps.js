@@ -17,31 +17,36 @@ Then(
   }
 );
 
-Then('The raw document {string}:{string}:{string} content match:', async function (index, collection, _id, dataTable) {
-  const expectedContent = this.parseObject(dataTable);
-  const response = await this.sdk.query({
-    'controller': 'document',
-    'action': 'get',
-    'body': {},
-    index,
-    collection,
-    _id,
-    'options': {
-      'raw': true
-    }
-  });
-  const document = response.result;
-  should(document._source).matchObject(expectedContent);
-});
+Then(
+  "The raw document {string}:{string}:{string} content match:",
+  async function (index, collection, _id, dataTable) {
+    const expectedContent = this.parseObject(dataTable);
+    const response = await this.sdk.query({
+      controller: "document",
+      action: "get",
+      body: {},
+      index,
+      collection,
+      _id,
+      options: {
+        raw: true,
+      },
+    });
+    const document = response.result;
+    should(document._source).matchObject(expectedContent);
+  }
+);
 
-Then('The document {string}:{string}:{string} content match:', async function (index, collection, _id, dataTable) {
-  const expectedContent = this.parseObject(dataTable);
-  const document = await this.sdk.document.get(index, collection, _id);
-  should(document._source).matchObject(expectedContent);
-});
+Then(
+  "The document {string}:{string}:{string} content match:",
+  async function (index, collection, _id, dataTable) {
+    const expectedContent = this.parseObject(dataTable);
+    const document = await this.sdk.document.get(index, collection, _id);
+    should(document._source).matchObject(expectedContent);
+  }
+);
 
-
-Then('I {string} the following documents:', async function (action, dataTable) {
+Then("I {string} the following documents:", async function (action, dataTable) {
   action = `m${action[0].toUpperCase() + action.slice(1)}`;
 
   const documents = this.parseObjectArray(dataTable);
@@ -179,10 +184,6 @@ Then(
   }
 );
 
-<<<<<<< HEAD
-  if (! not && ! exists) {
-    throw new Error(`Expected document ${id} to exist`);
-=======
 Then(
   /I "(.*?)" the following document ids( with verb "(.*?)")?:/,
   async function (action, verb, dataTable) {
@@ -199,7 +200,6 @@ Then(
       ids,
       options
     );
->>>>>>> 2-dev
   }
 );
 
@@ -236,15 +236,6 @@ Then(
   async function (index, collection, dataTable) {
     const expectedContent = this.parseObject(dataTable);
 
-<<<<<<< HEAD
-  const result = await this.sdk.document.search(
-    index,
-    collection,
-    {
-      sort: { '_kuzzle_info.createdAt': 'desc' }
-    },
-    { size: 1 });
-=======
     const result = await this.sdk.document.search(
       index,
       collection,
@@ -253,7 +244,6 @@ Then(
       },
       { size: 1 }
     );
->>>>>>> 2-dev
 
     if (result.hits.length === 0) {
       throw new Error("No document found");

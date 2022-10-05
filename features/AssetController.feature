@@ -26,6 +26,12 @@ Feature: DeviceManager asset controller
       | model           | "PERFO"         |
       | metadata.foobar | 42              |
       | metadata.index  | "engine-kuzzle" |
+    And The raw document "engine-kuzzle":"assets":"outils-PERFO-asset_01" content match:
+      | model                     | "PERFO"         |
+      | metadata[0].key           | "foobar"        |
+      | metadata[0].value.integer | 42              |
+      | metadata[1].key           | "index"         |
+      | metadata[1].value.keyword | "engine-kuzzle" |
     Then I refresh the collection "engine-kuzzle":"assets"
     When I successfully execute the action "device-manager/asset":"search" with args:
       | engineId | "engine-kuzzle" |
