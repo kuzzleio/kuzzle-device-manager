@@ -204,28 +204,35 @@ export class DeviceManagerPlugin extends Plugin {
       "device-manager/device:beforeSearch": this.pipeCheckEngine.bind(this),
       "device-manager/device:beforeUpdate": this.pipeCheckEngine.bind(this),
       "generic:document:beforeWrite": [],
-      "core:realtime:notification:dispatch:before": async (myObject) => {
-        if (
-          myObject.notification.collection === "assets" ||
-          myObject.notification.collection === "devices"
-        ) {
-          myObject.notification.result._source.metadata =
-            this.assetCategoryService.formatMetadataForGet(
-              myObject.notification.result._source.metadata
-            );
-        }
-        return myObject;
-      },
       "generic:document:afterGet": async (documents, request: Request) => {
         if (
           (request.input.args.collection === "assets" ||
             request.input.args.collection === "devices") &&
-          !request.input.args.options?.raw
+          request.input.args.options?.prettify
         ) {
           for (const document of documents) {
             if (document._source?.metadata) {
               document._source.metadata =
                 this.assetCategoryService.formatMetadataForGet(
+                  document._source.metadata
+                );
+            }
+          }
+        }
+        return documents;
+      },
+      "generic:document:beforeUpdate": async (documents, request: Request) => {
+        console.log("beforeUpdate : " + JSON.stringify(request));
+        if (
+          (request.input.args.collection === "assets" ||
+            request.input.args.collection === "devices") &&
+          request.input.args.options?.prettify
+        ) {
+          console.log("if");
+          for (const document of documents) {
+            if (document._source?.metadata) {
+              document._source.metadata =
+                this.assetCategoryService.formatMetadataForES(
                   document._source.metadata
                 );
             }

@@ -18,7 +18,16 @@ Then(
 );
 
 Then(
-  "The raw document {string}:{string}:{string} content match:",
+  "The document {string}:{string}:{string} content match:",
+  async function (index, collection, _id, dataTable) {
+    const expectedContent = this.parseObject(dataTable);
+    const document = await this.sdk.document.get(index, collection, _id);
+    should(document._source).matchObject(expectedContent);
+  }
+);
+
+Then(
+  "The formatted document {string}:{string}:{string} content match:",
   async function (index, collection, _id, dataTable) {
     const expectedContent = this.parseObject(dataTable);
     const response = await this.sdk.query({
@@ -29,19 +38,10 @@ Then(
       collection,
       _id,
       options: {
-        raw: true,
+        prettify: true,
       },
     });
     const document = response.result;
-    should(document._source).matchObject(expectedContent);
-  }
-);
-
-Then(
-  "The document {string}:{string}:{string} content match:",
-  async function (index, collection, _id, dataTable) {
-    const expectedContent = this.parseObject(dataTable);
-    const document = await this.sdk.document.get(index, collection, _id);
     should(document._source).matchObject(expectedContent);
   }
 );

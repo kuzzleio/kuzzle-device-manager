@@ -13,9 +13,11 @@ Feature: DeviceManager asset controller
       | body.model | "ALTMODEL"              |
     Then The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" content match:
       | model | "ALTMODEL" |
-    When I successfully execute the action "device-manager/asset":"update" with args:
-      | engineId             | "engine-kuzzle"         |
+    When I successfully execute the action "document":"update" with args:
+      | index                | "engine-kuzzle"         |
+      | collection           | "assets"                |
       | _id                  | "outils-PERFO-asset_01" |
+      | options.prettify     | true                    |
       | body.metadata.foobar | 42                      |
       | body.metadata.index  | "engine-kuzzle"         |
       | body.model           | "PERFO"                 |
@@ -26,7 +28,7 @@ Feature: DeviceManager asset controller
       | model           | "PERFO"         |
       | metadata.foobar | 42              |
       | metadata.index  | "engine-kuzzle" |
-    And The raw document "engine-kuzzle":"assets":"outils-PERFO-asset_01" content match:
+    And The document "engine-kuzzle":"assets":"outils-PERFO-asset_01" content match:
       | model                     | "PERFO"         |
       | metadata[0].key           | "foobar"        |
       | metadata[0].value.integer | 42              |
