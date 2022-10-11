@@ -1,6 +1,9 @@
-import { Measurement, MeasureDefinition } from "lib/types";
-
 /* eslint-disable sort-keys */
+
+import {
+  MeasureDefinition,
+  Measurement,
+} from "../../../../lib/modules/measure";
 
 export type Acceleration3dMeasurement = Measurement<{
   x: number;
