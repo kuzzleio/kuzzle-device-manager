@@ -16,7 +16,6 @@ function checkEventWithDocument(app: Backend, event: string) {
 
 export function registerTestPipes(app: Backend) {
   app.pipe.register(
-
     "device-manager:measures:process:before",
     async ({
       asset,
@@ -36,7 +35,6 @@ export function registerTestPipes(app: Backend) {
       }
 
       return { asset, device, measures };
-
     }
   );
 

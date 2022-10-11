@@ -46,7 +46,7 @@ Then("I should receive a result matching:", function (dataTable) {
   should(this.props.result).matchObject(expectedResult);
 });
 
-Then('I should have a realtime object matching:', function (dataTable) {
+Then("I should have a realtime object matching:", function (dataTable) {
   const expectedResult = this.parseObject(dataTable);
 
   should(this.props.realtime).not.be.undefined();
@@ -54,9 +54,10 @@ Then('I should have a realtime object matching:', function (dataTable) {
   should(this.props.result).matchObject(expectedResult);
 });
 
-Then('The property {string} of the result should match:', function (path, dataTable) {
-  const expectedProperty = this.parseObject(dataTable);
-
+Then(
+  "The property {string} of the result should match:",
+  function (path, dataTable) {
+    const expectedProperty = this.parseObject(dataTable);
 
     const property = _.get(this.props.result, path);
 

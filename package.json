@@ -18,6 +18,7 @@
     "test:functional": "cucumber-js --require-module ts-node/register --exit --fail-fast",
     "test:lint": "eslint ./lib --ext .ts --config .eslintrc.json",
     "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
+    "test:prettier:fix": "npx prettier lib/ features/ --write",
     "build": "tsc --build tsconfig.json",
     "clean": "touch index.ts && npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
     "package:create": "npm run build && npm pack"
