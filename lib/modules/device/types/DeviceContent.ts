@@ -40,6 +40,7 @@ export interface DeviceContent extends BaseDeviceContent {
    */
   metadata?: JSONObject;
 }
+
 export interface EsDeviceContent extends BaseDeviceContent {
   /**
    * Device metadata

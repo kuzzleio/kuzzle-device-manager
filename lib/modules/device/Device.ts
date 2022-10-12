@@ -4,6 +4,7 @@ import { MeasureContent } from "./../measure";
 import { LinkRequest } from "./../asset";
 
 import { DeviceContent } from "./types/DeviceContent";
+import _ from 'lodash';
 
 export class Device {
   static id(model: string, reference: string) {
@@ -63,6 +64,6 @@ export class Device {
   }
 
   public updateMetadata(metadata: JSONObject) {
-    this._source.metadata = this._source.metadata.concat(metadata);
+    this._source.metadata = _.merge(this._source.metadata, metadata);
   }
 }
