@@ -6,6 +6,6 @@ runs:
     - name: Install deps
       shell: bash
       run: |
-           npm install npm
+           npm install -g npm
            npm ci
            npm run test:lint
