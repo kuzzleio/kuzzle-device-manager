@@ -4,7 +4,7 @@ import { MeasureContent } from "./../measure";
 import { LinkRequest } from "./../asset";
 
 import { DeviceContent } from "./types/DeviceContent";
-import _ from 'lodash';
+import _ from "lodash";
 
 export class Device {
   static id(model: string, reference: string) {
