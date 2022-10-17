@@ -9,7 +9,7 @@ on:
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
@@ -26,7 +26,7 @@ jobs:
 
   functional-tests:
     name: Functional Tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: [lint]
     steps:
       - name: Install SSH key
