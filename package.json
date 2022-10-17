@@ -8,6 +8,7 @@
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
   },
   "scripts": {
+    "docker": "docker-compose run kuzzle",
     "npm:docker": "docker-compose run kuzzle npm",
     "install:docker": "npm run npm:docker install kuzzle",
     "dev:docker": "docker-compose up",
