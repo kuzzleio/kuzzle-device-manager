@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         npm run docker npm install
-        npm run docker npm build
+        npm run docker npm run build
         DOCKER_COMMAND="npm run prod" docker-compose up -d
         bash features/wait-kuzzle.sh
         npm run test:functional
