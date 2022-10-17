@@ -10,6 +10,7 @@ import {
   FormattedMetadata,
   FormattedValue,
 } from "./types/AssetCategoryContent";
+import { EsDeviceContent } from "../device";
 
 export class AssetCategoryService {
   private config: DeviceManagerConfiguration;

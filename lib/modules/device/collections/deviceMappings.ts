@@ -1,4 +1,4 @@
-import { metadataValue } from "./metadataMappings";
+import { metadataValue } from "../../../modules/metadata";
 
 export const devicesMappings = {
   dynamic: "strict",
