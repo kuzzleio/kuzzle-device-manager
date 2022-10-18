@@ -1,4 +1,4 @@
-import { DeviceLink } from "./BaseAssetContent";
+import { DeviceLink } from "./AssetContent";
 
 /**
  * Represents a request to link a device to an engine

@@ -4,9 +4,12 @@ import {
   BatchController,
   JSONObject,
   KDocument,
+  KHit,
+  Mutex,
   NotFoundError,
   Plugin,
   PluginContext,
+  SearchResult,
 } from "kuzzle";
 
 import { writeToDatabase } from "../../utils";
@@ -15,8 +18,11 @@ import { mResponse, mRequest } from "../../utils/writeMany";
 import { MeasureContent } from "../measure/";
 import { DeviceManagerConfiguration } from "../engine";
 
-import { BaseAsset } from "./BaseAsset";
-import { BaseAssetContent } from "./types/BaseAssetContent";
+import { Asset } from "./Asset";
+import { AssetContent } from "./types/AssetContent";
+import { EventAssetUpdateBefore } from "./types/AssetEvents";
+import { AssetSerializer } from "./AssetSerializer";
+import { DeviceUnlinkAssetRequest } from "../device/types/DeviceRequests";
 
 export class AssetService {
   private config: DeviceManagerConfiguration;
@@ -93,8 +99,8 @@ export class AssetService {
       successes: [],
     };
 
-    const assetDocuments = assets.map((asset: BaseAssetContent) => {
-      const _asset = new BaseAsset(asset);
+    const assetDocuments = assets.map((asset: AssetContent) => {
+      const _asset = new Asset(asset);
 
       return {
         _id: _asset._id,
@@ -122,14 +128,125 @@ export class AssetService {
     return results;
   }
 
-  public async get(engineId: string, assetId: string): Promise<BaseAsset> {
-    const document = await this.sdk.document.get<BaseAssetContent>(
+  private async lock<TReturn>(engineId: string, assetId: string, cb: () => Promise<TReturn>) {
+    const mutex = new Mutex(`asset-${engineId}-${assetId}`);
+
+    try {
+      await mutex.lock();
+
+      return await cb();
+    }
+    finally {
+      await mutex.unlock();
+    }
+  }
+
+  public async get(engineId: string, assetId: string): Promise<Asset> {
+    const document = await this.sdk.document.get<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assetId
     );
 
-    return new BaseAsset(document._source, document._id);
+    return new Asset(document._source, document._id);
+  }
+
+  public async update(engineId: string, assetId: string, metadata: JSONObject, { refresh }: { refresh: any }): Promise<Asset> {
+    return this.lock<Asset>(engineId, assetId, async () => {
+      const asset = await this.get(engineId, assetId);
+
+      // @todo add type EventAssetUpdateBefore
+      const updatedPayload = await global.app.trigger(
+        "device-manager:asset:update:before",
+        { asset, metadata }
+      );
+
+      const { _source, _id } = await this.sdk.document.update<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        assetId,
+        { metadata: updatedPayload.metadata },
+        { refresh },
+      );
+
+      const updatedAsset = new Asset(_source, _id);
+
+      // @todo add type EventAssetUpdateBefore
+      await global.app.trigger(
+        "device-manager:asset:update:after",
+        { asset: updatedAsset, metadata: updatedPayload.metadata }
+      );
+
+      return updatedAsset;
+    });
+  }
+
+  public async create(
+    engineId: string,
+    model: string,
+    reference: string,
+    metadata: JSONObject,
+    { refresh }: { refresh: any },
+  ): Promise<Asset> {
+    const assetId = AssetSerializer.id(model, reference);
+
+    return this.lock<Asset>(engineId, assetId, async () => {
+      const { _source, _id } = await this.sdk.document.create<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        {
+          model,
+          reference,
+          metadata,
+        },
+        assetId,
+        { refresh });
+
+      return new Asset(_source, _id);
+    });
+  }
+
+  public async delete (
+    engineId: string,
+    assetId: string,
+    { refresh, strict }: { refresh: any, strict: boolean },
+  ) {
+    return this.lock<void>(engineId, assetId, async () => {
+      const asset = await this.get(engineId, assetId);
+
+      if (strict && asset._source.deviceLinks.length !== 0) {
+        throw new BadRequestError(`Asset "${assetId}" is still linked to devices.`);
+      }
+
+      for (const { deviceId } of asset._source.deviceLinks) {
+        const req: DeviceUnlinkAssetRequest = {
+          controller: "device-manager/devices",
+          action: "update",
+          engineId,
+          _id: deviceId,
+        };
+
+        await this.sdk.query(req);
+      }
+
+      await this.sdk.document.delete(engineId, InternalCollection.ASSETS, assetId, {
+        refresh,
+      });
+    });
+  }
+
+  public async search (
+    engineId: string,
+    searchBody: JSONObject,
+    { from, size, scroll, lang }: { from?: number, size?: number, scroll?: string, lang?: string },
+  ): Promise<SearchResult<KHit<AssetContent>>> {
+    const result = await this.sdk.document.search<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      searchBody,
+      { from, size, scroll, lang });
+
+    return result;
   }
 
   public async removeMeasures(

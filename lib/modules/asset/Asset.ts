@@ -1,22 +1,20 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject, KDocument } from "kuzzle";
+import _ from 'lodash';
 
-import { MeasureContent } from "../measure/";
+import { MeasureContent } from "../measure";
 import { Device } from "../device";
 
 import { LinkRequest } from "./types/LinkRequest";
-import { BaseAssetContent } from "./types/BaseAssetContent";
+import { AssetContent } from "./types/AssetContent";
+import { AssetSerializer } from "./AssetSerializer";
 
-export class BaseAsset {
-  static id(type: string, model: string, reference: string) {
-    return `${type}-${model}-${reference}`;
-  }
-
+export class Asset {
   public _id: string;
-  public _source: BaseAssetContent;
+  public _source: AssetContent;
 
-  constructor(content: BaseAssetContent, _id?: string) {
+  constructor(content: AssetContent, _id?: string) {
     this._id =
-      _id || BaseAsset.id(content.type, content.model, content.reference);
+      _id || AssetSerializer.id(content.model, content.reference);
 
     this._source = content;
 
@@ -26,6 +24,10 @@ export class BaseAsset {
 
     if (!Array.isArray(this._source.deviceLinks)) {
       this._source.deviceLinks = [];
+    }
+
+    if (!_.isObject(this._source.metadata)) {
+      this._source.metadata = {};
     }
   }
 
@@ -83,13 +85,6 @@ export class BaseAsset {
     return {
       notFound: assetMeasureNames,
       removed,
-    };
-  }
-
-  serialize(): JSONObject {
-    return {
-      _id: this._id,
-      _source: this._source,
     };
   }
 }

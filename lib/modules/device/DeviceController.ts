@@ -16,6 +16,7 @@ import { AssetCategoryService } from "../asset-category";
 import { DeviceService, DeviceBulkContent } from "./DeviceService";
 import { Device } from "./Device";
 import { DeviceContent, EsDeviceContent } from "./types/DeviceContent";
+import { DeviceUnlinkAssetResult } from "./types/DeviceRequests";
 
 export class DeviceController extends CRUDController {
   protected config: DeviceManagerConfiguration;
@@ -366,7 +367,7 @@ export class DeviceController extends CRUDController {
   /**
    * Unlink a device from an asset.
    */
-  async unlinkAsset(request: KuzzleRequest) {
+  async unlinkAsset(request: KuzzleRequest): Promise<DeviceUnlinkAssetResult> {
     const deviceId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean("strict");
@@ -386,6 +387,7 @@ export class DeviceController extends CRUDController {
     const invalids = [];
 
     for (const deviceId of deviceIds) {
+      // @todo we need to keep the last measure made by the device
       // Cannot be done in parallel because we need to keep previous measures
       try {
         const result = await this.deviceService.unlinkAsset(deviceId, {

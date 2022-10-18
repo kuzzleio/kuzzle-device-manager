@@ -1,54 +1,35 @@
 import csv from "csvtojson";
-import { BadRequestError, KuzzleRequest, Plugin } from "kuzzle";
+import { BadRequestError, ControllerDefinition, KDocument, KuzzleRequest, Plugin, PluginContext } from "kuzzle";
+import { CRUDController } from "kuzzle-plugin-commons";
 
 import { MeasureService } from "../measure";
-import { AssetCategoryService, AssetCategoryContent } from "../asset-category";
 import { DeviceService } from "../device";
-import { RelationalController } from "../metadata";
 
-import { BaseAsset } from "./BaseAsset";
+import { Asset } from "./Asset";
 import { AssetService } from "./AssetService";
-import { BaseAssetContent } from "./types/BaseAssetContent";
+import { AssetContent, Metadata } from "./types/AssetContent";
+import { InternalCollection } from "lib/InternalCollection";
+import { AssetCreateResult, AssetDeleteResult, AssetGetResult, AssetSearchResult, AssetUpdateResult } from "./types/AssetRequests";
+import { AssetSerializer } from "./AssetSerializer";
+import { DeviceUnlinkAssetRequest } from "../device/types/DeviceRequests";
 
-export class AssetController extends RelationalController {
+export class AssetController {
+  private context: PluginContext;
+  private definition: ControllerDefinition;
   private assetService: AssetService;
   private deviceService: DeviceService;
-  private assetCategoryService: AssetCategoryService;
   private measureService: MeasureService;
+
+  private get sdk() {
+    return this.context.accessors.sdk;
+  }
 
   constructor(
     plugin: Plugin,
     assetService: AssetService,
     deviceService: DeviceService,
-    assetCategoryService: AssetCategoryService,
     measureService: MeasureService
   ) {
-    super(plugin, "assets");
-    global.app.errors.register(
-      "device-manager",
-      "asset_controller",
-      "mandatory_metadata",
-      {
-        class: "BadRequestError",
-        description:
-          "Metadata which are specified in AssetCategory as mandatory must be present",
-        message: "metadata %s is mandatory for the asset",
-      }
-    );
-    global.app.errors.register(
-      "device-manager",
-      "asset_controller",
-      "enum_metadata",
-      {
-        class: "BadRequestError",
-        description:
-          "Metadata must have one of the values specified in metadata valueList",
-        message:
-          "metadata %s cannot have %s value : value must have one of the value of metadata valueList ",
-      }
-    );
-
-    this.assetCategoryService = assetCategoryService;
     this.assetService = assetService;
     this.deviceService = deviceService;
     this.measureService = measureService;
@@ -70,12 +51,6 @@ export class AssetController extends RelationalController {
           handler: this.get.bind(this),
           http: [{ path: "device-manager/:engineId/assets/:_id", verb: "get" }],
         },
-        importAssets: {
-          handler: this.importAssets.bind(this),
-          http: [
-            { path: "device-manager/:engineId/assets/_import", verb: "post" },
-          ],
-        },
         search: {
           handler: this.search.bind(this),
           http: [
@@ -87,30 +62,18 @@ export class AssetController extends RelationalController {
           handler: this.update.bind(this),
           http: [{ path: "device-manager/:engineId/assets/:_id", verb: "put" }],
         },
+        importAssets: {
+          handler: this.importAssets.bind(this),
+          http: [
+            { path: "device-manager/:engineId/assets/_import", verb: "post" },
+          ],
+        },
         getMeasures: {
           handler: this.getMeasures.bind(this),
           http: [
             {
               path: "device-manager/:engineId/assets/:_id/measures",
               verb: "get",
-            },
-          ],
-        },
-        linkCategory: {
-          handler: this.linkCategory.bind(this),
-          http: [
-            {
-              path: "device-manager/:engineId/assets/:_id/_link/category/:categoryId",
-              verb: "put",
-            },
-          ],
-        },
-        unlinkCategory: {
-          handler: this.unlinkCategory.bind(this),
-          http: [
-            {
-              path: "device-manager/:engineId/assets/:_id/_unlink/category/:categoryId",
-              verb: "delete",
             },
           ],
         },
@@ -123,17 +86,8 @@ export class AssetController extends RelationalController {
             },
           ],
         },
-        removeMeasure: {
-          handler: this.removeMeasure.bind(this),
-          http: [
-            {
-              path: "device-manager/:engineId/assets/:_id/measures/:assetMeasureName",
-              verb: "delete",
-            },
-          ],
-        },
-        mRemoveMeasures: {
-          handler: this.mRemoveMeasures.bind(this),
+        removeMeasures: {
+          handler: this.removeMeasures.bind(this),
           http: [
             {
               path: "device-manager/:engineId/assets/:_id/measures",
@@ -146,7 +100,7 @@ export class AssetController extends RelationalController {
     /* eslint-enable sort-keys */
   }
 
-  async mRemoveMeasures(request: KuzzleRequest) {
+  async removeMeasures(request: KuzzleRequest) {
     const id = request.getId();
     const strict = request.getBoolean("strict");
     const engineId = request.getString("engineId");
@@ -154,16 +108,6 @@ export class AssetController extends RelationalController {
 
     return this.assetService.removeMeasures(engineId, id, assetMeasureNames, {
       strict,
-    });
-  }
-
-  async removeMeasure(request: KuzzleRequest) {
-    const id = request.getId();
-    const engineId = request.getString("engineId");
-    const assetMeasureName = request.getString("assetMeasureName");
-
-    return this.assetService.removeMeasures(engineId, id, [assetMeasureName], {
-      strict: true,
     });
   }
 
@@ -187,82 +131,6 @@ export class AssetController extends RelationalController {
     return { measures };
   }
 
-  async get(request: KuzzleRequest) {
-    const id = request.getId();
-    const engineId = request.getString("engineId");
-    const category = this.getFieldPath(
-      request,
-      "category",
-      null,
-      "asset-category"
-    );
-
-    const document = await this.genericGet<BaseAssetContent>(
-      engineId,
-      this.collection,
-      id,
-      [category]
-    );
-    this.assetCategoryService.formatDocumentMetadata(document);
-    return document._source;
-  }
-
-  async unlinkCategory(request: KuzzleRequest) {
-    const id = request.getId();
-    const engineId = request.getString("engineId");
-    const categoryId = request.getString("categoryId");
-    const document = await this.sdk.document.get(engineId, this.collection, id);
-    if (
-      document._source.category !== categoryId &&
-      document._source.subCategory !== categoryId
-    ) {
-      throw global.app.errors.get(
-        "device-manager",
-        "relational_controller",
-        "remove_unexisting_link"
-      );
-    }
-    request.input.body = { category: null, subCategory: null };
-    return this.update(request);
-  }
-
-  async linkCategory(request: KuzzleRequest) {
-    //TODO : verify mandatory metadata (for later)
-    const id = request.getId();
-    const engineId = request.getString("engineId");
-    const categoryId = request.getString("categoryId");
-    const document = await this.sdk.document.get<BaseAssetContent>(
-      engineId,
-      this.collection,
-      id
-    );
-    const categoryDocument = await this.sdk.document.get(
-      engineId,
-      "asset-category",
-      categoryId
-    );
-    const updateRequest = {
-      category: null,
-      subCategory: null,
-    };
-    if (document._source.category) {
-      throw global.app.errors.get(
-        "device-manager",
-        "relational_controller",
-        "already_linked",
-        "asset",
-        "category"
-      );
-    } else if (categoryDocument._source.parent) {
-      updateRequest.category = categoryDocument._source.parent;
-      updateRequest.subCategory = request.getString("categoryId");
-    } else {
-      updateRequest.category = request.getString("categoryId");
-    }
-    request.input.body = updateRequest;
-    return this.update(request);
-  }
-
   async pushMeasures(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
     const assetId = request.getId();
@@ -283,86 +151,6 @@ export class AssetController extends RelationalController {
     return { asset, engineId, invalids, valids };
   }
 
-  async update(request: KuzzleRequest) {
-    const id = request.getId();
-    const engineId = request.getString("engineId");
-    const body = request.getBody();
-
-    const asset = await this.sdk.document.get(engineId, this.collection, id);
-
-    const assetMetadata = request.input.body.metadata;
-    if (assetMetadata) {
-      const previousMetadata = asset._source.metadata
-        ? asset._source.metadata.filter(
-            (m) => !Object.keys(assetMetadata).includes(m.key)
-          )
-        : [];
-      const updatedMetadata =
-        this.assetCategoryService.formatMetadataForES(assetMetadata);
-      request.input.body.metadata = [...updatedMetadata, ...previousMetadata];
-    }
-
-    const response = await global.app.trigger(
-      "device-manager:asset:update:before",
-      {
-        asset,
-        updates: body,
-      }
-    );
-
-    request.input.args.index = engineId;
-    request.input.body = response.updates;
-
-    const result = await super.update(request);
-
-    await global.app.trigger("device-manager:asset:update:after", {
-      asset,
-      updates: result._source,
-    });
-    return result;
-  }
-
-  async create(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
-    const type = request.getBodyString("type");
-    const model = request.getBodyString("model");
-    const reference = request.getBodyString("reference");
-    const category = request.getBody().category;
-    const assetMetadata = request.getBodyObject("metadata", {});
-
-    if (category) {
-      await this.assetCategoryService.validateMetadata(
-        assetMetadata,
-        engineId,
-        category
-      );
-      const assetCategory = await this.sdk.document.get<AssetCategoryContent>(
-        engineId,
-        "asset-category",
-        category
-      );
-      const values = await this.assetCategoryService.getMetadataValues(
-        assetCategory._source,
-        engineId
-      );
-      request.input.body.metadata =
-        await this.assetCategoryService.formatMetadataForES(assetMetadata);
-      request.input.body.metadata = request.input.body.metadata.concat(values);
-    } else {
-      request.input.body.metadata =
-        await this.assetCategoryService.formatMetadataForES(assetMetadata);
-      request.input.body.category = null;
-    }
-    if (!request.input.args._id) {
-      request.input.args._id = BaseAsset.id(type, model, reference);
-    }
-    request.input.args.index = engineId;
-    request.input.body.measures = [];
-    request.input.body.deviceLinks = [];
-    request.input.body.measures = [];
-    return super.create(request);
-  }
-
   async importAssets(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
     const content = request.getBodyString("csv");
@@ -370,39 +158,63 @@ export class AssetController extends RelationalController {
     const assets = await csv({ delimiter: "auto" }).fromString(content);
 
     const results = await this.assetService.importAssets(engineId, assets, {
-      options: { ...request.input.args },
+      options: request.input.args,
       strict: true,
     });
 
     return results;
   }
 
-  async delete(request: KuzzleRequest) {
+
+  async get(request: KuzzleRequest): Promise<AssetGetResult> {
+    const assetId = request.getId();
     const engineId = request.getString("engineId");
-    request.input.args.index = engineId;
+
+    const asset = await this.assetService.get(engineId, assetId);
+
+    return AssetSerializer.serialize(asset);
+  }
+
+  async update(request: KuzzleRequest): Promise<AssetUpdateResult> {
+    const assetId = request.getId();
+    const engineId = request.getString("engineId");
+    const metadata = request.getBody();
+    const refresh = request.getRefresh();
+
+    const updatedAsset = await this.assetService.update(engineId, assetId, metadata, {
+      refresh,
+    });
+
+    return AssetSerializer.serialize(updatedAsset);
+  }
+
+  async create(request: KuzzleRequest): Promise<AssetCreateResult> {
+    const engineId = request.getString("engineId");
+    const model = request.getBodyString('model');
+    const reference = request.getBodyString("reference");
+    const metadata = request.getBodyObject("metadata", {});
+    const refresh = request.getRefresh();
+
+    const asset = await this.assetService.create(engineId, model, reference, metadata, {
+      refresh,
+    });
+
+    return AssetSerializer.serialize(asset);
+  }
+
+  async delete(request: KuzzleRequest): Promise<AssetDeleteResult> {
+    const engineId = request.getString("engineId");
     const assetId = request.getId();
     const refresh = request.getRefresh();
     const strict = request.getBoolean("strict");
 
-    const asset = await this.assetService.get(engineId, assetId);
-
-    for (const deviceLink of asset._source.deviceLinks) {
-      // TODO : Refacto to only get the asset one time
-      await this.deviceService.unlinkAsset(deviceLink.deviceId, {
-        refresh,
-        strict,
-      });
-    }
-
-    return super.delete(request);
+    await this.assetService.delete(engineId, assetId, {
+      refresh,
+      strict,
+    });
   }
 
-  /**
-   * search assets or devices depending on the collection.
-   *
-   * @param request
-   */
-  async search(request: KuzzleRequest) {
+  async search(request: KuzzleRequest): Promise<AssetSearchResult> {
     const engineId = request.getString("engineId");
     const {
       searchBody,
@@ -410,33 +222,15 @@ export class AssetController extends RelationalController {
       size,
       scrollTTL: scroll,
     } = request.getSearchParams();
-    const category = this.getFieldPath(
-      request,
-      "category",
-      null,
-      "asset-category"
-    );
+    const lang = request.getLangParam();
 
-    const res = await this.sdk.document.search<BaseAssetContent>(
-      engineId,
-      this.collection,
-      searchBody,
-      {
-        from,
-        lang: request.getLangParam(),
-        scroll,
-        size,
-      }
-    );
-    for (const hit of res.hits) {
-      const document = await this.esDocumentToFormatted<BaseAssetContent>(
-        engineId,
-        this.collection,
-        hit,
-        [category]
-      );
-      this.assetCategoryService.formatDocumentMetadata(document);
-    }
-    return res;
+    const result = await this.assetService.search(engineId, searchBody, {
+      from,
+      size,
+      scroll,
+      lang,
+    });
+
+    return result;
   }
 }

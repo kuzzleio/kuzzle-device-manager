@@ -1,7 +1,6 @@
 import { KDocumentContent } from "kuzzle";
 
-import { MeasureContent } from "./../../measure";
-import { FormattedMetadata } from "../../asset-category";
+import { MeasureContent } from "../../measure";
 
 /**
  * A jointure link with a device and a match between
@@ -25,14 +24,22 @@ export interface MeasureNamesLink {
   deviceMeasureName: string;
 }
 
+export type MetadataValue = boolean | number | string | { lat: number; lon: number; };
+
+export type Metadata = Record<string, MetadataValue>;
+
 /**
  * Asset document content
  */
-export interface BaseAssetContent extends KDocumentContent {
-  type: string;
-
+export interface AssetContent extends KDocumentContent {
+  /**
+   * Asset model name
+   */
   model: string;
 
+  /**
+   * Asset unique reference
+   */
   reference: string;
 
   /**
@@ -44,13 +51,10 @@ export interface BaseAssetContent extends KDocumentContent {
   /**
    * Asset metadata
    */
-  metadata: FormattedMetadata[];
+  metadata: Metadata;
 
   /**
    * Link with attached device
    */
   deviceLinks: DeviceLink[];
-
-  category: string;
-  subCategory: string;
 }
