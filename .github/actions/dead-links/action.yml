@@ -6,21 +6,21 @@ runs:
     - name: Install deps
       run: npm ci
       shell: bash
-    # - name: Install Kuzdoc (latest minor)
-    #   run: npm i kuzdoc
-    #   shell: bash
-    # - name: Prepare documentation
-    #   run: npm run doc:prepare
-    #   shell: bash
-    # - name: Install docs repositories
-    #   run: npx kuzdoc iterate-repos:install --repos_path doc/framework/.repos/
-    #   shell: bash
-    # - name: Link kuzdoc
-    #   run: npx kuzdoc framework:link -d /official-plugins/device-manager/1/ -v 1
-    #   shell: bash
-    # - name: Install typhoeus
-    #   run: sudo gem install typhoeus
-    #   shell: bash
-    # - name: Run dead links tests
-    #   run: cd doc/framework/ && HYDRA_MAX_CONCURRENCY=20 ruby .ci/dead-links.rb -p src/official-plugins/device-manager/1/
-    #   shell: bash
+    - name: Install Kuzdoc (latest minor)
+      run: npm i kuzdoc
+      shell: bash
+    - name: Prepare documentation
+      run: npm run doc:prepare
+      shell: bash
+    - name: Install docs repositories
+      run: npx kuzdoc iterate-repos:install --repos_path doc/framework/.repos/
+      shell: bash
+    - name: Link kuzdoc
+      run: npx kuzdoc framework:link -d /official-plugins/device-manager/1/ -v 1
+      shell: bash
+    - name: Install typhoeus
+      run: sudo gem install typhoeus
+      shell: bash
+    - name: Run dead links tests
+      run: cd doc/framework/ && HYDRA_MAX_CONCURRENCY=20 ruby .ci/dead-links.rb -p src/official-plugins/device-manager/1/
+      shell: bash
