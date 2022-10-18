@@ -1,9 +1,10 @@
 import csv from "csvtojson";
-import { CRUDController } from "kuzzle-plugin-commons";
 import {
   BadRequestError,
+  ControllerDefinition,
   JSONObject,
   KuzzleRequest,
+  PluginContext,
   PluginImplementationError,
 } from "kuzzle";
 import _ from "lodash";
@@ -11,31 +12,23 @@ import _ from "lodash";
 import { MeasureNamesLink, LinkRequest, AttachRequest } from "./../asset";
 import { DeviceManagerPlugin } from "./../../DeviceManagerPlugin";
 import { DeviceManagerConfiguration } from "./../engine";
-import { AssetCategoryService } from "../asset-category";
 
 import { DeviceService, DeviceBulkContent } from "./DeviceService";
 import { Device } from "./Device";
-import { DeviceContent, EsDeviceContent } from "./types/DeviceContent";
-import { DeviceUnlinkAssetResult } from "./types/DeviceRequests";
+import { DeviceContent } from "./types/DeviceContent";
+import { DeviceDeleteResult, DeviceGetResult, DeviceSearchResult, DeviceUnlinkAssetResult, DeviceUpdateResult } from "./types/DeviceRequests";
+import { DeviceSerializer } from "./DeviceSerializer";
 
-export class DeviceController extends CRUDController {
-  protected config: DeviceManagerConfiguration;
+export class DeviceController {
+  public definition: ControllerDefinition;
 
+  private config: DeviceManagerConfiguration;
   private deviceService: DeviceService;
-  private assetCategoryService: AssetCategoryService;
-
-  protected get sdk() {
-    return this.context.accessors.sdk;
-  }
 
   constructor(
     plugin: DeviceManagerPlugin,
     deviceService: DeviceService,
-    assetCategoryService: AssetCategoryService
   ) {
-    super(plugin, "devices");
-    this.assetCategoryService = assetCategoryService;
-
     this.deviceService = deviceService;
 
     /* eslint-disable sort-keys */
@@ -56,16 +49,26 @@ export class DeviceController extends CRUDController {
             { path: "device-manager/devices/:_id/_detach", verb: "delete" },
           ],
         },
-        get: {
-          handler: this.get.bind(this),
-          http: [
-            { path: "device-manager/:engineId/devices/:_id", verb: "get" },
-          ],
+        mAttachEngines: {
+          handler: this.mAttachEngines.bind(this),
+          http: [{ path: "device-manager/devices/_mAttach", verb: "put" }],
         },
+        mDetachEngines: {
+          handler: this.mDetachEngines.bind(this),
+          http: [{ path: "device-manager/devices/_mDetach", verb: "put" }],
+        },
+
         importDevices: {
           handler: this.importDevices.bind(this),
           http: [{ path: "device-manager/devices/_import", verb: "post" }],
         },
+        prunePayloads: {
+          handler: this.prunePayloads.bind(this),
+          http: [
+            { path: "device-manager/devices/_prunePayloads", verb: "delete" },
+          ],
+        },
+
         linkAsset: {
           handler: this.linkAsset.bind(this),
           http: [
@@ -74,14 +77,6 @@ export class DeviceController extends CRUDController {
               verb: "put",
             },
           ],
-        },
-        mAttachEngines: {
-          handler: this.mAttachEngines.bind(this),
-          http: [{ path: "device-manager/devices/_mAttach", verb: "put" }],
-        },
-        mDetachEngines: {
-          handler: this.mDetachEngines.bind(this),
-          http: [{ path: "device-manager/devices/_mDetach", verb: "put" }],
         },
         mLinkAssets: {
           handler: this.mLinkAssets.bind(this),
@@ -92,12 +87,6 @@ export class DeviceController extends CRUDController {
         mUnlinkAssets: {
           handler: this.mUnlinkAssets.bind(this),
           http: [{ path: "device-manager/devices/_mUnlink", verb: "put" }],
-        },
-        prunePayloads: {
-          handler: this.prunePayloads.bind(this),
-          http: [
-            { path: "device-manager/devices/_prunePayloads", verb: "delete" },
-          ],
         },
         unlinkAsset: {
           handler: this.unlinkAsset.bind(this),
@@ -110,6 +99,12 @@ export class DeviceController extends CRUDController {
         },
 
         // CRUD Controller
+        get: {
+          handler: this.get.bind(this),
+          http: [
+            { path: "device-manager/:engineId/devices/:_id", verb: "get" },
+          ],
+        },
         create: {
           handler: this.create.bind(this),
           http: [{ path: "device-manager/:engineId/devices", verb: "post" }],
@@ -140,16 +135,58 @@ export class DeviceController extends CRUDController {
     /* eslint-enable sort-keys */
   }
 
-  async get(request: KuzzleRequest) {
-    const id = request.getId();
+  async get(request: KuzzleRequest): Promise<DeviceGetResult> {
+    const deviceId = request.getId();
     const engineId = request.getString("engineId");
-    const document = await this.sdk.document.get<EsDeviceContent>(
-      engineId,
-      this.collection,
-      id
-    );
-    this.assetCategoryService.formatDocumentMetadata(document);
-    return document._source;
+
+    const device = await this.deviceService.get(engineId, deviceId);
+
+    return DeviceSerializer.serialize(device);
+  }
+
+  async update(request: KuzzleRequest): Promise<DeviceUpdateResult> {
+    const deviceId = request.getId();
+    const engineId = request.getString("engineId");
+    const metadata = request.getBody();
+    const refresh = request.getRefresh();
+
+    const updatedDevice = await this.deviceService.update(engineId, deviceId, metadata, {
+      refresh,
+    });
+
+    return DeviceSerializer.serialize(updatedDevice);
+  }
+
+  async delete(request: KuzzleRequest): Promise<DeviceDeleteResult> {
+    const engineId = request.getString("engineId");
+    const deviceId = request.getId();
+    const refresh = request.getRefresh();
+    const strict = request.getBoolean("strict");
+
+    await this.deviceService.delete(engineId, deviceId, {
+      refresh,
+      strict,
+    });
+  }
+
+  async search(request: KuzzleRequest): Promise<DeviceSearchResult> {
+    const engineId = request.getString("engineId");
+    const {
+      searchBody,
+      from,
+      size,
+      scrollTTL: scroll,
+    } = request.getSearchParams();
+    const lang = request.getLangParam();
+
+    const result = await this.deviceService.search(engineId, searchBody, {
+      from,
+      size,
+      scroll,
+      lang,
+    });
+
+    return result;
   }
 
   /**
@@ -204,27 +241,6 @@ export class DeviceController extends CRUDController {
     });
 
     return device;
-  }
-
-  async update(request: KuzzleRequest) {
-    request.input.args.index = request.getString("engineId");
-    const rawMetadata = request.getBodyObject("metadata", {});
-    const metadata = this.assetCategoryService.formatMetadataForES(rawMetadata);
-    request.input.body.metadata = metadata;
-
-    return super.update(request);
-  }
-
-  async search(request: KuzzleRequest) {
-    request.input.args.index = request.getString("engineId");
-
-    return super.search(request);
-  }
-
-  async delete(request: KuzzleRequest) {
-    request.input.args.index = request.getString("engineId");
-
-    return super.delete(request);
   }
 
   /**

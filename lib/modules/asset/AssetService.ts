@@ -1,7 +1,6 @@
 import _ from "lodash";
 import {
   BadRequestError,
-  BatchController,
   JSONObject,
   KDocument,
   KHit,
@@ -16,28 +15,22 @@ import { writeToDatabase } from "../../utils";
 import { InternalCollection } from "../../InternalCollection";
 import { mResponse, mRequest } from "../../utils/writeMany";
 import { MeasureContent } from "../measure/";
-import { DeviceManagerConfiguration } from "../engine";
 
 import { Asset } from "./Asset";
 import { AssetContent } from "./types/AssetContent";
-import { EventAssetUpdateBefore } from "./types/AssetEvents";
 import { AssetSerializer } from "./AssetSerializer";
 import { DeviceUnlinkAssetRequest } from "../device/types/DeviceRequests";
+import { lock } from "lib/utils/lock";
 
 export class AssetService {
-  private config: DeviceManagerConfiguration;
   private context: PluginContext;
-  private batch: BatchController;
 
   private get sdk() {
     return this.context.accessors.sdk;
   }
 
-  constructor(plugin: Plugin, batchController: BatchController) {
-    this.config = plugin.config as any;
+  constructor(plugin: Plugin) {
     this.context = plugin.context;
-
-    this.batch = batchController;
   }
 
   /**
@@ -128,19 +121,6 @@ export class AssetService {
     return results;
   }
 
-  private async lock<TReturn>(engineId: string, assetId: string, cb: () => Promise<TReturn>) {
-    const mutex = new Mutex(`asset-${engineId}-${assetId}`);
-
-    try {
-      await mutex.lock();
-
-      return await cb();
-    }
-    finally {
-      await mutex.unlock();
-    }
-  }
-
   public async get(engineId: string, assetId: string): Promise<Asset> {
     const document = await this.sdk.document.get<AssetContent>(
       engineId,
@@ -151,8 +131,13 @@ export class AssetService {
     return new Asset(document._source, document._id);
   }
 
-  public async update(engineId: string, assetId: string, metadata: JSONObject, { refresh }: { refresh: any }): Promise<Asset> {
-    return this.lock<Asset>(engineId, assetId, async () => {
+  public async update(
+    engineId: string,
+    assetId: string,
+    metadata: JSONObject,
+    { refresh }: { refresh: any },
+  ): Promise<Asset> {
+    return lock<Asset>(`asset-${engineId}-${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
       // @todo add type EventAssetUpdateBefore
@@ -190,7 +175,7 @@ export class AssetService {
   ): Promise<Asset> {
     const assetId = AssetSerializer.id(model, reference);
 
-    return this.lock<Asset>(engineId, assetId, async () => {
+    return lock<Asset>(`asset-${engineId}-${assetId}`, async () => {
       const { _source, _id } = await this.sdk.document.create<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
@@ -211,7 +196,7 @@ export class AssetService {
     assetId: string,
     { refresh, strict }: { refresh: any, strict: boolean },
   ) {
-    return this.lock<void>(engineId, assetId, async () => {
+    return lock<void>(`asset-${engineId}-${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
       if (strict && asset._source.deviceLinks.length !== 0) {

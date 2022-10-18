@@ -1,10 +1,11 @@
 import {
   Backend,
   BadRequestError,
-  BatchController,
   JSONObject,
+  KHit,
   Plugin,
   PluginContext,
+  SearchResult,
 } from "kuzzle";
 import _ from "lodash";
 import { v4 as uuidv4 } from "uuid";
@@ -12,8 +13,6 @@ import { v4 as uuidv4 } from "uuid";
 import {
   AttachRequest,
   LinkRequest,
-  BaseAsset,
-  AssetService,
 } from "./../asset";
 import { MeasureContent } from "./../measure";
 import { DeviceManagerConfiguration } from "./../engine";
@@ -23,6 +22,7 @@ import { DecodersRegister } from "../measure";
 
 import { Device } from "./Device";
 import { DeviceContent } from "./types/DeviceContent";
+import { lock } from "lib/utils/lock";
 
 export type DeviceBulkContent = {
   engineId: string;
@@ -33,8 +33,6 @@ export type DeviceBulkContent = {
 export class DeviceService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
-  private batch: BatchController;
-  private assetService: AssetService;
   private decodersRegister: DecodersRegister;
   static eventId = "device-manager:device";
 
@@ -48,16 +46,11 @@ export class DeviceService {
 
   constructor(
     plugin: Plugin,
-    batchController: BatchController,
-    assetService: AssetService,
     decoderRegister: DecodersRegister
   ) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-    this.assetService = assetService;
     this.decodersRegister = decoderRegister;
-
-    this.batch = batchController;
   }
 
   /**
@@ -540,5 +533,80 @@ export class DeviceService {
     });
 
     return tenantExists;
+  }
+
+  public async get(engineId: string, deviceId: string): Promise<Device> {
+    const document = await this.sdk.document.get<DeviceContent>(
+      engineId,
+      InternalCollection.DEVICES,
+      deviceId
+    );
+
+    return new Device(document._source, document._id);
+  }
+
+  public async update(
+    engineId: string,
+    deviceId: string,
+    metadata: JSONObject,
+    { refresh }: { refresh: any },
+  ): Promise<Device> {
+    return lock<Device>(`device-${engineId}-${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId);
+
+      // @todo add type EventDeviceUpdateBefore
+      const updatedPayload = await global.app.trigger(
+        "device-manager:device:update:before",
+        { device, metadata }
+      );
+
+      const { _source, _id } = await this.sdk.document.update<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        deviceId,
+        { metadata: updatedPayload.metadata },
+        { refresh },
+      );
+
+      const updatedDevice = new Device(_source, _id);
+
+      // @todo add type EventDeviceUpdateBefore
+      await global.app.trigger(
+        "device-manager:device:update:after",
+        { device: updatedDevice, metadata: updatedPayload.metadata }
+      );
+
+      return updatedDevice;
+    });
+  }
+
+  public async delete (
+    engineId: string,
+    deviceId: string,
+    { refresh }: { refresh: any },
+  ) {
+    return lock<void>(`device-${engineId}-${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId);
+
+      // @todo remove link in linked asset
+
+      await this.sdk.document.delete(engineId, InternalCollection.DEVICES, deviceId, {
+        refresh,
+      });
+    });
+  }
+
+  public async search (
+    engineId: string,
+    searchBody: JSONObject,
+    { from, size, scroll, lang }: { from?: number, size?: number, scroll?: string, lang?: string },
+  ): Promise<SearchResult<KHit<DeviceContent>>> {
+    const result = await this.sdk.document.search<DeviceContent>(
+      engineId,
+      InternalCollection.DEVICES,
+      searchBody,
+      { from, size, scroll, lang });
+
+    return result;
   }
 }

@@ -43,15 +43,15 @@ export interface AssetContent extends KDocumentContent {
   reference: string;
 
   /**
+   * Asset metadata
+   */
+  metadata: Metadata;
+
+  /**
    * Each most recent measures attached to the asset
    * with a different `deviceMeasureName`
    */
   measures: MeasureContent[];
-
-  /**
-   * Asset metadata
-   */
-  metadata: Metadata;
 
   /**
    * Link with attached device

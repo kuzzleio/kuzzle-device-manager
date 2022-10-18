@@ -1,21 +1,18 @@
-import { JSONObject } from "kuzzle-sdk";
+import { JSONObject } from "kuzzle";
+import _ from "lodash";
 
 import { MeasureContent } from "./../measure";
 import { LinkRequest } from "./../asset";
 
 import { DeviceContent } from "./types/DeviceContent";
-import _ from "lodash";
+import { DeviceSerializer } from "./DeviceSerializer";
 
 export class Device {
-  static id(model: string, reference: string) {
-    return `${model}-${reference}`;
-  }
-
   public _id: string;
   public _source: DeviceContent;
 
   constructor(content: DeviceContent, _id?: string) {
-    this._id = _id || Device.id(content.model, content.reference);
+    this._id = _id || DeviceSerializer.id(content.model, content.reference);
 
     this._source = {
       metadata: [],
@@ -25,13 +22,6 @@ export class Device {
     if (!Array.isArray(this._source.measures)) {
       this._source.measures = [];
     }
-  }
-
-  serialize(): { _id: string; _source: DeviceContent } {
-    return {
-      _id: this._id,
-      _source: this._source,
-    };
   }
 
   public unlinkToAsset() {

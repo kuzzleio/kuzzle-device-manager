@@ -1,37 +1,23 @@
 import csv from "csvtojson";
-import { BadRequestError, ControllerDefinition, KDocument, KuzzleRequest, Plugin, PluginContext } from "kuzzle";
-import { CRUDController } from "kuzzle-plugin-commons";
+import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { MeasureService } from "../measure";
-import { DeviceService } from "../device";
 
-import { Asset } from "./Asset";
 import { AssetService } from "./AssetService";
-import { AssetContent, Metadata } from "./types/AssetContent";
-import { InternalCollection } from "lib/InternalCollection";
 import { AssetCreateResult, AssetDeleteResult, AssetGetResult, AssetSearchResult, AssetUpdateResult } from "./types/AssetRequests";
 import { AssetSerializer } from "./AssetSerializer";
-import { DeviceUnlinkAssetRequest } from "../device/types/DeviceRequests";
 
 export class AssetController {
-  private context: PluginContext;
-  private definition: ControllerDefinition;
+  public definition: ControllerDefinition;
+
   private assetService: AssetService;
-  private deviceService: DeviceService;
   private measureService: MeasureService;
 
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
   constructor(
-    plugin: Plugin,
     assetService: AssetService,
-    deviceService: DeviceService,
     measureService: MeasureService
   ) {
     this.assetService = assetService;
-    this.deviceService = deviceService;
     this.measureService = measureService;
 
     /* eslint-disable sort-keys */
