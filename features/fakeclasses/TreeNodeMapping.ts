@@ -1,4 +1,4 @@
-import { fieldPathMappings } from "../../lib/mappings/fieldpathMappings";
+import { fieldPathMappings } from "../../lib/modules/metadata/collections/fieldpathMappings";
 
 export const TreeNodeMappings = {
   dynamic: "strict",
