@@ -35,3 +35,4 @@ doc/framework
 frontmatter-errors.json
 
 .vscode
+.idea/

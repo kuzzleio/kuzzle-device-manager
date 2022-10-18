@@ -1,11 +1,12 @@
 import { JSONObject, KDocumentContent } from "kuzzle";
 
+import { FormattedMetadata } from "../../asset-category";
 import { MeasureContent } from "../../measure/";
 
 /**
  * Device document content
  */
-export interface DeviceContent extends KDocumentContent {
+export interface BaseDeviceContent extends KDocumentContent {
   /**
    * Device model
    * (This will be auto-filled by Kuzzle)
@@ -23,11 +24,6 @@ export interface DeviceContent extends KDocumentContent {
   measures?: MeasureContent[];
 
   /**
-   * Device metadata
-   */
-  metadata?: JSONObject;
-
-  /**
    * Linked asset unique identifier
    */
   assetId?: string;
@@ -36,4 +32,18 @@ export interface DeviceContent extends KDocumentContent {
    * Attached engine ID (index name)
    */
   engineId?: string;
+}
+
+export interface DeviceContent extends BaseDeviceContent {
+  /**
+   * Device metadata
+   */
+  metadata?: JSONObject;
+}
+
+export interface EsDeviceContent extends BaseDeviceContent {
+  /**
+   * Device metadata
+   */
+  metadata?: FormattedMetadata[];
 }

@@ -1,10 +1,10 @@
 import { JSONObject } from "kuzzle-sdk";
-import _ from "lodash";
 
 import { MeasureContent } from "./../measure";
 import { LinkRequest } from "./../asset";
 
 import { DeviceContent } from "./types/DeviceContent";
+import _ from "lodash";
 
 export class Device {
   static id(model: string, reference: string) {
@@ -18,7 +18,7 @@ export class Device {
     this._id = _id || Device.id(content.model, content.reference);
 
     this._source = {
-      metadata: {},
+      metadata: [],
       ...content,
     };
 

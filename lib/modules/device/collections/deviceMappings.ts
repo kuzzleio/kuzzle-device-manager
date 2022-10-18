@@ -1,3 +1,5 @@
+import { metadataValue } from "../../../modules/metadata";
+
 export const devicesMappings = {
   dynamic: "strict",
   properties: {
@@ -18,10 +20,8 @@ export const devicesMappings = {
         // measures mappings will be injected by the plugin
       },
     },
-    metadata: {
-      dynamic: "false",
-      properties: {},
-    },
+    metadata: metadataValue,
+
     model: {
       fields: {
         text: { type: "text" },

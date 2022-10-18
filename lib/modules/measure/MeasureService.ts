@@ -30,6 +30,7 @@ export class MeasureService {
   private assetService: AssetService;
   private measuresRegister: MeasuresRegister;
   private assetCategoryService: AssetCategoryService;
+
   private get sdk() {
     return this.context.accessors.sdk;
   }
@@ -118,10 +119,10 @@ export class MeasureService {
         measurements,
         payloadUuids
       );
-
-      device.updateMetadata(
+      const deviceMetadata = this.assetCategoryService.formatMetadataForES(
         decodedPayload.getMetadata(device._source.reference)
       );
+      device.updateMetadata(deviceMetadata);
 
       /**
        * Event before starting to process new measures.
@@ -393,6 +394,7 @@ export class MeasureService {
 
         const assetMeasureName =
           measurement.assetMeasureName ?? measurement.type;
+
         const assetInfos = this.getAssetInfos(asset);
         validMeasures.push({
           asset: assetInfos,
