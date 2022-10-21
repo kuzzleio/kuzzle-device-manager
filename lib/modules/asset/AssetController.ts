@@ -40,6 +40,7 @@ export class AssetController {
           handler: this.update.bind(this),
           http: [{ path: "device-manager/:engineId/assets/:_id", verb: "put" }],
         },
+
         getMeasures: {
           handler: this.getMeasures.bind(this),
           http: [
@@ -49,49 +50,9 @@ export class AssetController {
             },
           ],
         },
-        removeMeasures: {
-          handler: this.removeMeasures.bind(this),
-          http: [
-            {
-              path: "device-manager/:engineId/assets/:_id/measures",
-              verb: "delete",
-            },
-          ],
-        },
       },
     };
     /* eslint-enable sort-keys */
-  }
-
-  async removeMeasures(request: KuzzleRequest) {
-    const id = request.getId();
-    const strict = request.getBoolean("strict");
-    const engineId = request.getString("engineId");
-    const assetMeasureNames = request.getBodyArray("assetMeasureNames");
-
-    return this.assetService.removeMeasures(engineId, id, assetMeasureNames, {
-      strict,
-    });
-  }
-
-  async getMeasures(request: KuzzleRequest) {
-    const id = request.getId();
-    const engineId = request.getString("engineId");
-    const size = request.input.args.size;
-    const startAt = request.input.args.startAt;
-    const endAt = request.input.args.endAt;
-    if ((size && startAt) || (size && endAt)) {
-      throw new BadRequestError(
-        'You cannot specify both a "size" and a "startAt" or "endAt"'
-      );
-    }
-    const measures = await this.assetService.measureHistory(engineId, id, {
-      endAt,
-      size,
-      startAt,
-    });
-
-    return { measures };
   }
 
   async get(request: KuzzleRequest) {
@@ -166,5 +127,27 @@ export class AssetController {
     });
 
     return result;
+  }
+
+  async getMeasures(request: KuzzleRequest) {
+    const id = request.getId();
+    const engineId = request.getString("engineId");
+    const size = request.input.args.size;
+    const startAt = request.input.args.startAt ? request.getDate("startAt") : null;
+    const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
+
+    if ((size && startAt) || (size && endAt)) {
+      throw new BadRequestError(
+        'You cannot specify both a "size" and a "startAt" or "endAt"'
+      );
+    }
+
+    const measures = await this.assetService.measureHistory(engineId, id, {
+      endAt,
+      size,
+      startAt,
+    });
+
+    return { measures };
   }
 }

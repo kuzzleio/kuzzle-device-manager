@@ -37,13 +37,6 @@ export function registerTestPipes(app: Backend) {
     }
   );
 
-  checkEventWithDocument(app, "device-manager:device:provisioning:before");
-  checkEventWithDocument(app, "device-manager:device:provisioning:after");
-  checkEventWithDocument(app, "device-manager:device:attach-engine:before");
-  checkEventWithDocument(app, "device-manager:device:attach-engine:after");
-  checkEventWithDocument(app, "device-manager:device:link-asset:before");
-  checkEventWithDocument(app, "device-manager:device:link-asset:after");
-
   // Used in PayloadController.feature
   app.pipe.register(
     "engine:engine-ayse:asset:measures:new",

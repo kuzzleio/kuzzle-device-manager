@@ -1,4 +1,4 @@
-Feature: Device Controller actions
+Feature: Payload Controller actions
 
   Scenario: Clean payloads collection
     Given I successfully execute the action "document":"update" with args:

@@ -68,3 +68,16 @@ export interface ApiAssetSearchRequest extends AssetControllerRequest {
   body: JSONObject;
 }
 export type ApiAssetSearchResult = ReturnType<AssetController["search"]>;
+
+export interface ApiAssetGetMeasuresRequest extends AssetControllerRequest {
+  action: 'getMeasures';
+
+  _id: string;
+
+  size?: number;
+
+  startAt?: string;
+
+  endAt?: string;
+}
+export type ApiAssetGetMeasuresResult = ReturnType<AssetController["getMeasures"]>;

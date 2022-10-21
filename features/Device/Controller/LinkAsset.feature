@@ -64,18 +64,6 @@ Feature: LinkAsset
       | measures[0].asset._id          | "container-FRIDGE-unlinked_1"             |
       | measures[0].origin.id          | "DummyMultiTemp-attached_ayse_unlinked_1" |
 
-  Scenario: Link device to an asset and enriching the asset with before event
-    When I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id      | "DummyMultiTemp-attached_ayse_unlinked_1" |
-      | assetId  | "container-FRIDGE-unlinked_1"             |
-      | engineId | "engine-ayse"                             |
-    Then The document "tests":"events":"device-manager:device:link-asset:before" content match:
-      | device._id | "DummyMultiTemp-attached_ayse_unlinked_1" |
-      | asset._id  | "container-FRIDGE-unlinked_1"             |
-    And The document "tests":"events":"device-manager:device:link-asset:after" content match:
-      | device._id | "DummyMultiTemp-attached_ayse_unlinked_1" |
-      | asset._id  | "container-FRIDGE-unlinked_1"             |
-
   Scenario: Error when device is already linked
     When I successfully execute the action "device-manager/device":"linkAsset" with args:
       | _id      | "DummyMultiTemp-attached_ayse_unlinked_1" |
@@ -87,16 +75,6 @@ Feature: LinkAsset
       | engineId | "engine-ayse"                             |
     Then I should receive an error matching:
       | message | "Device \"DummyMultiTemp-attached_ayse_unlinked_1\" is already linked to an asset." |
-
-  Scenario: Link multiple device to multiple assets using JSON
-    When I successfully execute the action "device-manager/device":"mLinkAssets" with args:
-      | body.linkRequests[0].assetId             | "container-FRIDGE-unlinked_1"             |
-      | body.linkRequests[0].deviceLink.deviceId | "DummyMultiTemp-attached_ayse_unlinked_1" |
-      | engineId                                 | "engine-ayse"                             |
-    Then The document "device-manager":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
-      | assetId | "container-FRIDGE-unlinked_1" |
-    And The document "engine-ayse":"devices":"DummyMultiTemp-attached_ayse_unlinked_1" content match:
-      | assetId | "container-FRIDGE-unlinked_1" |
 
   Scenario: Error when device is not attached to an engine
     When I execute the action "device-manager/device":"linkAsset" with args:

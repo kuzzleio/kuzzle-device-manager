@@ -31,12 +31,6 @@ async function resetEngine(sdk, index) {
 async function createNodeCollection(sdk) {
   await sdk.index.delete("test").catch(() => {});
   await sdk.index.create("test");
-  await Promise.all([
-    sdk.collection.create("test", "node", { mappings: TreeNodeMappings }),
-    sdk.collection.create("test", "invertnode", {
-      mappings: InvertTreeNodeMappings,
-    }),
-  ]);
 }
 
 BeforeAll({ timeout: 30 * 1000 }, async function () {
@@ -80,21 +74,14 @@ Before({ timeout: 30 * 1000 }, async function () {
   await Promise.all([
     truncateCollection(this.sdk, "device-manager", "devices"),
     truncateCollection(this.sdk, "device-manager", "payloads"),
-    removeCatalogEntries(this.sdk, "device-manager"),
 
     truncateCollection(this.sdk, "engine-kuzzle", "assets"),
     truncateCollection(this.sdk, "engine-kuzzle", "measures"),
     truncateCollection(this.sdk, "engine-kuzzle", "devices"),
-    removeCatalogEntries(this.sdk, "engine-kuzzle"),
-    truncateCollection(this.sdk, "engine-kuzzle", "asset-category"),
-    truncateCollection(this.sdk, "engine-kuzzle", "metadata"),
 
     truncateCollection(this.sdk, "engine-ayse", "assets"),
     truncateCollection(this.sdk, "engine-ayse", "measures"),
     truncateCollection(this.sdk, "engine-ayse", "devices"),
-    truncateCollection(this.sdk, "engine-ayse", "asset-category"),
-    truncateCollection(this.sdk, "engine-ayse", "metadata"),
-    removeCatalogEntries(this.sdk, "engine-ayse"),
 
     truncateCollection(this.sdk, "tests", "events"),
   ]);
@@ -212,19 +199,4 @@ async function truncateCollection(sdk, index, collection) {
         throw error;
       }
     });
-}
-
-async function removeCatalogEntries(sdk, index) {
-  return sdk.collection.refresh(index, "config").then(() =>
-    sdk.document.deleteByQuery(
-      index,
-      "config",
-      {
-        query: {
-          equals: { type: "catalog" },
-        },
-      },
-      { lang: "koncorde", refresh: "wait_for" }
-    )
-  );
 }

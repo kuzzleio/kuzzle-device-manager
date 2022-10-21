@@ -60,11 +60,11 @@ export class AssetService {
     };
 
     if (startAt) {
-      query.range.measuredAt.gte = this.iso8601(startAt, "startAt").getTime();
+      query.range.measuredAt.gte = (new Date(startAt)).getTime();
     }
 
     if (endAt) {
-      query.range.measuredAt.lte = this.iso8601(startAt, "endAt").getTime();
+      query.range.measuredAt.lte = (new Date(endAt)).getTime();
     }
 
     const sort = { measuredAt: "desc" };
@@ -190,45 +190,5 @@ export class AssetService {
       { from, size, scroll, lang });
 
     return result;
-  }
-
-  public async removeMeasures(
-    engineId: string,
-    assetId: string,
-    assetMeasureNames: string[],
-    { strict }: { strict?: boolean }
-  ) {
-    const asset = await this.get(engineId, assetId);
-    const result = asset.removeMeasures(assetMeasureNames);
-
-    if (strict && result.notFound.length) {
-      throw new NotFoundError(
-        `AssetMeasureNames "${result.notFound}" in asset "${assetId}" of engine "${engineId}"`
-      );
-    }
-
-    await this.sdk.document.update(
-      engineId,
-      InternalCollection.ASSETS,
-      asset._id,
-      asset._source,
-      { strict }
-    );
-
-    return {
-      asset,
-      ...result,
-    };
-  }
-
-  // @todo remove when we have the date extractor in the core
-  private iso8601(value: string, name: string): Date {
-    const parsed: any = new Date(value);
-
-    if (isNaN(parsed)) {
-      throw new BadRequestError(`"${name}" is not a valid ISO8601 date`);
-    }
-
-    return parsed;
   }
 }
