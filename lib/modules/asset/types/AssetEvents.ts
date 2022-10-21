@@ -1,5 +1,6 @@
-import { Asset } from "../Asset";
-import { MetadataValue } from "./AssetContent";
+import { MetadataValue } from "../../../modules/shared";
+
+import { Asset } from "../model/Asset";
 
 export type EventAssetUpdateBefore = {
   name: 'device-manager:asset:update:before';

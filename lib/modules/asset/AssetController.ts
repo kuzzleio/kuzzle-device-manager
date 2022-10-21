@@ -1,24 +1,16 @@
 import csv from "csvtojson";
 import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
 
-import { MeasureService } from "../measure";
-
 import { AssetService } from "./AssetService";
-import { AssetCreateResult, AssetDeleteResult, AssetGetResult, AssetSearchResult, AssetUpdateResult } from "./types/AssetRequests";
-import { AssetSerializer } from "./AssetSerializer";
+import { AssetSerializer } from "./model/AssetSerializer";
 
 export class AssetController {
   public definition: ControllerDefinition;
 
   private assetService: AssetService;
-  private measureService: MeasureService;
 
-  constructor(
-    assetService: AssetService,
-    measureService: MeasureService
-  ) {
+  constructor(assetService: AssetService) {
     this.assetService = assetService;
-    this.measureService = measureService;
 
     /* eslint-disable sort-keys */
     this.definition = {
@@ -48,27 +40,12 @@ export class AssetController {
           handler: this.update.bind(this),
           http: [{ path: "device-manager/:engineId/assets/:_id", verb: "put" }],
         },
-        importAssets: {
-          handler: this.importAssets.bind(this),
-          http: [
-            { path: "device-manager/:engineId/assets/_import", verb: "post" },
-          ],
-        },
         getMeasures: {
           handler: this.getMeasures.bind(this),
           http: [
             {
               path: "device-manager/:engineId/assets/:_id/measures",
               verb: "get",
-            },
-          ],
-        },
-        pushMeasures: {
-          handler: this.pushMeasures.bind(this),
-          http: [
-            {
-              path: "device-manager/:engineId/assets/:_id/measures",
-              verb: "post",
             },
           ],
         },
@@ -117,51 +94,18 @@ export class AssetController {
     return { measures };
   }
 
-  async pushMeasures(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
-    const assetId = request.getId();
-    const refresh = request.getRefresh();
-    const strict = request.getBoolean("strict");
-    const measures = request.getBodyArray("measures");
-    const kuid = request.getKuid();
-
-    const { asset, invalids, valids } =
-      await this.measureService.registerByAsset(
-        engineId,
-        assetId,
-        measures,
-        kuid,
-        { refresh, strict }
-      );
-
-    return { asset, engineId, invalids, valids };
-  }
-
-  async importAssets(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
-    const content = request.getBodyString("csv");
-
-    const assets = await csv({ delimiter: "auto" }).fromString(content);
-
-    const results = await this.assetService.importAssets(engineId, assets, {
-      options: request.input.args,
-      strict: true,
-    });
-
-    return results;
-  }
-
-
-  async get(request: KuzzleRequest): Promise<AssetGetResult> {
+  async get(request: KuzzleRequest) {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
 
     const asset = await this.assetService.get(engineId, assetId);
 
-    return AssetSerializer.serialize(asset);
+    return {
+      asset: AssetSerializer.serialize(asset),
+    };
   }
 
-  async update(request: KuzzleRequest): Promise<AssetUpdateResult> {
+  async update(request: KuzzleRequest) {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
     const metadata = request.getBody();
@@ -171,10 +115,12 @@ export class AssetController {
       refresh,
     });
 
-    return AssetSerializer.serialize(updatedAsset);
+    return {
+      asset: AssetSerializer.serialize(updatedAsset),
+    }
   }
 
-  async create(request: KuzzleRequest): Promise<AssetCreateResult> {
+  async create(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
     const model = request.getBodyString('model');
     const reference = request.getBodyString("reference");
@@ -185,10 +131,12 @@ export class AssetController {
       refresh,
     });
 
-    return AssetSerializer.serialize(asset);
+    return {
+      asset: AssetSerializer.serialize(asset),
+    }
   }
 
-  async delete(request: KuzzleRequest): Promise<AssetDeleteResult> {
+  async delete(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
     const assetId = request.getId();
     const refresh = request.getRefresh();
@@ -200,7 +148,7 @@ export class AssetController {
     });
   }
 
-  async search(request: KuzzleRequest): Promise<AssetSearchResult> {
+  async search(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
     const {
       searchBody,

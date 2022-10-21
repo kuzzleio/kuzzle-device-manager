@@ -5,7 +5,6 @@ import {
   DecodedPayload,
   TemperatureMeasurement,
   BatteryMeasurement,
-  MeasuresRegister,
 } from "../../../../index";
 
 export class DummyMultiTempDecoder extends Decoder {

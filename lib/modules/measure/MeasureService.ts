@@ -1,35 +1,38 @@
 import {
   Backend,
-  BatchController,
+  BadRequestError,
   JSONObject,
+  KDocument,
   NotFoundError,
   PluginContext,
-  PluginImplementationError,
 } from "kuzzle";
 import _ from "lodash";
 
-import { InternalCollection } from "../../InternalCollection";
-import { DeviceManagerPlugin } from "../../DeviceManagerPlugin";
-import { Device, DeviceContent } from "./../device";
-import { BaseAsset, BaseAssetContent, AssetService } from "./../asset";
-import { AssetCategoryService } from "./../asset-category";
-import { DeviceManagerConfiguration } from "./../engine";
+import {
+  DeviceManagerConfiguration,
+  DeviceManagerPlugin,
+  InternalCollection,
+} from "../../core";
+import { DeviceContent } from "./../device";
 
 import {
   MeasureContent,
   AssetMeasurement,
   Measurement,
 } from "./types/MeasureContent";
-import { DecodedPayload } from "./DecodedPayload";
-import { MeasuresRegister } from "./MeasuresRegister";
+import { Asset, AssetContent } from "../asset";
+import { Device, DeviceSerializer } from "../device";
+import { DigitalTwinContent } from "../shared";
+import { AssetSerializer } from "../asset";
+import { DecodedPayload } from "../decoder";
+
+import { EventMeasureIngest } from "./types/MeasureEvents";
+import { MeasuresRegister } from "../../core/registers/MeasuresRegister";
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
-  private batch: BatchController;
-  private assetService: AssetService;
   private measuresRegister: MeasuresRegister;
-  private assetCategoryService: AssetCategoryService;
 
   private get sdk() {
     return this.context.accessors.sdk;
@@ -41,19 +44,25 @@ export class MeasureService {
 
   constructor(
     plugin: DeviceManagerPlugin,
-    batchController: BatchController,
-    assetService: AssetService,
     measuresRegister: MeasuresRegister,
-    assetCategoryService: AssetCategoryService
   ) {
-    this.assetCategoryService = assetCategoryService;
     this.config = plugin.config as any;
     this.context = plugin.context;
 
-    this.assetService = assetService;
     this.measuresRegister = measuresRegister;
 
-    this.batch = batchController;
+    this.app.pipe.register<EventMeasureIngest>(
+      "device-manager:measure:ingest",
+      async (payload) => {
+        await this.ingest(
+          payload.deviceModel,
+          payload.decodedPayload,
+          payload.payloadUuids,
+          payload.options,
+        );
+
+        return payload;
+      })
   }
 
   /**
@@ -69,7 +78,7 @@ export class MeasureService {
    * @param options.provisionDevice If true and a `decodedPayload` reference a nonexisting device, create this device
    * @param options.refresh Wait for ES indexation
    */
-  public async processDecodedPayload(
+  public async ingest(
     deviceModel: string,
     decodedPayload: DecodedPayload,
     payloadUuids: string[],
@@ -84,23 +93,7 @@ export class MeasureService {
     );
 
     for (const device of devices) {
-      let asset: BaseAsset = null;
-
-      if (device._source.assetId) {
-        try {
-          const { _source, _id } = await this.batch.get<BaseAssetContent>(
-            device._source.engineId,
-            InternalCollection.ASSETS,
-            device._source.assetId
-          );
-
-          asset = new BaseAsset(_source, _id);
-        } catch (error) {
-          this.app.log.error(
-            `[${device._source.engineId}] Cannot find asset "${device._source.assetId}" linked to device "${device._id}".`
-          );
-        }
-      }
+      const asset = await this.tryGetLinkedAsset(device._source.engineId, device._source.assetId);
 
       const measurements = decodedPayload.getMeasurements(
         device._source.reference
@@ -119,10 +112,8 @@ export class MeasureService {
         measurements,
         payloadUuids
       );
-      const deviceMetadata = this.assetCategoryService.formatMetadataForES(
-        decodedPayload.getMetadata(device._source.reference)
-      );
-      device.updateMetadata(deviceMetadata);
+
+      device._source.metadata = _.merge(device._source.metadata, decodedPayload.getMetadata(device._source.reference));
 
       /**
        * Event before starting to process new measures.
@@ -141,7 +132,7 @@ export class MeasureService {
         );
       }
 
-      device.updateMeasures(updatedMeasures);
+      this.mergeMeasures(device, updatedMeasures);
 
       await this.sdk.document.update<DeviceContent>(
         this.config.adminIndex,
@@ -167,9 +158,9 @@ export class MeasureService {
         );
 
         if (asset) {
-          asset.updateMeasures(updatedMeasures);
+          this.mergeMeasures(asset, updatedMeasures);
 
-          await this.sdk.document.update<BaseAssetContent>(
+          await this.sdk.document.update<AssetContent>(
             device._source.engineId,
             InternalCollection.ASSETS,
             asset._id,
@@ -200,25 +191,28 @@ export class MeasureService {
     }
   }
 
-  public getAssetInfos(asset: BaseAsset) {
-    if (asset === null) {
-      return undefined;
+  private mergeMeasures(
+    digitalTwin: KDocument<DigitalTwinContent>,
+    measures: MeasureContent[],
+  ) {
+    for (const newMeasure of measures) {
+      const idx = digitalTwin._source.measures.findIndex(
+        (measure) => measure.deviceMeasureName === newMeasure.deviceMeasureName
+      );
+
+      if (idx === -1) {
+        digitalTwin._source.measures.push(newMeasure);
+      } else if (
+        newMeasure.measuredAt > digitalTwin._source.measures[idx].measuredAt
+      ) {
+        digitalTwin._source.measures[idx] = newMeasure;
+      }
     }
-    return {
-      _id: asset._id,
-      _source: {
-        category: asset._source.category,
-        metadata: asset._source.metadata,
-        model: asset._source.model,
-        reference: asset._source.reference,
-        type: asset._source.type,
-      },
-    };
   }
 
   private buildMeasures(
     device: Device,
-    asset: BaseAsset,
+    asset: Asset,
     measurements: Measurement[],
     payloadUuids: string[]
   ): MeasureContent[] {
@@ -235,15 +229,10 @@ export class MeasureService {
       const deviceMeasureName =
         measurement.deviceMeasureName || measurement.type;
 
-      const assetMeasureName =
-        asset === null
-          ? undefined
-          : this.findAssetMeasureName(device, asset, deviceMeasureName);
-
-      const assetInfos = this.getAssetInfos(asset);
+      const assetMeasureName = this.tryFindAssetMeasureName(device, asset, deviceMeasureName);
 
       const measureContent: MeasureContent = {
-        asset: assetInfos,
+        asset: AssetSerializer.description(asset),
         assetMeasureName,
         deviceMeasureName,
         measuredAt: measurement.measuredAt,
@@ -274,7 +263,7 @@ export class MeasureService {
       refresh,
     }: {
       refresh?: any;
-    }
+    } = {}
   ) {
     const devices: Device[] = [];
 
@@ -282,7 +271,7 @@ export class MeasureService {
     const { successes, errors } = await this.sdk.document.mGet<DeviceContent>(
       this.config.adminIndex,
       InternalCollection.DEVICES,
-      references.map((reference) => Device.id(deviceModel, reference))
+      references.map((reference) => DeviceSerializer.id(deviceModel, reference))
     );
 
     for (const { _source, _id } of successes) {
@@ -291,7 +280,7 @@ export class MeasureService {
 
     // If we have unknown devices, let's check if we should register them
     if (errors.length > 0) {
-      const { _source } = await this.batch.get(
+      const { _source } = await this.sdk.document.get(
         this.config.adminIndex,
         this.config.adminCollections.config.name,
         "plugin--device-manager"
@@ -325,7 +314,7 @@ export class MeasureService {
       const reference = rest.join("-");
 
       return {
-        _id: Device.id(deviceModel, reference),
+        _id: DeviceSerializer.id(deviceModel, reference),
         body: {
           measures: [],
           model: deviceModel,
@@ -369,128 +358,101 @@ export class MeasureService {
   public async registerByAsset(
     engineId: string,
     assetId: string,
-    jsonMeasurements: JSONObject[],
+    measurement: AssetMeasurement,
     kuid: string,
     {
       refresh,
-      strict,
-    }: { refresh?: "wait_for" | "false"; strict?: boolean } = {}
+    }: { refresh?: any } = {}
   ) {
-    const invalidMeasurements: JSONObject[] = [];
-    const validMeasures: MeasureContent[] = [];
-
-    const asset = await this.assetService.get(engineId, assetId);
+    const asset = await this.tryGetLinkedAsset(engineId, assetId);
 
     if (!asset) {
-      throw new NotFoundError(`Asset ${assetId} does not exist`);
+      throw new NotFoundError(`Asset "${assetId}" does not exist`);
     }
 
-    for (const jsonMeasurement of jsonMeasurements) {
-      if (
-        this.validateAssetMeasurement(jsonMeasurement) &&
-        this.measuresRegister.has(jsonMeasurement.type)
-      ) {
-        const measurement = jsonMeasurement as AssetMeasurement;
-
-        const assetMeasureName =
-          measurement.assetMeasureName ?? measurement.type;
-
-        const assetInfos = this.getAssetInfos(asset);
-        validMeasures.push({
-          asset: assetInfos,
-          assetMeasureName,
-          deviceMeasureName: null,
-          measuredAt: measurement.measuredAt || Date.now(),
-          origin: {
-            id: kuid,
-            type: "user",
-          },
-          type: measurement.type,
-          unit: this.measuresRegister.get(measurement.type).unit,
-          values: measurement.values,
-        });
-      } else {
-        invalidMeasurements.push(jsonMeasurement);
-      }
+    if (!measurement.type
+      || !measurement.values
+      || this.measuresRegister.has(measurement.type)
+    ) {
+      throw new BadRequestError(`Invalid measurement for asset "${asset._id}": missing "type", "values" or unknown measure type`);
     }
 
-    if (strict && invalidMeasurements.length) {
-      throw new PluginImplementationError(
-        `Some measure pushed by asset ${assetId} are invalid, all has been blocked`
-      );
+    const measure: MeasureContent<JSONObject> = {
+      asset: AssetSerializer.description(asset),
+      assetMeasureName: measurement.assetMeasureName ?? measurement.type,
+      deviceMeasureName: null,
+      measuredAt: measurement.measuredAt || Date.now(),
+      origin: {
+        id: kuid,
+        type: "user",
+      },
+      type: measurement.type,
+      unit: this.measuresRegister.get(measurement.type).unit,
+      values: measurement.values,
     }
 
-    if (!validMeasures.length) {
-      return {
-        asset: asset.serialize(),
+    this.mergeMeasures(asset, [measure]);
+
+    const [updatedAsset, ] = await Promise.all([
+      this.sdk.document.update<AssetContent>(
         engineId,
-        invalids: invalidMeasurements,
-        valids: [],
-      };
-    }
-
-    asset.updateMeasures(validMeasures);
-
-    await this.sdk.document.update(
-      engineId,
-      InternalCollection.ASSETS,
-      asset._id,
-      { measures: asset._source.measures }
-    );
-
-    await this.historizeEngineMeasures(engineId, validMeasures, { refresh });
+        InternalCollection.ASSETS,
+        asset._id,
+        { measures: asset._source.measures },
+        { refresh },
+      ),
+      this.sdk.document.create<MeasureContent>(
+        engineId,
+        InternalCollection.MEASURES,
+        measure,
+        null,
+        { refresh }
+      ),
+    ]);
 
     return {
-      asset: asset.serialize,
-      engineId,
-      invalids: invalidMeasurements,
-      valids: validMeasures,
+      asset: new Asset(updatedAsset._source, updatedAsset._id),
     };
   }
 
-  /**
-   * Register new measures in the engine
-   */
-  private async historizeEngineMeasures(
-    engineId: string,
-    newMeasures: MeasureContent[],
-    { refresh }: { refresh?: "wait_for" | "false" } = {}
-  ) {
-    await Promise.all(
-      newMeasures.map((measure) => {
-        return this.batch.create<MeasureContent>(
-          engineId,
-          InternalCollection.MEASURES,
-          measure,
-          null,
-          { refresh }
-        );
-      })
-    );
+  private async tryGetLinkedAsset(engineId: string, assetId: string): Promise<Asset> {
+    if (!assetId) {
+      return null;
+    }
+
+    try {
+      const { _source, _id } = await this.sdk.document.get<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        assetId
+      );
+
+      return new Asset(_source, _id);
+    } catch (error) {
+      this.app.log.error(
+        `[${engineId}] Cannot find asset "${assetId}".`
+      );
+
+      return null;
+    }
   }
 
-  private validateAssetMeasurement(toValidate: JSONObject): boolean {
-    return (
-      _.has(toValidate, "values") &&
-      _.has(toValidate, "type") &&
-      this.measuresRegister.has(toValidate.type)
-    );
-  }
-
-  private findAssetMeasureName(
+  private tryFindAssetMeasureName(
     device: Device,
-    asset: BaseAsset,
+    asset: Asset,
     deviceMeasureName: string
   ): string {
+    if (! asset) {
+      return undefined;
+    }
+
     const deviceLink = asset._source.deviceLinks.find(
       (link) => link.deviceId === device._id
     );
 
-    // TOSEE Convert to assert ?
     if (!deviceLink) {
-      throw new PluginImplementationError(
-        `The device "${device._id}" is not linked to the asset "${asset._id}"`
-      );
+      this.app.log.error(`The device "${device._id}" is not linked to the asset "${asset._id}"`);
+      return undefined;
     }
 
     const measureLink = deviceLink.measureNamesLinks.find(

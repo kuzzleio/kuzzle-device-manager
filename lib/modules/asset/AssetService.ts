@@ -4,23 +4,20 @@ import {
   JSONObject,
   KDocument,
   KHit,
-  Mutex,
   NotFoundError,
   Plugin,
   PluginContext,
   SearchResult,
 } from "kuzzle";
 
-import { writeToDatabase } from "../../utils";
-import { InternalCollection } from "../../InternalCollection";
-import { mResponse, mRequest } from "../../utils/writeMany";
+import { InternalCollection } from "../../core/InternalCollection";
 import { MeasureContent } from "../measure/";
 
-import { Asset } from "./Asset";
+import { Asset } from "./model/Asset";
 import { AssetContent } from "./types/AssetContent";
-import { AssetSerializer } from "./AssetSerializer";
-import { DeviceUnlinkAssetRequest } from "../device/types/DeviceRequests";
-import { lock } from "lib/utils/lock";
+import { AssetSerializer } from "./model/AssetSerializer";
+import { ApiDeviceUnlinkAssetRequest } from "../device/types/DeviceApi";
+import { lock } from "../shared/utils/lock";
 
 export class AssetService {
   private context: PluginContext;
@@ -82,45 +79,6 @@ export class AssetService {
     return measures.hits;
   }
 
-  async importAssets(
-    index: string,
-    assets: JSONObject,
-    { strict, options }: { strict?: boolean; options?: JSONObject }
-  ) {
-    const results = {
-      errors: [],
-      successes: [],
-    };
-
-    const assetDocuments = assets.map((asset: AssetContent) => {
-      const _asset = new Asset(asset);
-
-      return {
-        _id: _asset._id,
-        body: _.omit(asset, ["_id"]),
-      };
-    });
-
-    await writeToDatabase(
-      assetDocuments,
-      async (result: mRequest[]): Promise<mResponse> => {
-        const created = await this.sdk.document.mCreate(
-          index,
-          "assets",
-          result,
-          { strict, ...options }
-        );
-
-        return {
-          errors: results.errors.concat(created.errors),
-          successes: results.successes.concat(created.successes),
-        };
-      }
-    );
-
-    return results;
-  }
-
   public async get(engineId: string, assetId: string): Promise<Asset> {
     const document = await this.sdk.document.get<AssetContent>(
       engineId,
@@ -137,7 +95,7 @@ export class AssetService {
     metadata: JSONObject,
     { refresh }: { refresh: any },
   ): Promise<Asset> {
-    return lock<Asset>(`asset-${engineId}-${assetId}`, async () => {
+    return lock<Asset>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
       // @todo add type EventAssetUpdateBefore
@@ -175,7 +133,7 @@ export class AssetService {
   ): Promise<Asset> {
     const assetId = AssetSerializer.id(model, reference);
 
-    return lock<Asset>(`asset-${engineId}-${assetId}`, async () => {
+    return lock<Asset>(`asset:${engineId}:${assetId}`, async () => {
       const { _source, _id } = await this.sdk.document.create<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
@@ -196,7 +154,7 @@ export class AssetService {
     assetId: string,
     { refresh, strict }: { refresh: any, strict: boolean },
   ) {
-    return lock<void>(`asset-${engineId}-${assetId}`, async () => {
+    return lock<void>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
       if (strict && asset._source.deviceLinks.length !== 0) {
@@ -204,9 +162,9 @@ export class AssetService {
       }
 
       for (const { deviceId } of asset._source.deviceLinks) {
-        const req: DeviceUnlinkAssetRequest = {
+        const req: ApiDeviceUnlinkAssetRequest = {
           controller: "device-manager/devices",
-          action: "update",
+          action: "unlinkAsset",
           engineId,
           _id: deviceId,
         };

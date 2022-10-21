@@ -1,9 +1,7 @@
 import _ from "lodash";
 import { Backend } from "kuzzle";
 
-import { BaseAsset } from "../../../lib/modules/asset";
-import { Device } from "../../../lib/modules/device";
-import { MeasureContent } from "../../../lib/modules/measure";
+import { Asset, Device, MeasureContent } from "../../../index";
 
 function checkEventWithDocument(app: Backend, event: string) {
   app.pipe.register(event, async (payload) => {
@@ -23,7 +21,7 @@ export function registerTestPipes(app: Backend) {
       device,
       measures,
     }: {
-      asset: BaseAsset;
+      asset: Asset;
       device: Device;
       measures: MeasureContent[];
     }) => {

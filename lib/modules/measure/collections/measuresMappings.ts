@@ -1,7 +1,5 @@
 /* eslint-disable sort-keys */
 
-import { metadataValue } from "./../../metadata";
-
 export const measuresMappings = {
   dynamic: "strict",
   properties: {
@@ -48,11 +46,11 @@ export const measuresMappings = {
         _id: { type: "keyword" },
         _source: {
           properties: {
-            category: { type: "keyword" },
-            metadata: metadataValue,
+            metadata: {
+              // @todo to be populated
+            },
             model: { type: "keyword" },
             reference: { type: "keyword" },
-            type: { type: "keyword" },
           },
         },
       },

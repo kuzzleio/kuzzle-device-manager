@@ -1,6 +1,6 @@
 import { JSONObject, KDocumentContent } from "kuzzle";
 
-import { FormattedMetadata } from "./../../asset-category";
+import { AssetDescription } from "../../../modules/asset";
 
 import { MeasureUnit } from "./MeasureDefinition";
 
@@ -68,16 +68,7 @@ export interface MeasureContent<
   /**
    * Asset linked to the device when the measure was made
    */
-  asset?: {
-    _id: string;
-    _source: {
-      category: string;
-      metadata: FormattedMetadata[];
-      model: string;
-      reference: string;
-      type: string;
-    };
-  };
+  asset?: AssetDescription;
 
   /**
    * Define the origin of the measure.
