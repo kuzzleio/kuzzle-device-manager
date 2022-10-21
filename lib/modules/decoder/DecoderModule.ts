@@ -10,6 +10,7 @@ export class DecoderModule extends Module {
 
   // @todo temporary until registers refactor
   private get decodersRegister() {
+    // eslint-disable-next-line dot-notation
     return this.plugin["decodersRegister"];
   }
 

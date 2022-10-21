@@ -101,8 +101,6 @@ export class DecodersRegister {
   /**
    * Build the PayloadController with registered decoders
    *
-   * @todo generate OpenAPI specification
-   *
    * @internal
    */
   getPayloadController(payloadService: PayloadService): ControllerDefinition {

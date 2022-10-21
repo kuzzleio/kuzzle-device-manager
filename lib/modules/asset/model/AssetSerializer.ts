@@ -29,9 +29,9 @@ export class AssetSerializer {
 
     return {
       id: asset._id,
+      metadata: asset._source.metadata,
       model: asset._source.model,
       reference: asset._source.reference,
-      metadata: asset._source.metadata,
     };
   }
 }

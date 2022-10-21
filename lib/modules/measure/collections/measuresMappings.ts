@@ -43,14 +43,12 @@ export const measuresMappings = {
     },
     asset: {
       properties: {
-        _id: { type: "keyword" },
-        _source: {
+        id: { type: "keyword" },
+        model: { type: "keyword" },
+        reference: { type: "keyword" },
+        metadata: {
           properties: {
-            metadata: {
-              // @todo to be populated
-            },
-            model: { type: "keyword" },
-            reference: { type: "keyword" },
+            // @todo to be populated
           },
         },
       },

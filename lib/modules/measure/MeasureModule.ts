@@ -9,6 +9,7 @@ export class MeasureModule extends Module {
 
   // @todo temporary until register refactor
   protected get measuresRegister() {
+    // eslint-disable-next-line dot-notation
     return this.plugin["measuresRegister"];
   }
 

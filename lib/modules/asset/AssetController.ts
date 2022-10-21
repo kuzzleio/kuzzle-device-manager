@@ -1,4 +1,3 @@
-import csv from "csvtojson";
 import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { AssetService } from "./AssetService";
@@ -132,9 +131,9 @@ export class AssetController {
 
     const result = await this.assetService.search(engineId, searchBody, {
       from,
-      size,
-      scroll,
       lang,
+      scroll,
+      size,
     });
 
     return result;

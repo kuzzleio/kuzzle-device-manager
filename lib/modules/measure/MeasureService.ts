@@ -26,7 +26,13 @@ import { DigitalTwinContent } from "../shared";
 import { AssetSerializer } from "../asset";
 import { DecodedPayload } from "../decoder";
 
-import { EventMeasureIngest } from "./types/MeasureEvents";
+import {
+  EventMeasureIngest,
+  EventMeasureProcessAfter,
+  EventMeasureProcessBefore,
+  TenantEventMeasureProcessAfter,
+  TenantEventMeasureProcessBefore,
+} from "./types/MeasureEvents";
 import { MeasuresRegister } from "../../core/registers/MeasuresRegister";
 
 export class MeasureService {
@@ -49,13 +55,13 @@ export class MeasureService {
     this.measuresRegister = measuresRegister;
 
     this.app.pipe.register<EventMeasureIngest>(
-      "device-manager:measure:ingest",
+      "device-manager:measures:ingest",
       async (payload) => {
         await this.ingest(
           payload.deviceModel,
           payload.decodedPayload,
           payload.payloadUuids,
-          payload.options
+          { refresh: payload.refresh }
         );
 
         return payload;
@@ -124,13 +130,14 @@ export class MeasureService {
        *
        * Useful to enrich measures before they are saved.
        */
-      const { measures: updatedMeasures } = await this.app.trigger(
-        "device-manager:measures:process:before",
-        { asset, device, measures }
-      );
+      const { measures: updatedMeasures } =
+        await this.app.trigger<EventMeasureProcessBefore>(
+          "device-manager:measures:process:before",
+          { asset, device, measures }
+        );
 
       if (device._source.engineId) {
-        await this.app.trigger(
+        await this.app.trigger<TenantEventMeasureProcessBefore>(
           `engine:${device._source.engineId}:device-manager:measures:process:before`,
           { asset, device, measures }
         );
@@ -153,7 +160,6 @@ export class MeasureService {
           device._source
         );
 
-        // @todo replace by batch.mCreate when available
         await this.sdk.document.mCreate<MeasureContent>(
           device._source.engineId,
           InternalCollection.MEASURES,
@@ -180,14 +186,17 @@ export class MeasureService {
        *
        * @todo test this
        */
-      await this.app.trigger("device-manager:measures:process:after", {
-        asset,
-        device,
-        measures,
-      });
+      await this.app.trigger<EventMeasureProcessAfter>(
+        "device-manager:measures:process:after",
+        {
+          asset,
+          device,
+          measures,
+        }
+      );
 
       if (device._source.engineId) {
-        await this.app.trigger(
+        await this.app.trigger<TenantEventMeasureProcessAfter>(
           `engine:${device._source.engineId}:device-manager:measures:process:after`,
           { asset, device, measures }
         );
@@ -275,7 +284,6 @@ export class MeasureService {
   ) {
     const devices: Device[] = [];
 
-    // @todo replace with batch.mGet when available
     const { successes, errors } = await this.sdk.document.mGet<DeviceContent>(
       this.config.adminIndex,
       InternalCollection.DEVICES,
@@ -331,7 +339,6 @@ export class MeasureService {
       };
     });
 
-    // @todo replace with batch.mCreate when available
     const { successes, errors } =
       await this.sdk.document.mCreate<DeviceContent>(
         this.config.adminIndex,

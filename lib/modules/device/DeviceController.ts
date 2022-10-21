@@ -139,9 +139,9 @@ export class DeviceController {
 
     const result = await this.deviceService.search(engineId, searchBody, {
       from,
-      size,
-      scroll,
       lang,
+      scroll,
+      size,
     });
 
     return result;
@@ -174,9 +174,9 @@ export class DeviceController {
     const device = await this.deviceService.create(model, reference, metadata, {
       engineId,
       linkRequest: {
-        engineId,
         assetId,
         deviceId: DeviceSerializer.id(model, reference),
+        engineId,
         measureNamesLinks,
       },
       refresh,
@@ -210,7 +210,6 @@ export class DeviceController {
 
   /**
    * Link a device to an asset.
-   * @todo there is no restriction according to tenant index? (same problem everywhere)
    */
   async linkAsset(request: KuzzleRequest) {
     const deviceId = request.getId();

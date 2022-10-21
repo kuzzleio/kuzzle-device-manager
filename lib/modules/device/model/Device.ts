@@ -1,8 +1,4 @@
-import { JSONObject } from "kuzzle";
-import _ from "lodash";
-
 import { MeasureContent } from "../../measure";
-import { LinkRequest } from "../../asset";
 
 import { DeviceContent } from "../types/DeviceContent";
 import { DeviceSerializer } from "./DeviceSerializer";

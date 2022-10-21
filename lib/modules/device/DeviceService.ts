@@ -1,4 +1,5 @@
 import {
+  Backend,
   BadRequestError,
   JSONObject,
   KHit,
@@ -6,7 +7,6 @@ import {
   PluginContext,
   SearchResult,
 } from "kuzzle";
-import _ from "lodash";
 
 import { Asset, AssetContent, LinkRequest, DeviceLink } from "./../asset";
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
@@ -15,6 +15,11 @@ import { lock } from "../shared/utils/lock";
 import { Device } from "./model/Device";
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
+import {
+  EventDeviceUpdateAfter,
+  EventDeviceUpdateBefore,
+} from "./types/DeviceEvents";
+import { Metadata } from "../shared";
 
 export class DeviceService {
   private config: DeviceManagerConfiguration;
@@ -22,6 +27,10 @@ export class DeviceService {
 
   private get sdk() {
     return this.context.accessors.sdk;
+  }
+
+  private get app(): Backend {
+    return global.app;
   }
 
   constructor(plugin: Plugin) {
@@ -47,7 +56,7 @@ export class DeviceService {
     } = {}
   ): Promise<Device> {
     let device = new Device(
-      { model, reference, metadata, measures: [] },
+      { measures: [], metadata, model, reference },
       DeviceSerializer.id(model, reference)
     );
 
@@ -67,16 +76,16 @@ export class DeviceService {
       device._source = _source;
 
       refreshableCollections.push({
-        index: this.config.adminIndex,
         collection: InternalCollection.DEVICES,
+        index: this.config.adminIndex,
       });
 
       if (engineId) {
         device = await this.attachEngine(engineId, device._id);
 
         refreshableCollections.push({
-          index: engineId,
           collection: InternalCollection.DEVICES,
+          index: engineId,
         });
 
         if (linkRequest) {
@@ -90,8 +99,8 @@ export class DeviceService {
           device = ret.device;
 
           refreshableCollections.push({
-            index: engineId,
             collection: InternalCollection.ASSETS,
+            index: engineId,
           });
         }
       }
@@ -121,14 +130,13 @@ export class DeviceService {
   public async update(
     engineId: string,
     deviceId: string,
-    metadata: JSONObject,
+    metadata: Metadata,
     { refresh }: { refresh: any }
   ): Promise<Device> {
     return lock<Device>(`device:update:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId);
 
-      // @todo add type EventDeviceUpdateBefore
-      const updatedPayload = await global.app.trigger(
+      const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
         "device-manager:device:update:before",
         { device, metadata }
       );
@@ -143,11 +151,13 @@ export class DeviceService {
 
       const updatedDevice = new Device(_source, _id);
 
-      // @todo add type EventDeviceUpdateBefore
-      await global.app.trigger("device-manager:device:update:after", {
-        device: updatedDevice,
-        metadata: updatedPayload.metadata,
-      });
+      await this.app.trigger<EventDeviceUpdateAfter>(
+        "device-manager:device:update:after",
+        {
+          device: updatedDevice,
+          metadata: updatedPayload.metadata,
+        }
+      );
 
       return updatedDevice;
     });
@@ -161,16 +171,51 @@ export class DeviceService {
     return lock<void>(`device:delete:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId);
 
-      // @todo remove link in linked asset
+      const promises = [];
 
-      await this.sdk.document.delete(
-        engineId,
-        InternalCollection.DEVICES,
-        deviceId,
-        {
-          refresh,
-        }
+      if (device._source.assetId) {
+        const asset = await this.sdk.document.get<AssetContent>(
+          engineId,
+          InternalCollection.ASSETS,
+          device._source.assetId
+        );
+
+        const deviceLinks = asset._source.deviceLinks.filter(
+          (link) => link.deviceId !== device._id
+        );
+
+        promises.push(
+          // Potential race condition if someone update the asset deviceLinks
+          // at the same time (e.g link or unlink asset)
+          this.sdk.document.update<AssetContent>(
+            engineId,
+            InternalCollection.ASSETS,
+            device._source.assetId,
+            { deviceLinks },
+            { refresh }
+          )
+        );
+      }
+
+      promises.push(
+        this.sdk.document.delete(
+          this.config.adminIndex,
+          InternalCollection.DEVICES,
+          deviceId,
+          { refresh }
+        )
       );
+
+      promises.push(
+        this.sdk.document.delete(
+          engineId,
+          InternalCollection.DEVICES,
+          deviceId,
+          { refresh }
+        )
+      );
+
+      await Promise.all(promises);
     });
   }
 
@@ -188,7 +233,7 @@ export class DeviceService {
       engineId,
       InternalCollection.DEVICES,
       searchBody,
-      { from, size, scroll, lang }
+      { from, lang, scroll, size }
     );
 
     return result;
@@ -478,8 +523,6 @@ export class DeviceService {
       return { asset: updatedAsset, device: updatedDevice };
     });
   }
-
-  public async;
 
   private async checkEngineExists(engineId: string) {
     const { result: exists } = await this.sdk.query({

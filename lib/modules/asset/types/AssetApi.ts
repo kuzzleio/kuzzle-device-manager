@@ -1,6 +1,5 @@
 import { JSONObject } from "kuzzle";
 
-import { AssetMeasurement } from "../../../modules/measure";
 import { Metadata } from "../../shared";
 import { AssetController } from "../AssetController";
 

@@ -1,10 +1,9 @@
-import _ from "lodash";
 import {
+  Backend,
   BadRequestError,
   JSONObject,
   KDocument,
   KHit,
-  NotFoundError,
   Plugin,
   PluginContext,
   SearchResult,
@@ -18,12 +17,21 @@ import { AssetContent } from "./types/AssetContent";
 import { AssetSerializer } from "./model/AssetSerializer";
 import { ApiDeviceUnlinkAssetRequest } from "../device/types/DeviceApi";
 import { lock } from "../shared/utils/lock";
+import {
+  EventAssetUpdateAfter,
+  EventAssetUpdateBefore,
+} from "./types/AssetEvents";
+import { Metadata } from "../shared";
 
 export class AssetService {
   private context: PluginContext;
 
   private get sdk() {
     return this.context.accessors.sdk;
+  }
+
+  private get app(): Backend {
+    return global.app;
   }
 
   constructor(plugin: Plugin) {
@@ -92,14 +100,13 @@ export class AssetService {
   public async update(
     engineId: string,
     assetId: string,
-    metadata: JSONObject,
+    metadata: Metadata,
     { refresh }: { refresh: any }
   ): Promise<Asset> {
     return lock<Asset>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
-      // @todo add type EventAssetUpdateBefore
-      const updatedPayload = await global.app.trigger(
+      const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
         "device-manager:asset:update:before",
         { asset, metadata }
       );
@@ -114,11 +121,13 @@ export class AssetService {
 
       const updatedAsset = new Asset(_source, _id);
 
-      // @todo add type EventAssetUpdateBefore
-      await global.app.trigger("device-manager:asset:update:after", {
-        asset: updatedAsset,
-        metadata: updatedPayload.metadata,
-      });
+      await this.app.trigger<EventAssetUpdateAfter>(
+        "device-manager:asset:update:after",
+        {
+          asset: updatedAsset,
+          metadata: updatedPayload.metadata,
+        }
+      );
 
       return updatedAsset;
     });
@@ -138,9 +147,9 @@ export class AssetService {
         engineId,
         InternalCollection.ASSETS,
         {
+          metadata,
           model,
           reference,
-          metadata,
         },
         assetId,
         { refresh }
@@ -166,10 +175,10 @@ export class AssetService {
 
       for (const { deviceId } of asset._source.deviceLinks) {
         const req: ApiDeviceUnlinkAssetRequest = {
-          controller: "device-manager/devices",
-          action: "unlinkAsset",
-          engineId,
           _id: deviceId,
+          action: "unlinkAsset",
+          controller: "device-manager/devices",
+          engineId,
         };
 
         await this.sdk.query(req);
@@ -200,7 +209,7 @@ export class AssetService {
       engineId,
       InternalCollection.ASSETS,
       searchBody,
-      { from, size, scroll, lang }
+      { from, lang, scroll, size }
     );
 
     return result;

@@ -55,12 +55,12 @@ export class PayloadService {
     const decodedPayload = await decoder.decode(payload, request);
 
     await this.app.trigger<EventMeasureIngest>(
-      "device-manager:measure:ingest",
+      "device-manager:measures:ingest",
       {
-        deviceModel: decoder.deviceModel,
         decodedPayload,
+        deviceModel: decoder.deviceModel,
         payloadUuids: [uuid],
-        options: { refresh },
+        refresh,
       }
     );
   }
