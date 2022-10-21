@@ -12,7 +12,6 @@ import { Decoder, DecoderContent } from "../../modules/decoder";
 
 import { MeasuresRegister } from "./MeasuresRegister";
 
-
 export class DecodersRegister {
   private measuresRegister: MeasuresRegister;
   private context: PluginContext;

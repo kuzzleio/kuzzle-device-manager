@@ -5,20 +5,20 @@ import { DeviceController } from "../DeviceController";
 import { Metadata } from "../../shared";
 
 interface DeviceControllerRequest {
-  controller: 'device-manager/devices';
+  controller: "device-manager/devices";
 
   engineId: string;
 }
 
 export interface ApiDeviceGetRequest extends DeviceControllerRequest {
-  action: 'get';
+  action: "get";
 
   _id: string;
 }
 export type ApiDeviceGetResult = ReturnType<DeviceController["get"]>;
 
 export interface ApiDeviceUpdateRequest extends DeviceControllerRequest {
-  action: 'update';
+  action: "update";
 
   _id: string;
 
@@ -26,12 +26,12 @@ export interface ApiDeviceUpdateRequest extends DeviceControllerRequest {
 
   body: {
     metadata: Metadata;
-  }
+  };
 }
 export type ApiDeviceUpdateResult = ReturnType<DeviceController["update"]>;
 
 export interface ApiDeviceCreateRequest extends DeviceControllerRequest {
-  action: 'create';
+  action: "create";
 
   refresh?: string;
 
@@ -45,12 +45,12 @@ export interface ApiDeviceCreateRequest extends DeviceControllerRequest {
     assetId?: string;
 
     measureNamesLinks?: DeviceLink["measureNamesLinks"];
-  }
+  };
 }
 export type ApiDeviceCreateResult = ReturnType<DeviceController["create"]>;
 
 export interface ApiDeviceDeleteRequest extends DeviceControllerRequest {
-  action: 'delete';
+  action: "delete";
 
   _id: string;
 
@@ -58,10 +58,10 @@ export interface ApiDeviceDeleteRequest extends DeviceControllerRequest {
 
   strict?: boolean;
 }
-export type ApiDeviceDeleteResult = ReturnType<DeviceController["delete"]>;;
+export type ApiDeviceDeleteResult = ReturnType<DeviceController["delete"]>;
 
 export interface ApiDeviceSearchRequest extends DeviceControllerRequest {
-  action: 'search';
+  action: "search";
 
   from?: number;
 
@@ -71,11 +71,10 @@ export interface ApiDeviceSearchRequest extends DeviceControllerRequest {
 
   body: JSONObject;
 }
-export type ApiDeviceSearchResult = ReturnType<DeviceController["search"]>;;
-
+export type ApiDeviceSearchResult = ReturnType<DeviceController["search"]>;
 
 export interface ApiDeviceUnlinkAssetRequest extends DeviceControllerRequest {
-  action: 'unlinkAsset';
+  action: "unlinkAsset";
 
   _id: string;
 
@@ -83,28 +82,34 @@ export interface ApiDeviceUnlinkAssetRequest extends DeviceControllerRequest {
 
   refresh?: string;
 }
-export type ApiDeviceUnlinkAssetResult = ReturnType<DeviceController["unlinkAsset"]>;
+export type ApiDeviceUnlinkAssetResult = ReturnType<
+  DeviceController["unlinkAsset"]
+>;
 
 export interface ApiDeviceAttachEngineRequest extends DeviceControllerRequest {
-  action: 'attachEngine';
+  action: "attachEngine";
 
   _id: string;
 
   refresh?: string;
 }
-export type ApiDeviceAttachEngineResult = ReturnType<DeviceController["attachEngine"]>;;
+export type ApiDeviceAttachEngineResult = ReturnType<
+  DeviceController["attachEngine"]
+>;
 
 export interface ApiDeviceDetachEngineRequest extends DeviceControllerRequest {
-  action: 'detachEngine';
+  action: "detachEngine";
 
   _id: string;
 
   refresh?: string;
 }
-export type ApiDeviceDetachEngineResult = ReturnType<DeviceController["detachEngine"]>;;
+export type ApiDeviceDetachEngineResult = ReturnType<
+  DeviceController["detachEngine"]
+>;
 
 export interface ApiDeviceLinkAssetRequest extends DeviceControllerRequest {
-  action: 'linkAsset';
+  action: "linkAsset";
 
   _id: string;
 
@@ -114,6 +119,8 @@ export interface ApiDeviceLinkAssetRequest extends DeviceControllerRequest {
 
   body?: {
     measureNamesLinks?: DeviceLink["measureNamesLinks"];
-  }
+  };
 }
-export type ApiDeviceLinkAssetResult = ReturnType<DeviceController["linkAsset"]>;
+export type ApiDeviceLinkAssetResult = ReturnType<
+  DeviceController["linkAsset"]
+>;

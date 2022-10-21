@@ -5,20 +5,20 @@ import { Metadata } from "../../shared";
 import { AssetController } from "../AssetController";
 
 interface AssetControllerRequest {
-  controller: 'device-manager/assets';
+  controller: "device-manager/assets";
 
   engineId: string;
 }
 
 export interface ApiAssetGetRequest extends AssetControllerRequest {
-  action: 'get';
+  action: "get";
 
   _id: string;
 }
 export type ApiAssetGetResult = ReturnType<AssetController["get"]>;
 
 export interface ApiAssetUpdateRequest extends AssetControllerRequest {
-  action: 'update';
+  action: "update";
 
   _id: string;
 
@@ -26,12 +26,12 @@ export interface ApiAssetUpdateRequest extends AssetControllerRequest {
 
   body: {
     metadata: Metadata;
-  }
+  };
 }
-export type ApiAssetUpdateResult = ReturnType<AssetController["update"]>
+export type ApiAssetUpdateResult = ReturnType<AssetController["update"]>;
 
 export interface ApiAssetCreateRequest extends AssetControllerRequest {
-  action: 'create';
+  action: "create";
 
   refresh?: string;
 
@@ -41,12 +41,12 @@ export interface ApiAssetCreateRequest extends AssetControllerRequest {
     reference: string;
 
     metadata?: Metadata;
-  }
+  };
 }
 export type ApiAssetCreateResult = ReturnType<AssetController["create"]>;
 
 export interface ApiAssetDeleteRequest extends AssetControllerRequest {
-  action: 'delete';
+  action: "delete";
 
   _id: string;
 
@@ -57,7 +57,7 @@ export interface ApiAssetDeleteRequest extends AssetControllerRequest {
 export type ApiAssetDeleteResult = ReturnType<AssetController["delete"]>;
 
 export interface ApiAssetSearchRequest extends AssetControllerRequest {
-  action: 'search';
+  action: "search";
 
   from?: number;
 
@@ -70,7 +70,7 @@ export interface ApiAssetSearchRequest extends AssetControllerRequest {
 export type ApiAssetSearchResult = ReturnType<AssetController["search"]>;
 
 export interface ApiAssetGetMeasuresRequest extends AssetControllerRequest {
-  action: 'getMeasures';
+  action: "getMeasures";
 
   _id: string;
 
@@ -80,4 +80,6 @@ export interface ApiAssetGetMeasuresRequest extends AssetControllerRequest {
 
   endAt?: string;
 }
-export type ApiAssetGetMeasuresResult = ReturnType<AssetController["getMeasures"]>;
+export type ApiAssetGetMeasuresResult = ReturnType<
+  AssetController["getMeasures"]
+>;

@@ -1,9 +1,4 @@
-import {
-  Backend,
-  JSONObject,
-  KuzzleRequest,
-  PluginContext,
-} from "kuzzle";
+import { Backend, JSONObject, KuzzleRequest, PluginContext } from "kuzzle";
 import { v4 as uuidv4 } from "uuid";
 
 import { DeviceManagerPlugin, DeviceManagerConfiguration } from "../../core";
@@ -23,9 +18,7 @@ export class PayloadService {
     return global.app;
   }
 
-  constructor(
-    plugin: DeviceManagerPlugin,
-  ) {
+  constructor(plugin: DeviceManagerPlugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
   }
@@ -68,7 +61,8 @@ export class PayloadService {
         decodedPayload,
         payloadUuids: [uuid],
         options: { refresh },
-      })
+      }
+    );
   }
 
   /**
@@ -96,10 +90,10 @@ export class PayloadService {
     }
   }
 
-  public async prune (
+  public async prune(
     days: number,
     onlyValid: boolean,
-    { deviceModel }: { deviceModel?: string } = {},
+    { deviceModel }: { deviceModel?: string } = {}
   ): Promise<number> {
     const filter = [];
 

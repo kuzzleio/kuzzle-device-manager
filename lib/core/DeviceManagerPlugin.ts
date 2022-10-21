@@ -205,7 +205,7 @@ export class DeviceManagerPlugin extends Plugin {
       this.context.log.info(
         "Default rights for payload controller has been registered."
       );
-    }
+    };
 
     this.decodersRegister.printDecoders();
 

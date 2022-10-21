@@ -10,7 +10,10 @@ export class DecoderController {
 
   public definition: ControllerDefinition;
 
-  constructor(payloadService: PayloadService, decodersRegister: DecodersRegister) {
+  constructor(
+    payloadService: PayloadService,
+    decodersRegister: DecodersRegister
+  ) {
     this.payloadService = payloadService;
     this.decodersRegister = decodersRegister;
 
@@ -36,12 +39,14 @@ export class DecoderController {
   /**
    * Clean payload collection for a time period
    */
-   async prunePayloads(request: KuzzleRequest) {
+  async prunePayloads(request: KuzzleRequest) {
     const days = request.getBodyNumber("days");
     const deviceModel = request.input.body.deviceModel;
     const onlyValid = request.input.body.onlyValid ?? true;
 
-    const deleted = await this.payloadService.prune(days, onlyValid, { deviceModel });
+    const deleted = await this.payloadService.prune(days, onlyValid, {
+      deviceModel,
+    });
 
     return { deleted };
   }

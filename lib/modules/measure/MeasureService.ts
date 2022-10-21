@@ -42,10 +42,7 @@ export class MeasureService {
     return global.app;
   }
 
-  constructor(
-    plugin: DeviceManagerPlugin,
-    measuresRegister: MeasuresRegister,
-  ) {
+  constructor(plugin: DeviceManagerPlugin, measuresRegister: MeasuresRegister) {
     this.config = plugin.config as any;
     this.context = plugin.context;
 
@@ -58,11 +55,12 @@ export class MeasureService {
           payload.deviceModel,
           payload.decodedPayload,
           payload.payloadUuids,
-          payload.options,
+          payload.options
         );
 
         return payload;
-      })
+      }
+    );
   }
 
   /**
@@ -93,7 +91,10 @@ export class MeasureService {
     );
 
     for (const device of devices) {
-      const asset = await this.tryGetLinkedAsset(device._source.engineId, device._source.assetId);
+      const asset = await this.tryGetLinkedAsset(
+        device._source.engineId,
+        device._source.assetId
+      );
 
       const measurements = decodedPayload.getMeasurements(
         device._source.reference
@@ -113,7 +114,10 @@ export class MeasureService {
         payloadUuids
       );
 
-      device._source.metadata = _.merge(device._source.metadata, decodedPayload.getMetadata(device._source.reference));
+      device._source.metadata = _.merge(
+        device._source.metadata,
+        decodedPayload.getMetadata(device._source.reference)
+      );
 
       /**
        * Event before starting to process new measures.
@@ -193,7 +197,7 @@ export class MeasureService {
 
   private mergeMeasures(
     digitalTwin: KDocument<DigitalTwinContent>,
-    measures: MeasureContent[],
+    measures: MeasureContent[]
   ) {
     for (const newMeasure of measures) {
       const idx = digitalTwin._source.measures.findIndex(
@@ -229,7 +233,11 @@ export class MeasureService {
       const deviceMeasureName =
         measurement.deviceMeasureName || measurement.type;
 
-      const assetMeasureName = this.tryFindAssetMeasureName(device, asset, deviceMeasureName);
+      const assetMeasureName = this.tryFindAssetMeasureName(
+        device,
+        asset,
+        deviceMeasureName
+      );
 
       const measureContent: MeasureContent = {
         asset: AssetSerializer.description(asset),
@@ -360,9 +368,7 @@ export class MeasureService {
     assetId: string,
     measurement: AssetMeasurement,
     kuid: string,
-    {
-      refresh,
-    }: { refresh?: any } = {}
+    { refresh }: { refresh?: any } = {}
   ) {
     const asset = await this.tryGetLinkedAsset(engineId, assetId);
 
@@ -370,11 +376,14 @@ export class MeasureService {
       throw new NotFoundError(`Asset "${assetId}" does not exist`);
     }
 
-    if (!measurement.type
-      || !measurement.values
-      || this.measuresRegister.has(measurement.type)
+    if (
+      !measurement.type ||
+      !measurement.values ||
+      this.measuresRegister.has(measurement.type)
     ) {
-      throw new BadRequestError(`Invalid measurement for asset "${asset._id}": missing "type", "values" or unknown measure type`);
+      throw new BadRequestError(
+        `Invalid measurement for asset "${asset._id}": missing "type", "values" or unknown measure type`
+      );
     }
 
     const measure: MeasureContent<JSONObject> = {
@@ -389,17 +398,17 @@ export class MeasureService {
       type: measurement.type,
       unit: this.measuresRegister.get(measurement.type).unit,
       values: measurement.values,
-    }
+    };
 
     this.mergeMeasures(asset, [measure]);
 
-    const [updatedAsset, ] = await Promise.all([
+    const [updatedAsset] = await Promise.all([
       this.sdk.document.update<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
         asset._id,
         { measures: asset._source.measures },
-        { refresh },
+        { refresh }
       ),
       this.sdk.document.create<MeasureContent>(
         engineId,
@@ -415,7 +424,10 @@ export class MeasureService {
     };
   }
 
-  private async tryGetLinkedAsset(engineId: string, assetId: string): Promise<Asset> {
+  private async tryGetLinkedAsset(
+    engineId: string,
+    assetId: string
+  ): Promise<Asset> {
     if (!assetId) {
       return null;
     }
@@ -429,9 +441,7 @@ export class MeasureService {
 
       return new Asset(_source, _id);
     } catch (error) {
-      this.app.log.error(
-        `[${engineId}] Cannot find asset "${assetId}".`
-      );
+      this.app.log.error(`[${engineId}] Cannot find asset "${assetId}".`);
 
       return null;
     }
@@ -442,7 +452,7 @@ export class MeasureService {
     asset: Asset,
     deviceMeasureName: string
   ): string {
-    if (! asset) {
+    if (!asset) {
       return undefined;
     }
 
@@ -451,7 +461,9 @@ export class MeasureService {
     );
 
     if (!deviceLink) {
-      this.app.log.error(`The device "${device._id}" is not linked to the asset "${asset._id}"`);
+      this.app.log.error(
+        `The device "${device._id}" is not linked to the asset "${asset._id}"`
+      );
       return undefined;
     }
 

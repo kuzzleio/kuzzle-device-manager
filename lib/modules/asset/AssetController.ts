@@ -72,29 +72,40 @@ export class AssetController {
     const metadata = request.getBody();
     const refresh = request.getRefresh();
 
-    const updatedAsset = await this.assetService.update(engineId, assetId, metadata, {
-      refresh,
-    });
+    const updatedAsset = await this.assetService.update(
+      engineId,
+      assetId,
+      metadata,
+      {
+        refresh,
+      }
+    );
 
     return {
       asset: AssetSerializer.serialize(updatedAsset),
-    }
+    };
   }
 
   async create(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
-    const model = request.getBodyString('model');
+    const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata", {});
     const refresh = request.getRefresh();
 
-    const asset = await this.assetService.create(engineId, model, reference, metadata, {
-      refresh,
-    });
+    const asset = await this.assetService.create(
+      engineId,
+      model,
+      reference,
+      metadata,
+      {
+        refresh,
+      }
+    );
 
     return {
       asset: AssetSerializer.serialize(asset),
-    }
+    };
   }
 
   async delete(request: KuzzleRequest) {
@@ -133,7 +144,9 @@ export class AssetController {
     const id = request.getId();
     const engineId = request.getString("engineId");
     const size = request.input.args.size;
-    const startAt = request.input.args.startAt ? request.getDate("startAt") : null;
+    const startAt = request.input.args.startAt
+      ? request.getDate("startAt")
+      : null;
     const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
 
     if ((size && startAt) || (size && endAt)) {

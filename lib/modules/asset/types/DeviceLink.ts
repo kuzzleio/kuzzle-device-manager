@@ -5,8 +5,8 @@
 export type DeviceLink = {
   deviceId: string;
 
-   measureNamesLinks: Array<{
+  measureNamesLinks: Array<{
     assetMeasureName: string;
     deviceMeasureName: string;
   }>;
-}
+};

@@ -1,14 +1,16 @@
 import { DecodedPayload } from "../../../modules/decoder";
 
 export type EventMeasureIngest = {
-  name: 'device-manager:measure:ingest';
+  name: "device-manager:measure:ingest";
 
-  args: [{
-    deviceModel: string,
-    decodedPayload: DecodedPayload,
-    payloadUuids: string[],
-    options: {
-      refresh?: string;
+  args: [
+    {
+      deviceModel: string;
+      decodedPayload: DecodedPayload;
+      payloadUuids: string[];
+      options: {
+        refresh?: string;
+      };
     }
-  }];
-}
+  ];
+};

@@ -9,14 +9,19 @@ export class DecoderModule extends Module {
   private decoderController: DecoderController;
 
   // @todo temporary until registers refactor
-  private get decodersRegister () {
+  private get decodersRegister() {
     return this.plugin["decodersRegister"];
   }
 
-  public async init(): Promise<void> {    this.payloadService = new PayloadService(this.plugin);
-    this.decoderController = new DecoderController(this.payloadService, this.decodersRegister);
+  public async init(): Promise<void> {
+    this.payloadService = new PayloadService(this.plugin);
+    this.decoderController = new DecoderController(
+      this.payloadService,
+      this.decodersRegister
+    );
 
-    this.plugin.api["device-manager/decoder"] = this.decoderController.definition;
+    this.plugin.api["device-manager/decoder"] =
+      this.decoderController.definition;
     this.plugin.api["device-manager/payload"] =
       this.decodersRegister.getPayloadController(this.payloadService);
     this.plugin.api["device-manager/payload"].actions.generic = {

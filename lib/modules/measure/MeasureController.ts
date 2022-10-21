@@ -32,7 +32,7 @@ export class MeasureController {
       assetId,
       measure as any,
       kuid,
-      { refresh },
+      { refresh }
     );
   }
 }

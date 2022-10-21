@@ -60,11 +60,11 @@ export class AssetService {
     };
 
     if (startAt) {
-      query.range.measuredAt.gte = (new Date(startAt)).getTime();
+      query.range.measuredAt.gte = new Date(startAt).getTime();
     }
 
     if (endAt) {
-      query.range.measuredAt.lte = (new Date(endAt)).getTime();
+      query.range.measuredAt.lte = new Date(endAt).getTime();
     }
 
     const sort = { measuredAt: "desc" };
@@ -93,7 +93,7 @@ export class AssetService {
     engineId: string,
     assetId: string,
     metadata: JSONObject,
-    { refresh }: { refresh: any },
+    { refresh }: { refresh: any }
   ): Promise<Asset> {
     return lock<Asset>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
@@ -109,16 +109,16 @@ export class AssetService {
         InternalCollection.ASSETS,
         assetId,
         { metadata: updatedPayload.metadata },
-        { refresh },
+        { refresh }
       );
 
       const updatedAsset = new Asset(_source, _id);
 
       // @todo add type EventAssetUpdateBefore
-      await global.app.trigger(
-        "device-manager:asset:update:after",
-        { asset: updatedAsset, metadata: updatedPayload.metadata }
-      );
+      await global.app.trigger("device-manager:asset:update:after", {
+        asset: updatedAsset,
+        metadata: updatedPayload.metadata,
+      });
 
       return updatedAsset;
     });
@@ -129,7 +129,7 @@ export class AssetService {
     model: string,
     reference: string,
     metadata: JSONObject,
-    { refresh }: { refresh: any },
+    { refresh }: { refresh: any }
   ): Promise<Asset> {
     const assetId = AssetSerializer.id(model, reference);
 
@@ -143,22 +143,25 @@ export class AssetService {
           metadata,
         },
         assetId,
-        { refresh });
+        { refresh }
+      );
 
       return new Asset(_source, _id);
     });
   }
 
-  public async delete (
+  public async delete(
     engineId: string,
     assetId: string,
-    { refresh, strict }: { refresh: any, strict: boolean },
+    { refresh, strict }: { refresh: any; strict: boolean }
   ) {
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
       if (strict && asset._source.deviceLinks.length !== 0) {
-        throw new BadRequestError(`Asset "${assetId}" is still linked to devices.`);
+        throw new BadRequestError(
+          `Asset "${assetId}" is still linked to devices.`
+        );
       }
 
       for (const { deviceId } of asset._source.deviceLinks) {
@@ -172,22 +175,33 @@ export class AssetService {
         await this.sdk.query(req);
       }
 
-      await this.sdk.document.delete(engineId, InternalCollection.ASSETS, assetId, {
-        refresh,
-      });
+      await this.sdk.document.delete(
+        engineId,
+        InternalCollection.ASSETS,
+        assetId,
+        {
+          refresh,
+        }
+      );
     });
   }
 
-  public async search (
+  public async search(
     engineId: string,
     searchBody: JSONObject,
-    { from, size, scroll, lang }: { from?: number, size?: number, scroll?: string, lang?: string },
+    {
+      from,
+      size,
+      scroll,
+      lang,
+    }: { from?: number; size?: number; scroll?: string; lang?: string }
   ): Promise<SearchResult<KHit<AssetContent>>> {
     const result = await this.sdk.document.search<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       searchBody,
-      { from, size, scroll, lang });
+      { from, size, scroll, lang }
+    );
 
     return result;
   }

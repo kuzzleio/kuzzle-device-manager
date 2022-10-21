@@ -107,9 +107,14 @@ export class DeviceController {
     const metadata = request.getBody();
     const refresh = request.getRefresh();
 
-    const updatedDevice = await this.deviceService.update(engineId, deviceId, metadata, {
-      refresh,
-    });
+    const updatedDevice = await this.deviceService.update(
+      engineId,
+      deviceId,
+      metadata,
+      {
+        refresh,
+      }
+    );
 
     return DeviceSerializer.serialize(updatedDevice);
   }
@@ -166,20 +171,16 @@ export class DeviceController {
       );
     }
 
-    const device = await this.deviceService.create(
-      model,
-      reference,
-      metadata,
-      {
+    const device = await this.deviceService.create(model, reference, metadata, {
+      engineId,
+      linkRequest: {
         engineId,
-        linkRequest: {
-          engineId,
-          assetId,
-          deviceId: DeviceSerializer.id(model, reference),
-          measureNamesLinks,
-        },
-        refresh,
-      });
+        assetId,
+        deviceId: DeviceSerializer.id(model, reference),
+        measureNamesLinks,
+      },
+      refresh,
+    });
 
     return DeviceSerializer.serialize(device);
   }
@@ -229,7 +230,7 @@ export class DeviceController {
       deviceId,
       assetId,
       measureNamesLinks,
-      { refresh },
+      { refresh }
     );
 
     return {
@@ -246,7 +247,7 @@ export class DeviceController {
     const refresh = request.getRefresh();
 
     const { asset, device } = await this.deviceService.unlinkAsset(deviceId, {
-      refresh
+      refresh,
     });
 
     return {

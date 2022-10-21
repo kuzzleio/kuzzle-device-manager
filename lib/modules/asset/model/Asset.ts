@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from "lodash";
 
 import { MeasureContent } from "../../measure";
 
@@ -10,8 +10,7 @@ export class Asset {
   public _source: AssetContent;
 
   constructor(content: AssetContent, _id?: string) {
-    this._id =
-      _id || AssetSerializer.id(content.model, content.reference);
+    this._id = _id || AssetSerializer.id(content.model, content.reference);
 
     this._source = content;
 

@@ -8,14 +8,18 @@ export class MeasureModule extends Module {
   private measureController: MeasureController;
 
   // @todo temporary until register refactor
-  protected get measuresRegister () {
+  protected get measuresRegister() {
     return this.plugin["measuresRegister"];
   }
 
   public async init(): Promise<void> {
-    this.measureService = new MeasureService(this.plugin, this.measuresRegister);
+    this.measureService = new MeasureService(
+      this.plugin,
+      this.measuresRegister
+    );
     this.measureController = new MeasureController(this.measureService);
 
-    this.plugin.api["device-manager/measure"] = this.measureController.definition;
+    this.plugin.api["device-manager/measure"] =
+      this.measureController.definition;
   }
 }
