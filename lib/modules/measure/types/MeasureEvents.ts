@@ -1,18 +1,23 @@
+import { JSONObject } from "kuzzle";
+
 import { Asset } from "../../../modules/asset";
 import { Device } from "../../../modules/device";
-import { DecodedPayload } from "../../../modules/decoder";
+import { Metadata } from "../../../modules/shared";
 
-import { MeasureContent } from "./MeasureContent";
+import { MeasureContent, Measurement } from "./MeasureContent";
 
+/**
+ * @internal
+ */
 export type EventMeasureIngest = {
   name: "device-manager:measures:ingest";
 
   args: [
     {
-      deviceModel: string;
-      decodedPayload: DecodedPayload;
+      device: Device;
+      measurements: Measurement<JSONObject>[];
+      metadata: Metadata;
       payloadUuids: string[];
-      refresh?: string;
     }
   ];
 };

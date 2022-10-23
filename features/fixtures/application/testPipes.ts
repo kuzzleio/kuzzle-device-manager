@@ -1,7 +1,12 @@
 import _ from "lodash";
 import { Backend } from "kuzzle";
 
-import { Asset, Device, MeasureContent } from "../../../index";
+import {
+  Asset,
+  Device,
+  MeasureContent,
+  EventMeasureProcessBefore,
+} from "../../../index";
 
 function checkEventWithDocument(app: Backend, event: string) {
   app.pipe.register(event, async (payload) => {
@@ -14,7 +19,7 @@ function checkEventWithDocument(app: Backend, event: string) {
 }
 
 export function registerTestPipes(app: Backend) {
-  app.pipe.register(
+  app.pipe.register<EventMeasureProcessBefore>(
     "device-manager:measures:process:before",
     async ({
       asset,
@@ -34,35 +39,6 @@ export function registerTestPipes(app: Backend) {
       }
 
       return { asset, device, measures };
-    }
-  );
-
-  // Used in PayloadController.feature
-  app.pipe.register(
-    "engine:engine-ayse:asset:measures:new",
-    async ({ asset, measures }) => {
-      if (asset._id !== "tools-MART-linked") {
-        return { asset, measures };
-      }
-
-      return { asset, measures };
-    }
-  );
-
-  // Used in PayloadController.feature
-  app.pipe.register(
-    "engine:engine-ayse:device:measures:new",
-    async ({ device, measures }) => {
-      if (device._id !== "DummyTemp-attached_ayse_unlinked") {
-        return { device, measures };
-      }
-
-      device._source.metadata = {
-        enriched: true,
-        measureTypes: measures.map((m) => m.type),
-      };
-
-      return { device, measures };
     }
   );
 }

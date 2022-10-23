@@ -103,7 +103,7 @@ export class AssetService {
     metadata: Metadata,
     { refresh }: { refresh: any }
   ): Promise<Asset> {
-    return lock<Asset>(`asset:${engineId}:${assetId}`, async () => {
+    return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
@@ -142,7 +142,7 @@ export class AssetService {
   ): Promise<Asset> {
     const assetId = AssetSerializer.id(model, reference);
 
-    return lock<Asset>(`asset:${engineId}:${assetId}`, async () => {
+    return lock(`asset:${engineId}:${assetId}`, async () => {
       const { _source, _id } = await this.sdk.document.create<AssetContent>(
         engineId,
         InternalCollection.ASSETS,

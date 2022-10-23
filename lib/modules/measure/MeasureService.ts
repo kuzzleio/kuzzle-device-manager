@@ -14,17 +14,12 @@ import {
   InternalCollection,
 } from "../../core";
 import { DeviceContent } from "./../device";
-
-import {
-  MeasureContent,
-  AssetMeasurement,
-  Measurement,
-} from "./types/MeasureContent";
 import { Asset, AssetContent } from "../asset";
-import { Device, DeviceSerializer } from "../device";
-import { DigitalTwinContent } from "../shared";
+import { Device } from "../device";
+import { DigitalTwinContent, Metadata } from "../shared";
 import { AssetSerializer } from "../asset";
-import { DecodedPayload } from "../decoder";
+import { MeasuresRegister } from "../../core/registers/MeasuresRegister";
+import { lock } from "../shared/utils/lock";
 
 import {
   EventMeasureIngest,
@@ -33,7 +28,11 @@ import {
   TenantEventMeasureProcessAfter,
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
-import { MeasuresRegister } from "../../core/registers/MeasuresRegister";
+import {
+  MeasureContent,
+  AssetMeasurement,
+  Measurement,
+} from "./types/MeasureContent";
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
@@ -58,10 +57,10 @@ export class MeasureService {
       "device-manager:measures:ingest",
       async (payload) => {
         await this.ingest(
-          payload.deviceModel,
-          payload.decodedPayload,
-          payload.payloadUuids,
-          { refresh: payload.refresh }
+          payload.device,
+          payload.measurements,
+          payload.metadata,
+          payload.payloadUuids
         );
 
         return payload;
@@ -76,41 +75,25 @@ export class MeasureService {
    * - linked asset
    * - engine measures
    *
-   * @param deviceModel Model of the device
-   * @param decodedPayloads `decodedPayload`
-   * @param payloadUuids Payload Uuids that generated the measurements
-   * @param options.provisionDevice If true and a `decodedPayload` reference a nonexisting device, create this device
-   * @param options.refresh Wait for ES indexation
+   * A mutex ensure only one device can be processed at the same time
    */
   public async ingest(
-    deviceModel: string,
-    decodedPayload: DecodedPayload,
-    payloadUuids: string[],
-    options: {
-      refresh?: string;
-    }
+    device: Device,
+    measurements: Measurement<JSONObject>[],
+    metadata: Metadata,
+    payloadUuids: string[]
   ) {
-    const devices = await this.getDevices(
-      deviceModel,
-      decodedPayload.references,
-      options
-    );
-
-    for (const device of devices) {
+    await lock(`measure:ingest:${device._id}`, async () => {
       const asset = await this.tryGetLinkedAsset(
         device._source.engineId,
         device._source.assetId
-      );
-
-      const measurements = decodedPayload.getMeasurements(
-        device._source.reference
       );
 
       if (!measurements) {
         this.app.log.warn(
           `Cannot find measurements for device "${device._source.reference}"`
         );
-        continue;
+        return;
       }
 
       const measures = this.buildMeasures(
@@ -120,10 +103,7 @@ export class MeasureService {
         payloadUuids
       );
 
-      device._source.metadata = _.merge(
-        device._source.metadata,
-        decodedPayload.getMetadata(device._source.reference)
-      );
+      device._source.metadata = _.merge(device._source.metadata, metadata);
 
       /**
        * Event before starting to process new measures.
@@ -145,39 +125,54 @@ export class MeasureService {
 
       this.mergeMeasures(device, updatedMeasures);
 
-      await this.sdk.document.update<DeviceContent>(
-        this.config.adminIndex,
-        InternalCollection.DEVICES,
-        device._id,
-        device._source
-      );
+      const promises = [];
 
-      if (device._source.engineId) {
-        await this.sdk.document.update<DeviceContent>(
-          device._source.engineId,
+      promises.push(
+        this.sdk.document.update<DeviceContent>(
+          this.config.adminIndex,
           InternalCollection.DEVICES,
           device._id,
           device._source
+        )
+      );
+
+      if (device._source.engineId) {
+        promises.push(
+          this.sdk.document.update<DeviceContent>(
+            device._source.engineId,
+            InternalCollection.DEVICES,
+            device._id,
+            device._source
+          )
         );
 
-        await this.sdk.document.mCreate<MeasureContent>(
-          device._source.engineId,
-          InternalCollection.MEASURES,
-          updatedMeasures.map((measure) => ({ body: measure })),
-          { strict: true }
+        promises.push(
+          this.sdk.document.mCreate<MeasureContent>(
+            device._source.engineId,
+            InternalCollection.MEASURES,
+            updatedMeasures.map((measure) => ({ body: measure })),
+            { strict: true }
+          )
         );
 
         if (asset) {
           this.mergeMeasures(asset, updatedMeasures);
 
-          await this.sdk.document.update<AssetContent>(
-            device._source.engineId,
-            InternalCollection.ASSETS,
-            asset._id,
-            asset._source
+          // @todo potential race condition if 2 differents device are linked
+          // to the same asset and get processed at the same time
+          // asset measures update could be protected by mutex
+          promises.push(
+            this.sdk.document.update<AssetContent>(
+              device._source.engineId,
+              InternalCollection.ASSETS,
+              asset._id,
+              asset._source
+            )
           );
         }
       }
+
+      await Promise.all(promises);
 
       /**
        * Event at the end of the measure process pipeline.
@@ -201,7 +196,7 @@ export class MeasureService {
           { asset, device, measures }
         );
       }
-    }
+    });
   }
 
   private mergeMeasures(
@@ -271,92 +266,6 @@ export class MeasureService {
   }
 
   /**
-   * Get devices or create missing ones (when auto-provisionning is enabled)
-   */
-  private async getDevices(
-    deviceModel: string,
-    references: string[],
-    {
-      refresh,
-    }: {
-      refresh?: any;
-    } = {}
-  ) {
-    const devices: Device[] = [];
-
-    const { successes, errors } = await this.sdk.document.mGet<DeviceContent>(
-      this.config.adminIndex,
-      InternalCollection.DEVICES,
-      references.map((reference) => DeviceSerializer.id(deviceModel, reference))
-    );
-
-    for (const { _source, _id } of successes) {
-      devices.push(new Device(_source, _id));
-    }
-
-    // If we have unknown devices, let's check if we should register them
-    if (errors.length > 0) {
-      const { _source } = await this.sdk.document.get(
-        this.config.adminIndex,
-        this.config.adminCollections.config.name,
-        "plugin--device-manager"
-      );
-
-      if (_source["device-manager"].provisioningStrategy === "auto") {
-        const newDevices = await this.provisionDevices(deviceModel, errors, {
-          refresh,
-        });
-        devices.push(...newDevices);
-      } else {
-        this.app.log.info(
-          `Skipping new devices "${errors.join(
-            ", "
-          )}". Auto-provisioning is disabled.`
-        );
-      }
-    }
-
-    return devices;
-  }
-
-  private async provisionDevices(
-    deviceModel: string,
-    deviceIds: string[],
-    { refresh }: { refresh: any }
-  ): Promise<Device[]> {
-    const newDevices = deviceIds.map((deviceId) => {
-      // Reference may contains a "-"
-      const [, ...rest] = deviceId.split("-");
-      const reference = rest.join("-");
-
-      return {
-        _id: DeviceSerializer.id(deviceModel, reference),
-        body: {
-          measures: [],
-          model: deviceModel,
-          reference,
-        },
-      };
-    });
-
-    const { successes, errors } =
-      await this.sdk.document.mCreate<DeviceContent>(
-        this.config.adminIndex,
-        InternalCollection.DEVICES,
-        newDevices,
-        { refresh }
-      );
-
-    for (const error of errors) {
-      this.app.log.error(
-        `Cannot create device "${error.document._id}": ${error.reason}`
-      );
-    }
-
-    return successes.map(({ _source, _id }) => new Device(_source as any, _id));
-  }
-
-  /**
    * Register new measures from a device, updates :
    * - linked asset
    * - engine measures
@@ -377,58 +286,60 @@ export class MeasureService {
     kuid: string,
     { refresh }: { refresh?: any } = {}
   ) {
-    const asset = await this.tryGetLinkedAsset(engineId, assetId);
+    return lock(`asset:${engineId}:${assetId}`, async () => {
+      const asset = await this.tryGetLinkedAsset(engineId, assetId);
 
-    if (!asset) {
-      throw new NotFoundError(`Asset "${assetId}" does not exist`);
-    }
+      if (!asset) {
+        throw new NotFoundError(`Asset "${assetId}" does not exist`);
+      }
 
-    if (
-      !measurement.type ||
-      !measurement.values ||
-      this.measuresRegister.has(measurement.type)
-    ) {
-      throw new BadRequestError(
-        `Invalid measurement for asset "${asset._id}": missing "type", "values" or unknown measure type`
-      );
-    }
+      if (
+        !measurement.type ||
+        !measurement.values ||
+        this.measuresRegister.has(measurement.type)
+      ) {
+        throw new BadRequestError(
+          `Invalid measurement for asset "${asset._id}": missing "type", "values" or unknown measure type`
+        );
+      }
 
-    const measure: MeasureContent<JSONObject> = {
-      asset: AssetSerializer.description(asset),
-      assetMeasureName: measurement.assetMeasureName ?? measurement.type,
-      deviceMeasureName: null,
-      measuredAt: measurement.measuredAt || Date.now(),
-      origin: {
-        id: kuid,
-        type: "user",
-      },
-      type: measurement.type,
-      unit: this.measuresRegister.get(measurement.type).unit,
-      values: measurement.values,
-    };
+      const measure: MeasureContent<JSONObject> = {
+        asset: AssetSerializer.description(asset),
+        assetMeasureName: measurement.assetMeasureName ?? measurement.type,
+        deviceMeasureName: null,
+        measuredAt: measurement.measuredAt || Date.now(),
+        origin: {
+          id: kuid,
+          type: "user",
+        },
+        type: measurement.type,
+        unit: this.measuresRegister.get(measurement.type).unit,
+        values: measurement.values,
+      };
 
-    this.mergeMeasures(asset, [measure]);
+      this.mergeMeasures(asset, [measure]);
 
-    const [updatedAsset] = await Promise.all([
-      this.sdk.document.update<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
-        asset._id,
-        { measures: asset._source.measures },
-        { refresh }
-      ),
-      this.sdk.document.create<MeasureContent>(
-        engineId,
-        InternalCollection.MEASURES,
-        measure,
-        null,
-        { refresh }
-      ),
-    ]);
+      const [updatedAsset] = await Promise.all([
+        this.sdk.document.update<AssetContent>(
+          engineId,
+          InternalCollection.ASSETS,
+          asset._id,
+          { measures: asset._source.measures },
+          { refresh }
+        ),
+        this.sdk.document.create<MeasureContent>(
+          engineId,
+          InternalCollection.MEASURES,
+          measure,
+          null,
+          { refresh }
+        ),
+      ]);
 
-    return {
-      asset: new Asset(updatedAsset._source, updatedAsset._id),
-    };
+      return {
+        asset: new Asset(updatedAsset._source, updatedAsset._id),
+      };
+    });
   }
 
   private async tryGetLinkedAsset(

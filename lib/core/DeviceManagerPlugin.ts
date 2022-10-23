@@ -91,8 +91,16 @@ export class DeviceManagerPlugin extends Plugin {
 
   constructor() {
     super({
-      kuzzleVersion: ">=2.16.8 <3",
+      kuzzleVersion: ">=2.19.5 <3",
     });
+
+    this.api = {};
+    this.pipes = {
+      "generic:document:beforeWrite": [],
+      "generic:document:beforeUpdate": [],
+      "generic:document:beforeDelete": [],
+    };
+    this.hooks = {};
 
     /* eslint-disable sort-keys */
     this.config = {
@@ -161,6 +169,8 @@ export class DeviceManagerPlugin extends Plugin {
     await this.deviceModule.init();
     await this.decoderModule.init();
     await this.measureModule.init();
+
+    this.decodersRegister.init(this.context);
 
     this.adminConfigManager = new ConfigManager(this, {
       mappings: this.config.adminCollections.config.mappings,

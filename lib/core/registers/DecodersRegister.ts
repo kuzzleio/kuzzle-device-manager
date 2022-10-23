@@ -111,7 +111,7 @@ export class DecodersRegister {
         handler: async (request: KuzzleRequest) => {
           const source = request.getBoolean("source");
 
-          const ret = await payloadService.process(request, decoder);
+          const ret = await payloadService.receive(request, decoder);
 
           return source ? ret : undefined;
         },
