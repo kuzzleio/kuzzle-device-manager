@@ -40,6 +40,10 @@ export class DeviceService {
 
   /**
    * Create a new device.
+   *
+   * @todo creating a device in the "device-manager" index should be a separate
+   * method since in this case "engineId" is not really an engine ID but still
+   * required as an argument (in part to check the tenant rights)
    */
   async create(
     model: string,
@@ -80,7 +84,7 @@ export class DeviceService {
         index: this.config.adminIndex,
       });
 
-      if (engineId) {
+      if (engineId && engineId !== this.config.adminIndex) {
         device = await this.attachEngine(engineId, device._id);
 
         refreshableCollections.push({

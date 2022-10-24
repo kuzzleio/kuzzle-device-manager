@@ -11,6 +11,6 @@ export class AssetModule extends Module {
     this.assetService = new AssetService(this.plugin);
     this.assetController = new AssetController(this.assetService);
 
-    this.plugin.api["device-manager/asset"] = this.assetController.definition;
+    this.plugin.api["device-manager/assets"] = this.assetController.definition;
   }
 }

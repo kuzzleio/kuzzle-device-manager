@@ -1,462 +1,53 @@
-// --- Categories -----------------------------------------
+const { Asset } = require("../../lib/modules/asset");
+const { Device } = require("../../lib/modules/device");
 
-const truckCategory = {
-  name: "truck",
-  assetMetadata: [],
-  metadataValues: [],
-};
-
-const bigTruckCategory = {
-  name: "bigTruck",
-  parent: "truck",
-};
-
-const sizeMetadata = {
-  name: "size",
-  valueType: "integer",
-  mandatory: false,
-};
-
-// --- Payloads -------------------------------------------
-
-const payload_0 = {
-  uuid: "0",
-  valid: true,
-  deviceModel: "DummyMultiTemp",
-  payload: {
-    payloads: [
-      {
-        deviceEUI: "attached_ayse_unlinked",
-        register1: 30.1,
-        register2: 30.3,
-        lvlBattery: 13,
-      },
-      {
-        deviceEUI: "attached_ayse_linked-1",
-        register1: -3.1,
-        register2: 29.2,
-        lvlBattery: 80,
-      },
-    ],
-  },
-};
-
-const payload_1 = {
-  uuid: "1",
-  valid: false,
-  deviceModel: "DummyMultiTemp",
-  payload: {
-    invalid: true,
-    payloads: [
-      {
-        deviceEUI: "attached_ayse_unlinked",
-        register2: 30.3,
-      },
-      {
-        deviceEUI: "attached_ayse_linked-1",
-        register1: -3.1,
-      },
-    ],
-  },
-};
-
-const payload_2 = {
-  uuid: "2",
-  valid: true,
-  deviceModel: "DummyMultiTemp",
-  payload: {
-    payloads: [
-      {
-        deviceEUI: "attached_ayse_linked-2",
-        register1: -2.3,
-        register2: 30.1,
-        lvlBattery: 78,
-      },
-    ],
-  },
-};
-
-// --- Measures -------------------------------------------
-
-const measure_last_leftInnerTemp = {
-  type: "temperature",
-  assetMeasureName: "leftInnerTemp",
-  deviceMeasureName: "innerTemp",
-  unit: {
-    name: "Degree",
-    sign: "°",
-    type: "number",
-  },
-  values: {
-    temperature: -3.1,
-  },
-  measuredAt: 1610793427900,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_linked_1",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["0"],
-  },
-};
-
-const measure_last_leftOuterTemp = {
-  type: "temperature",
-  assetMeasureName: "leftOuterTemp",
-  deviceMeasureName: "outerTemp",
-  unit: {
-    name: "Degree",
-    sign: "°",
-    type: "number",
-  },
-  values: {
-    temperature: 29.2,
-  },
-  measuredAt: 1610793427900,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_linked_1",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["0"],
-  },
-};
-
-const measure_last_rightInnerTemp = {
-  type: "temperature",
-  assetMeasureName: "rightInnerTemp",
-  deviceMeasureName: "innerTemp",
-  unit: {
-    name: "Degree",
-    sign: "°",
-    type: "number",
-  },
-  values: {
-    temperature: -2.3,
-  },
-  measuredAt: 1610793427999,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_linked_2",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["2"],
-  },
-};
-
-const measure_last_rightOuterTemp = {
-  type: "temperature",
-  assetMeasureName: "rightOuterTemp",
-  deviceMeasureName: "outerTemp",
-  unit: {
-    name: "Degree",
-    sign: "°",
-    type: "number",
-  },
-  values: {
-    temperature: 30.1,
-  },
-  measuredAt: 1610793427999,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_linked_2",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["2"],
-  },
-};
-
-const measure_last_coreBatteryLevel = {
-  type: "battery",
-  assetMeasureName: "coreBatteryLevel",
-  deviceMeasureName: "lvlBattery",
-  unit: {
-    name: "Volt",
-    sign: "v",
-    type: "number",
-  },
-  values: {
-    battery: 78,
-  },
-  measuredAt: 1610793427999,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_linked_2",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["2"],
-  },
-};
-
-const measure_old_coreBatteryLevel = {
-  type: "battery",
-  assetMeasureName: "coreBatteryLevel",
-  deviceMeasureName: "lvlBattery",
-  unit: {
-    name: "Volt",
-    sign: "v",
-    type: "number",
-  },
-  values: {
-    battery: 80,
-  },
-  measuredAt: 1610793427900,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_linked_1",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["0"],
-  },
-};
-
-const measure_unlinked_innerTemp = {
-  type: "temperature",
-  assetMeasureName: null,
-  deviceMeasureName: "innerTemp",
-  unit: {
-    name: "Degree",
-    sign: "°",
-    type: "number",
-  },
-  values: {
-    temperature: 30.1,
-  },
-  measuredAt: 1610793427900,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_unlinked",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["0"],
-  },
-};
-
-const measure_unlinked_outerTemp = {
-  type: "temperature",
-  assetMeasureName: null,
-  deviceMeasureName: "outerTemp",
-  unit: {
-    name: "Degree",
-    sign: "°",
-    type: "number",
-  },
-  values: {
-    temperature: 30.3,
-  },
-  measuredAt: 1610793427900,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_unlinked",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["0"],
-  },
-};
-
-const measure_unlinked_lvlBattery = {
-  type: "battery",
-  assetMeasureName: "coreBatteryLevel",
-  deviceMeasureName: "lvlBattery",
-  unit: {
-    name: "Volt",
-    sign: "v",
-    type: "number",
-  },
-  values: {
-    battery: 13,
-  },
-  measuredAt: 1610793427900,
-  origin: {
-    id: "DummyMultiTemp-attached_ayse_unlinked",
-    type: "device",
-    deviceModel: "DummyMultiTemp",
-    payloadUuids: ["0"],
-  },
-};
-
-// --- Devices --------------------------------------------
-
-const device_DummyMultiTemp_AttachedAyse_linked_1 = {
-  reference: "attached_ayse_linked_1",
-  model: "DummyMultiTemp",
-  measures: [
-    measure_last_leftInnerTemp,
-    measure_last_leftOuterTemp,
-    measure_old_coreBatteryLevel,
-  ],
-  engineId: "engine-ayse",
-  assetId: "container-FRIDGE-linked",
-};
-
-const device_DummyMultiTemp_AttachedAyse_linked_2 = {
-  reference: "attached_ayse_linked_2",
-  model: "DummyMultiTemp",
-  measures: [
-    measure_last_rightInnerTemp,
-    measure_last_rightOuterTemp,
-    measure_last_coreBatteryLevel,
-  ],
-  engineId: "engine-ayse",
-  assetId: "container-FRIDGE-linked",
-};
-
-const device_DummyMultiTemp_AttachedAyse_unlinked_1 = {
-  reference: "attached_ayse_unlinked_1",
-  model: "DummyMultiTemp",
-  engineId: "engine-ayse",
-  measures: [
-    measure_unlinked_innerTemp,
-    measure_unlinked_outerTemp,
-    measure_unlinked_lvlBattery,
-  ],
-  assetId: null,
-};
-
-const device_DummyMultiTemp_AttachedAyse_unlinked_2 = {
-  reference: "attached_ayse_unlinked_2",
-  model: "DummyMultiTemp",
-  engineId: "engine-ayse",
-  measures: [
-    measure_unlinked_innerTemp,
-    measure_unlinked_outerTemp,
-    measure_unlinked_lvlBattery,
-  ],
-  assetId: null,
-};
-
-const device_DummyMultiTemp_detached = {
-  reference: "detached",
-  model: "DummyMultiTemp",
+const deviceAyseLinked1 = new Device({
+  model: "DummyTemp",
+  reference: "linked1",
+  metadata: {},
   measures: [],
-  assetId: null,
-};
+  engineId: "engine-ayse",
+  assetId: "container-linked1",
+});
 
-// --- Assets ---------------------------------------------
-
-const asset_Fridge_AttachedAyse_linked = {
-  type: "container",
-  model: "FRIDGE",
-  reference: "linked",
-  measures: [
-    measure_last_coreBatteryLevel,
-    measure_last_leftOuterTemp,
-    measure_last_leftInnerTemp,
-    measure_last_rightOuterTemp,
-    measure_last_rightInnerTemp,
-  ],
+const assetAyseLinked = new Asset({
+  model: "container",
+  reference: "linked1",
+  metadata: {},
   deviceLinks: [
     {
-      deviceId: "DummyMultiTemp-attached_ayse_linked_1",
-      measureNamesLinks: [
-        {
-          assetMeasureName: "leftInnerTemp",
-          deviceMeasureName: "innerTemp",
-        },
-        {
-          assetMeasureName: "leftOuterTemp",
-          deviceMeasureName: "outerTemp",
-        },
-        {
-          assetMeasureName: "coreBatteryLevel",
-          deviceMeasureName: "lvlBattery",
-        },
-      ],
-    },
-    {
-      deviceId: "DummyMultiTemp-attached_ayse_linked_2",
-      measureNamesLinks: [
-        {
-          assetMeasureName: "rightInnerTemp",
-          deviceMeasureName: "innerTemp",
-        },
-        {
-          assetMeasureName: "rightOuterTemp",
-          deviceMeasureName: "outerTemp",
-        },
-        {
-          assetMeasureName: "coreBatteryLevel",
-          deviceMeasureName: "lvlBattery",
-        },
-      ],
+      measureNamesLinks: [],
+      deviceId: "DummyTemp-linked1",
     },
   ],
-};
+});
 
-const asset_Fridge_AttachedAyse_unlinked_1 = {
-  type: "container",
-  model: "FRIDGE",
-  reference: "unlinked_1",
-  measures: [],
+const assetAyseUnlinked = new Asset({
+  model: "container",
+  reference: "unlinked1",
+  metadata: {},
   deviceLinks: [],
-};
-
-const asset_Fridge_AttachedAyse_unlinked_2 = {
-  type: "container",
-  model: "FRIDGE",
-  reference: "unlinked_2",
-  measures: [],
-  deviceLinks: [],
-};
-
-// --- Exports --------------------------------------------
-
-const attachedDevices = [
-  { create: { _id: "DummyMultiTemp-attached_ayse_linked_1" } },
-  device_DummyMultiTemp_AttachedAyse_linked_1,
-  { create: { _id: "DummyMultiTemp-attached_ayse_linked_2" } },
-  device_DummyMultiTemp_AttachedAyse_linked_2,
-  { create: { _id: "DummyMultiTemp-attached_ayse_unlinked_1" } },
-  device_DummyMultiTemp_AttachedAyse_unlinked_1,
-  { create: { _id: "DummyMultiTemp-attached_ayse_unlinked_2" } },
-  device_DummyMultiTemp_AttachedAyse_unlinked_2,
-];
+});
 
 module.exports = {
   "device-manager": {
     devices: [
-      ...attachedDevices,
-      { create: { _id: "DummyMultiTemp-detached" } },
-      device_DummyMultiTemp_detached,
-    ],
-    // devices: JSON.parse(JSON.stringify(devices)),
-    payloads: [
-      { index: { _id: "0" } },
-      payload_0,
-      { index: { _id: "1" } },
-      payload_1,
-      { index: { _id: "2" } },
-      payload_2,
+      { index: { _id: deviceAyseLinked1._id } },
+      deviceAyseLinked1._source,
     ],
   },
+
+  // Index "engine-ayse"
   "engine-ayse": {
-    "asset-category": [
-      { index: { _id: "truck" } },
-      truckCategory,
-      { index: { _id: "bigTruck" } },
-      bigTruckCategory,
+    devices: [
+      { index: { _id: deviceAyseLinked1._id } },
+      deviceAyseLinked1._source,
     ],
-    metadata: [{ index: { _id: "size" } }, sizeMetadata],
     assets: [
-      { index: { _id: "container-FRIDGE-linked" } },
-      asset_Fridge_AttachedAyse_linked,
-      { index: { _id: "container-FRIDGE-unlinked_1" } },
-      asset_Fridge_AttachedAyse_unlinked_1,
-      { index: { _id: "container-FRIDGE-unlinked_2" } },
-      asset_Fridge_AttachedAyse_unlinked_2,
-    ],
-    devices: attachedDevices,
-    measures: [
-      { index: { _id: "0" } },
-      measure_last_leftInnerTemp,
-      { index: { _id: "1" } },
-      measure_last_leftOuterTemp,
-      { index: { _id: "2" } },
-      measure_last_rightInnerTemp,
-      { index: { _id: "3" } },
-      measure_last_rightOuterTemp,
-      { index: { _id: "4" } },
-      measure_last_coreBatteryLevel,
-      { index: { _id: "5" } },
-      measure_old_coreBatteryLevel,
-      { index: { _id: "6" } },
-      measure_unlinked_innerTemp,
-      { index: { _id: "7" } },
-      measure_unlinked_outerTemp,
-      { index: { _id: "8" } },
-      measure_unlinked_lvlBattery,
+      { index: { _id: assetAyseLinked._id } },
+      assetAyseLinked._source,
+      { index: { _id: assetAyseUnlinked._id } },
+      assetAyseUnlinked._source,
     ],
   },
 };

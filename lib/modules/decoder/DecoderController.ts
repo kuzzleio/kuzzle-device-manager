@@ -3,6 +3,10 @@ import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 import { DecodersRegister } from "../../core/registers/DecodersRegister";
 
 import { PayloadService } from "./PayloadService";
+import {
+  ApiDecoderListResult,
+  ApiDecoderPrunePayloadsResult,
+} from "./types/DecoderApi";
 
 export class DecoderController {
   private payloadService: PayloadService;
@@ -23,6 +27,12 @@ export class DecoderController {
           handler: this.list.bind(this),
           http: [{ path: "device-manager/decoders", verb: "get" }],
         },
+        prunePayloads: {
+          handler: this.prunePayloads.bind(this),
+          http: [
+            { path: "device-manager/decoders/_prunePayloads", verb: "delete" },
+          ],
+        },
       },
     };
   }
@@ -30,7 +40,7 @@ export class DecoderController {
   /**
    * List all available decoders
    */
-  async list() {
+  async list(): Promise<ApiDecoderListResult> {
     const decoders = this.decodersRegister.list();
 
     return { decoders };
@@ -39,7 +49,9 @@ export class DecoderController {
   /**
    * Clean payload collection for a time period
    */
-  async prunePayloads(request: KuzzleRequest) {
+  async prunePayloads(
+    request: KuzzleRequest
+  ): Promise<ApiDecoderPrunePayloadsResult> {
     const days = request.getBodyNumber("days");
     const deviceModel = request.input.body.deviceModel;
     const onlyValid = request.input.body.onlyValid ?? true;

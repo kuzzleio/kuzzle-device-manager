@@ -1,4 +1,4 @@
-import { DecoderController } from "../DecoderController";
+import { DecoderContent } from "./DecoderContent";
 
 interface DecoderControllerRequest {
   controller: "device-manager/decoders";
@@ -9,7 +9,9 @@ export interface ApiDecoderListRequest extends DecoderControllerRequest {
 
   _id: string;
 }
-export type ApiDecoderListResult = ReturnType<DecoderController["list"]>;
+export type ApiDecoderListResult = {
+  decoders: DecoderContent[];
+};
 
 export interface ApiDecoderPrunePayloadsRequest
   extends DecoderControllerRequest {
@@ -17,6 +19,6 @@ export interface ApiDecoderPrunePayloadsRequest
 
   _id: string;
 }
-export type ApiDecoderPrunePayloadsResult = ReturnType<
-  DecoderController["prunePayloads"]
->;
+export type ApiDecoderPrunePayloadsResult = {
+  deleted: number;
+};

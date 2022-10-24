@@ -4,14 +4,10 @@ import {
   Decoder,
   DecodedPayload,
   TemperatureMeasurement,
-  BatteryMeasurement,
 } from "../../../../index";
 
 export class DummyTempDecoder extends Decoder {
-  public measures = [
-    { name: "theBatteryLevel", type: "battery" },
-    { name: "temperature", type: "temperature" },
-  ] as const;
+  public measures = [{ name: "temperature", type: "temperature" }] as const;
 
   constructor() {
     super();
@@ -37,6 +33,7 @@ export class DummyTempDecoder extends Decoder {
     const decodedPayload = new DecodedPayload<DummyTempDecoder>(this);
 
     if (payload?.metadata?.color) {
+      console.log(payload);
       decodedPayload.addMetadata(payload.deviceEUI, {
         color: payload.metadata.color,
       });
@@ -49,19 +46,7 @@ export class DummyTempDecoder extends Decoder {
         measuredAt: Date.now(),
         type: "temperature",
         values: {
-          temperature: payload.register55,
-        },
-      }
-    );
-
-    decodedPayload.addMeasurement<BatteryMeasurement>(
-      payload.deviceEUI,
-      "theBatteryLevel",
-      {
-        measuredAt: Date.now(),
-        type: "battery",
-        values: {
-          battery: payload.batteryLevel * 100,
+          temperature: payload.temperature,
         },
       }
     );

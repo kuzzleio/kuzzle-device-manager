@@ -1,6 +1,6 @@
-Feature: Payload Controller actions
+Feature: Decoders Controller
 
-  Scenario: Clean payloads collection
+  Scenario: Prune payloads collection
     Given I successfully execute the action "document":"update" with args:
       | index                                    | "device-manager"         |
       | collection                               | "config"                 |
@@ -9,16 +9,12 @@ Feature: Payload Controller actions
     Given I successfully execute the action "collection":"truncate" with args:
       | index      | "device-manager" |
       | collection | "payloads"       |
-    Then I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "12345" |
-      | register55   | 23.3    |
-      | batteryLevel | 0.8     |
-    And I successfully receive a "dummy-temp-position" payload with:
-      | deviceEUI     | "12345" |
-      | register55    | 23.3    |
-      | location.lat  | 42.2    |
-      | location.lon  | 2.42    |
-      | location.accu | 2100    |
+    When I send the following "dummy-temp" payloads:
+      | deviceEUI | temperature | metadata.color |
+      | "12345"   | 23.1        | "RED"          |
+    When I send the following "dummy-temp-position" payloads:
+      | deviceEUI | temperature | location.lat | location.lon | location.accuracy | battery |
+      | "12345"   | 23.3          | 42.2         | 2.42         | 2100              | 0.8     |
     And I successfully execute the action "collection":"refresh" with args:
       | index      | "device-manager" |
       | collection | "payloads"       |
@@ -27,7 +23,7 @@ Feature: Payload Controller actions
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 2 |
-    And I successfully execute the action "device-manager/device":"prunePayloads" with args:
+    And I successfully execute the action "device-manager/decoders":"prunePayloads" with args:
       | body.days        | 0           |
       | body.deviceModel | "DummyTemp" |
     And I successfully execute the action "collection":"refresh" with args:
@@ -38,16 +34,3 @@ Feature: Payload Controller actions
       | collection | "payloads"       |
     Then I should receive a result matching:
       | total | 1 |
-
-  Scenario: Throw an error when decoding unknown measure name
-    Given I successfully execute the action "device-manager/device":"create" with args:
-      | engineId       | "device-manager" |
-      | body.model     | "DummyTemp"      |
-      | body.reference | "test"           |
-    When I receive a "dummy-temp" payload with:
-      | deviceEUI      | "test" |
-      | register55     | 100    |
-      | unknownMeasure | 100    |
-      | batteryLevel   | 1      |
-    Then The document "device-manager":"devices":"DummyTemp-test" content match:
-      | measures | [] |

@@ -2,6 +2,14 @@ import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
+import {
+  ApiAssetCreateResult,
+  ApiAssetDeleteResult,
+  ApiAssetGetMeasuresResult,
+  ApiAssetGetResult,
+  ApiAssetSearchResult,
+  ApiAssetUpdateResult,
+} from "./types/AssetApi";
 
 export class AssetController {
   public definition: ControllerDefinition;
@@ -54,21 +62,19 @@ export class AssetController {
     /* eslint-enable sort-keys */
   }
 
-  async get(request: KuzzleRequest) {
+  async get(request: KuzzleRequest): Promise<ApiAssetGetResult> {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
 
     const asset = await this.assetService.get(engineId, assetId);
 
-    return {
-      asset: AssetSerializer.serialize(asset),
-    };
+    return AssetSerializer.serialize(asset);
   }
 
-  async update(request: KuzzleRequest) {
+  async update(request: KuzzleRequest): Promise<ApiAssetUpdateResult> {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
-    const metadata = request.getBody();
+    const metadata = request.getBodyObject("metadata");
     const refresh = request.getRefresh();
 
     const updatedAsset = await this.assetService.update(
@@ -80,12 +86,10 @@ export class AssetController {
       }
     );
 
-    return {
-      asset: AssetSerializer.serialize(updatedAsset),
-    };
+    return AssetSerializer.serialize(updatedAsset);
   }
 
-  async create(request: KuzzleRequest) {
+  async create(request: KuzzleRequest): Promise<ApiAssetCreateResult> {
     const engineId = request.getString("engineId");
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
@@ -102,12 +106,10 @@ export class AssetController {
       }
     );
 
-    return {
-      asset: AssetSerializer.serialize(asset),
-    };
+    return AssetSerializer.serialize(asset);
   }
 
-  async delete(request: KuzzleRequest) {
+  async delete(request: KuzzleRequest): Promise<ApiAssetDeleteResult> {
     const engineId = request.getString("engineId");
     const assetId = request.getId();
     const refresh = request.getRefresh();
@@ -119,7 +121,7 @@ export class AssetController {
     });
   }
 
-  async search(request: KuzzleRequest) {
+  async search(request: KuzzleRequest): Promise<ApiAssetSearchResult> {
     const engineId = request.getString("engineId");
     const {
       searchBody,
@@ -139,7 +141,9 @@ export class AssetController {
     return result;
   }
 
-  async getMeasures(request: KuzzleRequest) {
+  async getMeasures(
+    request: KuzzleRequest
+  ): Promise<ApiAssetGetMeasuresResult> {
     const id = request.getId();
     const engineId = request.getString("engineId");
     const size = request.input.args.size;
@@ -154,7 +158,7 @@ export class AssetController {
       );
     }
 
-    const measures = await this.assetService.measureHistory(engineId, id, {
+    const measures = await this.assetService.getMeasureHistory(engineId, id, {
       endAt,
       size,
       startAt,

@@ -1,7 +1,9 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle";
 
+import { MeasureContent } from "../../../modules/measure";
 import { Metadata } from "../../shared";
-import { AssetController } from "../AssetController";
+
+import { AssetContent } from "./AssetContent";
 
 interface AssetControllerRequest {
   controller: "device-manager/assets";
@@ -14,7 +16,7 @@ export interface ApiAssetGetRequest extends AssetControllerRequest {
 
   _id: string;
 }
-export type ApiAssetGetResult = ReturnType<AssetController["get"]>;
+export type ApiAssetGetResult = KDocument<AssetContent>;
 
 export interface ApiAssetUpdateRequest extends AssetControllerRequest {
   action: "update";
@@ -27,7 +29,7 @@ export interface ApiAssetUpdateRequest extends AssetControllerRequest {
     metadata: Metadata;
   };
 }
-export type ApiAssetUpdateResult = ReturnType<AssetController["update"]>;
+export type ApiAssetUpdateResult = KDocument<AssetContent>;
 
 export interface ApiAssetCreateRequest extends AssetControllerRequest {
   action: "create";
@@ -42,7 +44,7 @@ export interface ApiAssetCreateRequest extends AssetControllerRequest {
     metadata?: Metadata;
   };
 }
-export type ApiAssetCreateResult = ReturnType<AssetController["create"]>;
+export type ApiAssetCreateResult = KDocument<AssetContent>;
 
 export interface ApiAssetDeleteRequest extends AssetControllerRequest {
   action: "delete";
@@ -53,7 +55,7 @@ export interface ApiAssetDeleteRequest extends AssetControllerRequest {
 
   strict?: boolean;
 }
-export type ApiAssetDeleteResult = ReturnType<AssetController["delete"]>;
+export type ApiAssetDeleteResult = void;
 
 export interface ApiAssetSearchRequest extends AssetControllerRequest {
   action: "search";
@@ -66,7 +68,7 @@ export interface ApiAssetSearchRequest extends AssetControllerRequest {
 
   body: JSONObject;
 }
-export type ApiAssetSearchResult = ReturnType<AssetController["search"]>;
+export type ApiAssetSearchResult = SearchResult<KHit<AssetContent>>;
 
 export interface ApiAssetGetMeasuresRequest extends AssetControllerRequest {
   action: "getMeasures";
@@ -79,6 +81,6 @@ export interface ApiAssetGetMeasuresRequest extends AssetControllerRequest {
 
   endAt?: string;
 }
-export type ApiAssetGetMeasuresResult = ReturnType<
-  AssetController["getMeasures"]
->;
+export type ApiAssetGetMeasuresResult = {
+  measures: Array<KDocument<MeasureContent<JSONObject>>>;
+};

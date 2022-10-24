@@ -45,7 +45,7 @@ Feature: Measure propagation in Digital Twins
       | measures[4].values.temperature | -21                |
 
   Scenario: Propagate measures into differents linked assets
-    Given I successfully execute the action "device-manager/device":"linkAsset" with args:
+    Given I successfully execute the action "device-manager/devices":"linkAsset" with args:
       | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId                                     | "container-FRIDGE-unlinked_1"             |
       | body.metadata.index                         | "engine-ayse"                             |

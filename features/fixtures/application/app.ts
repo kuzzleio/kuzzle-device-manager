@@ -85,6 +85,8 @@ app.config.set("plugins.device-manager.writerInterval", 1);
 
 app.config.set("limits.documentsWriteCount", 5000);
 
+app.hook.register("request:onError", (request) => console.log(request.error));
+
 app
   .start()
   .then(() => {

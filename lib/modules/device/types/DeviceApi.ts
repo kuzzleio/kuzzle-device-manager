@@ -1,8 +1,9 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle";
 
-import { DeviceLink } from "../../asset/types/DeviceLink";
-import { DeviceController } from "../DeviceController";
+import { DeviceLink, AssetContent } from "../../asset";
 import { Metadata } from "../../shared";
+
+import { DeviceContent } from "./DeviceContent";
 
 interface DeviceControllerRequest {
   controller: "device-manager/devices";
@@ -15,7 +16,7 @@ export interface ApiDeviceGetRequest extends DeviceControllerRequest {
 
   _id: string;
 }
-export type ApiDeviceGetResult = ReturnType<DeviceController["get"]>;
+export type ApiDeviceGetResult = KDocument<DeviceContent>;
 
 export interface ApiDeviceUpdateRequest extends DeviceControllerRequest {
   action: "update";
@@ -28,7 +29,7 @@ export interface ApiDeviceUpdateRequest extends DeviceControllerRequest {
     metadata: Metadata;
   };
 }
-export type ApiDeviceUpdateResult = ReturnType<DeviceController["update"]>;
+export type ApiDeviceUpdateResult = KDocument<DeviceContent>;
 
 export interface ApiDeviceCreateRequest extends DeviceControllerRequest {
   action: "create";
@@ -47,7 +48,7 @@ export interface ApiDeviceCreateRequest extends DeviceControllerRequest {
     measureNamesLinks?: DeviceLink["measureNamesLinks"];
   };
 }
-export type ApiDeviceCreateResult = ReturnType<DeviceController["create"]>;
+export type ApiDeviceCreateResult = KDocument<DeviceContent>;
 
 export interface ApiDeviceDeleteRequest extends DeviceControllerRequest {
   action: "delete";
@@ -58,7 +59,7 @@ export interface ApiDeviceDeleteRequest extends DeviceControllerRequest {
 
   strict?: boolean;
 }
-export type ApiDeviceDeleteResult = ReturnType<DeviceController["delete"]>;
+export type ApiDeviceDeleteResult = void;
 
 export interface ApiDeviceSearchRequest extends DeviceControllerRequest {
   action: "search";
@@ -71,7 +72,7 @@ export interface ApiDeviceSearchRequest extends DeviceControllerRequest {
 
   body: JSONObject;
 }
-export type ApiDeviceSearchResult = ReturnType<DeviceController["search"]>;
+export type ApiDeviceSearchResult = SearchResult<KHit<DeviceContent>>;
 
 export interface ApiDeviceUnlinkAssetRequest extends DeviceControllerRequest {
   action: "unlinkAsset";
@@ -82,9 +83,10 @@ export interface ApiDeviceUnlinkAssetRequest extends DeviceControllerRequest {
 
   refresh?: string;
 }
-export type ApiDeviceUnlinkAssetResult = ReturnType<
-  DeviceController["unlinkAsset"]
->;
+export type ApiDeviceUnlinkAssetResult = {
+  asset: KDocument<AssetContent>;
+  device: KDocument<DeviceContent>;
+};
 
 export interface ApiDeviceAttachEngineRequest extends DeviceControllerRequest {
   action: "attachEngine";
@@ -93,9 +95,7 @@ export interface ApiDeviceAttachEngineRequest extends DeviceControllerRequest {
 
   refresh?: string;
 }
-export type ApiDeviceAttachEngineResult = ReturnType<
-  DeviceController["attachEngine"]
->;
+export type ApiDeviceAttachEngineResult = void;
 
 export interface ApiDeviceDetachEngineRequest extends DeviceControllerRequest {
   action: "detachEngine";
@@ -104,9 +104,7 @@ export interface ApiDeviceDetachEngineRequest extends DeviceControllerRequest {
 
   refresh?: string;
 }
-export type ApiDeviceDetachEngineResult = ReturnType<
-  DeviceController["detachEngine"]
->;
+export type ApiDeviceDetachEngineResult = void;
 
 export interface ApiDeviceLinkAssetRequest extends DeviceControllerRequest {
   action: "linkAsset";
@@ -121,6 +119,7 @@ export interface ApiDeviceLinkAssetRequest extends DeviceControllerRequest {
     measureNamesLinks?: DeviceLink["measureNamesLinks"];
   };
 }
-export type ApiDeviceLinkAssetResult = ReturnType<
-  DeviceController["linkAsset"]
->;
+export type ApiDeviceLinkAssetResult = {
+  asset: KDocument<AssetContent>;
+  device: KDocument<DeviceContent>;
+};

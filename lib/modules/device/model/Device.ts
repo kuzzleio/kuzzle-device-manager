@@ -11,7 +11,7 @@ export class Device {
     this._id = _id || DeviceSerializer.id(content.model, content.reference);
 
     this._source = {
-      metadata: [],
+      metadata: {},
       ...content,
     };
 

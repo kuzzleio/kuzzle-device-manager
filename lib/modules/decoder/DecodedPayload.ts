@@ -1,4 +1,4 @@
-import { PluginImplementationError, JSONObject } from "kuzzle";
+import { JSONObject, BadRequestError } from "kuzzle";
 
 import { Measurement } from "../measure";
 
@@ -43,7 +43,7 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
     measurement: TMeasurement
   ) {
     if (!this.decoder.measureNames.includes(measureName)) {
-      throw new PluginImplementationError(
+      throw new BadRequestError(
         `Decoder "${this.decoder.deviceModel}" has no measure named "${measureName}"`
       );
     }

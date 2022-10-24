@@ -47,7 +47,7 @@ export class AssetService {
    * @param options.startAt Returns measures starting from this date (ISO8601)
    * @param options.endAt Returns measures until this date (ISO8601)
    */
-  async measureHistory(
+  async getMeasureHistory(
     engineId: string,
     assetId: string,
     {

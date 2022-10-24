@@ -1,85 +1,51 @@
 Feature: Payloads Controller
 
   Scenario: Register a DummyTemp payload
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI  | "12345" |
-      | register55 | 23.3    |
-      | lvlBattery | 0.8     |
-    And I refresh the collection "device-manager":"devices"
+    Given I send the following "dummy-temp" payloads:
+      | deviceEUI | temperature |
+      | "12345"   | 21          |
+      | "12345"   | 42          |
     Then The document "device-manager":"devices":"DummyTemp-12345" content match:
       | reference                      | "12345"           |
       | model                          | "DummyTemp"       |
       | measures[0].type               | "temperature"     |
       | measures[0].measuredAt         | "_DATE_NOW_"      |
       | measures[0].deviceMeasureName  | "temperature"     |
-      | measures[0].values.temperature | 23.3              |
+      | measures[0].values.temperature | 42                |
       | measures[0].origin.id          | "DummyTemp-12345" |
       | measures[0].origin.deviceModel | "DummyTemp"       |
       | measures[0].origin.type        | "device"          |
       | measures[0].unit.name          | "Degree"          |
       | measures[0].unit.sign          | "°"               |
       | measures[0].unit.type          | "number"          |
-      | measures[1].type               | "battery"         |
-      | measures[1].measuredAt         | "_DATE_NOW_"      |
-      | measures[1].deviceMeasureName  | "theBatteryLevel" |
-      | measures[1].values.battery     | 80                |
-      | measures[1].origin.id          | "DummyTemp-12345" |
-      | measures[1].origin.deviceModel | "DummyTemp"       |
-      | measures[1].origin.type        | "device"          |
-      | measures[1].unit.name          | "Volt"            |
-      | measures[1].unit.sign          | "v"               |
-      | measures[1].unit.type          | "number"          |
       | engineId                       | "_UNDEFINED_"     |
       | assetId                        | "_UNDEFINED_"     |
 
-  Scenario: Update a DummyTemp payload
-    Given I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "12345" |
-      | register55   | 23.3    |
-      | batteryLevel | 0.8     |
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI    | "12345" |
-      | register55   | 42.2    |
-      | batteryLevel | 0.7     |
-    And I refresh the collection "device-manager":"devices"
-    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
-      | reference                      | "12345"     |
-      | model                          | "DummyTemp" |
-      | measures[0].values.temperature | 42.2        |
-      | measures[1].values.battery     | 70          |
-
   Scenario: Reject with error a DummyTemp payload
-    When I receive a "dummy-temp" payload with:
-      | deviceEUI    | null |
-      | register55   | 42.2 |
-      | batteryLevel | 0.7  |
+    Given I try to send the following "dummy-temp" payloads:
+      | deviceEUI | temperature |
+      | null      | 21          |
     Then I should receive an error matching:
       | message | "Invalid payload: missing \"deviceEUI\"" |
 
   Scenario: Reject a DummyTemp payload
-    When I receive a "dummy-temp" payload with:
-      | deviceEUI    | "4242" |
-      | invalid      | true   |
-      | register55   | 42.2   |
-      | batteryLevel | 0.7    |
+    Given I send the following "dummy-temp" payloads:
+      | deviceEUI | temperature | invalid |
+      | "12345"   | 21          | true    |
     Then I should receive a result matching:
       | valid | false |
-    And The document "device-manager":"devices":"DummyTemp-4242" does not exists
+    And The document "device-manager":"devices":"DummyTemp-12345" does not exists
 
   Scenario: Receive a payload with 3 measures
-    When I successfully receive a "dummy-temp-position" payload with:
-      | deviceEUI     | "12345" |
-      | register55    | 23.3    |
-      | location.lat  | 42.2    |
-      | location.lon  | 2.42    |
-      | location.accu | 2100    |
-    And I refresh the collection "device-manager":"devices"
+    Given I send the following "dummy-temp-position" payloads:
+      | deviceEUI | temperature | location.lat | location.lon | location.accuracy | battery |
+      | "12345"   | 21          | 42.2         | 2.42         | 2100              | 0.8     |
     Then The document "device-manager":"devices":"DummyTempPosition-12345" content match:
       | reference                       | "12345"                   |
       | model                           | "DummyTempPosition"       |
       | measures[0].type                | "temperature"             |
       | measures[0].measuredAt          | "_DATE_NOW_"              |
-      | measures[0].values.temperature  | 23.3                      |
+      | measures[0].values.temperature  | 21                        |
       | measures[0].origin.id           | "DummyTempPosition-12345" |
       | measures[0].origin.deviceModel  | "DummyTempPosition"       |
       | measures[0].origin.type         | "device"                  |
@@ -111,106 +77,35 @@ Feature: Payloads Controller
       | assetId                         | "_UNDEFINED_"             |
 
   Scenario: Historize the measures with deviceId and assetId
-    Given I successfully execute the action "device-manager/asset":"create" with args:
-      | engineId       | "engine-kuzzle" |
-      | body.type      | "type1"         |
-      | body.reference | "reference1"    |
-      | body.model     | "model1"        |
-    And I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id      | "DummyMultiTemp-detached" |
-      | engineId | "engine-kuzzle"           |
-    And I refresh the collection "engine-ayse":"assets"
-    And I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id      | "DummyMultiTemp-detached" |
-      | assetId  | "type1-model1-reference1" |
-      | engineId | "engine-kuzzle"           |
-    When I successfully receive a "dummy-multi-temp" payload with:
-      | payloads[0].deviceEUI     | "detached" |
-      | payloads[0].registerInner | 42.2       |
-      | payloads[0].lvlBattery    | 0.4        |
-    And I refresh the collection "engine-kuzzle":"measures"
-    Then When I successfully execute the action "document":"search" with args:
-      | index      | "engine-kuzzle" |
-      | collection | "measures"      |
-    And I should receive a "hits" array of objects matching:
-      | _source.type  | _source.origin.id         | _source.asset._id         | _source.origin.type |
-      | "temperature" | "DummyMultiTemp-detached" | "type1-model1-reference1" | "device"            |
-      | "battery"     | "DummyMultiTemp-detached" | "type1-model1-reference1" | "device"            |
-
-  Scenario: Receive a Payload from a know and an unknow device and verify payload documents
-    When I successfully execute the following HTTP request:
-      | method            | "post"                                 |
-      | path              | "/_/device-manager/payload/dummy-temp" |
-      | body.deviceEUI    | "777"                                  |
-      | body.temperature  | 3                                      |
-      | body.batteryLevel | 14                                     |
-    Then The document "device-manager":"devices":"DummyTemp-777" content match:
-      | reference | "777"       |
-      | model     | "DummyTemp" |
-    When I refresh the collection "device-manager":"payloads"
-    Then I successfully execute the action "document":"search" with args:
-      | index            | "device-manager"             |
-      | collection       | "payloads"                   |
-      | body.query.match | {"payload.deviceEUI" :"777"} |
-    And I should receive a result matching:
-      | hits | [{_source : {deviceModel : "DummyTemp", payload : { deviceEUI : "777", temperature : 3}}}] |
-    When I successfully execute the following HTTP request:
-      | method            | "post"                                   |
-      | path              | "/_/device-manager/payload/unknowDevice" |
-      | body.deviceEUI    | "666"                                    |
-      | body.temperature  | 6                                        |
-      | body.batteryLevel | 66                                       |
-    And I refresh the collection "device-manager":"payloads"
-    And I successfully execute the action "document":"search" with args:
-      | index            | "device-manager"              |
-      | collection       | "payloads"                    |
-      | body.query.match | {deviceModel :"unknowDevice"} |
-    Then I should receive a result matching:
-      | hits | [{_source : {deviceModel : "unknowDevice", rawPayload : { deviceEUI : "666", temperature : 6}}}] |
-
-  Scenario: Enrich a measure for a device linked to an asset with asset info
-    Given I successfully receive a "dummy-multi-temp" payload with:
-      | payloads[0].deviceEUI     | "enrich_me_master" |
-      | payloads[0].registerInner | 42.2               |
-      | payloads[0].lvlBattery    | 0.4                |
-    Given I successfully execute the action "device-manager/device":"attachEngine" with args:
-      | _id      | "DummyMultiTemp-enrich_me_master" |
-      | engineId | "engine-ayse"                     |
-    Given I successfully execute the action "device-manager/device":"linkAsset" with args:
-      | _id      | "DummyMultiTemp-enrich_me_master" |
-      | assetId  | "container-FRIDGE-unlinked_1"     |
-      | engineId | "engine-ayse"                     |
-    When I successfully receive a "dummy-multi-temp" payload with:
-      | payloads[0].deviceEUI     | "enrich_me_master" |
-      | payloads[0].registerInner | 21.1               |
-      | payloads[0].lvlBattery    | 0.8                |
+    Given I send the following "dummy-temp" payloads:
+      | deviceEUI | "12345" |
+      | "linked1" | 42.2    |
     And I refresh the collection "engine-ayse":"measures"
     Then When I successfully execute the action "document":"search" with args:
-      | index      | "engine-ayse"                                                 |
-      | collection | "measures"                                                    |
-      | body       | { query: { term:{"asset._id":"container-FRIDGE-unlinked_1"}}} |
+      | index      | "engine-ayse" |
+      | collection | "measures"    |
     And I should receive a "hits" array of objects matching:
-      | _source.type  | _source.origin.id                                             | _source.asset._source.model |
-      | "temperature" | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" | "FRIDGE"                    |
-      | "battery"     | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" | "FRIDGE"                    |
-    Then The document "device-manager":"devices":"DummyMultiTemp-enrich_me_master" content match:
-      | measures[0].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
-      | measures[1].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
-    Then The document "engine-ayse":"devices":"DummyMultiTemp-enrich_me_master" content match:
-      | measures[0].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
-      | measures[1].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
-    Then The document "engine-ayse":"assets":"container-FRIDGE-unlinked_1" content match:
-      | measures[0].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
-      | measures[1].origin.id | "DummyMultiTemp-enrich_me_master+container-FRIDGE-unlinked_1" |
+      | _source.type  | _source.origin.id   | _source.asset.id    | _source.origin.type |
+      | "temperature" | "DummyTemp-linked1" | "container-linked1" | "device"            |
 
   Scenario: Decode Device metadata from payload
-    When I successfully receive a "dummy-temp" payload with:
-      | deviceEUI      | "12345" |
-      | register55     | 23.3    |
-      | lvlBattery     | 0.8     |
-      | metadata.color | "RED"   |
-    And I refresh the collection "device-manager":"devices"
+    Given I send the following "dummy-temp" payloads:
+      | deviceEUI | temperature | metadata.color |
+      | "12345"   | 21.1        | "RED"          |
     Then The formatted document "device-manager":"devices":"DummyTemp-12345" content match:
       | reference      | "12345"     |
       | model          | "DummyTemp" |
       | metadata.color | "RED"       |
+
+  Scenario: Throw an error when decoding unknown measure name
+    Given I successfully execute the action "device-manager/devices":"create" with args:
+      | engineId       | "device-manager" |
+      | body.model     | "DummyTemp"      |
+      | body.reference | "test"           |
+    When I try to send the following "dummy-temp" payloads:
+      | deviceEUI | temperature | unknownMeasure |
+      | "12345"   | 21.1        | 42             |
+    Then I should receive an error matching:
+      | message | "Decoder \"DummyTemp\" has no measure named \"unknownMeasureName\"" |
+    Then The document "device-manager":"devices":"DummyTemp-test" content match:
+      | measures | [] |

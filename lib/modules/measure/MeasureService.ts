@@ -204,9 +204,13 @@ export class MeasureService {
     measures: MeasureContent[]
   ) {
     for (const newMeasure of measures) {
-      const idx = digitalTwin._source.measures.findIndex(
-        (measure) => measure.deviceMeasureName === newMeasure.deviceMeasureName
-      );
+      const idx = digitalTwin._source.measures.findIndex((measure) => {
+        const [measureName, newMeasureName] = measure.assetMeasureName
+          ? [measure.assetMeasureName, newMeasure.assetMeasureName]
+          : [measure.deviceMeasureName, newMeasure.deviceMeasureName];
+
+        return measureName === newMeasureName;
+      });
 
       if (idx === -1) {
         digitalTwin._source.measures.push(newMeasure);
@@ -293,13 +297,24 @@ export class MeasureService {
         throw new NotFoundError(`Asset "${assetId}" does not exist`);
       }
 
+      if (!measurement.type) {
+        throw new BadRequestError(
+          `Invalid measurement for asset "${asset._id}": missing "type"`
+        );
+      }
+
       if (
-        !measurement.type ||
         !measurement.values ||
-        this.measuresRegister.has(measurement.type)
+        Object.keys(measurement.values || {}).length === 0
       ) {
         throw new BadRequestError(
-          `Invalid measurement for asset "${asset._id}": missing "type", "values" or unknown measure type`
+          `Invalid measurement for asset "${asset._id}": missing "values"`
+        );
+      }
+
+      if (!this.measuresRegister.has(measurement.type)) {
+        throw new BadRequestError(
+          `Invalid measurement for asset "${asset._id}": unknown measure type "${measurement.type}"`
         );
       }
 

@@ -30,7 +30,7 @@ export function registerTestPipes(app: Backend) {
       device: Device;
       measures: MeasureContent[];
     }) => {
-      if (device._id !== "DummyMultiTemp-enrich_me_master") {
+      if (device._id !== "DummyTemp-enrich_me_master") {
         return { asset, device, measures };
       }
 

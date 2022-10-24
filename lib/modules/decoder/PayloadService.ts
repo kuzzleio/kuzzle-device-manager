@@ -78,6 +78,8 @@ export class PayloadService {
         }
       );
     }
+
+    return { valid };
   }
 
   /**

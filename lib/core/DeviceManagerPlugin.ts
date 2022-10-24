@@ -94,6 +94,8 @@ export class DeviceManagerPlugin extends Plugin {
       kuzzleVersion: ">=2.19.5 <3",
     });
 
+    /* eslint-disable sort-keys */
+
     this.api = {};
     this.pipes = {
       "generic:document:beforeWrite": [],
@@ -102,7 +104,6 @@ export class DeviceManagerPlugin extends Plugin {
     };
     this.hooks = {};
 
-    /* eslint-disable sort-keys */
     this.config = {
       adminIndex: "device-manager",
       adminCollections: {

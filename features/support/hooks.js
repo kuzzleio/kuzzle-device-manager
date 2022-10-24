@@ -7,10 +7,6 @@ const defaultRights = require("../fixtures/rights");
 const defaultMappings = require("../fixtures/mappings");
 
 const World = require("./world");
-const { TreeNodeMappings } = require("../fakeclasses/TreeNodeMapping");
-const {
-  InvertTreeNodeMappings,
-} = require("../fakeclasses/InvertTreeNodeMapping");
 
 async function resetEngine(sdk, index) {
   await sdk
@@ -28,9 +24,22 @@ async function resetEngine(sdk, index) {
   });
 }
 
-async function createNodeCollection(sdk) {
-  await sdk.index.delete("test").catch(() => {});
-  await sdk.index.create("test");
+async function createEngine(sdk, index) {
+  const { result } = await sdk.query({
+    controller: "device-manager/engine",
+    action: "exists",
+    index,
+  });
+
+  if (result.exists) {
+    return;
+  }
+
+  await sdk.query({
+    controller: "device-manager/engine",
+    action: "create",
+    index,
+  });
 }
 
 BeforeAll({ timeout: 30 * 1000 }, async function () {
@@ -43,8 +52,8 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
   await world.sdk.connect();
 
   await Promise.all([
-    resetEngine(world.sdk, "engine-ayse"),
-    resetEngine(world.sdk, "engine-kuzzle"),
+    createEngine(world.sdk, "engine-ayse"),
+    createEngine(world.sdk, "engine-kuzzle"),
     world.sdk.query({
       controller: "admin",
       action: "loadMappings",
@@ -57,7 +66,6 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
       refresh: "wait_for",
       onExistingUsers: "overwrite",
     }),
-    createNodeCollection(world.sdk),
   ]);
 
   world.sdk.disconnect();

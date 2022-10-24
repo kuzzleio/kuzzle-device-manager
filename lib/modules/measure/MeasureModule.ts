@@ -20,7 +20,7 @@ export class MeasureModule extends Module {
     );
     this.measureController = new MeasureController(this.measureService);
 
-    this.plugin.api["device-manager/measure"] =
+    this.plugin.api["device-manager/measures"] =
       this.measureController.definition;
   }
 }

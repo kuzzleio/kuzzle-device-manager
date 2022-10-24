@@ -36,7 +36,7 @@ export class DummyTempPositionDecoder extends Decoder {
       {
         measuredAt: Date.now(),
         type: "temperature",
-        values: { temperature: payload.register55 },
+        values: { temperature: payload.temperature },
       }
     );
 
@@ -51,7 +51,7 @@ export class DummyTempPositionDecoder extends Decoder {
             lat: payload.location.lat,
             lon: payload.location.lon,
           },
-          accuracy: payload.location.accu,
+          accuracy: payload.location.accuracy,
         },
       }
     );
@@ -63,7 +63,7 @@ export class DummyTempPositionDecoder extends Decoder {
         measuredAt: Date.now(),
         type: "battery",
         values: {
-          battery: payload.batteryLevel * 100,
+          battery: payload.battery * 100,
         },
       }
     );

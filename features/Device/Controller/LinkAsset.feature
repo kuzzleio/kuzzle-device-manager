@@ -1,7 +1,7 @@
 Feature: LinkAsset
 
   Scenario: Create a device with an incorrect link request (wrong measureNamesLinks) throw an error:
-    When I execute the action "device-manager/device":"linkAsset" with args:
+    When I execute the action "device-manager/devices":"linkAsset" with args:
       | _id                    | "DummyMultiTemp-attached_ayse_unlinked_1"                               |
       | body.measureNamesLinks | [{"assetMeasureName":"coreTemp", "deviceMeasureName":"theTemperature"}] |
       | engineId               | "engine-ayse"                                                           |
@@ -9,7 +9,7 @@ Feature: LinkAsset
       | message | "Missing argument \"assetId\"." |
 
   Scenario: Create a device with an incorrect link request (no assetId) throw an error:
-    When I execute the action "device-manager/device":"linkAsset" with args:
+    When I execute the action "device-manager/devices":"linkAsset" with args:
       | _id                    | "DummyMultiTemp-attached_ayse_unlinked_1"                                 |
       | assetId                | "container-FRIDGE-unlinked_1"                                             |
       | body.measureNamesLinks | [{"invalidMeasureName":"coreTemp", "deviceMeasureName":"theTemperature"}] |
@@ -18,7 +18,7 @@ Feature: LinkAsset
       | message | "The linkRequest provided is incorrectly formed\\nThis is probably not a Kuzzle error, but a problem with a plugin implementation." |
 
   Scenario: Link device to an asset without measureNamesLinks
-    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+    When I successfully execute the action "device-manager/devices":"linkAsset" with args:
       | _id      | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId  | "container-FRIDGE-unlinked_1"             |
       | engineId | "engine-ayse"                             |
@@ -36,7 +36,7 @@ Feature: LinkAsset
       | deviceLinks[0].measureNamesLinks[2].deviceMeasureName | "lvlBattery"                              |
 
   Scenario: Link device to an asset with partial measureNamesLinks and receive a payload
-    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+    When I successfully execute the action "device-manager/devices":"linkAsset" with args:
       | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId                                     | "container-FRIDGE-unlinked_1"             |
       | body.measureNamesLinks[0].assetMeasureName  | "coreInnerTemp"                           |
@@ -65,11 +65,11 @@ Feature: LinkAsset
       | measures[0].origin.id          | "DummyMultiTemp-attached_ayse_unlinked_1" |
 
   Scenario: Error when device is already linked
-    When I successfully execute the action "device-manager/device":"linkAsset" with args:
+    When I successfully execute the action "device-manager/devices":"linkAsset" with args:
       | _id      | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId  | "container-FRIDGE-unlinked_1"             |
       | engineId | "engine-ayse"                             |
-    And I execute the action "device-manager/device":"linkAsset" with args:
+    And I execute the action "device-manager/devices":"linkAsset" with args:
       | _id      | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId  | "tools-SCREW-unlinked_1"                  |
       | engineId | "engine-ayse"                             |
@@ -77,7 +77,7 @@ Feature: LinkAsset
       | message | "Device \"DummyMultiTemp-attached_ayse_unlinked_1\" is already linked to an asset." |
 
   Scenario: Error when device is not attached to an engine
-    When I execute the action "device-manager/device":"linkAsset" with args:
+    When I execute the action "device-manager/devices":"linkAsset" with args:
       | _id                                         | "DummyMultiTemp-detached"     |
       | assetId                                     | "container-FRIDGE-unlinked_1" |
       | body.measureNamesLinks[0].assetMeasureName  | "outerTemp"                   |
@@ -87,7 +87,7 @@ Feature: LinkAsset
       | message | "Device \"DummyMultiTemp-detached\" is not attached to an engine." |
 
   Scenario: Error when device is not attached to an engine
-    When I execute the action "device-manager/device":"linkAsset" with args:
+    When I execute the action "device-manager/devices":"linkAsset" with args:
       | _id      | "DummyMultiTemp-detached"     |
       | assetId  | "container-FRIDGE-unlinked_1" |
       | engineId | "engine-ayse"                 |
@@ -95,7 +95,7 @@ Feature: LinkAsset
       | message | "Device \"DummyMultiTemp-detached\" is not attached to an engine." |
 
   Scenario: Error when device is attached to wrong engine
-    When I execute the action "device-manager/device":"linkAsset" with args:
+    When I execute the action "device-manager/devices":"linkAsset" with args:
       | _id      | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId  | "container-FRIDGE-unlinked_1"             |
       | engineId | "engine-kuzzle"                           |
@@ -103,7 +103,7 @@ Feature: LinkAsset
       | message | "Device \"DummyMultiTemp-attached_ayse_unlinked_1\" is not attached to given engine." |
 
   Scenario: Error when device is linked to non-existing asset
-    When I execute the action "device-manager/device":"linkAsset" with args:
+    When I execute the action "device-manager/devices":"linkAsset" with args:
       | _id                                         | "DummyMultiTemp-attached_ayse_unlinked_1" |
       | assetId                                     | "PERFO-non-existing"                      |
       | engineId                                    | "engine-ayse"                             |

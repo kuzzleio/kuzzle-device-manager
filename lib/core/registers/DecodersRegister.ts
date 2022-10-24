@@ -108,13 +108,8 @@ export class DecodersRegister {
 
     for (const decoder of this.decoders) {
       controllers.actions[decoder.action] = {
-        handler: async (request: KuzzleRequest) => {
-          const source = request.getBoolean("source");
-
-          const ret = await payloadService.receive(request, decoder);
-
-          return source ? ret : undefined;
-        },
+        handler: (request: KuzzleRequest) =>
+          payloadService.receive(request, decoder),
         http: decoder.http,
       };
     }

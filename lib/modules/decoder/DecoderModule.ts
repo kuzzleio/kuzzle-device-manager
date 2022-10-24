@@ -21,7 +21,7 @@ export class DecoderModule extends Module {
       this.decodersRegister
     );
 
-    this.plugin.api["device-manager/decoder"] =
+    this.plugin.api["device-manager/decoders"] =
       this.decoderController.definition;
     this.plugin.api["device-manager/payload"] =
       this.decodersRegister.getPayloadController(this.payloadService);
