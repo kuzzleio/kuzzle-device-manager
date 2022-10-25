@@ -204,8 +204,8 @@ export class AssetCategoryService {
       formattedValue.boolean = value;
     } else if (typeof value === "object") {
       if (
-        Object.prototype.hasOwnProperty.call(value, "lat") &&
-        Object.prototype.hasOwnProperty.call(value, "lon")
+        typeof value.lat !== "undefined" &&
+        typeof value.lon !== "undefined"
       ) {
         formattedValue.geo_point = value;
       } else {
