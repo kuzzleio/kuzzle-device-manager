@@ -202,10 +202,15 @@ export class AssetCategoryService {
       formattedValue.integer = value;
     } else if (typeof value === "boolean") {
       formattedValue.boolean = value;
-    } else if (value.lat) {
-      formattedValue.geo_point = value;
     } else if (typeof value === "object") {
-      formattedValue.object = this.formatMetadataForES(value);
+      if (
+        typeof value.lat !== "undefined" &&
+        typeof value.lon !== "undefined"
+      ) {
+        formattedValue.geo_point = value;
+      } else {
+        formattedValue.object = this.formatMetadataForES(value);
+      }
     } else {
       formattedValue.keyword = value;
     }
