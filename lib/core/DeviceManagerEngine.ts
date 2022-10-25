@@ -7,7 +7,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
-} from "../modules/models";
+} from "../modules/model";
 import { measuresMappings } from "../modules/measure";
 import { devicesMappings } from "../modules/device";
 

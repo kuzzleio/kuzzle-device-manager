@@ -1,13 +1,13 @@
 import { JSONObject, PluginContext } from "kuzzle";
 
 import { MeasureUnit } from "../../modules/measure";
-import { ModelSerializer } from "../../modules/models/ModelSerializer";
+import { ModelSerializer } from "../../modules/model";
 import {
   AssetModelContent,
   MeasureModelContent,
   ModelContent,
   DeviceModelContent,
-} from "../../modules/models";
+} from "../../modules/model";
 import { DeviceManagerConfiguration } from "../DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "../DeviceManagerPlugin";
 import { InternalCollection } from "../InternalCollection";

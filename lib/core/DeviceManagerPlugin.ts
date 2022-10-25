@@ -22,7 +22,7 @@ import { DeviceModule, devicesMappings } from "../modules/device";
 import { MeasureModule } from "../modules/measure";
 import { AssetModule } from "../modules/asset";
 import { Decoder, DecoderModule, payloadsMappings } from "../modules/decoder";
-import { modelsMappings } from "../modules/models";
+import { modelsMappings } from "../modules/model";
 import { lock } from "../modules/shared/utils/lock";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
