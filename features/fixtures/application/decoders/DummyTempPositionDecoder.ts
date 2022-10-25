@@ -10,9 +10,9 @@ import {
 
 export class DummyTempPositionDecoder extends Decoder {
   public measures = [
-    { name: "theTemperature", type: "temperature" },
-    { name: "theBattery", type: "battery" },
-    { name: "thePosition", type: "position" },
+    { name: "temperature", type: "temperature" },
+    { name: "battery", type: "battery" },
+    { name: "position", type: "position" },
   ] as const;
 
   constructor() {
@@ -32,7 +32,7 @@ export class DummyTempPositionDecoder extends Decoder {
 
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,
-      "theTemperature",
+      "temperature",
       {
         measuredAt: Date.now(),
         type: "temperature",
@@ -42,7 +42,7 @@ export class DummyTempPositionDecoder extends Decoder {
 
     decodedPayload.addMeasurement<PositionMeasurement>(
       payload.deviceEUI,
-      "thePosition",
+      "position",
       {
         measuredAt: Date.now(),
         type: "position",
@@ -58,7 +58,7 @@ export class DummyTempPositionDecoder extends Decoder {
 
     decodedPayload.addMeasurement<BatteryMeasurement>(
       payload.deviceEUI,
-      "theBattery",
+      "battery",
       {
         measuredAt: Date.now(),
         type: "battery",

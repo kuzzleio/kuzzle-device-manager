@@ -1,6 +1,13 @@
 const { Asset } = require("../../lib/modules/asset");
 const { Device } = require("../../lib/modules/device");
 
+const deviceDetached1 = new Device({
+  model: "DummyTemp",
+  reference: "detached1",
+  metadata: {},
+  measures: [],
+});
+
 const deviceAyseLinked1 = new Device({
   model: "DummyTemp",
   reference: "linked1",
@@ -29,11 +36,24 @@ const assetAyseUnlinked = new Asset({
   deviceLinks: [],
 });
 
+const deviceAyseUnlinked1 = new Device({
+  model: "DummyTemp",
+  reference: "unlinked1",
+  metadata: {},
+  measures: [],
+  engineId: "engine-ayse",
+  assetId: null,
+});
+
 module.exports = {
   "device-manager": {
     devices: [
       { index: { _id: deviceAyseLinked1._id } },
       deviceAyseLinked1._source,
+      { index: { _id: deviceDetached1._id } },
+      deviceDetached1._source,
+      { index: { _id: deviceAyseUnlinked1._id } },
+      deviceAyseUnlinked1._source,
     ],
   },
 
@@ -42,6 +62,8 @@ module.exports = {
     devices: [
       { index: { _id: deviceAyseLinked1._id } },
       deviceAyseLinked1._source,
+      { index: { _id: deviceAyseUnlinked1._id } },
+      deviceAyseUnlinked1._source,
     ],
     assets: [
       { index: { _id: assetAyseLinked._id } },

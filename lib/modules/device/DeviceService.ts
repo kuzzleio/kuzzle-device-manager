@@ -92,7 +92,7 @@ export class DeviceService {
           index: engineId,
         });
 
-        if (linkRequest) {
+        if (linkRequest.assetId) {
           const ret = await this.linkAsset(
             linkRequest.engineId,
             linkRequest.deviceId,
@@ -529,7 +529,9 @@ export class DeviceService {
   }
 
   private async checkEngineExists(engineId: string) {
-    const { result: exists } = await this.sdk.query({
+    const {
+      result: { exists },
+    } = await this.sdk.query({
       action: "exists",
       controller: "device-manager/engine",
       index: engineId,

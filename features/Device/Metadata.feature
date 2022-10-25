@@ -8,8 +8,7 @@ Feature: Register Device Metadata
       | index      | "device-manager" |
       | collection | "devices"        |
     Then I should receive a result matching:
-      | properties.metadata.properties.group.type                         | "keyword"   |
-      | properties.metadata.properties.group2.type                        | "keyword"   |
+      | properties.metadata.properties.color.type                         | "keyword"   |
       # default measures
       | properties.measures.properties.values.properties.humidity.type    | "float"     |
       | properties.measures.properties.values.properties.accuracy.type    | "float"     |

@@ -2,21 +2,27 @@ Feature: Detach device from engine
 
   Scenario: Detach device from an engine
     And I successfully execute the action "device-manager/devices":"attachEngine" with args:
-      | _id      | "DummyMultiTemp-detached" |
-      | engineId | "engine-kuzzle"              |
+      | _id      | "DummyTemp-detached1" |
+      | engineId | "engine-kuzzle"       |
     When I successfully execute the action "device-manager/devices":"detachEngine" with args:
-      | _id | "DummyMultiTemp-detached" |
-    Then The document "device-manager":"devices":"DummyMultiTemp-detached" content match:
+      | engineId | "engine-kuzzle"       |
+      | _id      | "DummyTemp-detached1" |
+    Then The document "device-manager":"devices":"DummyTemp-detached1" content match:
       | engineId | null |
-    And The document "engine-kuzzle":"devices":"DummyMultiTemp-detached" does not exists
+    And The document "engine-kuzzle":"devices":"DummyTemp-detached1" does not exists
 
-  Scenario: Error when detaching from an engine
+  Scenario: Error if device is not attached
     When I execute the action "device-manager/devices":"detachEngine" with args:
-      | _id    | "DummyMultiTemp-detached" |
-      | strict | true                 |
+      | engineId | "engine-ayse"         |
+      | _id      | "DummyTemp-detached1" |
     Then I should receive an error matching:
-      | message | "Device \"DummyMultiTemp-detached\" is not attached to an engine." |
-    When I execute the action "device-manager/devices":"detachEngine" with args:
-      | _id | "DummyMultiTemp-attached_ayse_linked_1" |
-    Then I should receive an error matching:
-      | message | "Device \"DummyMultiTemp-attached_ayse_linked_1\" is still linked to an asset." |
+      | message | "Device \"DummyTemp-detached1\" is not attached to an engine." |
+
+  Scenario: Unlink the linked device
+    When I successfully execute the action "device-manager/devices":"detachEngine" with args:
+      | engineId | "engine-ayse"       |
+      | _id      | "DummyTemp-linked1" |
+    Then The document "engine-ayse":"assets":"container-linked1" content match:
+      | deviceLinks | [] |
+    Then The document "device-manager":"devices":"DummyTemp-linked1" content match:
+      | assetId | null |

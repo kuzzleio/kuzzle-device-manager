@@ -9,9 +9,11 @@ Feature: Ingestion Pipeline Events
       | _id      | "DummyTemp-enrich_me_master" |
       | engineId | "engine-ayse"                |
     Given I successfully execute the action "device-manager/devices":"linkAsset" with args:
-      | _id      | "DummyTemp-enrich_me_master" |
-      | assetId  | "container-unlinked1"        |
-      | engineId | "engine-ayse"                |
+      | _id                                         | "DummyTemp-enrich_me_master" |
+      | assetId                                     | "container-unlinked1"        |
+      | engineId                                    | "engine-ayse"                |
+      | body.measureNamesLinks[0].assetMeasureName  | "temperature"                |
+      | body.measureNamesLinks[0].deviceMeasureName | "temperature"                |
     Given I send the following "dummy-temp" payloads:
       | deviceEUI          | temperature |
       | "enrich_me_master" | 21.1        |

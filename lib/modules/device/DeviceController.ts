@@ -1,13 +1,12 @@
 import {
+  BadRequestError,
   ControllerDefinition,
   JSONObject,
   KuzzleRequest,
   PluginImplementationError,
 } from "kuzzle";
-import _ from "lodash";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
-import { DeviceLink } from "../asset/types/DeviceLink";
 
 import { DeviceService } from "./DeviceService";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -170,10 +169,8 @@ export class DeviceController {
     const measureNamesLinks = request.getBodyArray("measureNamesLinks", []);
     const refresh = request.getRefresh();
 
-    if (assetId && !this.validateMeasureNamesLinks(measureNamesLinks)) {
-      throw new PluginImplementationError(
-        "The linkRequest provided is not valid"
-      );
+    if (assetId) {
+      this.validateMeasureNamesLinks(measureNamesLinks);
     }
 
     if (assetId && !assetId.length && measureNamesLinks.length === 0) {
@@ -231,13 +228,9 @@ export class DeviceController {
     const engineId = request.getString("engineId");
     const assetId = request.getString("assetId");
     const refresh = request.getRefresh();
-    const measureNamesLinks = request.getBodyArray("measureNamesLinks", []);
+    const measureNamesLinks = request.getBodyArray("measureNamesLinks");
 
-    if (!this.validateMeasureNamesLinks(measureNamesLinks)) {
-      throw new PluginImplementationError(
-        "The linkRequest provided is incorrectly formed"
-      );
-    }
+    this.validateMeasureNamesLinks(measureNamesLinks);
 
     const { asset, device } = await this.deviceService.linkAsset(
       engineId,
@@ -272,23 +265,24 @@ export class DeviceController {
     };
   }
 
-  private validateMeasureNamesLinks(toValidate: JSONObject) {
-    if (toValidate && !Array.isArray(toValidate)) {
-      return false;
+  private validateMeasureNamesLinks(measureNamesLinks: JSONObject) {
+    if (measureNamesLinks.length === 0) {
+      throw new BadRequestError(
+        `Measures name mappings is empty ("measureNamesLinks")`
+      );
     }
 
-    const measureNamesLinks = toValidate as DeviceLink["measureNamesLinks"][];
-
-    for (const measureNamesLink of measureNamesLinks) {
-      if (
-        !(
-          _.has(measureNamesLink, "assetMeasureName") &&
-          _.has(measureNamesLink, "deviceMeasureName")
-        )
-      ) {
-        return false;
+    for (let i = 0; i < measureNamesLinks.length; i++) {
+      if (!measureNamesLinks[i].assetMeasureName) {
+        throw new BadRequestError(
+          `Missing "measureNamesLinks[${i}].assetMeasureName"`
+        );
+      }
+      if (!measureNamesLinks[i].deviceMeasureName) {
+        throw new BadRequestError(
+          `Missing "measureNamesLinks[${i}].deviceMeasureName"`
+        );
       }
     }
-    return true;
   }
 }
