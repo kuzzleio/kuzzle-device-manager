@@ -1,24 +1,25 @@
-import { Plugin } from "kuzzle";
+import _ from "lodash";
+import { JSONObject, Plugin } from "kuzzle";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
+
+import { assetsMappings } from "../modules/asset";
+import {
+  AssetModelContent,
+  DeviceModelContent,
+  MeasureModelContent,
+} from "../modules/models";
+import { measuresMappings } from "../modules/measure";
+import { devicesMappings } from "../modules/device";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
-import { AssetsRegister } from "./registers/AssetsRegister";
-import { DevicesRegister } from "./registers/DevicesRegister";
-import { MeasuresRegister } from "./registers/MeasuresRegister";
+import { InternalCollection } from "./InternalCollection";
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfiguration;
 
-  private assetsRegister: AssetsRegister;
-  private devicesRegister: DevicesRegister;
-  private measuresRegister: MeasuresRegister;
-
   constructor(
     plugin: Plugin,
-    assetsRegister: AssetsRegister,
-    devicesRegister: DevicesRegister,
-    measuresRegister: MeasuresRegister,
     adminConfigManager: ConfigManager,
     engineConfigManager: ConfigManager
   ) {
@@ -31,31 +32,16 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     this.context = plugin.context;
-    this.assetsRegister = assetsRegister;
-    this.devicesRegister = devicesRegister;
-    this.measuresRegister = measuresRegister;
   }
 
   async onCreate(index: string, group = "commons") {
     const promises = [];
 
-    promises.push(
-      this.sdk.collection.create(index, "assets", {
-        mappings: this.assetsRegister.getMappings(group),
-      })
-    );
+    promises.push(this.createAssetsCollection(index, group));
 
-    promises.push(
-      this.sdk.collection.create(index, "devices", {
-        mappings: this.devicesRegister.getMappings(),
-      })
-    );
+    promises.push(this.createDevicesCollection(index));
 
-    promises.push(
-      this.sdk.collection.create(index, "measures", {
-        mappings: this.measuresRegister.getMappings(),
-      })
-    );
+    promises.push(this.createMeasuresCollection(index));
 
     promises.push(this.engineConfigManager.createCollection(index));
 
@@ -74,27 +60,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async onUpdate(index: string, group = "commons") {
     const promises = [];
 
-    promises.push(
-      this.sdk.collection.create(index, "assets", {
-        mappings: this.assetsRegister.getMappings(group),
-      })
-    );
+    promises.push(this.createAssetsCollection(index, group));
 
-    promises.push(
-      this.sdk.collection.create(index, "devices", {
-        mappings: this.devicesRegister.getMappings(),
-      })
-    );
+    promises.push(this.createDevicesCollection(index));
 
-    promises.push(
-      this.sdk.collection.create(index, "measures", {
-        mappings: this.measuresRegister.getMappings(),
-      })
-    );
+    promises.push(this.createMeasuresCollection(index));
 
-    await Promise.all(promises);
+    const collections = await Promise.all(promises);
 
-    return { collections: ["assets", "devices", "measures"] };
+    return { collections };
   }
 
   async onDelete(index: string) {
@@ -107,5 +81,116 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     await Promise.all(promises);
 
     return { collections: ["assets", "devices", "measures"] };
+  }
+
+  async createAssetsCollection(engineId: string, engineGroup = "commons") {
+    const models = await this.getModels<AssetModelContent>(
+      this.config.adminIndex,
+      "asset",
+      engineGroup
+    );
+
+    const mappings = JSON.parse(JSON.stringify(assetsMappings));
+
+    for (const model of models) {
+      mappings.properties.metadata.properties = _.merge(
+        mappings.properties.metadata.properties,
+        model._source.asset.metadataMappings
+      );
+    }
+
+    mappings.properties.measures = await this.getMeasuresMappings();
+
+    await this.sdk.collection.create(
+      engineId,
+      InternalCollection.ASSETS,
+      mappings
+    );
+
+    return InternalCollection.ASSETS;
+  }
+
+  async createDevicesCollection(engineId: string) {
+    const models = await this.getModels<DeviceModelContent>(
+      this.config.adminIndex,
+      "device"
+    );
+
+    const mappings = JSON.parse(JSON.stringify(devicesMappings));
+
+    for (const model of models) {
+      mappings.properties.metadata.properties = _.merge(
+        mappings.properties.metadata.properties,
+        model._source.device.metadataMappings
+      );
+    }
+
+    mappings.properties.measures = await this.getMeasuresMappings();
+
+    await this.sdk.collection.create(
+      engineId,
+      InternalCollection.DEVICES,
+      mappings
+    );
+
+    return InternalCollection.DEVICES;
+  }
+
+  async createMeasuresCollection(engineId: string) {
+    const mappings = await this.getMeasuresMappings();
+
+    await this.sdk.collection.create(
+      engineId,
+      InternalCollection.MEASURES,
+      mappings
+    );
+
+    return InternalCollection.MEASURES;
+  }
+
+  private async getMeasuresMappings() {
+    const models = await this.getModels<MeasureModelContent>(
+      this.config.adminIndex,
+      "measure"
+    );
+
+    const mappings = JSON.parse(JSON.stringify(measuresMappings));
+
+    for (const model of models) {
+      mappings.properties.values.properties = _.merge(
+        mappings.properties.values.properties,
+        model._source.measure.valuesMappings
+      );
+    }
+
+    return mappings;
+  }
+
+  private async getModels<T>(
+    engineId: string,
+    type: string,
+    engineGroup?: string
+  ) {
+    const query: JSONObject = {
+      and: [{ equals: { type } }],
+    };
+
+    if (engineGroup) {
+      query.and.push({
+        or: [
+          { equals: { engineGroup } },
+          { equals: { engineGroup: "commons" } },
+        ],
+      });
+    }
+
+    const result = await this.sdk.document.search<T>(
+      engineId,
+      InternalCollection.MODELS,
+      { query },
+      { lang: "koncorde", size: 100 }
+    );
+
+    return result.hits;
   }
 }

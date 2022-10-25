@@ -1,3 +1,5 @@
+import util from "node:util";
+
 import { Backend, KuzzleRequest } from "kuzzle";
 
 import { DeviceManagerPlugin } from "../../../index";
@@ -8,14 +10,14 @@ const app = new Backend("kuzzle");
 
 const deviceManager = new DeviceManagerPlugin();
 
-deviceManager.decoders.register(new DummyTempDecoder());
-deviceManager.decoders.register(new DummyTempPositionDecoder());
+deviceManager.registerDecoder(new DummyTempDecoder());
+deviceManager.registerDecoder(new DummyTempPositionDecoder());
 
-deviceManager.devices.registerMetadata({
+deviceManager.models.registerDevice("DummyTemp", {
   color: { type: "keyword" },
 });
 
-deviceManager.assets.register("car", {
+deviceManager.models.registerAsset("car", {
   warranty: {
     type: "keyword",
     fields: {
@@ -26,7 +28,7 @@ deviceManager.assets.register("car", {
 
 // Register an asset for the "astronaut" group
 
-deviceManager.assets.register(
+deviceManager.models.registerAsset(
   "rocket",
   {
     stillAlive: { type: "boolean" },
@@ -34,7 +36,7 @@ deviceManager.assets.register(
   { engineGroup: "astronaut" }
 );
 
-deviceManager.assets.register(
+deviceManager.models.registerAsset(
   "hevSuit",
   {
     freezing: { type: "boolean" },
@@ -50,6 +52,9 @@ app.hook.register("request:onError", async (request: KuzzleRequest) => {
   app.log.error(request.error);
 });
 
+util.inspect.defaultOptions = {
+  depth: 10,
+};
 app.config.content.plugins["kuzzle-plugin-logger"].services.stdout.level =
   "debug";
 app.config.content.limits.documentsWriteCount = 5000;

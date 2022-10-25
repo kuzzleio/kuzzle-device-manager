@@ -15,9 +15,9 @@ Feature: Payloads Controller
       | measures[0].origin.id          | "DummyTemp-12345" |
       | measures[0].origin.deviceModel | "DummyTemp"       |
       | measures[0].origin.type        | "device"          |
-      | measures[0].unit.name          | "Degree"          |
-      | measures[0].unit.sign          | "°"               |
-      | measures[0].unit.type          | "number"          |
+      # | measures[0].unit.name          | "Degree"          |
+      # | measures[0].unit.sign          | "°"               |
+      # | measures[0].unit.type          | "number"          |
       | engineId                       | "_UNDEFINED_"     |
       | assetId                        | "_UNDEFINED_"     |
 
@@ -50,9 +50,9 @@ Feature: Payloads Controller
       | measures[0].origin.deviceModel  | "DummyTempPosition"       |
       | measures[0].origin.type         | "device"                  |
       | measures[0].origin.assetId      | "_UNDEFINED_"             |
-      | measures[0].unit.name           | "Degree"                  |
-      | measures[0].unit.sign           | "°"                       |
-      | measures[0].unit.type           | "number"                  |
+      # | measures[0].unit.name           | "Degree"                  |
+      # | measures[0].unit.sign           | "°"                       |
+      # | measures[0].unit.type           | "number"                  |
       | measures[1].type                | "position"                |
       | measures[1].measuredAt          | "_DATE_NOW_"              |
       | measures[1].values.position.lat | 42.2                      |
@@ -61,18 +61,18 @@ Feature: Payloads Controller
       | measures[1].origin.id           | "DummyTempPosition-12345" |
       | measures[1].origin.deviceModel  | "DummyTempPosition"       |
       | measures[1].origin.type         | "device"                  |
-      | measures[1].unit.name           | "GPS"                     |
-      | measures[1].unit.sign           | "_NULL_"                  |
-      | measures[1].unit.type           | "geo_point"               |
+      # | measures[1].unit.name           | "GPS"                     |
+      # | measures[1].unit.sign           | "_NULL_"                  |
+      # | measures[1].unit.type           | "geo_point"               |
       | measures[2].type                | "battery"                 |
       | measures[2].measuredAt          | "_DATE_NOW_"              |
       | measures[2].values.battery      | 80                        |
       | measures[2].origin.id           | "DummyTempPosition-12345" |
       | measures[2].origin.deviceModel  | "DummyTempPosition"       |
       | measures[2].origin.type         | "device"                  |
-      | measures[2].unit.name           | "Volt"                    |
-      | measures[2].unit.sign           | "v"                       |
-      | measures[2].unit.type           | "number"                  |
+      # | measures[2].unit.name           | "Volt"                    |
+      # | measures[2].unit.sign           | "v"                       |
+      # | measures[2].unit.type           | "number"                  |
       | engineId                        | "_UNDEFINED_"             |
       | assetId                         | "_UNDEFINED_"             |
 

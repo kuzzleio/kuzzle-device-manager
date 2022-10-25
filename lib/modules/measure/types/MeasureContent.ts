@@ -63,7 +63,7 @@ export interface MeasureContent<
   /**
    * Measurement self-description.
    */
-  unit: MeasureUnit;
+  unit?: MeasureUnit;
 
   /**
    * Asset linked to the device when the measure was made

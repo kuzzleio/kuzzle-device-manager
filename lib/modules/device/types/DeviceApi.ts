@@ -5,20 +5,20 @@ import { Metadata } from "../../shared";
 
 import { DeviceContent } from "./DeviceContent";
 
-interface DeviceControllerRequest {
+interface DevicesControllerRequest {
   controller: "device-manager/devices";
 
   engineId: string;
 }
 
-export interface ApiDeviceGetRequest extends DeviceControllerRequest {
+export interface ApiDeviceGetRequest extends DevicesControllerRequest {
   action: "get";
 
   _id: string;
 }
 export type ApiDeviceGetResult = KDocument<DeviceContent>;
 
-export interface ApiDeviceUpdateRequest extends DeviceControllerRequest {
+export interface ApiDeviceUpdateRequest extends DevicesControllerRequest {
   action: "update";
 
   _id: string;
@@ -31,7 +31,7 @@ export interface ApiDeviceUpdateRequest extends DeviceControllerRequest {
 }
 export type ApiDeviceUpdateResult = KDocument<DeviceContent>;
 
-export interface ApiDeviceCreateRequest extends DeviceControllerRequest {
+export interface ApiDeviceCreateRequest extends DevicesControllerRequest {
   action: "create";
 
   refresh?: string;
@@ -50,7 +50,7 @@ export interface ApiDeviceCreateRequest extends DeviceControllerRequest {
 }
 export type ApiDeviceCreateResult = KDocument<DeviceContent>;
 
-export interface ApiDeviceDeleteRequest extends DeviceControllerRequest {
+export interface ApiDeviceDeleteRequest extends DevicesControllerRequest {
   action: "delete";
 
   _id: string;
@@ -61,7 +61,7 @@ export interface ApiDeviceDeleteRequest extends DeviceControllerRequest {
 }
 export type ApiDeviceDeleteResult = void;
 
-export interface ApiDeviceSearchRequest extends DeviceControllerRequest {
+export interface ApiDeviceSearchRequest extends DevicesControllerRequest {
   action: "search";
 
   from?: number;
@@ -74,7 +74,7 @@ export interface ApiDeviceSearchRequest extends DeviceControllerRequest {
 }
 export type ApiDeviceSearchResult = SearchResult<KHit<DeviceContent>>;
 
-export interface ApiDeviceUnlinkAssetRequest extends DeviceControllerRequest {
+export interface ApiDeviceUnlinkAssetRequest extends DevicesControllerRequest {
   action: "unlinkAsset";
 
   _id: string;
@@ -88,7 +88,7 @@ export type ApiDeviceUnlinkAssetResult = {
   device: KDocument<DeviceContent>;
 };
 
-export interface ApiDeviceAttachEngineRequest extends DeviceControllerRequest {
+export interface ApiDeviceAttachEngineRequest extends DevicesControllerRequest {
   action: "attachEngine";
 
   _id: string;
@@ -97,7 +97,7 @@ export interface ApiDeviceAttachEngineRequest extends DeviceControllerRequest {
 }
 export type ApiDeviceAttachEngineResult = void;
 
-export interface ApiDeviceDetachEngineRequest extends DeviceControllerRequest {
+export interface ApiDeviceDetachEngineRequest extends DevicesControllerRequest {
   action: "detachEngine";
 
   _id: string;
@@ -106,7 +106,7 @@ export interface ApiDeviceDetachEngineRequest extends DeviceControllerRequest {
 }
 export type ApiDeviceDetachEngineResult = void;
 
-export interface ApiDeviceLinkAssetRequest extends DeviceControllerRequest {
+export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
   action: "linkAsset";
 
   _id: string;

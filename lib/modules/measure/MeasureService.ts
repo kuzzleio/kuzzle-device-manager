@@ -18,7 +18,6 @@ import { Asset, AssetContent } from "../asset";
 import { Device } from "../device";
 import { DigitalTwinContent, Metadata } from "../shared";
 import { AssetSerializer } from "../asset";
-import { MeasuresRegister } from "../../core/registers/MeasuresRegister";
 import { lock } from "../shared/utils/lock";
 
 import {
@@ -37,7 +36,6 @@ import {
 export class MeasureService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
-  private measuresRegister: MeasuresRegister;
 
   private get sdk() {
     return this.context.accessors.sdk;
@@ -47,11 +45,9 @@ export class MeasureService {
     return global.app;
   }
 
-  constructor(plugin: DeviceManagerPlugin, measuresRegister: MeasuresRegister) {
+  constructor(plugin: DeviceManagerPlugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-
-    this.measuresRegister = measuresRegister;
 
     this.app.pipe.register<EventMeasureIngest>(
       "device-manager:measures:ingest",
@@ -231,12 +227,7 @@ export class MeasureService {
     const measures: MeasureContent[] = [];
 
     for (const measurement of measurements) {
-      if (!this.measuresRegister.has(measurement.type)) {
-        this.app.log.warn(
-          `Unknown measurement "${measurement.type}" from Decoder "${device._source.model}"`
-        );
-        continue;
-      }
+      // @todo check if measure type exists
 
       const deviceMeasureName =
         measurement.deviceMeasureName || measurement.type;
@@ -259,7 +250,6 @@ export class MeasureService {
           type: "device",
         },
         type: measurement.type,
-        unit: this.measuresRegister.get(measurement.type).unit,
         values: measurement.values,
       };
 
@@ -312,11 +302,7 @@ export class MeasureService {
         );
       }
 
-      if (!this.measuresRegister.has(measurement.type)) {
-        throw new BadRequestError(
-          `Invalid measurement for asset "${asset._id}": unknown measure type "${measurement.type}"`
-        );
-      }
+      // @todo check if measure type exists
 
       const measure: MeasureContent<JSONObject> = {
         asset: AssetSerializer.description(asset),
@@ -328,7 +314,6 @@ export class MeasureService {
           type: "user",
         },
         type: measurement.type,
-        unit: this.measuresRegister.get(measurement.type).unit,
         values: measurement.values,
       };
 

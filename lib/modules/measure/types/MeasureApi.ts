@@ -1,15 +1,15 @@
 import { JSONObject } from "kuzzle";
 
-import { MeasureController } from "../MeasureController";
+import { MeasuresController } from "../MeasuresController";
 import { AssetMeasurement } from "./MeasureContent";
 
-interface MeasureControllerRequest {
+interface MeasuresControllerRequest {
   controller: "device-manager/measures";
 
   engineId: string;
 }
 
-export interface ApiMeasurePushRequest extends MeasureControllerRequest {
+export interface ApiMeasurePushRequest extends MeasuresControllerRequest {
   action: "push";
 
   refresh?: string;
@@ -20,4 +20,4 @@ export interface ApiMeasurePushRequest extends MeasureControllerRequest {
     measure: AssetMeasurement<JSONObject>;
   };
 }
-export type ApiMeasurePushResult = ReturnType<MeasureController["push"]>;
+export type ApiMeasurePushResult = ReturnType<MeasuresController["push"]>;

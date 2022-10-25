@@ -8,7 +8,7 @@ import {
   ApiDecoderPrunePayloadsResult,
 } from "./types/DecoderApi";
 
-export class DecoderController {
+export class DecodersController {
   private payloadService: PayloadService;
   private decodersRegister: DecodersRegister;
 

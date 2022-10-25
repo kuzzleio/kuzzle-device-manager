@@ -1,12 +1,12 @@
 import { KuzzleRequest } from "kuzzle";
 import { Module } from "../shared/Module";
 
-import { DecoderController } from "./DecoderController";
+import { DecodersController } from "./DecodersController";
 import { PayloadService } from "./PayloadService";
 
 export class DecoderModule extends Module {
   private payloadService: PayloadService;
-  private decoderController: DecoderController;
+  private decoderController: DecodersController;
 
   // @todo temporary until registers refactor
   private get decodersRegister() {
@@ -16,7 +16,7 @@ export class DecoderModule extends Module {
 
   public async init(): Promise<void> {
     this.payloadService = new PayloadService(this.plugin);
-    this.decoderController = new DecoderController(
+    this.decoderController = new DecodersController(
       this.payloadService,
       this.decodersRegister
     );

@@ -1,15 +1,15 @@
 import { Module } from "../shared/Module";
 
-import { DeviceController } from "./DeviceController";
+import { DevicesController } from "./DevicesController";
 import { DeviceService } from "./DeviceService";
 
 export class DeviceModule extends Module {
   private deviceService: DeviceService;
-  private deviceController: DeviceController;
+  private deviceController: DevicesController;
 
   public async init(): Promise<void> {
     this.deviceService = new DeviceService(this.plugin);
-    this.deviceController = new DeviceController(this.deviceService);
+    this.deviceController = new DevicesController(this.deviceService);
 
     this.plugin.api["device-manager/devices"] =
       this.deviceController.definition;

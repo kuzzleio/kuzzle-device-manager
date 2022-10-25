@@ -11,7 +11,7 @@ import {
   ApiAssetUpdateResult,
 } from "./types/AssetApi";
 
-export class AssetController {
+export class AssetsController {
   public definition: ControllerDefinition;
 
   private assetService: AssetService;

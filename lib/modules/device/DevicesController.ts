@@ -22,7 +22,7 @@ import {
   ApiDeviceUpdateResult,
 } from "./types/DeviceApi";
 
-export class DeviceController {
+export class DevicesController {
   public definition: ControllerDefinition;
 
   private deviceService: DeviceService;

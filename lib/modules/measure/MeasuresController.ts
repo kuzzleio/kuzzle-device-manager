@@ -2,7 +2,7 @@ import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { MeasureService } from "./MeasureService";
 
-export class MeasureController {
+export class MeasuresController {
   private measureService: MeasureService;
 
   public definition: ControllerDefinition;

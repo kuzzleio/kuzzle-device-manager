@@ -10,10 +10,7 @@ import {
 import { PayloadService } from "../../modules/decoder/PayloadService";
 import { Decoder, DecoderContent } from "../../modules/decoder";
 
-import { MeasuresRegister } from "./MeasuresRegister";
-
 export class DecodersRegister {
-  private measuresRegister: MeasuresRegister;
   private context: PluginContext;
 
   /**
@@ -27,10 +24,6 @@ export class DecodersRegister {
 
   get decoders(): Decoder[] {
     return Array.from(this._decoders.values());
-  }
-
-  constructor(measuresRegister: MeasuresRegister) {
-    this.measuresRegister = measuresRegister;
   }
 
   init(context: PluginContext) {
@@ -61,6 +54,8 @@ export class DecodersRegister {
    *
    * @param decoder Instantiated decoder
    *
+   * @todo check if measures declared by the decoder exists, maybe when plugin starts only
+   *
    * @returns Corresponding API action requestPayload
    */
   register(decoder: Decoder) {
@@ -74,14 +69,6 @@ export class DecodersRegister {
       throw new PluginImplementationError(
         `Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property.`
       );
-    }
-
-    for (const measureDeclaration of decoder.measures) {
-      if (!this.measuresRegister.has(measureDeclaration.type)) {
-        throw new PluginImplementationError(
-          `Decoder "${decoder.deviceModel}" cannot register unknown measure type "${measureDeclaration.type}"`
-        );
-      }
     }
 
     if (this._decoders.has(decoder.deviceModel)) {

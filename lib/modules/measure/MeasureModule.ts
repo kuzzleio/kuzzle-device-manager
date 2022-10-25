@@ -1,11 +1,11 @@
 import { Module } from "../shared/Module";
 
-import { MeasureController } from "./MeasureController";
+import { MeasuresController } from "./MeasuresController";
 import { MeasureService } from "./MeasureService";
 
 export class MeasureModule extends Module {
   private measureService: MeasureService;
-  private measureController: MeasureController;
+  private measureController: MeasuresController;
 
   // @todo temporary until register refactor
   protected get measuresRegister() {
@@ -14,11 +14,8 @@ export class MeasureModule extends Module {
   }
 
   public async init(): Promise<void> {
-    this.measureService = new MeasureService(
-      this.plugin,
-      this.measuresRegister
-    );
-    this.measureController = new MeasureController(this.measureService);
+    this.measureService = new MeasureService(this.plugin);
+    this.measureController = new MeasuresController(this.measureService);
 
     this.plugin.api["device-manager/measures"] =
       this.measureController.definition;
