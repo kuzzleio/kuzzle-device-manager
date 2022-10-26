@@ -30,6 +30,18 @@ export class ModelsController {
           handler: this.createMeasure.bind(this),
           http: [{ path: "device-manager/models/measures", verb: "post" }],
         },
+        updateAsset: {
+          handler: this.updateAsset.bind(this),
+          http: [{ path: "device-manager/models/asset/:_id", verb: "patch" }],
+        },
+        updateDevice: {
+          handler: this.updateDevice.bind(this),
+          http: [{ path: "device-manager/models/device/:_id", verb: "patch" }],
+        },
+        updateMeasure: {
+          handler: this.updateMeasure.bind(this),
+          http: [{ path: "device-manager/models/measure/:_id", verb: "patch" }],
+        },
       },
     };
   }
