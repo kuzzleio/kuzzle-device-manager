@@ -22,7 +22,7 @@ import { DeviceModule, devicesMappings } from "../modules/device";
 import { MeasureModule } from "../modules/measure";
 import { AssetModule } from "../modules/asset";
 import { Decoder, DecoderModule, payloadsMappings } from "../modules/decoder";
-import { modelsMappings } from "../modules/model";
+import { ModelModule, modelsMappings } from "../modules/model";
 import { lock } from "../modules/shared/utils/lock";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
@@ -42,6 +42,7 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceModule: DeviceModule;
   private decoderModule: DecoderModule;
   private measureModule: MeasureModule;
+  private modelModule: ModelModule;
 
   private modelsRegister: ModelsRegister;
   private decodersRegister: DecodersRegister;
@@ -55,7 +56,7 @@ export class DeviceManagerPlugin extends Plugin {
       registerAsset: (
         model: string,
         metadataMappings: JSONObject,
-        { engineGroup = "commons" }: { engineGroup?: string } = {}
+        { engineGroup }: { engineGroup: string }
       ) => {
         return this.modelsRegister.registerAsset(model, metadataMappings, {
           engineGroup,
@@ -101,6 +102,9 @@ export class DeviceManagerPlugin extends Plugin {
     this.hooks = {};
 
     this.config = {
+      engine: {
+        autoUpdate: true,
+      },
       adminIndex: "device-manager",
       adminCollections: {
         config: {
@@ -158,12 +162,14 @@ export class DeviceManagerPlugin extends Plugin {
     this.deviceModule = new DeviceModule(this);
     this.decoderModule = new DecoderModule(this);
     this.measureModule = new MeasureModule(this);
+    this.modelModule = new ModelModule(this);
 
     // Modules init
     await this.assetModule.init();
     await this.deviceModule.init();
     await this.decoderModule.init();
     await this.measureModule.init();
+    await this.modelModule.init();
 
     this.decodersRegister.init(this.context);
     this.modelsRegister.init(this);
@@ -269,6 +275,10 @@ export class DeviceManagerPlugin extends Plugin {
         });
 
       await this.initializeConfig();
+
+      if (this.config.engine.autoUpdate) {
+        await this.deviceManagerEngine.updateEngines();
+      }
     });
   }
 

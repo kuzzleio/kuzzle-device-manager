@@ -34,6 +34,28 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     this.context = plugin.context;
   }
 
+  async updateEngines() {
+    const result = await this.sdk.document.search(
+      this.config.adminIndex,
+      InternalCollection.CONFIG,
+      {
+        query: {
+          equals: { type: "engine-device-manager" },
+        },
+      },
+      { lang: "koncorde", size: 1000 }
+    );
+
+    this.context.log.info(`Update ${result.fetched} existing engines`);
+
+    for (const engine of result.hits) {
+      await this.onUpdate(
+        engine._source.engine.index,
+        engine._source.engine.group
+      );
+    }
+  }
+
   async onCreate(index: string, group = "commons") {
     const promises = [];
 

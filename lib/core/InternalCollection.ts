@@ -3,4 +3,5 @@ export enum InternalCollection {
   DEVICES = "devices",
   MEASURES = "measures",
   MODELS = "models",
+  CONFIG = "config",
 }

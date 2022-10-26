@@ -11,6 +11,6 @@ export class ModelModule extends Module {
     this.modelService = new ModelService(this.plugin);
     this.modelController = new ModelsController(this.modelService);
 
-    this.plugin.api["model-manager/models"] = this.modelController.definition;
+    this.plugin.api["device-manager/models"] = this.modelController.definition;
   }
 }

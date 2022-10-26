@@ -3,25 +3,27 @@ Feature: Asset Controller
   Scenario: SCRUD asset
     # Create
     When I successfully execute the action "device-manager/assets":"create" with args:
-      | engineId       | "engine-kuzzle" |
-      | body.model     | "container"     |
-      | body.reference | "A1"            |
-    Then The document "engine-kuzzle":"assets":"container-A1" exists
-    # Update @todo activate when model metadata are done
-    # When I successfully execute the action "device-manager/assets":"update" with args:
-    #   | engineId             | "engine-kuzzle" |
-    #   | _id                  | "container-A1"  |
-    #   | body.metadata.height | 42              |
-    # Then The document "engine-kuzzle":"assets":"container-A1" content match:
-    #   | metadata.height | 42 |
+      | engineId             | "engine-kuzzle" |
+      | body.model           | "container"     |
+      | body.reference       | "A1"            |
+      | body.metadata.height | 5               |
+    Then The document "engine-kuzzle":"assets":"container-A1" content match:
+      | metadata.height | 5    |
+      | metadata.weight | null |
+    When I successfully execute the action "device-manager/assets":"update" with args:
+      | engineId             | "engine-kuzzle" |
+      | _id                  | "container-A1"  |
+      | body.metadata.weight | 1250            |
+    Then The document "engine-kuzzle":"assets":"container-A1" content match:
+      | metadata.height | 5    |
+      | metadata.weight | 1250 |
     # Get
     When I successfully execute the action "device-manager/assets":"get" with args:
       | engineId | "engine-kuzzle" |
       | _id      | "container-A1"  |
     Then I should receive a result matching:
-      # @todo activate when model metadata are done
-      # | metadata.height | 42   |
-      | _source.reference | "A1" |
+      | _source.metadata.height | 5    |
+      | _source.reference       | "A1" |
     # Search
     Given I successfully execute the action "device-manager/assets":"create" with args:
       | engineId       | "engine-kuzzle" |
@@ -41,6 +43,14 @@ Feature: Asset Controller
       | engineId | "engine-kuzzle" |
       | _id      | "container-A1"  |
     Then The document "engine-kuzzle":"assets":"container-A1" does not exists
+
+  Scenario: Error when creating Asset from unknown model
+    When I execute the action "device-manager/assets":"create" with args:
+      | engineId       | "engine-kuzzle" |
+      | body.model     | "truck"         |
+      | body.reference | "BX98HZ"        |
+    Then I should receive an error matching:
+      | message | "Unknown Asset model \"truck\"." |
 
   Scenario: Update linked device when deleting asset
     When I successfully execute the action "device-manager/assets":"delete" with args:

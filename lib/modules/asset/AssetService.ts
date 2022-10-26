@@ -4,12 +4,10 @@ import {
   JSONObject,
   KDocument,
   KHit,
-  Plugin,
   PluginContext,
   SearchResult,
 } from "kuzzle";
 
-import { InternalCollection } from "../../core/InternalCollection";
 import { MeasureContent } from "../measure/";
 
 import { Asset } from "./model/Asset";
@@ -22,9 +20,17 @@ import {
   EventAssetUpdateBefore,
 } from "./types/AssetEvents";
 import { Metadata } from "../shared";
+import { AssetModelContent } from "../model";
+import {
+  DeviceManagerConfiguration,
+  InternalCollection,
+  DeviceManagerPlugin,
+} from "../../core";
+import { EngineContent } from "kuzzle-plugin-commons/lib/engine/EngineContent";
 
 export class AssetService {
   private context: PluginContext;
+  private config: DeviceManagerConfiguration;
 
   private get sdk() {
     return this.context.accessors.sdk;
@@ -34,8 +40,9 @@ export class AssetService {
     return global.app;
   }
 
-  constructor(plugin: Plugin) {
+  constructor(plugin: DeviceManagerPlugin) {
     this.context = plugin.context;
+    this.config = plugin.config;
   }
 
   /**
@@ -143,11 +150,20 @@ export class AssetService {
     const assetId = AssetSerializer.id(model, reference);
 
     return lock(`asset:${engineId}:${assetId}`, async () => {
+      const assetModel = await this.getModel(engineId, model);
+
+      const assetMetadata = {};
+      for (const metadataName of Object.keys(
+        assetModel.asset.metadataMappings
+      )) {
+        assetMetadata[metadataName] = null;
+      }
+
       const { _source, _id } = await this.sdk.document.create<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
         {
-          metadata,
+          metadata: { ...assetMetadata, ...metadata },
           model,
           reference,
         },
@@ -157,6 +173,44 @@ export class AssetService {
 
       return new Asset(_source, _id);
     });
+  }
+
+  private async getModel(
+    engineId: string,
+    model: string
+  ): Promise<AssetModelContent> {
+    const engine = await this.getEngine(engineId);
+
+    const query = {
+      and: [
+        { equals: { engineGroup: engine.group } },
+        { equals: { type: "asset" } },
+        { equals: { "asset.model": model } },
+      ],
+    };
+
+    const result = await this.sdk.document.search<AssetModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      { query },
+      { lang: "koncorde", size: 1 }
+    );
+
+    if (result.total === 0) {
+      throw new BadRequestError(`Unknown Asset model "${model}".`);
+    }
+
+    return result.hits[0]._source;
+  }
+
+  private async getEngine(engineId: string): Promise<EngineContent> {
+    const engine = await this.sdk.document.get(
+      this.config.adminIndex,
+      InternalCollection.CONFIG,
+      `engine-device-manager--${engineId}`
+    );
+
+    return engine._source.engine;
   }
 
   public async delete(

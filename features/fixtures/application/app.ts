@@ -17,31 +17,23 @@ deviceManager.models.registerDevice("DummyTemp", {
   color: { type: "keyword" },
 });
 
-deviceManager.models.registerAsset("car", {
-  warranty: {
-    type: "keyword",
-    fields: {
-      text: { type: "text" },
-    },
-  },
-});
-
-// Register an asset for the "astronaut" group
+// Register an asset for the "commons" group
 
 deviceManager.models.registerAsset(
-  "rocket",
+  "container",
   {
-    stillAlive: { type: "boolean" },
+    weight: { type: "integer" },
+    height: { type: "integer" },
   },
-  { engineGroup: "astronaut" }
+  { engineGroup: "commons" }
 );
 
 deviceManager.models.registerAsset(
-  "hevSuit",
+  "warehouse",
   {
-    freezing: { type: "boolean" },
+    surface: { type: "integer" },
   },
-  { engineGroup: "astronaut" }
+  { engineGroup: "commons" }
 );
 
 registerTestPipes(app); //TODO : move this line in another filer

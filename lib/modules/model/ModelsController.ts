@@ -30,18 +30,18 @@ export class ModelsController {
           handler: this.createMeasure.bind(this),
           http: [{ path: "device-manager/models/measures", verb: "post" }],
         },
-        updateAsset: {
-          handler: this.updateAsset.bind(this),
-          http: [{ path: "device-manager/models/asset/:_id", verb: "patch" }],
-        },
-        updateDevice: {
-          handler: this.updateDevice.bind(this),
-          http: [{ path: "device-manager/models/device/:_id", verb: "patch" }],
-        },
-        updateMeasure: {
-          handler: this.updateMeasure.bind(this),
-          http: [{ path: "device-manager/models/measure/:_id", verb: "patch" }],
-        },
+        // updateAsset: {
+        //   handler: this.updateAsset.bind(this),
+        //   http: [{ path: "device-manager/models/asset/:_id", verb: "patch" }],
+        // },
+        // updateDevice: {
+        //   handler: this.updateDevice.bind(this),
+        //   http: [{ path: "device-manager/models/device/:_id", verb: "patch" }],
+        // },
+        // updateMeasure: {
+        //   handler: this.updateMeasure.bind(this),
+        //   http: [{ path: "device-manager/models/measure/:_id", verb: "patch" }],
+        // },
       },
     };
   }
@@ -49,9 +49,9 @@ export class ModelsController {
   async createAsset(
     request: KuzzleRequest
   ): Promise<ApiModelCreateAssetResult> {
+    const engineGroup = request.getBodyString("engineGroup");
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
-    const engineGroup = request.input.args.engineGroup;
 
     const assetModel = await this.modelService.createAsset(
       model,
@@ -82,7 +82,7 @@ export class ModelsController {
     request: KuzzleRequest
   ): Promise<ApiModelCreateMeasureResult> {
     const name = request.getBodyString("name");
-    const unit = request.getBodyObject("unit") as MeasureUnit;
+    const unit = request.getBodyObject("unit", {}) as MeasureUnit;
     const valuesMappings = request.getBodyObject("valuesMappings");
 
     const measureModel = await this.modelService.createMeasure(
