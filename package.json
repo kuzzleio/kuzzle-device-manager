@@ -8,7 +8,6 @@
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
   },
   "scripts": {
-    "docker": "docker-compose run kuzzle",
     "npm:docker": "docker-compose run kuzzle npm",
     "install:docker": "npm run npm:docker install kuzzle",
     "dev:docker": "docker-compose up",
@@ -19,7 +18,6 @@
     "test:functional": "cucumber-js --require-module ts-node/register --exit --fail-fast",
     "test:lint": "eslint ./lib --ext .ts --config .eslintrc.json",
     "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
-    "test:prettier:fix": "npx prettier lib/ features/ --write",
     "build": "tsc --build tsconfig.json",
     "clean": "touch index.ts && npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
     "package:create": "npm run build && npm pack"
@@ -45,7 +43,7 @@
     "typescript": "^4.8.4"
   },
   "peerDependencies": {
-    "kuzzle": "^2.19.5"
+    "kuzzle": "^2.17.3"
   },
   "files": [
     "index.js",

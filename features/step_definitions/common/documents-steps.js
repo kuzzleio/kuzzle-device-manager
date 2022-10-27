@@ -19,29 +19,11 @@ Then(
 
 Then(
   "The document {string}:{string}:{string} content match:",
-  async function (index, collection, _id, dataTable) {
+  async function (index, collection, documentId, dataTable) {
     const expectedContent = this.parseObject(dataTable);
-    const document = await this.sdk.document.get(index, collection, _id);
-    should(document._source).matchObject(expectedContent);
-  }
-);
 
-Then(
-  "The formatted document {string}:{string}:{string} content match:",
-  async function (index, collection, _id, dataTable) {
-    const expectedContent = this.parseObject(dataTable);
-    const response = await this.sdk.query({
-      controller: "document",
-      action: "get",
-      body: {},
-      index,
-      collection,
-      _id,
-      options: {
-        prettify: true,
-      },
-    });
-    const document = response.result;
+    const document = await this.sdk.document.get(index, collection, documentId);
+
     should(document._source).matchObject(expectedContent);
   }
 );

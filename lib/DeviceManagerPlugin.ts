@@ -8,7 +8,6 @@ import {
   KuzzleRequest,
   BadRequestError,
   BatchController,
-  Request,
 } from "kuzzle";
 import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 
@@ -194,8 +193,6 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.context = context;
 
-    this.assetCategoryService = new AssetCategoryService(this);
-
     /* eslint-disable sort-keys */
     this.pipes = {
       "device-manager/asset:before*": this.pipeCheckEngine.bind(this),
@@ -204,40 +201,6 @@ export class DeviceManagerPlugin extends Plugin {
       "device-manager/device:beforeSearch": this.pipeCheckEngine.bind(this),
       "device-manager/device:beforeUpdate": this.pipeCheckEngine.bind(this),
       "generic:document:beforeWrite": [],
-      "generic:document:afterGet": async (documents, request: Request) => {
-        if (
-          (request.input.args.collection === "assets" ||
-            request.input.args.collection === "devices") &&
-          request.input.args.options?.prettify
-        ) {
-          for (const document of documents) {
-            if (document._source?.metadata) {
-              document._source.metadata =
-                this.assetCategoryService.formatMetadataForGet(
-                  document._source.metadata
-                );
-            }
-          }
-        }
-        return documents;
-      },
-      "generic:document:beforeUpdate": async (documents, request: Request) => {
-        if (
-          (request.input.args.collection === "assets" ||
-            request.input.args.collection === "devices") &&
-          request.input.args.options?.prettify
-        ) {
-          for (const document of documents) {
-            if (document._source?.metadata) {
-              document._source.metadata =
-                this.assetCategoryService.formatMetadataForES(
-                  document._source.metadata
-                );
-            }
-          }
-        }
-        return documents;
-      },
     };
     /* eslint-enable sort-keys */
 
@@ -264,6 +227,7 @@ export class DeviceManagerPlugin extends Plugin {
       settings: this.config.engineCollections.config.settings,
     });
 
+    this.assetCategoryService = new AssetCategoryService(this);
     this.batchController = new BatchController(this.sdk as any, {
       interval: this.config.batchInterval,
     });
@@ -282,7 +246,6 @@ export class DeviceManagerPlugin extends Plugin {
       this.measuresRegister,
       this.assetCategoryService
     );
-
     this.payloadService = new PayloadService(
       this,
       this.batchController,
@@ -308,11 +271,7 @@ export class DeviceManagerPlugin extends Plugin {
       this.measuresService
     );
 
-    this.deviceController = new DeviceController(
-      this,
-      this.deviceService,
-      this.assetCategoryService
-    );
+    this.deviceController = new DeviceController(this, this.deviceService);
     this.decodersController = new DecoderController(
       this,
       this.decodersRegister
