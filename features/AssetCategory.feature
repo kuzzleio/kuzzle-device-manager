@@ -6,7 +6,7 @@ Feature: AssetCategory
       | body.name | "smallTruck"  |
     When I successfully execute the action "device-manager/metadata":"create" with args:
       | engineId       | "engine-ayse" |
-      | body.name      | "length"        |
+      | body.name      | "length"      |
       | body.valueType | "integer"     |
       | body.mandatory | false         |
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
@@ -35,10 +35,10 @@ Feature: AssetCategory
       | body.valueType | "integer"     |
       | body.mandatory | false         |
     When I successfully execute the action "device-manager/assetCategory":"linkMetadata" with args:
-      | engineId    | "engine-ayse"  |
-      | _id         | "strangeTruck" |
+      | engineId   | "engine-ayse"  |
+      | _id        | "strangeTruck" |
       | metadataId | "volume"       |
-      | body.value  | 101            |
+      | body.value | 101            |
     Then The document "engine-ayse":"asset-category":"strangeTruck" content match:
       | name                            | "strangeTruck" |
       | assetMetadata[0]                | "volume"       |
@@ -73,7 +73,6 @@ Feature: AssetCategory
     Then The document "engine-ayse":"assets":"container-FRIDGE-linked" content match:
       | category    | null |
       | subCategory | null |
-
 
   Scenario: Remove an AssetCategory and verify propagation to a linked asset
     When I successfully execute the action "device-manager/assetCategory":"create" with args:

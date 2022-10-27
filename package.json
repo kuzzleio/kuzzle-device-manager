@@ -9,6 +9,9 @@
   },
   "scripts": {
     "docker": "docker-compose run kuzzle",
+    "npm:docker": "docker-compose run kuzzle npm",
+    "install:docker": "npm run npm:docker install kuzzle",
+    "dev:docker": "docker-compose up",
     "prod": "node ./features/fixtures/application/app.js",
     "dev": "NODE_ENV=development npx ergol ./features/fixtures/application/app.ts -c ergol.config.json",
     "test": "npm run test:lint && npm run test:unit && npm run test:functional",
@@ -16,6 +19,7 @@
     "test:functional": "cucumber-js --require-module ts-node/register --exit --fail-fast",
     "test:lint": "eslint ./lib --ext .ts --config .eslintrc.json",
     "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
+    "test:prettier:fix": "npx prettier lib/ features/ --write",
     "build": "tsc --build tsconfig.json",
     "clean": "touch index.ts && npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
     "package:create": "npm run build && npm pack"
@@ -41,7 +45,7 @@
     "typescript": "^4.8.4"
   },
   "peerDependencies": {
-    "kuzzle": "^2.17.3"
+    "kuzzle": "^2.19.5"
   },
   "files": [
     "index.js",
