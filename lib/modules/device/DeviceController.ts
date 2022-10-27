@@ -11,29 +11,18 @@ import _ from "lodash";
 import { MeasureNamesLink, LinkRequest, AttachRequest } from "./../asset";
 import { DeviceManagerPlugin } from "./../../DeviceManagerPlugin";
 import { DeviceManagerConfiguration } from "./../engine";
-import { AssetCategoryService } from "../asset-category";
 
 import { DeviceService, DeviceBulkContent } from "./DeviceService";
 import { Device } from "./Device";
-import { DeviceContent, EsDeviceContent } from "./types/DeviceContent";
+import { DeviceContent } from "./types/DeviceContent";
 
 export class DeviceController extends CRUDController {
   protected config: DeviceManagerConfiguration;
 
   private deviceService: DeviceService;
-  private assetCategoryService: AssetCategoryService;
 
-  protected get sdk() {
-    return this.context.accessors.sdk;
-  }
-
-  constructor(
-    plugin: DeviceManagerPlugin,
-    deviceService: DeviceService,
-    assetCategoryService: AssetCategoryService
-  ) {
+  constructor(plugin: DeviceManagerPlugin, deviceService: DeviceService) {
     super(plugin, "devices");
-    this.assetCategoryService = assetCategoryService;
 
     this.deviceService = deviceService;
 
@@ -53,12 +42,6 @@ export class DeviceController extends CRUDController {
           handler: this.detachEngine.bind(this),
           http: [
             { path: "device-manager/devices/:_id/_detach", verb: "delete" },
-          ],
-        },
-        get: {
-          handler: this.get.bind(this),
-          http: [
-            { path: "device-manager/:engineId/devices/:_id", verb: "get" },
           ],
         },
         importDevices: {
@@ -139,18 +122,6 @@ export class DeviceController extends CRUDController {
     /* eslint-enable sort-keys */
   }
 
-  async get(request: KuzzleRequest) {
-    const id = request.getId();
-    const engineId = request.getString("engineId");
-    const document = await this.sdk.document.get<EsDeviceContent>(
-      engineId,
-      this.collection,
-      id
-    );
-    this.assetCategoryService.formatDocumentMetadata(document);
-    return document._source;
-  }
-
   /**
    * Create and provision a new device
    */
@@ -158,9 +129,7 @@ export class DeviceController extends CRUDController {
     const engineId = request.getString("engineId");
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
-    const rawMetadata = request.getBodyObject("metadata", {});
-    const metadata = this.assetCategoryService.formatMetadataForES(rawMetadata);
-
+    const metadata = request.getBodyObject("metadata", {});
     const refresh = request.getRefresh();
 
     const assetId = request.getBodyString("assetId", "");
@@ -207,9 +176,6 @@ export class DeviceController extends CRUDController {
 
   async update(request: KuzzleRequest) {
     request.input.args.index = request.getString("engineId");
-    const rawMetadata = request.getBodyObject("metadata", {});
-    const metadata = this.assetCategoryService.formatMetadataForES(rawMetadata);
-    request.input.body.metadata = metadata;
 
     return super.update(request);
   }

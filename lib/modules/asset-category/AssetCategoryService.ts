@@ -10,7 +10,6 @@ import {
   FormattedMetadata,
   FormattedValue,
 } from "./types/AssetCategoryContent";
-import { EsDeviceContent } from "../device";
 
 export class AssetCategoryService {
   private config: DeviceManagerConfiguration;
@@ -233,8 +232,8 @@ export class AssetCategoryService {
    * @param document
    */
   formatDocumentMetadata(
-    document: KDocument<BaseAssetContent | EsDeviceContent>
-  ): KDocument<BaseAssetContent | EsDeviceContent> {
+    document: KDocument<BaseAssetContent>
+  ): KDocument<BaseAssetContent> {
     const metadata = document._source.metadata;
     if (metadata) {
       const asset = document._source as JSONObject;

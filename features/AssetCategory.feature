@@ -233,7 +233,10 @@ Feature: AssetCategory
       | body.model     | "M"           |
       | body.reference | "asset_03"    |
       | body.category  | "solarTruck"  |
-    Then The formatted document "engine-ayse":"assets":"solarTruck-M-asset_03" content match:
+    When I successfully execute the action "device-manager/asset":"get" with args:
+      | engineId | "engine-ayse" |
+      | _id      | "solarTruck-M-asset_03" |
+    Then I should receive a result matching:
       | metadata.panelSurface | 101 |
 
   Scenario: link, update and unlink a metadata on a parent category, and verify edition propagation on children category

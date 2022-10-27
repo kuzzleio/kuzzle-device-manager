@@ -210,7 +210,7 @@ Feature: Payloads Controller
       | lvlBattery     | 0.8     |
       | metadata.color | "RED"   |
     And I refresh the collection "device-manager":"devices"
-    Then The formatted document "device-manager":"devices":"DummyTemp-12345" content match:
+    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
       | reference      | "12345"     |
       | model          | "DummyTemp" |
       | metadata.color | "RED"       |
