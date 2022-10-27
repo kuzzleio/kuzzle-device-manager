@@ -33,7 +33,6 @@ export class DummyTempDecoder extends Decoder {
     const decodedPayload = new DecodedPayload<DummyTempDecoder>(this);
 
     if (payload?.metadata?.color) {
-      console.log(payload);
       decodedPayload.addMetadata(payload.deviceEUI, {
         color: payload.metadata.color,
       });
