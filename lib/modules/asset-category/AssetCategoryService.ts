@@ -243,6 +243,12 @@ export class AssetCategoryService {
   }
 
   formatMetadataForGet(assetMetadata: FormattedMetadata[]) {
+    if (!assetMetadata) {
+      return {};
+    }
+    if (!Array.isArray(assetMetadata)) {
+      return assetMetadata;
+    }
     const formattedMetadata: JSONObject = {};
     for (const metadata of assetMetadata) {
       formattedMetadata[metadata.key] = this.getValue(metadata.value);
