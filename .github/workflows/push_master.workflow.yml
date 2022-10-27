@@ -10,7 +10,7 @@ on:
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
@@ -27,7 +27,7 @@ jobs:
 
   functional-tests:
     name: Functional Tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: [lint]
     steps:
       - uses: actions/checkout@v2
@@ -69,7 +69,7 @@ jobs:
 
   npm-deploy:
     name: Publish Package to NPM.js
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: [functional-tests]
     steps:
       - name: Install SSH key
@@ -95,7 +95,7 @@ jobs:
             ${{ runner.os }}-
       - uses: actions/setup-node@v1
         with:
-          node-version: "14.x"
+          node-version: "14"
           registry-url: "https://registry.npmjs.org"
       - run: npm install
       - run: npm run build
