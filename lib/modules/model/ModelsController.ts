@@ -6,6 +6,12 @@ import {
   ApiModelCreateAssetResult,
   ApiModelCreateDeviceResult,
   ApiModelCreateMeasureResult,
+  ApiModelDeleteAssetResult,
+  ApiModelDeleteDeviceResult,
+  ApiModelDeleteMeasureResult,
+  ApiModelListAssetsResult,
+  ApiModelListDevicesResult,
+  ApiModelListMeasuresResult,
 } from "./types/ModelApi";
 
 export class ModelsController {
@@ -18,42 +24,54 @@ export class ModelsController {
 
     this.definition = {
       actions: {
-        createAsset: {
-          handler: this.createAsset.bind(this),
+        deleteAsset: {
+          handler: this.deleteAsset.bind(this),
+          http: [{ path: "device-manager/models/asset/:_id", verb: "delete" }],
+        },
+        deleteDevice: {
+          handler: this.deleteDevice.bind(this),
+          http: [{ path: "device-manager/models/device/:_id", verb: "delete" }],
+        },
+        deleteMeasure: {
+          handler: this.deleteMeasure.bind(this),
+          http: [
+            { path: "device-manager/models/measure/:_id", verb: "delete" },
+          ],
+        },
+        listAssets: {
+          handler: this.listAssets.bind(this),
+          http: [{ path: "device-manager/models/assets", verb: "get" }],
+        },
+        listDevices: {
+          handler: this.listDevices.bind(this),
+          http: [{ path: "device-manager/models/devices", verb: "get" }],
+        },
+        listMeasures: {
+          handler: this.listMeasures.bind(this),
+          http: [{ path: "device-manager/models/measures", verb: "get" }],
+        },
+        writeAsset: {
+          handler: this.writeAsset.bind(this),
           http: [{ path: "device-manager/models/assets", verb: "post" }],
         },
-        createDevice: {
-          handler: this.createDevice.bind(this),
+        writeDevice: {
+          handler: this.writeDevice.bind(this),
           http: [{ path: "device-manager/models/devices", verb: "post" }],
         },
-        createMeasure: {
-          handler: this.createMeasure.bind(this),
+        writeMeasure: {
+          handler: this.writeMeasure.bind(this),
           http: [{ path: "device-manager/models/measures", verb: "post" }],
         },
-        // updateAsset: {
-        //   handler: this.updateAsset.bind(this),
-        //   http: [{ path: "device-manager/models/asset/:_id", verb: "patch" }],
-        // },
-        // updateDevice: {
-        //   handler: this.updateDevice.bind(this),
-        //   http: [{ path: "device-manager/models/device/:_id", verb: "patch" }],
-        // },
-        // updateMeasure: {
-        //   handler: this.updateMeasure.bind(this),
-        //   http: [{ path: "device-manager/models/measure/:_id", verb: "patch" }],
-        // },
       },
     };
   }
 
-  async createAsset(
-    request: KuzzleRequest
-  ): Promise<ApiModelCreateAssetResult> {
+  async writeAsset(request: KuzzleRequest): Promise<ApiModelCreateAssetResult> {
     const engineGroup = request.getBodyString("engineGroup");
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
 
-    const assetModel = await this.modelService.createAsset(
+    const assetModel = await this.modelService.writeAsset(
       model,
       metadataMappings,
       {
@@ -64,13 +82,13 @@ export class ModelsController {
     return assetModel;
   }
 
-  async createDevice(
+  async writeDevice(
     request: KuzzleRequest
   ): Promise<ApiModelCreateDeviceResult> {
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
 
-    const deviceModel = await this.modelService.createDevice(
+    const deviceModel = await this.modelService.writeDevice(
       model,
       metadataMappings
     );
@@ -78,19 +96,72 @@ export class ModelsController {
     return deviceModel;
   }
 
-  async createMeasure(
+  async writeMeasure(
     request: KuzzleRequest
   ): Promise<ApiModelCreateMeasureResult> {
     const name = request.getBodyString("name");
     const unit = request.getBodyObject("unit", {}) as MeasureUnit;
     const valuesMappings = request.getBodyObject("valuesMappings");
 
-    const measureModel = await this.modelService.createMeasure(
+    const measureModel = await this.modelService.writeMeasure(
       name,
       unit,
       valuesMappings
     );
 
     return measureModel;
+  }
+
+  async deleteAsset(
+    request: KuzzleRequest
+  ): Promise<ApiModelDeleteAssetResult> {
+    const _id = request.getId();
+
+    await this.modelService.deleteAsset(_id);
+  }
+
+  async deleteDevice(
+    request: KuzzleRequest
+  ): Promise<ApiModelDeleteDeviceResult> {
+    const _id = request.getId();
+
+    await this.modelService.deleteDevice(_id);
+  }
+
+  async deleteMeasure(
+    request: KuzzleRequest
+  ): Promise<ApiModelDeleteMeasureResult> {
+    const _id = request.getId();
+
+    await this.modelService.deleteMeasure(_id);
+  }
+
+  async listAssets(request: KuzzleRequest): Promise<ApiModelListAssetsResult> {
+    const engineGroup = request.getString("engineGroup");
+
+    const models = await this.modelService.listAsset(engineGroup);
+
+    return {
+      models,
+      total: models.length,
+    };
+  }
+
+  async listDevices(): Promise<ApiModelListDevicesResult> {
+    const models = await this.modelService.listDevices();
+
+    return {
+      models,
+      total: models.length,
+    };
+  }
+
+  async listMeasures(): Promise<ApiModelListMeasuresResult> {
+    const models = await this.modelService.listMeasures();
+
+    return {
+      models,
+      total: models.length,
+    };
   }
 }

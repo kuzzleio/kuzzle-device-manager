@@ -28,3 +28,11 @@ Feature: Device SCRUD
       | hits[0]._source.reference      | "scrudme" |
       | hits[0]._source.metadata.color | "RED"     |
       | total                          | 1         |
+
+  Scenario: Error when creating device of unknown model
+    When I execute the action "device-manager/devices":"create" with args:
+      | engineId       | "device-manager" |
+      | body.model     | "NotExisting"    |
+      | body.reference | "errorMeMaster"  |
+    Then I should receive an error matching:
+      | message | "Unknown Device model \"NotExisting\"." |

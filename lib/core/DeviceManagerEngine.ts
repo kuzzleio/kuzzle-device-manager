@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { JSONObject, Plugin } from "kuzzle";
+import { Backend, JSONObject, Plugin } from "kuzzle";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 
 import { assetsMappings } from "../modules/asset";
@@ -10,13 +10,26 @@ import {
 } from "../modules/model";
 import { measuresMappings } from "../modules/measure";
 import { devicesMappings } from "../modules/device";
+import { onAsk } from "../modules/shared/utils/ask";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { InternalCollection } from "./InternalCollection";
 
+export type AskEngineUpdateAll = {
+  name: "ask:device-manager:engine:updateAll";
+
+  payload: void;
+
+  result: void;
+};
+
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfiguration;
+
+  get app(): Backend {
+    return global.app;
+  }
 
   constructor(
     plugin: Plugin,
@@ -32,6 +45,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     this.context = plugin.context;
+
+    onAsk<AskEngineUpdateAll>("ask:device-manager:engine:updateAll", () =>
+      this.updateEngines()
+    );
   }
 
   async updateEngines() {

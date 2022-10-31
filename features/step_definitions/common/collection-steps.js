@@ -78,3 +78,17 @@ Then(
 Then("I wait for a refresh", async function () {
   await new Promise((resolve) => setTimeout(resolve, 2000));
 });
+
+Then(
+  "The collection {string}:{string} mappings match:",
+  async function (index, collection, dataTable) {
+    const expectedMappings = this.parseObject(dataTable);
+
+    const collectionDefinition = await this.sdk.collection.getMapping(
+      index,
+      collection
+    );
+
+    should(collectionDefinition).matchObject(expectedMappings);
+  }
+);

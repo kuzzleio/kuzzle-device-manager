@@ -10,10 +10,11 @@ const app = new Backend("kuzzle");
 
 const deviceManager = new DeviceManagerPlugin();
 
-deviceManager.registerDecoder(new DummyTempDecoder());
-deviceManager.registerDecoder(new DummyTempPositionDecoder());
-
-deviceManager.models.registerDevice("DummyTemp", {
+deviceManager.models.registerDevice(
+  "DummyTempPosition",
+  new DummyTempPositionDecoder()
+);
+deviceManager.models.registerDevice("DummyTemp", new DummyTempDecoder(), {
   color: { type: "keyword" },
 });
 

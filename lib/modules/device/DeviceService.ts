@@ -11,6 +11,9 @@ import {
 import { Asset, AssetContent, LinkRequest, DeviceLink } from "./../asset";
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
 import { lock } from "../shared/utils/lock";
+import { Metadata } from "../shared";
+import { ask } from "../shared/utils/ask";
+import { AskModelDeviceGet } from "../model/types/ModelEvents";
 
 import { Device } from "./model/Device";
 import { DeviceContent } from "./types/DeviceContent";
@@ -19,7 +22,6 @@ import {
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
-import { Metadata } from "../shared";
 
 export class DeviceService {
   private config: DeviceManagerConfiguration;
@@ -65,6 +67,17 @@ export class DeviceService {
     );
 
     return lock(`device:create:${device._id}`, async () => {
+      const deviceModel = await ask<AskModelDeviceGet>(
+        "ask:device-manager:model:device:get",
+        { model }
+      );
+
+      for (const metadataName of Object.keys(
+        deviceModel.device.metadataMappings
+      )) {
+        device._source.metadata[metadataName] ||= null;
+      }
+
       const refreshableCollections: Array<{
         index: string;
         collection: string;

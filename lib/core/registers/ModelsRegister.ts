@@ -41,7 +41,7 @@ export class ModelsRegister {
     );
   }
 
-  async registerAsset(
+  registerAsset(
     model: string,
     metadataMappings: JSONObject,
     { engineGroup = "commons" }: { engineGroup?: string } = {}
@@ -53,18 +53,14 @@ export class ModelsRegister {
     });
   }
 
-  async registerDevice(model: string, metadataMappings: JSONObject) {
+  registerDevice(model: string, metadataMappings: JSONObject) {
     this.deviceModels.push({
       device: { metadataMappings, model },
       type: "device",
     });
   }
 
-  async registerMeasure(
-    name: string,
-    unit: MeasureUnit,
-    valuesMappings: JSONObject
-  ) {
+  registerMeasure(name: string, unit: MeasureUnit, valuesMappings: JSONObject) {
     this.measureModels.push({
       measure: { name, unit, valuesMappings },
       type: "measure",

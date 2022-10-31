@@ -58,13 +58,18 @@ export class DeviceManagerPlugin extends Plugin {
         metadataMappings: JSONObject,
         { engineGroup }: { engineGroup: string }
       ) => {
-        return this.modelsRegister.registerAsset(model, metadataMappings, {
+        this.modelsRegister.registerAsset(model, metadataMappings, {
           engineGroup,
         });
       },
 
-      registerDevice: (model: string, metadataMappings: JSONObject) => {
-        return this.modelsRegister.registerDevice(model, metadataMappings);
+      registerDevice: (
+        model: string,
+        decoder: Decoder,
+        metadataMappings: JSONObject = {}
+      ) => {
+        this.decodersRegister.register(decoder);
+        this.modelsRegister.registerDevice(model, metadataMappings);
       },
 
       registerMeasure: (
@@ -77,13 +82,9 @@ export class DeviceManagerPlugin extends Plugin {
           valuesMappings: JSONObject;
         }
       ) => {
-        return this.modelsRegister.registerMeasure(name, unit, valuesMappings);
+        this.modelsRegister.registerMeasure(name, unit, valuesMappings);
       },
     };
-  }
-
-  registerDecoder(decoder: Decoder) {
-    return this.decodersRegister.register(decoder);
   }
 
   constructor() {
