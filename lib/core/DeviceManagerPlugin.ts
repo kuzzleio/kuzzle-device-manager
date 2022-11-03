@@ -33,6 +33,8 @@ import { ModelsRegister } from "./registers/ModelsRegister";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
+  public roles = {};
+
   private deviceManagerEngine: DeviceManagerEngine;
   private adminConfigManager: ConfigManager;
   private engineConfigManager: ConfigManager;
@@ -56,20 +58,27 @@ export class DeviceManagerPlugin extends Plugin {
       registerAsset: (
         model: string,
         metadataMappings: JSONObject,
-        { engineGroup }: { engineGroup: string }
+        {
+          engineGroup = "commons",
+          defaultValues = {},
+        }: { defaultValues?: JSONObject; engineGroup?: string } = {}
       ) => {
         this.modelsRegister.registerAsset(model, metadataMappings, {
           engineGroup,
+          defaultValues,
         });
       },
 
       registerDevice: (
         model: string,
         decoder: Decoder,
-        metadataMappings: JSONObject = {}
+        metadataMappings: JSONObject = {},
+        { defaultValues = {} }: { defaultValues?: JSONObject } = {}
       ) => {
         this.decodersRegister.register(decoder);
-        this.modelsRegister.registerDevice(model, metadataMappings);
+        this.modelsRegister.registerDevice(model, metadataMappings, {
+          defaultValues,
+        });
       },
 
       registerMeasure: (
@@ -103,6 +112,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.hooks = {};
 
     this.config = {
+      ignoreStartupErrors: false,
       engine: {
         autoUpdate: true,
       },
@@ -211,15 +221,49 @@ export class DeviceManagerPlugin extends Plugin {
     );
 
     this.hooks["kuzzle:state:live"] = async () => {
-      await this.decodersRegister.createDefaultRights();
-      this.context.log.info(
-        "Default rights for payload controller has been registered."
-      );
+      try {
+        await this.decodersRegister.createDefaultRights();
+        await this.createDefaultRoles();
+      } catch (error) {
+        if (this.config.ignoreStartupErrors) {
+          this.context.log.warn(
+            `WARNING: An error occured during plugin initialization: ${error.message}`
+          );
+        } else {
+          throw error;
+        }
+      }
     };
 
     this.decodersRegister.printDecoders();
 
-    await this.initDatabase();
+    try {
+      await this.initDatabase();
+    } catch (error) {
+      if (this.config.ignoreStartupErrors) {
+        this.context.log.warn(
+          `WARNING: An error occured during plugin initialization: ${error.message}`
+        );
+      } else {
+        throw error;
+      }
+    }
+
+    if (this.config.ignoreStartupErrors) {
+      this.context.log.warn(
+        'WARNING: The "ignoreStartupErrors" option is enabled. Additional errors may appears at runtime.'
+      );
+    }
+  }
+
+  private async createDefaultRoles() {
+    const promises = [];
+
+    for (const [roleId, role] of Object.entries(this.roles)) {
+      promises.push(this.sdk.security.createOrReplaceRole(roleId, role));
+    }
+
+    await Promise.all(promises);
   }
 
   /**

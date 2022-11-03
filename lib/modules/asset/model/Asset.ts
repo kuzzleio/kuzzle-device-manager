@@ -5,11 +5,11 @@ import { MeasureContent } from "../../measure";
 import { AssetContent } from "../types/AssetContent";
 import { AssetSerializer } from "./AssetSerializer";
 
-export class Asset {
+export class Asset<TAssetContent extends AssetContent = AssetContent> {
   public _id: string;
-  public _source: AssetContent;
+  public _source: TAssetContent;
 
-  constructor(content: AssetContent, _id?: string) {
+  constructor(content: TAssetContent, _id?: string) {
     this._id = _id || AssetSerializer.id(content.model, content.reference);
 
     this._source = content;

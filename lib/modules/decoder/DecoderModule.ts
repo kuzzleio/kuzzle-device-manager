@@ -1,8 +1,10 @@
 import { KuzzleRequest } from "kuzzle";
+
 import { Module } from "../shared/Module";
 
 import { DecodersController } from "./DecodersController";
 import { PayloadService } from "./PayloadService";
+import { decodersAdmin } from "./roles/decodersAdmin";
 
 export class DecoderModule extends Module {
   private payloadService: PayloadService;
@@ -23,12 +25,16 @@ export class DecoderModule extends Module {
 
     this.plugin.api["device-manager/decoders"] =
       this.decoderController.definition;
+
     this.plugin.api["device-manager/payload"] =
       this.decodersRegister.getPayloadController(this.payloadService);
+
     this.plugin.api["device-manager/payload"].actions.generic = {
       handler: this.unknowPayload.bind(this),
       http: [{ path: "device-manager/payload/:device", verb: "post" }],
     };
+
+    this.plugin.roles["decoders.admin"] = decodersAdmin;
   }
 
   async unknowPayload(request: KuzzleRequest) {

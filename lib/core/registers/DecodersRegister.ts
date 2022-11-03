@@ -117,31 +117,15 @@ export class DecodersRegister {
    * This method never returns a rejected promise.
    */
   async createDefaultRights() {
-    try {
-      await this.createDefaultRoles();
-    } catch (error) {
-      this.context.log.error(
-        `Cannot register default decoders roles: ${error}${error.stack}`
-      );
-      return;
-    }
+    await this.createDefaultRoles();
 
-    try {
-      await this.createDefaultProfiles();
-    } catch (error) {
-      this.context.log.error(
-        `Cannot register default decoders profiles: ${error}${error.stack}`
-      );
-      return;
-    }
+    await this.createDefaultProfiles();
 
-    try {
-      await this.createDefaultUsers();
-    } catch (error) {
-      this.context.log.error(
-        `Cannot register default decoders users: ${error}${error.stack}`
-      );
-    }
+    await this.createDefaultUsers();
+
+    this.context.log.info(
+      "Default rights for payload controller has been registered."
+    );
   }
 
   private async createDefaultUsers() {
