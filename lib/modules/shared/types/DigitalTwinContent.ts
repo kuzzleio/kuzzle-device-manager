@@ -1,15 +1,18 @@
-import { KDocumentContent } from "kuzzle";
+import { JSONObject, KDocumentContent } from "kuzzle";
 
 import { MeasureContent } from "../../measure";
 
 import { Metadata } from "./Metadata";
 
-export interface DigitalTwinContent extends KDocumentContent {
+export interface DigitalTwinContent<
+  TMeasurementValues extends JSONObject = JSONObject,
+  TMetadata extends Metadata = Metadata
+> extends KDocumentContent {
   model: string;
 
   reference: string;
 
-  metadata: Metadata;
+  metadata: TMetadata;
 
-  measures: MeasureContent[];
+  measures: MeasureContent<TMeasurementValues, TMetadata>[];
 }

@@ -1,11 +1,15 @@
-import { DigitalTwinContent } from "../../shared";
+import { JSONObject } from "kuzzle-sdk";
+import { DigitalTwinContent, Metadata } from "../../shared";
 
 import { DeviceLink } from "./DeviceLink";
 
 /**
  * Asset document content
  */
-export interface AssetContent extends DigitalTwinContent {
+export interface AssetContent<
+  TMeasurementValues extends JSONObject = JSONObject,
+  TMetadata extends Metadata = Metadata
+> extends DigitalTwinContent<TMeasurementValues, TMetadata> {
   /**
    * Link with attached device
    */
@@ -15,6 +19,9 @@ export interface AssetContent extends DigitalTwinContent {
 /**
  * Asset description used to contextualize each measure data point
  */
-export type AssetDescription = {
+export type AssetDescription<TMetadata extends Metadata = Metadata> = {
   id: string;
-} & Pick<AssetContent, "model" | "reference" | "metadata">;
+} & Pick<
+  AssetContent<JSONObject, TMetadata>,
+  "model" | "reference" | "metadata"
+>;

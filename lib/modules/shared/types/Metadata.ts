@@ -4,4 +4,7 @@ export type MetadataValue =
   | string
   | { lat: number; lon: number };
 
-export type Metadata = Record<string, MetadataValue>;
+export type Metadata = Record<
+  string,
+  MetadataValue | Record<string, MetadataValue>
+>;
