@@ -64,8 +64,8 @@ export class DeviceManagerPlugin extends Plugin {
         }: { defaultValues?: JSONObject; engineGroup?: string } = {}
       ) => {
         this.modelsRegister.registerAsset(model, metadataMappings, {
-          engineGroup,
           defaultValues,
+          engineGroup,
         });
       },
 

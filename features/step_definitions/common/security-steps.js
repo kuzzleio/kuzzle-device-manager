@@ -159,15 +159,12 @@ Then("The role {string} should match the default one", async function (roleId) {
   }
 });
 
-Then(
-  "The role {string} should match:",
-  async function (roleId, raw) {
-    const roleDefinition = eval(`let o = ${raw};o`);
-    const role = await this.sdk.security.getRole(roleId);
+Then("The role {string} should match:", async function (roleId, raw) {
+  const roleDefinition = eval(`let o = ${raw};o`);
+  const role = await this.sdk.security.getRole(roleId);
 
-    should(role).matchObject(roleDefinition);
-  }
-);
+  should(role).matchObject(roleDefinition);
+});
 
 Then(
   "The profile {string} policies should match:",

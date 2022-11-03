@@ -1,21 +1,21 @@
 export const devicesAdmin = {
-  "controllers": {
+  controllers: {
     "device-manager/devices": {
-      "actions": {
-        "create": true,
-        "get": true,
-        "update": true,
-        "search": true,
-        "delete": true,
-        "linkAsset": true,
-        "unlinkAsset": true,
+      actions: {
+        create: true,
+        delete: true,
+        get: true,
+        linkAsset: true,
+        search: true,
+        unlinkAsset: true,
+        update: true,
       },
     },
     "device-manager/models": {
-      "actions": {
-        "listDevices": true,
-        "writeDevice": true,
-        "deleteDevice": true,
+      actions: {
+        deleteDevice: true,
+        listDevices: true,
+        writeDevice: true,
       },
     },
   },

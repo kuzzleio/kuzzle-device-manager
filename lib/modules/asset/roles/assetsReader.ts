@@ -1,15 +1,15 @@
 export const assetsReader = {
-  "controllers": {
+  controllers: {
     "device-manager/assets": {
-      "actions": {
-        "get": true,
-        "search": true,
-        "getMeasures": true,
+      actions: {
+        get: true,
+        getMeasures: true,
+        search: true,
       },
     },
     "device-manager/models": {
-      "actions": {
-        "listAssets": true,
+      actions: {
+        listAssets: true,
       },
     },
   },

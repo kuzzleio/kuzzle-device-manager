@@ -1,8 +1,8 @@
 export const measuresReader = {
-  "controllers": {
+  controllers: {
     "device-manager/models": {
-      "actions": {
-        "listMeasures": true,
+      actions: {
+        listMeasures: true,
       },
     },
   },

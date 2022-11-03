@@ -1,15 +1,15 @@
 export const assetsAdmin = {
-  "controllers": {
+  controllers: {
     "device-manager/assets": {
-      "actions": {
+      actions: {
         "*": true,
       },
     },
     "device-manager/models": {
-      "actions": {
-        "listAssets": true,
-        "writeAsset": true,
-        "deleteAsset": true,
+      actions: {
+        deleteAsset: true,
+        listAssets: true,
+        writeAsset: true,
       },
     },
   },

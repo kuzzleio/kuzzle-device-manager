@@ -1,7 +1,7 @@
 export const decodersAdmin = {
-  "controllers": {
+  controllers: {
     "device-manager/decoders": {
-      "actions": {
+      actions: {
         "*": true,
       },
     },

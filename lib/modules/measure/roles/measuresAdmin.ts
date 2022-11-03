@@ -1,15 +1,15 @@
 export const measuresAdmin = {
-  "controllers": {
+  controllers: {
     "device-manager/measures": {
-      "actions": {
+      actions: {
         "*": true,
       },
     },
     "device-manager/models": {
-      "actions": {
-        "listMeasures": true,
-        "writeMeasure": true,
-        "deleteMeasure": true,
+      actions: {
+        deleteMeasure: true,
+        listMeasures: true,
+        writeMeasure: true,
       },
     },
   },

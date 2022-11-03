@@ -27,8 +27,9 @@ Feature: Model Controller
     When I successfully execute the action "device-manager/models":"listAssets" with args:
       | engineGroup | "commons" |
     Then I should receive a result matching:
-      | total         | 3                   |
-      | models[2]._id | "model-asset-plane" |
+      | total         | 3                       |
+      | models[0]._id | "model-asset-container" |
+      | models[1]._id | "model-asset-plane"     |
 
   @models
   Scenario: Create an asset with default metadata values
@@ -109,7 +110,8 @@ Feature: Model Controller
     When I successfully execute the action "device-manager/models":"listMeasures"
     Then I should receive a result matching:
       | total         | 6                        |
-      | models[5]._id | "model-measure-presence" |
+      | models[0]._id | "model-measure-battery"  |
+      | models[4]._id | "model-measure-presence" |
 
   Scenario: Register models from the framework
     Then The document "device-manager":"models":"model-asset-container" content match:

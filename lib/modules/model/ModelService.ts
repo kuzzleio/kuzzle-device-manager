@@ -179,11 +179,12 @@ export class ModelService {
     const query = {
       and: [{ equals: { type: "asset" } }, { equals: { engineGroup } }],
     };
+    const sort = { "asset.model": "asc" };
 
     const result = await this.sdk.document.search<AssetModelContent>(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      { query },
+      { query, sort },
       { lang: "koncorde", size: 100 }
     );
 
@@ -194,11 +195,12 @@ export class ModelService {
     const query = {
       and: [{ equals: { type: "device" } }],
     };
+    const sort = { "device.model": "asc" };
 
     const result = await this.sdk.document.search<DeviceModelContent>(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      { query },
+      { query, sort },
       { lang: "koncorde", size: 100 }
     );
 
@@ -209,11 +211,12 @@ export class ModelService {
     const query = {
       and: [{ equals: { type: "measure" } }],
     };
+    const sort = { "measure.name": "asc" };
 
     const result = await this.sdk.document.search<MeasureModelContent>(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      { query },
+      { query, sort },
       { lang: "koncorde", size: 100 }
     );
 

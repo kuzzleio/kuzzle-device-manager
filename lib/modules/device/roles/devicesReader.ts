@@ -1,14 +1,14 @@
 export const devicesReader = {
-  "controllers": {
+  controllers: {
     "device-manager/devices": {
-      "actions": {
-        "get": true,
-        "search": true,
+      actions: {
+        get: true,
+        search: true,
       },
     },
     "device-manager/models": {
-      "actions": {
-        "listDevices": true,
+      actions: {
+        listDevices: true,
       },
     },
   },
