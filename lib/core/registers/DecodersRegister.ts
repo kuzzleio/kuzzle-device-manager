@@ -54,7 +54,7 @@ export class DecodersRegister {
    *
    * @param decoder Instantiated decoder
    *
-   * @todo check if measures declared by the decoder exists, maybe when plugin starts only
+   * @todo could check if measures declared by the decoder exists, maybe when plugin starts only
    *
    * @returns Corresponding API action requestPayload
    */

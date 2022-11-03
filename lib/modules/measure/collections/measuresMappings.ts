@@ -48,7 +48,7 @@ export const measuresMappings = {
         reference: { type: "keyword" },
         metadata: {
           properties: {
-            // @todo to be populated
+            // populated with asset metadata mappings
           },
         },
       },

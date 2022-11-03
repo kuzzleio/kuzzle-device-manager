@@ -132,7 +132,6 @@ Feature: Asset Controller
       | measures[1].origin.type        | "user"          |
     Then I count 3 documents in "engine-ayse":"measures"
 
-  # @todo maybe this should be forbidden after the measure name refactor
   Scenario: Push a measure without name use measure type as name
     When I successfully execute the action "device-manager/measures":"push" with args:
       | engineId                        | "engine-ayse"         |

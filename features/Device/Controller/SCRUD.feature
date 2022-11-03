@@ -1,6 +1,5 @@
 Feature: Device SCRUD
 
-  # @todo
   Scenario: SCRUD device
     When I successfully execute the action "device-manager/devices":"create" with args:
       | engineId       | "device-manager" |

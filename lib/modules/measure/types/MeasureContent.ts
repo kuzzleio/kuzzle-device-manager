@@ -10,8 +10,6 @@ import { MeasureUnit } from "./MeasureDefinition";
  *
  * This interface should be extended and the `values` property specialized
  * to declare new measurement type.
- *
- * @todo cannot use type when iterating on measure of the pipe event
  */
 export interface Measurement<
   TMeasurementValues extends JSONObject = JSONObject
@@ -39,7 +37,6 @@ export interface Measurement<
    * Name given by the decoder to the measure.
    *
    * By default, it's the type of the measure
-   * @todo device.name
    */
   deviceMeasureName?: string;
 }
@@ -49,7 +46,6 @@ export interface AssetMeasurement<
 > extends Measurement<TMeasurementValues> {
   /**
    * Name given by the `deviceLink` of the linked asset.
-   * @todo asset.name
    */
   assetMeasureName: string;
 }
