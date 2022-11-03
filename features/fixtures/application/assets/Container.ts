@@ -25,8 +25,11 @@ interface ContainerAssetContent
   model: "container";
 }
 
-let container: ContainerAssetContent;
+// This function is never called and only exists to make sure the types are correct
+function neverCalled () {
+  let container: ContainerAssetContent;
 
-container.metadata.height = 40;
-container?.measures[0]?.asset.metadata.height;
-container.measures[0].asset.metadata;
+  container.metadata.height = 40;
+  container?.measures[0]?.asset.metadata.height;
+  container.measures[0].asset.metadata;
+}
