@@ -20,7 +20,10 @@ const deviceAyseLinked1 = new Device({
 const assetAyseLinked = new Asset({
   model: "container",
   reference: "linked1",
-  metadata: {},
+  metadata: {
+    weight: 10,
+    height: 11,
+  },
   deviceLinks: [
     {
       measureNamesLinks: [],
@@ -32,7 +35,10 @@ const assetAyseLinked = new Asset({
 const assetAyseUnlinked = new Asset({
   model: "container",
   reference: "unlinked1",
-  metadata: {},
+  metadata: {
+    weight: 20,
+    height: 22,
+  },
   deviceLinks: [],
 });
 

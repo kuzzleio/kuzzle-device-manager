@@ -80,7 +80,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createDevicesCollection(index));
 
-    promises.push(this.createMeasuresCollection(index));
+    promises.push(this.createMeasuresCollection(index, group));
 
     promises.push(this.engineConfigManager.createCollection(index));
 
@@ -103,7 +103,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createDevicesCollection(index));
 
-    promises.push(this.createMeasuresCollection(index));
+    promises.push(this.createMeasuresCollection(index, group));
 
     const collections = await Promise.all(promises);
 
@@ -122,7 +122,23 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return { collections: ["assets", "devices", "measures"] };
   }
 
-  async createAssetsCollection(engineId: string, engineGroup = "commons") {
+  async createAssetsCollection(engineId: string, engineGroup: string) {
+    const mappings = await this.getAssetsMappings(engineGroup);
+
+    mappings.properties.measures = await this.getMeasuresMappings({
+      withAssetDescription: false,
+    });
+
+    await this.sdk.collection.create(
+      engineId,
+      InternalCollection.ASSETS,
+      mappings
+    );
+
+    return InternalCollection.ASSETS;
+  }
+
+  private async getAssetsMappings(engineGroup: string) {
     const models = await this.getModels<AssetModelContent>(
       this.config.adminIndex,
       "asset",
@@ -138,15 +154,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       );
     }
 
-    mappings.properties.measures = await this.getMeasuresMappings();
-
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.ASSETS,
-      mappings
-    );
-
-    return InternalCollection.ASSETS;
+    return mappings;
   }
 
   async createDevicesCollection(engineId: string) {
@@ -164,7 +172,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       );
     }
 
-    mappings.properties.measures = await this.getMeasuresMappings();
+    mappings.properties.measures = await this.getMeasuresMappings({
+      withAssetDescription: false,
+    });
 
     await this.sdk.collection.create(
       engineId,
@@ -175,8 +185,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.DEVICES;
   }
 
-  async createMeasuresCollection(engineId: string) {
-    const mappings = await this.getMeasuresMappings();
+  async createMeasuresCollection(engineId: string, engineGroup: string) {
+    const mappings = await this.getMeasuresMappings({
+      engineGroup,
+      withAssetDescription: true,
+    });
 
     await this.sdk.collection.create(
       engineId,
@@ -187,7 +200,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.MEASURES;
   }
 
-  private async getMeasuresMappings() {
+  /**
+   * engineGroup should be specified if the measures needs to be contextualized
+   * with the asset description.
+   * It's not used when adding the measures mappings inside the devices or assets collections
+   */
+  private async getMeasuresMappings({
+    engineGroup,
+    withAssetDescription,
+  }: {
+    engineGroup?: string;
+    withAssetDescription: boolean;
+  }) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.adminIndex,
       "measure"
@@ -200,6 +224,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         mappings.properties.values.properties,
         model._source.measure.valuesMappings
       );
+    }
+
+    if (withAssetDescription) {
+      // assetsMappings is already declared
+      const _assetsMappings = await this.getAssetsMappings(engineGroup);
+      mappings.properties.asset.properties.metadata.properties =
+        _assetsMappings.properties.metadata.properties;
+    } else {
+      mappings.properties.asset = undefined;
     }
 
     return mappings;

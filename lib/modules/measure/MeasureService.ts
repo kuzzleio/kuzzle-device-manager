@@ -143,15 +143,24 @@ export class MeasureService {
         );
 
         promises.push(
-          this.sdk.document.mCreate<MeasureContent>(
-            device._source.engineId,
-            InternalCollection.MEASURES,
-            updatedMeasures.map((measure) => ({ body: measure })),
-          ).then(({ errors }) => {
-            if (errors.length !== 0) {
-              throw errors[0];
-            }
-          })
+          this.sdk.document
+            .mCreate<MeasureContent>(
+              device._source.engineId,
+              InternalCollection.MEASURES,
+              updatedMeasures.map((measure) => ({
+                body: {
+                  ...measure,
+                  asset: AssetSerializer.description(asset),
+                },
+              }))
+            )
+            .then(({ errors }) => {
+              if (errors.length !== 0) {
+                throw new BadRequestError(
+                  `Cannot save measures: ${errors[0].reason}`
+                );
+              }
+            })
         );
 
         if (asset) {
@@ -242,7 +251,6 @@ export class MeasureService {
       );
 
       const measureContent: MeasureContent = {
-        asset: AssetSerializer.description(asset),
         assetMeasureName,
         deviceMeasureName,
         measuredAt: measurement.measuredAt,
@@ -308,7 +316,6 @@ export class MeasureService {
       // @todo check if measure type exists
 
       const measure: MeasureContent<JSONObject> = {
-        asset: AssetSerializer.description(asset),
         assetMeasureName: measurement.assetMeasureName ?? measurement.type,
         deviceMeasureName: null,
         measuredAt: measurement.measuredAt || Date.now(),
@@ -333,7 +340,7 @@ export class MeasureService {
         this.sdk.document.create<MeasureContent>(
           engineId,
           InternalCollection.MEASURES,
-          measure,
+          { ...measure, asset: AssetSerializer.description(asset) },
           null,
           { refresh }
         ),
