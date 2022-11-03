@@ -11,28 +11,30 @@ interface ModelsControllerRequest {
 }
 
 export interface ApiModelCreateAssetRequest extends ModelsControllerRequest {
-  action: "createAsset";
+  action: "writeAsset";
 
   body: {
     engineGroup: string;
     model: string;
     metadataMappings: JSONObject;
+    defaultValues: JSONObject;
   };
 }
 export type ApiModelCreateAssetResult = KDocument<AssetModelContent>;
 
 export interface ApiModelCreateDeviceRequest extends ModelsControllerRequest {
-  action: "createDevice";
+  action: "writeDevice";
 
   body: {
     model: string;
     metadataMappings: JSONObject;
+    defaultValues: JSONObject;
   };
 }
 export type ApiModelCreateDeviceResult = KDocument<DeviceModelContent>;
 
 export interface ApiModelCreateMeasureRequest extends ModelsControllerRequest {
-  action: "createMeasure";
+  action: "writeMeasure";
 
   body: {
     name: string;

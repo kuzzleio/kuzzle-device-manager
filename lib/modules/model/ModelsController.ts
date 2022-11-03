@@ -70,13 +70,13 @@ export class ModelsController {
     const engineGroup = request.getBodyString("engineGroup");
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
+    const defaultValues = request.getBodyObject("defaultValues", {});
 
     const assetModel = await this.modelService.writeAsset(
+      engineGroup,
       model,
       metadataMappings,
-      {
-        engineGroup,
-      }
+      defaultValues
     );
 
     return assetModel;
@@ -87,10 +87,12 @@ export class ModelsController {
   ): Promise<ApiModelCreateDeviceResult> {
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
+    const defaultValues = request.getBodyObject("defaultValues", {});
 
     const deviceModel = await this.modelService.writeDevice(
       model,
-      metadataMappings
+      metadataMappings,
+      defaultValues
     );
 
     return deviceModel;

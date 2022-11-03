@@ -32,6 +32,10 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        defaultValues: {
+          dynamic: "false",
+          properties: {},
+        },
       },
     },
 
@@ -39,6 +43,10 @@ export const modelsMappings: CollectionMappings = {
       properties: {
         model: { type: "keyword" },
         metadataMappings: {
+          dynamic: "false",
+          properties: {},
+        },
+        defaultValues: {
           dynamic: "false",
           properties: {},
         },

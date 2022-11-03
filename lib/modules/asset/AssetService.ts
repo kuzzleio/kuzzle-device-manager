@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
   Backend,
   BadRequestError,
@@ -161,6 +162,11 @@ export class AssetService {
         assetModel.asset.metadataMappings
       )) {
         assetMetadata[metadataName] = null;
+      }
+      for (const [metadataName, metadataValue] of Object.entries(
+        assetModel.asset.defaultValues
+      )) {
+        _.set(assetMetadata, metadataName, metadataValue);
       }
 
       const { _source, _id } = await this.sdk.document.create<AssetContent>(

@@ -16,6 +16,7 @@ import {
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
 import { AskModelAssetGet, AskModelDeviceGet } from "./types/ModelEvents";
+import { flattenObject } from "../shared/utils/flattenObject";
 
 export class ModelService {
   private config: DeviceManagerConfiguration;
@@ -44,15 +45,18 @@ export class ModelService {
   }
 
   async writeAsset(
+    engineGroup: string,
     model: string,
     metadataMappings: JSONObject,
-    { engineGroup = "commons" }: { engineGroup?: string } = {}
+    defaultValues: JSONObject
   ): Promise<KDocument<AssetModelContent>> {
     const modelContent: AssetModelContent = {
-      asset: { metadataMappings, model },
+      asset: { defaultValues, metadataMappings, model },
       engineGroup,
       type: "asset",
     };
+
+    this.checkDefaultValues(metadataMappings, defaultValues);
 
     const assetModel = await this.sdk.document.upsert<AssetModelContent>(
       this.config.adminIndex,
@@ -70,12 +74,36 @@ export class ModelService {
     return assetModel;
   }
 
+  private checkDefaultValues(
+    metadataMappings: JSONObject,
+    defaultValues: JSONObject
+  ) {
+    const metadata = Object.keys(
+      JSON.parse(
+        JSON.stringify(flattenObject(metadataMappings))
+          .replace(/properties\./g, "")
+          .replace(/\.type/g, "")
+      )
+    );
+
+    const values = Object.keys(flattenObject(defaultValues));
+
+    for (let i = 0; i < values.length; i++) {
+      if (!metadata.includes(values[i])) {
+        throw new BadRequestError(
+          `The default value "${values[i]}" is not in the metadata mappings.`
+        );
+      }
+    }
+  }
+
   async writeDevice(
     model: string,
-    metadataMappings: JSONObject
+    metadataMappings: JSONObject,
+    defaultValues: JSONObject
   ): Promise<KDocument<DeviceModelContent>> {
     const modelContent: DeviceModelContent = {
-      device: { metadataMappings, model },
+      device: { defaultValues, metadataMappings, model },
       type: "device",
     };
 

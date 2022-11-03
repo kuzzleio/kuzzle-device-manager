@@ -31,6 +31,32 @@ Feature: Model Controller
       | models[2]._id | "model-asset-plane" |
 
   @models
+  Scenario: Create an asset with default metadata values
+    Given I successfully execute the action "device-manager/models":"writeAsset" with args:
+      | body.engineGroup      | "commons"                                                                               |
+      | body.model            | "plane"                                                                                 |
+      | body.metadataMappings | { size: { type: "integer" }, person: { properties: { company: { type: "keyword" } } } } |
+      | body.defaultValues    | { "person.company": "Firebird" }                                                        |
+    When I successfully execute the action "device-manager/assets":"create" with args:
+      | engineId           | "engine-kuzzle" |
+      | body.model         | "plane"         |
+      | body.reference     | "Dasha31"       |
+      | body.metadata.size | 179             |
+    Then The document "engine-kuzzle":"assets":"plane-Dasha31" content match:
+      | metadata.size           | 179        |
+      | metadata.person.company | "Firebird" |
+
+  @models
+  Scenario: Error if a default value is not a metadata
+    Given I execute the action "device-manager/models":"writeAsset" with args:
+      | body.engineGroup      | "commons"                     |
+      | body.model            | "plane"                       |
+      | body.metadataMappings | { size: { type: "integer" } } |
+      | body.defaultValues    | { "name": "Firebird" }        |
+    Then I should receive an error matching:
+      | message | "The default value \"name\" is not in the metadata mappings." |
+
+  @models
   Scenario: Write and List a Device model
     When I successfully execute the action "device-manager/models":"writeDevice" with args:
       | body.model            | "Zigbee"                         |
@@ -53,7 +79,7 @@ Feature: Model Controller
       | properties.metadata.properties.network2.type | "keyword" |
     When I successfully execute the action "device-manager/models":"listDevices"
     Then I should receive a result matching:
-      | total         | 3                    |
+      | total         | 3                     |
       | models[2]._id | "model-device-Zigbee" |
 
   @models

@@ -44,18 +44,25 @@ export class ModelsRegister {
   registerAsset(
     model: string,
     metadataMappings: JSONObject,
-    { engineGroup = "commons" }: { engineGroup?: string } = {}
+    {
+      engineGroup = "commons",
+      defaultValues = {},
+    }: { defaultValues?: JSONObject; engineGroup?: string } = {}
   ) {
     this.assetModels.push({
-      asset: { metadataMappings, model },
+      asset: { defaultValues, metadataMappings, model },
       engineGroup,
       type: "asset",
     });
   }
 
-  registerDevice(model: string, metadataMappings: JSONObject) {
+  registerDevice(
+    model: string,
+    metadataMappings: JSONObject,
+    { defaultValues = {} }: { defaultValues?: JSONObject } = {}
+  ) {
     this.deviceModels.push({
-      device: { metadataMappings, model },
+      device: { defaultValues, metadataMappings, model },
       type: "device",
     });
   }
