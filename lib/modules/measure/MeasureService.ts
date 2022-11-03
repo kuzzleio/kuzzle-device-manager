@@ -147,8 +147,11 @@ export class MeasureService {
             device._source.engineId,
             InternalCollection.MEASURES,
             updatedMeasures.map((measure) => ({ body: measure })),
-            { strict: true }
-          )
+          ).then(({ errors }) => {
+            if (errors.length !== 0) {
+              throw errors[0];
+            }
+          })
         );
 
         if (asset) {

@@ -42,12 +42,10 @@ export class ModelsRegister {
   }
 
   registerAsset(
+    engineGroup: string,
     model: string,
     metadataMappings: JSONObject,
-    {
-      engineGroup = "commons",
-      defaultValues = {},
-    }: { defaultValues?: JSONObject; engineGroup?: string } = {}
+    { defaultValues = {} }: { defaultValues?: JSONObject } = {}
   ) {
     this.assetModels.push({
       asset: { defaultValues, metadataMappings, model },
