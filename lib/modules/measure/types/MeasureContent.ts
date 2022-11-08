@@ -1,6 +1,6 @@
 import { JSONObject, KDocumentContent } from "kuzzle";
-import { Metadata } from "lib/modules/shared";
 
+import { Metadata } from "../../../modules/shared";
 import { AssetDescription } from "../../../modules/asset";
 
 import { MeasureUnit } from "./MeasureDefinition";
