@@ -2,6 +2,7 @@ import {
   Backend,
   BadRequestError,
   JSONObject,
+  KDocument,
   KHit,
   Plugin,
   PluginContext,
@@ -15,7 +16,6 @@ import { Metadata } from "../shared";
 import { ask } from "../shared/utils/ask";
 import { AskModelDeviceGet } from "../model/types/ModelEvents";
 
-import { Device } from "./model/Device";
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
 import {
@@ -53,18 +53,21 @@ export class DeviceService {
     metadata: JSONObject,
     {
       engineId,
-      linkRequest,
       refresh,
     }: {
       engineId?: string;
-      linkRequest?: LinkRequest;
       refresh?: any;
     } = {}
-  ): Promise<Device> {
-    let device = new Device(
-      { measures: [], metadata, model, reference },
-      DeviceSerializer.id(model, reference)
-    );
+  ): Promise<KDocument<DeviceContent>> {
+    let device: KDocument<DeviceContent> = {
+      _id: DeviceSerializer.id(model, reference),
+      _source: {
+        model,
+        reference,
+        measures: {},
+        metadata,
+      }
+    }
 
     return lock(`device:create:${device._id}`, async () => {
       const deviceModel = await ask<AskModelDeviceGet>(
@@ -104,22 +107,6 @@ export class DeviceService {
           collection: InternalCollection.DEVICES,
           index: engineId,
         });
-
-        if (linkRequest.assetId) {
-          const ret = await this.linkAsset(
-            linkRequest.engineId,
-            linkRequest.deviceId,
-            linkRequest.assetId,
-            linkRequest.measureNamesLinks
-          );
-
-          device = ret.device;
-
-          refreshableCollections.push({
-            collection: InternalCollection.ASSETS,
-            index: engineId,
-          });
-        }
       }
 
       if (refresh) {
@@ -134,14 +121,14 @@ export class DeviceService {
     });
   }
 
-  public async get(index: string, deviceId: string): Promise<Device> {
-    const document = await this.sdk.document.get<DeviceContent>(
+  public async get(index: string, deviceId: string): Promise<KDocument<DeviceContent>> {
+    const device = await this.sdk.document.get<DeviceContent>(
       index,
       InternalCollection.DEVICES,
       deviceId
     );
 
-    return new Device(document._source, document._id);
+    return device;
   }
 
   public async update(
@@ -149,8 +136,8 @@ export class DeviceService {
     deviceId: string,
     metadata: Metadata,
     { refresh }: { refresh: any }
-  ): Promise<Device> {
-    return lock<Device>(`device:update:${deviceId}`, async () => {
+  ): Promise<KDocument<DeviceContent>> {
+    return lock<KDocument<DeviceContent>>(`device:update:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId);
 
       const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
@@ -158,15 +145,13 @@ export class DeviceService {
         { device, metadata }
       );
 
-      const { _source, _id } = await this.sdk.document.update<DeviceContent>(
+      const updatedDevice = await this.sdk.document.update<DeviceContent>(
         engineId,
         InternalCollection.DEVICES,
         deviceId,
         { metadata: updatedPayload.metadata },
         { refresh }
       );
-
-      const updatedDevice = new Device(_source, _id);
 
       await this.app.trigger<EventDeviceUpdateAfter>(
         "device-manager:device:update:after",
@@ -197,18 +182,18 @@ export class DeviceService {
           device._source.assetId
         );
 
-        const deviceLinks = asset._source.deviceLinks.filter(
-          (link) => link.deviceId !== device._id
+        const linkedDevices = asset._source.linkedDevices.filter(
+          (link) => link.id !== device._id
         );
 
         promises.push(
-          // Potential race condition if someone update the asset deviceLinks
+          // Potential race condition if someone update the asset linkedDevices
           // at the same time (e.g link or unlink asset)
           this.sdk.document.update<AssetContent>(
             engineId,
             InternalCollection.ASSETS,
             device._source.assetId,
-            { deviceLinks },
+            { linkedDevices },
             { refresh }
           )
         );
@@ -268,7 +253,7 @@ export class DeviceService {
     engineId: string,
     deviceId: string,
     { refresh }: { refresh?: any } = {}
-  ): Promise<Device> {
+  ): Promise<KDocument<DeviceContent>> {
     return lock(`device:attachEngine:${deviceId}`, async () => {
       const device = await this.get(this.config.adminIndex, deviceId);
 
@@ -282,7 +267,7 @@ export class DeviceService {
 
       device._source.engineId = engineId;
 
-      const [deviceDoc] = await Promise.all([
+      const [updatedDevice] = await Promise.all([
         this.sdk.document.update<DeviceContent>(
           this.config.adminIndex,
           InternalCollection.DEVICES,
@@ -311,8 +296,6 @@ export class DeviceService {
         ]);
       }
 
-      const updatedDevice = new Device(deviceDoc._source, deviceDoc._id);
-
       return updatedDevice;
     });
   }
@@ -326,7 +309,7 @@ export class DeviceService {
   async detachEngine(
     deviceId: string,
     { refresh }: { refresh?: any } = {}
-  ): Promise<Device> {
+  ): Promise<KDocument<DeviceContent>> {
     return lock(`device:detachEngine:${deviceId}`, async () => {
       const device = await this.get(this.config.adminIndex, deviceId);
 
@@ -379,9 +362,9 @@ export class DeviceService {
     engineId: string,
     deviceId: string,
     assetId: string,
-    measureNamesLinks: DeviceLink["measureNamesLinks"],
+    measuresNames: Record<string, string>,
     { refresh }: { refresh?: any } = {}
-  ): Promise<{ asset: Asset; device: Device }> {
+  ): Promise<{ asset: KDocument<AssetContent>; device: KDocument<DeviceContent> }> {
     return lock(`device:linkAsset:${deviceId}`, async () => {
       const device = await this.get(this.config.adminIndex, deviceId);
 
@@ -408,9 +391,9 @@ export class DeviceService {
       const asset = new Asset(assetDoc._source, assetDoc._id);
 
       device._source.assetId = assetId;
-      asset._source.deviceLinks.push({ deviceId, measureNamesLinks });
+      asset._source.linkedDevices.push({ id: deviceId, measures: measuresNames });
 
-      const [updatedDeviceDoc, , updatedAssetDoc] = await Promise.all([
+      const [updatedDevice, , updatedAsset] = await Promise.all([
         this.sdk.document.update<DeviceContent>(
           this.config.adminIndex,
           InternalCollection.DEVICES,
@@ -429,7 +412,7 @@ export class DeviceService {
           device._source.engineId,
           InternalCollection.ASSETS,
           asset._id,
-          { deviceLinks: asset._source.deviceLinks }
+          { linkedDevices: asset._source.linkedDevices }
         ),
       ]);
 
@@ -450,15 +433,6 @@ export class DeviceService {
         ]);
       }
 
-      const updatedAsset = new Asset(
-        updatedAssetDoc._source,
-        updatedAssetDoc._id
-      );
-      const updatedDevice = new Device(
-        updatedDeviceDoc._source,
-        updatedDeviceDoc._id
-      );
-
       return { asset: updatedAsset, device: updatedDevice };
     });
   }
@@ -472,7 +446,7 @@ export class DeviceService {
   async unlinkAsset(
     deviceId: string,
     { refresh }: { refresh?: any } = {}
-  ): Promise<{ asset: Asset; device: Device }> {
+  ): Promise<{ asset: KDocument<AssetContent>; device: KDocument<DeviceContent> }> {
     return lock(`device:unlinkAsset:${deviceId}`, async () => {
       const device = await this.get(this.config.adminIndex, deviceId);
 
@@ -490,11 +464,11 @@ export class DeviceService {
         device._source.assetId
       );
 
-      const deviceLinks = asset._source.deviceLinks.filter(
-        (link) => link.deviceId !== device._id
+      const linkedDevices = asset._source.linkedDevices.filter(
+        (link) => link.id !== device._id
       );
 
-      const [deviceDoc, , assetDoc] = await Promise.all([
+      const [updatedDevice, , updatedAsset] = await Promise.all([
         this.sdk.document.update<DeviceContent>(
           this.config.adminIndex,
           InternalCollection.DEVICES,
@@ -513,7 +487,7 @@ export class DeviceService {
           device._source.engineId,
           InternalCollection.ASSETS,
           asset._id,
-          { deviceLinks }
+          { linkedDevices }
         ),
       ]);
 
@@ -533,9 +507,6 @@ export class DeviceService {
           ),
         ]);
       }
-
-      const updatedAsset = new Asset(assetDoc._source, assetDoc._id);
-      const updatedDevice = new Device(deviceDoc._source, deviceDoc._id);
 
       return { asset: updatedAsset, device: updatedDevice };
     });
@@ -555,7 +526,7 @@ export class DeviceService {
     }
   }
 
-  private checkAttachedToEngine(device: Device) {
+  private checkAttachedToEngine(device: KDocument<DeviceContent>) {
     if (!device._source.engineId) {
       throw new BadRequestError(
         `Device "${device._id}" is not attached to an engine.`

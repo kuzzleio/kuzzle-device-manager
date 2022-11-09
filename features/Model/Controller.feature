@@ -3,27 +3,66 @@ Feature: Model Controller
   @models
   Scenario: Write and List an Asset model
     When I successfully execute the action "device-manager/models":"writeAsset" with args:
-      | body.engineGroup      | "commons"                        |
-      | body.model            | "plane"                          |
-      | body.metadataMappings | { company: { type: "keyword" } } |
+      | body.engineGroup             | "commons"                        |
+      | body.model                   | "plane"                          |
+      | body.metadataMappings        | { company: { type: "keyword" } } |
+      | body.measures.temperatureExt | "temperature"                    |
     Then The document "device-manager":"models":"model-asset-plane" content match:
-      | type                                | "asset"   |
-      | engineGroup                         | "commons" |
-      | asset.model                         | "plane"   |
-      | asset.metadataMappings.company.type | "keyword" |
+      | type                                | "asset"       |
+      | engineGroup                         | "commons"     |
+      | asset.model                         | "plane"       |
+      | asset.metadataMappings.company.type | "keyword"     |
+      | asset.measures.temperatureExt       | "temperature" |
     When I successfully execute the action "device-manager/models":"writeAsset" with args:
-      | body.engineGroup      | "commons"                         |
-      | body.model            | "plane"                           |
-      | body.metadataMappings | { company2: { type: "keyword" } } |
+      | body.engineGroup       | "commons"                         |
+      | body.model             | "plane"                           |
+      | body.metadataMappings  | { company2: { type: "keyword" } } |
+      | body.measures.position | "position"                        |
     Then The document "device-manager":"models":"model-asset-plane" content match:
-      | type                                 | "asset"   |
-      | engineGroup                          | "commons" |
-      | asset.model                          | "plane"   |
-      | asset.metadataMappings.company.type  | "keyword" |
-      | asset.metadataMappings.company2.type | "keyword" |
+      | type                                 | "asset"       |
+      | engineGroup                          | "commons"     |
+      | asset.model                          | "plane"       |
+      | asset.metadataMappings.company.type  | "keyword"     |
+      | asset.metadataMappings.company2.type | "keyword"     |
+      | asset.measures.temperatureExt        | "temperature" |
+      | asset.measures.position              | "position"    |
     Then The collection "engine-ayse":"assets" mappings match:
-      | properties.metadata.properties.company.type  | "keyword" |
-      | properties.metadata.properties.company2.type | "keyword" |
+    """
+      {
+        metadata: {
+          properties: {
+            company: { type: "keyword" },
+            company2: { type: "keyword" },
+          }
+        },
+        measures: {
+          properties: {
+            temperatureExt: {
+              properties: {
+                id: { type: "keyword" },
+                type: { type: "keyword" },
+                measuredAt: { type: "date" },
+                value: { type: "float" },
+              }
+            },
+            position: {
+              properties: {
+                id: { type: "keyword" },
+                type: { type: "keyword" },
+                measuredAt: { type: "date" },
+                value: {
+                  properties: {
+                    lat: { type: "float" },
+                    lon: { type: "float" },
+                    accuracy: { type: "float" },
+                  }
+                },
+              }
+            },
+          }
+        }
+      }
+    """
     When I successfully execute the action "device-manager/models":"listAssets" with args:
       | engineGroup | "commons" |
     Then I should receive a result matching:
@@ -86,18 +125,18 @@ Feature: Model Controller
   @models
   Scenario: Write and List a Measure model
     When I successfully execute the action "device-manager/models":"writeMeasure" with args:
-      | body.name           | "presence"                        |
+      | body.type           | "presence"                        |
       | body.valuesMappings | { presence: { type: "boolean" } } |
     Then The document "device-manager":"models":"model-measure-presence" content match:
       | type                                 | "measure"  |
-      | measure.name                         | "presence" |
+      | measure.type                         | "presence" |
       | measure.valuesMappings.presence.type | "boolean"  |
     When I successfully execute the action "device-manager/models":"writeMeasure" with args:
-      | body.name           | "presence"                         |
+      | body.type           | "presence"                         |
       | body.valuesMappings | { presence2: { type: "boolean" } } |
     Then The document "device-manager":"models":"model-measure-presence" content match:
       | type                                  | "measure"  |
-      | measure.name                          | "presence" |
+      | measure.type                          | "presence" |
       | measure.valuesMappings.presence.type  | "boolean"  |
       | measure.valuesMappings.presence2.type | "boolean"  |
     And I refresh the collection "device-manager":"models"

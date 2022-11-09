@@ -6,7 +6,7 @@ export interface MeasureModelContent extends KDocumentContent {
   type: "measure";
 
   measure: MeasureDefinition & {
-    name: string;
+    type: string;
   };
 }
 
@@ -44,6 +44,19 @@ export interface AssetModelContent extends KDocumentContent {
      * }
      */
     defaultValues: JSONObject;
+
+    /**
+     * List of accepted measures for this model
+     *
+     * Record<name, type>
+     *
+     * @example
+     *
+     * {
+     *   "externalTemperature": "temperature",
+     * }
+     */
+    measures: Record<string, string>;
   };
 }
 
@@ -79,6 +92,19 @@ export interface DeviceModelContent extends KDocumentContent {
      * }
      */
     defaultValues: JSONObject;
+
+    /**
+     * List of decoded measures for this model
+     *
+     * Record<name, type>
+     *
+     * @example
+     *
+     * {
+     *   "temperature1": "temperature",
+     * }
+     */
+    measures: Record<string, string>;
   };
 }
 

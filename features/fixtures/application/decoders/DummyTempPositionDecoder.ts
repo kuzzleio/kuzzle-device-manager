@@ -2,9 +2,9 @@ import { JSONObject, PreconditionError } from "kuzzle";
 
 import {
   Decoder,
-  BatteryMeasurement,
-  PositionMeasurement,
-  TemperatureMeasurement,
+  BatteryMeasureValues,
+  PositionMeasureValues,
+  TemperatureMeasureValues,
   DecodedPayload,
 } from "../../../../index";
 
@@ -14,10 +14,6 @@ export class DummyTempPositionDecoder extends Decoder {
     { name: "battery", type: "battery" },
     { name: "position", type: "position" },
   ] as const;
-
-  constructor() {
-    super();
-  }
 
   async validate(payload: JSONObject) {
     if (payload.deviceEUI === undefined) {
@@ -30,7 +26,7 @@ export class DummyTempPositionDecoder extends Decoder {
   async decode(payload: JSONObject): Promise<DecodedPayload<Decoder>> {
     const decodedPayload = new DecodedPayload<DummyTempPositionDecoder>(this);
 
-    decodedPayload.addMeasurement<TemperatureMeasurement>(
+    decodedPayload.addMeasurement<TemperatureMeasureValues>(
       payload.deviceEUI,
       "temperature",
       {
@@ -40,7 +36,7 @@ export class DummyTempPositionDecoder extends Decoder {
       }
     );
 
-    decodedPayload.addMeasurement<PositionMeasurement>(
+    decodedPayload.addMeasurement<PositionMeasureValues>(
       payload.deviceEUI,
       "position",
       {
@@ -56,7 +52,7 @@ export class DummyTempPositionDecoder extends Decoder {
       }
     );
 
-    decodedPayload.addMeasurement<BatteryMeasurement>(
+    decodedPayload.addMeasurement<BatteryMeasureValues>(
       payload.deviceEUI,
       "battery",
       {

@@ -12,22 +12,26 @@ const deviceManager = new DeviceManagerPlugin();
 
 deviceManager.models.registerDevice(
   "DummyTempPosition",
-  new DummyTempPositionDecoder()
+  new DummyTempPositionDecoder(),
 );
-deviceManager.models.registerDevice("DummyTemp", new DummyTempDecoder(), {
-  color: { type: "keyword" },
-});
+
+deviceManager.models.registerDevice("DummyTemp", new DummyTempDecoder());
 
 // Register an asset for the "commons" group
 
 deviceManager.models.registerAsset("commons", "container", {
   weight: { type: "integer" },
   height: { type: "integer" },
-});
+}, [
+  { name: "temperatureExt", type: "temperature" },
+  { name: "position", type: "position" },
+]);
 
 deviceManager.models.registerAsset("commons", "warehouse", {
   surface: { type: "integer" },
-});
+}, [
+  { name: "position", type: "position" },
+]);
 
 registerTestPipes(app); //TODO : move this line in another filer
 

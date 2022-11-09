@@ -21,7 +21,7 @@ import {
 import { DeviceModule, devicesMappings } from "../modules/device";
 import { MeasureModule } from "../modules/measure";
 import { AssetModule } from "../modules/asset";
-import { Decoder, DecoderModule, payloadsMappings } from "../modules/decoder";
+import { Decoder, DecoderModule, NamedMeasures, payloadsMappings } from "../modules/decoder";
 import { ModelModule, modelsMappings } from "../modules/model";
 import { lock } from "../modules/shared/utils/lock";
 
@@ -59,12 +59,20 @@ export class DeviceManagerPlugin extends Plugin {
         engineGroup: string,
         model: string,
         metadataMappings: JSONObject,
+        measuresNames: NamedMeasures,
         { defaultValues = {} }: { defaultValues?: JSONObject } = {}
       ) => {
+        const measures: Record<string, string> = {};
+
+        for (const measure of measuresNames) {
+          measures[measure.name] = measure.type;
+        }
+
         this.modelsRegister.registerAsset(
           engineGroup,
           model,
           metadataMappings,
+          measures,
           {
             defaultValues,
           }
@@ -74,11 +82,17 @@ export class DeviceManagerPlugin extends Plugin {
       registerDevice: (
         model: string,
         decoder: Decoder,
-        metadataMappings: JSONObject = {},
-        { defaultValues = {} }: { defaultValues?: JSONObject } = {}
+        { defaultValues = {}, metadataMappings={} }: { defaultValues?: JSONObject, metadataMappings?: JSONObject } = {}
       ) => {
         this.decodersRegister.register(decoder);
-        this.modelsRegister.registerDevice(model, metadataMappings, {
+
+        const measures: Record<string, string> = {};
+
+        for (const measure of decoder.measures) {
+          measures[measure.name] = measure.type;
+        }
+
+        this.modelsRegister.registerDevice(model, metadataMappings, measures, {
           defaultValues,
         });
       },
@@ -86,14 +100,12 @@ export class DeviceManagerPlugin extends Plugin {
       registerMeasure: (
         name: string,
         {
-          unit,
           valuesMappings,
         }: {
-          unit: MeasureUnit;
           valuesMappings: JSONObject;
         }
       ) => {
-        this.modelsRegister.registerMeasure(name, unit, valuesMappings);
+        this.modelsRegister.registerMeasure(name, valuesMappings);
       },
     };
   }

@@ -10,7 +10,7 @@ export const modelsMappings: CollectionMappings = {
 
     measure: {
       properties: {
-        name: { type: "keyword" },
+        type: { type: "keyword" },
         unit: {
           properties: {
             name: { type: "keyword" },
@@ -36,6 +36,10 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        measures: {
+          dynamic: "false",
+          properties: {},
+        },
       },
     },
 
@@ -47,6 +51,10 @@ export const modelsMappings: CollectionMappings = {
           properties: {},
         },
         defaultValues: {
+          dynamic: "false",
+          properties: {},
+        },
+        measures: {
           dynamic: "false",
           properties: {},
         },

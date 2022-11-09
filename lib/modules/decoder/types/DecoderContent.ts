@@ -1,7 +1,7 @@
-import { DecoderMeasures } from "../Decoder";
+import { NamedMeasures } from "../Decoder";
 
 export interface DecoderContent {
   deviceModel: string;
 
-  measures: DecoderMeasures;
+  measures: NamedMeasures;
 }

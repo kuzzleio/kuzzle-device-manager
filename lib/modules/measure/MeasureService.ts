@@ -15,7 +15,6 @@ import {
 } from "../../core";
 import { DeviceContent } from "./../device";
 import { Asset, AssetContent } from "../asset";
-import { Device } from "../device";
 import { DigitalTwinContent, Metadata } from "../shared";
 import { AssetSerializer } from "../asset";
 import { lock } from "../shared/utils/lock";
@@ -29,7 +28,6 @@ import {
 } from "./types/MeasureEvents";
 import {
   MeasureContent,
-  AssetMeasurement,
   Measurement,
 } from "./types/MeasureContent";
 
@@ -277,12 +275,6 @@ export class MeasureService {
    *
    * The `measuredAt` of the measures will be set automatically if not setted
    *
-   * @param engineId Engine id
-   * @param assetId Asset id
-   * @param jsonMeasurements `AssetMeasurement` array from a request
-   * @param kuid Kuid of the user pushing the measurements
-   * @param options.refresh Wait for ES indexation
-   * @param options.strict If true, throw if an operation isn't possible
    */
   public async registerByAsset(
     engineId: string,
@@ -315,7 +307,7 @@ export class MeasureService {
 
       // @todo check if measure type exists
 
-      const measure: MeasureContent<JSONObject> = {
+      const measure: MeasureContent = {
         assetMeasureName: measurement.assetMeasureName ?? measurement.type,
         deviceMeasureName: null,
         measuredAt: measurement.measuredAt || Date.now(),

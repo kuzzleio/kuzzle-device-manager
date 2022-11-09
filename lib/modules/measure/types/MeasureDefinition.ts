@@ -25,19 +25,9 @@ export interface MeasureUnit {
  * @example
  * {
  *   valuesMappings: { temperature: { type: 'float' } },
- *   unit: {
- *     name: 'Degree',
- *     sign: '°',
- *     type: 'number',
- *   },
  * }
  */
 export interface MeasureDefinition {
-  /**
-   * Unit definition
-   */
-  unit: MeasureUnit;
-
   /**
    * Mappings for the measurement values in order to index the fields
    */

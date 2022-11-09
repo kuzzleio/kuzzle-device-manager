@@ -11,33 +11,25 @@ export const assetsMappings = {
       type: "keyword",
       fields: { text: { type: "text" } },
     },
+
     metadata: {
       properties: {
         // populated with asset models
       },
     },
+
     measures: {
       properties: {
-        // populated with measure models
+        // populated with asset models measures names
       },
     },
-    deviceLinks: {
+
+    linkedDevices: {
       properties: {
-        deviceId: {
-          type: "keyword",
-          fields: { text: { type: "text" } },
-        },
-        measureNamesLinks: {
-          properties: {
-            assetMeasureName: {
-              type: "keyword",
-              fields: { text: { type: "text" } },
-            },
-            deviceMeasureName: {
-              type: "keyword",
-              fields: { text: { type: "text" } },
-            },
-          },
+        _id: { type: "keyword" },
+        measures: {
+          dynamic: "false",
+          properties: {}
         },
       },
     },

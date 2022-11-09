@@ -48,10 +48,11 @@ export class ModelService {
     engineGroup: string,
     model: string,
     metadataMappings: JSONObject,
-    defaultValues: JSONObject
+    defaultValues: JSONObject,
+    measures: JSONObject,
   ): Promise<KDocument<AssetModelContent>> {
     const modelContent: AssetModelContent = {
-      asset: { defaultValues, metadataMappings, model },
+      asset: { defaultValues, measures, metadataMappings, model },
       engineGroup,
       type: "asset",
     };
@@ -100,10 +101,11 @@ export class ModelService {
   async writeDevice(
     model: string,
     metadataMappings: JSONObject,
-    defaultValues: JSONObject
+    defaultValues: JSONObject,
+    measures: JSONObject,
   ): Promise<KDocument<DeviceModelContent>> {
     const modelContent: DeviceModelContent = {
-      device: { defaultValues, metadataMappings, model },
+      device: { defaultValues, measures, metadataMappings, model },
       type: "device",
     };
 
@@ -124,12 +126,12 @@ export class ModelService {
   }
 
   async writeMeasure(
-    name: string,
+    type: string,
     unit: MeasureUnit,
     valuesMappings: JSONObject
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
-      measure: { name, unit, valuesMappings },
+      measure: { type, unit, valuesMappings },
       type: "measure",
     };
 

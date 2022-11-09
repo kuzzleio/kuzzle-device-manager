@@ -45,10 +45,11 @@ export class ModelsRegister {
     engineGroup: string,
     model: string,
     metadataMappings: JSONObject,
+    measures: Record<string, string>,
     { defaultValues = {} }: { defaultValues?: JSONObject } = {}
   ) {
     this.assetModels.push({
-      asset: { defaultValues, metadataMappings, model },
+      asset: { defaultValues, measures, metadataMappings, model },
       engineGroup,
       type: "asset",
     });
@@ -57,17 +58,18 @@ export class ModelsRegister {
   registerDevice(
     model: string,
     metadataMappings: JSONObject,
+    measures: Record<string, string>,
     { defaultValues = {} }: { defaultValues?: JSONObject } = {}
   ) {
     this.deviceModels.push({
-      device: { defaultValues, metadataMappings, model },
+      device: { defaultValues, measures, metadataMappings, model },
       type: "device",
     });
   }
 
-  registerMeasure(name: string, unit: MeasureUnit, valuesMappings: JSONObject) {
+  registerMeasure(type: string, valuesMappings: JSONObject) {
     this.measureModels.push({
-      measure: { name, unit, valuesMappings },
+      measure: { type, valuesMappings },
       type: "measure",
     });
   }

@@ -1,27 +1,50 @@
-import { JSONObject } from "kuzzle-sdk";
-import { DigitalTwinContent, Metadata } from "../../shared";
-
-import { DeviceLink } from "./DeviceLink";
+import { DigitalTwinContent, DigitalTwinMeasures, Metadata } from "../../shared";
 
 /**
  * Asset document content
  */
 export interface AssetContent<
-  TMeasurementValues extends JSONObject = JSONObject,
+  TMeasures extends DigitalTwinMeasures = DigitalTwinMeasures,
   TMetadata extends Metadata = Metadata
-> extends DigitalTwinContent<TMeasurementValues, TMetadata> {
+> extends DigitalTwinContent<TMeasures, TMetadata> {
   /**
    * Link with attached device
    */
-  deviceLinks: DeviceLink[];
+  linkedDevices: Array<{
+    /**
+     * Device ID
+     */
+    id: string;
+
+    /**
+     * Names lookup table for measures
+     *
+     * Record<deviceName, name>
+     *
+     * @example
+     *
+     * {
+     *   "temperature": "externalTemperature",
+     * }
+     */
+    measures: Record<string, string>;
+  }>;
 }
 
 /**
  * Asset description used to contextualize each measure data point
  */
 export type AssetDescription<TMetadata extends Metadata = Metadata> = {
+  /**
+   * ID of the asset
+   */
   id: string;
+
+  /**
+   * Name of the measure for the Asset
+   */
+  measureName: string;
 } & Pick<
-  AssetContent<JSONObject, TMetadata>,
+  AssetContent<DigitalTwinMeasures, TMetadata>,
   "model" | "reference" | "metadata"
 >;

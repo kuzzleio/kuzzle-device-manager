@@ -25,7 +25,7 @@ export class ModelSerializer {
     } else if (type === "device") {
       return (model as DeviceModelContent).device.model;
     } else if (type === "measure") {
-      return (model as MeasureModelContent).measure.name;
+      return (model as MeasureModelContent).measure.type;
     }
 
     throw new BadRequestError(`Unknown model type "${type}"`);
