@@ -390,7 +390,10 @@ export class DeviceService {
       );
 
       device._source.assetId = assetId;
-      asset._source.linkedDevices.push({ id: deviceId, measures: measuresNames });
+      asset._source.linkedDevices.push({
+        id: deviceId,
+        measures: measuresNames
+      });
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
         this.sdk.document.update<DeviceContent>(

@@ -115,8 +115,19 @@ export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
 
   assetId: string;
 
-  body?: {
-    measureNamesLinks?: DeviceLink["measureNamesLinks"];
+  body: {
+    /**
+     * Names lookup table for measures
+     *
+     * Record<deviceName, assetName>
+     *
+     * @example
+     *
+     * {
+     *   "temperature": "externalTemperature",
+     * }
+     */
+    measureNames: Record<string, string>;
   };
 }
 export type ApiDeviceLinkAssetResult = {

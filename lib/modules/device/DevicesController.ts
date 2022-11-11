@@ -209,16 +209,14 @@ export class DevicesController {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
     const assetId = request.getString("assetId");
+    const measureNames = request.getBodyObject("measureNames");
     const refresh = request.getRefresh();
-    const measureNamesLinks = request.getBodyArray("measureNamesLinks");
-
-    this.validateMeasureNamesLinks(measureNamesLinks);
 
     const { asset, device } = await this.deviceService.linkAsset(
       engineId,
       deviceId,
       assetId,
-      measureNamesLinks,
+      measureNames,
       { refresh }
     );
 
@@ -245,26 +243,5 @@ export class DevicesController {
       asset: AssetSerializer.serialize(asset),
       device: DeviceSerializer.serialize(device),
     };
-  }
-
-  private validateMeasureNamesLinks(measureNamesLinks: JSONObject) {
-    if (measureNamesLinks.length === 0) {
-      throw new BadRequestError(
-        `Measures name mappings is empty ("measureNamesLinks")`
-      );
-    }
-
-    for (let i = 0; i < measureNamesLinks.length; i++) {
-      if (!measureNamesLinks[i].assetMeasureName) {
-        throw new BadRequestError(
-          `Missing "measureNamesLinks[${i}].assetMeasureName"`
-        );
-      }
-      if (!measureNamesLinks[i].deviceMeasureName) {
-        throw new BadRequestError(
-          `Missing "measureNamesLinks[${i}].deviceMeasureName"`
-        );
-      }
-    }
   }
 }
