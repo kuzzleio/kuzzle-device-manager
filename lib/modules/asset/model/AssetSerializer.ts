@@ -1,14 +1,13 @@
 import { KDocument } from "kuzzle";
 
-import { Asset } from "./Asset";
-import { AssetContent, AssetDescription } from "../types/AssetContent";
+import { AssetContent, AssetMeasureContext } from "../types/AssetContent";
 
 export class AssetSerializer {
   static id(model: string, reference: string) {
     return `${model}-${reference}`;
   }
 
-  static serialize(asset: Asset): KDocument<AssetContent> {
+  static serialize(asset: KDocument<AssetContent>): KDocument<AssetContent> {
     if (!asset) {
       return undefined;
     }
@@ -22,7 +21,7 @@ export class AssetSerializer {
   /**
    * Get asset description to contextualize measure data point
    */
-  static description(asset: Asset): AssetDescription {
+  static measureContext(asset: KDocument<AssetContent>, measureName: string): AssetMeasureContext {
     if (!asset) {
       return undefined;
     }
@@ -32,6 +31,7 @@ export class AssetSerializer {
       metadata: asset._source.metadata,
       model: asset._source.model,
       reference: asset._source.reference,
+      measureName
     };
   }
 }

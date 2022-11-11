@@ -14,10 +14,9 @@ import {
   InternalCollection,
 } from "../../core";
 import { DeviceContent } from "./../device";
-import { Asset, AssetContent } from "../asset";
-import { DigitalTwinContent, Metadata } from "../shared";
+import { AssetContent } from "../asset";
+import { DigitalTwinContent, Metadata, lock } from "../shared";
 import { AssetSerializer } from "../asset";
-import { lock } from "../shared/utils/lock";
 
 import {
   EventMeasureIngest,
@@ -27,9 +26,10 @@ import {
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
 import {
+  DecodedMeasurement,
   MeasureContent,
-  Measurement,
 } from "./types/MeasureContent";
+import { ApiMeasurePushRequest } from "./types/MeasureApi";
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
@@ -69,26 +69,34 @@ export class MeasureService {
    * - linked asset
    * - engine measures
    *
-   * A mutex ensure only one device can be processed at the same time
+   * A mutex ensure that a device can ingest one measure at a time.
+   *
+   * This method represents the ingestion pipeline:
+   *  - build measures documents and update digital twins (device and asset)
+   *  - trigger events to enrich measures documents
+   *  - save documents (measures, device and asset)
+   *  - trigger events to trigger business rules
    */
   public async ingest(
-    device: Device,
-    measurements: Measurement<JSONObject>[],
+    device: KDocument<DeviceContent>,
+    measurements: DecodedMeasurement<JSONObject>[],
     metadata: Metadata,
     payloadUuids: string[]
   ) {
     await lock(`measure:ingest:${device._id}`, async () => {
-      const asset = await this.tryGetLinkedAsset(
-        device._source.engineId,
-        device._source.assetId
-      );
-
       if (!measurements) {
         this.app.log.warn(
           `Cannot find measurements for device "${device._source.reference}"`
         );
         return;
       }
+
+      const asset = await this.tryGetLinkedAsset(
+        device._source.engineId,
+        device._source.assetId
+      );
+
+      _.merge(device._source.metadata, metadata);
 
       const measures = this.buildMeasures(
         device,
@@ -97,27 +105,35 @@ export class MeasureService {
         payloadUuids
       );
 
-      device._source.metadata = _.merge(device._source.metadata, metadata);
+      this.updateEmbeddedMeasures('device', device, measures);
+      if (asset) {
+        this.updateEmbeddedMeasures('asset', asset, measures);
+      }
 
       /**
        * Event before starting to process new measures.
        *
        * Useful to enrich measures before they are saved.
+       *
+       * Only measures documents can be modified
        */
-      const { measures: updatedMeasures } =
+      let afterEnrichment =
         await this.app.trigger<EventMeasureProcessBefore>(
           "device-manager:measures:process:before",
           { asset, device, measures }
         );
 
       if (device._source.engineId) {
-        await this.app.trigger<TenantEventMeasureProcessBefore>(
+        afterEnrichment = await this.app.trigger<TenantEventMeasureProcessBefore>(
           `engine:${device._source.engineId}:device-manager:measures:process:before`,
-          { asset, device, measures }
+          { asset, device, measures: afterEnrichment.measures }
         );
       }
 
-      this.mergeMeasures(device, updatedMeasures);
+      this.updateEmbeddedMeasures('device', device, afterEnrichment.measures);
+      if (asset) {
+        this.updateEmbeddedMeasures('asset', asset, afterEnrichment.measures);
+      }
 
       const promises = [];
 
@@ -145,12 +161,7 @@ export class MeasureService {
             .mCreate<MeasureContent>(
               device._source.engineId,
               InternalCollection.MEASURES,
-              updatedMeasures.map((measure) => ({
-                body: {
-                  ...measure,
-                  asset: AssetSerializer.description(asset),
-                },
-              }))
+              afterEnrichment.measures.map((measure) => ({ body: measure }))
             )
             .then(({ errors }) => {
               if (errors.length !== 0) {
@@ -162,8 +173,6 @@ export class MeasureService {
         );
 
         if (asset) {
-          this.mergeMeasures(asset, updatedMeasures);
-
           // @todo potential race condition if 2 differents device are linked
           // to the same asset and get processed at the same time
           // asset measures update could be protected by mutex
@@ -183,7 +192,7 @@ export class MeasureService {
       /**
        * Event at the end of the measure process pipeline.
        *
-       * Useful to trigger alerts.
+       * Useful to trigger business rules like alerts
        *
        * @todo test this
        */
@@ -205,58 +214,67 @@ export class MeasureService {
     });
   }
 
-  private mergeMeasures(
+  /**
+   * Updates embedded measures in a digital twin
+   */
+  private updateEmbeddedMeasures(
+    type: 'asset' | 'device', // this is why I hate typescript, there is no way to know types at runtime
     digitalTwin: KDocument<DigitalTwinContent>,
-    measures: MeasureContent[]
+    measurements: MeasureContent[]
   ) {
-    for (const newMeasure of measures) {
-      const idx = digitalTwin._source.measures.findIndex((measure) => {
-        const [measureName, newMeasureName] = measure.assetMeasureName
-          ? [measure.assetMeasureName, newMeasure.assetMeasureName]
-          : [measure.deviceMeasureName, newMeasure.deviceMeasureName];
+    if (!digitalTwin._source.measures) {
+      digitalTwin._source.measures = {};
+    }
 
-        return measureName === newMeasureName;
-      });
+    for (const measurement of measurements) {
+      const measureName = type === 'asset'
+        ? measurement.asset.measureName
+        : measurement.origin.measureName;
 
-      if (idx === -1) {
-        digitalTwin._source.measures.push(newMeasure);
-      } else if (
-        newMeasure.measuredAt > digitalTwin._source.measures[idx].measuredAt
-      ) {
-        digitalTwin._source.measures[idx] = newMeasure;
+      const previousMeasure = digitalTwin._source.measures[measureName];
+
+      if (previousMeasure.measuredAt > measurement.measuredAt) {
+        continue;
       }
+
+      digitalTwin._source.measures[measureName] = {
+        _id: null,
+        type: measurement.type,
+        measuredAt: measurement.measuredAt,
+        values: measurement.values,
+      };
     }
   }
 
+  /**
+   * Build the measures documents to save
+   */
   private buildMeasures(
-    device: Device,
-    asset: Asset,
-    measurements: Measurement[],
+    device: KDocument<DeviceContent>,
+    asset: KDocument<AssetContent> | null,
+    measurements: DecodedMeasurement[],
     payloadUuids: string[]
   ): MeasureContent[] {
     const measures: MeasureContent[] = [];
 
     for (const measurement of measurements) {
       // @todo check if measure type exists
-
-      const deviceMeasureName =
-        measurement.deviceMeasureName || measurement.type;
-
       const assetMeasureName = this.tryFindAssetMeasureName(
         device,
         asset,
-        deviceMeasureName
+        measurement.measureName
       );
 
       const measureContent: MeasureContent = {
-        assetMeasureName,
-        deviceMeasureName,
+        asset: AssetSerializer.measureContext(asset, assetMeasureName),
         measuredAt: measurement.measuredAt,
         origin: {
-          deviceModel: device._source.model,
-          id: device._id,
-          payloadUuids,
+          measureName: measurement.measureName,
           type: "device",
+          payloadUuids,
+          deviceModel: device._source.model,
+          reference: device._source.reference,
+          id: device._id,
         },
         type: measurement.type,
         values: measurement.values,
@@ -274,15 +292,14 @@ export class MeasureService {
    * - engine measures
    *
    * The `measuredAt` of the measures will be set automatically if not setted
-   *
    */
   public async registerByAsset(
     engineId: string,
     assetId: string,
-    measurement: AssetMeasurement,
+    measureInfo: ApiMeasurePushRequest["body"]["measure"],
     kuid: string,
     { refresh }: { refresh?: any } = {}
-  ) {
+  ): Promise<KDocument<AssetContent>> {
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.tryGetLinkedAsset(engineId, assetId);
 
@@ -290,36 +307,42 @@ export class MeasureService {
         throw new NotFoundError(`Asset "${assetId}" does not exist`);
       }
 
-      if (!measurement.type) {
+      if (!measureInfo.type) {
         throw new BadRequestError(
-          `Invalid measurement for asset "${asset._id}": missing "type"`
+          `Invalid measure for asset "${asset._id}": missing "type"`
+        );
+      }
+
+      if (!measureInfo.measureName) {
+        throw new BadRequestError(
+          `Invalid measure for asset "${asset._id}": missing "measureName"`
         );
       }
 
       if (
-        !measurement.values ||
-        Object.keys(measurement.values || {}).length === 0
+        !measureInfo.values ||
+        Object.keys(measureInfo.values || {}).length === 0
       ) {
         throw new BadRequestError(
-          `Invalid measurement for asset "${asset._id}": missing "values"`
+          `Invalid measure for asset "${asset._id}": missing "values"`
         );
       }
 
       // @todo check if measure type exists
 
       const measure: MeasureContent = {
-        assetMeasureName: measurement.assetMeasureName ?? measurement.type,
-        deviceMeasureName: null,
-        measuredAt: measurement.measuredAt || Date.now(),
+        asset: AssetSerializer.measureContext(asset, measureInfo.measureName),
+        measuredAt: measureInfo.measuredAt || Date.now(),
         origin: {
+          measureName: measureInfo.measureName,
           id: kuid,
           type: "user",
         },
-        type: measurement.type,
-        values: measurement.values,
+        type: measureInfo.type,
+        values: measureInfo.values,
       };
 
-      this.mergeMeasures(asset, [measure]);
+      this.updateEmbeddedMeasures('asset', asset, [measure]);
 
       const [updatedAsset] = await Promise.all([
         this.sdk.document.update<AssetContent>(
@@ -327,39 +350,37 @@ export class MeasureService {
           InternalCollection.ASSETS,
           asset._id,
           { measures: asset._source.measures },
-          { refresh }
+          { refresh, source: true }
         ),
         this.sdk.document.create<MeasureContent>(
           engineId,
           InternalCollection.MEASURES,
-          { ...measure, asset: AssetSerializer.description(asset) },
+          measure,
           null,
           { refresh }
         ),
       ]);
 
-      return {
-        asset: new Asset(updatedAsset._source, updatedAsset._id),
-      };
+      return updatedAsset
     });
   }
 
   private async tryGetLinkedAsset(
     engineId: string,
     assetId: string
-  ): Promise<Asset> {
+  ): Promise<KDocument<AssetContent>> {
     if (!assetId) {
       return null;
     }
 
     try {
-      const { _source, _id } = await this.sdk.document.get<AssetContent>(
+      const asset = await this.sdk.document.get<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
         assetId
       );
 
-      return new Asset(_source, _id);
+      return asset;
     } catch (error) {
       this.app.log.error(`[${engineId}] Cannot find asset "${assetId}".`);
 
@@ -367,30 +388,26 @@ export class MeasureService {
     }
   }
 
+  /**
+   * Retrieve the measure name for the asset
+   */
   private tryFindAssetMeasureName(
-    device: Device,
-    asset: Asset,
+    device: KDocument<DeviceContent>,
+    asset: KDocument<AssetContent>,
     deviceMeasureName: string
-  ): string {
+  ): string | null {
     if (!asset) {
-      return undefined;
+      return null;
     }
 
-    const deviceLink = asset._source.deviceLinks.find(
-      (link) => link.deviceId === device._id
+    const deviceLink = asset._source.linkedDevices.find(
+      (link) => link.id === device._id
     );
 
     if (!deviceLink) {
-      this.app.log.error(
-        `The device "${device._id}" is not linked to the asset "${asset._id}"`
-      );
-      return undefined;
+      throw new BadRequestError(`Device "${device._id}" is not linked to asset "${asset._id}"`);
     }
 
-    const measureLink = deviceLink.measureNamesLinks.find(
-      (nameLink) => nameLink.deviceMeasureName === deviceMeasureName
-    );
-
-    return measureLink ? measureLink.assetMeasureName : undefined;
+    return deviceLink.measures[deviceMeasureName] || null;
   }
 }

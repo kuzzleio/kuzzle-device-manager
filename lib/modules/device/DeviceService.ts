@@ -9,7 +9,7 @@ import {
   SearchResult,
 } from "kuzzle";
 
-import { Asset, AssetContent, LinkRequest, DeviceLink } from "./../asset";
+import { AssetContent } from "./../asset";
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
 import { lock } from "../shared/utils/lock";
 import { Metadata } from "../shared";
@@ -150,7 +150,7 @@ export class DeviceService {
         InternalCollection.DEVICES,
         deviceId,
         { metadata: updatedPayload.metadata },
-        { refresh }
+        { refresh, source: true }
       );
 
       await this.app.trigger<EventDeviceUpdateAfter>(
@@ -272,7 +272,8 @@ export class DeviceService {
           this.config.adminIndex,
           InternalCollection.DEVICES,
           device._id,
-          { engineId }
+          { engineId },
+          { source: true }
         ),
 
         this.sdk.document.create<DeviceContent>(
@@ -382,13 +383,11 @@ export class DeviceService {
         );
       }
 
-      const assetDoc = await this.sdk.document.get<AssetContent>(
+      const asset = await this.sdk.document.get<AssetContent>(
         device._source.engineId,
         InternalCollection.ASSETS,
         assetId
       );
-
-      const asset = new Asset(assetDoc._source, assetDoc._id);
 
       device._source.assetId = assetId;
       asset._source.linkedDevices.push({ id: deviceId, measures: measuresNames });
@@ -398,7 +397,8 @@ export class DeviceService {
           this.config.adminIndex,
           InternalCollection.DEVICES,
           device._id,
-          { assetId }
+          { assetId },
+          { source: true }
         ),
 
         this.sdk.document.update<DeviceContent>(
@@ -412,7 +412,8 @@ export class DeviceService {
           device._source.engineId,
           InternalCollection.ASSETS,
           asset._id,
-          { linkedDevices: asset._source.linkedDevices }
+          { linkedDevices: asset._source.linkedDevices },
+          { source: true }
         ),
       ]);
 
@@ -473,7 +474,8 @@ export class DeviceService {
           this.config.adminIndex,
           InternalCollection.DEVICES,
           device._id,
-          { assetId: null }
+          { assetId: null },
+          { source: true }
         ),
 
         this.sdk.document.update<DeviceContent>(
@@ -487,7 +489,8 @@ export class DeviceService {
           device._source.engineId,
           InternalCollection.ASSETS,
           asset._id,
-          { linkedDevices }
+          { linkedDevices },
+          { source: true }
         ),
       ]);
 

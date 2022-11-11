@@ -1,7 +1,7 @@
 import { JSONObject, KDocumentContent } from "kuzzle";
 
 import { Metadata } from "../../../modules/shared";
-import { AssetDescription } from "../../../modules/asset";
+import { AssetMeasureContext } from "../../../modules/asset";
 
 /**
  * Represents the content of a measure document.
@@ -13,7 +13,7 @@ export interface MeasureContent<
   /**
    * Asset linked to the device when the measure was made
    */
-  asset?: AssetDescription<TMetadata>;
+  asset?: AssetMeasureContext<TMetadata>;
 
   /**
    * Define the origin of the measure.
@@ -55,7 +55,7 @@ export interface MeasureContent<
   };
 }
 
-export type Measurement<TMeasureValues> = {
+export type Measurement<TMeasureValues extends JSONObject = JSONObject> = {
   /**
    * Type of the measure. (e.g. "temperature")
    */

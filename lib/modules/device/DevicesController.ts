@@ -165,28 +165,10 @@ export class DevicesController {
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata", {});
-    const assetId = request.input.body.assetId;
-    const measureNamesLinks = request.getBodyArray("measureNamesLinks", []);
     const refresh = request.getRefresh();
-
-    if (assetId) {
-      this.validateMeasureNamesLinks(measureNamesLinks);
-    }
-
-    if (assetId && !assetId.length && measureNamesLinks.length === 0) {
-      throw new PluginImplementationError(
-        "A link request is given without any assetId"
-      );
-    }
 
     const device = await this.deviceService.create(model, reference, metadata, {
       engineId,
-      linkRequest: {
-        assetId,
-        deviceId: DeviceSerializer.id(model, reference),
-        engineId,
-        measureNamesLinks,
-      },
       refresh,
     });
 

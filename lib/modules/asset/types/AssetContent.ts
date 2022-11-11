@@ -19,7 +19,7 @@ export interface AssetContent<
     /**
      * Names lookup table for measures
      *
-     * Record<deviceName, name>
+     * Record<deviceName, assetName>
      *
      * @example
      *
@@ -34,7 +34,7 @@ export interface AssetContent<
 /**
  * Asset description used to contextualize each measure data point
  */
-export type AssetDescription<TMetadata extends Metadata = Metadata> = {
+export type AssetMeasureContext<TMetadata extends Metadata = Metadata> = {
   /**
    * ID of the asset
    */

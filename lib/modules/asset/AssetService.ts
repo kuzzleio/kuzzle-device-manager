@@ -21,7 +21,6 @@ import {
 import { ask } from "../shared/utils/ask";
 import { AskModelAssetGet } from "../model/types/ModelEvents";
 
-import { Asset } from "./model/Asset";
 import { AssetContent } from "./types/AssetContent";
 import { AssetSerializer } from "./model/AssetSerializer";
 import {
@@ -124,7 +123,7 @@ export class AssetService {
         InternalCollection.ASSETS,
         assetId,
         { metadata: updatedPayload.metadata },
-        { refresh }
+        { refresh, source: true }
       );
 
       const updatedAsset = new Asset(_source, _id);
