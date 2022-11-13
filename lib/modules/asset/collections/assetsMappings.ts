@@ -20,13 +20,13 @@ export const assetsMappings = {
 
     measures: {
       properties: {
-        // populated with asset models measures names
+        // populated with asset models
       },
     },
 
     linkedDevices: {
       properties: {
-        _id: { type: "keyword" },
+        id: { type: "keyword" },
         measures: {
           dynamic: "false",
           properties: {}

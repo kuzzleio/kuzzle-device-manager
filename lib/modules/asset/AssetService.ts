@@ -173,6 +173,7 @@ export class AssetService {
           metadata: { ...assetMetadata, ...metadata },
           model,
           reference,
+          linkedDevices: [],
         },
         assetId,
         { refresh }

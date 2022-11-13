@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Backend, JSONObject, Plugin } from "kuzzle";
+import { Backend, InternalError, JSONObject, NotFoundError, Plugin } from "kuzzle";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 
 import { assetsMappings } from "../modules/asset";
@@ -125,9 +125,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async createAssetsCollection(engineId: string, engineGroup: string) {
     const mappings = await this.getAssetsMappings(engineGroup);
 
-    mappings.properties.measures = await this.getMeasuresMappings({
-      withAssetDescription: false,
-    });
 
     await this.sdk.collection.create(
       engineId,
@@ -145,6 +142,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       engineGroup
     );
 
+    const measureModels = await this.getModels<MeasureModelContent>(
+      this.config.adminIndex,
+      "measure"
+    );
+
     const mappings = JSON.parse(JSON.stringify(assetsMappings));
 
     for (const model of models) {
@@ -152,6 +154,29 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         mappings.properties.metadata.properties,
         model._source.asset.metadataMappings
       );
+
+      for (const [measureName, measureType] of Object.entries(model._source.asset.measures)) {
+        const measureModel = measureModels.find(
+          (model) => model._source.measure.type === measureType
+        );
+
+        if (!measureModel) {
+          throw new InternalError(
+            `Cannot find measure "${measureType}" declared in asset "${model._source.asset.model}"`
+          );
+        }
+
+        mappings.properties.measures.properties[measureName] = {
+          properties: {
+            type: { type: "keyword" },
+            payloadUuids: { type: "keyword" },
+            measuredAt: { type: "date" },
+            values: {
+              properties: measureModel._source.measure.valuesMappings
+            }
+          }
+        };
+      }
     }
 
     return mappings;

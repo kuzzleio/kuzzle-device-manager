@@ -2,9 +2,10 @@ import { JSONObject } from "kuzzle";
 
 export type EmbeddedMeasure<TMeasureValue extends JSONObject = JSONObject> = {
   /**
-   * Measure unique identifier
+   * Payloads that created this measure.
+   * This can be used to retrieve the measure in the measures collection
    */
-  _id: string;
+  payloadUuids: string[];
 
   /**
    * Measure type

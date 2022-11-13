@@ -18,7 +18,7 @@ export interface ApiMeasurePushRequest extends MeasuresControllerRequest {
     assetId: string;
 
     measure: {
-      measureName: string;
+      name: string;
       type: string;
       measuredAt?: number;
       values: JSONObject;

@@ -104,7 +104,7 @@ export class MeasureService {
         measurements,
         payloadUuids
       );
-
+        console.log(measures)
       this.updateEmbeddedMeasures('device', device, measures);
       if (asset) {
         this.updateEmbeddedMeasures('asset', asset, measures);
@@ -143,7 +143,9 @@ export class MeasureService {
           InternalCollection.DEVICES,
           device._id,
           device._source
-        )
+        ).catch(error => {
+          throw new BadRequestError(`Cannot update device "${device._id}": ${error.message}`);
+        })
       );
 
       if (device._source.engineId) {
@@ -153,7 +155,9 @@ export class MeasureService {
             InternalCollection.DEVICES,
             device._id,
             device._source
-          )
+          ).catch(error => {
+            throw new BadRequestError(`Cannot update engine device "${device._id}": ${error.message}`);
+          })
         );
 
         promises.push(
@@ -182,7 +186,9 @@ export class MeasureService {
               InternalCollection.ASSETS,
               asset._id,
               asset._source
-            )
+            ).catch(error => {
+              throw new BadRequestError(`Cannot update asset "${asset._id}": ${error.message}`);
+            })
           );
         }
       }
@@ -233,12 +239,12 @@ export class MeasureService {
 
       const previousMeasure = digitalTwin._source.measures[measureName];
 
-      if (previousMeasure.measuredAt > measurement.measuredAt) {
+      if (previousMeasure && previousMeasure.measuredAt > measurement.measuredAt) {
         continue;
       }
 
       digitalTwin._source.measures[measureName] = {
-        _id: null,
+        payloadUuids: measurement.origin.payloadUuids,
         type: measurement.type,
         measuredAt: measurement.measuredAt,
         values: measurement.values,
@@ -313,9 +319,9 @@ export class MeasureService {
         );
       }
 
-      if (!measureInfo.measureName) {
+      if (!measureInfo.name) {
         throw new BadRequestError(
-          `Invalid measure for asset "${asset._id}": missing "measureName"`
+          `Invalid measure for asset "${asset._id}": missing "name"`
         );
       }
 
@@ -331,10 +337,10 @@ export class MeasureService {
       // @todo check if measure type exists
 
       const measure: MeasureContent = {
-        asset: AssetSerializer.measureContext(asset, measureInfo.measureName),
+        asset: AssetSerializer.measureContext(asset, measureInfo.name),
         measuredAt: measureInfo.measuredAt || Date.now(),
         origin: {
-          measureName: measureInfo.measureName,
+          measureName: measureInfo.name,
           id: kuid,
           type: "user",
         },
@@ -408,6 +414,10 @@ export class MeasureService {
       throw new BadRequestError(`Device "${device._id}" is not linked to asset "${asset._id}"`);
     }
 
-    return deviceLink.measures[deviceMeasureName] || null;
+    if (!deviceLink.measures[deviceMeasureName]) {
+      throw new BadRequestError(`Measure "${deviceMeasureName}" from device "${device._id}" does not have a name in asset "${asset._id}"`);
+    }
+
+    return deviceLink.measures[deviceMeasureName];
   }
 }

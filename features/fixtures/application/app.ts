@@ -24,6 +24,7 @@ deviceManager.models.registerAsset("commons", "container", {
   height: { type: "integer" },
 }, [
   { name: "temperatureExt", type: "temperature" },
+  { name: "temperatureInt", type: "temperature" },
   { name: "position", type: "position" },
 ]);
 

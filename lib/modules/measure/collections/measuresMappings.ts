@@ -34,18 +34,12 @@ export const measuresMappings = {
      */
     assetMeasureName: { type: "keyword" },
 
-    /**
-     * Measurement self-description.
-     */
-    unit: {
-      dynamic: "false",
-      properties: {},
-    },
     asset: {
       properties: {
         id: { type: "keyword" },
         model: { type: "keyword" },
         reference: { type: "keyword" },
+        measureName: { type: "keyword" },
         metadata: {
           properties: {
             // populated with asset metadata mappings
@@ -66,6 +60,8 @@ export const measuresMappings = {
          */
         type: { type: "keyword" },
 
+        measureName: { type: "keyword" },
+
         /**
          * Array of payloads uuids that were used to create this measure.
          */
@@ -73,6 +69,8 @@ export const measuresMappings = {
 
         // E.g. "AbeewayTemp"
         deviceModel: { type: "keyword" },
+
+        reference: { type: "keyword" },
 
         /**
          * ID of the origin. Can be:
