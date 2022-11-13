@@ -13,9 +13,12 @@ const deviceManager = new DeviceManagerPlugin();
 deviceManager.models.registerDevice(
   "DummyTempPosition",
   new DummyTempPositionDecoder(),
+  {}
 );
 
-deviceManager.models.registerDevice("DummyTemp", new DummyTempDecoder());
+deviceManager.models.registerDevice("DummyTemp", new DummyTempDecoder(), {
+  color: { type: "keyword" },
+});
 
 // Register an asset for the "commons" group
 

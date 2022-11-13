@@ -82,7 +82,8 @@ export class DeviceManagerPlugin extends Plugin {
       registerDevice: (
         model: string,
         decoder: Decoder,
-        { defaultValues = {}, metadataMappings={} }: { defaultValues?: JSONObject, metadataMappings?: JSONObject } = {}
+        metadataMappings: JSONObject,
+        { defaultValues = {} }: { defaultValues?: JSONObject } = {}
       ) => {
         this.decodersRegister.register(decoder);
 

@@ -26,6 +26,16 @@ const deviceAyseUnlinked1 = {
 };
 const deviceAyseUnlinked1Id = `${deviceAyseUnlinked1.model}-${deviceAyseUnlinked1.reference}`;
 
+const deviceAyseUnlinked2 = {
+  model: "DummyTemp",
+  reference: "unlinked2",
+  metadata: {},
+  measures: [],
+  engineId: "engine-ayse",
+  assetId: null,
+};
+const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
+
 const assetAyseLinked = {
   model: "container",
   reference: "linked1",
@@ -64,6 +74,8 @@ module.exports = {
       deviceDetached1,
       { index: { _id: deviceAyseUnlinked1Id } },
       deviceAyseUnlinked1,
+      { index: { _id: deviceAyseUnlinked2Id } },
+      deviceAyseUnlinked2,
     ],
   },
 
@@ -74,6 +86,8 @@ module.exports = {
       deviceAyseLinked1,
       { index: { _id: deviceAyseUnlinked1Id } },
       deviceAyseUnlinked1,
+      { index: { _id: deviceAyseUnlinked2Id } },
+      deviceAyseUnlinked2,
     ],
     assets: [
       { index: { _id: assetAyseLinkedId } },

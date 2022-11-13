@@ -389,6 +389,19 @@ export class DeviceService {
         assetId
       );
 
+      const requestedMeasuresNames = Object.values(measuresNames);
+      for (const link of asset._source.linkedDevices) {
+        const existingMeasureNames = Object.values(link.measures);
+
+        for (const requestedMeasuresName of requestedMeasuresNames) {
+          if (existingMeasureNames.includes(requestedMeasuresName)) {
+            throw new BadRequestError(
+              `Measure name "${requestedMeasuresName}" is already used by another device.`
+            );
+          }
+        }
+      }
+
       device._source.assetId = assetId;
       asset._source.linkedDevices.push({
         id: deviceId,

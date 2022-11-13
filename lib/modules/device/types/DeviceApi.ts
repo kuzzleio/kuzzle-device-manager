@@ -1,6 +1,6 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle";
 
-import { DeviceLink, AssetContent } from "../../asset";
+import { AssetContent } from "../../asset";
 import { Metadata } from "../../shared";
 
 import { DeviceContent } from "./DeviceContent";
@@ -42,10 +42,6 @@ export interface ApiDeviceCreateRequest extends DevicesControllerRequest {
     reference: string;
 
     metadata?: Metadata;
-
-    assetId?: string;
-
-    measureNamesLinks?: DeviceLink["measureNamesLinks"];
   };
 }
 export type ApiDeviceCreateResult = KDocument<DeviceContent>;

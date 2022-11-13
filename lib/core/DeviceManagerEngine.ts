@@ -123,8 +123,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async createAssetsCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getAssetsMappings(engineGroup);
-
+    const mappings = await this.getDigitalTwinMappings<AssetModelContent>("asset", engineGroup);
 
     await this.sdk.collection.create(
       engineId,
@@ -135,10 +134,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.ASSETS;
   }
 
-  private async getAssetsMappings(engineGroup: string) {
-    const models = await this.getModels<AssetModelContent>(
+  private async getDigitalTwinMappings<
+  TDigitalTwinModelContent extends AssetModelContent | DeviceModelContent
+>(digitalTwinType: 'asset' | 'device', engineGroup?: string) {
+    const models = await this.getModels<TDigitalTwinModelContent>(
       this.config.adminIndex,
-      "asset",
+      digitalTwinType,
       engineGroup
     );
 
@@ -152,17 +153,17 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     for (const model of models) {
       mappings.properties.metadata.properties = _.merge(
         mappings.properties.metadata.properties,
-        model._source.asset.metadataMappings
+        model._source[digitalTwinType].metadataMappings
       );
 
-      for (const [measureName, measureType] of Object.entries(model._source.asset.measures)) {
+      for (const [measureName, measureType] of Object.entries(model._source[digitalTwinType].measures)) {
         const measureModel = measureModels.find(
           (model) => model._source.measure.type === measureType
         );
 
         if (!measureModel) {
           throw new InternalError(
-            `Cannot find measure "${measureType}" declared in asset "${model._source.asset.model}"`
+            `Cannot find measure "${measureType}" declared in ${[digitalTwinType]} "${model._source[digitalTwinType].model}"`
           );
         }
 
@@ -183,23 +184,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async createDevicesCollection(engineId: string) {
-    const models = await this.getModels<DeviceModelContent>(
-      this.config.adminIndex,
-      "device"
-    );
-
-    const mappings = JSON.parse(JSON.stringify(devicesMappings));
-
-    for (const model of models) {
-      mappings.properties.metadata.properties = _.merge(
-        mappings.properties.metadata.properties,
-        model._source.device.metadataMappings
-      );
-    }
-
-    mappings.properties.measures = await this.getMeasuresMappings({
-      withAssetDescription: false,
-    });
+    const mappings = await this.getDigitalTwinMappings<DeviceModelContent>("device");
 
     await this.sdk.collection.create(
       engineId,
@@ -211,10 +196,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async createMeasuresCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getMeasuresMappings({
-      engineGroup,
-      withAssetDescription: true,
-    });
+    const mappings = await this.getMeasuresMappings(engineGroup);
 
     await this.sdk.collection.create(
       engineId,
@@ -225,21 +207,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.MEASURES;
   }
 
-  /**
-   * engineGroup should be specified if the measures needs to be contextualized
-   * with the asset description.
-   * It's not used when adding the measures mappings inside the devices or assets collections
-   */
-  private async getMeasuresMappings({
-    engineGroup,
-    withAssetDescription,
-  }: {
-    engineGroup?: string;
-    withAssetDescription: boolean;
-  }) {
+  private async getMeasuresMappings(engineGroup: string) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.adminIndex,
-      "measure"
+      "measure",
+      engineGroup
     );
 
     const mappings = JSON.parse(JSON.stringify(measuresMappings));
@@ -251,14 +223,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       );
     }
 
-    if (withAssetDescription) {
-      // assetsMappings is already declared
-      const _assetsMappings = await this.getAssetsMappings(engineGroup);
-      mappings.properties.asset.properties.metadata.properties =
-        _assetsMappings.properties.metadata.properties;
-    } else {
-      mappings.properties.asset = undefined;
-    }
+    const _assetsMappings = await this.getDigitalTwinMappings("asset", engineGroup);
+    mappings.properties.asset.properties.metadata.properties =
+      _assetsMappings.properties.metadata.properties;
 
     return mappings;
   }

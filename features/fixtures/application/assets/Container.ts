@@ -16,6 +16,7 @@ interface ContainerMetadata extends Metadata {
   };
 }
 
+// @todo fix this
 type ContainerMeasurements = TemperatureMeasurement["values"] &
   HumidityMeasurement["values"] &
   PositionMeasurement["values"];
