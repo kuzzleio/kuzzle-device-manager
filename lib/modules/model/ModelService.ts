@@ -127,11 +127,10 @@ export class ModelService {
 
   async writeMeasure(
     type: string,
-    unit: MeasureUnit,
     valuesMappings: JSONObject
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
-      measure: { type, unit, valuesMappings },
+      measure: { type, valuesMappings },
       type: "measure",
     };
 

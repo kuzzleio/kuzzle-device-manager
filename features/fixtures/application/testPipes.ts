@@ -1,11 +1,11 @@
 import _ from "lodash";
-import { Backend } from "kuzzle";
+import { Backend, KDocument } from "kuzzle";
 
 import {
-  Asset,
-  Device,
   MeasureContent,
   EventMeasureProcessBefore,
+  AssetContent,
+  DeviceContent
 } from "../../../index";
 
 function checkEventWithDocument(app: Backend, event: string) {
@@ -26,8 +26,8 @@ export function registerTestPipes(app: Backend) {
       device,
       measures,
     }: {
-      asset: Asset;
-      device: Device;
+      asset: KDocument<AssetContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     }) => {
       if (device._id !== "DummyTemp-enrich_me_master") {

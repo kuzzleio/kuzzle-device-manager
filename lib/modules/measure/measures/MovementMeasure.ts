@@ -2,7 +2,7 @@ import { MeasureDefinition } from "./../types/MeasureDefinition";
 
 /* eslint-disable sort-keys */
 
-export type MovementMeasureValues = {
+export type MovementMeasurement = {
   movement: boolean;
 };
 

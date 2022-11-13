@@ -11,13 +11,6 @@ export const modelsMappings: CollectionMappings = {
     measure: {
       properties: {
         type: { type: "keyword" },
-        unit: {
-          properties: {
-            name: { type: "keyword" },
-            sign: { type: "keyword" },
-            type: { type: "keyword" },
-          },
-        },
         valuesMappings: {
           dynamic: "false",
           properties: {},

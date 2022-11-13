@@ -2,7 +2,7 @@ import { MeasureDefinition } from "./../types/MeasureDefinition";
 
 /* eslint-disable sort-keys */
 
-export type PositionMeasureValues = {
+export type PositionMeasurement = {
   position: {
     lat: number;
     lon: number;

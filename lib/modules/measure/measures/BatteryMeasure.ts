@@ -2,7 +2,7 @@ import { MeasureDefinition } from "./../types/MeasureDefinition";
 
 /* eslint-disable sort-keys */
 
-export type BatteryMeasureValues = {
+export type BatteryMeasurement = {
   battery: number;
 };
 

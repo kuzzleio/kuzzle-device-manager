@@ -2,9 +2,9 @@ import { JSONObject, PreconditionError } from "kuzzle";
 
 import {
   Decoder,
-  BatteryMeasureValues,
-  PositionMeasureValues,
-  TemperatureMeasureValues,
+  BatteryMeasurement,
+  PositionMeasurement,
+  TemperatureMeasurement,
   DecodedPayload,
 } from "../../../../index";
 
@@ -26,7 +26,7 @@ export class DummyTempPositionDecoder extends Decoder {
   async decode(payload: JSONObject): Promise<DecodedPayload<Decoder>> {
     const decodedPayload = new DecodedPayload<DummyTempPositionDecoder>(this);
 
-    decodedPayload.addMeasurement<TemperatureMeasureValues>(
+    decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,
       "temperature",
       {
@@ -36,7 +36,7 @@ export class DummyTempPositionDecoder extends Decoder {
       }
     );
 
-    decodedPayload.addMeasurement<PositionMeasureValues>(
+    decodedPayload.addMeasurement<PositionMeasurement>(
       payload.deviceEUI,
       "position",
       {
@@ -52,7 +52,7 @@ export class DummyTempPositionDecoder extends Decoder {
       }
     );
 
-    decodedPayload.addMeasurement<BatteryMeasureValues>(
+    decodedPayload.addMeasurement<BatteryMeasurement>(
       payload.deviceEUI,
       "battery",
       {

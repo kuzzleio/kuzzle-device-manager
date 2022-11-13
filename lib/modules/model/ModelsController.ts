@@ -106,12 +106,10 @@ export class ModelsController {
     request: KuzzleRequest
   ): Promise<ApiModelCreateMeasureResult> {
     const type = request.getBodyString("type");
-    const unit = request.getBodyObject("unit", {}) as MeasureUnit;
     const valuesMappings = request.getBodyObject("valuesMappings");
 
     const measureModel = await this.modelService.writeMeasure(
       type,
-      unit,
       valuesMappings
     );
 
