@@ -1,6 +1,5 @@
 import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
-import { MeasureUnit } from "../measure";
 import { ModelService } from "./ModelService";
 import {
   ApiModelCreateAssetResult,
@@ -90,7 +89,7 @@ export class ModelsController {
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
     const defaultValues = request.getBodyObject("defaultValues", {});
-    const measures = request.getBodyObject("measures", {});
+    const measures = request.getBodyObject("measures");
 
     const deviceModel = await this.modelService.writeDevice(
       model,

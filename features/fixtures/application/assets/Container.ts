@@ -27,7 +27,7 @@ interface ContainerAssetContent
 }
 
 // This function is never called and only exists to make sure the types are correct
-function neverCalled () {
+function neverCalled() {
   let container: ContainerAssetContent;
 
   container.metadata.height = 40;

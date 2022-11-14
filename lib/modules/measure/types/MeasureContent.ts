@@ -9,7 +9,8 @@ import { AssetMeasureContext } from "../../../modules/asset";
 export interface MeasureContent<
   TMeasureValues extends JSONObject = JSONObject,
   TMetadata extends Metadata = Metadata
-> extends Measurement<TMeasureValues>, KDocumentContent {
+> extends Measurement<TMeasureValues>,
+    KDocumentContent {
   /**
    * Asset linked to the device when the measure was made
    */
@@ -59,24 +60,25 @@ export type Measurement<TMeasureValues extends JSONObject = JSONObject> = {
   /**
    * Type of the measure. (e.g. "temperature")
    */
-   type: string;
+  type: string;
 
-   /**
-    * Micro Timestamp of the measurement time.
-    */
-   measuredAt: number;
+  /**
+   * Micro Timestamp of the measurement time.
+   */
+  measuredAt: number;
 
-   /**
-    * Property containing the actual measurement.
-    *
-    * This should be specialized by child interfaces.
-    */
-   values: TMeasureValues;
-}
+  /**
+   * Property containing the actual measurement.
+   *
+   * This should be specialized by child interfaces.
+   */
+  values: TMeasureValues;
+};
 
 /**
  * Used in the DecodedPayload to store a decoded measure
  */
-export type DecodedMeasurement<TMeasureValues extends JSONObject = JSONObject> = {
-  measureName: string
-} & Measurement<TMeasureValues>;
+export type DecodedMeasurement<TMeasureValues extends JSONObject = JSONObject> =
+  {
+    measureName: string;
+  } & Measurement<TMeasureValues>;

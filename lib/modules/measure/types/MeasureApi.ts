@@ -1,7 +1,6 @@
 import { JSONObject, KDocument } from "kuzzle";
-import { AssetContent } from "lib/modules/asset";
 
-import { MeasuresController } from "../MeasuresController";
+import { AssetContent } from "../../../modules/asset";
 
 interface MeasuresControllerRequest {
   controller: "device-manager/measures";
@@ -26,5 +25,5 @@ export interface ApiMeasurePushRequest extends MeasuresControllerRequest {
   };
 }
 export type ApiMeasurePushResult = {
-  asset: KDocument<AssetContent>
+  asset: KDocument<AssetContent>;
 };

@@ -1,4 +1,8 @@
-import { DigitalTwinContent, DigitalTwinMeasures, Metadata } from "../../shared";
+import {
+  DigitalTwinContent,
+  DigitalTwinMeasures,
+  Metadata,
+} from "../../shared";
 
 /**
  * Asset document content

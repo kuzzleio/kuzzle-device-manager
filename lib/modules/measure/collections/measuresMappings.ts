@@ -24,16 +24,6 @@ export const measuresMappings = {
      */
     measuredAt: { type: "date" },
 
-    /**
-     * Name given by the decoder to the measure.
-     */
-    deviceMeasureName: { type: "keyword" },
-
-    /**
-     * Name given by the `deviceLink` of the linked asset.
-     */
-    assetMeasureName: { type: "keyword" },
-
     asset: {
       properties: {
         id: { type: "keyword" },

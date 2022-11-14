@@ -21,17 +21,20 @@ export class AssetSerializer {
   /**
    * Get asset description to contextualize measure data point
    */
-  static measureContext(asset: KDocument<AssetContent>, measureName: string): AssetMeasureContext {
+  static measureContext(
+    asset: KDocument<AssetContent>,
+    measureName: string
+  ): AssetMeasureContext {
     if (!asset) {
       return undefined;
     }
 
     return {
       id: asset._id,
+      measureName,
       metadata: asset._source.metadata,
       model: asset._source.model,
       reference: asset._source.reference,
-      measureName
     };
   }
 }

@@ -21,4 +21,4 @@ export type EmbeddedMeasure<TMeasureValue extends JSONObject = JSONObject> = {
    * An object containing the measure values.
    */
   values: TMeasureValue;
-}
+};

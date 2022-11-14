@@ -1,6 +1,5 @@
 import { JSONObject, PluginContext } from "kuzzle";
 
-import { MeasureUnit } from "../../modules/measure";
 import { ModelSerializer } from "../../modules/model";
 import {
   AssetModelContent,

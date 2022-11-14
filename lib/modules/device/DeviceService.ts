@@ -62,12 +62,12 @@ export class DeviceService {
     let device: KDocument<DeviceContent> = {
       _id: DeviceSerializer.id(model, reference),
       _source: {
-        model,
-        reference,
         measures: {},
         metadata,
-      }
-    }
+        model,
+        reference,
+      },
+    };
 
     return lock(`device:create:${device._id}`, async () => {
       const deviceModel = await ask<AskModelDeviceGet>(
@@ -121,7 +121,10 @@ export class DeviceService {
     });
   }
 
-  public async get(index: string, deviceId: string): Promise<KDocument<DeviceContent>> {
+  public async get(
+    index: string,
+    deviceId: string
+  ): Promise<KDocument<DeviceContent>> {
     const device = await this.sdk.document.get<DeviceContent>(
       index,
       InternalCollection.DEVICES,
@@ -137,32 +140,35 @@ export class DeviceService {
     metadata: Metadata,
     { refresh }: { refresh: any }
   ): Promise<KDocument<DeviceContent>> {
-    return lock<KDocument<DeviceContent>>(`device:update:${deviceId}`, async () => {
-      const device = await this.get(engineId, deviceId);
+    return lock<KDocument<DeviceContent>>(
+      `device:update:${deviceId}`,
+      async () => {
+        const device = await this.get(engineId, deviceId);
 
-      const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
-        "device-manager:device:update:before",
-        { device, metadata }
-      );
+        const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
+          "device-manager:device:update:before",
+          { device, metadata }
+        );
 
-      const updatedDevice = await this.sdk.document.update<DeviceContent>(
-        engineId,
-        InternalCollection.DEVICES,
-        deviceId,
-        { metadata: updatedPayload.metadata },
-        { refresh, source: true }
-      );
+        const updatedDevice = await this.sdk.document.update<DeviceContent>(
+          engineId,
+          InternalCollection.DEVICES,
+          deviceId,
+          { metadata: updatedPayload.metadata },
+          { refresh, source: true }
+        );
 
-      await this.app.trigger<EventDeviceUpdateAfter>(
-        "device-manager:device:update:after",
-        {
-          device: updatedDevice,
-          metadata: updatedPayload.metadata,
-        }
-      );
+        await this.app.trigger<EventDeviceUpdateAfter>(
+          "device-manager:device:update:after",
+          {
+            device: updatedDevice,
+            metadata: updatedPayload.metadata,
+          }
+        );
 
-      return updatedDevice;
-    });
+        return updatedDevice;
+      }
+    );
   }
 
   public async delete(
@@ -354,10 +360,6 @@ export class DeviceService {
 
   /**
    * Link a device to an asset.
-   * If a match between `deviceMeasureName`s and `assetMeasureName`
-   * isn't specified, it will be auto generated with the
-   * `deviceMeasureNames` of the associated decoder
-   *
    */
   async linkAsset(
     engineId: string,
@@ -365,7 +367,10 @@ export class DeviceService {
     assetId: string,
     measuresNames: Record<string, string>,
     { refresh }: { refresh?: any } = {}
-  ): Promise<{ asset: KDocument<AssetContent>; device: KDocument<DeviceContent> }> {
+  ): Promise<{
+    asset: KDocument<AssetContent>;
+    device: KDocument<DeviceContent>;
+  }> {
     return lock(`device:linkAsset:${deviceId}`, async () => {
       const device = await this.get(this.config.adminIndex, deviceId);
 
@@ -405,7 +410,7 @@ export class DeviceService {
       device._source.assetId = assetId;
       asset._source.linkedDevices.push({
         id: deviceId,
-        measures: measuresNames
+        measures: measuresNames,
       });
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
@@ -463,7 +468,10 @@ export class DeviceService {
   async unlinkAsset(
     deviceId: string,
     { refresh }: { refresh?: any } = {}
-  ): Promise<{ asset: KDocument<AssetContent>; device: KDocument<DeviceContent> }> {
+  ): Promise<{
+    asset: KDocument<AssetContent>;
+    device: KDocument<DeviceContent>;
+  }> {
     return lock(`device:unlinkAsset:${deviceId}`, async () => {
       const device = await this.get(this.config.adminIndex, deviceId);
 

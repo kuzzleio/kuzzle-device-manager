@@ -1,4 +1,8 @@
-import { DigitalTwinContent, DigitalTwinMeasures, Metadata } from "../../shared";
+import {
+  DigitalTwinContent,
+  DigitalTwinMeasures,
+  Metadata,
+} from "../../shared";
 
 /**
  * Device document content

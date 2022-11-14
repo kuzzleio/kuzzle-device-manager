@@ -1,10 +1,4 @@
-import {
-  BadRequestError,
-  ControllerDefinition,
-  JSONObject,
-  KuzzleRequest,
-  PluginImplementationError,
-} from "kuzzle";
+import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
 

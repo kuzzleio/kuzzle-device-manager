@@ -1,4 +1,10 @@
-import { Backend, JSONObject, KDocument, KuzzleRequest, PluginContext } from "kuzzle";
+import {
+  Backend,
+  JSONObject,
+  KDocument,
+  KuzzleRequest,
+  PluginContext,
+} from "kuzzle";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -119,11 +125,14 @@ export class PayloadService {
       refresh?: any;
     } = {}
   ) {
-    const { successes: devices, errors } = await this.sdk.document.mGet<DeviceContent>(
-      this.config.adminIndex,
-      InternalCollection.DEVICES,
-      references.map((reference) => DeviceSerializer.id(deviceModel, reference))
-    );
+    const { successes: devices, errors } =
+      await this.sdk.document.mGet<DeviceContent>(
+        this.config.adminIndex,
+        InternalCollection.DEVICES,
+        references.map((reference) =>
+          DeviceSerializer.id(deviceModel, reference)
+        )
+      );
 
     // If we have unknown devices, let's check if we should register them
     if (errors.length > 0) {
@@ -161,17 +170,17 @@ export class PayloadService {
       const reference = rest.join("-");
 
       const body: DeviceContent = {
-        measures: {},
-        model: deviceModel,
-        reference,
-        metadata: {},
         assetId: null,
         engineId: null,
+        measures: {},
+        metadata: {},
+        model: deviceModel,
+        reference,
       };
 
       return {
         _id: DeviceSerializer.id(deviceModel, reference),
-        body
+        body,
       };
     });
 

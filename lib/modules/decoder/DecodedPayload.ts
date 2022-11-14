@@ -54,7 +54,7 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
     const decodedMeasurement: DecodedMeasurement<TMeasureValues> = {
       measureName,
       ...measurement,
-    }
+    };
 
     this.measurementsByDevice[deviceReference].push(decodedMeasurement);
   }

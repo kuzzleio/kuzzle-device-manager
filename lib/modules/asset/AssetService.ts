@@ -94,7 +94,10 @@ export class AssetService {
     return measures.hits;
   }
 
-  public async get(engineId: string, assetId: string): Promise<KDocument<AssetContent>> {
+  public async get(
+    engineId: string,
+    assetId: string
+  ): Promise<KDocument<AssetContent>> {
     const asset = await this.sdk.document.get<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
@@ -170,10 +173,10 @@ export class AssetService {
         engineId,
         InternalCollection.ASSETS,
         {
+          linkedDevices: [],
           metadata: { ...assetMetadata, ...metadata },
           model,
           reference,
-          linkedDevices: [],
         },
         assetId,
         { refresh }

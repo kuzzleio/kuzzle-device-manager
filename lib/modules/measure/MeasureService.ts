@@ -25,10 +25,7 @@ import {
   TenantEventMeasureProcessAfter,
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
-import {
-  DecodedMeasurement,
-  MeasureContent,
-} from "./types/MeasureContent";
+import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import { ApiMeasurePushRequest } from "./types/MeasureApi";
 
 export class MeasureService {
@@ -104,10 +101,10 @@ export class MeasureService {
         measurements,
         payloadUuids
       );
-        console.log(measures)
-      this.updateEmbeddedMeasures('device', device, measures);
+
+      this.updateEmbeddedMeasures("device", device, measures);
       if (asset) {
-        this.updateEmbeddedMeasures('asset', asset, measures);
+        this.updateEmbeddedMeasures("asset", asset, measures);
       }
 
       /**
@@ -117,47 +114,55 @@ export class MeasureService {
        *
        * Only measures documents can be modified
        */
-      let afterEnrichment =
-        await this.app.trigger<EventMeasureProcessBefore>(
-          "device-manager:measures:process:before",
-          { asset, device, measures }
-        );
+      let afterEnrichment = await this.app.trigger<EventMeasureProcessBefore>(
+        "device-manager:measures:process:before",
+        { asset, device, measures }
+      );
 
       if (device._source.engineId) {
-        afterEnrichment = await this.app.trigger<TenantEventMeasureProcessBefore>(
-          `engine:${device._source.engineId}:device-manager:measures:process:before`,
-          { asset, device, measures: afterEnrichment.measures }
-        );
+        afterEnrichment =
+          await this.app.trigger<TenantEventMeasureProcessBefore>(
+            `engine:${device._source.engineId}:device-manager:measures:process:before`,
+            { asset, device, measures: afterEnrichment.measures }
+          );
       }
 
-      this.updateEmbeddedMeasures('device', device, afterEnrichment.measures);
+      this.updateEmbeddedMeasures("device", device, afterEnrichment.measures);
       if (asset) {
-        this.updateEmbeddedMeasures('asset', asset, afterEnrichment.measures);
+        this.updateEmbeddedMeasures("asset", asset, afterEnrichment.measures);
       }
 
       const promises = [];
 
       promises.push(
-        this.sdk.document.update<DeviceContent>(
-          this.config.adminIndex,
-          InternalCollection.DEVICES,
-          device._id,
-          device._source
-        ).catch(error => {
-          throw new BadRequestError(`Cannot update device "${device._id}": ${error.message}`);
-        })
+        this.sdk.document
+          .update<DeviceContent>(
+            this.config.adminIndex,
+            InternalCollection.DEVICES,
+            device._id,
+            device._source
+          )
+          .catch((error) => {
+            throw new BadRequestError(
+              `Cannot update device "${device._id}": ${error.message}`
+            );
+          })
       );
 
       if (device._source.engineId) {
         promises.push(
-          this.sdk.document.update<DeviceContent>(
-            device._source.engineId,
-            InternalCollection.DEVICES,
-            device._id,
-            device._source
-          ).catch(error => {
-            throw new BadRequestError(`Cannot update engine device "${device._id}": ${error.message}`);
-          })
+          this.sdk.document
+            .update<DeviceContent>(
+              device._source.engineId,
+              InternalCollection.DEVICES,
+              device._id,
+              device._source
+            )
+            .catch((error) => {
+              throw new BadRequestError(
+                `Cannot update engine device "${device._id}": ${error.message}`
+              );
+            })
         );
 
         promises.push(
@@ -181,14 +186,18 @@ export class MeasureService {
           // to the same asset and get processed at the same time
           // asset measures update could be protected by mutex
           promises.push(
-            this.sdk.document.update<AssetContent>(
-              device._source.engineId,
-              InternalCollection.ASSETS,
-              asset._id,
-              asset._source
-            ).catch(error => {
-              throw new BadRequestError(`Cannot update asset "${asset._id}": ${error.message}`);
-            })
+            this.sdk.document
+              .update<AssetContent>(
+                device._source.engineId,
+                InternalCollection.ASSETS,
+                asset._id,
+                asset._source
+              )
+              .catch((error) => {
+                throw new BadRequestError(
+                  `Cannot update asset "${asset._id}": ${error.message}`
+                );
+              })
           );
         }
       }
@@ -224,7 +233,7 @@ export class MeasureService {
    * Updates embedded measures in a digital twin
    */
   private updateEmbeddedMeasures(
-    type: 'asset' | 'device', // this is why I hate typescript, there is no way to know types at runtime
+    type: "asset" | "device", // this is why I hate typescript, there is no way to know types at runtime
     digitalTwin: KDocument<DigitalTwinContent>,
     measurements: MeasureContent[]
   ) {
@@ -233,20 +242,24 @@ export class MeasureService {
     }
 
     for (const measurement of measurements) {
-      const measureName = type === 'asset'
-        ? measurement.asset.measureName
-        : measurement.origin.measureName;
+      const measureName =
+        type === "asset"
+          ? measurement.asset.measureName
+          : measurement.origin.measureName;
 
       const previousMeasure = digitalTwin._source.measures[measureName];
 
-      if (previousMeasure && previousMeasure.measuredAt > measurement.measuredAt) {
+      if (
+        previousMeasure &&
+        previousMeasure.measuredAt > measurement.measuredAt
+      ) {
         continue;
       }
 
       digitalTwin._source.measures[measureName] = {
+        measuredAt: measurement.measuredAt,
         payloadUuids: measurement.origin.payloadUuids,
         type: measurement.type,
-        measuredAt: measurement.measuredAt,
         values: measurement.values,
       };
     }
@@ -275,12 +288,12 @@ export class MeasureService {
         asset: AssetSerializer.measureContext(asset, assetMeasureName),
         measuredAt: measurement.measuredAt,
         origin: {
-          measureName: measurement.measureName,
-          type: "device",
-          payloadUuids,
           deviceModel: device._source.model,
-          reference: device._source.reference,
           id: device._id,
+          measureName: measurement.measureName,
+          payloadUuids,
+          reference: device._source.reference,
+          type: "device",
         },
         type: measurement.type,
         values: measurement.values,
@@ -340,15 +353,15 @@ export class MeasureService {
         asset: AssetSerializer.measureContext(asset, measureInfo.name),
         measuredAt: measureInfo.measuredAt || Date.now(),
         origin: {
-          measureName: measureInfo.name,
           id: kuid,
+          measureName: measureInfo.name,
           type: "user",
         },
         type: measureInfo.type,
         values: measureInfo.values,
       };
 
-      this.updateEmbeddedMeasures('asset', asset, [measure]);
+      this.updateEmbeddedMeasures("asset", asset, [measure]);
 
       const [updatedAsset] = await Promise.all([
         this.sdk.document.update<AssetContent>(
@@ -367,7 +380,7 @@ export class MeasureService {
         ),
       ]);
 
-      return updatedAsset
+      return updatedAsset;
     });
   }
 
@@ -411,11 +424,15 @@ export class MeasureService {
     );
 
     if (!deviceLink) {
-      throw new BadRequestError(`Device "${device._id}" is not linked to asset "${asset._id}"`);
+      throw new BadRequestError(
+        `Device "${device._id}" is not linked to asset "${asset._id}"`
+      );
     }
 
     if (!deviceLink.measures[deviceMeasureName]) {
-      throw new BadRequestError(`Measure "${deviceMeasureName}" from device "${device._id}" does not have a name in asset "${asset._id}"`);
+      throw new BadRequestError(
+        `Measure "${deviceMeasureName}" from device "${device._id}" does not have a name in asset "${asset._id}"`
+      );
     }
 
     return deviceLink.measures[deviceMeasureName];

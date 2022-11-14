@@ -3,7 +3,7 @@ import { JSONObject, PreconditionError } from "kuzzle";
 import {
   Decoder,
   DecodedPayload,
-  TemperatureMeasurement
+  TemperatureMeasurement,
 } from "../../../../index";
 
 export class DummyTempDecoder extends Decoder {

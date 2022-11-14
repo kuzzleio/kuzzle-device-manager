@@ -29,7 +29,7 @@ export const assetsMappings = {
         id: { type: "keyword" },
         measures: {
           dynamic: "false",
-          properties: {}
+          properties: {},
         },
       },
     },

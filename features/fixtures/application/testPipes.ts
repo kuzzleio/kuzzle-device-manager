@@ -5,7 +5,7 @@ import {
   MeasureContent,
   EventMeasureProcessBefore,
   AssetContent,
-  DeviceContent
+  DeviceContent,
 } from "../../../index";
 
 function checkEventWithDocument(app: Backend, event: string) {
@@ -35,7 +35,9 @@ export function registerTestPipes(app: Backend) {
       }
 
       for (const measure of measures) {
-        measure.origin.id += `+${asset?._id}`;
+        if (measure.values.temperature) {
+          measure.values.temperature *= 2;
+        }
       }
 
       return { asset, device, measures };

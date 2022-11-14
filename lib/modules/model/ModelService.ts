@@ -6,7 +6,6 @@ import {
   DeviceManagerPlugin,
   InternalCollection,
 } from "../../core";
-import { MeasureUnit } from "../measure";
 import { ask, onAsk } from "../shared/utils/ask";
 
 import {
@@ -49,7 +48,7 @@ export class ModelService {
     model: string,
     metadataMappings: JSONObject,
     defaultValues: JSONObject,
-    measures: JSONObject,
+    measures: JSONObject
   ): Promise<KDocument<AssetModelContent>> {
     const modelContent: AssetModelContent = {
       asset: { defaultValues, measures, metadataMappings, model },
@@ -102,7 +101,7 @@ export class ModelService {
     model: string,
     metadataMappings: JSONObject,
     defaultValues: JSONObject,
-    measures: JSONObject,
+    measures: JSONObject
   ): Promise<KDocument<DeviceModelContent>> {
     const modelContent: DeviceModelContent = {
       device: { defaultValues, measures, metadataMappings, model },
@@ -212,7 +211,7 @@ export class ModelService {
     const query = {
       and: [{ equals: { type: "measure" } }],
     };
-    const sort = { "measure.name": "asc" };
+    const sort = { "measure.type": "asc" };
 
     const result = await this.sdk.document.search<MeasureModelContent>(
       this.config.adminIndex,

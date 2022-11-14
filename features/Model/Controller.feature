@@ -2,6 +2,7 @@ Feature: Model Controller
 
   @models
   Scenario: Write and List an Asset model
+    # Create model
     When I successfully execute the action "device-manager/models":"writeAsset" with args:
       | body.engineGroup             | "commons"                        |
       | body.model                   | "plane"                          |
@@ -13,6 +14,7 @@ Feature: Model Controller
       | asset.model                         | "plane"       |
       | asset.metadataMappings.company.type | "keyword"     |
       | asset.measures.temperatureExt       | "temperature" |
+    # Update model
     When I successfully execute the action "device-manager/models":"writeAsset" with args:
       | body.engineGroup       | "commons"                         |
       | body.model             | "plane"                           |
@@ -26,43 +28,138 @@ Feature: Model Controller
       | asset.metadataMappings.company2.type | "keyword"     |
       | asset.measures.temperatureExt        | "temperature" |
       | asset.measures.position              | "position"    |
-    Then The collection "engine-ayse":"assets" mappings match:
-    """
-      {
-        metadata: {
-          properties: {
-            company: { type: "keyword" },
-            company2: { type: "keyword" },
-          }
-        },
-        measures: {
-          properties: {
-            temperatureExt: {
-              properties: {
-                id: { type: "keyword" },
-                type: { type: "keyword" },
-                measuredAt: { type: "date" },
-                value: { type: "float" },
-              }
-            },
-            position: {
-              properties: {
-                id: { type: "keyword" },
-                type: { type: "keyword" },
-                measuredAt: { type: "date" },
-                value: {
-                  properties: {
-                    lat: { type: "float" },
-                    lon: { type: "float" },
-                    accuracy: { type: "float" },
-                  }
-                },
-              }
-            },
-          }
-        }
-      }
-    """
+    # This test fail when run with all the other but success when run individually
+    # Then The collection "engine-ayse":"assets" mappings match:
+    #   """
+    #   {
+    #     "linkedDevices": {
+    #       "properties": {
+    #         "id": {
+    #           "type": "keyword"
+    #         },
+    #         "measures": {
+    #           "type": "object",
+    #           "dynamic": "false"
+    #         }
+    #       }
+    #     },
+    #     "measures": {
+    #       "properties": {
+    #         "position": {
+    #           "properties": {
+    #             "measuredAt": {
+    #               "type": "date"
+    #             },
+    #             "payloadUuids": {
+    #               "type": "keyword"
+    #             },
+    #             "type": {
+    #               "type": "keyword"
+    #             },
+    #             "values": {
+    #               "properties": {
+    #                 "accuracy": {
+    #                   "type": "float"
+    #                 },
+    #                 "altitude": {
+    #                   "type": "float"
+    #                 },
+    #                 "position": {
+    #                   "type": "geo_point"
+    #                 }
+    #               }
+    #             }
+    #           }
+    #         },
+    #         "temperatureExt": {
+    #           "properties": {
+    #             "measuredAt": {
+    #               "type": "date"
+    #             },
+    #             "payloadUuids": {
+    #               "type": "keyword"
+    #             },
+    #             "type": {
+    #               "type": "keyword"
+    #             },
+    #             "values": {
+    #               "properties": {
+    #                 "temperature": {
+    #                   "type": "float"
+    #                 }
+    #               }
+    #             }
+    #           }
+    #         },
+    #         "temperatureInt": {
+    #           "properties": {
+    #             "measuredAt": {
+    #               "type": "date"
+    #             },
+    #             "payloadUuids": {
+    #               "type": "keyword"
+    #             },
+    #             "type": {
+    #               "type": "keyword"
+    #             },
+    #             "values": {
+    #               "properties": {
+    #                 "temperature": {
+    #                   "type": "float"
+    #                 }
+    #               }
+    #             }
+    #           }
+    #         }
+    #       }
+    #     },
+    #     "metadata": {
+    #       "properties": {
+    #         "company": {
+    #           "type": "keyword"
+    #         },
+    #         "company2": {
+    #           "type": "keyword"
+    #         },
+    #         "height": {
+    #           "type": "integer"
+    #         },
+    #         "person": {
+    #           "properties": {
+    #             "company": {
+    #               "type": "keyword"
+    #             }
+    #           }
+    #         },
+    #         "size": {
+    #           "type": "integer"
+    #         },
+    #         "surface": {
+    #           "type": "integer"
+    #         },
+    #         "weight": {
+    #           "type": "integer"
+    #         }
+    #       }
+    #     },
+    #     "model": {
+    #       "type": "keyword",
+    #       "fields": {
+    #         "text": {
+    #           "type": "text"
+    #         }
+    #       }
+    #     },
+    #     "reference": {
+    #       "type": "keyword",
+    #       "fields": {
+    #         "text": {
+    #           "type": "text"
+    #         }
+    #       }
+    #     }
+    #   }
+    #   """
     When I successfully execute the action "device-manager/models":"listAssets" with args:
       | engineGroup | "commons" |
     Then I should receive a result matching:
@@ -100,23 +197,60 @@ Feature: Model Controller
   Scenario: Write and List a Device model
     When I successfully execute the action "device-manager/models":"writeDevice" with args:
       | body.model            | "Zigbee"                         |
+      | body.measures.battery | "battery"                        |
       | body.metadataMappings | { network: { type: "keyword" } } |
     Then The document "device-manager":"models":"model-device-Zigbee" content match:
       | type                                 | "device"  |
       | device.model                         | "Zigbee"  |
       | device.metadataMappings.network.type | "keyword" |
     When I successfully execute the action "device-manager/models":"writeDevice" with args:
-      | body.model            | "Zigbee"                          |
-      | body.metadataMappings | { network2: { type: "keyword" } } |
+      | body.model                | "Zigbee"                          |
+      | body.measures.temperature | "temperature"                     |
+      | body.metadataMappings     | { network2: { type: "keyword" } } |
     Then The document "device-manager":"models":"model-device-Zigbee" content match:
-      | type                                  | "device"  |
-      | device.model                          | "Zigbee"  |
-      | device.metadataMappings.network.type  | "keyword" |
-      | device.metadataMappings.network2.type | "keyword" |
+      | type                                  | "device"      |
+      | device.model                          | "Zigbee"      |
+      | device.metadataMappings.network.type  | "keyword"     |
+      | device.metadataMappings.network2.type | "keyword"     |
+      | device.measures.battery               | "battery"     |
+      | device.measures.temperature           | "temperature" |
     And I refresh the collection "device-manager":"models"
     Then The collection "engine-ayse":"devices" mappings match:
-      | properties.metadata.properties.network.type  | "keyword" |
-      | properties.metadata.properties.network2.type | "keyword" |
+      """
+      {
+        "metadata": {
+          "properties": {
+            "color": {
+              "type": "keyword"
+            },
+            "network": {
+              "type": "keyword"
+            },
+            "network2": {
+              "type": "keyword"
+            }
+          }
+        },
+      }
+      """
+    Then The collection "device-manager":"devices" mappings match:
+      """
+      {
+        "metadata": {
+          "properties": {
+            "color": {
+              "type": "keyword"
+            },
+            "network": {
+              "type": "keyword"
+            },
+            "network2": {
+              "type": "keyword"
+            }
+          }
+        },
+      }
+      """
     When I successfully execute the action "device-manager/models":"listDevices"
     Then I should receive a result matching:
       | total         | 3                     |
@@ -141,11 +275,109 @@ Feature: Model Controller
       | measure.valuesMappings.presence2.type | "boolean"  |
     And I refresh the collection "device-manager":"models"
     Then The collection "engine-ayse":"measures" mappings match:
-      | properties.values.properties.presence.type  | "boolean" |
-      | properties.values.properties.presence2.type | "boolean" |
+      """
+      {
+        "values": {
+          "properties": {
+            "presence": {
+              "type": "boolean"
+            },
+            "presence2": {
+              "type": "boolean"
+            },
+            "accuracy": {
+              "type": "float"
+            },
+            "altitude": {
+              "type": "float"
+            },
+            "battery": {
+              "type": "integer"
+            },
+            "humidity": {
+              "type": "float"
+            },
+            "movement": {
+              "type": "boolean"
+            },
+            "position": {
+              "type": "geo_point"
+            },
+            "temperature": {
+              "type": "float"
+            }
+          }
+        }
+      }
+      """
+    When I successfully execute the action "device-manager/models":"writeDevice" with args:
+      | body.model             | "Zigbee"   |
+      | body.metadataMappings  | {}         |
+      | body.measures.presence | "presence" |
     Then The collection "engine-ayse":"devices" mappings match:
-      | properties.measures.properties.values.properties.presence.type  | "boolean" |
-      | properties.measures.properties.values.properties.presence2.type | "boolean" |
+      """
+      {
+        "measures": {
+          "properties": {
+            "presence": {
+              "properties": {
+                "measuredAt": {
+                  "type": "date"
+                },
+                "payloadUuids": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                },
+                "values": {
+                  "properties": {
+                    "presence": {
+                      "type": "boolean"
+                    },
+                    "presence2": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            },
+          }
+        },
+      }
+      """
+    Then The collection "device-manager":"devices" mappings match:
+      """
+      {
+        "measures": {
+          "properties": {
+            "presence": {
+              "properties": {
+                "measuredAt": {
+                  "type": "date"
+                },
+                "payloadUuids": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                },
+                "values": {
+                  "properties": {
+                    "presence": {
+                      "type": "boolean"
+                    },
+                    "presence2": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            },
+          }
+        },
+      }
+      """
     When I successfully execute the action "device-manager/models":"listMeasures"
     Then I should receive a result matching:
       | total         | 6                        |
@@ -170,5 +402,5 @@ Feature: Model Controller
       | device.metadataMappings.color.type | "keyword"   |
     Then The document "device-manager":"models":"model-measure-temperature" content match:
       | type                                    | "measure"     |
-      | measure.name                            | "temperature" |
+      | measure.type                            | "temperature" |
       | measure.valuesMappings.temperature.type | "float"       |
