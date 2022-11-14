@@ -14,8 +14,8 @@ import { DecoderContent } from "./types/DecoderContent";
 /**
  * Array of measures declaration
  */
-export type NamedMeasures<T = string> = ReadonlyArray<{
-  name: T;
+export type NamedMeasures = ReadonlyArray<{
+  name: string;
 
   type: string;
 }>;

@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle-sdk";
+import { JSONObject } from "kuzzle";
 
 /**
  * Flatten an object transform:

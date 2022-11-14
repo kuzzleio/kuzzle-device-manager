@@ -121,5 +121,6 @@ Feature: Asset Controller
       | body.measure.values.temperature | 70                    |
       | body.measure.name               | "temperatureExt"      |
     Then The document "engine-ayse":"assets":"container-unlinked1" content match:
-      | measures.temperatureExt.type               | "temperature" |
-      | measures.temperatureExt.values.temperature | 70            |
+      | measures.temperatureExt.type               | "temperature"    |
+      | measures.temperatureExt.name               | "temperatureExt" |
+      | measures.temperatureExt.values.temperature | 70               |

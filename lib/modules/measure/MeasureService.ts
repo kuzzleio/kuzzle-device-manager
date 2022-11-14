@@ -258,6 +258,7 @@ export class MeasureService {
 
       digitalTwin._source.measures[measureName] = {
         measuredAt: measurement.measuredAt,
+        name: measureName,
         payloadUuids: measurement.origin.payloadUuids,
         type: measurement.type,
         values: measurement.values,

@@ -43,7 +43,7 @@ export interface AssetModelContent extends KDocumentContent {
      *    "company.name": "Firebird"
      * }
      */
-    defaultValues: JSONObject;
+    defaultMetadata: JSONObject;
 
     /**
      * List of accepted measures for this model
@@ -91,7 +91,7 @@ export interface DeviceModelContent extends KDocumentContent {
      *    "company.name": "Firebird"
      * }
      */
-    defaultValues: JSONObject;
+    defaultMetadata: JSONObject;
 
     /**
      * List of decoded measures for this model

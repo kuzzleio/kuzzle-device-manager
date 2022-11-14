@@ -12,6 +12,7 @@ import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 import {
   batteryMeasure,
   humidityMeasure,
+  MeasureDefinition,
   movementMeasure,
   positionMeasure,
   temperatureMeasure,
@@ -20,13 +21,13 @@ import {
 import { DeviceModule, devicesMappings } from "../modules/device";
 import { MeasureModule } from "../modules/measure";
 import { AssetModule } from "../modules/asset";
+import { DecoderModule, payloadsMappings } from "../modules/decoder";
 import {
-  Decoder,
-  DecoderModule,
-  NamedMeasures,
-  payloadsMappings,
-} from "../modules/decoder";
-import { ModelModule, modelsMappings } from "../modules/model";
+  AssetModelDefinition,
+  DeviceModelDefinition,
+  ModelModule,
+  modelsMappings,
+} from "../modules/model";
 import { lock } from "../modules/shared/utils/lock";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
@@ -59,58 +60,112 @@ export class DeviceManagerPlugin extends Plugin {
 
   get models() {
     return {
+      /**
+       * Register an asset model
+       *
+       * @param engineGroup Engine group name
+       * @param model Name of the asset model
+       * @param definition.measuresNames Array describing measures names and types
+       * @param definition.metadataMappings Metadata mappings definition
+       * @param definition.defaultMetadata Default metadata values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerAsset(
+       *   "logistic",
+       *   "container",
+       *   {
+       *     measuresNames: [
+       *       { name: "temperatureExt", type: "temperature" },
+       *       { name: "temperatureInt", type: "temperature" },
+       *       { name: "position", type: "position" },
+       *     ],
+       *     metadataMappings: {
+       *       weight: { type: "integer" },
+       *       height: { type: "integer" },
+       *     },
+       *     defaultMetadata: {
+       *       height: 20
+       *     }
+       *   }
+       * );
+       * ```
+       */
       registerAsset: (
         engineGroup: string,
         model: string,
-        metadataMappings: JSONObject,
-        measuresNames: NamedMeasures,
-        { defaultValues = {} }: { defaultValues?: JSONObject } = {}
+        definition: AssetModelDefinition
       ) => {
         const measures: Record<string, string> = {};
 
-        for (const measure of measuresNames) {
+        for (const measure of definition.measuresNames) {
           measures[measure.name] = measure.type;
         }
 
         this.modelsRegister.registerAsset(
           engineGroup,
           model,
-          metadataMappings,
+          definition.metadataMappings,
           measures,
-          {
-            defaultValues,
-          }
+          definition.defaultMetadata
         );
       },
 
-      registerDevice: (
-        model: string,
-        decoder: Decoder,
-        metadataMappings: JSONObject,
-        { defaultValues = {} }: { defaultValues?: JSONObject } = {}
-      ) => {
-        this.decodersRegister.register(decoder);
+      /**
+       * Register a device model
+       *
+       * @param model Name of the device model
+       * @param definition.decoded Decoder used to decode payloads
+       * @param definition.metadataMappings Metadata mappings definition
+       * @param definition.defaultMetadata Default metadata values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerDevice(
+       *   "Abeeway",
+       *   {
+       *     decoder: new DummyTempPositionDecoder(),
+       *     metadataMappings: {
+       *       serial: { type: "keyword" },
+       *     }
+       *   }
+       * );
+       * ```
+       */
+      registerDevice: (model: string, definition: DeviceModelDefinition) => {
+        this.decodersRegister.register(definition.decoder);
 
         const measures: Record<string, string> = {};
 
-        for (const measure of decoder.measures) {
+        for (const measure of definition.decoder.measures) {
           measures[measure.name] = measure.type;
         }
 
-        this.modelsRegister.registerDevice(model, metadataMappings, measures, {
-          defaultValues,
-        });
+        this.modelsRegister.registerDevice(
+          model,
+          definition.metadataMappings,
+          measures,
+          definition.defaultMetadata
+        );
       },
 
-      registerMeasure: (
-        name: string,
-        {
-          valuesMappings,
-        }: {
-          valuesMappings: JSONObject;
-        }
-      ) => {
-        this.modelsRegister.registerMeasure(name, valuesMappings);
+      /**
+       * Register a new measure
+       *
+       * @param name Name of the measure
+       * @param valuesMappings Mappings for the measure values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerMeasure("acceleration", {
+       *   x: { type: "float" },
+       *   y: { type: "float" },
+       *   z: { type: "float" },
+       * });
+       * ```
+       */
+      registerMeasure: (name: string, measureDefinition: MeasureDefinition) => {
+        this.modelsRegister.registerMeasure(name, measureDefinition);
       },
     };
   }

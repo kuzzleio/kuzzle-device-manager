@@ -1,9 +1,9 @@
 import {
   Metadata,
   AssetContent,
-  HumidityMeasurement,
   TemperatureMeasurement,
   PositionMeasurement,
+  EmbeddedMeasure,
 } from "../../../../index";
 
 interface ContainerMetadata extends Metadata {
@@ -16,10 +16,10 @@ interface ContainerMetadata extends Metadata {
   };
 }
 
-// @todo fix this
-type ContainerMeasurements = TemperatureMeasurement["values"] &
-  HumidityMeasurement["values"] &
-  PositionMeasurement["values"];
+type ContainerMeasurements = {
+  temperatureExt: TemperatureMeasurement;
+  position: PositionMeasurement;
+};
 
 interface ContainerAssetContent
   extends AssetContent<ContainerMeasurements, ContainerMetadata> {
@@ -31,6 +31,10 @@ function neverCalled() {
   let container: ContainerAssetContent;
 
   container.metadata.height = 40;
-  container?.measures[0]?.asset.metadata.height;
-  container.measures[0].asset.metadata;
+  container.measures.temperatureExt.values.temperature = 20;
+  container.measures.position.values.accuracy = 10;
+  // @ts-expect-error
+  container.measures.unexistingMeasure;
+  // @ts-expect-error
+  container.measures.temperatureExt.values.notValue;
 }

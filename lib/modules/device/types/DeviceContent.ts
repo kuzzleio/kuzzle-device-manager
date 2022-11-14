@@ -1,15 +1,13 @@
-import {
-  DigitalTwinContent,
-  DigitalTwinMeasures,
-  Metadata,
-} from "../../shared";
+import { JSONObject } from "kuzzle";
+
+import { DigitalTwinContent, Metadata } from "../../shared";
 
 /**
  * Device document content
  */
 export interface DeviceContent<
-  TMeasures extends DigitalTwinMeasures = DigitalTwinMeasures,
-  TMetadata extends Metadata = Metadata
+  TMeasures extends JSONObject = any,
+  TMetadata extends Metadata = any
 > extends DigitalTwinContent<TMeasures, TMetadata> {
   /**
    * Linked asset unique identifier

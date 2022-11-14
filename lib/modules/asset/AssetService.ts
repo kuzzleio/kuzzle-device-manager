@@ -164,7 +164,7 @@ export class AssetService {
         assetMetadata[metadataName] = null;
       }
       for (const [metadataName, metadataValue] of Object.entries(
-        assetModel.asset.defaultValues
+        assetModel.asset.defaultMetadata
       )) {
         _.set(assetMetadata, metadataName, metadataValue);
       }

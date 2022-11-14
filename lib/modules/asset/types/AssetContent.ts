@@ -1,15 +1,13 @@
-import {
-  DigitalTwinContent,
-  DigitalTwinMeasures,
-  Metadata,
-} from "../../shared";
+import { JSONObject } from "kuzzle";
+
+import { DigitalTwinContent, Metadata } from "../../shared";
 
 /**
  * Asset document content
  */
 export interface AssetContent<
-  TMeasures extends DigitalTwinMeasures = DigitalTwinMeasures,
-  TMetadata extends Metadata = Metadata
+  TMeasures extends JSONObject = any,
+  TMetadata extends Metadata = any
 > extends DigitalTwinContent<TMeasures, TMetadata> {
   /**
    * Link with attached device
@@ -49,6 +47,6 @@ export type AssetMeasureContext<TMetadata extends Metadata = Metadata> = {
    */
   measureName: string;
 } & Pick<
-  AssetContent<DigitalTwinMeasures, TMetadata>,
+  AssetContent<JSONObject, TMetadata>,
   "model" | "reference" | "metadata"
 >;

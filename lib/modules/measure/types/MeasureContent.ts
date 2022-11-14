@@ -7,8 +7,8 @@ import { AssetMeasureContext } from "../../../modules/asset";
  * Represents the content of a measure document.
  */
 export interface MeasureContent<
-  TMeasureValues extends JSONObject = JSONObject,
-  TMetadata extends Metadata = Metadata
+  TMeasureValues extends JSONObject = any,
+  TMetadata extends Metadata = any
 > extends Measurement<TMeasureValues>,
     KDocumentContent {
   /**
@@ -56,7 +56,7 @@ export interface MeasureContent<
   };
 }
 
-export type Measurement<TMeasureValues extends JSONObject = JSONObject> = {
+export type Measurement<TMeasureValues extends JSONObject = any> = {
   /**
    * Type of the measure. (e.g. "temperature")
    */

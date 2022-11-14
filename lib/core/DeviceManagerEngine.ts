@@ -188,6 +188,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         mappings.properties.measures.properties[measureName] = {
           properties: {
             measuredAt: { type: "date" },
+            name: { type: "keyword" },
             payloadUuids: { type: "keyword" },
             type: { type: "keyword" },
             values: {

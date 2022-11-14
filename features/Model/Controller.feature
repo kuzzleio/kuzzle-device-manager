@@ -380,9 +380,9 @@ Feature: Model Controller
       """
     When I successfully execute the action "device-manager/models":"listMeasures"
     Then I should receive a result matching:
-      | total         | 6                        |
-      | models[0]._id | "model-measure-battery"  |
-      | models[4]._id | "model-measure-presence" |
+      | total         | 7                        |
+      | models[1]._id | "model-measure-battery"  |
+      | models[5]._id | "model-measure-presence" |
 
   Scenario: Register models from the framework
     Then The document "device-manager":"models":"model-asset-container" content match:

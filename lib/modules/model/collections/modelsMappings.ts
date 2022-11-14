@@ -25,7 +25,7 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
-        defaultValues: {
+        defaultMetadata: {
           dynamic: "false",
           properties: {},
         },
@@ -43,7 +43,7 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
-        defaultValues: {
+        defaultMetadata: {
           dynamic: "false",
           properties: {},
         },

@@ -1,4 +1,5 @@
 import { JSONObject, PluginContext } from "kuzzle";
+import { MeasureDefinition } from "lib/modules/measure";
 
 import { ModelSerializer } from "../../modules/model";
 import {
@@ -45,10 +46,10 @@ export class ModelsRegister {
     model: string,
     metadataMappings: JSONObject,
     measures: Record<string, string>,
-    { defaultValues = {} }: { defaultValues?: JSONObject } = {}
+    defaultMetadata: JSONObject = {}
   ) {
     this.assetModels.push({
-      asset: { defaultValues, measures, metadataMappings, model },
+      asset: { defaultMetadata, measures, metadataMappings, model },
       engineGroup,
       type: "asset",
     });
@@ -58,17 +59,17 @@ export class ModelsRegister {
     model: string,
     metadataMappings: JSONObject,
     measures: Record<string, string>,
-    { defaultValues = {} }: { defaultValues?: JSONObject } = {}
+    defaultMetadata: JSONObject = {}
   ) {
     this.deviceModels.push({
-      device: { defaultValues, measures, metadataMappings, model },
+      device: { defaultMetadata, measures, metadataMappings, model },
       type: "device",
     });
   }
 
-  registerMeasure(type: string, valuesMappings: JSONObject) {
+  registerMeasure(type: string, measureDefinition: MeasureDefinition) {
     this.measureModels.push({
-      measure: { type, valuesMappings },
+      measure: { type, valuesMappings: measureDefinition.valuesMappings },
       type: "measure",
     });
   }
