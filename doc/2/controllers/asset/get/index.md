@@ -82,13 +82,13 @@ kourou device-manager/assets:get <engineId> --id <assetId>
       },
       "metadata": {
         "position": {
-          "lon": 10, 
+          "lon": 10,
           "lat": 20
         },
         "color": "red"
       },
       "measures": [],
-      "deviceLinks": [],
+      "linkedDevices": [],
       "_kuzzle_info": {
       "author": "-1",
       "createdAt": 1658999673193,

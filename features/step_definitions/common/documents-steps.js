@@ -113,6 +113,7 @@ Then("I should receive a empty {string} array", function (name) {
 });
 
 Then("I count {int} documents", async function (expectedCount) {
+  await this.sdk.collection.refresh(this.props.index, this.props.collection);
   const count = await this.sdk.document.count(
     this.props.index,
     this.props.collection
@@ -124,6 +125,8 @@ Then("I count {int} documents", async function (expectedCount) {
 Then(
   "I count {int} documents in {string}:{string}",
   async function (expectedCount, index, collection) {
+    await this.sdk.collection.refresh(index, collection);
+
     const count = await this.sdk.document.count(index, collection);
 
     should(count).be.eql(expectedCount);
@@ -133,6 +136,8 @@ Then(
 Then(
   "I count {int} documents matching:",
   async function (expectedCount, dataTable) {
+    await this.sdk.collection.refresh(this.props.index, this.props.collection);
+
     const properties = this.parseObject(dataTable);
 
     const query = {

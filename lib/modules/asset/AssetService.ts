@@ -1,37 +1,48 @@
 import _ from "lodash";
 import {
+  Backend,
   BadRequestError,
-  BatchController,
   JSONObject,
   KDocument,
-  NotFoundError,
-  Plugin,
+  KHit,
   PluginContext,
+  SearchResult,
 } from "kuzzle";
 
-import { writeToDatabase } from "../../utils";
-import { InternalCollection } from "../../InternalCollection";
-import { mResponse, mRequest } from "../../utils/writeMany";
 import { MeasureContent } from "../measure/";
-import { DeviceManagerConfiguration } from "../engine";
+import { ApiDeviceUnlinkAssetRequest } from "../device/types/DeviceApi";
+import { lock } from "../shared/utils/lock";
+import { Metadata } from "../shared";
+import {
+  DeviceManagerConfiguration,
+  InternalCollection,
+  DeviceManagerPlugin,
+} from "../../core";
+import { ask } from "../shared/utils/ask";
+import { AskModelAssetGet } from "../model/types/ModelEvents";
 
-import { BaseAsset } from "./BaseAsset";
-import { BaseAssetContent } from "./types/BaseAssetContent";
+import { AssetContent } from "./types/AssetContent";
+import { AssetSerializer } from "./model/AssetSerializer";
+import {
+  EventAssetUpdateAfter,
+  EventAssetUpdateBefore,
+} from "./types/AssetEvents";
 
 export class AssetService {
-  private config: DeviceManagerConfiguration;
   private context: PluginContext;
-  private batch: BatchController;
+  private config: DeviceManagerConfiguration;
 
   private get sdk() {
     return this.context.accessors.sdk;
   }
 
-  constructor(plugin: Plugin, batchController: BatchController) {
-    this.config = plugin.config as any;
-    this.context = plugin.context;
+  private get app(): Backend {
+    return global.app;
+  }
 
-    this.batch = batchController;
+  constructor(plugin: DeviceManagerPlugin) {
+    this.context = plugin.context;
+    this.config = plugin.config;
   }
 
   /**
@@ -43,7 +54,7 @@ export class AssetService {
    * @param options.startAt Returns measures starting from this date (ISO8601)
    * @param options.endAt Returns measures until this date (ISO8601)
    */
-  async measureHistory(
+  async getMeasureHistory(
     engineId: string,
     assetId: string,
     {
@@ -64,11 +75,11 @@ export class AssetService {
     };
 
     if (startAt) {
-      query.range.measuredAt.gte = this.iso8601(startAt, "startAt").getTime();
+      query.range.measuredAt.gte = new Date(startAt).getTime();
     }
 
     if (endAt) {
-      query.range.measuredAt.lte = this.iso8601(startAt, "endAt").getTime();
+      query.range.measuredAt.lte = new Date(endAt).getTime();
     }
 
     const sort = { measuredAt: "desc" };
@@ -83,92 +94,161 @@ export class AssetService {
     return measures.hits;
   }
 
-  async importAssets(
-    index: string,
-    assets: JSONObject,
-    { strict, options }: { strict?: boolean; options?: JSONObject }
-  ) {
-    const results = {
-      errors: [],
-      successes: [],
-    };
-
-    const assetDocuments = assets.map((asset: BaseAssetContent) => {
-      const _asset = new BaseAsset(asset);
-
-      return {
-        _id: _asset._id,
-        body: _.omit(asset, ["_id"]),
-      };
-    });
-
-    await writeToDatabase(
-      assetDocuments,
-      async (result: mRequest[]): Promise<mResponse> => {
-        const created = await this.sdk.document.mCreate(
-          index,
-          "assets",
-          result,
-          { strict, ...options }
-        );
-
-        return {
-          errors: results.errors.concat(created.errors),
-          successes: results.successes.concat(created.successes),
-        };
-      }
-    );
-
-    return results;
-  }
-
-  public async get(engineId: string, assetId: string): Promise<BaseAsset> {
-    const document = await this.sdk.document.get<BaseAssetContent>(
+  public async get(
+    engineId: string,
+    assetId: string
+  ): Promise<KDocument<AssetContent>> {
+    const asset = await this.sdk.document.get<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assetId
     );
 
-    return new BaseAsset(document._source, document._id);
+    return asset;
   }
 
-  public async removeMeasures(
+  public async update(
     engineId: string,
     assetId: string,
-    assetMeasureNames: string[],
-    { strict }: { strict?: boolean }
-  ) {
-    const asset = await this.get(engineId, assetId);
-    const result = asset.removeMeasures(assetMeasureNames);
+    metadata: Metadata,
+    { refresh }: { refresh: any }
+  ): Promise<KDocument<AssetContent>> {
+    return lock(`asset:${engineId}:${assetId}`, async () => {
+      const asset = await this.get(engineId, assetId);
 
-    if (strict && result.notFound.length) {
-      throw new NotFoundError(
-        `AssetMeasureNames "${result.notFound}" in asset "${assetId}" of engine "${engineId}"`
+      const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
+        "device-manager:asset:update:before",
+        { asset, metadata }
       );
-    }
 
-    await this.sdk.document.update(
-      engineId,
-      InternalCollection.ASSETS,
-      asset._id,
-      asset._source,
-      { strict }
-    );
+      const updatedAsset = await this.sdk.document.update<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        assetId,
+        { metadata: updatedPayload.metadata },
+        { refresh, source: true }
+      );
 
-    return {
-      asset,
-      ...result,
-    };
+      await this.app.trigger<EventAssetUpdateAfter>(
+        "device-manager:asset:update:after",
+        {
+          asset: updatedAsset,
+          metadata: updatedPayload.metadata,
+        }
+      );
+
+      return updatedAsset;
+    });
   }
 
-  // @todo remove when we have the date extractor in the core
-  private iso8601(value: string, name: string): Date {
-    const parsed: any = new Date(value);
+  public async create(
+    engineId: string,
+    model: string,
+    reference: string,
+    metadata: JSONObject,
+    { refresh }: { refresh: any }
+  ): Promise<KDocument<AssetContent>> {
+    const assetId = AssetSerializer.id(model, reference);
 
-    if (isNaN(parsed)) {
-      throw new BadRequestError(`"${name}" is not a valid ISO8601 date`);
-    }
+    return lock(`asset:${engineId}:${assetId}`, async () => {
+      const engine = await this.getEngine(engineId);
+      const assetModel = await ask<AskModelAssetGet>(
+        "ask:device-manager:model:asset:get",
+        { engineGroup: engine.group, model }
+      );
 
-    return parsed;
+      const assetMetadata = {};
+      for (const metadataName of Object.keys(
+        assetModel.asset.metadataMappings
+      )) {
+        assetMetadata[metadataName] = null;
+      }
+      for (const [metadataName, metadataValue] of Object.entries(
+        assetModel.asset.defaultMetadata
+      )) {
+        _.set(assetMetadata, metadataName, metadataValue);
+      }
+
+      const asset = await this.sdk.document.create<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        {
+          linkedDevices: [],
+          metadata: { ...assetMetadata, ...metadata },
+          model,
+          reference,
+        },
+        assetId,
+        { refresh }
+      );
+
+      return asset;
+    });
+  }
+
+  public async delete(
+    engineId: string,
+    assetId: string,
+    { refresh, strict }: { refresh: any; strict: boolean }
+  ) {
+    return lock<void>(`asset:${engineId}:${assetId}`, async () => {
+      const asset = await this.get(engineId, assetId);
+
+      if (strict && asset._source.linkedDevices.length !== 0) {
+        throw new BadRequestError(
+          `Asset "${assetId}" is still linked to devices.`
+        );
+      }
+
+      for (const { id: deviceId } of asset._source.linkedDevices) {
+        const req: ApiDeviceUnlinkAssetRequest = {
+          _id: deviceId,
+          action: "unlinkAsset",
+          controller: "device-manager/devices",
+          engineId,
+        };
+
+        await this.sdk.query(req);
+      }
+
+      await this.sdk.document.delete(
+        engineId,
+        InternalCollection.ASSETS,
+        assetId,
+        {
+          refresh,
+        }
+      );
+    });
+  }
+
+  public async search(
+    engineId: string,
+    searchBody: JSONObject,
+    {
+      from,
+      size,
+      scroll,
+      lang,
+    }: { from?: number; size?: number; scroll?: string; lang?: string }
+  ): Promise<SearchResult<KHit<AssetContent>>> {
+    const result = await this.sdk.document.search<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      searchBody,
+      { from, lang, scroll, size }
+    );
+
+    return result;
+  }
+
+  private async getEngine(engineId: string): Promise<JSONObject> {
+    const engine = await this.sdk.document.get(
+      this.config.adminIndex,
+      InternalCollection.CONFIG,
+      `engine-device-manager--${engineId}`
+    );
+
+    return engine._source.engine;
   }
 }
