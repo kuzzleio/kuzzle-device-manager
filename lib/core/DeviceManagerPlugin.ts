@@ -4,7 +4,6 @@ import {
   PluginContext,
   JSONObject,
   PluginImplementationError,
-  Mutex,
   KuzzleRequest,
   BadRequestError,
 } from "kuzzle";
@@ -13,6 +12,7 @@ import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 import {
   batteryMeasure,
   humidityMeasure,
+  MeasureDefinition,
   movementMeasure,
   positionMeasure,
   temperatureMeasure,
@@ -22,16 +22,24 @@ import { DeviceModule, devicesMappings } from "../modules/device";
 import { MeasureModule } from "../modules/measure";
 import { AssetModule } from "../modules/asset";
 import { DecoderModule, payloadsMappings } from "../modules/decoder";
+import {
+  AssetModelDefinition,
+  DeviceModelDefinition,
+  ModelModule,
+  modelsMappings,
+} from "../modules/model";
+import { lock } from "../modules/shared/utils/lock";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
-import { AssetsRegister } from "./registers/AssetsRegister";
 import { DecodersRegister } from "./registers/DecodersRegister";
-import { DevicesRegister } from "./registers/DevicesRegister";
-import { MeasuresRegister } from "./registers/MeasuresRegister";
+import { InternalCollection } from "./InternalCollection";
+import { ModelsRegister } from "./registers/ModelsRegister";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
+  public roles = {};
+
   private deviceManagerEngine: DeviceManagerEngine;
   private adminConfigManager: ConfigManager;
   private engineConfigManager: ConfigManager;
@@ -41,52 +49,125 @@ export class DeviceManagerPlugin extends Plugin {
   private deviceModule: DeviceModule;
   private decoderModule: DecoderModule;
   private measureModule: MeasureModule;
+  private modelModule: ModelModule;
 
-  private assetsRegister: AssetsRegister;
-  private devicesRegister: DevicesRegister;
-  private measuresRegister: MeasuresRegister;
+  private modelsRegister: ModelsRegister;
   private decodersRegister: DecodersRegister;
 
   private get sdk() {
     return this.context.accessors.sdk;
   }
 
-  /**
-   * Manager assets customization.
-   *
-   * @method register
-   */
-  get assets() {
-    return this.assetsRegister;
-  }
+  get models() {
+    return {
+      /**
+       * Register an asset model
+       *
+       * @param engineGroup Engine group name
+       * @param model Name of the asset model
+       * @param definition.measuresNames Array describing measures names and types
+       * @param definition.metadataMappings Metadata mappings definition
+       * @param definition.defaultMetadata Default metadata values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerAsset(
+       *   "logistic",
+       *   "container",
+       *   {
+       *     measuresNames: [
+       *       { name: "temperatureExt", type: "temperature" },
+       *       { name: "temperatureInt", type: "temperature" },
+       *       { name: "position", type: "position" },
+       *     ],
+       *     metadataMappings: {
+       *       weight: { type: "integer" },
+       *       height: { type: "integer" },
+       *     },
+       *     defaultMetadata: {
+       *       height: 20
+       *     }
+       *   }
+       * );
+       * ```
+       */
+      registerAsset: (
+        engineGroup: string,
+        model: string,
+        definition: AssetModelDefinition
+      ) => {
+        const measures: Record<string, string> = {};
 
-  /**
-   * Manage devices customization.
-   *
-   * @method registerMetadata
-   */
-  get devices() {
-    return this.devicesRegister;
-  }
+        for (const measure of definition.measuresNames) {
+          measures[measure.name] = measure.type;
+        }
 
-  /**
-   * Manage measures customization.
-   *
-   * @method register
-   * @method get
-   */
-  get measures() {
-    return this.measuresRegister;
-  }
+        this.modelsRegister.registerAsset(
+          engineGroup,
+          model,
+          definition.metadataMappings,
+          measures,
+          definition.defaultMetadata
+        );
+      },
 
-  /**
-   * Manage decoders customization.
-   *
-   * @method register
-   * @method list
-   */
-  get decoders() {
-    return this.decodersRegister;
+      /**
+       * Register a device model
+       *
+       * @param model Name of the device model
+       * @param definition.decoded Decoder used to decode payloads
+       * @param definition.metadataMappings Metadata mappings definition
+       * @param definition.defaultMetadata Default metadata values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerDevice(
+       *   "Abeeway",
+       *   {
+       *     decoder: new DummyTempPositionDecoder(),
+       *     metadataMappings: {
+       *       serial: { type: "keyword" },
+       *     }
+       *   }
+       * );
+       * ```
+       */
+      registerDevice: (model: string, definition: DeviceModelDefinition) => {
+        this.decodersRegister.register(definition.decoder);
+
+        const measures: Record<string, string> = {};
+
+        for (const measure of definition.decoder.measures) {
+          measures[measure.name] = measure.type;
+        }
+
+        this.modelsRegister.registerDevice(
+          model,
+          definition.metadataMappings,
+          measures,
+          definition.defaultMetadata
+        );
+      },
+
+      /**
+       * Register a new measure
+       *
+       * @param name Name of the measure
+       * @param valuesMappings Mappings for the measure values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerMeasure("acceleration", {
+       *   x: { type: "float" },
+       *   y: { type: "float" },
+       *   z: { type: "float" },
+       * });
+       * ```
+       */
+      registerMeasure: (name: string, measureDefinition: MeasureDefinition) => {
+        this.modelsRegister.registerMeasure(name, measureDefinition);
+      },
+    };
   }
 
   constructor() {
@@ -105,6 +186,10 @@ export class DeviceManagerPlugin extends Plugin {
     this.hooks = {};
 
     this.config = {
+      ignoreStartupErrors: false,
+      engine: {
+        autoUpdate: true,
+      },
       adminIndex: "device-manager",
       adminCollections: {
         config: {
@@ -140,16 +225,14 @@ export class DeviceManagerPlugin extends Plugin {
     /* eslint-enable sort-keys */
 
     // Registers
-    this.measuresRegister = new MeasuresRegister();
-    this.assetsRegister = new AssetsRegister(this.measuresRegister);
-    this.devicesRegister = new DevicesRegister(this.measuresRegister);
-    this.decodersRegister = new DecodersRegister(this.measuresRegister);
+    this.decodersRegister = new DecodersRegister();
+    this.modelsRegister = new ModelsRegister();
 
-    this.measuresRegister.register("temperature", temperatureMeasure);
-    this.measuresRegister.register("position", positionMeasure);
-    this.measuresRegister.register("movement", movementMeasure);
-    this.measuresRegister.register("humidity", humidityMeasure);
-    this.measuresRegister.register("battery", batteryMeasure);
+    this.models.registerMeasure("temperature", temperatureMeasure);
+    this.models.registerMeasure("position", positionMeasure);
+    this.models.registerMeasure("movement", movementMeasure);
+    this.models.registerMeasure("humidity", humidityMeasure);
+    this.models.registerMeasure("battery", batteryMeasure);
   }
 
   /**
@@ -164,14 +247,17 @@ export class DeviceManagerPlugin extends Plugin {
     this.deviceModule = new DeviceModule(this);
     this.decoderModule = new DecoderModule(this);
     this.measureModule = new MeasureModule(this);
+    this.modelModule = new ModelModule(this);
 
     // Modules init
     await this.assetModule.init();
     await this.deviceModule.init();
     await this.decoderModule.init();
     await this.measureModule.init();
+    await this.modelModule.init();
 
     this.decodersRegister.init(this.context);
+    this.modelsRegister.init(this);
 
     this.adminConfigManager = new ConfigManager(this, {
       mappings: this.config.adminCollections.config.mappings,
@@ -198,9 +284,6 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
-      this.assetsRegister,
-      this.devicesRegister,
-      this.measuresRegister,
       this.adminConfigManager,
       this.engineConfigManager
     );
@@ -212,26 +295,56 @@ export class DeviceManagerPlugin extends Plugin {
     );
 
     this.hooks["kuzzle:state:live"] = async () => {
-      await this.decodersRegister.createDefaultRights();
-      this.context.log.info(
-        "Default rights for payload controller has been registered."
-      );
+      try {
+        await this.decodersRegister.createDefaultRights();
+        await this.createDefaultRoles();
+      } catch (error) {
+        if (this.config.ignoreStartupErrors) {
+          this.context.log.warn(
+            `WARNING: An error occured during plugin initialization: ${error.message}`
+          );
+        } else {
+          throw error;
+        }
+      }
     };
 
     this.decodersRegister.printDecoders();
 
-    await this.initDatabase();
+    try {
+      await this.initDatabase();
+    } catch (error) {
+      if (this.config.ignoreStartupErrors) {
+        this.context.log.warn(
+          `WARNING: An error occured during plugin initialization: ${error.message}`
+        );
+      } else {
+        throw error;
+      }
+    }
+
+    if (this.config.ignoreStartupErrors) {
+      this.context.log.warn(
+        'WARNING: The "ignoreStartupErrors" option is enabled. Additional errors may appears at runtime.'
+      );
+    }
+  }
+
+  private async createDefaultRoles() {
+    const promises = [];
+
+    for (const [roleId, role] of Object.entries(this.roles)) {
+      promises.push(this.sdk.security.createOrReplaceRole(roleId, role));
+    }
+
+    await Promise.all(promises);
   }
 
   /**
    * Initialize the administration index of the plugin
    */
   private async initDatabase() {
-    const mutex = new Mutex("device-manager/initDatabase");
-
-    await mutex.lock();
-
-    try {
+    await lock("device-manager/initDatabase", async () => {
       if (!(await this.sdk.index.exists(this.config.adminIndex))) {
         // Possible race condition because of index cache propagation.
         // The index has been created but the node didn't receive the index
@@ -245,42 +358,47 @@ export class DeviceManagerPlugin extends Plugin {
         }
       }
 
-      await Promise.all([
-        this.adminConfigManager
-          .createCollection(this.config.adminIndex)
-          .catch((error) => {
-            throw new PluginImplementationError(
-              `Cannot create admin "config" collection: ${error}`
-            );
-          }),
-        this.sdk.collection
-          .create(
-            this.config.adminIndex,
-            "devices",
-            this.devicesRegister.getMappings()
-          )
-          .catch((error) => {
-            throw new PluginImplementationError(
-              `Cannot create admin "devices" collection: ${error}`
-            );
-          }),
-        this.sdk.collection
-          .create(
-            this.config.adminIndex,
-            "payloads",
-            this.getPayloadsMappings()
-          )
-          .catch((error) => {
-            throw new PluginImplementationError(
-              `Cannot create admin "payloads" collection: ${error}`
-            );
-          }),
-      ]);
+      await this.adminConfigManager
+        .createCollection(this.config.adminIndex)
+        .catch((error) => {
+          throw new PluginImplementationError(
+            `Cannot create admin "config" collection: ${error}`
+          );
+        });
+
+      await this.sdk.collection
+        .create(this.config.adminIndex, InternalCollection.MODELS, {
+          mappings: modelsMappings,
+        })
+        .catch((error) => {
+          throw new PluginImplementationError(
+            `Cannot create admin "models" collection: ${error}`
+          );
+        });
+      await this.modelsRegister.loadModels();
+
+      await this.deviceManagerEngine
+        .createDevicesCollection(this.config.adminIndex)
+        .catch((error) => {
+          throw new PluginImplementationError(
+            `Cannot create admin "devices" collection: ${error}`
+          );
+        });
+
+      await this.sdk.collection
+        .create(this.config.adminIndex, "payloads", this.getPayloadsMappings())
+        .catch((error) => {
+          throw new PluginImplementationError(
+            `Cannot create admin "payloads" collection: ${error}`
+          );
+        });
 
       await this.initializeConfig();
-    } finally {
-      await mutex.unlock();
-    }
+
+      if (this.config.engine.autoUpdate) {
+        await this.deviceManagerEngine.updateEngines();
+      }
+    });
   }
 
   /**

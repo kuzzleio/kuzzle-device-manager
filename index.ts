@@ -9,3 +9,5 @@ export * from './lib/modules/device';
 export * from './lib/modules/measure';
 
 export * from './lib/modules/decoder';
+
+export * from './lib/modules/shared';

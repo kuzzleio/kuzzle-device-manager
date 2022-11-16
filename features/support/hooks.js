@@ -196,6 +196,21 @@ Before({ tags: "@tenant-custom" }, async function () {
   } catch {}
 });
 
+Before({ tags: "@models" }, async function () {
+  await this.sdk.collection.refresh("device-manager", "models");
+  await this.sdk.document.deleteByQuery("device-manager", "models", {
+    query: {
+      ids: {
+        values: [
+          "model-measure-presence",
+          "model-asset-plane",
+          "model-device-Zigbee",
+        ],
+      },
+    },
+  });
+});
+
 async function truncateCollection(sdk, index, collection) {
   return sdk.collection
     .refresh(index, collection)

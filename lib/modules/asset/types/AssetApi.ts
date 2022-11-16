@@ -5,20 +5,20 @@ import { Metadata } from "../../shared";
 
 import { AssetContent } from "./AssetContent";
 
-interface AssetControllerRequest {
+interface AssetsControllerRequest {
   controller: "device-manager/assets";
 
   engineId: string;
 }
 
-export interface ApiAssetGetRequest extends AssetControllerRequest {
+export interface ApiAssetGetRequest extends AssetsControllerRequest {
   action: "get";
 
   _id: string;
 }
 export type ApiAssetGetResult = KDocument<AssetContent>;
 
-export interface ApiAssetUpdateRequest extends AssetControllerRequest {
+export interface ApiAssetUpdateRequest extends AssetsControllerRequest {
   action: "update";
 
   _id: string;
@@ -31,7 +31,7 @@ export interface ApiAssetUpdateRequest extends AssetControllerRequest {
 }
 export type ApiAssetUpdateResult = KDocument<AssetContent>;
 
-export interface ApiAssetCreateRequest extends AssetControllerRequest {
+export interface ApiAssetCreateRequest extends AssetsControllerRequest {
   action: "create";
 
   refresh?: string;
@@ -46,7 +46,7 @@ export interface ApiAssetCreateRequest extends AssetControllerRequest {
 }
 export type ApiAssetCreateResult = KDocument<AssetContent>;
 
-export interface ApiAssetDeleteRequest extends AssetControllerRequest {
+export interface ApiAssetDeleteRequest extends AssetsControllerRequest {
   action: "delete";
 
   _id: string;
@@ -57,7 +57,7 @@ export interface ApiAssetDeleteRequest extends AssetControllerRequest {
 }
 export type ApiAssetDeleteResult = void;
 
-export interface ApiAssetSearchRequest extends AssetControllerRequest {
+export interface ApiAssetSearchRequest extends AssetsControllerRequest {
   action: "search";
 
   from?: number;
@@ -70,7 +70,7 @@ export interface ApiAssetSearchRequest extends AssetControllerRequest {
 }
 export type ApiAssetSearchResult = SearchResult<KHit<AssetContent>>;
 
-export interface ApiAssetGetMeasuresRequest extends AssetControllerRequest {
+export interface ApiAssetGetMeasuresRequest extends AssetsControllerRequest {
   action: "getMeasures";
 
   _id: string;

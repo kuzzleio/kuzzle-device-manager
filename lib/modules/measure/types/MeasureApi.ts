@@ -1,15 +1,14 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject, KDocument } from "kuzzle";
 
-import { MeasureController } from "../MeasureController";
-import { AssetMeasurement } from "./MeasureContent";
+import { AssetContent } from "../../../modules/asset";
 
-interface MeasureControllerRequest {
+interface MeasuresControllerRequest {
   controller: "device-manager/measures";
 
   engineId: string;
 }
 
-export interface ApiMeasurePushRequest extends MeasureControllerRequest {
+export interface ApiMeasurePushRequest extends MeasuresControllerRequest {
   action: "push";
 
   refresh?: string;
@@ -17,7 +16,14 @@ export interface ApiMeasurePushRequest extends MeasureControllerRequest {
   body: {
     assetId: string;
 
-    measure: AssetMeasurement<JSONObject>;
+    measure: {
+      name: string;
+      type: string;
+      measuredAt?: number;
+      values: JSONObject;
+    };
   };
 }
-export type ApiMeasurePushResult = ReturnType<MeasureController["push"]>;
+export type ApiMeasurePushResult = {
+  asset: KDocument<AssetContent>;
+};

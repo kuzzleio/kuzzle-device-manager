@@ -78,3 +78,17 @@ Then(
 Then("I wait for a refresh", async function () {
   await new Promise((resolve) => setTimeout(resolve, 2000));
 });
+
+Then(
+  "The collection {string}:{string} mappings match:",
+  async function (index, collection, rawMappings) {
+    const expectedMappings = eval(`var o = ${rawMappings}; o`);
+
+    const collectionDefinition = await this.sdk.collection.getMapping(
+      index,
+      collection
+    );
+
+    should(collectionDefinition.properties).matchObject(expectedMappings);
+  }
+);

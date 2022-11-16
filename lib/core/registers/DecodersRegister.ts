@@ -10,10 +10,7 @@ import {
 import { PayloadService } from "../../modules/decoder/PayloadService";
 import { Decoder, DecoderContent } from "../../modules/decoder";
 
-import { MeasuresRegister } from "./MeasuresRegister";
-
 export class DecodersRegister {
-  private measuresRegister: MeasuresRegister;
   private context: PluginContext;
 
   /**
@@ -27,10 +24,6 @@ export class DecodersRegister {
 
   get decoders(): Decoder[] {
     return Array.from(this._decoders.values());
-  }
-
-  constructor(measuresRegister: MeasuresRegister) {
-    this.measuresRegister = measuresRegister;
   }
 
   init(context: PluginContext) {
@@ -61,6 +54,8 @@ export class DecodersRegister {
    *
    * @param decoder Instantiated decoder
    *
+   * @todo could check if measures declared by the decoder exists, maybe when plugin starts only
+   *
    * @returns Corresponding API action requestPayload
    */
   register(decoder: Decoder) {
@@ -74,14 +69,6 @@ export class DecodersRegister {
       throw new PluginImplementationError(
         `Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property.`
       );
-    }
-
-    for (const measureDeclaration of decoder.measures) {
-      if (!this.measuresRegister.has(measureDeclaration.type)) {
-        throw new PluginImplementationError(
-          `Decoder "${decoder.deviceModel}" cannot register unknown measure type "${measureDeclaration.type}"`
-        );
-      }
     }
 
     if (this._decoders.has(decoder.deviceModel)) {
@@ -130,31 +117,15 @@ export class DecodersRegister {
    * This method never returns a rejected promise.
    */
   async createDefaultRights() {
-    try {
-      await this.createDefaultRoles();
-    } catch (error) {
-      this.context.log.error(
-        `Cannot register default decoders roles: ${error}${error.stack}`
-      );
-      return;
-    }
+    await this.createDefaultRoles();
 
-    try {
-      await this.createDefaultProfiles();
-    } catch (error) {
-      this.context.log.error(
-        `Cannot register default decoders profiles: ${error}${error.stack}`
-      );
-      return;
-    }
+    await this.createDefaultProfiles();
 
-    try {
-      await this.createDefaultUsers();
-    } catch (error) {
-      this.context.log.error(
-        `Cannot register default decoders users: ${error}${error.stack}`
-      );
-    }
+    await this.createDefaultUsers();
+
+    this.context.log.info(
+      "Default rights for payload controller has been registered."
+    );
   }
 
   private async createDefaultUsers() {

@@ -6,20 +6,13 @@ Feature: Payloads Controller
       | "12345"   | 21          |
       | "12345"   | 42          |
     Then The document "device-manager":"devices":"DummyTemp-12345" content match:
-      | reference                      | "12345"           |
-      | model                          | "DummyTemp"       |
-      | measures[0].type               | "temperature"     |
-      | measures[0].measuredAt         | "_DATE_NOW_"      |
-      | measures[0].deviceMeasureName  | "temperature"     |
-      | measures[0].values.temperature | 42                |
-      | measures[0].origin.id          | "DummyTemp-12345" |
-      | measures[0].origin.deviceModel | "DummyTemp"       |
-      | measures[0].origin.type        | "device"          |
-      | measures[0].unit.name          | "Degree"          |
-      | measures[0].unit.sign          | "°"               |
-      | measures[0].unit.type          | "number"          |
-      | engineId                       | "_UNDEFINED_"     |
-      | assetId                        | "_UNDEFINED_"     |
+      | reference                               | "12345"       |
+      | model                                   | "DummyTemp"   |
+      | measures.temperature.type               | "temperature" |
+      | measures.temperature.measuredAt         | "_DATE_NOW_"  |
+      | measures.temperature.values.temperature | 42            |
+      | engineId                                | null          |
+      | assetId                                 | null          |
 
   Scenario: Reject with error a DummyTemp payload
     Given I try to send the following "dummy-temp" payloads:
@@ -41,42 +34,23 @@ Feature: Payloads Controller
       | deviceEUI | temperature | location.lat | location.lon | location.accuracy | battery |
       | "12345"   | 21          | 42.2         | 2.42         | 2100              | 0.8     |
     Then The document "device-manager":"devices":"DummyTempPosition-12345" content match:
-      | reference                       | "12345"                   |
-      | model                           | "DummyTempPosition"       |
-      | measures[0].type                | "temperature"             |
-      | measures[0].measuredAt          | "_DATE_NOW_"              |
-      | measures[0].values.temperature  | 21                        |
-      | measures[0].origin.id           | "DummyTempPosition-12345" |
-      | measures[0].origin.deviceModel  | "DummyTempPosition"       |
-      | measures[0].origin.type         | "device"                  |
-      | measures[0].origin.assetId      | "_UNDEFINED_"             |
-      | measures[0].unit.name           | "Degree"                  |
-      | measures[0].unit.sign           | "°"                       |
-      | measures[0].unit.type           | "number"                  |
-      | measures[1].type                | "position"                |
-      | measures[1].measuredAt          | "_DATE_NOW_"              |
-      | measures[1].values.position.lat | 42.2                      |
-      | measures[1].values.position.lon | 2.42                      |
-      | measures[1].values.accuracy     | 2100                      |
-      | measures[1].origin.id           | "DummyTempPosition-12345" |
-      | measures[1].origin.deviceModel  | "DummyTempPosition"       |
-      | measures[1].origin.type         | "device"                  |
-      | measures[1].unit.name           | "GPS"                     |
-      | measures[1].unit.sign           | "_NULL_"                  |
-      | measures[1].unit.type           | "geo_point"               |
-      | measures[2].type                | "battery"                 |
-      | measures[2].measuredAt          | "_DATE_NOW_"              |
-      | measures[2].values.battery      | 80                        |
-      | measures[2].origin.id           | "DummyTempPosition-12345" |
-      | measures[2].origin.deviceModel  | "DummyTempPosition"       |
-      | measures[2].origin.type         | "device"                  |
-      | measures[2].unit.name           | "Volt"                    |
-      | measures[2].unit.sign           | "v"                       |
-      | measures[2].unit.type           | "number"                  |
-      | engineId                        | "_UNDEFINED_"             |
-      | assetId                         | "_UNDEFINED_"             |
+      | reference                               | "12345"             |
+      | model                                   | "DummyTempPosition" |
+      | measures.temperature.type               | "temperature"       |
+      | measures.temperature.measuredAt         | "_DATE_NOW_"        |
+      | measures.temperature.values.temperature | 21                  |
+      | measures.position.type                  | "position"          |
+      | measures.position.measuredAt            | "_DATE_NOW_"        |
+      | measures.position.values.position.lat   | 42.2                |
+      | measures.position.values.position.lon   | 2.42                |
+      | measures.position.values.accuracy       | 2100                |
+      | measures.battery.type                   | "battery"           |
+      | measures.battery.measuredAt             | "_DATE_NOW_"        |
+      | measures.battery.values.battery         | 80                  |
+      | engineId                                | null                |
+      | assetId                                 | null                |
 
-  Scenario: Historize the measures with deviceId and assetId
+  Scenario: Historize the measures with device and asset context
     Given I send the following "dummy-temp" payloads:
       | deviceEUI | "12345" |
       | "linked1" | 42.2    |
@@ -84,9 +58,18 @@ Feature: Payloads Controller
     Then When I successfully execute the action "document":"search" with args:
       | index      | "engine-ayse" |
       | collection | "measures"    |
-    And I should receive a "hits" array of objects matching:
-      | _source.type  | _source.origin.id   | _source.asset.id    | _source.origin.type |
-      | "temperature" | "DummyTemp-linked1" | "container-linked1" | "device"            |
+    And I should receive a result matching:
+      | hits[0]._source.type                  | "temperature"       |
+      | hits[0]._source.measuredAt            | "_DATE_NOW_"        |
+      | hits[0]._source.origin.id             | "DummyTemp-linked1" |
+      | hits[0]._source.origin.type           | "device"            |
+      | hits[0]._source.origin.measureName    | "temperature"       |
+      | hits[0]._source.origin.deviceModel    | "DummyTemp"         |
+      | hits[0]._source.origin.reference      | "linked1"           |
+      | hits[0]._source.asset.id              | "container-linked1" |
+      | hits[0]._source.asset.measureName     | "temperatureExt"    |
+      | hits[0]._source.asset.metadata.weight | 10                  |
+      | hits[0]._source.asset.metadata.height | 11                  |
 
   Scenario: Decode Device metadata from payload
     Given I send the following "dummy-temp" payloads:
@@ -108,4 +91,4 @@ Feature: Payloads Controller
     Then I should receive an error matching:
       | message | "Decoder \"DummyTemp\" has no measure named \"unknownMeasureName\"" |
     Then The document "device-manager":"devices":"DummyTemp-test" content match:
-      | measures | [] |
+      | measures | {} |

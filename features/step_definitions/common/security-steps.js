@@ -159,13 +159,11 @@ Then("The role {string} should match the default one", async function (roleId) {
   }
 });
 
-Then("The role {string} should match:", async function (roleId, dataTable) {
-  const controllers = this.parseObject(dataTable),
-    role = await this.sdk.security.getRole(roleId);
+Then("The role {string} should match:", async function (roleId, raw) {
+  const roleDefinition = eval(`let o = ${raw};o`);
+  const role = await this.sdk.security.getRole(roleId);
 
-  for (const [controller, actions] of Object.entries(controllers)) {
-    should(actions).match(role.controllers[controller].actions);
-  }
+  should(role).matchObject(roleDefinition);
 });
 
 Then(

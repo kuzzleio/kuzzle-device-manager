@@ -1,3 +1,5 @@
+import util from "node:util";
+
 import { Backend, KuzzleRequest } from "kuzzle";
 
 import { DeviceManagerPlugin } from "../../../index";
@@ -8,39 +10,51 @@ const app = new Backend("kuzzle");
 
 const deviceManager = new DeviceManagerPlugin();
 
-deviceManager.decoders.register(new DummyTempDecoder());
-deviceManager.decoders.register(new DummyTempPositionDecoder());
-
-deviceManager.devices.registerMetadata({
-  color: { type: "keyword" },
-});
-
-deviceManager.assets.register("car", {
-  warranty: {
-    type: "keyword",
-    fields: {
-      text: { type: "text" },
-    },
+deviceManager.models.registerDevice("DummyTempPosition", {
+  decoder: new DummyTempPositionDecoder(),
+  metadataMappings: {
+    serial: { type: "keyword" },
   },
 });
 
-// Register an asset for the "astronaut" group
-
-deviceManager.assets.register(
-  "rocket",
-  {
-    stillAlive: { type: "boolean" },
+deviceManager.models.registerDevice("DummyTemp", {
+  decoder: new DummyTempDecoder(),
+  metadataMappings: {
+    color: { type: "keyword" },
   },
-  { engineGroup: "astronaut" }
-);
+});
 
-deviceManager.assets.register(
-  "hevSuit",
-  {
-    freezing: { type: "boolean" },
+// Register an asset for the "commons" group
+
+deviceManager.models.registerAsset("commons", "container", {
+  measuresNames: [
+    { name: "temperatureExt", type: "temperature" },
+    { name: "temperatureInt", type: "temperature" },
+    { name: "position", type: "position" },
+  ],
+  metadataMappings: {
+    weight: { type: "integer" },
+    height: { type: "integer" },
   },
-  { engineGroup: "astronaut" }
-);
+  defaultMetadata: {
+    height: 20,
+  },
+});
+
+deviceManager.models.registerAsset("commons", "warehouse", {
+  measuresNames: [{ name: "position", type: "position" }],
+  metadataMappings: {
+    surface: { type: "integer" },
+  },
+});
+
+deviceManager.models.registerMeasure("acceleration", {
+  valuesMappings: {
+    x: { type: "float" },
+    y: { type: "float" },
+    z: { type: "float" },
+  },
+});
 
 registerTestPipes(app); //TODO : move this line in another filer
 
@@ -50,6 +64,9 @@ app.hook.register("request:onError", async (request: KuzzleRequest) => {
   app.log.error(request.error);
 });
 
+util.inspect.defaultOptions = {
+  depth: 10,
+};
 app.config.content.plugins["kuzzle-plugin-logger"].services.stdout.level =
   "debug";
 app.config.content.limits.documentsWriteCount = 5000;

@@ -1,6 +1,6 @@
 import { JSONObject, BadRequestError } from "kuzzle";
 
-import { Measurement } from "../measure";
+import { DecodedMeasurement } from "../measure";
 
 import { Decoder } from "./Decoder";
 
@@ -15,7 +15,7 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    *
    * Record<deviceReference, Measurement[]>
    */
-  private measurementsByDevice: Record<string, Measurement[]> = {};
+  private measurementsByDevice: Record<string, DecodedMeasurement[]> = {};
 
   /**
    * Metadata per device.
@@ -37,10 +37,10 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    * @param measureName Name of the decoded measure
    * @param measurement Measurement object
    */
-  addMeasurement<TMeasurement extends Measurement = Measurement>(
+  addMeasurement<TMeasureValues extends JSONObject = JSONObject>(
     deviceReference: string,
     measureName: TDecoder["measures"][number]["name"],
-    measurement: TMeasurement
+    measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">
   ) {
     if (!this.decoder.measureNames.includes(measureName)) {
       throw new BadRequestError(
@@ -51,10 +51,12 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
     if (!this.measurementsByDevice[deviceReference]) {
       this.measurementsByDevice[deviceReference] = [];
     }
+    const decodedMeasurement: DecodedMeasurement<TMeasureValues> = {
+      measureName,
+      ...measurement,
+    };
 
-    measurement.deviceMeasureName = measureName;
-
-    this.measurementsByDevice[deviceReference].push(measurement);
+    this.measurementsByDevice[deviceReference].push(decodedMeasurement);
   }
 
   /**
@@ -79,7 +81,7 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
   /**
    * Gets the measurements decoded for a device
    */
-  getMeasurements(deviceReference: string): Measurement[] {
+  getMeasurements(deviceReference: string): DecodedMeasurement[] {
     return this.measurementsByDevice[deviceReference];
   }
 

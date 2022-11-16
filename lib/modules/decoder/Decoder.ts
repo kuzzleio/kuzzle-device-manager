@@ -14,8 +14,8 @@ import { DecoderContent } from "./types/DecoderContent";
 /**
  * Array of measures declaration
  */
-export type DecoderMeasures<T = string> = ReadonlyArray<{
-  name: T;
+export type NamedMeasures = ReadonlyArray<{
+  name: string;
 
   type: string;
 }>;
@@ -47,7 +47,7 @@ export abstract class Decoder {
    *   { type: 'temperature', name: 'temperatureExterior' },
    * ];
    */
-  public measures: DecoderMeasures = [];
+  public measures: NamedMeasures = [];
 
   /**
    * Custom name for the associated API action in the "payload" controller

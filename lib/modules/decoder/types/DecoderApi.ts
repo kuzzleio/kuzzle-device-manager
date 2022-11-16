@@ -1,10 +1,10 @@
 import { DecoderContent } from "./DecoderContent";
 
-interface DecoderControllerRequest {
+interface DecodersControllerRequest {
   controller: "device-manager/decoders";
 }
 
-export interface ApiDecoderListRequest extends DecoderControllerRequest {
+export interface ApiDecoderListRequest extends DecodersControllerRequest {
   action: "list";
 
   _id: string;
@@ -14,7 +14,7 @@ export type ApiDecoderListResult = {
 };
 
 export interface ApiDecoderPrunePayloadsRequest
-  extends DecoderControllerRequest {
+  extends DecodersControllerRequest {
   action: "prunePayloads";
 
   _id: string;
