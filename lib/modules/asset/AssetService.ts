@@ -21,7 +21,6 @@ import {
 import { ask } from "../shared/utils/ask";
 import { AskModelAssetGet } from "../model/types/ModelEvents";
 
-import { Asset } from "./model/Asset";
 import { AssetContent } from "./types/AssetContent";
 import { AssetSerializer } from "./model/AssetSerializer";
 import {
@@ -95,14 +94,17 @@ export class AssetService {
     return measures.hits;
   }
 
-  public async get(engineId: string, assetId: string): Promise<Asset> {
-    const document = await this.sdk.document.get<AssetContent>(
+  public async get(
+    engineId: string,
+    assetId: string
+  ): Promise<KDocument<AssetContent>> {
+    const asset = await this.sdk.document.get<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assetId
     );
 
-    return new Asset(document._source, document._id);
+    return asset;
   }
 
   public async update(
@@ -110,7 +112,7 @@ export class AssetService {
     assetId: string,
     metadata: Metadata,
     { refresh }: { refresh: any }
-  ): Promise<Asset> {
+  ): Promise<KDocument<AssetContent>> {
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
@@ -119,15 +121,13 @@ export class AssetService {
         { asset, metadata }
       );
 
-      const { _source, _id } = await this.sdk.document.update<AssetContent>(
+      const updatedAsset = await this.sdk.document.update<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
         assetId,
         { metadata: updatedPayload.metadata },
-        { refresh }
+        { refresh, source: true }
       );
-
-      const updatedAsset = new Asset(_source, _id);
 
       await this.app.trigger<EventAssetUpdateAfter>(
         "device-manager:asset:update:after",
@@ -147,7 +147,7 @@ export class AssetService {
     reference: string,
     metadata: JSONObject,
     { refresh }: { refresh: any }
-  ): Promise<Asset> {
+  ): Promise<KDocument<AssetContent>> {
     const assetId = AssetSerializer.id(model, reference);
 
     return lock(`asset:${engineId}:${assetId}`, async () => {
@@ -164,15 +164,16 @@ export class AssetService {
         assetMetadata[metadataName] = null;
       }
       for (const [metadataName, metadataValue] of Object.entries(
-        assetModel.asset.defaultValues
+        assetModel.asset.defaultMetadata
       )) {
         _.set(assetMetadata, metadataName, metadataValue);
       }
 
-      const { _source, _id } = await this.sdk.document.create<AssetContent>(
+      const asset = await this.sdk.document.create<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
         {
+          linkedDevices: [],
           metadata: { ...assetMetadata, ...metadata },
           model,
           reference,
@@ -181,7 +182,7 @@ export class AssetService {
         { refresh }
       );
 
-      return new Asset(_source, _id);
+      return asset;
     });
   }
 
@@ -193,13 +194,13 @@ export class AssetService {
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
-      if (strict && asset._source.deviceLinks.length !== 0) {
+      if (strict && asset._source.linkedDevices.length !== 0) {
         throw new BadRequestError(
           `Asset "${assetId}" is still linked to devices.`
         );
       }
 
-      for (const { deviceId } of asset._source.deviceLinks) {
+      for (const { id: deviceId } of asset._source.linkedDevices) {
         const req: ApiDeviceUnlinkAssetRequest = {
           _id: deviceId,
           action: "unlinkAsset",

@@ -1,81 +1,99 @@
-const { Asset } = require("../../lib/modules/asset");
-const { Device } = require("../../lib/modules/device");
-
-const deviceDetached1 = new Device({
+const deviceDetached1 = {
   model: "DummyTemp",
   reference: "detached1",
   metadata: {},
   measures: [],
-});
+};
+const deviceDetached1Id = `${deviceDetached1.model}-${deviceDetached1.reference}`;
 
-const deviceAyseLinked1 = new Device({
+const deviceAyseLinked1 = {
   model: "DummyTemp",
   reference: "linked1",
   metadata: {},
   measures: [],
   engineId: "engine-ayse",
   assetId: "container-linked1",
-});
+};
+const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinked1.reference}`;
 
-const assetAyseLinked = new Asset({
-  model: "container",
-  reference: "linked1",
-  metadata: {
-    weight: 10,
-    height: 11,
-  },
-  deviceLinks: [
-    {
-      measureNamesLinks: [],
-      deviceId: "DummyTemp-linked1",
-    },
-  ],
-});
-
-const assetAyseUnlinked = new Asset({
-  model: "container",
-  reference: "unlinked1",
-  metadata: {
-    weight: 20,
-    height: 22,
-  },
-  deviceLinks: [],
-});
-
-const deviceAyseUnlinked1 = new Device({
+const deviceAyseUnlinked1 = {
   model: "DummyTemp",
   reference: "unlinked1",
   metadata: {},
   measures: [],
   engineId: "engine-ayse",
   assetId: null,
-});
+};
+const deviceAyseUnlinked1Id = `${deviceAyseUnlinked1.model}-${deviceAyseUnlinked1.reference}`;
+
+const deviceAyseUnlinked2 = {
+  model: "DummyTemp",
+  reference: "unlinked2",
+  metadata: {},
+  measures: [],
+  engineId: "engine-ayse",
+  assetId: null,
+};
+const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
+
+const assetAyseLinked = {
+  model: "container",
+  reference: "linked1",
+  metadata: {
+    weight: 10,
+    height: 11,
+  },
+  linkedDevices: [
+    {
+      measures: {
+        temperature: "temperatureExt",
+      },
+      id: "DummyTemp-linked1",
+    },
+  ],
+};
+const assetAyseLinkedId = `${assetAyseLinked.model}-${assetAyseLinked.reference}`;
+
+const assetAyseUnlinked = {
+  model: "container",
+  reference: "unlinked1",
+  metadata: {
+    weight: 20,
+    height: 22,
+  },
+  linkedDevices: [],
+};
+const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.reference}`;
 
 module.exports = {
   "device-manager": {
     devices: [
-      { index: { _id: deviceAyseLinked1._id } },
-      deviceAyseLinked1._source,
-      { index: { _id: deviceDetached1._id } },
-      deviceDetached1._source,
-      { index: { _id: deviceAyseUnlinked1._id } },
-      deviceAyseUnlinked1._source,
+      { index: { _id: deviceAyseLinked1Id } },
+      deviceAyseLinked1,
+      { index: { _id: deviceDetached1Id } },
+      deviceDetached1,
+      { index: { _id: deviceAyseUnlinked1Id } },
+      deviceAyseUnlinked1,
+      { index: { _id: deviceAyseUnlinked2Id } },
+      deviceAyseUnlinked2,
     ],
   },
 
   // Index "engine-ayse"
   "engine-ayse": {
     devices: [
-      { index: { _id: deviceAyseLinked1._id } },
-      deviceAyseLinked1._source,
-      { index: { _id: deviceAyseUnlinked1._id } },
-      deviceAyseUnlinked1._source,
+      { index: { _id: deviceAyseLinked1Id } },
+      deviceAyseLinked1,
+      { index: { _id: deviceAyseUnlinked1Id } },
+      deviceAyseUnlinked1,
+      { index: { _id: deviceAyseUnlinked2Id } },
+      deviceAyseUnlinked2,
     ],
     assets: [
-      { index: { _id: assetAyseLinked._id } },
-      assetAyseLinked._source,
-      { index: { _id: assetAyseUnlinked._id } },
-      assetAyseUnlinked._source,
+      { index: { _id: assetAyseLinkedId } },
+      assetAyseLinked,
+      { index: { _id: assetAyseUnlinkedId } },
+      assetAyseUnlinked,
     ],
   },
 };

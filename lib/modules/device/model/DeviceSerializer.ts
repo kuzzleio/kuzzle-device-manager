@@ -1,6 +1,5 @@
 import { KDocument } from "kuzzle";
 
-import { Device } from "./Device";
 import { DeviceContent } from "../types/DeviceContent";
 
 export class DeviceSerializer {
@@ -8,7 +7,7 @@ export class DeviceSerializer {
     return `${model}-${reference}`;
   }
 
-  static serialize(device: Device): KDocument<DeviceContent> {
+  static serialize(device: KDocument<DeviceContent>): KDocument<DeviceContent> {
     return {
       _id: device._id,
       _source: device._source,

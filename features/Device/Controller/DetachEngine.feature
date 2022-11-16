@@ -23,6 +23,6 @@ Feature: Detach device from engine
       | engineId | "engine-ayse"       |
       | _id      | "DummyTemp-linked1" |
     Then The document "engine-ayse":"assets":"container-linked1" content match:
-      | deviceLinks | [] |
+      | linkedDevices | [] |
     Then The document "device-manager":"devices":"DummyTemp-linked1" content match:
       | assetId | null |
