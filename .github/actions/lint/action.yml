@@ -8,3 +8,4 @@ runs:
       run: |
         npm run docker npm ci
         npm run test:lint
+        npm run build

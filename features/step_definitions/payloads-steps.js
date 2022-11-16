@@ -1,34 +1,43 @@
 const { Then } = require("cucumber");
 
+// Delay in second for dates sent between two steps so the plugin accept the new
+// Add a delay for subsequent payload of the same device so the plugin accept it
+const deviceDelay = {};
+
 Then(
-  /I (successfully )?receive a "(.*?)" payload with:/,
-  async function (expectSuccess, payloadType, dataTable) {
-    const changes = this.parseObject(dataTable);
+  /I (try to )?send the following "(.*?)" payloads:/,
+  async function (tryTo, action, dataTable) {
+    const payloads = this.parseObjectArray(dataTable);
 
-    const basePayload = JSON.parse(
-      JSON.stringify(require(`../fixtures/payloads/${payloadType}`))
-    );
+    for (let i = 0; i < payloads.length; i++) {
+      const payload = payloads[i];
 
-    const payload = {
-      ...basePayload,
-      ...changes,
-    };
-
-    try {
-      const response = await this.sdk.query({
-        controller: "device-manager/payload",
-        action: payloadType,
-        source: true,
-        body: payload,
-      });
-
-      this.props.result = response.result;
-    } catch (error) {
-      if (expectSuccess) {
-        throw error;
+      if (deviceDelay[payload.reference]) {
+        deviceDelay[payload.reference] += 2;
+      } else {
+        deviceDelay[payload.reference] = 1;
       }
 
-      this.props.error = error;
+      if (!payload.date) {
+        const delay = deviceDelay[payload.reference] * 1000;
+        payload.date = new Date(Date.now() + delay);
+      }
+
+      try {
+        const { result } = await this.sdk.query({
+          controller: "device-manager/payload",
+          action,
+          body: payload,
+        });
+
+        this.props.result = result;
+      } catch (error) {
+        if (!tryTo) {
+          throw error;
+        }
+
+        this.props.error = error;
+      }
     }
   }
 );

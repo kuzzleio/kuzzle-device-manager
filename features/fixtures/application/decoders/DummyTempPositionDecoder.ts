@@ -10,14 +10,10 @@ import {
 
 export class DummyTempPositionDecoder extends Decoder {
   public measures = [
-    { name: "theTemperature", type: "temperature" },
-    { name: "theBattery", type: "battery" },
-    { name: "thePosition", type: "position" },
+    { name: "temperature", type: "temperature" },
+    { name: "battery", type: "battery" },
+    { name: "position", type: "position" },
   ] as const;
-
-  constructor() {
-    super();
-  }
 
   async validate(payload: JSONObject) {
     if (payload.deviceEUI === undefined) {
@@ -32,17 +28,17 @@ export class DummyTempPositionDecoder extends Decoder {
 
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,
-      "theTemperature",
+      "temperature",
       {
         measuredAt: Date.now(),
         type: "temperature",
-        values: { temperature: payload.register55 },
+        values: { temperature: payload.temperature },
       }
     );
 
     decodedPayload.addMeasurement<PositionMeasurement>(
       payload.deviceEUI,
-      "thePosition",
+      "position",
       {
         measuredAt: Date.now(),
         type: "position",
@@ -51,19 +47,19 @@ export class DummyTempPositionDecoder extends Decoder {
             lat: payload.location.lat,
             lon: payload.location.lon,
           },
-          accuracy: payload.location.accu,
+          accuracy: payload.location.accuracy,
         },
       }
     );
 
     decodedPayload.addMeasurement<BatteryMeasurement>(
       payload.deviceEUI,
-      "theBattery",
+      "battery",
       {
         measuredAt: Date.now(),
         type: "battery",
         values: {
-          battery: payload.batteryLevel * 100,
+          battery: payload.battery * 100,
         },
       }
     );

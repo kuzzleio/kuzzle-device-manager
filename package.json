@@ -8,32 +8,27 @@
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
   },
   "scripts": {
-    "docker": "docker-compose run kuzzle",
-    "npm:docker": "docker-compose run kuzzle npm",
-    "install:docker": "npm run npm:docker install kuzzle",
-    "dev:docker": "docker-compose up",
-    "prod": "node ./features/fixtures/application/app.js",
-    "dev": "NODE_ENV=development npx ergol ./features/fixtures/application/app.ts -c ergol.config.json",
+    "docker": "docker-compose run kuzzle ",
+    "dev": "docker-compose up",
+    "test-app": "node ./features/fixtures/application/app.js",
     "test": "npm run test:lint && npm run test:unit && npm run test:functional",
     "test:unit": "mocha",
     "test:functional": "cucumber-js --require-module ts-node/register --exit --fail-fast",
     "test:lint": "eslint ./lib --ext .ts --config .eslintrc.json",
     "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
-    "test:prettier:fix": "npx prettier lib/ features/ --write",
+    "prettier": "npx prettier lib/ features/ --write",
     "build": "tsc --build tsconfig.json",
     "clean": "touch index.ts && npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
     "package:create": "npm run build && npm pack"
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "csvtojson": "~2.0.10",
-    "json-stable-stringify": "^1.0.1",
     "kuzzle-plugin-commons": "https://github.com/kuzzleio/kuzzle-plugin-commons/archive/refs/tags/1.0.5.tar.gz",
     "lodash": "^4.17.21",
-    "uuid": "~8.3.2"
+    "uuid": "~9.0.0"
   },
   "devDependencies": {
-    "@types/node": "^18.11.0",
+    "@types/node": "^18.11.3",
     "axios": "^1.1.3",
     "cucumber": "^6.0.5",
     "ergol": "^1.0.2",
@@ -45,7 +40,7 @@
     "typescript": "^4.8.4"
   },
   "peerDependencies": {
-    "kuzzle": "^2.19.5"
+    "kuzzle": "^2.17.3"
   },
   "files": [
     "index.js",

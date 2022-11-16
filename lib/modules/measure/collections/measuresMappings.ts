@@ -1,7 +1,5 @@
 /* eslint-disable sort-keys */
 
-import { metadataValue } from "./../../metadata";
-
 export const measuresMappings = {
   dynamic: "strict",
   properties: {
@@ -26,33 +24,15 @@ export const measuresMappings = {
      */
     measuredAt: { type: "date" },
 
-    /**
-     * Name given by the decoder to the measure.
-     */
-    deviceMeasureName: { type: "keyword" },
-
-    /**
-     * Name given by the `deviceLink` of the linked asset.
-     */
-    assetMeasureName: { type: "keyword" },
-
-    /**
-     * Measurement self-description.
-     */
-    unit: {
-      dynamic: "false",
-      properties: {},
-    },
     asset: {
       properties: {
-        _id: { type: "keyword" },
-        _source: {
+        id: { type: "keyword" },
+        model: { type: "keyword" },
+        reference: { type: "keyword" },
+        measureName: { type: "keyword" },
+        metadata: {
           properties: {
-            category: { type: "keyword" },
-            metadata: metadataValue,
-            model: { type: "keyword" },
-            reference: { type: "keyword" },
-            type: { type: "keyword" },
+            // populated with asset metadata mappings
           },
         },
       },
@@ -70,6 +50,8 @@ export const measuresMappings = {
          */
         type: { type: "keyword" },
 
+        measureName: { type: "keyword" },
+
         /**
          * Array of payloads uuids that were used to create this measure.
          */
@@ -77,6 +59,8 @@ export const measuresMappings = {
 
         // E.g. "AbeewayTemp"
         deviceModel: { type: "keyword" },
+
+        reference: { type: "keyword" },
 
         /**
          * ID of the origin. Can be:

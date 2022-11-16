@@ -1,38 +1,33 @@
+/* eslint-disable sort-keys */
+
 export const devicesMappings = {
   dynamic: "strict",
   properties: {
-    assetId: {
-      fields: {
-        text: { type: "text" },
-      },
+    model: {
       type: "keyword",
+      fields: { text: { type: "text" } },
+    },
+    reference: {
+      type: "keyword",
+      fields: { text: { type: "text" } },
+    },
+    assetId: {
+      type: "keyword",
+      fields: { text: { type: "text" } },
     },
     engineId: {
-      fields: {
-        text: { type: "text" },
-      },
       type: "keyword",
+      fields: { text: { type: "text" } },
+    },
+    metadata: {
+      properties: {
+        // populated with device models
+      },
     },
     measures: {
       properties: {
-        // measures mappings will be injected by the plugin
+        // populated with measure models
       },
-    },
-    metadata: {
-      dynamic: "false",
-      properties: {},
-    },
-    model: {
-      fields: {
-        text: { type: "text" },
-      },
-      type: "keyword",
-    },
-    reference: {
-      fields: {
-        text: { type: "text" },
-      },
-      type: "keyword",
     },
   },
 };

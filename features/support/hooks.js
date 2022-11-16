@@ -7,10 +7,6 @@ const defaultRights = require("../fixtures/rights");
 const defaultMappings = require("../fixtures/mappings");
 
 const World = require("./world");
-const { TreeNodeMappings } = require("../fakeclasses/TreeNodeMapping");
-const {
-  InvertTreeNodeMappings,
-} = require("../fakeclasses/InvertTreeNodeMapping");
 
 async function resetEngine(sdk, index) {
   await sdk
@@ -28,15 +24,22 @@ async function resetEngine(sdk, index) {
   });
 }
 
-async function createNodeCollection(sdk) {
-  await sdk.index.delete("test").catch(() => {});
-  await sdk.index.create("test");
-  await Promise.all([
-    sdk.collection.create("test", "node", { mappings: TreeNodeMappings }),
-    sdk.collection.create("test", "invertnode", {
-      mappings: InvertTreeNodeMappings,
-    }),
-  ]);
+async function createEngine(sdk, index) {
+  const { result } = await sdk.query({
+    controller: "device-manager/engine",
+    action: "exists",
+    index,
+  });
+
+  if (result.exists) {
+    return;
+  }
+
+  await sdk.query({
+    controller: "device-manager/engine",
+    action: "create",
+    index,
+  });
 }
 
 BeforeAll({ timeout: 30 * 1000 }, async function () {
@@ -49,8 +52,8 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
   await world.sdk.connect();
 
   await Promise.all([
-    resetEngine(world.sdk, "engine-ayse"),
-    resetEngine(world.sdk, "engine-kuzzle"),
+    createEngine(world.sdk, "engine-ayse"),
+    createEngine(world.sdk, "engine-kuzzle"),
     world.sdk.query({
       controller: "admin",
       action: "loadMappings",
@@ -63,7 +66,6 @@ BeforeAll({ timeout: 30 * 1000 }, async function () {
       refresh: "wait_for",
       onExistingUsers: "overwrite",
     }),
-    createNodeCollection(world.sdk),
   ]);
 
   world.sdk.disconnect();
@@ -80,21 +82,14 @@ Before({ timeout: 30 * 1000 }, async function () {
   await Promise.all([
     truncateCollection(this.sdk, "device-manager", "devices"),
     truncateCollection(this.sdk, "device-manager", "payloads"),
-    removeCatalogEntries(this.sdk, "device-manager"),
 
     truncateCollection(this.sdk, "engine-kuzzle", "assets"),
     truncateCollection(this.sdk, "engine-kuzzle", "measures"),
     truncateCollection(this.sdk, "engine-kuzzle", "devices"),
-    removeCatalogEntries(this.sdk, "engine-kuzzle"),
-    truncateCollection(this.sdk, "engine-kuzzle", "asset-category"),
-    truncateCollection(this.sdk, "engine-kuzzle", "metadata"),
 
     truncateCollection(this.sdk, "engine-ayse", "assets"),
     truncateCollection(this.sdk, "engine-ayse", "measures"),
     truncateCollection(this.sdk, "engine-ayse", "devices"),
-    truncateCollection(this.sdk, "engine-ayse", "asset-category"),
-    truncateCollection(this.sdk, "engine-ayse", "metadata"),
-    removeCatalogEntries(this.sdk, "engine-ayse"),
 
     truncateCollection(this.sdk, "tests", "events"),
   ]);
@@ -201,6 +196,21 @@ Before({ tags: "@tenant-custom" }, async function () {
   } catch {}
 });
 
+Before({ tags: "@models" }, async function () {
+  await this.sdk.collection.refresh("device-manager", "models");
+  await this.sdk.document.deleteByQuery("device-manager", "models", {
+    query: {
+      ids: {
+        values: [
+          "model-measure-presence",
+          "model-asset-plane",
+          "model-device-Zigbee",
+        ],
+      },
+    },
+  });
+});
+
 async function truncateCollection(sdk, index, collection) {
   return sdk.collection
     .refresh(index, collection)
@@ -212,19 +222,4 @@ async function truncateCollection(sdk, index, collection) {
         throw error;
       }
     });
-}
-
-async function removeCatalogEntries(sdk, index) {
-  return sdk.collection.refresh(index, "config").then(() =>
-    sdk.document.deleteByQuery(
-      index,
-      "config",
-      {
-        query: {
-          equals: { type: "catalog" },
-        },
-      },
-      { lang: "koncorde", refresh: "wait_for" }
-    )
-  );
 }
