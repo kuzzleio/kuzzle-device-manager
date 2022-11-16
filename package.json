@@ -8,11 +8,8 @@
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
   },
   "scripts": {
-    "npm:docker": "docker-compose run kuzzle npm",
-    "install:docker": "npm run npm:docker install kuzzle",
-    "dev:docker": "docker-compose up",
-    "prod": "node ./features/fixtures/application/app.js",
-    "dev": "NODE_ENV=development npx ergol ./features/fixtures/application/app.ts -c ergol.config.json",
+    "docker": "docker-compose run kuzzle ",
+    "dev": "docker-compose up",
     "test": "npm run test:lint && npm run test:unit && npm run test:functional",
     "test:unit": "mocha",
     "test:functional": "cucumber-js --require-module ts-node/register --exit --fail-fast",

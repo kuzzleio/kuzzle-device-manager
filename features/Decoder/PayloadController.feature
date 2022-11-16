@@ -75,7 +75,7 @@ Feature: Payloads Controller
     Given I send the following "dummy-temp" payloads:
       | deviceEUI | temperature | metadata.color |
       | "12345"   | 21.1        | "RED"          |
-    Then The formatted document "device-manager":"devices":"DummyTemp-12345" content match:
+    Then The document "device-manager":"devices":"DummyTemp-12345" content match:
       | reference      | "12345"     |
       | model          | "DummyTemp" |
       | metadata.color | "RED"       |
