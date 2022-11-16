@@ -1,6 +1,6 @@
 {
   "name": "kuzzle-device-manager",
-  "version": "2.0.0-rc27",
+  "version": "2.0.0-rc28",
   "description": "Manage your IoT devices and assets. Choose a provisioning strategy, receive and decode payload, handle your IoT business logic.",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
@@ -8,7 +8,6 @@
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
   },
   "scripts": {
-    "docker": "docker-compose run kuzzle",
     "npm:docker": "docker-compose run kuzzle npm",
     "install:docker": "npm run npm:docker install kuzzle",
     "dev:docker": "docker-compose up",
@@ -43,7 +42,7 @@
     "typescript": "^4.8.4"
   },
   "peerDependencies": {
-    "kuzzle": "^2.19.5"
+    "kuzzle": "^2.17.3"
   },
   "files": [
     "index.js",
