@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Backend, JSONObject, Plugin } from "kuzzle";
+import { Backend, InternalError, JSONObject, Plugin } from "kuzzle";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 
 import { assetsMappings } from "../modules/asset";
@@ -15,6 +15,11 @@ import { onAsk } from "../modules/shared/utils/ask";
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { InternalCollection } from "./InternalCollection";
+
+const digitalTwinMappings = {
+  asset: assetsMappings,
+  device: devicesMappings,
+} as const;
 
 export type AskEngineUpdateAll = {
   name: "ask:device-manager:engine:updateAll";
@@ -46,8 +51,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     this.context = plugin.context;
 
-    onAsk<AskEngineUpdateAll>("ask:device-manager:engine:updateAll", () =>
-      this.updateEngines()
+    onAsk<AskEngineUpdateAll>(
+      "ask:device-manager:engine:updateAll",
+      async () => {
+        await this.updateEngines();
+        await this.createDevicesCollection(this.config.adminIndex);
+      }
     );
   }
 
@@ -80,7 +89,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createDevicesCollection(index));
 
-    promises.push(this.createMeasuresCollection(index));
+    promises.push(this.createMeasuresCollection(index, group));
 
     promises.push(this.engineConfigManager.createCollection(index));
 
@@ -103,7 +112,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createDevicesCollection(index));
 
-    promises.push(this.createMeasuresCollection(index));
+    promises.push(this.createMeasuresCollection(index, group));
 
     const collections = await Promise.all(promises);
 
@@ -122,23 +131,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return { collections: ["assets", "devices", "measures"] };
   }
 
-  async createAssetsCollection(engineId: string, engineGroup = "commons") {
-    const models = await this.getModels<AssetModelContent>(
-      this.config.adminIndex,
+  async createAssetsCollection(engineId: string, engineGroup: string) {
+    const mappings = await this.getDigitalTwinMappings<AssetModelContent>(
       "asset",
       engineGroup
     );
-
-    const mappings = JSON.parse(JSON.stringify(assetsMappings));
-
-    for (const model of models) {
-      mappings.properties.metadata.properties = _.merge(
-        mappings.properties.metadata.properties,
-        model._source.asset.metadataMappings
-      );
-    }
-
-    mappings.properties.measures = await this.getMeasuresMappings();
 
     await this.sdk.collection.create(
       engineId,
@@ -149,22 +146,66 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.ASSETS;
   }
 
-  async createDevicesCollection(engineId: string) {
-    const models = await this.getModels<DeviceModelContent>(
+  private async getDigitalTwinMappings<
+    TDigitalTwinModelContent extends AssetModelContent | DeviceModelContent
+  >(digitalTwinType: "asset" | "device", engineGroup?: string) {
+    const models = await this.getModels<TDigitalTwinModelContent>(
       this.config.adminIndex,
-      "device"
+      digitalTwinType,
+      engineGroup
     );
 
-    const mappings = JSON.parse(JSON.stringify(devicesMappings));
+    const measureModels = await this.getModels<MeasureModelContent>(
+      this.config.adminIndex,
+      "measure"
+    );
+
+    const mappings = JSON.parse(
+      JSON.stringify(digitalTwinMappings[digitalTwinType])
+    );
 
     for (const model of models) {
-      mappings.properties.metadata.properties = _.merge(
+      _.merge(
         mappings.properties.metadata.properties,
-        model._source.device.metadataMappings
+        model._source[digitalTwinType].metadataMappings
       );
+
+      for (const [measureName, measureType] of Object.entries(
+        model._source[digitalTwinType].measures
+      )) {
+        const measureModel = measureModels.find(
+          (m) => m._source.measure.type === measureType
+        );
+
+        if (!measureModel) {
+          throw new InternalError(
+            `Cannot find measure "${measureType}" declared in ${[
+              digitalTwinType,
+            ]} "${model._source[digitalTwinType].model}"`
+          );
+        }
+
+        mappings.properties.measures.properties[measureName] = {
+          properties: {
+            measuredAt: { type: "date" },
+            name: { type: "keyword" },
+            payloadUuids: { type: "keyword" },
+            type: { type: "keyword" },
+            values: {
+              properties: measureModel._source.measure.valuesMappings,
+            },
+          },
+        };
+      }
     }
 
-    mappings.properties.measures = await this.getMeasuresMappings();
+    return mappings;
+  }
+
+  async createDevicesCollection(engineId: string) {
+    const mappings = await this.getDigitalTwinMappings<DeviceModelContent>(
+      "device"
+    );
 
     await this.sdk.collection.create(
       engineId,
@@ -175,8 +216,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.DEVICES;
   }
 
-  async createMeasuresCollection(engineId: string) {
-    const mappings = await this.getMeasuresMappings();
+  async createMeasuresCollection(engineId: string, engineGroup: string) {
+    const mappings = await this.getMeasuresMappings(engineGroup);
 
     await this.sdk.collection.create(
       engineId,
@@ -187,7 +228,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.MEASURES;
   }
 
-  private async getMeasuresMappings() {
+  private async getMeasuresMappings(engineGroup: string) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.adminIndex,
       "measure"
@@ -196,11 +237,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const mappings = JSON.parse(JSON.stringify(measuresMappings));
 
     for (const model of models) {
-      mappings.properties.values.properties = _.merge(
+      _.merge(
         mappings.properties.values.properties,
         model._source.measure.valuesMappings
       );
     }
+
+    const _assetsMappings = await this.getDigitalTwinMappings(
+      "asset",
+      engineGroup
+    );
+    mappings.properties.asset.properties.metadata.properties =
+      _assetsMappings.properties.metadata.properties;
 
     return mappings;
   }

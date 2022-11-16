@@ -12,7 +12,7 @@ import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 import {
   batteryMeasure,
   humidityMeasure,
-  MeasureUnit,
+  MeasureDefinition,
   movementMeasure,
   positionMeasure,
   temperatureMeasure,
@@ -21,8 +21,13 @@ import {
 import { DeviceModule, devicesMappings } from "../modules/device";
 import { MeasureModule } from "../modules/measure";
 import { AssetModule } from "../modules/asset";
-import { Decoder, DecoderModule, payloadsMappings } from "../modules/decoder";
-import { ModelModule, modelsMappings } from "../modules/model";
+import { DecoderModule, payloadsMappings } from "../modules/decoder";
+import {
+  AssetModelDefinition,
+  DeviceModelDefinition,
+  ModelModule,
+  modelsMappings,
+} from "../modules/model";
 import { lock } from "../modules/shared/utils/lock";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
@@ -33,6 +38,8 @@ import { ModelsRegister } from "./registers/ModelsRegister";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
+  public roles = {};
+
   private deviceManagerEngine: DeviceManagerEngine;
   private adminConfigManager: ConfigManager;
   private engineConfigManager: ConfigManager;
@@ -53,36 +60,112 @@ export class DeviceManagerPlugin extends Plugin {
 
   get models() {
     return {
+      /**
+       * Register an asset model
+       *
+       * @param engineGroup Engine group name
+       * @param model Name of the asset model
+       * @param definition.measuresNames Array describing measures names and types
+       * @param definition.metadataMappings Metadata mappings definition
+       * @param definition.defaultMetadata Default metadata values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerAsset(
+       *   "logistic",
+       *   "container",
+       *   {
+       *     measuresNames: [
+       *       { name: "temperatureExt", type: "temperature" },
+       *       { name: "temperatureInt", type: "temperature" },
+       *       { name: "position", type: "position" },
+       *     ],
+       *     metadataMappings: {
+       *       weight: { type: "integer" },
+       *       height: { type: "integer" },
+       *     },
+       *     defaultMetadata: {
+       *       height: 20
+       *     }
+       *   }
+       * );
+       * ```
+       */
       registerAsset: (
+        engineGroup: string,
         model: string,
-        metadataMappings: JSONObject,
-        { engineGroup }: { engineGroup: string }
+        definition: AssetModelDefinition
       ) => {
-        this.modelsRegister.registerAsset(model, metadataMappings, {
-          engineGroup,
-        });
-      },
+        const measures: Record<string, string> = {};
 
-      registerDevice: (
-        model: string,
-        decoder: Decoder,
-        metadataMappings: JSONObject = {}
-      ) => {
-        this.decodersRegister.register(decoder);
-        this.modelsRegister.registerDevice(model, metadataMappings);
-      },
-
-      registerMeasure: (
-        name: string,
-        {
-          unit,
-          valuesMappings,
-        }: {
-          unit: MeasureUnit;
-          valuesMappings: JSONObject;
+        for (const measure of definition.measuresNames) {
+          measures[measure.name] = measure.type;
         }
-      ) => {
-        this.modelsRegister.registerMeasure(name, unit, valuesMappings);
+
+        this.modelsRegister.registerAsset(
+          engineGroup,
+          model,
+          definition.metadataMappings,
+          measures,
+          definition.defaultMetadata
+        );
+      },
+
+      /**
+       * Register a device model
+       *
+       * @param model Name of the device model
+       * @param definition.decoded Decoder used to decode payloads
+       * @param definition.metadataMappings Metadata mappings definition
+       * @param definition.defaultMetadata Default metadata values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerDevice(
+       *   "Abeeway",
+       *   {
+       *     decoder: new DummyTempPositionDecoder(),
+       *     metadataMappings: {
+       *       serial: { type: "keyword" },
+       *     }
+       *   }
+       * );
+       * ```
+       */
+      registerDevice: (model: string, definition: DeviceModelDefinition) => {
+        this.decodersRegister.register(definition.decoder);
+
+        const measures: Record<string, string> = {};
+
+        for (const measure of definition.decoder.measures) {
+          measures[measure.name] = measure.type;
+        }
+
+        this.modelsRegister.registerDevice(
+          model,
+          definition.metadataMappings,
+          measures,
+          definition.defaultMetadata
+        );
+      },
+
+      /**
+       * Register a new measure
+       *
+       * @param name Name of the measure
+       * @param valuesMappings Mappings for the measure values
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerMeasure("acceleration", {
+       *   x: { type: "float" },
+       *   y: { type: "float" },
+       *   z: { type: "float" },
+       * });
+       * ```
+       */
+      registerMeasure: (name: string, measureDefinition: MeasureDefinition) => {
+        this.modelsRegister.registerMeasure(name, measureDefinition);
       },
     };
   }
@@ -103,6 +186,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.hooks = {};
 
     this.config = {
+      ignoreStartupErrors: false,
       engine: {
         autoUpdate: true,
       },
@@ -211,15 +295,49 @@ export class DeviceManagerPlugin extends Plugin {
     );
 
     this.hooks["kuzzle:state:live"] = async () => {
-      await this.decodersRegister.createDefaultRights();
-      this.context.log.info(
-        "Default rights for payload controller has been registered."
-      );
+      try {
+        await this.decodersRegister.createDefaultRights();
+        await this.createDefaultRoles();
+      } catch (error) {
+        if (this.config.ignoreStartupErrors) {
+          this.context.log.warn(
+            `WARNING: An error occured during plugin initialization: ${error.message}`
+          );
+        } else {
+          throw error;
+        }
+      }
     };
 
     this.decodersRegister.printDecoders();
 
-    await this.initDatabase();
+    try {
+      await this.initDatabase();
+    } catch (error) {
+      if (this.config.ignoreStartupErrors) {
+        this.context.log.warn(
+          `WARNING: An error occured during plugin initialization: ${error.message}`
+        );
+      } else {
+        throw error;
+      }
+    }
+
+    if (this.config.ignoreStartupErrors) {
+      this.context.log.warn(
+        'WARNING: The "ignoreStartupErrors" option is enabled. Additional errors may appears at runtime.'
+      );
+    }
+  }
+
+  private async createDefaultRoles() {
+    const promises = [];
+
+    for (const [roleId, role] of Object.entries(this.roles)) {
+      promises.push(this.sdk.security.createOrReplaceRole(roleId, role));
+    }
+
+    await Promise.all(promises);
   }
 
   /**

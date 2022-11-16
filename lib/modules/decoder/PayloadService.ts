@@ -1,4 +1,10 @@
-import { Backend, JSONObject, KuzzleRequest, PluginContext } from "kuzzle";
+import {
+  Backend,
+  JSONObject,
+  KDocument,
+  KuzzleRequest,
+  PluginContext,
+} from "kuzzle";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -6,7 +12,7 @@ import {
   DeviceManagerConfiguration,
   InternalCollection,
 } from "../../core";
-import { Device, DeviceContent, DeviceSerializer } from "../device";
+import { DeviceContent, DeviceSerializer } from "../device";
 import { EventMeasureIngest } from "../measure";
 
 import { Decoder } from "./Decoder";
@@ -119,17 +125,14 @@ export class PayloadService {
       refresh?: any;
     } = {}
   ) {
-    const devices: Device[] = [];
-
-    const { successes, errors } = await this.sdk.document.mGet<DeviceContent>(
-      this.config.adminIndex,
-      InternalCollection.DEVICES,
-      references.map((reference) => DeviceSerializer.id(deviceModel, reference))
-    );
-
-    for (const { _source, _id } of successes) {
-      devices.push(new Device(_source, _id));
-    }
+    const { successes: devices, errors } =
+      await this.sdk.document.mGet<DeviceContent>(
+        this.config.adminIndex,
+        InternalCollection.DEVICES,
+        references.map((reference) =>
+          DeviceSerializer.id(deviceModel, reference)
+        )
+      );
 
     // If we have unknown devices, let's check if we should register them
     if (errors.length > 0) {
@@ -160,19 +163,24 @@ export class PayloadService {
     deviceModel: string,
     deviceIds: string[],
     { refresh }: { refresh: any }
-  ): Promise<Device[]> {
+  ): Promise<KDocument<DeviceContent>[]> {
     const newDevices = deviceIds.map((deviceId) => {
       // Reference may contains a "-"
       const [, ...rest] = deviceId.split("-");
       const reference = rest.join("-");
 
+      const body: DeviceContent = {
+        assetId: null,
+        engineId: null,
+        measures: {},
+        metadata: {},
+        model: deviceModel,
+        reference,
+      };
+
       return {
         _id: DeviceSerializer.id(deviceModel, reference),
-        body: {
-          measures: [],
-          model: deviceModel,
-          reference,
-        },
+        body,
       };
     });
 
@@ -190,7 +198,7 @@ export class PayloadService {
       );
     }
 
-    return successes.map(({ _source, _id }) => new Device(_source as any, _id));
+    return successes as KDocument<DeviceContent>[];
   }
 
   public async prune(

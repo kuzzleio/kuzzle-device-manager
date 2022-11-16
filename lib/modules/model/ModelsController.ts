@@ -1,6 +1,5 @@
 import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
-import { MeasureUnit } from "../measure";
 import { ModelService } from "./ModelService";
 import {
   ApiModelCreateAssetResult,
@@ -71,12 +70,14 @@ export class ModelsController {
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
     const defaultValues = request.getBodyObject("defaultValues", {});
+    const measures = request.getBodyObject("measures", {});
 
     const assetModel = await this.modelService.writeAsset(
       engineGroup,
       model,
       metadataMappings,
-      defaultValues
+      defaultValues,
+      measures
     );
 
     return assetModel;
@@ -88,11 +89,13 @@ export class ModelsController {
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
     const defaultValues = request.getBodyObject("defaultValues", {});
+    const measures = request.getBodyObject("measures");
 
     const deviceModel = await this.modelService.writeDevice(
       model,
       metadataMappings,
-      defaultValues
+      defaultValues,
+      measures
     );
 
     return deviceModel;
@@ -101,13 +104,11 @@ export class ModelsController {
   async writeMeasure(
     request: KuzzleRequest
   ): Promise<ApiModelCreateMeasureResult> {
-    const name = request.getBodyString("name");
-    const unit = request.getBodyObject("unit", {}) as MeasureUnit;
+    const type = request.getBodyString("type");
     const valuesMappings = request.getBodyObject("valuesMappings");
 
     const measureModel = await this.modelService.writeMeasure(
-      name,
-      unit,
+      type,
       valuesMappings
     );
 

@@ -9,7 +9,7 @@ Feature: UnlinkAsset
     And The document "engine-ayse":"devices":"DummyTemp-linked1" content match:
       | assetId | null |
     And The document "engine-ayse":"assets":"container-linked1" content match:
-      | deviceLinks.length | 0 |
+      | linkedDevices.length | 0 |
 
   Scenario: Error when the device was not linked
     When I execute the action "device-manager/devices":"unlinkAsset" with args:

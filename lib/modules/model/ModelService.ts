@@ -6,7 +6,6 @@ import {
   DeviceManagerPlugin,
   InternalCollection,
 } from "../../core";
-import { MeasureUnit } from "../measure";
 import { ask, onAsk } from "../shared/utils/ask";
 
 import {
@@ -48,15 +47,16 @@ export class ModelService {
     engineGroup: string,
     model: string,
     metadataMappings: JSONObject,
-    defaultValues: JSONObject
+    defaultMetadata: JSONObject,
+    measures: JSONObject
   ): Promise<KDocument<AssetModelContent>> {
     const modelContent: AssetModelContent = {
-      asset: { defaultValues, metadataMappings, model },
+      asset: { defaultMetadata, measures, metadataMappings, model },
       engineGroup,
       type: "asset",
     };
 
-    this.checkDefaultValues(metadataMappings, defaultValues);
+    this.checkDefaultValues(metadataMappings, defaultMetadata);
 
     const assetModel = await this.sdk.document.upsert<AssetModelContent>(
       this.config.adminIndex,
@@ -76,7 +76,7 @@ export class ModelService {
 
   private checkDefaultValues(
     metadataMappings: JSONObject,
-    defaultValues: JSONObject
+    defaultMetadata: JSONObject
   ) {
     const metadata = Object.keys(
       JSON.parse(
@@ -86,7 +86,7 @@ export class ModelService {
       )
     );
 
-    const values = Object.keys(flattenObject(defaultValues));
+    const values = Object.keys(flattenObject(defaultMetadata));
 
     for (let i = 0; i < values.length; i++) {
       if (!metadata.includes(values[i])) {
@@ -100,10 +100,11 @@ export class ModelService {
   async writeDevice(
     model: string,
     metadataMappings: JSONObject,
-    defaultValues: JSONObject
+    defaultMetadata: JSONObject,
+    measures: JSONObject
   ): Promise<KDocument<DeviceModelContent>> {
     const modelContent: DeviceModelContent = {
-      device: { defaultValues, metadataMappings, model },
+      device: { defaultMetadata, measures, metadataMappings, model },
       type: "device",
     };
 
@@ -124,12 +125,11 @@ export class ModelService {
   }
 
   async writeMeasure(
-    name: string,
-    unit: MeasureUnit,
+    type: string,
     valuesMappings: JSONObject
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
-      measure: { name, unit, valuesMappings },
+      measure: { type, valuesMappings },
       type: "measure",
     };
 
@@ -179,11 +179,12 @@ export class ModelService {
     const query = {
       and: [{ equals: { type: "asset" } }, { equals: { engineGroup } }],
     };
+    const sort = { "asset.model": "asc" };
 
     const result = await this.sdk.document.search<AssetModelContent>(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      { query },
+      { query, sort },
       { lang: "koncorde", size: 100 }
     );
 
@@ -194,11 +195,12 @@ export class ModelService {
     const query = {
       and: [{ equals: { type: "device" } }],
     };
+    const sort = { "device.model": "asc" };
 
     const result = await this.sdk.document.search<DeviceModelContent>(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      { query },
+      { query, sort },
       { lang: "koncorde", size: 100 }
     );
 
@@ -209,11 +211,12 @@ export class ModelService {
     const query = {
       and: [{ equals: { type: "measure" } }],
     };
+    const sort = { "measure.type": "asc" };
 
     const result = await this.sdk.document.search<MeasureModelContent>(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      { query },
+      { query, sort },
       { lang: "koncorde", size: 100 }
     );
 

@@ -1,10 +1,4 @@
-import {
-  BadRequestError,
-  ControllerDefinition,
-  JSONObject,
-  KuzzleRequest,
-  PluginImplementationError,
-} from "kuzzle";
+import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
 
@@ -165,28 +159,10 @@ export class DevicesController {
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata", {});
-    const assetId = request.input.body.assetId;
-    const measureNamesLinks = request.getBodyArray("measureNamesLinks", []);
     const refresh = request.getRefresh();
-
-    if (assetId) {
-      this.validateMeasureNamesLinks(measureNamesLinks);
-    }
-
-    if (assetId && !assetId.length && measureNamesLinks.length === 0) {
-      throw new PluginImplementationError(
-        "A link request is given without any assetId"
-      );
-    }
 
     const device = await this.deviceService.create(model, reference, metadata, {
       engineId,
-      linkRequest: {
-        assetId,
-        deviceId: DeviceSerializer.id(model, reference),
-        engineId,
-        measureNamesLinks,
-      },
       refresh,
     });
 
@@ -227,16 +203,14 @@ export class DevicesController {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
     const assetId = request.getString("assetId");
+    const measureNames = request.getBodyObject("measureNames");
     const refresh = request.getRefresh();
-    const measureNamesLinks = request.getBodyArray("measureNamesLinks");
-
-    this.validateMeasureNamesLinks(measureNamesLinks);
 
     const { asset, device } = await this.deviceService.linkAsset(
       engineId,
       deviceId,
       assetId,
-      measureNamesLinks,
+      measureNames,
       { refresh }
     );
 
@@ -263,26 +237,5 @@ export class DevicesController {
       asset: AssetSerializer.serialize(asset),
       device: DeviceSerializer.serialize(device),
     };
-  }
-
-  private validateMeasureNamesLinks(measureNamesLinks: JSONObject) {
-    if (measureNamesLinks.length === 0) {
-      throw new BadRequestError(
-        `Measures name mappings is empty ("measureNamesLinks")`
-      );
-    }
-
-    for (let i = 0; i < measureNamesLinks.length; i++) {
-      if (!measureNamesLinks[i].assetMeasureName) {
-        throw new BadRequestError(
-          `Missing "measureNamesLinks[${i}].assetMeasureName"`
-        );
-      }
-      if (!measureNamesLinks[i].deviceMeasureName) {
-        throw new BadRequestError(
-          `Missing "measureNamesLinks[${i}].deviceMeasureName"`
-        );
-      }
-    }
   }
 }

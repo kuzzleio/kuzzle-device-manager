@@ -15,10 +15,6 @@ export class DummyTempPositionDecoder extends Decoder {
     { name: "position", type: "position" },
   ] as const;
 
-  constructor() {
-    super();
-  }
-
   async validate(payload: JSONObject) {
     if (payload.deviceEUI === undefined) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');

@@ -1,10 +1,10 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject, KDocument } from "kuzzle";
 
-import { Asset } from "../../../modules/asset";
-import { Device } from "../../../modules/device";
+import { DeviceContent } from "../../../modules/device";
+import { AssetContent } from "../../../modules/asset";
 import { Metadata } from "../../../modules/shared";
 
-import { MeasureContent, Measurement } from "./MeasureContent";
+import { DecodedMeasurement, MeasureContent } from "./MeasureContent";
 
 /**
  * @internal
@@ -14,8 +14,8 @@ export type EventMeasureIngest = {
 
   args: [
     {
-      device: Device;
-      measurements: Measurement<JSONObject>[];
+      device: KDocument<DeviceContent>;
+      measurements: DecodedMeasurement<JSONObject>[];
       metadata: Metadata;
       payloadUuids: string[];
     }
@@ -27,8 +27,8 @@ export type EventMeasureProcessBefore = {
 
   args: [
     {
-      asset: Asset;
-      device: Device;
+      readonly asset: KDocument<AssetContent>;
+      readonly device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     }
   ];
@@ -39,8 +39,8 @@ export type TenantEventMeasureProcessBefore = {
 
   args: [
     {
-      asset: Asset;
-      device: Device;
+      readonly asset: KDocument<AssetContent>;
+      readonly device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     }
   ];
@@ -51,8 +51,8 @@ export type EventMeasureProcessAfter = {
 
   args: [
     {
-      asset: Asset;
-      device: Device;
+      asset: KDocument<AssetContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     }
   ];
@@ -63,8 +63,8 @@ export type TenantEventMeasureProcessAfter = {
 
   args: [
     {
-      asset: Asset;
-      device: Device;
+      asset: KDocument<AssetContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     }
   ];

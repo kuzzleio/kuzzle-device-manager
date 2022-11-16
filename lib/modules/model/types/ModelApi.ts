@@ -37,7 +37,7 @@ export interface ApiModelCreateMeasureRequest extends ModelsControllerRequest {
   action: "writeMeasure";
 
   body: {
-    name: string;
+    type: string;
     unit: {
       name: string;
       sign: string;
