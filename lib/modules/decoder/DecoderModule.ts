@@ -1,5 +1,3 @@
-import { KuzzleRequest } from "kuzzle";
-
 import { Module } from "../shared/Module";
 
 import { DecodersController } from "./DecodersController";

@@ -23,30 +23,30 @@ export class PayloadsController {
         receiveUnknown: {
           handler: this.receiveUnknown.bind(this),
           http: [
-              {
-                openapi: {
-                  description: `Receive a payload from a device`,
-                  parameters: [
-                    {
-                      in: "path",
-                      name: "deviceModel",
-                      required: true,
-                      schema: {
-                        type: "string",
-                      },
+            {
+              openapi: {
+                description: `Receive a payload from a device`,
+                parameters: [
+                  {
+                    in: "path",
+                    name: "deviceModel",
+                    required: true,
+                    schema: {
+                      type: "string",
                     },
-                    {
-                      in: "body",
-                      name: "payload",
-                      required: true,
-                      schema: {
-                        type: "object",
-                      },
+                  },
+                  {
+                    in: "body",
+                    name: "payload",
+                    required: true,
+                    schema: {
+                      type: "object",
                     },
-                  ],
-                },
+                  },
+                ],
+              },
               path: "device-manager/payload/:deviceModel",
-              verb: "post"
+              verb: "post",
             },
           ],
         },
@@ -62,7 +62,9 @@ export class PayloadsController {
     }
   }
 
-  async receiveUnknown (request: KuzzleRequest): Promise<ApiPayloadReceiveUnkownResult> {
+  async receiveUnknown(
+    request: KuzzleRequest
+  ): Promise<ApiPayloadReceiveUnkownResult> {
     const payload = request.getBody();
     const deviceModel = request.getString("deviceModel");
 

@@ -2,7 +2,7 @@ export const devicesPlatformAdmin = {
   controllers: {
     "device-manager/devices": {
       actions: {
-        '*': true,
+        "*": true,
       },
     },
     "device-manager/models": {

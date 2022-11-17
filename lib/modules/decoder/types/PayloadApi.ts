@@ -1,12 +1,11 @@
 import { JSONObject } from "kuzzle";
 
-import { DecoderContent } from "./DecoderContent";
-
 interface PayloadsControllerRequest {
   controller: "device-manager/payloads";
 }
 
-export interface ApiPayloadReceiveUnkownRequest extends PayloadsControllerRequest {
+export interface ApiPayloadReceiveUnkownRequest
+  extends PayloadsControllerRequest {
   action: "receiveUnknown";
 
   deviceModel: string;

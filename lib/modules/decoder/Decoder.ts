@@ -98,7 +98,7 @@ export abstract class Decoder {
             ],
           },
           path: `device-manager/payload/${this.action}`,
-          verb: "post"
+          verb: "post",
         },
       ];
     }
