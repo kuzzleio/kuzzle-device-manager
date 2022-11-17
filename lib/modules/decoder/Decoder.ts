@@ -83,7 +83,23 @@ export abstract class Decoder {
   get http(): HttpRoute[] {
     if (!this._http) {
       this._http = [
-        { path: `device-manager/payload/${this.action}`, verb: "post" },
+        {
+          openapi: {
+            description: `Receive a payload from a ${this.deviceModel} device`,
+            parameters: [
+              {
+                in: "body",
+                name: "payload",
+                required: true,
+                schema: {
+                  type: "object",
+                },
+              },
+            ],
+          },
+          path: `device-manager/payload/${this.action}`,
+          verb: "post"
+        },
       ];
     }
 

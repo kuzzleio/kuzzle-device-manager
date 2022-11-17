@@ -92,3 +92,12 @@ Feature: Payloads Controller
       | message | "Decoder \"DummyTemp\" has no measure named \"unknownMeasureName\"" |
     Then The document "device-manager":"devices":"DummyTemp-test" content match:
       | measures | {} |
+
+  Scenario: Receive a payload from unknown device
+    When I successfully execute the action "device-manager/payloads":"receiveUnknown" with args:
+      | deviceModel    | "Abeeway" |
+      | body.deviceEUI | "JORA"    |
+    Then The last received payload match:
+      | deviceModel       | "Abeeway" |
+      | valid             | false     |
+      | payload.deviceEUI | "JORA"    |

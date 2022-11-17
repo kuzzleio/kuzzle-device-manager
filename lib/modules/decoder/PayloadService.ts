@@ -233,4 +233,8 @@ export class PayloadService {
 
     return deleted;
   }
+
+  public async receiveUnknown (deviceModel: string, payload: JSONObject) {
+    await this.savePayload(deviceModel, uuidv4(), false, payload);
+  }
 }

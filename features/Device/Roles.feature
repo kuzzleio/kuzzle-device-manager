@@ -43,4 +43,23 @@ Feature: Default devices roles are registered
           },
         },
       }
+    """
+    Then The role "devices.platform-admin" should match:
+    """
+      {
+        "controllers": {
+          "device-manager/devices": {
+            "actions": {
+              "*": true
+            },
+          },
+          "device-manager/models": {
+            "actions": {
+              "listDevices": true,
+              "writeDevice": true,
+              "deleteDevice": true,
+            },
+          },
+        },
+      }
   """
