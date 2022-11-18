@@ -8,6 +8,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
+    "outDir": "dist/",
     "esModuleInterop": true
   },
   "rootDir": "lib/",
