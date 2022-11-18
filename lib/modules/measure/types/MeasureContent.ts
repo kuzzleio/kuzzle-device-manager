@@ -52,7 +52,7 @@ export interface MeasureContent<
      * - device id if origin type is `device`
      * - kuid of the request if origin type is `user`
      */
-    id?: string;
+    _id?: string;
   };
 }
 

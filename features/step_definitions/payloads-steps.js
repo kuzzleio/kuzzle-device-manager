@@ -25,7 +25,7 @@ Then(
 
       try {
         const { result } = await this.sdk.query({
-          controller: "device-manager/payload",
+          controller: "device-manager/payloads",
           action,
           body: payload,
         });
@@ -41,3 +41,23 @@ Then(
     }
   }
 );
+
+Then("The last received payload match:", async function (dataTable) {
+  const expectedContent = this.parseObject(dataTable);
+
+  await this.sdk.collection.refresh("device-manager", "payloads");
+
+  const result = await this.sdk.document.search(
+    "device-manager",
+    "payloads",
+    {
+      query: {},
+      sort: { "_kuzzle_info.createdAt": "desc" },
+    },
+    {
+      size: 1,
+    }
+  );
+
+  should(result.hits[0]._source).matchObject(expectedContent);
+});

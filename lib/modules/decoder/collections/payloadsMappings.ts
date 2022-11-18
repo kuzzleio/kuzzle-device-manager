@@ -6,10 +6,6 @@ export const payloadsMappings = {
       dynamic: "false",
       properties: {},
     },
-    rawPayload: {
-      dynamic: "false",
-      properties: {},
-    },
     uuid: { type: "keyword" },
     valid: { type: "boolean" },
   },

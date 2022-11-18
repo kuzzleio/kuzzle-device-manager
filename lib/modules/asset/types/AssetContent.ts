@@ -16,7 +16,7 @@ export interface AssetContent<
     /**
      * Device ID
      */
-    id: string;
+    _id: string;
 
     /**
      * Names lookup table for measures
@@ -40,7 +40,7 @@ export type AssetMeasureContext<TMetadata extends Metadata = Metadata> = {
   /**
    * ID of the asset
    */
-  id: string;
+  _id: string;
 
   /**
    * Name of the measure for the Asset
