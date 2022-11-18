@@ -18,7 +18,7 @@ Feature: Ingestion Pipeline Events
     Then When I successfully execute the action "document":"search" with args:
       | index      | "engine-ayse"                                        |
       | collection | "measures"                                           |
-      | body       | { query: { term:{"asset.id":"container-unlinked1"}}} |
+      | body       | { query: { term:{"asset._id":"container-unlinked1"}}} |
     # temperature has been multiplied by 2
     And I should receive a result matching:
       | hits[0]._source.type               | "temperature" |

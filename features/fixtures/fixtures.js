@@ -48,7 +48,7 @@ const assetAyseLinked = {
       measures: {
         temperature: "temperatureExt",
       },
-      id: "DummyTemp-linked1",
+      _id: "DummyTemp-linked1",
     },
   ],
 };

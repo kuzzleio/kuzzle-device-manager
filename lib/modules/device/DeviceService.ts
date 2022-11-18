@@ -189,7 +189,7 @@ export class DeviceService {
         );
 
         const linkedDevices = asset._source.linkedDevices.filter(
-          (link) => link.id !== device._id
+          (link) => link._id !== device._id
         );
 
         promises.push(
@@ -409,7 +409,7 @@ export class DeviceService {
 
       device._source.assetId = assetId;
       asset._source.linkedDevices.push({
-        id: deviceId,
+        _id: deviceId,
         measures: measuresNames,
       });
 
@@ -490,7 +490,7 @@ export class DeviceService {
       );
 
       const linkedDevices = asset._source.linkedDevices.filter(
-        (link) => link.id !== device._id
+        (link) => link._id !== device._id
       );
 
       const [updatedDevice, , updatedAsset] = await Promise.all([

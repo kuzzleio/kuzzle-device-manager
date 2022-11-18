@@ -75,7 +75,7 @@ Feature: Asset Controller
       | _id      | "container-linked1" |
       | size     | 2                   |
     Then I should receive a "measures" array of objects matching:
-      | _source.values.temperature | _source.asset.id    | _source.origin.id   | _source.asset.model |
+      | _source.values.temperature | _source.asset._id    | _source.origin._id   | _source.asset.model |
       | 40                         | "container-linked1" | "DummyTemp-linked1" | "container"         |
       | 41                         | "container-linked1" | "DummyTemp-linked1" | "container"         |
 

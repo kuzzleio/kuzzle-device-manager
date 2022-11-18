@@ -26,7 +26,7 @@ export const measuresMappings = {
 
     asset: {
       properties: {
-        id: { type: "keyword" },
+        _id: { type: "keyword" },
         model: { type: "keyword" },
         reference: { type: "keyword" },
         measureName: { type: "keyword" },
@@ -67,7 +67,7 @@ export const measuresMappings = {
          * - device id if origin type is `device`
          * - user id if origin type is `asset`
          */
-        id: { type: "keyword" },
+        _id: { type: "keyword" },
       },
     },
   },

@@ -1,13 +1,10 @@
 import {
   BadRequestError,
-  ControllerDefinition,
   Inflector,
-  KuzzleRequest,
   PluginContext,
   PluginImplementationError,
 } from "kuzzle";
 
-import { PayloadService } from "../../modules/decoder/PayloadService";
 import { Decoder, DecoderContent } from "../../modules/decoder";
 
 export class DecodersRegister {
@@ -54,8 +51,6 @@ export class DecodersRegister {
    *
    * @param decoder Instantiated decoder
    *
-   * @todo could check if measures declared by the decoder exists, maybe when plugin starts only
-   *
    * @returns Corresponding API action requestPayload
    */
   register(decoder: Decoder) {
@@ -81,27 +76,8 @@ export class DecodersRegister {
 
     return {
       action: decoder.action,
-      controller: "device-manager/payload",
+      controller: "device-manager/payloads",
     };
-  }
-
-  /**
-   * Build the PayloadController with registered decoders
-   *
-   * @internal
-   */
-  getPayloadController(payloadService: PayloadService): ControllerDefinition {
-    const controllers: ControllerDefinition = { actions: {} };
-
-    for (const decoder of this.decoders) {
-      controllers.actions[decoder.action] = {
-        handler: (request: KuzzleRequest) =>
-          payloadService.receive(request, decoder),
-        http: decoder.http,
-      };
-    }
-
-    return controllers;
   }
 
   printDecoders() {
@@ -207,7 +183,7 @@ export class DecodersRegister {
       const roleId = `payload-gateway.${decoder.action}`;
       const role = {
         controllers: {
-          "device-manager/payload": {
+          "device-manager/payloads": {
             actions: {
               [decoder.action]: true,
             },

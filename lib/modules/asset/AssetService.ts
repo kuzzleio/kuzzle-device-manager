@@ -200,7 +200,7 @@ export class AssetService {
         );
       }
 
-      for (const { id: deviceId } of asset._source.linkedDevices) {
+      for (const { _id: deviceId } of asset._source.linkedDevices) {
         const req: ApiDeviceUnlinkAssetRequest = {
           _id: deviceId,
           action: "unlinkAsset",

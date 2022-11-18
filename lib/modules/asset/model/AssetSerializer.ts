@@ -30,7 +30,7 @@ export class AssetSerializer {
     }
 
     return {
-      id: asset._id,
+      _id: asset._id,
       measureName,
       metadata: asset._source.metadata,
       model: asset._source.model,

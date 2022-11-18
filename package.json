@@ -9,8 +9,8 @@
   },
   "scripts": {
     "docker": "docker-compose run kuzzle ",
-    "dev": "docker-compose up",
-    "test-app": "node ./features/fixtures/application/app.js",
+    "dev": "NODE_ENV=development ergol features/fixtures/application/app.ts -c ergol.config.json",
+    "prod": "node ./features/fixtures/application/app.js",
     "test": "npm run test:lint && npm run test:unit && npm run test:functional",
     "test:unit": "mocha",
     "test:functional": "cucumber-js --require-module ts-node/register --exit --fail-fast",

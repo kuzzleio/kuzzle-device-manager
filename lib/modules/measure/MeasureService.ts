@@ -289,8 +289,8 @@ export class MeasureService {
         asset: AssetSerializer.measureContext(asset, assetMeasureName),
         measuredAt: measurement.measuredAt,
         origin: {
+          _id: device._id,
           deviceModel: device._source.model,
-          id: device._id,
           measureName: measurement.measureName,
           payloadUuids,
           reference: device._source.reference,
@@ -354,7 +354,7 @@ export class MeasureService {
         asset: AssetSerializer.measureContext(asset, measureInfo.name),
         measuredAt: measureInfo.measuredAt || Date.now(),
         origin: {
-          id: kuid,
+          _id: kuid,
           measureName: measureInfo.name,
           type: "user",
         },
@@ -421,7 +421,7 @@ export class MeasureService {
     }
 
     const deviceLink = asset._source.linkedDevices.find(
-      (link) => link.id === device._id
+      (link) => link._id === device._id
     );
 
     if (!deviceLink) {
