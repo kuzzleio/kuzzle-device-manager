@@ -61,12 +61,12 @@ Feature: Payloads Controller
     And I should receive a result matching:
       | hits[0]._source.type                  | "temperature"       |
       | hits[0]._source.measuredAt            | "_DATE_NOW_"        |
-      | hits[0]._source.origin.id             | "DummyTemp-linked1" |
+      | hits[0]._source.origin._id             | "DummyTemp-linked1" |
       | hits[0]._source.origin.type           | "device"            |
       | hits[0]._source.origin.measureName    | "temperature"       |
       | hits[0]._source.origin.deviceModel    | "DummyTemp"         |
       | hits[0]._source.origin.reference      | "linked1"           |
-      | hits[0]._source.asset.id              | "container-linked1" |
+      | hits[0]._source.asset._id              | "container-linked1" |
       | hits[0]._source.asset.measureName     | "temperatureExt"    |
       | hits[0]._source.asset.metadata.weight | 10                  |
       | hits[0]._source.asset.metadata.height | 11                  |

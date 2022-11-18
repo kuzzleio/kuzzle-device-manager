@@ -11,7 +11,7 @@ Feature: LinkAsset
     And The document "engine-ayse":"devices":"DummyTemp-unlinked1" content match:
       | assetId | "container-unlinked1" |
     And The document "engine-ayse":"assets":"container-unlinked1" content match:
-      | linkedDevices[0].id                   | "DummyTemp-unlinked1" |
+      | linkedDevices[0]._id                   | "DummyTemp-unlinked1" |
       | linkedDevices[0].measures.temperature | "temperatureExt"      |
     When I successfully execute the action "device-manager/devices":"linkAsset" with args:
       | _id                           | "DummyTemp-unlinked2" |
@@ -19,9 +19,9 @@ Feature: LinkAsset
       | engineId                      | "engine-ayse"         |
       | body.measureNames.temperature | "temperatureInt"      |
     And The document "engine-ayse":"assets":"container-unlinked1" content match:
-      | linkedDevices[0].id                   | "DummyTemp-unlinked1" |
+      | linkedDevices[0]._id                   | "DummyTemp-unlinked1" |
       | linkedDevices[0].measures.temperature | "temperatureExt"      |
-      | linkedDevices[1].id                   | "DummyTemp-unlinked2" |
+      | linkedDevices[1]._id                   | "DummyTemp-unlinked2" |
       | linkedDevices[1].measures.temperature | "temperatureInt"      |
 
   Scenario: Error when device is already linked
