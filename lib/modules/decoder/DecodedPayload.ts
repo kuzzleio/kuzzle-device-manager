@@ -96,7 +96,7 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
   }
 
   private validateMeasurement<TMeasureValues>(
-    measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">,
+    measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">
   ) {
     if (measurement.measuredAt / 1000000000000 < 1) {
       throw new BadRequestError(
