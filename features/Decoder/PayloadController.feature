@@ -14,6 +14,13 @@ Feature: Payloads Controller
       | engineId                                | null          |
       | assetId                                 | null          |
 
+  Scenario: Reject if measuredAt is not unix timestamp
+    Given I try to send the following "dummy-temp" payloads:
+      | deviceEUI | temperature | measuredAt |
+      | "12345"   | 21          | 1671007889 |
+    Then I should receive an error matching:
+      | message | "Invalid payload: \"measuredAt\" should be a timestamp in milliseconds" |
+
   Scenario: Reject with error a DummyTemp payload
     Given I try to send the following "dummy-temp" payloads:
       | deviceEUI | temperature |
@@ -61,12 +68,12 @@ Feature: Payloads Controller
     And I should receive a result matching:
       | hits[0]._source.type                  | "temperature"       |
       | hits[0]._source.measuredAt            | "_DATE_NOW_"        |
-      | hits[0]._source.origin._id             | "DummyTemp-linked1" |
+      | hits[0]._source.origin._id            | "DummyTemp-linked1" |
       | hits[0]._source.origin.type           | "device"            |
       | hits[0]._source.origin.measureName    | "temperature"       |
       | hits[0]._source.origin.deviceModel    | "DummyTemp"         |
       | hits[0]._source.origin.reference      | "linked1"           |
-      | hits[0]._source.asset._id              | "container-linked1" |
+      | hits[0]._source.asset._id             | "container-linked1" |
       | hits[0]._source.asset.measureName     | "temperatureExt"    |
       | hits[0]._source.asset.metadata.weight | 10                  |
       | hits[0]._source.asset.metadata.height | 11                  |

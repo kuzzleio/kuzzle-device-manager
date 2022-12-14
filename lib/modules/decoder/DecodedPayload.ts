@@ -48,9 +48,12 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
       );
     }
 
+    this.validateMeasurement(measurement);
+
     if (!this.measurementsByDevice[deviceReference]) {
       this.measurementsByDevice[deviceReference] = [];
     }
+
     const decodedMeasurement: DecodedMeasurement<TMeasureValues> = {
       measureName,
       ...measurement,
@@ -90,5 +93,15 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    */
   getMetadata(deviceReference: string): JSONObject {
     return this.metadataByDevice[deviceReference];
+  }
+
+  private validateMeasurement<TMeasureValues>(
+    measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">,
+  ) {
+    if (measurement.measuredAt / 1000000000000 < 1) {
+      throw new BadRequestError(
+        `Invalid payload: "measuredAt" should be a timestamp in milliseconds`
+      );
+    }
   }
 }
