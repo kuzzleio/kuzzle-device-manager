@@ -26,7 +26,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
     },
  */
 export const RoleDevicesAdmin: KuzzleRole = {
-  name: 'devices.admin',
+  name: "devices.admin",
   definition: {
     controllers: {
       "device-manager/devices": {
@@ -48,5 +48,5 @@ export const RoleDevicesAdmin: KuzzleRole = {
         },
       },
     },
-  }
-}
+  },
+};

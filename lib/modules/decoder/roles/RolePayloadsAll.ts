@@ -11,7 +11,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
     },
  */
 export const RolePayloadsAll: KuzzleRole = {
-  name: 'payloads.all',
+  name: "payloads.all",
   definition: {
     controllers: {
       "device-manager/payloads": {
@@ -20,5 +20,5 @@ export const RolePayloadsAll: KuzzleRole = {
         },
       },
     },
-  }
-}
+  },
+};

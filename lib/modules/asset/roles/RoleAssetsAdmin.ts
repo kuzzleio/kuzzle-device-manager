@@ -37,5 +37,5 @@ export const RoleAssetsAdmin: KuzzleRole = {
         },
       },
     },
-  }
-}
+  },
+};

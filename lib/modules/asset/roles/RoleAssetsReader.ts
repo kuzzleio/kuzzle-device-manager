@@ -36,6 +36,5 @@ export const RoleAssetsReader: KuzzleRole = {
         },
       },
     },
-  }
+  },
 } as const;
-

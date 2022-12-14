@@ -13,7 +13,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
     },
  */
 export const RoleDecodersAdmin: KuzzleRole = {
-  name: 'decoders.admin',
+  name: "decoders.admin",
   definition: {
     controllers: {
       "device-manager/decoders": {
@@ -22,5 +22,5 @@ export const RoleDecodersAdmin: KuzzleRole = {
         },
       },
     },
-  }
-}
+  },
+};

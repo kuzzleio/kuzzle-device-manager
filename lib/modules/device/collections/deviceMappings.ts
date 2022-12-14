@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 export const devicesMappings = {
   dynamic: "strict",
   properties: {

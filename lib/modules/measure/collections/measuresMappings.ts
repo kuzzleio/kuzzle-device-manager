@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 export const measuresMappings = {
   dynamic: "strict",
   properties: {
@@ -72,5 +70,3 @@ export const measuresMappings = {
     },
   },
 };
-
-/* eslint-enable sort-keys */

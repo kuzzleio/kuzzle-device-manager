@@ -20,7 +20,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
     }
  */
 export const RoleDevicesReader: KuzzleRole = {
-  name: 'devices.reader',
+  name: "devices.reader",
   definition: {
     controllers: {
       "device-manager/devices": {
@@ -35,5 +35,5 @@ export const RoleDevicesReader: KuzzleRole = {
         },
       },
     },
-  }
-}
+  },
+};

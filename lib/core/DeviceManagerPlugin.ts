@@ -335,7 +335,9 @@ export class DeviceManagerPlugin extends Plugin {
     const promises = [];
 
     for (const role of this.roles) {
-      promises.push(this.sdk.security.createOrReplaceRole(role.name, role.definition));
+      promises.push(
+        this.sdk.security.createOrReplaceRole(role.name, role.definition)
+      );
     }
 
     await Promise.all(promises);
