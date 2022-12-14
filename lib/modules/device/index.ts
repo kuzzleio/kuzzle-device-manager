@@ -4,3 +4,6 @@ export * from "./types/DeviceApi";
 export * from "./types/DeviceEvents";
 export * from "./model/DeviceSerializer";
 export * from "./DeviceModule";
+export * from "./roles/RoleDevicesAdmin";
+export * from "./roles/RoleDevicesPlatformAdmin";
+export * from "./roles/RoleDevicesReader";
