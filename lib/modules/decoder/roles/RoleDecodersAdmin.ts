@@ -3,7 +3,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
 /**
  * Role used to manage decoders and their payloads.
  *
- * It's a platform admin role.
+ * It's a platform role.
  *
  * @example
     "device-manager/decoders": {

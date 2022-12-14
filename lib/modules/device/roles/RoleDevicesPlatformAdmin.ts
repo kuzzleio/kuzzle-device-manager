@@ -3,7 +3,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
 /**
  * This role allows to manage devices and also assign them to tenants.
  *
- * It's a platform admin role.
+ * It's a platform role.
  *
  * @example
     "device-manager/devices": {
