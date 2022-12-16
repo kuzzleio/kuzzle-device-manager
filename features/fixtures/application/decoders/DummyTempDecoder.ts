@@ -42,7 +42,7 @@ export class DummyTempDecoder extends Decoder {
       payload.deviceEUI,
       "temperature",
       {
-        measuredAt: Date.now(),
+        measuredAt: payload.measuredAt || Date.now(),
         type: "temperature",
         values: {
           temperature: payload.temperature,
