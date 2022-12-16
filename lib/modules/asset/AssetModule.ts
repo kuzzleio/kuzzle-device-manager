@@ -2,8 +2,8 @@ import { Module } from "../shared/Module";
 
 import { AssetsController } from "./AssetsController";
 import { AssetService } from "./AssetService";
-import { assetsAdmin } from "./roles/assetsAdmin";
-import { assetsReader } from "./roles/assetsReader";
+import { RoleAssetsAdmin } from "./roles/RoleAssetsAdmin";
+import { RoleAssetsReader } from "./roles/RoleAssetsReader";
 
 export class AssetModule extends Module {
   private assetService: AssetService;
@@ -15,7 +15,7 @@ export class AssetModule extends Module {
 
     this.plugin.api["device-manager/assets"] = this.assetController.definition;
 
-    this.plugin.roles["assets.admin"] = assetsAdmin;
-    this.plugin.roles["assets.reader"] = assetsReader;
+    this.plugin.roles.push(RoleAssetsAdmin);
+    this.plugin.roles.push(RoleAssetsReader);
   }
 }

@@ -2,8 +2,8 @@ import { Module } from "../shared/Module";
 
 import { MeasuresController } from "./MeasuresController";
 import { MeasureService } from "./MeasureService";
-import { measuresAdmin } from "./roles/measuresAdmin";
-import { measuresReader } from "./roles/measuresReader";
+import { RoleMeasuresAdmin } from "./roles/RoleMeasuresAdmin";
+import { RoleMeasuresReader } from "./roles/RoleMeasuresReader";
 
 export class MeasureModule extends Module {
   private measureService: MeasureService;
@@ -16,7 +16,7 @@ export class MeasureModule extends Module {
     this.plugin.api["device-manager/measures"] =
       this.measureController.definition;
 
-    this.plugin.roles["measures.admin"] = measuresAdmin;
-    this.plugin.roles["measures.reader"] = measuresReader;
+    this.plugin.roles.push(RoleMeasuresAdmin);
+    this.plugin.roles.push(RoleMeasuresReader);
   }
 }

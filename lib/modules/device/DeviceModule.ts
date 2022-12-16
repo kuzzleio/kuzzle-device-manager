@@ -2,9 +2,9 @@ import { Module } from "../shared/Module";
 
 import { DevicesController } from "./DevicesController";
 import { DeviceService } from "./DeviceService";
-import { devicesAdmin } from "./roles/devicesAdmin";
-import { devicesPlatformAdmin } from "./roles/devicesPlatformAdmin";
-import { devicesReader } from "./roles/devicesReader";
+import { RoleDevicesAdmin } from "./roles/RoleDevicesAdmin";
+import { RoleDevicesPlatformAdmin } from "./roles/RoleDevicesPlatformAdmin";
+import { RoleDevicesReader } from "./roles/RoleDevicesReader";
 
 export class DeviceModule extends Module {
   private deviceService: DeviceService;
@@ -17,8 +17,8 @@ export class DeviceModule extends Module {
     this.plugin.api["device-manager/devices"] =
       this.deviceController.definition;
 
-    this.plugin.roles["devices.platform-admin"] = devicesPlatformAdmin;
-    this.plugin.roles["devices.admin"] = devicesAdmin;
-    this.plugin.roles["devices.reader"] = devicesReader;
+    this.plugin.roles.push(RoleDevicesAdmin);
+    this.plugin.roles.push(RoleDevicesPlatformAdmin);
+    this.plugin.roles.push(RoleDevicesReader);
   }
 }

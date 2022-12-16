@@ -35,10 +35,11 @@ import { DeviceManagerEngine } from "./DeviceManagerEngine";
 import { DecodersRegister } from "./registers/DecodersRegister";
 import { InternalCollection } from "./InternalCollection";
 import { ModelsRegister } from "./registers/ModelsRegister";
+import { KuzzleRole } from "lib/modules/shared/types/KuzzleRole";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
-  public roles = {};
+  public roles: KuzzleRole[] = [];
 
   private deviceManagerEngine: DeviceManagerEngine;
   private adminConfigManager: ConfigManager;
@@ -333,8 +334,10 @@ export class DeviceManagerPlugin extends Plugin {
   private async createDefaultRoles() {
     const promises = [];
 
-    for (const [roleId, role] of Object.entries(this.roles)) {
-      promises.push(this.sdk.security.createOrReplaceRole(roleId, role));
+    for (const role of this.roles) {
+      promises.push(
+        this.sdk.security.createOrReplaceRole(role.name, role.definition)
+      );
     }
 
     await Promise.all(promises);

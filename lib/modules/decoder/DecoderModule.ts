@@ -3,7 +3,8 @@ import { Module } from "../shared/Module";
 import { DecodersController } from "./DecodersController";
 import { PayloadsController } from "./PayloadsController";
 import { PayloadService } from "./PayloadService";
-import { decodersAdmin } from "./roles/decodersAdmin";
+import { RoleDecodersAdmin } from "./roles/RoleDecodersAdmin";
+import { RolePayloadsAll } from "./roles/RolePayloadsAll";
 
 export class DecoderModule extends Module {
   private payloadService: PayloadService;
@@ -33,6 +34,7 @@ export class DecoderModule extends Module {
     this.plugin.api["device-manager/payloads"] =
       this.payloadsController.definition;
 
-    this.plugin.roles["decoders.admin"] = decodersAdmin;
+    this.plugin.roles.push(RoleDecodersAdmin);
+    this.plugin.roles.push(RolePayloadsAll);
   }
 }
