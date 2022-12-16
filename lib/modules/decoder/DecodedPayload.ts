@@ -98,7 +98,7 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
   private validateMeasurement<TMeasureValues>(
     measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">
   ) {
-    if (measurement.measuredAt / 1000000000000 < 1) {
+    if (measurement.measuredAt.toString().length !== 13) {
       throw new BadRequestError(
         `Invalid payload: "measuredAt" should be a timestamp in milliseconds`
       );
