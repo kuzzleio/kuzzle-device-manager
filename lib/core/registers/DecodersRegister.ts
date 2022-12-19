@@ -93,6 +93,10 @@ export class DecodersRegister {
    * This method never returns a rejected promise.
    */
   async createDefaultRights() {
+    if (this.decoders.length === 0) {
+      return;
+    }
+
     await this.createDefaultRoles();
 
     await this.createDefaultProfiles();
