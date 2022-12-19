@@ -14,6 +14,7 @@ import {
 } from "../../core";
 import { DeviceContent, DeviceSerializer } from "../device";
 import { EventMeasureIngest } from "../measure";
+import { DecodedPayload } from "./DecodedPayload";
 
 import { Decoder } from "./Decoder";
 
@@ -63,7 +64,9 @@ export class PayloadService {
       await this.savePayload(decoder.deviceModel, uuid, valid, payload);
     }
 
-    const decodedPayload = await decoder.decode(payload, request);
+    let decodedPayload = new DecodedPayload<any>(decoder);
+
+    decodedPayload = await decoder.decode(decodedPayload, payload, request);
 
     const devices = await this.retrieveDevices(
       decoder.deviceModel,
