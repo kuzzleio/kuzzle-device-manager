@@ -140,6 +140,7 @@ export abstract class Decoder {
    *  - set "reference"
    *  - fetch measures
    *
+   * @param decodedPayload Decoded payload to store decoded measures
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
