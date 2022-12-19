@@ -1,12 +1,14 @@
 {
   "name": "kuzzle-device-manager",
-  "version": "2.0.0-rc32",
+  "version": "2.0.0-rc33",
   "description": "Manage your IoT devices and assets. Choose a provisioning strategy, receive and decode payload, handle your IoT business logic.",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
     "type": "git",
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "docker": "docker-compose run kuzzle ",
     "dev": "NODE_ENV=development ergol features/fixtures/application/app.ts -c ergol.config.json",
