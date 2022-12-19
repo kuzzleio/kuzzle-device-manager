@@ -147,9 +147,10 @@ export abstract class Decoder {
    */
   // eslint-disable-next-line no-unused-vars
   abstract decode(
+    decodedPayload: DecodedPayload<any>,
     payload: JSONObject,
     request: KuzzleRequest
-  ): Promise<DecodedPayload<Decoder>>;
+  ): Promise<DecodedPayload<any>>;
 
   /**
    * Checks if the provided properties are present in the payload
