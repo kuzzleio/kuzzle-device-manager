@@ -6,6 +6,6 @@ export type BatteryMeasurement = {
   battery: number;
 };
 
-export const batteryMeasure: MeasureDefinition = {
+export const batteryMeasureDefinition: MeasureDefinition = {
   valuesMappings: { battery: { type: "integer" } },
 };

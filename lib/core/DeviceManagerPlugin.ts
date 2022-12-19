@@ -10,12 +10,12 @@ import {
 import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 
 import {
-  batteryMeasure,
-  humidityMeasure,
+  batteryMeasureDefinition,
+  humidityMeasureDefinition,
   MeasureDefinition,
-  movementMeasure,
-  positionMeasure,
-  temperatureMeasure,
+  movementMeasureDefinition,
+  positionMeasureDefinition,
+  temperatureMeasureDefinition,
 } from "../modules/measure";
 
 import { DeviceModule, devicesMappings } from "../modules/device";
@@ -144,8 +144,8 @@ export class DeviceManagerPlugin extends Plugin {
 
         this.modelsRegister.registerDevice(
           model,
-          definition.metadataMappings,
           measures,
+          definition.metadataMappings,
           definition.defaultMetadata
         );
       },
@@ -229,11 +229,11 @@ export class DeviceManagerPlugin extends Plugin {
     this.decodersRegister = new DecodersRegister();
     this.modelsRegister = new ModelsRegister();
 
-    this.models.registerMeasure("temperature", temperatureMeasure);
-    this.models.registerMeasure("position", positionMeasure);
-    this.models.registerMeasure("movement", movementMeasure);
-    this.models.registerMeasure("humidity", humidityMeasure);
-    this.models.registerMeasure("battery", batteryMeasure);
+    this.models.registerMeasure("temperature", temperatureMeasureDefinition);
+    this.models.registerMeasure("position", positionMeasureDefinition);
+    this.models.registerMeasure("movement", movementMeasureDefinition);
+    this.models.registerMeasure("humidity", humidityMeasureDefinition);
+    this.models.registerMeasure("battery", batteryMeasureDefinition);
   }
 
   /**

@@ -11,7 +11,7 @@ export type PositionMeasurement = {
   accuracy?: number;
 };
 
-export const positionMeasure: MeasureDefinition = {
+export const positionMeasureDefinition: MeasureDefinition = {
   valuesMappings: {
     accuracy: { type: "float" },
     altitude: { type: "float" },

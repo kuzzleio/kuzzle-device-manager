@@ -6,6 +6,6 @@ export type HumidityMeasurement = {
   humidity: number;
 };
 
-export const humidityMeasure: MeasureDefinition = {
+export const humidityMeasureDefinition: MeasureDefinition = {
   valuesMappings: { humidity: { type: "float" } },
 };
