@@ -6,6 +6,6 @@ export type MovementMeasurement = {
   movement: boolean;
 };
 
-export const movementMeasure: MeasureDefinition = {
+export const movementMeasureDefinition: MeasureDefinition = {
   valuesMappings: { movement: { type: "boolean" } },
 };

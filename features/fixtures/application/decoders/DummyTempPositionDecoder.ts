@@ -25,7 +25,7 @@ export class DummyTempPositionDecoder extends Decoder {
 
   async decode(
     decodedPayload: DecodedPayload<DummyTempPositionDecoder>,
-    payload: JSONObject,
+    payload: JSONObject
   ): Promise<DecodedPayload<DummyTempPositionDecoder>> {
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,

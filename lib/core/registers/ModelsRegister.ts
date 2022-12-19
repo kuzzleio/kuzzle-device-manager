@@ -57,8 +57,8 @@ export class ModelsRegister {
 
   registerDevice(
     model: string,
-    metadataMappings: JSONObject,
     measures: Record<string, string>,
+    metadataMappings: JSONObject = {},
     defaultMetadata: JSONObject = {}
   ) {
     this.deviceModels.push({

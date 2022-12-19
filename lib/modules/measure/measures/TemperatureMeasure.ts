@@ -6,6 +6,6 @@ export type TemperatureMeasurement = {
   temperature: number;
 };
 
-export const temperatureMeasure: MeasureDefinition = {
+export const temperatureMeasureDefinition: MeasureDefinition = {
   valuesMappings: { temperature: { type: "float" } },
 };

@@ -11,3 +11,5 @@ export * from './lib/modules/measure';
 export * from './lib/modules/decoder';
 
 export * from './lib/modules/shared';
+
+export * from './lib/modules/model';
