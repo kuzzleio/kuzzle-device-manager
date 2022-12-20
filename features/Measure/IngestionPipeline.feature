@@ -8,7 +8,7 @@ Feature: Ingestion Pipeline Events
       | body.reference | "enrich_me_master" |
     Given I successfully execute the action "device-manager/devices":"linkAsset" with args:
       | _id                           | "DummyTemp-enrich_me_master" |
-      | assetId                       | "container-unlinked1"        |
+      | assetId                       | "Container-unlinked1"        |
       | engineId                      | "engine-ayse"                |
       | body.measureNames.temperature | "temperatureExt"             |
     Given I send the following "dummy-temp" payloads:
@@ -18,7 +18,7 @@ Feature: Ingestion Pipeline Events
     Then When I successfully execute the action "document":"search" with args:
       | index      | "engine-ayse"                                        |
       | collection | "measures"                                           |
-      | body       | { query: { term:{"asset._id":"container-unlinked1"}}} |
+      | body       | { query: { term:{"asset._id":"Container-unlinked1"}}} |
     # temperature has been multiplied by 2
     And I should receive a result matching:
       | hits[0]._source.type               | "temperature" |
@@ -27,5 +27,5 @@ Feature: Ingestion Pipeline Events
       | measures.temperature.values.temperature | 42 |
     Then The document "engine-ayse":"devices":"DummyTemp-enrich_me_master" content match:
       | measures.temperature.values.temperature | 42 |
-    Then The document "engine-ayse":"assets":"container-unlinked1" content match:
+    Then The document "engine-ayse":"assets":"Container-unlinked1" content match:
       | measures.temperatureExt.values.temperature | 42 |

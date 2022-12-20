@@ -23,7 +23,7 @@ type ContainerMeasurements = {
 
 interface ContainerAssetContent
   extends AssetContent<ContainerMeasurements, ContainerMetadata> {
-  model: "container";
+  model: "Container";
 }
 
 // This function is never called and only exists to make sure the types are correct

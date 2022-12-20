@@ -5,25 +5,25 @@ Feature: Model Controller
     # Create model
     When I successfully execute the action "device-manager/models":"writeAsset" with args:
       | body.engineGroup             | "commons"                        |
-      | body.model                   | "plane"                          |
+      | body.model                   | "Plane"                          |
       | body.metadataMappings        | { company: { type: "keyword" } } |
       | body.measures.temperatureExt | "temperature"                    |
-    Then The document "device-manager":"models":"model-asset-plane" content match:
+    Then The document "device-manager":"models":"model-asset-Plane" content match:
       | type                                | "asset"       |
       | engineGroup                         | "commons"     |
-      | asset.model                         | "plane"       |
+      | asset.model                         | "Plane"       |
       | asset.metadataMappings.company.type | "keyword"     |
       | asset.measures.temperatureExt       | "temperature" |
     # Update model
     When I successfully execute the action "device-manager/models":"writeAsset" with args:
       | body.engineGroup       | "commons"                         |
-      | body.model             | "plane"                           |
+      | body.model             | "Plane"                           |
       | body.metadataMappings  | { company2: { type: "keyword" } } |
       | body.measures.position | "position"                        |
-    Then The document "device-manager":"models":"model-asset-plane" content match:
+    Then The document "device-manager":"models":"model-asset-Plane" content match:
       | type                                 | "asset"       |
       | engineGroup                          | "commons"     |
-      | asset.model                          | "plane"       |
+      | asset.model                          | "Plane"       |
       | asset.metadataMappings.company.type  | "keyword"     |
       | asset.metadataMappings.company2.type | "keyword"     |
       | asset.measures.temperatureExt        | "temperature" |
@@ -164,30 +164,40 @@ Feature: Model Controller
       | engineGroup | "commons" |
     Then I should receive a result matching:
       | total         | 3                       |
-      | models[0]._id | "model-asset-container" |
-      | models[1]._id | "model-asset-plane"     |
+      | models[0]._id | "model-asset-Container" |
+      | models[1]._id | "model-asset-Plane"     |
 
   @models
   Scenario: Create an asset with default metadata values
     Given I successfully execute the action "device-manager/models":"writeAsset" with args:
       | body.engineGroup      | "commons"                                                                               |
-      | body.model            | "plane"                                                                                 |
+      | body.model            | "Plane"                                                                                 |
       | body.metadataMappings | { size: { type: "integer" }, person: { properties: { company: { type: "keyword" } } } } |
       | body.defaultValues    | { "person.company": "Firebird" }                                                        |
     When I successfully execute the action "device-manager/assets":"create" with args:
       | engineId           | "engine-kuzzle" |
-      | body.model         | "plane"         |
+      | body.model         | "Plane"         |
       | body.reference     | "Dasha31"       |
       | body.metadata.size | 179             |
-    Then The document "engine-kuzzle":"assets":"plane-Dasha31" content match:
+    Then The document "engine-kuzzle":"assets":"Plane-Dasha31" content match:
       | metadata.size           | 179        |
       | metadata.person.company | "Firebird" |
+
+  @models
+  Scenario: Error if the model name is not PascalCase
+    Given I execute the action "device-manager/models":"writeAsset" with args:
+      | body.engineGroup      | "commons"                     |
+      | body.model            | "Plane"                       |
+      | body.metadataMappings | { size: { type: "integer" } } |
+      | body.defaultValues    | { "name": "Firebird" }        |
+    Then I should receive an error matching:
+      | message | "The default value \"name\" is not in the metadata mappings." |
 
   @models
   Scenario: Error if a default value is not a metadata
     Given I execute the action "device-manager/models":"writeAsset" with args:
       | body.engineGroup      | "commons"                     |
-      | body.model            | "plane"                       |
+      | body.model            | "Plane"                       |
       | body.metadataMappings | { size: { type: "integer" } } |
       | body.defaultValues    | { "name": "Firebird" }        |
     Then I should receive an error matching:
@@ -385,16 +395,16 @@ Feature: Model Controller
       | models[5]._id | "model-measure-presence" |
 
   Scenario: Register models from the framework
-    Then The document "device-manager":"models":"model-asset-container" content match:
+    Then The document "device-manager":"models":"model-asset-Container" content match:
       | type                               | "asset"     |
       | engineGroup                        | "commons"   |
-      | asset.model                        | "container" |
+      | asset.model                        | "Container" |
       | asset.metadataMappings.weight.type | "integer"   |
       | asset.metadataMappings.height.type | "integer"   |
-    Then The document "device-manager":"models":"model-asset-warehouse" content match:
+    Then The document "device-manager":"models":"model-asset-Warehouse" content match:
       | type                                | "asset"     |
       | engineGroup                         | "commons"   |
-      | asset.model                         | "warehouse" |
+      | asset.model                         | "Warehouse" |
       | asset.metadataMappings.surface.type | "integer"   |
     Then The document "device-manager":"models":"model-device-DummyTemp" content match:
       | type                               | "device"    |

@@ -22,7 +22,7 @@ Feature: Detach device from engine
     When I successfully execute the action "device-manager/devices":"detachEngine" with args:
       | engineId | "engine-ayse"       |
       | _id      | "DummyTemp-linked1" |
-    Then The document "engine-ayse":"assets":"container-linked1" content match:
+    Then The document "engine-ayse":"assets":"Container-linked1" content match:
       | linkedDevices | [] |
     Then The document "device-manager":"devices":"DummyTemp-linked1" content match:
       | assetId | null |

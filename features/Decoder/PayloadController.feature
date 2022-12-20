@@ -73,7 +73,7 @@ Feature: Payloads Controller
       | hits[0]._source.origin.measureName    | "temperature"       |
       | hits[0]._source.origin.deviceModel    | "DummyTemp"         |
       | hits[0]._source.origin.reference      | "linked1"           |
-      | hits[0]._source.asset._id             | "container-linked1" |
+      | hits[0]._source.asset._id             | "Container-linked1" |
       | hits[0]._source.asset.measureName     | "temperatureExt"    |
       | hits[0]._source.asset.metadata.weight | 10                  |
       | hits[0]._source.asset.metadata.height | 11                  |

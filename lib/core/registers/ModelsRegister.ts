@@ -1,4 +1,9 @@
-import { JSONObject, PluginContext } from "kuzzle";
+import {
+  Inflector,
+  JSONObject,
+  PluginContext,
+  PluginImplementationError,
+} from "kuzzle";
 import { MeasureDefinition } from "../../modules/measure";
 
 import { ModelSerializer } from "../../modules/model";
@@ -48,6 +53,12 @@ export class ModelsRegister {
     measures: Record<string, string>,
     defaultMetadata: JSONObject = {}
   ) {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new PluginImplementationError(
+        `Asset model "${model}" must be PascalCase`
+      );
+    }
+
     this.assetModels.push({
       asset: { defaultMetadata, measures, metadataMappings, model },
       engineGroup,
@@ -61,6 +72,12 @@ export class ModelsRegister {
     metadataMappings: JSONObject = {},
     defaultMetadata: JSONObject = {}
   ) {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new PluginImplementationError(
+        `Device model "${model}" must be PascalCase`
+      );
+    }
+
     this.deviceModels.push({
       device: { defaultMetadata, measures, metadataMappings, model },
       type: "device",
