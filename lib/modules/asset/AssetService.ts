@@ -169,11 +169,22 @@ export class AssetService {
         _.set(assetMetadata, metadataName, metadataValue);
       }
 
+      const measures = {};
+
+      for (const [name, type] of Object.entries(assetModel.asset.measures)) {
+        measures[name] = {
+          name,
+          type,
+          values: {},
+        };
+      }
+
       const asset = await this.sdk.document.create<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
         {
           linkedDevices: [],
+          measures,
           metadata: { ...assetMetadata, ...metadata },
           model,
           reference,

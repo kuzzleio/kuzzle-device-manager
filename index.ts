@@ -1,15 +1,13 @@
-export * from './lib/core/DeviceManagerPlugin';
+export * from './lib/core/exports';
 
-export * from './lib/core/DeviceManagerConfiguration';
+export * from './lib/modules/asset/exports';
 
-export * from './lib/modules/asset';
+export * from './lib/modules/device/exports';
 
-export * from './lib/modules/device';
+export * from './lib/modules/measure/exports';
 
-export * from './lib/modules/measure';
+export * from './lib/modules/decoder/exports';
 
-export * from './lib/modules/decoder';
+export * from './lib/modules/shared/exports';
 
-export * from './lib/modules/shared';
-
-export * from './lib/modules/model';
+export * from './lib/modules/model/exports';

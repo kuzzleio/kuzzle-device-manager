@@ -8,7 +8,7 @@ Feature: UnlinkAsset
       | assetId | null |
     And The document "engine-ayse":"devices":"DummyTemp-linked1" content match:
       | assetId | null |
-    And The document "engine-ayse":"assets":"container-linked1" content match:
+    And The document "engine-ayse":"assets":"Container-linked1" content match:
       | linkedDevices.length | 0 |
 
   Scenario: Error when the device was not linked

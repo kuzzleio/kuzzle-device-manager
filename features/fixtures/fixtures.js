@@ -2,7 +2,7 @@ const deviceDetached1 = {
   model: "DummyTemp",
   reference: "detached1",
   metadata: {},
-  measures: [],
+  measures: {},
 };
 const deviceDetached1Id = `${deviceDetached1.model}-${deviceDetached1.reference}`;
 
@@ -10,9 +10,9 @@ const deviceAyseLinked1 = {
   model: "DummyTemp",
   reference: "linked1",
   metadata: {},
-  measures: [],
+  measures: {},
   engineId: "engine-ayse",
-  assetId: "container-linked1",
+  assetId: "Container-linked1",
 };
 const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinked1.reference}`;
 
@@ -20,7 +20,7 @@ const deviceAyseUnlinked1 = {
   model: "DummyTemp",
   reference: "unlinked1",
   metadata: {},
-  measures: [],
+  measures: {},
   engineId: "engine-ayse",
   assetId: null,
 };
@@ -30,14 +30,14 @@ const deviceAyseUnlinked2 = {
   model: "DummyTemp",
   reference: "unlinked2",
   metadata: {},
-  measures: [],
+  measures: {},
   engineId: "engine-ayse",
   assetId: null,
 };
 const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
 
 const assetAyseLinked = {
-  model: "container",
+  model: "Container",
   reference: "linked1",
   metadata: {
     weight: 10,
@@ -55,7 +55,7 @@ const assetAyseLinked = {
 const assetAyseLinkedId = `${assetAyseLinked.model}-${assetAyseLinked.reference}`;
 
 const assetAyseUnlinked = {
-  model: "container",
+  model: "Container",
   reference: "unlinked1",
   metadata: {
     weight: 20,

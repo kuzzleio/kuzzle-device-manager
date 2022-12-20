@@ -26,7 +26,7 @@ deviceManager.models.registerDevice("DummyTemp", {
 
 // Register an asset for the "commons" group
 
-deviceManager.models.registerAsset("commons", "container", {
+deviceManager.models.registerAsset("commons", "Container", {
   measuresNames: [
     { name: "temperatureExt", type: "temperature" },
     { name: "temperatureInt", type: "temperature" },
@@ -41,7 +41,7 @@ deviceManager.models.registerAsset("commons", "container", {
   },
 });
 
-deviceManager.models.registerAsset("commons", "warehouse", {
+deviceManager.models.registerAsset("commons", "Warehouse", {
   measuresNames: [{ name: "position", type: "position" }],
   metadataMappings: {
     surface: { type: "integer" },
@@ -56,7 +56,7 @@ deviceManager.models.registerMeasure("acceleration", {
   },
 });
 
-registerTestPipes(app); //TODO : move this line in another filer
+registerTestPipes(app);
 
 app.plugin.use(deviceManager);
 

@@ -1,4 +1,11 @@
-import { BadRequestError, JSONObject, KDocument, PluginContext } from "kuzzle";
+import {
+  BadRequestError,
+  Inflector,
+  JSONObject,
+  KDocument,
+  PluginContext,
+  PluginImplementationError,
+} from "kuzzle";
 
 import {
   AskEngineUpdateAll,
@@ -50,6 +57,12 @@ export class ModelService {
     defaultMetadata: JSONObject,
     measures: JSONObject
   ): Promise<KDocument<AssetModelContent>> {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new PluginImplementationError(
+        `Asset model "${model}" must be PascalCase`
+      );
+    }
+
     const modelContent: AssetModelContent = {
       asset: { defaultMetadata, measures, metadataMappings, model },
       engineGroup,
@@ -103,6 +116,12 @@ export class ModelService {
     defaultMetadata: JSONObject,
     measures: JSONObject
   ): Promise<KDocument<DeviceModelContent>> {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new PluginImplementationError(
+        `Device model "${model}" must be PascalCase`
+      );
+    }
+
     const modelContent: DeviceModelContent = {
       device: { defaultMetadata, measures, metadataMappings, model },
       type: "device",

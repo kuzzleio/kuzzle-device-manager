@@ -1,4 +1,4 @@
-import { KuzzleRole } from "lib/modules/shared/types/KuzzleRole";
+import { KuzzleRole } from "../../shared/types/KuzzleRole";
 
 /**
  * This role allows to push measures and manage their models.

@@ -1,6 +1,6 @@
 {
   "name": "kuzzle-device-manager-types",
-  "version": "2.0.0-rc29",
+  "version": "2.0.0-rc36",
   "description": "Shared types for Kuzzle Device Manager",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "types": "dist/index.d.ts",

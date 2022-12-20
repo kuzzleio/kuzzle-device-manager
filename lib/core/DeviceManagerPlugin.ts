@@ -28,14 +28,13 @@ import {
   ModelModule,
   modelsMappings,
 } from "../modules/model";
-import { lock } from "../modules/shared/utils/lock";
+import { lock, KuzzleRole } from "../modules/shared";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
 import { DecodersRegister } from "./registers/DecodersRegister";
 import { InternalCollection } from "./InternalCollection";
 import { ModelsRegister } from "./registers/ModelsRegister";
-import { KuzzleRole } from "lib/modules/shared/types/KuzzleRole";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;

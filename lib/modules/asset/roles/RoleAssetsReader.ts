@@ -1,4 +1,4 @@
-import { KuzzleRole } from "lib/modules/shared/types/KuzzleRole";
+import { KuzzleRole } from "../../shared/types/KuzzleRole";
 
 /**
  * This role only gives a read-only access to assets and their models.
