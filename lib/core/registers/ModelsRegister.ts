@@ -1,5 +1,5 @@
 import { JSONObject, PluginContext } from "kuzzle";
-import { MeasureDefinition } from "lib/modules/measure";
+import { MeasureDefinition } from "../../modules/measure";
 
 import { ModelSerializer } from "../../modules/model";
 import {

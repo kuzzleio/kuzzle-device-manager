@@ -111,7 +111,7 @@ export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
 
   assetId: string;
 
-  body: {
+  body?: {
     /**
      * Names lookup table for measures
      *

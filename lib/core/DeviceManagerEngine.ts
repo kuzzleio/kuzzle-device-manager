@@ -10,7 +10,7 @@ import {
 } from "../modules/model";
 import { measuresMappings } from "../modules/measure";
 import { devicesMappings } from "../modules/device";
-import { onAsk } from "../modules/shared/utils/ask";
+import { onAsk } from "../modules/shared";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";

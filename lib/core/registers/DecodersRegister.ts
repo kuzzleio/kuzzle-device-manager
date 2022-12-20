@@ -4,6 +4,7 @@ import {
   PluginContext,
   PluginImplementationError,
 } from "kuzzle";
+import { snakeCase } from "../../modules/shared";
 
 import { Decoder, DecoderContent } from "../../modules/decoder";
 
@@ -117,7 +118,7 @@ export class DecodersRegister {
     };
 
     for (const decoder of this.decoders) {
-      const userId = `payload-gateway.${decoder.action}`;
+      const userId = `payload_gateway.${snakeCase(decoder.action)}`;
       const user = {
         content: {
           // each created user has only the profile of the same name
@@ -139,12 +140,12 @@ export class DecodersRegister {
 
     promises.push(
       this.sdk.security
-        .createUser("payload-gateway", gatewayUser)
+        .createUser("payload_gateway", gatewayUser)
         .catch((error) => {
           if (error.id !== "security.user.already_exists") {
             throw error;
           }
-          return this.sdk.security.updateUser("payload-gateway", gatewayUser);
+          return this.sdk.security.updateUser("payload_gateway", gatewayUser);
         })
     );
 
@@ -158,7 +159,7 @@ export class DecodersRegister {
     };
 
     for (const decoder of this.decoders) {
-      const profileId = `payload-gateway.${decoder.action}`;
+      const profileId = `payload_gateway.${snakeCase(decoder.action)}`;
       const profile = {
         // each created profile has only the role of the same name
         policies: [{ roleId: profileId }],
@@ -172,7 +173,7 @@ export class DecodersRegister {
 
     promises.push(
       this.sdk.security.createOrReplaceProfile(
-        "payload-gateway",
+        "payload_gateway",
         gatewayProfile
       )
     );
@@ -184,7 +185,7 @@ export class DecodersRegister {
     const promises = [];
 
     for (const decoder of this.decoders) {
-      const roleId = `payload-gateway.${decoder.action}`;
+      const roleId = `payload_gateway.${snakeCase(decoder.action)}`;
       const role = {
         controllers: {
           "device-manager/payloads": {

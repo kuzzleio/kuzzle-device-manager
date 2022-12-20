@@ -8,9 +8,12 @@ Feature: Asset Controller
       | body.reference       | "A1"            |
       | body.metadata.height | 5               |
     Then The document "engine-kuzzle":"assets":"container-A1" content match:
-      | metadata.height | 5    |
-      | metadata.weight | null |
-      | linkedDevices   | []   |
+      | metadata.height              | 5             |
+      | metadata.weight              | null          |
+      | measures.temperatureExt.type | "temperature" |
+      | measures.temperatureInt.type | "temperature" |
+      | measures.position.type       | "position"    |
+      | linkedDevices                | []            |
     When I successfully execute the action "device-manager/assets":"update" with args:
       | engineId             | "engine-kuzzle" |
       | _id                  | "container-A1"  |
@@ -75,7 +78,7 @@ Feature: Asset Controller
       | _id      | "container-linked1" |
       | size     | 2                   |
     Then I should receive a "measures" array of objects matching:
-      | _source.values.temperature | _source.asset._id    | _source.origin._id   | _source.asset.model |
+      | _source.values.temperature | _source.asset._id   | _source.origin._id  | _source.asset.model |
       | 40                         | "container-linked1" | "DummyTemp-linked1" | "container"         |
       | 41                         | "container-linked1" | "DummyTemp-linked1" | "container"         |
 
