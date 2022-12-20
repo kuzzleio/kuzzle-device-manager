@@ -97,14 +97,11 @@ jobs:
         with:
           node-version: "14.x"
           registry-url: "https://registry.npmjs.org"
-      - run: npm install
-      - run: npm run build
-      - run: npm publish
+      # Deploy plugin
+      - run: npm install && npm run build && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # Deploy types
-      - run: cd types/
-      - run: npm run build
-      - run: npm publish
+      - run: cd types/ && npm run build && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
