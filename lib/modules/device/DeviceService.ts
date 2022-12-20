@@ -22,6 +22,7 @@ import {
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
+import { ApiDeviceLinkAssetRequest } from "./exports";
 
 export class DeviceService {
   private config: DeviceManagerConfiguration;
@@ -365,7 +366,7 @@ export class DeviceService {
     engineId: string,
     deviceId: string,
     assetId: string,
-    measuresNames: Record<string, string>,
+    measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"],
     { refresh }: { refresh?: any } = {}
   ): Promise<{
     asset: KDocument<AssetContent>;
@@ -394,23 +395,12 @@ export class DeviceService {
         assetId
       );
 
-      const requestedMeasuresNames = Object.values(measuresNames);
-      for (const link of asset._source.linkedDevices) {
-        const existingMeasureNames = Object.values(link.measures);
-
-        for (const requestedMeasuresName of requestedMeasuresNames) {
-          if (existingMeasureNames.includes(requestedMeasuresName)) {
-            throw new BadRequestError(
-              `Measure name "${requestedMeasuresName}" is already used by another device.`
-            );
-          }
-        }
-      }
+      this.checkAssetMeasureNamesAvailability(asset, measureNames);
 
       device._source.assetId = assetId;
       asset._source.linkedDevices.push({
         _id: deviceId,
-        measures: measuresNames,
+        measureNames,
       });
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
@@ -458,6 +448,30 @@ export class DeviceService {
       return { asset: updatedAsset, device: updatedDevice };
     });
   }
+
+  /**
+   * Checks if the asset does not already have a linked device using one of the
+   * requested measure names.
+   */
+  private checkAssetMeasureNamesAvailability(
+    asset: KDocument<AssetContent>,
+    measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"],
+  ) {
+    const requestedMeasuresNames = measureNames.map(m => m.asset);
+
+    for (const link of asset._source.linkedDevices) {
+      const existingMeasureNames = link.measureNames.map(m => m.asset);
+
+      for (const requestedMeasuresName of requestedMeasuresNames) {
+        if (existingMeasureNames.includes(requestedMeasuresName)) {
+          throw new BadRequestError(
+            `Measure name "${requestedMeasuresName}" is already used by another device on this asset.`
+          );
+        }
+      }
+    }
+  }
+
 
   /**
    * Unlink a device of an asset

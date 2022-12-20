@@ -429,13 +429,14 @@ export class MeasureService {
         `Device "${device._id}" is not linked to asset "${asset._id}"`
       );
     }
-
-    if (!deviceLink.measures[deviceMeasureName]) {
+    console.log({deviceLink})
+    const measureName = deviceLink.measureNames.find(m => m.device === deviceMeasureName);
+    if (!measureName) {
       throw new BadRequestError(
         `Measure "${deviceMeasureName}" from device "${device._id}" does not have a name in asset "${asset._id}"`
       );
     }
 
-    return deviceLink.measures[deviceMeasureName];
+    return measureName.asset;
   }
 }

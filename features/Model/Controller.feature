@@ -187,11 +187,11 @@ Feature: Model Controller
   Scenario: Error if the model name is not PascalCase
     Given I execute the action "device-manager/models":"writeAsset" with args:
       | body.engineGroup      | "commons"                     |
-      | body.model            | "Plane"                       |
+      | body.model            | "plane"                       |
       | body.metadataMappings | { size: { type: "integer" } } |
       | body.defaultValues    | { "name": "Firebird" }        |
     Then I should receive an error matching:
-      | message | "The default value \"name\" is not in the metadata mappings." |
+      | message | "Asset model \"plane\" must be PascalCase." |
 
   @models
   Scenario: Error if a default value is not a metadata
@@ -228,43 +228,54 @@ Feature: Model Controller
     Then The collection "engine-ayse":"devices" mappings match:
       """
       {
-        "metadata": {
-          "properties": {
-            "color": {
-              "type": "keyword"
-            },
-            "network": {
-              "type": "keyword"
-            },
-            "network2": {
-              "type": "keyword"
-            }
-          }
-        },
+      "metadata": {
+      "properties": {
+      "color": {
+      "type": "keyword"
+      },
+      "network": {
+      "type": "keyword"
+      },
+      "network2": {
+      "type": "keyword"
+      }
+      }
+      },
       }
       """
     Then The collection "device-manager":"devices" mappings match:
       """
       {
-        "metadata": {
-          "properties": {
-            "color": {
-              "type": "keyword"
-            },
-            "network": {
-              "type": "keyword"
-            },
-            "network2": {
-              "type": "keyword"
-            }
-          }
-        },
+      "metadata": {
+      "properties": {
+      "color": {
+      "type": "keyword"
+      },
+      "network": {
+      "type": "keyword"
+      },
+      "network2": {
+      "type": "keyword"
+      }
+      }
+      },
       }
       """
     When I successfully execute the action "device-manager/models":"listDevices"
     Then I should receive a result matching:
       | total         | 3                     |
       | models[2]._id | "model-device-Zigbee" |
+
+  @models
+  Scenario: Error if the model name is not PascalCase
+    Given I execute the action "device-manager/models":"writeDevice" with args:
+      | body.engineGroup          | "commons"                     |
+      | body.model                | "plane"                       |
+      | body.metadataMappings     | { size: { type: "integer" } } |
+      | body.defaultValues        | { "name": "Firebird" }        |
+      | body.measures.temperature | "temperature"                 |
+    Then I should receive an error matching:
+      | message | "Device model \"plane\" must be PascalCase." |
 
   @models
   Scenario: Write and List a Measure model
@@ -327,65 +338,65 @@ Feature: Model Controller
     Then The collection "engine-ayse":"devices" mappings match:
       """
       {
-        "measures": {
-          "properties": {
-            "presence": {
-              "properties": {
-                "measuredAt": {
-                  "type": "date"
-                },
-                "payloadUuids": {
-                  "type": "keyword"
-                },
-                "type": {
-                  "type": "keyword"
-                },
-                "values": {
-                  "properties": {
-                    "presence": {
-                      "type": "boolean"
-                    },
-                    "presence2": {
-                      "type": "boolean"
-                    }
-                  }
-                }
-              }
-            },
-          }
-        },
+      "measures": {
+      "properties": {
+      "presence": {
+      "properties": {
+      "measuredAt": {
+      "type": "date"
+      },
+      "payloadUuids": {
+      "type": "keyword"
+      },
+      "type": {
+      "type": "keyword"
+      },
+      "values": {
+      "properties": {
+      "presence": {
+      "type": "boolean"
+      },
+      "presence2": {
+      "type": "boolean"
+      }
+      }
+      }
+      }
+      },
+      }
+      },
       }
       """
     Then The collection "device-manager":"devices" mappings match:
       """
       {
-        "measures": {
-          "properties": {
-            "presence": {
-              "properties": {
-                "measuredAt": {
-                  "type": "date"
-                },
-                "payloadUuids": {
-                  "type": "keyword"
-                },
-                "type": {
-                  "type": "keyword"
-                },
-                "values": {
-                  "properties": {
-                    "presence": {
-                      "type": "boolean"
-                    },
-                    "presence2": {
-                      "type": "boolean"
-                    }
-                  }
-                }
-              }
-            },
-          }
-        },
+      "measures": {
+      "properties": {
+      "presence": {
+      "properties": {
+      "measuredAt": {
+      "type": "date"
+      },
+      "payloadUuids": {
+      "type": "keyword"
+      },
+      "type": {
+      "type": "keyword"
+      },
+      "values": {
+      "properties": {
+      "presence": {
+      "type": "boolean"
+      },
+      "presence2": {
+      "type": "boolean"
+      }
+      }
+      }
+      }
+      },
+      }
+      },
       }
       """
     When I successfully execute the action "device-manager/models":"listMeasures"

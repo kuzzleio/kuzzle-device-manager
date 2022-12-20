@@ -25,9 +25,11 @@ export const assetsMappings = {
     linkedDevices: {
       properties: {
         _id: { type: "keyword" },
-        measures: {
-          dynamic: "false",
-          properties: {},
+        measureNames: {
+          properties: {
+            asset: { type: "keyword" },
+            device: { type: "keyword" }
+          },
         },
       },
     },

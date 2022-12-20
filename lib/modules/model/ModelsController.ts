@@ -2,9 +2,9 @@ import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { ModelService } from "./ModelService";
 import {
-  ApiModelCreateAssetResult,
-  ApiModelCreateDeviceResult,
-  ApiModelCreateMeasureResult,
+  ApiModelWriteAssetResult,
+  ApiModelWriteDeviceResult,
+  ApiModelWriteMeasureResult,
   ApiModelDeleteAssetResult,
   ApiModelDeleteDeviceResult,
   ApiModelDeleteMeasureResult,
@@ -65,7 +65,7 @@ export class ModelsController {
     };
   }
 
-  async writeAsset(request: KuzzleRequest): Promise<ApiModelCreateAssetResult> {
+  async writeAsset(request: KuzzleRequest): Promise<ApiModelWriteAssetResult> {
     const engineGroup = request.getBodyString("engineGroup");
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
@@ -85,7 +85,7 @@ export class ModelsController {
 
   async writeDevice(
     request: KuzzleRequest
-  ): Promise<ApiModelCreateDeviceResult> {
+  ): Promise<ApiModelWriteDeviceResult> {
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings");
     const defaultValues = request.getBodyObject("defaultValues", {});
@@ -103,7 +103,7 @@ export class ModelsController {
 
   async writeMeasure(
     request: KuzzleRequest
-  ): Promise<ApiModelCreateMeasureResult> {
+  ): Promise<ApiModelWriteMeasureResult> {
     const type = request.getBodyString("type");
     const valuesMappings = request.getBodyObject("valuesMappings");
 

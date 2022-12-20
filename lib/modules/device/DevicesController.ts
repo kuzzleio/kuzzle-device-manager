@@ -10,6 +10,7 @@ import {
   ApiDeviceDeleteResult,
   ApiDeviceDetachEngineResult,
   ApiDeviceGetResult,
+  ApiDeviceLinkAssetRequest,
   ApiDeviceLinkAssetResult,
   ApiDeviceSearchResult,
   ApiDeviceUnlinkAssetResult,
@@ -203,7 +204,7 @@ export class DevicesController {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
     const assetId = request.getString("assetId");
-    const measureNames = request.getBodyObject("measureNames");
+    const measureNames = request.getBodyArray("measureNames") as ApiDeviceLinkAssetRequest["body"]["measureNames"];
     const refresh = request.getRefresh();
 
     const { asset, device } = await this.deviceService.linkAsset(

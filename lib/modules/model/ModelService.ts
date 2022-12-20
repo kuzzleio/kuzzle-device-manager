@@ -4,7 +4,6 @@ import {
   JSONObject,
   KDocument,
   PluginContext,
-  PluginImplementationError,
 } from "kuzzle";
 
 import {
@@ -58,8 +57,8 @@ export class ModelService {
     measures: JSONObject
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
-      throw new PluginImplementationError(
-        `Asset model "${model}" must be PascalCase`
+      throw new BadRequestError(
+        `Asset model "${model}" must be PascalCase.`
       );
     }
 
@@ -117,8 +116,8 @@ export class ModelService {
     measures: JSONObject
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
-      throw new PluginImplementationError(
-        `Device model "${model}" must be PascalCase`
+      throw new BadRequestError(
+        `Device model "${model}" must be PascalCase.`
       );
     }
 
