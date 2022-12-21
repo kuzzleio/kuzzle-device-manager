@@ -12,7 +12,7 @@ import {
 import { MeasureContent } from "../measure/";
 import { ApiDeviceUnlinkAssetRequest } from "../device/types/DeviceApi";
 import { lock } from "../shared/utils/lock";
-import { Metadata } from "../shared";
+import { EmbeddedMeasure, Metadata } from "../shared";
 import {
   DeviceManagerConfiguration,
   InternalCollection,
@@ -169,14 +169,10 @@ export class AssetService {
         _.set(assetMetadata, metadataName, metadataValue);
       }
 
-      const measures = {};
+      const measures: Record<string, EmbeddedMeasure> = {};
 
-      for (const [name, type] of Object.entries(assetModel.asset.measures)) {
-        measures[name] = {
-          name,
-          type,
-          values: {},
-        };
+      for (const { name } of assetModel.asset.measures) {
+        measures[name] = null;
       }
 
       const asset = await this.sdk.document.create<AssetContent>(

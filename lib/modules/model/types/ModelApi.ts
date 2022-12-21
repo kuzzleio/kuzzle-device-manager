@@ -10,43 +10,40 @@ interface ModelsControllerRequest {
   controller: "device-manager/models";
 }
 
-export interface ApiModelCreateAssetRequest extends ModelsControllerRequest {
+export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   action: "writeAsset";
 
   body: {
     engineGroup: string;
     model: string;
-    metadataMappings: JSONObject;
-    defaultValues: JSONObject;
+    metadataMappings?: JSONObject;
+    defaultValues?: JSONObject;
+    measures?: AssetModelContent["asset"]["measures"];
   };
 }
-export type ApiModelCreateAssetResult = KDocument<AssetModelContent>;
+export type ApiModelWriteAssetResult = KDocument<AssetModelContent>;
 
-export interface ApiModelCreateDeviceRequest extends ModelsControllerRequest {
+export interface ApiModelWriteDeviceRequest extends ModelsControllerRequest {
   action: "writeDevice";
 
   body: {
     model: string;
-    metadataMappings: JSONObject;
-    defaultValues: JSONObject;
+    metadataMappings?: JSONObject;
+    defaultValues?: JSONObject;
+    measures: DeviceModelContent["device"]["measures"];
   };
 }
-export type ApiModelCreateDeviceResult = KDocument<DeviceModelContent>;
+export type ApiModelWriteDeviceResult = KDocument<DeviceModelContent>;
 
-export interface ApiModelCreateMeasureRequest extends ModelsControllerRequest {
+export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
   action: "writeMeasure";
 
   body: {
     type: string;
-    unit: {
-      name: string;
-      sign: string;
-      type: string;
-    };
     valuesMappings: JSONObject;
   };
 }
-export type ApiModelCreateMeasureResult = KDocument<MeasureModelContent>;
+export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;
 
 export interface ApiModelDeleteAssetRequest extends ModelsControllerRequest {
   action: "deleteAsset";

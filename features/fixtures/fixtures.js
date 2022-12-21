@@ -45,9 +45,7 @@ const assetAyseLinked = {
   },
   linkedDevices: [
     {
-      measures: {
-        temperature: "temperatureExt",
-      },
+      measureNames: [{ asset: "temperatureExt", device: "temperature" }],
       _id: "DummyTemp-linked1",
     },
   ],

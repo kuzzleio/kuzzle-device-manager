@@ -15,6 +15,7 @@ import { onAsk } from "../modules/shared";
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { InternalCollection } from "./InternalCollection";
+import { NamedMeasures } from "lib/modules/decoder";
 
 const digitalTwinMappings = {
   asset: assetsMappings,
@@ -170,9 +171,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         model._source[digitalTwinType].metadataMappings
       );
 
-      for (const [measureName, measureType] of Object.entries(
-        model._source[digitalTwinType].measures
-      )) {
+      for (const { name: measureName, type: measureType } of model._source[
+        digitalTwinType
+      ].measures as NamedMeasures) {
         const measureModel = measureModels.find(
           (m) => m._source.measure.type === measureType
         );

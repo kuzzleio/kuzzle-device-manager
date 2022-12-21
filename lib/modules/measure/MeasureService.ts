@@ -102,11 +102,6 @@ export class MeasureService {
         payloadUuids
       );
 
-      this.updateEmbeddedMeasures("device", device, measures);
-      if (asset) {
-        this.updateEmbeddedMeasures("asset", asset, measures);
-      }
-
       /**
        * Event before starting to process new measures.
        *
@@ -430,12 +425,15 @@ export class MeasureService {
       );
     }
 
-    if (!deviceLink.measures[deviceMeasureName]) {
+    const measureName = deviceLink.measureNames.find(
+      (m) => m.device === deviceMeasureName
+    );
+    if (!measureName) {
       throw new BadRequestError(
         `Measure "${deviceMeasureName}" from device "${device._id}" does not have a name in asset "${asset._id}"`
       );
     }
 
-    return deviceLink.measures[deviceMeasureName];
+    return measureName.asset;
   }
 }

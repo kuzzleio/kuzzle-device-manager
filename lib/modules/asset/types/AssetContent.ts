@@ -19,17 +19,17 @@ export interface AssetContent<
     _id: string;
 
     /**
-     * Names lookup table for measures
+     * Names of the linked measures
      *
-     * Record<deviceName, assetName>
+     * Array<{ asset: string, device: string }>
      *
      * @example
      *
-     * {
-     *   "temperature": "externalTemperature",
-     * }
+     * [
+     *   { asset: "externalTemperature", device: "temperature" }
+     * ]
      */
-    measures: Record<string, string>;
+    measureNames: Array<{ asset: string; device: string }>;
   }>;
 }
 
