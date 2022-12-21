@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { Backend, KDocument } from "kuzzle";
+import should from "should";
 
 import {
   MeasureContent,
@@ -36,6 +37,13 @@ export function registerTestPipes(app: Backend) {
 
       for (const measure of measures) {
         if (measure.values.temperature) {
+          if (device._source.measures.temperature) {
+            // Ensure the measure has not been integrated to the device yet
+            should(measure.measuredAt).be.greaterThan(
+              device._source.measures.temperature.measuredAt
+            );
+          }
+
           measure.values.temperature *= 2;
         }
       }

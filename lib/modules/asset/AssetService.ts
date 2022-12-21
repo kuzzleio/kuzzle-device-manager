@@ -171,14 +171,8 @@ export class AssetService {
 
       const measures: Record<string, EmbeddedMeasure> = {};
 
-      for (const { name, type } of assetModel.asset.measures) {
-        measures[name] = {
-          measuredAt: null,
-          name,
-          payloadUuids: null,
-          type,
-          values: {},
-        };
+      for (const { name } of assetModel.asset.measures) {
+        measures[name] = null;
       }
 
       const asset = await this.sdk.document.create<AssetContent>(

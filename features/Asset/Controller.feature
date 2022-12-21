@@ -8,12 +8,12 @@ Feature: Asset Controller
       | body.reference       | "A1"            |
       | body.metadata.height | 5               |
     Then The document "engine-kuzzle":"assets":"Container-A1" content match:
-      | metadata.height              | 5             |
-      | metadata.weight              | null          |
-      | measures.temperatureExt.type | "temperature" |
-      | measures.temperatureInt.type | "temperature" |
-      | measures.position.type       | "position"    |
-      | linkedDevices                | []            |
+      | metadata.height         | 5    |
+      | metadata.weight         | null |
+      | measures.temperatureExt | null |
+      | measures.temperatureInt | null |
+      | measures.position       | null |
+      | linkedDevices           | []   |
     When I successfully execute the action "device-manager/assets":"update" with args:
       | engineId             | "engine-kuzzle" |
       | _id                  | "Container-A1"  |

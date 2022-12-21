@@ -102,11 +102,6 @@ export class MeasureService {
         payloadUuids
       );
 
-      this.updateEmbeddedMeasures("device", device, measures);
-      if (asset) {
-        this.updateEmbeddedMeasures("asset", asset, measures);
-      }
-
       /**
        * Event before starting to process new measures.
        *

@@ -14,6 +14,7 @@ Feature: Ingestion Pipeline Events
       | body.measureNames[0].asset  | "temperatureExt"             |
     Given I send the following "dummy-temp" payloads:
       | deviceEUI          | temperature |
+      | "enrich_me_master" | 18          |
       | "enrich_me_master" | 21          |
     And I refresh the collection "engine-ayse":"measures"
     Then When I successfully execute the action "document":"search" with args:
@@ -22,8 +23,8 @@ Feature: Ingestion Pipeline Events
       | body       | { query: { term:{"asset._id":"Container-unlinked1"}}} |
     # temperature has been multiplied by 2
     And I should receive a result matching:
-      | hits[0]._source.type               | "temperature" |
-      | hits[0]._source.values.temperature | 42            |
+      | hits[1]._source.type               | "temperature" |
+      | hits[1]._source.values.temperature | 42            |
     Then The document "device-manager":"devices":"DummyTemp-enrich_me_master" content match:
       | measures.temperature.values.temperature | 42 |
     Then The document "engine-ayse":"devices":"DummyTemp-enrich_me_master" content match:
