@@ -8,6 +8,9 @@ export const modelsMappings: CollectionMappings = {
     type: { type: "keyword" },
     engineGroup: { type: "keyword" },
 
+    /**
+     * Measure model
+     */
     measure: {
       properties: {
         type: { type: "keyword" },
@@ -18,6 +21,9 @@ export const modelsMappings: CollectionMappings = {
       },
     },
 
+    /**
+     * Asset model
+     */
     asset: {
       properties: {
         model: { type: "keyword" },
@@ -30,12 +36,17 @@ export const modelsMappings: CollectionMappings = {
           properties: {},
         },
         measures: {
-          dynamic: "false",
-          properties: {},
+          properties: {
+            type: { type: "keyword" },
+            name: { type: "keyword" },
+          },
         },
       },
     },
 
+    /**
+     * Device model
+     */
     device: {
       properties: {
         model: { type: "keyword" },
@@ -48,8 +59,10 @@ export const modelsMappings: CollectionMappings = {
           properties: {},
         },
         measures: {
-          dynamic: "false",
-          properties: {},
+          properties: {
+            type: { type: "keyword" },
+            name: { type: "keyword" },
+          },
         },
       },
     },

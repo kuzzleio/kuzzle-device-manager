@@ -68,9 +68,9 @@ export class ModelsController {
   async writeAsset(request: KuzzleRequest): Promise<ApiModelWriteAssetResult> {
     const engineGroup = request.getBodyString("engineGroup");
     const model = request.getBodyString("model");
-    const metadataMappings = request.getBodyObject("metadataMappings");
+    const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
-    const measures = request.getBodyObject("measures", {});
+    const measures = request.getBodyArray("measures", []);
 
     const assetModel = await this.modelService.writeAsset(
       engineGroup,
@@ -87,9 +87,9 @@ export class ModelsController {
     request: KuzzleRequest
   ): Promise<ApiModelWriteDeviceResult> {
     const model = request.getBodyString("model");
-    const metadataMappings = request.getBodyObject("metadataMappings");
+    const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
-    const measures = request.getBodyObject("measures");
+    const measures = request.getBodyArray("measures");
 
     const deviceModel = await this.modelService.writeDevice(
       model,

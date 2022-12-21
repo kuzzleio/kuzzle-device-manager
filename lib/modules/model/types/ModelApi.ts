@@ -16,8 +16,9 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   body: {
     engineGroup: string;
     model: string;
-    metadataMappings: JSONObject;
-    defaultValues: JSONObject;
+    metadataMappings?: JSONObject;
+    defaultValues?: JSONObject;
+    measures?: AssetModelContent["asset"]["measures"];
   };
 }
 export type ApiModelWriteAssetResult = KDocument<AssetModelContent>;
@@ -27,9 +28,9 @@ export interface ApiModelWriteDeviceRequest extends ModelsControllerRequest {
 
   body: {
     model: string;
-    metadataMappings: JSONObject;
-    defaultValues: JSONObject;
-    measures: Record<string, string>
+    metadataMappings?: JSONObject;
+    defaultValues?: JSONObject;
+    measures: DeviceModelContent["device"]["measures"];
   };
 }
 export type ApiModelWriteDeviceResult = KDocument<DeviceModelContent>;
@@ -39,11 +40,6 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
 
   body: {
     type: string;
-    unit: {
-      name: string;
-      sign: string;
-      type: string;
-    };
     valuesMappings: JSONObject;
   };
 }

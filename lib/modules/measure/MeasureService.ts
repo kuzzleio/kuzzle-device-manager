@@ -429,8 +429,10 @@ export class MeasureService {
         `Device "${device._id}" is not linked to asset "${asset._id}"`
       );
     }
-    console.log({deviceLink})
-    const measureName = deviceLink.measureNames.find(m => m.device === deviceMeasureName);
+
+    const measureName = deviceLink.measureNames.find(
+      (m) => m.device === deviceMeasureName
+    );
     if (!measureName) {
       throw new BadRequestError(
         `Measure "${deviceMeasureName}" from device "${device._id}" does not have a name in asset "${asset._id}"`

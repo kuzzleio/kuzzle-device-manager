@@ -28,7 +28,7 @@ export const assetsMappings = {
         measureNames: {
           properties: {
             asset: { type: "keyword" },
-            device: { type: "keyword" }
+            device: { type: "keyword" },
           },
         },
       },

@@ -54,12 +54,10 @@ export class ModelService {
     model: string,
     metadataMappings: JSONObject,
     defaultMetadata: JSONObject,
-    measures: JSONObject
+    measures: AssetModelContent["asset"]["measures"]
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
-      throw new BadRequestError(
-        `Asset model "${model}" must be PascalCase.`
-      );
+      throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
     }
 
     const modelContent: AssetModelContent = {
@@ -113,12 +111,10 @@ export class ModelService {
     model: string,
     metadataMappings: JSONObject,
     defaultMetadata: JSONObject,
-    measures: JSONObject
+    measures: DeviceModelContent["device"]["measures"]
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
-      throw new BadRequestError(
-        `Device model "${model}" must be PascalCase.`
-      );
+      throw new BadRequestError(`Device model "${model}" must be PascalCase.`);
     }
 
     const modelContent: DeviceModelContent = {

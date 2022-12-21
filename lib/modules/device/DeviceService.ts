@@ -455,12 +455,12 @@ export class DeviceService {
    */
   private checkAssetMeasureNamesAvailability(
     asset: KDocument<AssetContent>,
-    measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"],
+    measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
   ) {
-    const requestedMeasuresNames = measureNames.map(m => m.asset);
+    const requestedMeasuresNames = measureNames.map((m) => m.asset);
 
     for (const link of asset._source.linkedDevices) {
-      const existingMeasureNames = link.measureNames.map(m => m.asset);
+      const existingMeasureNames = link.measureNames.map((m) => m.asset);
 
       for (const requestedMeasuresName of requestedMeasuresNames) {
         if (existingMeasureNames.includes(requestedMeasuresName)) {
@@ -471,7 +471,6 @@ export class DeviceService {
       }
     }
   }
-
 
   /**
    * Unlink a device of an asset

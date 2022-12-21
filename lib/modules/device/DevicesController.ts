@@ -204,7 +204,9 @@ export class DevicesController {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
     const assetId = request.getString("assetId");
-    const measureNames = request.getBodyArray("measureNames") as ApiDeviceLinkAssetRequest["body"]["measureNames"];
+    const measureNames = request.getBodyArray(
+      "measureNames"
+    ) as ApiDeviceLinkAssetRequest["body"]["measureNames"];
     const refresh = request.getRefresh();
 
     const { asset, device } = await this.deviceService.linkAsset(

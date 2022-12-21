@@ -4,30 +4,37 @@ Feature: Model Controller
   Scenario: Write and List an Asset model
     # Create model
     When I successfully execute the action "device-manager/models":"writeAsset" with args:
-      | body.engineGroup             | "commons"                        |
-      | body.model                   | "Plane"                          |
-      | body.metadataMappings        | { company: { type: "keyword" } } |
-      | body.measures.temperatureExt | "temperature"                    |
+      | body.engineGroup      | "commons"                        |
+      | body.model            | "Plane"                          |
+      | body.metadataMappings | { company: { type: "keyword" } } |
+      | body.measures[0].name | "temperatureExt"                 |
+      | body.measures[0].type | "temperature"                    |
     Then The document "device-manager":"models":"model-asset-Plane" content match:
-      | type                                | "asset"       |
-      | engineGroup                         | "commons"     |
-      | asset.model                         | "Plane"       |
-      | asset.metadataMappings.company.type | "keyword"     |
-      | asset.measures.temperatureExt       | "temperature" |
+      | type                                | "asset"          |
+      | engineGroup                         | "commons"        |
+      | asset.model                         | "Plane"          |
+      | asset.metadataMappings.company.type | "keyword"        |
+      | asset.measures[0].name              | "temperatureExt" |
+      | asset.measures[0].type              | "temperature"    |
     # Update model
     When I successfully execute the action "device-manager/models":"writeAsset" with args:
-      | body.engineGroup       | "commons"                         |
-      | body.model             | "Plane"                           |
-      | body.metadataMappings  | { company2: { type: "keyword" } } |
-      | body.measures.position | "position"                        |
+      | body.engineGroup      | "commons"                         |
+      | body.model            | "Plane"                           |
+      | body.metadataMappings | { company2: { type: "keyword" } } |
+      | body.measures[0].name | "temperatureExt"                  |
+      | body.measures[0].type | "temperature"                     |
+      | body.measures[1].name | "position"                        |
+      | body.measures[1].type | "position"                        |
     Then The document "device-manager":"models":"model-asset-Plane" content match:
-      | type                                 | "asset"       |
-      | engineGroup                          | "commons"     |
-      | asset.model                          | "Plane"       |
-      | asset.metadataMappings.company.type  | "keyword"     |
-      | asset.metadataMappings.company2.type | "keyword"     |
-      | asset.measures.temperatureExt        | "temperature" |
-      | asset.measures.position              | "position"    |
+      | type                                 | "asset"          |
+      | engineGroup                          | "commons"        |
+      | asset.model                          | "Plane"          |
+      | asset.metadataMappings.company.type  | "keyword"        |
+      | asset.metadataMappings.company2.type | "keyword"        |
+      | asset.measures[0].name               | "temperatureExt" |
+      | asset.measures[0].type               | "temperature"    |
+      | asset.measures[1].name               | "position"       |
+      | asset.measures[1].type               | "position"       |
     # This test fail when run with all the other but success when run individually
     # Then The collection "engine-ayse":"assets" mappings match:
     #   """
@@ -207,23 +214,29 @@ Feature: Model Controller
   Scenario: Write and List a Device model
     When I successfully execute the action "device-manager/models":"writeDevice" with args:
       | body.model            | "Zigbee"                         |
-      | body.measures.battery | "battery"                        |
+      | body.measures[0].type | "battery"                        |
+      | body.measures[0].name | "battery"                        |
       | body.metadataMappings | { network: { type: "keyword" } } |
     Then The document "device-manager":"models":"model-device-Zigbee" content match:
       | type                                 | "device"  |
       | device.model                         | "Zigbee"  |
       | device.metadataMappings.network.type | "keyword" |
     When I successfully execute the action "device-manager/models":"writeDevice" with args:
-      | body.model                | "Zigbee"                          |
-      | body.measures.temperature | "temperature"                     |
-      | body.metadataMappings     | { network2: { type: "keyword" } } |
+      | body.model            | "Zigbee"                          |
+      | body.measures[0].type | "battery"                         |
+      | body.measures[0].name | "battery"                         |
+      | body.measures[1].type | "temperature"                     |
+      | body.measures[1].name | "temperature"                     |
+      | body.metadataMappings | { network2: { type: "keyword" } } |
     Then The document "device-manager":"models":"model-device-Zigbee" content match:
       | type                                  | "device"      |
       | device.model                          | "Zigbee"      |
       | device.metadataMappings.network.type  | "keyword"     |
       | device.metadataMappings.network2.type | "keyword"     |
-      | device.measures.battery               | "battery"     |
-      | device.measures.temperature           | "temperature" |
+      | device.measures[0].type               | "battery"     |
+      | device.measures[0].name               | "battery"     |
+      | device.measures[1].type               | "temperature" |
+      | device.measures[1].name               | "temperature" |
     And I refresh the collection "device-manager":"models"
     Then The collection "engine-ayse":"devices" mappings match:
       """
@@ -269,11 +282,12 @@ Feature: Model Controller
   @models
   Scenario: Error if the model name is not PascalCase
     Given I execute the action "device-manager/models":"writeDevice" with args:
-      | body.engineGroup          | "commons"                     |
-      | body.model                | "plane"                       |
-      | body.metadataMappings     | { size: { type: "integer" } } |
-      | body.defaultValues        | { "name": "Firebird" }        |
-      | body.measures.temperature | "temperature"                 |
+      | body.engineGroup      | "commons"                     |
+      | body.model            | "plane"                       |
+      | body.metadataMappings | { size: { type: "integer" } } |
+      | body.defaultValues    | { "name": "Firebird" }        |
+      | body.measures[0].type | "temperature"                 |
+      | body.measures[0].name | "temperature"                 |
     Then I should receive an error matching:
       | message | "Device model \"plane\" must be PascalCase." |
 
@@ -332,71 +346,72 @@ Feature: Model Controller
       }
       """
     When I successfully execute the action "device-manager/models":"writeDevice" with args:
-      | body.model             | "Zigbee"   |
-      | body.metadataMappings  | {}         |
-      | body.measures.presence | "presence" |
+      | body.model            | "Zigbee"   |
+      | body.metadataMappings | {}         |
+      | body.measures[0].type | "presence" |
+      | body.measures[0].name | "presence" |
     Then The collection "engine-ayse":"devices" mappings match:
       """
       {
-      "measures": {
-      "properties": {
-      "presence": {
-      "properties": {
-      "measuredAt": {
-      "type": "date"
-      },
-      "payloadUuids": {
-      "type": "keyword"
-      },
-      "type": {
-      "type": "keyword"
-      },
-      "values": {
-      "properties": {
-      "presence": {
-      "type": "boolean"
-      },
-      "presence2": {
-      "type": "boolean"
-      }
-      }
-      }
-      }
-      },
-      }
-      },
+        "measures": {
+          "properties": {
+            "presence": {
+              "properties": {
+                "measuredAt": {
+                  "type": "date"
+                },
+                "payloadUuids": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                },
+                "values": {
+                  "properties": {
+                    "presence": {
+                      "type": "boolean"
+                    },
+                    "presence2": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       """
     Then The collection "device-manager":"devices" mappings match:
       """
       {
-      "measures": {
-      "properties": {
-      "presence": {
-      "properties": {
-      "measuredAt": {
-      "type": "date"
-      },
-      "payloadUuids": {
-      "type": "keyword"
-      },
-      "type": {
-      "type": "keyword"
-      },
-      "values": {
-      "properties": {
-      "presence": {
-      "type": "boolean"
-      },
-      "presence2": {
-      "type": "boolean"
-      }
-      }
-      }
-      }
-      },
-      }
-      },
+        "measures": {
+          "properties": {
+            "presence": {
+              "properties": {
+                "measuredAt": {
+                  "type": "date"
+                },
+                "payloadUuids": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                },
+                "values": {
+                  "properties": {
+                    "presence": {
+                      "type": "boolean"
+                    },
+                    "presence2": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       """
     When I successfully execute the action "device-manager/models":"listMeasures"
@@ -407,20 +422,30 @@ Feature: Model Controller
 
   Scenario: Register models from the framework
     Then The document "device-manager":"models":"model-asset-Container" content match:
-      | type                               | "asset"     |
-      | engineGroup                        | "commons"   |
-      | asset.model                        | "Container" |
-      | asset.metadataMappings.weight.type | "integer"   |
-      | asset.metadataMappings.height.type | "integer"   |
+      | type                               | "asset"          |
+      | engineGroup                        | "commons"        |
+      | asset.model                        | "Container"      |
+      | asset.metadataMappings.weight.type | "integer"        |
+      | asset.metadataMappings.height.type | "integer"        |
+      | asset.measures[0].name             | "temperatureExt" |
+      | asset.measures[0].type             | "temperature"    |
+      | asset.measures[1].name             | "temperatureInt" |
+      | asset.measures[1].type             | "temperature"    |
+      | asset.measures[2].name             | "position"       |
+      | asset.measures[2].type             | "position"       |
     Then The document "device-manager":"models":"model-asset-Warehouse" content match:
       | type                                | "asset"     |
       | engineGroup                         | "commons"   |
       | asset.model                         | "Warehouse" |
       | asset.metadataMappings.surface.type | "integer"   |
+      | asset.measures[0].name              | "position"  |
+      | asset.measures[0].type              | "position"  |
     Then The document "device-manager":"models":"model-device-DummyTemp" content match:
-      | type                               | "device"    |
-      | device.model                       | "DummyTemp" |
-      | device.metadataMappings.color.type | "keyword"   |
+      | type                               | "device"      |
+      | device.model                       | "DummyTemp"   |
+      | device.metadataMappings.color.type | "keyword"     |
+      | device.measures[0].name            | "temperature" |
+      | device.measures[0].type            | "temperature" |
     Then The document "device-manager":"models":"model-measure-temperature" content match:
       | type                                    | "measure"     |
       | measure.type                            | "temperature" |
