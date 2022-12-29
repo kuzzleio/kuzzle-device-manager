@@ -31,7 +31,6 @@ import {
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
 import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
-import { ApiMeasurePushRequest } from "./types/MeasureApi";
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
@@ -336,7 +335,6 @@ export class MeasureService {
           measureName: measurement.measureName,
           payloadUuids,
           reference: device._source.reference,
-          type: "device",
         },
         type: measurement.type,
         values: measurement.values,
@@ -346,87 +344,6 @@ export class MeasureService {
     }
 
     return measures;
-  }
-
-  /**
-   * Register new measures from a device, updates :
-   * - linked asset
-   * - engine measures
-   *
-   * The `measuredAt` of the measures will be set automatically if not setted
-   *
-   * @todo remove
-   */
-  public async registerByAsset(
-    engineId: string,
-    assetId: string,
-    measureInfo: ApiMeasurePushRequest["body"]["measure"],
-    kuid: string,
-    { refresh }: { refresh?: any } = {}
-  ): Promise<KDocument<AssetContent>> {
-    return lock(`asset:${engineId}:${assetId}`, async () => {
-      const asset = await this.tryGetLinkedAsset(engineId, assetId);
-
-      if (!asset) {
-        throw new NotFoundError(`Asset "${assetId}" does not exist`);
-      }
-
-      if (!measureInfo.type) {
-        throw new BadRequestError(
-          `Invalid measure for asset "${asset._id}": missing "type"`
-        );
-      }
-
-      if (!measureInfo.name) {
-        throw new BadRequestError(
-          `Invalid measure for asset "${asset._id}": missing "name"`
-        );
-      }
-
-      if (
-        !measureInfo.values ||
-        Object.keys(measureInfo.values || {}).length === 0
-      ) {
-        throw new BadRequestError(
-          `Invalid measure for asset "${asset._id}": missing "values"`
-        );
-      }
-
-      // @todo check if measure type exists
-
-      const measure: MeasureContent = {
-        asset: AssetSerializer.measureContext(asset, measureInfo.name),
-        measuredAt: measureInfo.measuredAt || Date.now(),
-        origin: {
-          _id: kuid,
-          measureName: measureInfo.name,
-          type: "user",
-        },
-        type: measureInfo.type,
-        values: measureInfo.values,
-      };
-
-      this.updateEmbeddedMeasures("asset", asset, [measure]);
-
-      const [updatedAsset] = await Promise.all([
-        this.sdk.document.update<AssetContent>(
-          engineId,
-          InternalCollection.ASSETS,
-          asset._id,
-          { measures: asset._source.measures },
-          { refresh, source: true }
-        ),
-        this.sdk.document.create<MeasureContent>(
-          engineId,
-          InternalCollection.MEASURES,
-          measure,
-          null,
-          { refresh }
-        ),
-      ]);
-
-      return updatedAsset;
-    });
   }
 
   private async tryGetLinkedAsset(

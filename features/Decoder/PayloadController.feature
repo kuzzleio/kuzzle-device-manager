@@ -70,7 +70,6 @@ Feature: Payloads Controller
       | hits[0]._source.values.temperature    | 42.2                |
       | hits[0]._source.measuredAt            | "_DATE_NOW_"        |
       | hits[0]._source.origin._id            | "DummyTemp-linked1" |
-      | hits[0]._source.origin.type           | "device"            |
       | hits[0]._source.origin.measureName    | "temperature"       |
       | hits[0]._source.origin.deviceModel    | "DummyTemp"         |
       | hits[0]._source.origin.reference      | "linked1"           |

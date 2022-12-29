@@ -41,13 +41,6 @@ export const measuresMappings = {
      */
     origin: {
       properties: {
-        /**
-         * From what the measure has been pushed. Can be:
-         * - 'asset'
-         * - 'device'
-         */
-        type: { type: "keyword" },
-
         measureName: { type: "keyword" },
 
         /**

@@ -26,33 +26,27 @@ export interface MeasureContent<
     measureName: string;
 
     /**
-     * Type of the origin
-     */
-    type: "user" | "device";
-
-    /**
      * Payload uuids that were used to create this measure.
      */
-    payloadUuids?: Array<string>;
+    payloadUuids: Array<string>;
 
     /**
      * Model of the device
      *
      * @example "AbeewayTemp"
      */
-    deviceModel?: string;
+    deviceModel: string;
 
     /**
      * Reference of the device
      */
-    reference?: string;
+    reference: string;
 
     /**
      * ID of the origin. Can be:
      * - device id if origin type is `device`
-     * - kuid of the request if origin type is `user`
      */
-    _id?: string;
+    _id: string;
   };
 }
 
