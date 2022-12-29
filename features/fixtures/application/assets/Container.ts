@@ -3,7 +3,6 @@ import {
   AssetContent,
   TemperatureMeasurement,
   PositionMeasurement,
-  EmbeddedMeasure,
 } from "../../../../index";
 
 interface ContainerMetadata extends Metadata {
