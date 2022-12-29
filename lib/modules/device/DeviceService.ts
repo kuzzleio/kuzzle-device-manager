@@ -9,12 +9,10 @@ import {
   SearchResult,
 } from "kuzzle";
 
-import { AskAssetHistoryAdd, AssetContent } from "./../asset";
+import { AskAssetHistoryAdd, AssetContent, AssetHistoryEventLink, AssetHistoryEventUnlink } from "./../asset";
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
-import { lock } from "../shared/utils/lock";
-import { Metadata } from "../shared";
-import { ask } from "../shared/utils/ask";
-import { AskModelDeviceGet } from "../model/types/ModelEvents";
+import { Metadata, lock, ask } from "../shared";
+import { AskModelDeviceGet } from "../model";
 
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -428,9 +426,15 @@ export class DeviceService {
         ),
       ]);
 
-      await ask<AskAssetHistoryAdd>(
+      const event: AssetHistoryEventLink = {
+        name: "link",
+        link: {
+          deviceId: device._id
+        }
+      };
+      await ask<AskAssetHistoryAdd<AssetHistoryEventLink>>(
         "ask:device-manager:asset:history:add",
-        { engineId, events: ["link"], asset: updatedAsset });
+        { engineId, event, asset: updatedAsset });
 
       if (refresh) {
         await Promise.all([
@@ -536,9 +540,15 @@ export class DeviceService {
         ),
       ]);
 
-      await ask<AskAssetHistoryAdd>(
+      const event: AssetHistoryEventUnlink = {
+        name: "unlink",
+        unlink: {
+          deviceId
+        }
+      };
+      await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
         "ask:device-manager:asset:history:add",
-        { engineId, events: ["link"], asset: updatedAsset });
+        { engineId, event, asset: updatedAsset });
 
       if (refresh) {
         await Promise.all([

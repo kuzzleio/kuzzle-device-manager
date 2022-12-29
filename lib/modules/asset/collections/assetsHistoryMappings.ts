@@ -2,7 +2,31 @@ export const assetsHistoryMappings = {
   dynamic: "strict",
   properties: {
     type: { type: "keyword" },
-    events: { type: "keyword" },
+    event: {
+      properties: {
+        names: { type: "keyword" },
+        measure: {
+          properties: {
+            names: { type: 'keyword' },
+          }
+        },
+        metadata: {
+          properties: {
+            names: { type: 'keyword' },
+          }
+        },
+        link: {
+          properties: {
+            deviceId: { type: 'keyword' },
+          }
+        },
+        unlink: {
+          properties: {
+            deviceId: { type: 'keyword' },
+          }
+        },
+      }
+    },
     id: { type: "keyword" },
     asset: {
       // populated with generated assets mappings

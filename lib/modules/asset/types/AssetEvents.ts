@@ -3,7 +3,7 @@ import { KDocument } from "kuzzle";
 import { Metadata } from "../../../modules/shared";
 
 import { AssetContent } from "./AssetContent";
-import { AssetHistoryContent } from "./AssetHistoryContent";
+import { AssetHistoryEvent } from "./AssetHistoryContent";
 
 export type EventAssetUpdateBefore = {
   name: "device-manager:asset:update:before";
@@ -20,12 +20,12 @@ export type EventAssetUpdateAfter = {
 /**
  * @internal
  */
- export type AskAssetHistoryAdd = {
+ export type AskAssetHistoryAdd<TAssetHistoryEvent extends AssetHistoryEvent> = {
   name: "ask:device-manager:asset:history:add";
 
   payload: {
     engineId: string;
-    events: AssetHistoryContent["events"];
+    event: TAssetHistoryEvent;
     asset: KDocument<AssetContent>;
   };
 

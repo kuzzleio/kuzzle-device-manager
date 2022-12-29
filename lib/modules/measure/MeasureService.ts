@@ -14,7 +14,7 @@ import {
   InternalCollection,
 } from "../../core";
 import { DeviceContent } from "./../device";
-import { AskAssetHistoryAdd, AssetContent } from "../asset";
+import { AskAssetHistoryAdd, AssetContent, AssetHistoryEventMeasure, AssetHistoryEventMetadata } from "../asset";
 import { DigitalTwinContent, Metadata, lock, ask } from "../shared";
 import { AssetSerializer } from "../asset";
 
@@ -93,6 +93,7 @@ export class MeasureService {
         engineId,
         device._source.assetId
       );
+      const originalAssetMetadata = JSON.parse(JSON.stringify(asset._source.metadata));
 
       _.merge(device._source.metadata, metadata);
 
@@ -190,9 +191,23 @@ export class MeasureService {
                 asset._source
               )
               .then(async updatedAsset => {
-                await ask<AskAssetHistoryAdd>(
+                const event: AssetHistoryEventMeasure = {
+                  name: 'measure',
+                  measure: {
+                    names: afterEnrichment.measures.map(m => m.asset.measureName)
+                  }
+                }
+
+                const metadataDiff = this.compareMetadata(originalAssetMetadata, updatedAsset._source.metadata);
+                if (metadataDiff.length !== 0) {
+                  (event as unknown as AssetHistoryEventMetadata).metadata = {
+                    names: metadataDiff
+                  };
+                }
+
+                await ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
                   "ask:device-manager:asset:history:add",
-                  { engineId, events: ["measure"], asset: updatedAsset });
+                  { engineId, event, asset: updatedAsset });
               })
               .catch((error) => {
                 throw new BadRequestError(
@@ -228,6 +243,18 @@ export class MeasureService {
         );
       }
     });
+  }
+
+  private compareMetadata (before: JSONObject, after: JSONObject): string[] {
+    const names: string[] = [];
+
+    for (const [key, value] of Object.entries(before)) {
+      if (after[key] !== value) {
+        names.push(key);
+      }
+    }
+
+    return names;
   }
 
   /**

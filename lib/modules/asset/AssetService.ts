@@ -11,15 +11,13 @@ import {
 
 import { MeasureContent } from "../measure/";
 import { ApiDeviceUnlinkAssetRequest } from "../device";
-import { lock } from "../shared/utils/lock";
-import { EmbeddedMeasure, Metadata } from "../shared";
+import { EmbeddedMeasure, Metadata, lock, ask } from "../shared";
 import {
   DeviceManagerConfiguration,
   InternalCollection,
   DeviceManagerPlugin,
 } from "../../core";
-import { ask } from "../shared/utils/ask";
-import { AskModelAssetGet } from "../model/types/ModelEvents";
+import { AskModelAssetGet } from "../model";
 
 import { AssetContent } from "./types/AssetContent";
 import { AssetSerializer } from "./model/AssetSerializer";
@@ -28,6 +26,7 @@ import {
   EventAssetUpdateBefore,
 } from "./types/AssetEvents";
 import { AssetHistoryService } from "./AssetHistoryService";
+import { AssetHistoryEventMetadata } from "./types/AssetHistoryContent";
 
 export class AssetService {
   private context: PluginContext;
@@ -137,11 +136,15 @@ export class AssetService {
         { refresh, source: true }
       );
 
-      await this.assetHistoryService.add(
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(
         engineId,
-        ["metadata"],
-        updatedAsset
-      );
+        {
+          name: 'metadata',
+          metadata: {
+            names: Object.keys(updatedPayload.metadata)
+          }
+        },
+        updatedAsset);
 
       await this.app.trigger<EventAssetUpdateAfter>(
         "device-manager:asset:update:after",
@@ -203,7 +206,15 @@ export class AssetService {
         { refresh }
       );
 
-      await this.assetHistoryService.add(engineId, ["metadata"], asset);
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(
+        engineId,
+        {
+          name: 'metadata',
+          metadata: {
+            names: Object.keys(asset._source.metadata)
+          }
+        },
+        asset);
 
       return asset;
     });
