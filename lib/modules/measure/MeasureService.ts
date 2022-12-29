@@ -3,7 +3,6 @@ import {
   BadRequestError,
   JSONObject,
   KDocument,
-  NotFoundError,
   PluginContext,
 } from "kuzzle";
 import _ from "lodash";
