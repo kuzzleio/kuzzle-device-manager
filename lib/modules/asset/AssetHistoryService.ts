@@ -44,7 +44,6 @@ export class AssetHistoryService {
         asset: asset._source,
         event,
         id: asset._id,
-        type: "asset",
       }
     );
   }

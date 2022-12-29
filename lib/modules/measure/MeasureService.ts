@@ -199,9 +199,10 @@ export class MeasureService {
               .then(async (updatedAsset) => {
                 const event: AssetHistoryEventMeasure = {
                   measure: {
-                    names: afterEnrichment.measures.map(
-                      (m) => m.asset.measureName
-                    ),
+                    // Filter measures who are not in the asset device link
+                    names: afterEnrichment.measures
+                      .filter((m) => m.asset.measureName)
+                      .map((m) => m.asset.measureName),
                   },
                   name: "measure",
                 };
@@ -287,6 +288,12 @@ export class MeasureService {
           ? measurement.asset.measureName
           : measurement.origin.measureName;
 
+      // The measure does not have a name in the asset because it was not defined
+      // in the device link
+      if (measureName === null) {
+        continue;
+      }
+
       const previousMeasure = digitalTwin._source.measures[measureName];
 
       if (
@@ -326,7 +333,10 @@ export class MeasureService {
       );
 
       const measureContent: MeasureContent = {
-        asset: AssetSerializer.measureContext(asset, assetMeasureName),
+        asset:
+          asset === null
+            ? undefined
+            : AssetSerializer.measureContext(asset, assetMeasureName),
         measuredAt: measurement.measuredAt,
         origin: {
           _id: device._id,
@@ -393,10 +403,9 @@ export class MeasureService {
     const measureName = deviceLink.measureNames.find(
       (m) => m.device === deviceMeasureName
     );
+    // The measure is decoded by the device but is not linked to the asset
     if (!measureName) {
-      throw new BadRequestError(
-        `Measure "${deviceMeasureName}" from device "${device._id}" does not have a name in asset "${asset._id}"`
-      );
+      return null;
     }
 
     return measureName.asset;

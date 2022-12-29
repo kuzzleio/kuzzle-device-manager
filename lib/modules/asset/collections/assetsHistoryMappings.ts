@@ -1,7 +1,6 @@
 export const assetsHistoryMappings = {
   dynamic: "strict",
   properties: {
-    type: { type: "keyword" },
     event: {
       properties: {
         name: { type: "keyword" },

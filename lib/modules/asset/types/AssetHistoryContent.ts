@@ -47,13 +47,6 @@ export interface AssetHistoryContent<
   TMetadata extends Metadata = any
 > extends KDocumentContent {
   /**
-   * Type of the history document.
-   *
-   * (reserved for futur use)
-   */
-  type: string;
-
-  /**
    * Name of the event who caused the historization
    *
    *  - `measure` a new measure has been received
