@@ -31,7 +31,6 @@ Feature: UnlinkAsset
     And I should receive a result matching:
       | hits.length                                | 1                     |
       | hits[0]._source.id                         | "Container-linked1" |
-      | hits[0]._source.type                       | "asset"               |
       | hits[0]._source.event.name                 | "unlink"              |
       | hits[0]._source.event.unlink.deviceId      | "DummyTemp-linked1" |
       | hits[0]._source.asset.linkedDevices        | []                    |

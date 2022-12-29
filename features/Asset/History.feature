@@ -18,13 +18,11 @@ Feature: Asset Historization
     And I should receive a result matching:
       | hits.length                           | 2                    |
       | hits[0]._source.id                    | "Container-A1"       |
-      | hits[0]._source.type                  | "asset"              |
       | hits[0]._source.event.name            | "metadata"           |
       | hits[0]._source.event.metadata.names  | ["weight"]           |
       | hits[0]._source.asset.metadata.height | 5                    |
       | hits[0]._source.asset.metadata.weight | 1250                 |
       | hits[1]._source.id                    | "Container-A1"       |
-      | hits[1]._source.type                  | "asset"              |
       | hits[1]._source.event.name            | "metadata"           |
       | hits[1]._source.event.metadata.names  | ["weight", "height"] |
       | hits[1]._source.asset.metadata.height | 5                    |
@@ -48,12 +46,10 @@ Feature: Asset Historization
     And I should receive a result matching:
       | hits.length                                | 2                     |
       | hits[0]._source.id                         | "Container-unlinked1" |
-      | hits[0]._source.type                       | "asset"               |
       | hits[0]._source.event.name                 | "unlink"              |
       | hits[0]._source.event.unlink.deviceId      | "DummyTemp-unlinked1" |
       | hits[0]._source.asset.linkedDevices        | []                    |
       | hits[1]._source.id                         | "Container-unlinked1" |
-      | hits[1]._source.type                       | "asset"               |
       | hits[1]._source.event.name                 | "link"                |
       | hits[1]._source.event.link.deviceId        | "DummyTemp-unlinked1" |
       | hits[1]._source.asset.linkedDevices[0]._id | "DummyTemp-unlinked1" |
@@ -70,7 +66,6 @@ Feature: Asset Historization
     And I should receive a result matching:
       | hits.length                                                      | 1                   |
       | hits[0]._source.id                                               | "Container-linked1" |
-      | hits[0]._source.type                                             | "asset"             |
       | hits[0]._source.event.name                                       | "measure"           |
       | hits[0]._source.event.measure.names                              | ["temperatureExt"]  |
       | hits[0]._source.event.metadata                                   | "_UNDEFINED_"       |
@@ -89,7 +84,6 @@ Feature: Asset Historization
     And I should receive a result matching:
       | hits.length                                                      | 1                   |
       | hits[0]._source.id                                               | "Container-linked1" |
-      | hits[0]._source.type                                             | "asset"             |
       | hits[0]._source.event.name                                       | "measure"           |
       | hits[0]._source.event.measure.names                              | ["temperatureExt"]  |
       | hits[0]._source.event.metadata.names                             | ["weight"]          |
