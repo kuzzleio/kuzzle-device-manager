@@ -7,25 +7,25 @@ export const assetsHistoryMappings = {
         names: { type: "keyword" },
         measure: {
           properties: {
-            names: { type: 'keyword' },
-          }
+            names: { type: "keyword" },
+          },
         },
         metadata: {
           properties: {
-            names: { type: 'keyword' },
-          }
+            names: { type: "keyword" },
+          },
         },
         link: {
           properties: {
-            deviceId: { type: 'keyword' },
-          }
+            deviceId: { type: "keyword" },
+          },
         },
         unlink: {
           properties: {
-            deviceId: { type: 'keyword' },
-          }
+            deviceId: { type: "keyword" },
+          },
         },
-      }
+      },
     },
     id: { type: "keyword" },
     asset: {
@@ -38,9 +38,9 @@ export const assetsHistoryMappings = {
             createdAt: { type: "date" },
             updatedAt: { type: "date" },
             updater: { type: "keyword" },
-          }
-        }
-      }
-     }
-  }
+          },
+        },
+      },
+    },
+  },
 };

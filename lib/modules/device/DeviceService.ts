@@ -9,7 +9,12 @@ import {
   SearchResult,
 } from "kuzzle";
 
-import { AskAssetHistoryAdd, AssetContent, AssetHistoryEventLink, AssetHistoryEventUnlink } from "./../asset";
+import {
+  AskAssetHistoryAdd,
+  AssetContent,
+  AssetHistoryEventLink,
+  AssetHistoryEventUnlink,
+} from "./../asset";
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
 import { Metadata, lock, ask } from "../shared";
 import { AskModelDeviceGet } from "../model";
@@ -427,14 +432,15 @@ export class DeviceService {
       ]);
 
       const event: AssetHistoryEventLink = {
-        name: "link",
         link: {
-          deviceId: device._id
-        }
+          deviceId: device._id,
+        },
+        name: "link",
       };
       await ask<AskAssetHistoryAdd<AssetHistoryEventLink>>(
         "ask:device-manager:asset:history:add",
-        { engineId, event, asset: updatedAsset });
+        { asset: updatedAsset, engineId, event }
+      );
 
       if (refresh) {
         await Promise.all([
@@ -543,12 +549,13 @@ export class DeviceService {
       const event: AssetHistoryEventUnlink = {
         name: "unlink",
         unlink: {
-          deviceId
-        }
+          deviceId,
+        },
       };
       await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
         "ask:device-manager:asset:history:add",
-        { engineId, event, asset: updatedAsset });
+        { asset: updatedAsset, engineId, event }
+      );
 
       if (refresh) {
         await Promise.all([
@@ -556,14 +563,8 @@ export class DeviceService {
             this.config.adminIndex,
             InternalCollection.DEVICES
           ),
-          this.sdk.collection.refresh(
-            engineId,
-            InternalCollection.DEVICES
-          ),
-          this.sdk.collection.refresh(
-            engineId,
-            InternalCollection.ASSETS
-          ),
+          this.sdk.collection.refresh(engineId, InternalCollection.DEVICES),
+          this.sdk.collection.refresh(engineId, InternalCollection.ASSETS),
         ]);
       }
 

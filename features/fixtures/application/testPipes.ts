@@ -46,10 +46,11 @@ export function registerTestPipes(app: Backend) {
         }
       }
 
-      if (device._source.metadata.color === 'test-metadata-history-with-measure') {
+      if (
+        device._source.metadata.color === "test-metadata-history-with-measure"
+      ) {
         asset._source.metadata.weight = 42042;
       }
-
 
       return { asset, device, measures };
     }

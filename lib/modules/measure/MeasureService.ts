@@ -14,7 +14,12 @@ import {
   InternalCollection,
 } from "../../core";
 import { DeviceContent } from "./../device";
-import { AskAssetHistoryAdd, AssetContent, AssetHistoryEventMeasure, AssetHistoryEventMetadata } from "../asset";
+import {
+  AskAssetHistoryAdd,
+  AssetContent,
+  AssetHistoryEventMeasure,
+  AssetHistoryEventMetadata,
+} from "../asset";
 import { DigitalTwinContent, Metadata, lock, ask } from "../shared";
 import { AssetSerializer } from "../asset";
 
@@ -93,7 +98,9 @@ export class MeasureService {
         engineId,
         device._source.assetId
       );
-      const originalAssetMetadata = JSON.parse(JSON.stringify(asset._source.metadata));
+      const originalAssetMetadata = JSON.parse(
+        JSON.stringify(asset._source.metadata)
+      );
 
       _.merge(device._source.metadata, metadata);
 
@@ -190,24 +197,30 @@ export class MeasureService {
                 asset._id,
                 asset._source
               )
-              .then(async updatedAsset => {
+              .then(async (updatedAsset) => {
                 const event: AssetHistoryEventMeasure = {
-                  name: 'measure',
                   measure: {
-                    names: afterEnrichment.measures.map(m => m.asset.measureName)
-                  }
-                }
+                    names: afterEnrichment.measures.map(
+                      (m) => m.asset.measureName
+                    ),
+                  },
+                  name: "measure",
+                };
 
-                const metadataDiff = this.compareMetadata(originalAssetMetadata, updatedAsset._source.metadata);
+                const metadataDiff = this.compareMetadata(
+                  originalAssetMetadata,
+                  updatedAsset._source.metadata
+                );
                 if (metadataDiff.length !== 0) {
                   (event as unknown as AssetHistoryEventMetadata).metadata = {
-                    names: metadataDiff
+                    names: metadataDiff,
                   };
                 }
 
                 await ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
                   "ask:device-manager:asset:history:add",
-                  { engineId, event, asset: updatedAsset });
+                  { asset: updatedAsset, engineId, event }
+                );
               })
               .catch((error) => {
                 throw new BadRequestError(
@@ -245,7 +258,7 @@ export class MeasureService {
     });
   }
 
-  private compareMetadata (before: JSONObject, after: JSONObject): string[] {
+  private compareMetadata(before: JSONObject, after: JSONObject): string[] {
     const names: string[] = [];
 
     for (const [key, value] of Object.entries(before)) {

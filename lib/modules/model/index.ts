@@ -5,4 +5,3 @@ export * from "./types/ModelDefinition";
 export * from "./types/ModelEvents";
 export * from "./ModelModule";
 export * from "./ModelSerializer";
-

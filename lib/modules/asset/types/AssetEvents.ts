@@ -20,7 +20,7 @@ export type EventAssetUpdateAfter = {
 /**
  * @internal
  */
- export type AskAssetHistoryAdd<TAssetHistoryEvent extends AssetHistoryEvent> = {
+export type AskAssetHistoryAdd<TAssetHistoryEvent extends AssetHistoryEvent> = {
   name: "ask:device-manager:asset:history:add";
 
   payload: {

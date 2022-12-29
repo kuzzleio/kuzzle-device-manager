@@ -5,37 +5,38 @@ import { Metadata } from "../../shared";
 import { AssetContent } from "./AssetContent";
 
 export type AssetHistoryEventMeasure = {
-  name: 'measure';
+  name: "measure";
   measure: {
     names: string[];
   };
-}
+};
 
 export type AssetHistoryEventMetadata = {
-  name: 'metadata';
+  name: "metadata";
   metadata: {
     names: string[];
   };
-}
+};
 
 export type AssetHistoryEventLink = {
-  name: 'link';
+  name: "link";
   link: {
     deviceId: string;
   };
-}
+};
 
 export type AssetHistoryEventUnlink = {
-  name: 'unlink';
+  name: "unlink";
   unlink: {
     deviceId: string;
   };
-}
+};
 
-export type AssetHistoryEvent = AssetHistoryEventMeasure |
-  AssetHistoryEventMetadata |
-  AssetHistoryEventLink |
-  AssetHistoryEventUnlink;
+export type AssetHistoryEvent =
+  | AssetHistoryEventMeasure
+  | AssetHistoryEventMetadata
+  | AssetHistoryEventLink
+  | AssetHistoryEventUnlink;
 
 /**
  * Asset History document content

@@ -151,17 +151,22 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.ASSETS;
   }
 
-  async createAssetsHistoryCollection (engineId: string, engineGroup: string) {
-    const assetsMappings = await this.getDigitalTwinMappings<AssetModelContent>("asset", engineGroup);
+  async createAssetsHistoryCollection(engineId: string, engineGroup: string) {
+    const assetsCollectionMappings =
+      await this.getDigitalTwinMappings<AssetModelContent>(
+        "asset",
+        engineGroup
+      );
 
     const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
 
-    _.merge(mappings.properties.asset, assetsMappings);
+    _.merge(mappings.properties.asset, assetsCollectionMappings);
 
     await this.sdk.collection.create(
       engineId,
       InternalCollection.ASSETS_HISTORY,
-      mappings);
+      mappings
+    );
 
     return InternalCollection.ASSETS_HISTORY;
   }

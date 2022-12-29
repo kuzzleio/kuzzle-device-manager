@@ -41,7 +41,10 @@ export class AssetService {
     return global.app;
   }
 
-  constructor(plugin: DeviceManagerPlugin, assetHistoryService: AssetHistoryService) {
+  constructor(
+    plugin: DeviceManagerPlugin,
+    assetHistoryService: AssetHistoryService
+  ) {
     this.context = plugin.context;
     this.config = plugin.config;
     this.assetHistoryService = assetHistoryService;
@@ -139,12 +142,13 @@ export class AssetService {
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(
         engineId,
         {
-          name: 'metadata',
           metadata: {
-            names: Object.keys(updatedPayload.metadata)
-          }
+            names: Object.keys(updatedPayload.metadata),
+          },
+          name: "metadata",
         },
-        updatedAsset);
+        updatedAsset
+      );
 
       await this.app.trigger<EventAssetUpdateAfter>(
         "device-manager:asset:update:after",
@@ -209,12 +213,13 @@ export class AssetService {
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(
         engineId,
         {
-          name: 'metadata',
           metadata: {
-            names: Object.keys(asset._source.metadata)
-          }
+            names: Object.keys(asset._source.metadata),
+          },
+          name: "metadata",
         },
-        asset);
+        asset
+      );
 
       return asset;
     });
