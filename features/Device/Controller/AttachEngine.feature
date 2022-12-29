@@ -5,9 +5,11 @@ Feature: Attach device to engine
       | _id      | "DummyTemp-detached1" |
       | engineId | "engine-kuzzle"       |
     Then The document "device-manager":"devices":"DummyTemp-detached1" content match:
-      | engineId | "engine-kuzzle" |
+      | engineId             | "engine-kuzzle" |
+      | _kuzzle_info.updater | "-1"            |
     Then The document "engine-kuzzle":"devices":"DummyTemp-detached1" content match:
-      | engineId | "engine-kuzzle" |
+      | engineId            | "engine-kuzzle" |
+      | _kuzzle_info.author | "-1"            |
     When I send the following "dummy-temp" payloads:
       | deviceEUI   | temperature |
       | "detached1" | 21          |

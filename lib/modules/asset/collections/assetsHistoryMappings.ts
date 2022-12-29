@@ -4,7 +4,7 @@ export const assetsHistoryMappings = {
     type: { type: "keyword" },
     event: {
       properties: {
-        names: { type: "keyword" },
+        name: { type: "keyword" },
         measure: {
           properties: {
             names: { type: "keyword" },

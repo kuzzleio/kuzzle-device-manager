@@ -7,6 +7,7 @@ import {
   Plugin,
   PluginContext,
   SearchResult,
+  User,
 } from "kuzzle";
 
 import {
@@ -16,12 +17,13 @@ import {
   AssetHistoryEventUnlink,
 } from "./../asset";
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
-import { Metadata, lock, ask } from "../shared";
+import { Metadata, lock, ask, onAsk } from "../shared";
 import { AskModelDeviceGet } from "../model";
 
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
 import {
+  AskDeviceUnlinkAsset,
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
@@ -39,9 +41,20 @@ export class DeviceService {
     return global.app;
   }
 
+  private get impersonatedSdk() {
+    return (user: User) => this.sdk.as(user, { checkRights: false });
+  }
+
   constructor(plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+
+    onAsk<AskDeviceUnlinkAsset>(
+      "ask:device-manager:device:unlink-asset",
+      async ({ deviceId, user }) => {
+        await this.unlinkAsset(user, deviceId);
+      }
+    );
   }
 
   /**
@@ -52,6 +65,7 @@ export class DeviceService {
    * required as an argument (in part to check the tenant rights)
    */
   async create(
+    user: User,
     model: string,
     reference: string,
     metadata: JSONObject,
@@ -90,7 +104,9 @@ export class DeviceService {
         collection: string;
       }> = [];
 
-      const { _source } = await this.sdk.document.create<DeviceContent>(
+      const { _source } = await this.impersonatedSdk(
+        user
+      ).document.create<DeviceContent>(
         this.config.adminIndex,
         InternalCollection.DEVICES,
         device._source,
@@ -105,7 +121,7 @@ export class DeviceService {
       });
 
       if (engineId && engineId !== this.config.adminIndex) {
-        device = await this.attachEngine(engineId, device._id);
+        device = await this.attachEngine(user, engineId, device._id);
 
         refreshableCollections.push({
           collection: InternalCollection.DEVICES,
@@ -139,6 +155,7 @@ export class DeviceService {
   }
 
   public async update(
+    user: User,
     engineId: string,
     deviceId: string,
     metadata: Metadata,
@@ -154,7 +171,9 @@ export class DeviceService {
           { device, metadata }
         );
 
-        const updatedDevice = await this.sdk.document.update<DeviceContent>(
+        const updatedDevice = await this.impersonatedSdk(
+          user
+        ).document.update<DeviceContent>(
           engineId,
           InternalCollection.DEVICES,
           deviceId,
@@ -176,6 +195,7 @@ export class DeviceService {
   }
 
   public async delete(
+    user: User,
     engineId: string,
     deviceId: string,
     { refresh }: { refresh: any }
@@ -199,13 +219,27 @@ export class DeviceService {
         promises.push(
           // Potential race condition if someone update the asset linkedDevices
           // at the same time (e.g link or unlink asset)
-          this.sdk.document.update<AssetContent>(
-            engineId,
-            InternalCollection.ASSETS,
-            device._source.assetId,
-            { linkedDevices },
-            { refresh }
-          )
+          this.impersonatedSdk(user)
+            .document.update<AssetContent>(
+              engineId,
+              InternalCollection.ASSETS,
+              device._source.assetId,
+              { linkedDevices },
+              { refresh }
+            )
+            .then(async (updatedAsset) => {
+              const event: AssetHistoryEventUnlink = {
+                name: "unlink",
+                unlink: {
+                  deviceId,
+                },
+              };
+
+              await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
+                "ask:device-manager:asset:history:add",
+                { asset: updatedAsset, engineId, event }
+              );
+            })
         );
       }
 
@@ -260,6 +294,7 @@ export class DeviceService {
    * @param options.strict If true, throw if an operation isn't possible
    */
   async attachEngine(
+    user: User,
     engineId: string,
     deviceId: string,
     { refresh }: { refresh?: any } = {}
@@ -278,7 +313,7 @@ export class DeviceService {
       device._source.engineId = engineId;
 
       const [updatedDevice] = await Promise.all([
-        this.sdk.document.update<DeviceContent>(
+        this.impersonatedSdk(user).document.update<DeviceContent>(
           this.config.adminIndex,
           InternalCollection.DEVICES,
           device._id,
@@ -286,7 +321,7 @@ export class DeviceService {
           { source: true }
         ),
 
-        this.sdk.document.create<DeviceContent>(
+        this.impersonatedSdk(user).document.create<DeviceContent>(
           device._source.engineId,
           InternalCollection.DEVICES,
           device._source,
@@ -318,6 +353,7 @@ export class DeviceService {
    * @param options.refresh Wait for ES indexation
    */
   async detachEngine(
+    user: User,
     deviceId: string,
     { refresh }: { refresh?: any } = {}
   ): Promise<KDocument<DeviceContent>> {
@@ -327,11 +363,11 @@ export class DeviceService {
       this.checkAttachedToEngine(device);
 
       if (device._source.assetId) {
-        await this.unlinkAsset(deviceId, { refresh });
+        await this.unlinkAsset(user, deviceId, { refresh });
       }
 
       await Promise.all([
-        this.sdk.document.update(
+        this.impersonatedSdk(user).document.update(
           this.config.adminIndex,
           InternalCollection.DEVICES,
           device._id,
@@ -366,6 +402,7 @@ export class DeviceService {
    * Link a device to an asset.
    */
   async linkAsset(
+    user: User,
     engineId: string,
     deviceId: string,
     assetId: string,
@@ -407,7 +444,7 @@ export class DeviceService {
       });
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
-        this.sdk.document.update<DeviceContent>(
+        this.impersonatedSdk(user).document.update<DeviceContent>(
           this.config.adminIndex,
           InternalCollection.DEVICES,
           device._id,
@@ -415,14 +452,14 @@ export class DeviceService {
           { source: true }
         ),
 
-        this.sdk.document.update<DeviceContent>(
+        this.impersonatedSdk(user).document.update<DeviceContent>(
           device._source.engineId,
           InternalCollection.DEVICES,
           device._id,
           { assetId }
         ),
 
-        this.sdk.document.update<AssetContent>(
+        this.impersonatedSdk(user).document.update<AssetContent>(
           device._source.engineId,
           InternalCollection.ASSETS,
           asset._id,
@@ -493,6 +530,7 @@ export class DeviceService {
    * @param options.refresh Wait for ES indexation
    */
   async unlinkAsset(
+    user: User,
     deviceId: string,
     { refresh }: { refresh?: any } = {}
   ): Promise<{
@@ -522,7 +560,7 @@ export class DeviceService {
       );
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
-        this.sdk.document.update<DeviceContent>(
+        this.impersonatedSdk(user).document.update<DeviceContent>(
           this.config.adminIndex,
           InternalCollection.DEVICES,
           device._id,
@@ -530,14 +568,14 @@ export class DeviceService {
           { source: true }
         ),
 
-        this.sdk.document.update<DeviceContent>(
+        this.impersonatedSdk(user).document.update<DeviceContent>(
           engineId,
           InternalCollection.DEVICES,
           device._id,
           { assetId: null }
         ),
 
-        this.sdk.document.update<AssetContent>(
+        this.impersonatedSdk(user).document.update<AssetContent>(
           engineId,
           InternalCollection.ASSETS,
           asset._id,

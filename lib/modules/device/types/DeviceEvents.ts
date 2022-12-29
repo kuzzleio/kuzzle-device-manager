@@ -1,4 +1,4 @@
-import { KDocument } from "kuzzle";
+import { KDocument, User } from "kuzzle";
 
 import { Metadata } from "../../../modules/shared";
 
@@ -14,4 +14,18 @@ export type EventDeviceUpdateAfter = {
   name: "device-manager:device:update:after";
 
   args: [{ device: KDocument<DeviceContent>; metadata: Metadata }];
+};
+
+/**
+ * @internal
+ */
+export type AskDeviceUnlinkAsset = {
+  name: "ask:device-manager:device:unlink-asset";
+
+  payload: {
+    deviceId: string;
+    user: User;
+  };
+
+  result: void;
 };

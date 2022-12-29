@@ -100,10 +100,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     return {
       collections: [
-        "assets",
+        InternalCollection.ASSETS,
         this.engineConfigManager.collection,
-        "devices",
-        "measures",
+        InternalCollection.DEVICES,
+        InternalCollection.MEASURES,
       ],
     };
   }
@@ -127,13 +127,27 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async onDelete(index: string) {
     const promises = [];
 
-    promises.push(this.sdk.collection.delete(index, "assets"));
-    promises.push(this.sdk.collection.delete(index, "devices"));
-    promises.push(this.sdk.collection.delete(index, "measures"));
+    promises.push(this.sdk.collection.delete(index, InternalCollection.ASSETS));
+    promises.push(
+      this.sdk.collection.delete(index, InternalCollection.ASSETS_HISTORY)
+    );
+    promises.push(
+      this.sdk.collection.delete(index, InternalCollection.DEVICES)
+    );
+    promises.push(
+      this.sdk.collection.delete(index, InternalCollection.MEASURES)
+    );
 
     await Promise.all(promises);
 
-    return { collections: ["assets", "devices", "measures"] };
+    return {
+      collections: [
+        InternalCollection.ASSETS,
+        InternalCollection.ASSETS_HISTORY,
+        InternalCollection.DEVICES,
+        InternalCollection.MEASURES,
+      ],
+    };
   }
 
   async createAssetsCollection(engineId: string, engineGroup: string) {

@@ -98,9 +98,10 @@ export class MeasureService {
         engineId,
         device._source.assetId
       );
-      const originalAssetMetadata = JSON.parse(
-        JSON.stringify(asset._source.metadata)
-      );
+      const originalAssetMetadata =
+        asset === null
+          ? {}
+          : JSON.parse(JSON.stringify(asset._source.metadata));
 
       _.merge(device._source.metadata, metadata);
 
