@@ -10,7 +10,7 @@ import {
 } from "kuzzle";
 
 import { MeasureContent } from "../measure/";
-import { ApiDeviceUnlinkAssetRequest } from "../device/types/DeviceApi";
+import { ApiDeviceUnlinkAssetRequest } from "../device";
 import { lock } from "../shared/utils/lock";
 import { EmbeddedMeasure, Metadata } from "../shared";
 import {
@@ -27,10 +27,12 @@ import {
   EventAssetUpdateAfter,
   EventAssetUpdateBefore,
 } from "./types/AssetEvents";
+import { AssetHistoryService } from "./AssetHistoryService";
 
 export class AssetService {
   private context: PluginContext;
   private config: DeviceManagerConfiguration;
+  private assetHistoryService: AssetHistoryService;
 
   private get sdk() {
     return this.context.accessors.sdk;
@@ -40,9 +42,10 @@ export class AssetService {
     return global.app;
   }
 
-  constructor(plugin: DeviceManagerPlugin) {
+  constructor(plugin: DeviceManagerPlugin, assetHistoryService: AssetHistoryService) {
     this.context = plugin.context;
     this.config = plugin.config;
+    this.assetHistoryService = assetHistoryService;
   }
 
   /**
@@ -107,6 +110,11 @@ export class AssetService {
     return asset;
   }
 
+  /**
+   * Updates an asset metadata
+   *
+   * @todo use impersonated SDK to preserve Kuzzle metadata
+   */
   public async update(
     engineId: string,
     assetId: string,
@@ -127,6 +135,12 @@ export class AssetService {
         assetId,
         { metadata: updatedPayload.metadata },
         { refresh, source: true }
+      );
+
+      await this.assetHistoryService.add(
+        engineId,
+        ["metadata"],
+        updatedAsset
       );
 
       await this.app.trigger<EventAssetUpdateAfter>(
@@ -188,6 +202,8 @@ export class AssetService {
         assetId,
         { refresh }
       );
+
+      await this.assetHistoryService.add(engineId, ["metadata"], asset);
 
       return asset;
     });

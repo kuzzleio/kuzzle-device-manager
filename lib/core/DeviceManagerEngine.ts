@@ -2,7 +2,7 @@ import _ from "lodash";
 import { Backend, InternalError, JSONObject, Plugin } from "kuzzle";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 
-import { assetsMappings } from "../modules/asset";
+import { assetsMappings, assetsHistoryMappings } from "../modules/asset";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -11,11 +11,11 @@ import {
 import { measuresMappings } from "../modules/measure";
 import { devicesMappings } from "../modules/device";
 import { onAsk } from "../modules/shared";
+import { NamedMeasures } from "../modules/decoder";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { InternalCollection } from "./InternalCollection";
-import { NamedMeasures } from "lib/modules/decoder";
 
 const digitalTwinMappings = {
   asset: assetsMappings,
@@ -88,6 +88,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createAssetsCollection(index, group));
 
+    promises.push(this.createAssetsHistoryCollection(index, group));
+
     promises.push(this.createDevicesCollection(index));
 
     promises.push(this.createMeasuresCollection(index, group));
@@ -110,6 +112,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const promises = [];
 
     promises.push(this.createAssetsCollection(index, group));
+
+    promises.push(this.createAssetsHistoryCollection(index, group));
 
     promises.push(this.createDevicesCollection(index));
 
@@ -145,6 +149,21 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     return InternalCollection.ASSETS;
+  }
+
+  async createAssetsHistoryCollection (engineId: string, engineGroup: string) {
+    const assetsMappings = await this.getDigitalTwinMappings<AssetModelContent>("asset", engineGroup);
+
+    const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
+
+    _.merge(mappings.properties.asset, assetsMappings);
+
+    await this.sdk.collection.create(
+      engineId,
+      InternalCollection.ASSETS_HISTORY,
+      mappings);
+
+    return InternalCollection.ASSETS_HISTORY;
   }
 
   private async getDigitalTwinMappings<

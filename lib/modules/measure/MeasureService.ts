@@ -14,8 +14,8 @@ import {
   InternalCollection,
 } from "../../core";
 import { DeviceContent } from "./../device";
-import { AssetContent } from "../asset";
-import { DigitalTwinContent, Metadata, lock } from "../shared";
+import { AskAssetHistoryAdd, AssetContent } from "../asset";
+import { DigitalTwinContent, Metadata, lock, ask } from "../shared";
 import { AssetSerializer } from "../asset";
 
 import {
@@ -88,8 +88,9 @@ export class MeasureService {
         return;
       }
 
+      const engineId = device._source.engineId;
       const asset = await this.tryGetLinkedAsset(
-        device._source.engineId,
+        engineId,
         device._source.assetId
       );
 
@@ -114,10 +115,10 @@ export class MeasureService {
         { asset, device, measures }
       );
 
-      if (device._source.engineId) {
+      if (engineId) {
         afterEnrichment =
           await this.app.trigger<TenantEventMeasureProcessBefore>(
-            `engine:${device._source.engineId}:device-manager:measures:process:before`,
+            `engine:${engineId}:device-manager:measures:process:before`,
             { asset, device, measures: afterEnrichment.measures }
           );
       }
@@ -144,11 +145,11 @@ export class MeasureService {
           })
       );
 
-      if (device._source.engineId) {
+      if (engineId) {
         promises.push(
           this.sdk.document
             .update<DeviceContent>(
-              device._source.engineId,
+              engineId,
               InternalCollection.DEVICES,
               device._id,
               device._source
@@ -163,7 +164,7 @@ export class MeasureService {
         promises.push(
           this.sdk.document
             .mCreate<MeasureContent>(
-              device._source.engineId,
+              engineId,
               InternalCollection.MEASURES,
               afterEnrichment.measures.map((measure) => ({ body: measure }))
             )
@@ -183,11 +184,16 @@ export class MeasureService {
           promises.push(
             this.sdk.document
               .update<AssetContent>(
-                device._source.engineId,
+                engineId,
                 InternalCollection.ASSETS,
                 asset._id,
                 asset._source
               )
+              .then(async updatedAsset => {
+                await ask<AskAssetHistoryAdd>(
+                  "ask:device-manager:asset:history:add",
+                  { engineId, events: ["measure"], asset: updatedAsset });
+              })
               .catch((error) => {
                 throw new BadRequestError(
                   `Cannot update asset "${asset._id}": ${error.message}`
@@ -215,9 +221,9 @@ export class MeasureService {
         }
       );
 
-      if (device._source.engineId) {
+      if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessAfter>(
-          `engine:${device._source.engineId}:device-manager:measures:process:after`,
+          `engine:${engineId}:device-manager:measures:process:after`,
           { asset, device, measures }
         );
       }
@@ -228,7 +234,7 @@ export class MeasureService {
    * Updates embedded measures in a digital twin
    */
   private updateEmbeddedMeasures(
-    type: "asset" | "device", // this is why I hate typescript, there is no way to know types at runtime
+    type: "asset" | "device", // this is why typescript taste like half baked, there is no way to know types at runtime
     digitalTwin: KDocument<DigitalTwinContent>,
     measurements: MeasureContent[]
   ) {
@@ -307,6 +313,8 @@ export class MeasureService {
    * - engine measures
    *
    * The `measuredAt` of the measures will be set automatically if not setted
+   *
+   * @todo remove
    */
   public async registerByAsset(
     engineId: string,

@@ -84,10 +84,12 @@ Before({ timeout: 30 * 1000 }, async function () {
     truncateCollection(this.sdk, "device-manager", "payloads"),
 
     truncateCollection(this.sdk, "engine-kuzzle", "assets"),
+    truncateCollection(this.sdk, "engine-kuzzle", "assets-history"),
     truncateCollection(this.sdk, "engine-kuzzle", "measures"),
     truncateCollection(this.sdk, "engine-kuzzle", "devices"),
 
     truncateCollection(this.sdk, "engine-ayse", "assets"),
+    truncateCollection(this.sdk, "engine-ayse", "assets-history"),
     truncateCollection(this.sdk, "engine-ayse", "measures"),
     truncateCollection(this.sdk, "engine-ayse", "devices"),
 

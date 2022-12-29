@@ -59,14 +59,15 @@ Feature: Payloads Controller
 
   Scenario: Historize the measures with device and asset context
     Given I send the following "dummy-temp" payloads:
-      | deviceEUI | "12345" |
-      | "linked1" | 42.2    |
+      | deviceEUI | temperature |
+      | "linked1" | 42.2        |
     And I refresh the collection "engine-ayse":"measures"
     Then When I successfully execute the action "document":"search" with args:
       | index      | "engine-ayse" |
       | collection | "measures"    |
     And I should receive a result matching:
       | hits[0]._source.type                  | "temperature"       |
+      | hits[0]._source.values.temperature    | 42.2                |
       | hits[0]._source.measuredAt            | "_DATE_NOW_"        |
       | hits[0]._source.origin._id            | "DummyTemp-linked1" |
       | hits[0]._source.origin.type           | "device"            |

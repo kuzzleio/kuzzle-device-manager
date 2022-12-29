@@ -14,6 +14,7 @@ Feature: Asset Controller
       | measures.temperatureInt | null |
       | measures.position       | null |
       | linkedDevices           | []   |
+    # Update metadata
     When I successfully execute the action "device-manager/assets":"update" with args:
       | engineId             | "engine-kuzzle" |
       | _id                  | "Container-A1"  |

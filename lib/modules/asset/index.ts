@@ -1,5 +1,7 @@
 export * from "./collections/assetsMappings";
+export * from "./collections/assetsHistoryMappings";
 export * from "./types/AssetContent";
+export * from "./types/AssetHistoryContent";
 export * from "./types/AssetEvents";
 export * from "./types/AssetApi";
 export * from "./model/AssetSerializer";

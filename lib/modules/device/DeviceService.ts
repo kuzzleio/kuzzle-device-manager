@@ -9,7 +9,7 @@ import {
   SearchResult,
 } from "kuzzle";
 
-import { AssetContent } from "./../asset";
+import { AskAssetHistoryAdd, AssetContent } from "./../asset";
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
 import { lock } from "../shared/utils/lock";
 import { Metadata } from "../shared";
@@ -428,6 +428,10 @@ export class DeviceService {
         ),
       ]);
 
+      await ask<AskAssetHistoryAdd>(
+        "ask:device-manager:asset:history:add",
+        { engineId, events: ["link"], asset: updatedAsset });
+
       if (refresh) {
         await Promise.all([
           this.sdk.collection.refresh(
@@ -487,6 +491,7 @@ export class DeviceService {
   }> {
     return lock(`device:unlinkAsset:${deviceId}`, async () => {
       const device = await this.get(this.config.adminIndex, deviceId);
+      const engineId = device._source.engineId;
 
       this.checkAttachedToEngine(device);
 
@@ -497,7 +502,7 @@ export class DeviceService {
       }
 
       const asset = await this.sdk.document.get<AssetContent>(
-        device._source.engineId,
+        engineId,
         InternalCollection.ASSETS,
         device._source.assetId
       );
@@ -516,20 +521,24 @@ export class DeviceService {
         ),
 
         this.sdk.document.update<DeviceContent>(
-          device._source.engineId,
+          engineId,
           InternalCollection.DEVICES,
           device._id,
           { assetId: null }
         ),
 
         this.sdk.document.update<AssetContent>(
-          device._source.engineId,
+          engineId,
           InternalCollection.ASSETS,
           asset._id,
           { linkedDevices },
           { source: true }
         ),
       ]);
+
+      await ask<AskAssetHistoryAdd>(
+        "ask:device-manager:asset:history:add",
+        { engineId, events: ["link"], asset: updatedAsset });
 
       if (refresh) {
         await Promise.all([
@@ -538,11 +547,11 @@ export class DeviceService {
             InternalCollection.DEVICES
           ),
           this.sdk.collection.refresh(
-            device._source.engineId,
+            engineId,
             InternalCollection.DEVICES
           ),
           this.sdk.collection.refresh(
-            device._source.engineId,
+            engineId,
             InternalCollection.ASSETS
           ),
         ]);
