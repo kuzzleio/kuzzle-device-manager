@@ -25,10 +25,6 @@ export class AssetSerializer {
     asset: KDocument<AssetContent>,
     measureName: string
   ): AssetMeasureContext {
-    if (!asset) {
-      return undefined;
-    }
-
     return {
       _id: asset._id,
       measureName,
