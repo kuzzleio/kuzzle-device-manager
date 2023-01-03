@@ -36,12 +36,12 @@ Feature: Payloads Controller
       | valid | false |
     And The document "device-manager":"devices":"DummyTemp-12345" does not exists
 
-  Scenario: Receive a payload with 3 measures
+  Scenario: Receive a payload with 3 measures but only 2 are propagated to the asset
     Given I send the following "dummy-temp-position" payloads:
       | deviceEUI | temperature | location.lat | location.lon | location.accuracy | battery |
-      | "12345"   | 21          | 42.2         | 2.42         | 2100              | 0.8     |
-    Then The document "device-manager":"devices":"DummyTempPosition-12345" content match:
-      | reference                               | "12345"             |
+      | "linked2" | 21          | 42.2         | 2.42         | 2100              | 0.8     |
+    Then The document "device-manager":"devices":"DummyTempPosition-linked2" content match:
+      | reference                               | "linked2"           |
       | model                                   | "DummyTempPosition" |
       | measures.temperature.type               | "temperature"       |
       | measures.temperature.measuredAt         | "_DATE_NOW_"        |
@@ -54,22 +54,38 @@ Feature: Payloads Controller
       | measures.battery.type                   | "battery"           |
       | measures.battery.measuredAt             | "_DATE_NOW_"        |
       | measures.battery.values.battery         | 80                  |
-      | engineId                                | null                |
-      | assetId                                 | null                |
+      | engineId                                | "engine-ayse"       |
+      | assetId                                 | "Container-linked2" |
+    Then The document "engine-ayse":"assets":"Container-linked2" content match:
+      | measures.temperatureExt.values.temperature | 21            |
+      | measures.position.values.position.lat      | 42.2          |
+      | measures.position.values.position.lon      | 2.42          |
+      | measures.battery                           | "_UNDEFINED_" |
+    And I refresh the collection "engine-ayse":"assets-history"
+    Then I successfully execute the action "document":"search" with args:
+      | index      | "engine-ayse"                      |
+      | collection | "assets-history"                   |
+      | body.sort  | {"_kuzzle_info.createdAt": "desc"} |
+    And I should receive a result matching:
+      | hits.length                         | 1                              |
+      | hits[0]._source.id                  | "Container-linked2"            |
+      | hits[0]._source.event.name          | "measure"                      |
+      | hits[0]._source.event.measure.names | ["temperatureExt", "position"] |
+
 
   Scenario: Historize the measures with device and asset context
     Given I send the following "dummy-temp" payloads:
-      | deviceEUI | "12345" |
-      | "linked1" | 42.2    |
+      | deviceEUI | temperature |
+      | "linked1" | 42.2        |
     And I refresh the collection "engine-ayse":"measures"
     Then When I successfully execute the action "document":"search" with args:
       | index      | "engine-ayse" |
       | collection | "measures"    |
     And I should receive a result matching:
       | hits[0]._source.type                  | "temperature"       |
+      | hits[0]._source.values.temperature    | 42.2                |
       | hits[0]._source.measuredAt            | "_DATE_NOW_"        |
       | hits[0]._source.origin._id            | "DummyTemp-linked1" |
-      | hits[0]._source.origin.type           | "device"            |
       | hits[0]._source.origin.measureName    | "temperature"       |
       | hits[0]._source.origin.deviceModel    | "DummyTemp"         |
       | hits[0]._source.origin.reference      | "linked1"           |

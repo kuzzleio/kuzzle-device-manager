@@ -65,7 +65,7 @@ export class DeviceManagerPlugin extends Plugin {
        *
        * @param engineGroup Engine group name
        * @param model Name of the asset model
-       * @param definition.measuresNames Array describing measures names and types
+       * @param definition.measures Array describing measures names and types
        * @param definition.metadataMappings Metadata mappings definition
        * @param definition.defaultMetadata Default metadata values
        *
@@ -73,9 +73,9 @@ export class DeviceManagerPlugin extends Plugin {
        * ```
        * deviceManager.models.registerAsset(
        *   "logistic",
-       *   "container",
+       *   "Container",
        *   {
-       *     measuresNames: [
+       *     measures: [
        *       { name: "temperatureExt", type: "temperature" },
        *       { name: "temperatureInt", type: "temperature" },
        *       { name: "position", type: "position" },
@@ -96,17 +96,11 @@ export class DeviceManagerPlugin extends Plugin {
         model: string,
         definition: AssetModelDefinition
       ) => {
-        const measures: Record<string, string> = {};
-
-        for (const measure of definition.measuresNames) {
-          measures[measure.name] = measure.type;
-        }
-
         this.modelsRegister.registerAsset(
           engineGroup,
           model,
+          definition.measures,
           definition.metadataMappings,
-          measures,
           definition.defaultMetadata
         );
       },
@@ -135,15 +129,9 @@ export class DeviceManagerPlugin extends Plugin {
       registerDevice: (model: string, definition: DeviceModelDefinition) => {
         this.decodersRegister.register(definition.decoder);
 
-        const measures: Record<string, string> = {};
-
-        for (const measure of definition.decoder.measures) {
-          measures[measure.name] = measure.type;
-        }
-
         this.modelsRegister.registerDevice(
           model,
-          measures,
+          definition.decoder.measures,
           definition.metadataMappings,
           definition.defaultMetadata
         );

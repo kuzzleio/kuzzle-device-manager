@@ -16,6 +16,16 @@ const deviceAyseLinked1 = {
 };
 const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinked1.reference}`;
 
+const deviceAyseLinked2 = {
+  model: "DummyTempPosition",
+  reference: "linked2",
+  metadata: {},
+  measures: {},
+  engineId: "engine-ayse",
+  assetId: "Container-linked2",
+};
+const deviceAyseLinked2Id = `${deviceAyseLinked2.model}-${deviceAyseLinked2.reference}`;
+
 const deviceAyseUnlinked1 = {
   model: "DummyTemp",
   reference: "unlinked1",
@@ -36,7 +46,7 @@ const deviceAyseUnlinked2 = {
 };
 const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
 
-const assetAyseLinked = {
+const assetAyseLinked1 = {
   model: "Container",
   reference: "linked1",
   metadata: {
@@ -45,14 +55,31 @@ const assetAyseLinked = {
   },
   linkedDevices: [
     {
-      measures: {
-        temperature: "temperatureExt",
-      },
+      measureNames: [{ asset: "temperatureExt", device: "temperature" }],
       _id: "DummyTemp-linked1",
     },
   ],
 };
-const assetAyseLinkedId = `${assetAyseLinked.model}-${assetAyseLinked.reference}`;
+const assetAyseLinked1Id = `${assetAyseLinked1.model}-${assetAyseLinked1.reference}`;
+
+const assetAyseLinked2 = {
+  model: "Container",
+  reference: "linked2",
+  metadata: {
+    weight: 42,
+    height: 21,
+  },
+  linkedDevices: [
+    {
+      measureNames: [
+        { asset: "temperatureExt", device: "temperature" },
+        { asset: "position", device: "position" },
+      ],
+      _id: "DummyTempPosition-linked2",
+    },
+  ],
+};
+const assetAyseLinked2Id = `${assetAyseLinked2.model}-${assetAyseLinked2.reference}`;
 
 const assetAyseUnlinked = {
   model: "Container",
@@ -70,6 +97,8 @@ module.exports = {
     devices: [
       { index: { _id: deviceAyseLinked1Id } },
       deviceAyseLinked1,
+      { index: { _id: deviceAyseLinked2Id } },
+      deviceAyseLinked2,
       { index: { _id: deviceDetached1Id } },
       deviceDetached1,
       { index: { _id: deviceAyseUnlinked1Id } },
@@ -84,14 +113,18 @@ module.exports = {
     devices: [
       { index: { _id: deviceAyseLinked1Id } },
       deviceAyseLinked1,
+      { index: { _id: deviceAyseLinked2Id } },
+      deviceAyseLinked2,
       { index: { _id: deviceAyseUnlinked1Id } },
       deviceAyseUnlinked1,
       { index: { _id: deviceAyseUnlinked2Id } },
       deviceAyseUnlinked2,
     ],
     assets: [
-      { index: { _id: assetAyseLinkedId } },
-      assetAyseLinked,
+      { index: { _id: assetAyseLinked1Id } },
+      assetAyseLinked1,
+      { index: { _id: assetAyseLinked2Id } },
+      assetAyseLinked2,
       { index: { _id: assetAyseUnlinkedId } },
       assetAyseUnlinked,
     ],

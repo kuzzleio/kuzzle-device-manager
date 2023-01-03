@@ -27,7 +27,7 @@ deviceManager.models.registerDevice("DummyTemp", {
 // Register an asset for the "commons" group
 
 deviceManager.models.registerAsset("commons", "Container", {
-  measuresNames: [
+  measures: [
     { name: "temperatureExt", type: "temperature" },
     { name: "temperatureInt", type: "temperature" },
     { name: "position", type: "position" },
@@ -42,7 +42,7 @@ deviceManager.models.registerAsset("commons", "Container", {
 });
 
 deviceManager.models.registerAsset("commons", "Warehouse", {
-  measuresNames: [{ name: "position", type: "position" }],
+  measures: [{ name: "position", type: "position" }],
   metadataMappings: {
     surface: { type: "integer" },
   },

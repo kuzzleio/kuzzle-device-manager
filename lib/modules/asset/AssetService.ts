@@ -7,19 +7,18 @@ import {
   KHit,
   PluginContext,
   SearchResult,
+  User,
 } from "kuzzle";
 
 import { MeasureContent } from "../measure/";
-import { ApiDeviceUnlinkAssetRequest } from "../device/types/DeviceApi";
-import { lock } from "../shared/utils/lock";
-import { Metadata } from "../shared";
+import { AskDeviceUnlinkAsset } from "../device";
+import { EmbeddedMeasure, Metadata, lock, ask } from "../shared";
 import {
   DeviceManagerConfiguration,
   InternalCollection,
   DeviceManagerPlugin,
 } from "../../core";
-import { ask } from "../shared/utils/ask";
-import { AskModelAssetGet } from "../model/types/ModelEvents";
+import { AskModelAssetGet } from "../model";
 
 import { AssetContent } from "./types/AssetContent";
 import { AssetSerializer } from "./model/AssetSerializer";
@@ -27,10 +26,13 @@ import {
   EventAssetUpdateAfter,
   EventAssetUpdateBefore,
 } from "./types/AssetEvents";
+import { AssetHistoryService } from "./AssetHistoryService";
+import { AssetHistoryEventMetadata } from "./types/AssetHistoryContent";
 
 export class AssetService {
   private context: PluginContext;
   private config: DeviceManagerConfiguration;
+  private assetHistoryService: AssetHistoryService;
 
   private get sdk() {
     return this.context.accessors.sdk;
@@ -40,9 +42,17 @@ export class AssetService {
     return global.app;
   }
 
-  constructor(plugin: DeviceManagerPlugin) {
+  private get impersonatedSdk() {
+    return (user: User) => this.sdk.as(user, { checkRights: false });
+  }
+
+  constructor(
+    plugin: DeviceManagerPlugin,
+    assetHistoryService: AssetHistoryService
+  ) {
     this.context = plugin.context;
     this.config = plugin.config;
+    this.assetHistoryService = assetHistoryService;
   }
 
   /**
@@ -107,7 +117,11 @@ export class AssetService {
     return asset;
   }
 
+  /**
+   * Updates an asset metadata
+   */
   public async update(
+    user: User,
     engineId: string,
     assetId: string,
     metadata: Metadata,
@@ -121,12 +135,25 @@ export class AssetService {
         { asset, metadata }
       );
 
-      const updatedAsset = await this.sdk.document.update<AssetContent>(
+      const updatedAsset = await this.impersonatedSdk(
+        user
+      ).document.update<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
         assetId,
         { metadata: updatedPayload.metadata },
         { refresh, source: true }
+      );
+
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(
+        engineId,
+        {
+          metadata: {
+            names: Object.keys(updatedPayload.metadata),
+          },
+          name: "metadata",
+        },
+        updatedAsset
       );
 
       await this.app.trigger<EventAssetUpdateAfter>(
@@ -142,6 +169,7 @@ export class AssetService {
   }
 
   public async create(
+    user: User,
     engineId: string,
     model: string,
     reference: string,
@@ -169,17 +197,15 @@ export class AssetService {
         _.set(assetMetadata, metadataName, metadataValue);
       }
 
-      const measures = {};
+      const measures: Record<string, EmbeddedMeasure> = {};
 
-      for (const [name, type] of Object.entries(assetModel.asset.measures)) {
-        measures[name] = {
-          name,
-          type,
-          values: {},
-        };
+      for (const { name } of assetModel.asset.measures) {
+        measures[name] = null;
       }
 
-      const asset = await this.sdk.document.create<AssetContent>(
+      const asset = await this.impersonatedSdk(
+        user
+      ).document.create<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
         {
@@ -193,11 +219,23 @@ export class AssetService {
         { refresh }
       );
 
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(
+        engineId,
+        {
+          metadata: {
+            names: Object.keys(asset._source.metadata),
+          },
+          name: "metadata",
+        },
+        asset
+      );
+
       return asset;
     });
   }
 
   public async delete(
+    user: User,
     engineId: string,
     assetId: string,
     { refresh, strict }: { refresh: any; strict: boolean }
@@ -212,14 +250,10 @@ export class AssetService {
       }
 
       for (const { _id: deviceId } of asset._source.linkedDevices) {
-        const req: ApiDeviceUnlinkAssetRequest = {
-          _id: deviceId,
-          action: "unlinkAsset",
-          controller: "device-manager/devices",
-          engineId,
-        };
-
-        await this.sdk.query(req);
+        await ask<AskDeviceUnlinkAsset>(
+          "ask:device-manager:device:unlink-asset",
+          { deviceId, user }
+        );
       }
 
       await this.sdk.document.delete(

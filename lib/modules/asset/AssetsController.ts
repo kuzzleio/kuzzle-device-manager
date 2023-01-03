@@ -78,6 +78,7 @@ export class AssetsController {
     const refresh = request.getRefresh();
 
     const updatedAsset = await this.assetService.update(
+      request.getUser(),
       engineId,
       assetId,
       metadata,
@@ -97,6 +98,7 @@ export class AssetsController {
     const refresh = request.getRefresh();
 
     const asset = await this.assetService.create(
+      request.getUser(),
       engineId,
       model,
       reference,
@@ -115,7 +117,7 @@ export class AssetsController {
     const refresh = request.getRefresh();
     const strict = request.getBoolean("strict");
 
-    await this.assetService.delete(engineId, assetId, {
+    await this.assetService.delete(request.getUser(), engineId, assetId, {
       refresh,
       strict,
     });

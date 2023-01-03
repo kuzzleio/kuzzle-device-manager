@@ -7,7 +7,7 @@ import { Decoder, NamedMeasures } from "../../../modules/decoder";
  *
  * @example
  *   {
- *     measuresNames: [
+ *     measures: [
  *       { name: "temperatureExt", type: "temperature" },
  *       { name: "temperatureInt", type: "temperature" },
  *       { name: "position", type: "position" },
@@ -26,12 +26,12 @@ export type AssetModelDefinition = {
   /**
    * Array describing measures names and types
    */
-  measuresNames: NamedMeasures;
+  measures: NamedMeasures;
 
   /**
    * Metadata mappings definition
    */
-  metadataMappings: JSONObject;
+  metadataMappings?: JSONObject;
 
   /**
    * Default metadata values

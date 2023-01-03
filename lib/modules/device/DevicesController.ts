@@ -10,6 +10,7 @@ import {
   ApiDeviceDeleteResult,
   ApiDeviceDetachEngineResult,
   ApiDeviceGetResult,
+  ApiDeviceLinkAssetRequest,
   ApiDeviceLinkAssetResult,
   ApiDeviceSearchResult,
   ApiDeviceUnlinkAssetResult,
@@ -112,6 +113,7 @@ export class DevicesController {
     const refresh = request.getRefresh();
 
     const updatedDevice = await this.deviceService.update(
+      request.getUser(),
       engineId,
       deviceId,
       metadata,
@@ -128,7 +130,9 @@ export class DevicesController {
     const deviceId = request.getId();
     const refresh = request.getRefresh();
 
-    await this.deviceService.delete(engineId, deviceId, { refresh });
+    await this.deviceService.delete(request.getUser(), engineId, deviceId, {
+      refresh,
+    });
   }
 
   async search(request: KuzzleRequest): Promise<ApiDeviceSearchResult> {
@@ -161,10 +165,16 @@ export class DevicesController {
     const metadata = request.getBodyObject("metadata", {});
     const refresh = request.getRefresh();
 
-    const device = await this.deviceService.create(model, reference, metadata, {
-      engineId,
-      refresh,
-    });
+    const device = await this.deviceService.create(
+      request.getUser(),
+      model,
+      reference,
+      metadata,
+      {
+        engineId,
+        refresh,
+      }
+    );
 
     return DeviceSerializer.serialize(device);
   }
@@ -179,9 +189,14 @@ export class DevicesController {
     const deviceId = request.getId();
     const refresh = request.getRefresh();
 
-    await this.deviceService.attachEngine(engineId, deviceId, {
-      refresh,
-    });
+    await this.deviceService.attachEngine(
+      request.getUser(),
+      engineId,
+      deviceId,
+      {
+        refresh,
+      }
+    );
   }
 
   /**
@@ -193,7 +208,9 @@ export class DevicesController {
     const deviceId = request.getId();
     const refresh = request.getRefresh();
 
-    await this.deviceService.detachEngine(deviceId, { refresh });
+    await this.deviceService.detachEngine(request.getUser(), deviceId, {
+      refresh,
+    });
   }
 
   /**
@@ -203,10 +220,13 @@ export class DevicesController {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
     const assetId = request.getString("assetId");
-    const measureNames = request.getBodyObject("measureNames");
+    const measureNames = request.getBodyArray(
+      "measureNames"
+    ) as ApiDeviceLinkAssetRequest["body"]["measureNames"];
     const refresh = request.getRefresh();
 
     const { asset, device } = await this.deviceService.linkAsset(
+      request.getUser(),
       engineId,
       deviceId,
       assetId,
@@ -229,9 +249,13 @@ export class DevicesController {
     const deviceId = request.getId();
     const refresh = request.getRefresh();
 
-    const { asset, device } = await this.deviceService.unlinkAsset(deviceId, {
-      refresh,
-    });
+    const { asset, device } = await this.deviceService.unlinkAsset(
+      request.getUser(),
+      deviceId,
+      {
+        refresh,
+      }
+    );
 
     return {
       asset: AssetSerializer.serialize(asset),

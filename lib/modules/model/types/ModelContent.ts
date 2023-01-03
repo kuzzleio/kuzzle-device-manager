@@ -1,5 +1,7 @@
 import { JSONObject, KDocumentContent } from "kuzzle";
 
+import { NamedMeasures } from "../../../modules/decoder";
+
 import { MeasureDefinition } from "../../measure";
 
 export interface MeasureModelContent extends KDocumentContent {
@@ -48,15 +50,15 @@ export interface AssetModelContent extends KDocumentContent {
     /**
      * List of accepted measures for this model
      *
-     * Record<name, type>
+     * Array<{ type: string, name: string }>
      *
      * @example
      *
-     * {
-     *   "externalTemperature": "temperature",
-     * }
+     * [
+     *   { type: "temperature", name: "externalTemperature" }
+     * ]
      */
-    measures: Record<string, string>;
+    measures: NamedMeasures;
   };
 }
 
@@ -96,15 +98,15 @@ export interface DeviceModelContent extends KDocumentContent {
     /**
      * List of decoded measures for this model
      *
-     * Record<name, type>
+     * Array<{ type: string, name: string }>
      *
      * @example
      *
-     * {
-     *   "temperature1": "temperature",
-     * }
+     * [
+     *   { type: "temperature", name: "externalTemperature" }
+     * ]
      */
-    measures: Record<string, string>;
+    measures: NamedMeasures;
   };
 }
 

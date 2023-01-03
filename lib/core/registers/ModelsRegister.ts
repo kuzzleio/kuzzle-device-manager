@@ -4,8 +4,9 @@ import {
   PluginContext,
   PluginImplementationError,
 } from "kuzzle";
-import { MeasureDefinition } from "../../modules/measure";
 
+import { NamedMeasures } from "../../modules/decoder";
+import { MeasureDefinition } from "../../modules/measure";
 import { ModelSerializer } from "../../modules/model";
 import {
   AssetModelContent,
@@ -13,6 +14,7 @@ import {
   ModelContent,
   DeviceModelContent,
 } from "../../modules/model";
+
 import { DeviceManagerConfiguration } from "../DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "../DeviceManagerPlugin";
 import { InternalCollection } from "../InternalCollection";
@@ -49,8 +51,8 @@ export class ModelsRegister {
   registerAsset(
     engineGroup: string,
     model: string,
-    metadataMappings: JSONObject,
-    measures: Record<string, string>,
+    measures: NamedMeasures,
+    metadataMappings: JSONObject = {},
     defaultMetadata: JSONObject = {}
   ) {
     if (Inflector.pascalCase(model) !== model) {
@@ -68,7 +70,7 @@ export class ModelsRegister {
 
   registerDevice(
     model: string,
-    measures: Record<string, string>,
+    measures: NamedMeasures,
     metadataMappings: JSONObject = {},
     defaultMetadata: JSONObject = {}
   ) {

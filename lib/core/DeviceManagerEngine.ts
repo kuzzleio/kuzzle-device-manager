@@ -2,7 +2,7 @@ import _ from "lodash";
 import { Backend, InternalError, JSONObject, Plugin } from "kuzzle";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 
-import { assetsMappings } from "../modules/asset";
+import { assetsMappings, assetsHistoryMappings } from "../modules/asset";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -11,6 +11,7 @@ import {
 import { measuresMappings } from "../modules/measure";
 import { devicesMappings } from "../modules/device";
 import { onAsk } from "../modules/shared";
+import { NamedMeasures } from "../modules/decoder";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
@@ -87,6 +88,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createAssetsCollection(index, group));
 
+    promises.push(this.createAssetsHistoryCollection(index, group));
+
     promises.push(this.createDevicesCollection(index));
 
     promises.push(this.createMeasuresCollection(index, group));
@@ -97,10 +100,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     return {
       collections: [
-        "assets",
+        InternalCollection.ASSETS,
         this.engineConfigManager.collection,
-        "devices",
-        "measures",
+        InternalCollection.DEVICES,
+        InternalCollection.MEASURES,
       ],
     };
   }
@@ -109,6 +112,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const promises = [];
 
     promises.push(this.createAssetsCollection(index, group));
+
+    promises.push(this.createAssetsHistoryCollection(index, group));
 
     promises.push(this.createDevicesCollection(index));
 
@@ -122,13 +127,27 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async onDelete(index: string) {
     const promises = [];
 
-    promises.push(this.sdk.collection.delete(index, "assets"));
-    promises.push(this.sdk.collection.delete(index, "devices"));
-    promises.push(this.sdk.collection.delete(index, "measures"));
+    promises.push(this.sdk.collection.delete(index, InternalCollection.ASSETS));
+    promises.push(
+      this.sdk.collection.delete(index, InternalCollection.ASSETS_HISTORY)
+    );
+    promises.push(
+      this.sdk.collection.delete(index, InternalCollection.DEVICES)
+    );
+    promises.push(
+      this.sdk.collection.delete(index, InternalCollection.MEASURES)
+    );
 
     await Promise.all(promises);
 
-    return { collections: ["assets", "devices", "measures"] };
+    return {
+      collections: [
+        InternalCollection.ASSETS,
+        InternalCollection.ASSETS_HISTORY,
+        InternalCollection.DEVICES,
+        InternalCollection.MEASURES,
+      ],
+    };
   }
 
   async createAssetsCollection(engineId: string, engineGroup: string) {
@@ -144,6 +163,26 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     return InternalCollection.ASSETS;
+  }
+
+  async createAssetsHistoryCollection(engineId: string, engineGroup: string) {
+    const assetsCollectionMappings =
+      await this.getDigitalTwinMappings<AssetModelContent>(
+        "asset",
+        engineGroup
+      );
+
+    const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
+
+    _.merge(mappings.properties.asset, assetsCollectionMappings);
+
+    await this.sdk.collection.create(
+      engineId,
+      InternalCollection.ASSETS_HISTORY,
+      mappings
+    );
+
+    return InternalCollection.ASSETS_HISTORY;
   }
 
   private async getDigitalTwinMappings<
@@ -170,9 +209,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         model._source[digitalTwinType].metadataMappings
       );
 
-      for (const [measureName, measureType] of Object.entries(
-        model._source[digitalTwinType].measures
-      )) {
+      for (const { name: measureName, type: measureType } of model._source[
+        digitalTwinType
+      ].measures as NamedMeasures) {
         const measureModel = measureModels.find(
           (m) => m._source.measure.type === measureType
         );

@@ -17,11 +17,6 @@ Feature: Default measures roles are registered
     """
       {
         "controllers": {
-          "device-manager/measures": {
-            "actions": {
-              "*": true,
-            },
-          },
           "device-manager/models": {
             "actions": {
               "listMeasures": true,

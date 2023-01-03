@@ -22,6 +22,13 @@ export type EventMeasureIngest = {
   ];
 };
 
+/**
+ * Event before starting to process new measures.
+ *
+ * Useful to enrich measures before they are saved.
+ *
+ * Only measures documents can be modified
+ */
 export type EventMeasureProcessBefore = {
   name: "device-manager:measures:process:before";
 
