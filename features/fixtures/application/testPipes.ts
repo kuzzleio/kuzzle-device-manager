@@ -46,6 +46,51 @@ export function registerTestPipes(app: Backend) {
         }
       }
 
+      if (device._id === "DummyTemp-compute_me_master") {
+        const computedMeasures = [];
+
+        for (const measure of measures) {
+          if (measure.type === "temperature") {
+            const temperatureInt: MeasureContent = {
+              asset: {
+                _id: asset._id,
+                measureName: "temperatureInt",
+                metadata: asset._source.metadata,
+                model: asset._source.model,
+                reference: asset._source.reference,
+              },
+              measuredAt: measure.measuredAt,
+              origin: {
+                type: "computed",
+                _id: "compute-temperature-int",
+                measureName: "temperatureInt",
+                payloadUuids: measure.origin.payloadUuids,
+              },
+              type: "temperature",
+              values: {
+                temperature: measure.values.temperature * 2,
+              },
+            };
+
+            computedMeasures.push(temperatureInt);
+
+            asset._source.measures.temperatureInt = {
+              measuredAt: temperatureInt.measuredAt,
+              name: "temperatureInt",
+              payloadUuids: temperatureInt.origin.payloadUuids,
+              type: "temperature",
+              values: {
+                temperature: temperatureInt.values.temperature,
+              },
+            };
+          }
+        }
+
+        for (const computedMeasure of computedMeasures) {
+          measures.push(computedMeasure);
+        }
+      }
+
       if (
         device._source.metadata.color === "test-metadata-history-with-measure"
       ) {

@@ -1,16 +1,11 @@
 import { KuzzleRole } from "../../shared/types/KuzzleRole";
 
 /**
- * This role allows to push measures and manage their models.
+ * This role allows to manage measure models.
  *
  * It's a tenant role.
  *
  * @example
-    "device-manager/measures": {
-      actions: {
-        "*": true,
-      },
-    },
     "device-manager/models": {
       actions: {
         deleteMeasure: true,
@@ -23,11 +18,6 @@ export const RoleMeasuresAdmin: KuzzleRole = {
   name: "measures.admin",
   definition: {
     controllers: {
-      "device-manager/measures": {
-        actions: {
-          "*": true,
-        },
-      },
       "device-manager/models": {
         actions: {
           deleteMeasure: true,
