@@ -3,6 +3,61 @@ import { JSONObject, KDocumentContent } from "kuzzle";
 import { Metadata } from "../../../modules/shared";
 import { AssetMeasureContext } from "../../../modules/asset";
 
+export type MeasureOriginDevice = {
+  /**
+   * Origin of the measure
+   */
+  type: "device";
+
+  /**
+   * Name of the measure in the device
+   */
+  measureName: string;
+
+  /**
+   * Payload uuids that were used to create this measure.
+   */
+  payloadUuids: Array<string>;
+
+  /**
+   * Model of the device
+   *
+   * @example "AbeewayTemp"
+   */
+  deviceModel: string;
+
+  /**
+   * Reference of the device
+   */
+  reference: string;
+
+  /**
+   * Device ID
+   */
+  _id: string;
+};
+
+export type MeasureOriginComputed = {
+  type: "computed";
+
+  /**
+   * String that identify the rule used to compute the measure
+   */
+  _id: string;
+
+  /**
+   * Name of the measure
+   */
+  measureName: string;
+
+  /**
+   * Payload uuids that were used to create this measure for traceability.
+   */
+  payloadUuids: Array<string>;
+};
+
+export type MeasureOrigin = MeasureOriginDevice | MeasureOriginComputed;
+
 /**
  * Represents the content of a measure document.
  */
@@ -19,35 +74,7 @@ export interface MeasureContent<
   /**
    * Define the origin of the measure.
    */
-  origin: {
-    /**
-     * Name of the measure (e.g. from the Device)
-     */
-    measureName: string;
-
-    /**
-     * Payload uuids that were used to create this measure.
-     */
-    payloadUuids: Array<string>;
-
-    /**
-     * Model of the device
-     *
-     * @example "AbeewayTemp"
-     */
-    deviceModel: string;
-
-    /**
-     * Reference of the device
-     */
-    reference: string;
-
-    /**
-     * ID of the origin. Can be:
-     * - device id if origin type is `device`
-     */
-    _id: string;
-  };
+  origin: MeasureOrigin;
 }
 
 export type Measurement<TMeasureValues extends JSONObject = any> = {
