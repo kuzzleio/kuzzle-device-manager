@@ -8,7 +8,8 @@ Feature: Detach device from engine
       | engineId | "engine-kuzzle"       |
       | _id      | "DummyTemp-detached1" |
     Then The document "device-manager":"devices":"DummyTemp-detached1" content match:
-      | engineId | null |
+      | engineId             | null |
+      | _kuzzle_info.updater | "-1" |
     And The document "engine-kuzzle":"devices":"DummyTemp-detached1" does not exists
 
   Scenario: Error if device is not attached

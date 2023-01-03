@@ -1,5 +1,6 @@
 import { JSONObject, KDocumentContent } from "kuzzle";
-import { NamedMeasures } from "lib/modules/decoder";
+
+import { NamedMeasures } from "../../../modules/decoder";
 
 import { MeasureDefinition } from "../../measure";
 

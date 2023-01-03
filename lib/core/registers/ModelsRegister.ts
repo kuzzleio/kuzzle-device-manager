@@ -4,9 +4,9 @@ import {
   PluginContext,
   PluginImplementationError,
 } from "kuzzle";
-import { NamedMeasures } from "lib/modules/decoder";
-import { MeasureDefinition } from "../../modules/measure";
 
+import { NamedMeasures } from "../../modules/decoder";
+import { MeasureDefinition } from "../../modules/measure";
 import { ModelSerializer } from "../../modules/model";
 import {
   AssetModelContent,
@@ -14,6 +14,7 @@ import {
   ModelContent,
   DeviceModelContent,
 } from "../../modules/model";
+
 import { DeviceManagerConfiguration } from "../DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "../DeviceManagerPlugin";
 import { InternalCollection } from "../InternalCollection";

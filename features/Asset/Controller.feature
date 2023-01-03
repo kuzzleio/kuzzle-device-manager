@@ -14,13 +14,16 @@ Feature: Asset Controller
       | measures.temperatureInt | null |
       | measures.position       | null |
       | linkedDevices           | []   |
+      | _kuzzle_info.author     | "-1" |
+    # Update metadata
     When I successfully execute the action "device-manager/assets":"update" with args:
       | engineId             | "engine-kuzzle" |
       | _id                  | "Container-A1"  |
       | body.metadata.weight | 1250            |
     Then The document "engine-kuzzle":"assets":"Container-A1" content match:
-      | metadata.height | 5    |
-      | metadata.weight | 1250 |
+      | metadata.height      | 5    |
+      | metadata.weight      | 1250 |
+      | _kuzzle_info.updater | "-1" |
     # Get
     When I successfully execute the action "device-manager/assets":"get" with args:
       | engineId | "engine-kuzzle" |
@@ -42,11 +45,11 @@ Feature: Asset Controller
     Then I should receive a "hits" array of objects matching:
       | _id            |
       | "Container-A1" |
-    # Delete
-    When I successfully execute the action "device-manager/assets":"delete" with args:
-      | engineId | "engine-kuzzle" |
-      | _id      | "Container-A1"  |
-    Then The document "engine-kuzzle":"assets":"Container-A1" does not exists
+  # Delete
+  When I successfully execute the action "device-manager/assets":"delete" with args:
+    | engineId | "engine-kuzzle" |
+    | _id      | "Container-A1"  |
+  Then The document "engine-kuzzle":"assets":"Container-A1" does not exists
 
   Scenario: Error when creating Asset from unknown model
     When I execute the action "device-manager/assets":"create" with args:

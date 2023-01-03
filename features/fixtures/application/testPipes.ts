@@ -31,21 +31,25 @@ export function registerTestPipes(app: Backend) {
       device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     }) => {
-      if (device._id !== "DummyTemp-enrich_me_master") {
-        return { asset, device, measures };
+      if (device._id === "DummyTemp-enrich_me_master") {
+        for (const measure of measures) {
+          if (measure.values.temperature) {
+            if (device._source.measures.temperature) {
+              // Ensure the measure has not been integrated to the device yet
+              should(measure.measuredAt).be.greaterThan(
+                device._source.measures.temperature.measuredAt
+              );
+            }
+
+            measure.values.temperature *= 2;
+          }
+        }
       }
 
-      for (const measure of measures) {
-        if (measure.values.temperature) {
-          if (device._source.measures.temperature) {
-            // Ensure the measure has not been integrated to the device yet
-            should(measure.measuredAt).be.greaterThan(
-              device._source.measures.temperature.measuredAt
-            );
-          }
-
-          measure.values.temperature *= 2;
-        }
+      if (
+        device._source.metadata.color === "test-metadata-history-with-measure"
+      ) {
+        asset._source.metadata.weight = 42042;
       }
 
       return { asset, device, measures };

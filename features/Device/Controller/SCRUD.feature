@@ -17,6 +17,8 @@ Feature: Device SCRUD
       | _source.model          | "DummyTemp" |
       | _source.reference      | "scrudme"   |
       | _source.metadata.color | "RED"       |
+      | _source._kuzzle_info.author     | "-1" |
+      | _source._kuzzle_info.updater     | "-1" |
     Given I refresh the collection "device-manager":"devices"
     When I successfully execute the action "device-manager/devices":"search" with args:
       | engineId | "device-manager"                                |

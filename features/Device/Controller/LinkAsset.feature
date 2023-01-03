@@ -8,13 +8,16 @@ Feature: LinkAsset
       | body.measureNames[0].device | "temperature"         |
       | body.measureNames[0].asset  | "temperatureExt"      |
     Then The document "device-manager":"devices":"DummyTemp-unlinked1" content match:
-      | assetId | "Container-unlinked1" |
+      | assetId              | "Container-unlinked1" |
+      | _kuzzle_info.updater | "-1"                  |
     And The document "engine-ayse":"devices":"DummyTemp-unlinked1" content match:
-      | assetId | "Container-unlinked1" |
+      | assetId              | "Container-unlinked1" |
+      | _kuzzle_info.updater | "-1"                  |
     And The document "engine-ayse":"assets":"Container-unlinked1" content match:
       | linkedDevices[0]._id                    | "DummyTemp-unlinked1" |
       | linkedDevices[0].measureNames[0].asset  | "temperatureExt"      |
       | linkedDevices[0].measureNames[0].device | "temperature"         |
+      | _kuzzle_info.updater                    | "-1"                  |
     When I successfully execute the action "device-manager/devices":"linkAsset" with args:
       | _id                         | "DummyTemp-unlinked2" |
       | assetId                     | "Container-unlinked1" |
