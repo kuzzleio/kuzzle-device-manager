@@ -6,7 +6,7 @@ runs:
     - name: Run functional test
       shell: bash
       run: |
-        npm install
+        npm run docker npm ci
         npm run build
         DOCKER_COMMAND="npm run prod" docker-compose up -d
         bash features/wait-kuzzle.sh
