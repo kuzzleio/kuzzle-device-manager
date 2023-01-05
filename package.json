@@ -1,63 +1,49 @@
 {
   "name": "kuzzle-device-manager",
-  "version": "0.4.15",
-  "description": "Manage your IoT devices and assets. Choose a provisionning strategy, receive and decode payload, handle your IoT business logic.",
+  "version": "2.0.0",
+  "description": "Manage your IoT devices and assets. Choose a provisioning strategy, receive and decode payload, handle your IoT business logic.",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
     "type": "git",
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "npm:docker": "docker-compose run kuzzle npm",
-    "install:docker": "npm run npm:docker install kuzzle",
-    "dev:docker": "docker-compose up",
-    "prod": "node ./features/fixtures/application/app.js",
-    "dev": "NODE_ENV=development npx ergol ./features/fixtures/application/app.ts -c ergol.config.json",
+    "docker": "docker-compose run kuzzle ",
+    "dev": "NODE_ENV=development ergol features/fixtures/application/app.ts -c ergol.config.json",
+    "prod": "node ./dist/features/fixtures/application/app.js",
     "test": "npm run test:lint && npm run test:unit && npm run test:functional",
     "test:unit": "mocha",
-    "test:functional": "cucumber-js --exit --fail-fast",
+    "test:functional": "cucumber-js --require-module ts-node/register --exit --fail-fast",
     "test:lint": "eslint ./lib --ext .ts --config .eslintrc.json",
     "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
+    "prettier": "npx prettier lib/ features/ --write",
     "build": "tsc --build tsconfig.json",
-    "clean": "touch index.ts && npm run build | grep TSFILE | cut -d' ' -f 2 | xargs rm",
     "package:create": "npm run build && npm pack"
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "csvtojson": "~2.0.10",
-    "kuzzle": "^2.18.0",
-    "kuzzle-plugin-commons": "https://github.com/kuzzleio/kuzzle-plugin-commons/archive/refs/tags/0.0.1.tar.gz",
-    "uuid": "~8.3.2"
+    "kuzzle-plugin-commons": "https://github.com/kuzzleio/kuzzle-plugin-commons/archive/refs/tags/1.0.5.tar.gz",
+    "lodash": "^4.17.21",
+    "uuid": "~9.0.0"
   },
   "devDependencies": {
-    "@types/node": "^16.11.27",
-    "@typescript-eslint/eslint-plugin": "^5.20.0",
-    "@typescript-eslint/parser": "^5.20.0",
-    "cucumber": "^6.0.7",
+    "@types/node": "^18.11.18",
+    "axios": "^1.2.2",
+    "cucumber": "^6.0.5",
     "ergol": "^1.0.2",
-    "eslint": "^8.13.0",
-    "eslint-friendly-formatter": "^4.0.1",
-    "eslint-loader": "^4.0.2",
-    "kuzzle": "^2.18.0",
-    "kuzzle-sdk": "^7.10.0",
-    "lodash": "^4.17.21",
-    "mocha": "^9.2.2",
-    "mock-require": "^3.0.3",
-    "rewire": "^5.0.0",
+    "eslint-plugin-kuzzle": "^0.0.6",
+    "kuzzle": "^2.19.12",
+    "kuzzle-sdk": "^7.10.3",
     "should": "^13.2.3",
-    "should-sinon": "^0.0.6",
-    "sinon": "^12.0.1",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.3"
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
   },
   "peerDependencies": {
-    "kuzzle": "^2.15.2"
+    "kuzzle": "^2.17.3"
   },
   "files": [
-    "index.js",
-    "index.d.ts",
-    "lib/**/*.js",
-    "lib/**/*.d.ts",
-    "lib/**/*.json"
+    "dist/**/*"
   ]
 }

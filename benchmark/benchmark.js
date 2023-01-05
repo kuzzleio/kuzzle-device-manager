@@ -44,7 +44,7 @@ async function run () {
     await Promise.all(promises);
 
     const time = Date.now() - start;
-    console.log('Send 5000 req in ', time, 'ms (', 5000 / (time/1000).toFixed(1), ' req/s)')
+    console.log('Send 5000 req in ', time, 'ms (', 5000 / (time/1000).toFixed(1), ' req/s)');
     kuzzle.disconnect();
   }
   catch (error) {

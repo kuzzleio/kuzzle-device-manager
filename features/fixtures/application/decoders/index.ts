@@ -1,3 +1,2 @@
-export * from './DummyTempDecoder';
-
-export * from './DummyTempPositionDecoder';
+export * from "./DummyTempDecoder";
+export * from "./DummyTempPositionDecoder";

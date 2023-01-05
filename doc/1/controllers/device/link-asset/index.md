@@ -65,3 +65,25 @@ kourou device-manager/device:linkAsset <index> --id <deviceId> -a assetId=<asset
   "result": {}
 }
 ```
+
+## Events
+
+Two events when this action is called, allowing to modify the device before it is linked to the asset:
+
+```js
+import set from 'lodash/set';
+
+app.pipe.register('device-manager:device:link-asset:before', async ({ device, asset }) => {
+  app.log.debug('before link-asset triggered');
+
+  set(asset, 'body.metadata.enrichedByBeforeLinkAsset', true);
+
+  return { device, asset };
+})
+
+app.pipe.register('device-manager:device:link-asset:after', async ({ device, asset }) => {
+  app.log.debug('after link-asset triggered');
+
+  return { device, asset };
+})
+```

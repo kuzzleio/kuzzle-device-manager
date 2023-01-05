@@ -1,12 +1,21 @@
-import { Decoder, DeviceContent } from '../../../../index';
-import { JSONObject, KuzzleRequest, PreconditionError } from 'kuzzle';
+import { JSONObject, PreconditionError } from "kuzzle";
+
+import {
+  Decoder,
+  BatteryMeasurement,
+  PositionMeasurement,
+  TemperatureMeasurement,
+  DecodedPayload,
+} from "../../../../index";
 
 export class DummyTempPositionDecoder extends Decoder {
-  constructor () {
-    super('DummyTempPosition');
-  }
+  public measures = [
+    { name: "temperature", type: "temperature" },
+    { name: "battery", type: "battery" },
+    { name: "position", type: "position" },
+  ] as const;
 
-  async validate (payload: JSONObject, request: KuzzleRequest) {
+  async validate(payload: JSONObject) {
     if (payload.deviceEUI === undefined) {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
@@ -14,28 +23,48 @@ export class DummyTempPositionDecoder extends Decoder {
     return true;
   }
 
-  async decode (payload: JSONObject, request: KuzzleRequest): Promise<DeviceContent> {
-    const deviceContent: DeviceContent = {
-      reference: payload.deviceEUI,
-      measures: {
-        temperature: {
-          updatedAt: Date.now(),
-          degree: payload.register55,
-        },
-        position: {
-          updatedAt: Date.now(),
-          point: {
+  async decode(
+    decodedPayload: DecodedPayload<DummyTempPositionDecoder>,
+    payload: JSONObject
+  ): Promise<DecodedPayload<DummyTempPositionDecoder>> {
+    decodedPayload.addMeasurement<TemperatureMeasurement>(
+      payload.deviceEUI,
+      "temperature",
+      {
+        measuredAt: Date.now(),
+        type: "temperature",
+        values: { temperature: payload.temperature },
+      }
+    );
+
+    decodedPayload.addMeasurement<PositionMeasurement>(
+      payload.deviceEUI,
+      "position",
+      {
+        measuredAt: Date.now(),
+        type: "position",
+        values: {
+          position: {
             lat: payload.location.lat,
             lon: payload.location.lon,
           },
-          accuracy: payload.location.accu,
-        }
-      },
-      qos: {
-        battery: payload.batteryLevel * 100
+          accuracy: payload.location.accuracy,
+        },
       }
-    };
+    );
 
-    return deviceContent;
+    decodedPayload.addMeasurement<BatteryMeasurement>(
+      payload.deviceEUI,
+      "battery",
+      {
+        measuredAt: Date.now(),
+        type: "battery",
+        values: {
+          battery: payload.battery * 100,
+        },
+      }
+    );
+
+    return decodedPayload;
   }
 }

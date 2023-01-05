@@ -27,7 +27,7 @@ Method: POST
 {
   "controller": "device-manager/engine",
   "action": "create",
-  "index": "tenant-ayse",
+  "index": "engine-ayse",
 
   // Optional
   "group": "tenant-group"
@@ -55,8 +55,8 @@ Returns an object containing the index name and the list of created collections 
   "action": "create",
   "collection": null,
   "index": null,
-  "result": { 
-    "index": "tenant-ayse",
+  "result": {
+    "index": "engine-ayse",
     "collections": {
       "assets": {
         "properties": {

@@ -27,7 +27,7 @@ Method: PUT
 {
   "controller": "device-manager/engine",
   "action": "update",
-  "index": "tenant-ayse",
+  "index": "engine-ayse",
 
   // Optional
   "group": "tenant-group"
@@ -54,8 +54,8 @@ Returns an object containing the index name and the list of updated collections 
   "action": "update",
   "collection": null,
   "index": null,
-  "result": { 
-    "index": "tenant-ayse",
+  "result": {
+    "index": "engine-ayse",
     "collections": {
       "assets": {
         "properties": {
