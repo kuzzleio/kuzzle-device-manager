@@ -45,11 +45,11 @@ Feature: Asset Controller
     Then I should receive a "hits" array of objects matching:
       | _id            |
       | "Container-A1" |
-  # Delete
-  When I successfully execute the action "device-manager/assets":"delete" with args:
-    | engineId | "engine-kuzzle" |
-    | _id      | "Container-A1"  |
-  Then The document "engine-kuzzle":"assets":"Container-A1" does not exists
+    # Delete
+    When I successfully execute the action "device-manager/assets":"delete" with args:
+      | engineId | "engine-kuzzle" |
+      | _id      | "Container-A1"  |
+    Then The document "engine-kuzzle":"assets":"Container-A1" does not exists
 
   Scenario: Error when creating Asset from unknown model
     When I execute the action "device-manager/assets":"create" with args:
@@ -84,3 +84,10 @@ Feature: Asset Controller
       | _source.values.temperature | _source.asset._id   | _source.origin._id  | _source.asset.model |
       | 40                         | "Container-linked1" | "DummyTemp-linked1" | "Container"         |
       | 41                         | "Container-linked1" | "DummyTemp-linked1" | "Container"         |
+
+  Scenario: Create asset from backend side
+    When I successfully execute the action "tests":"createDigitalTwinFromBackend" with args:
+      | engineId       | "engine-kuzzle" |
+      | body.reference | "foobar"        |
+    Then The document "engine-kuzzle":"assets":"Container-foobar" exists
+    Then The document "engine-kuzzle":"devices":"DummyTemp-foobar" exists

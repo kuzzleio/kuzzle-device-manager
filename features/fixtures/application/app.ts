@@ -4,7 +4,8 @@ import { Backend, KuzzleRequest } from "kuzzle";
 
 import { DeviceManagerPlugin } from "../../../index";
 import { DummyTempDecoder, DummyTempPositionDecoder } from "./decoders";
-import { registerTestPipes } from "./testPipes";
+import { registerTestPipes } from "./tests/pipes";
+import { TestsController } from "./tests/controller";
 
 const app = new Backend("kuzzle");
 
@@ -59,6 +60,8 @@ deviceManager.models.registerMeasure("acceleration", {
 registerTestPipes(app);
 
 app.plugin.use(deviceManager);
+
+app.controller.use(new TestsController(app));
 
 app.hook.register("request:onError", async (request: KuzzleRequest) => {
   app.log.error(request.error);
