@@ -20,7 +20,7 @@
     "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
     "prettier": "npx prettier lib/ features/ --write",
     "build": "tsc --build tsconfig.json",
-    "package:create": "npm run build && npm pack"
+    "prepack": "npm run build"
   },
   "license": "Apache-2.0",
   "dependencies": {

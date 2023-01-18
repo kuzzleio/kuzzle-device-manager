@@ -162,12 +162,6 @@ export class AssetsController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    if (((size || from) && startAt) || ((size || from) && endAt)) {
-      throw new BadRequestError(
-        'You cannot specify both a "size" or "from" and a "startAt" or "endAt"'
-      );
-    }
-
     const { measures, total } = await this.assetService.getMeasureHistory(
       engineId,
       id,
