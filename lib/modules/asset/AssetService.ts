@@ -106,10 +106,7 @@ export class AssetService {
     }
 
     const searchQuery: JSONObject = {
-      and: [
-        { equals: { "asset._id": assetId } },
-        measuredAtRange,
-      ],
+      and: [{ equals: { "asset._id": assetId } }, measuredAtRange],
     };
 
     if (type) {

@@ -1,4 +1,4 @@
-import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
+import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
