@@ -92,4 +92,10 @@ Feature: Asset Controller
     Then I should receive a "measures" array of objects matching:
       | _source.values.temperature | _source.asset._id   | _source.origin._id  | _source.asset.model |
       | 40                         | "Container-linked1" | "DummyTemp-linked1" | "Container"         |
+    When I successfully execute the action "device-manager/assets":"getMeasures" with args:
+      | engineId | "engine-ayse"       |
+      | _id      | "Container-linked1" |
+      | type     | "position"          |
+    Then I should receive a result matching:
+      | measures | [] |
 

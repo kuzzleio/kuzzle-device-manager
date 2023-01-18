@@ -74,6 +74,7 @@ export class AssetService {
       startAt,
       query,
       sort = { measuredAt: "desc" },
+      type,
     }: {
       sort?: JSONObject;
       query?: JSONObject;
@@ -81,6 +82,7 @@ export class AssetService {
       size?: number;
       startAt?: string;
       endAt?: string;
+      type?: string;
     }
   ): Promise<KDocument<MeasureContent>[]> {
     await this.get(engineId, assetId);
@@ -105,6 +107,10 @@ export class AssetService {
     const searchQuery: JSONObject = {
       and: [measuredAtRange],
     };
+
+    if (type) {
+      searchQuery.and.push({ equals: { type } });
+    }
 
     if (query) {
       searchQuery.and.push(query);

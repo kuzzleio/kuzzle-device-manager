@@ -160,6 +160,7 @@ export class AssetsController {
     const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
     const query = request.input.body?.query;
     const sort = request.input.body?.sort;
+    const type = request.input.args.type;
 
     if (((size || from) && startAt) || ((size || from) && endAt)) {
       throw new BadRequestError(
@@ -174,6 +175,7 @@ export class AssetsController {
       size,
       sort,
       startAt,
+      type,
     });
 
     return { measures };

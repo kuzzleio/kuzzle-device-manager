@@ -83,6 +83,8 @@ export interface ApiAssetGetMeasuresRequest extends AssetsControllerRequest {
 
   endAt?: string;
 
+  type?: string;
+
   body?: {
     query?: JSONObject;
     sort?: JSONObject;
