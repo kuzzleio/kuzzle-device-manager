@@ -9,6 +9,7 @@
     "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
   },
   "scripts": {
+    "prepack": "npm run build",
     "build": "npm --prefix ../ run build && cp -r ../dist/ . && node scripts/copy-version.js"
   },
   "license": "Apache-2.0",
