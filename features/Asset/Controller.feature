@@ -45,11 +45,11 @@ Feature: Asset Controller
     Then I should receive a "hits" array of objects matching:
       | _id            |
       | "Container-A1" |
-  # Delete
-  When I successfully execute the action "device-manager/assets":"delete" with args:
-    | engineId | "engine-kuzzle" |
-    | _id      | "Container-A1"  |
-  Then The document "engine-kuzzle":"assets":"Container-A1" does not exists
+    # Delete
+    When I successfully execute the action "device-manager/assets":"delete" with args:
+      | engineId | "engine-kuzzle" |
+      | _id      | "Container-A1"  |
+    Then The document "engine-kuzzle":"assets":"Container-A1" does not exists
 
   Scenario: Error when creating Asset from unknown model
     When I execute the action "device-manager/assets":"create" with args:
@@ -77,10 +77,28 @@ Feature: Asset Controller
       | "linked1" | 40          |
     And I refresh the collection "engine-ayse":"measures"
     When I successfully execute the action "device-manager/assets":"getMeasures" with args:
-      | engineId | "engine-ayse"       |
-      | _id      | "Container-linked1" |
-      | size     | 2                   |
+      | engineId  | "engine-ayse"                    |
+      | _id       | "Container-linked1"              |
+      | size      | 2                                |
+      | body.sort | { "values.temperature": "desc" } |
+    Then I should receive a result matching:
+      | total           | 3 |
+      | measures.length | 2 |
+    Then I should receive a "measures" array of objects matching:
+      | _source.values.temperature | _source.asset._id   | _source.origin._id  | _source.asset.model |
+      | 42                         | "Container-linked1" | "DummyTemp-linked1" | "Container"         |
+      | 41                         | "Container-linked1" | "DummyTemp-linked1" | "Container"         |
+    When I successfully execute the action "device-manager/assets":"getMeasures" with args:
+      | engineId   | "engine-ayse"                            |
+      | _id        | "Container-linked1"                      |
+      | body.query | { equals: { "values.temperature": 40 } } |
     Then I should receive a "measures" array of objects matching:
       | _source.values.temperature | _source.asset._id   | _source.origin._id  | _source.asset.model |
       | 40                         | "Container-linked1" | "DummyTemp-linked1" | "Container"         |
-      | 41                         | "Container-linked1" | "DummyTemp-linked1" | "Container"         |
+    When I successfully execute the action "device-manager/assets":"getMeasures" with args:
+      | engineId | "engine-ayse"       |
+      | _id      | "Container-linked1" |
+      | type     | "position"          |
+    Then I should receive a result matching:
+      | measures | [] |
+

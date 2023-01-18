@@ -77,10 +77,20 @@ export interface ApiAssetGetMeasuresRequest extends AssetsControllerRequest {
 
   size?: number;
 
+  from?: number;
+
   startAt?: string;
 
   endAt?: string;
+
+  type?: string;
+
+  body?: {
+    query?: JSONObject;
+    sort?: JSONObject;
+  };
 }
 export type ApiAssetGetMeasuresResult = {
   measures: Array<KDocument<MeasureContent<JSONObject>>>;
+  total: number;
 };
