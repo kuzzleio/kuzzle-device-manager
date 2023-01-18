@@ -69,13 +69,16 @@ export class AssetService {
     assetId: string,
     {
       size = 25,
-      startAt,
+      from = 0,
       endAt,
-    }: { size?: number; startAt?: string; endAt?: string }
+      startAt,
+      query,
+      sort = { measuredAt: "desc" },
+    }: { sort?: JSONObject; query?: JSONObject; from?: number; size?: number; startAt?: string; endAt?: string }
   ): Promise<KDocument<MeasureContent>[]> {
     await this.get(engineId, assetId);
 
-    const query = {
+    const measuredAtRange = {
       range: {
         measuredAt: {
           gte: 0,
@@ -85,20 +88,28 @@ export class AssetService {
     };
 
     if (startAt) {
-      query.range.measuredAt.gte = new Date(startAt).getTime();
+      measuredAtRange.range.measuredAt.gte = new Date(startAt).getTime();
     }
 
     if (endAt) {
-      query.range.measuredAt.lte = new Date(endAt).getTime();
+      measuredAtRange.range.measuredAt.lte = new Date(endAt).getTime();
     }
 
-    const sort = { measuredAt: "desc" };
+    const searchQuery: JSONObject = {
+      and: [
+        measuredAtRange,
+      ]
+    };
+
+    if (query) {
+      searchQuery.and.push(query);
+    }
 
     const measures = await this.sdk.document.search<MeasureContent>(
       engineId,
-      "measures",
-      { query, sort },
-      { size: size || 25 }
+      InternalCollection.MEASURES,
+      { query: searchQuery, sort },
+      { size: size, from, lang: "koncorde" }
     );
 
     return measures.hits;

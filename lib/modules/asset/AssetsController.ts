@@ -55,6 +55,10 @@ export class AssetsController {
               path: "device-manager/:engineId/assets/:_id/measures",
               verb: "get",
             },
+            {
+              path: "device-manager/:engineId/assets/:_id/measures",
+              verb: "post",
+            },
           ],
         },
       },
@@ -149,21 +153,27 @@ export class AssetsController {
     const id = request.getId();
     const engineId = request.getString("engineId");
     const size = request.input.args.size;
+    const from = request.input.args.from;
     const startAt = request.input.args.startAt
       ? request.getDate("startAt")
       : null;
     const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
+    const query = request.input.body?.query;
+    const sort = request.input.body?.sort;
 
-    if ((size && startAt) || (size && endAt)) {
+    if (((size || from) && startAt) || ((size || from) && endAt)) {
       throw new BadRequestError(
-        'You cannot specify both a "size" and a "startAt" or "endAt"'
+        'You cannot specify both a "size" or "from" and a "startAt" or "endAt"'
       );
     }
 
     const measures = await this.assetService.getMeasureHistory(engineId, id, {
       endAt,
       size,
+      from,
       startAt,
+      query,
+      sort,
     });
 
     return { measures };
