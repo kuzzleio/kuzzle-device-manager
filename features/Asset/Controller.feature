@@ -81,6 +81,9 @@ Feature: Asset Controller
       | _id       | "Container-linked1"              |
       | size      | 2                                |
       | body.sort | { "values.temperature": "desc" } |
+    Then I should receive a result matching:
+      | total           | 3 |
+      | measures.length | 2 |
     Then I should receive a "measures" array of objects matching:
       | _source.values.temperature | _source.asset._id   | _source.origin._id  | _source.asset.model |
       | 42                         | "Container-linked1" | "DummyTemp-linked1" | "Container"         |

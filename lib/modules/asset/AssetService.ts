@@ -28,6 +28,7 @@ import {
 } from "./types/AssetEvents";
 import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetHistoryEventMetadata } from "./types/AssetHistoryContent";
+import { ApiAssetGetMeasuresResult } from "./types/AssetApi";
 
 export class AssetService {
   private context: PluginContext;
@@ -84,7 +85,7 @@ export class AssetService {
       endAt?: string;
       type?: string;
     }
-  ): Promise<KDocument<MeasureContent>[]> {
+  ): Promise<ApiAssetGetMeasuresResult> {
     await this.get(engineId, assetId);
 
     const measuredAtRange = {
@@ -116,14 +117,14 @@ export class AssetService {
       searchQuery.and.push(query);
     }
 
-    const measures = await this.sdk.document.search<MeasureContent>(
+    const result = await this.sdk.document.search<MeasureContent>(
       engineId,
       InternalCollection.MEASURES,
       { query: searchQuery, sort },
       { from, lang: "koncorde", size: size }
     );
 
-    return measures.hits;
+    return { measures: result.hits, total: result.total };
   }
 
   public async get(

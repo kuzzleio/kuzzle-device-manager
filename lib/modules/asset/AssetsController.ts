@@ -168,16 +168,20 @@ export class AssetsController {
       );
     }
 
-    const measures = await this.assetService.getMeasureHistory(engineId, id, {
-      endAt,
-      from,
-      query,
-      size,
-      sort,
-      startAt,
-      type,
-    });
+    const { measures, total } = await this.assetService.getMeasureHistory(
+      engineId,
+      id,
+      {
+        endAt,
+        from,
+        query,
+        size,
+        sort,
+        startAt,
+        type,
+      }
+    );
 
-    return { measures };
+    return { measures, total };
   }
 }

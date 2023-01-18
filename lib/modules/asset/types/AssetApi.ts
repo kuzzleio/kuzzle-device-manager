@@ -92,4 +92,5 @@ export interface ApiAssetGetMeasuresRequest extends AssetsControllerRequest {
 }
 export type ApiAssetGetMeasuresResult = {
   measures: Array<KDocument<MeasureContent<JSONObject>>>;
+  total: number;
 };
