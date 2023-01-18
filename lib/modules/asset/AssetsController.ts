@@ -169,11 +169,11 @@ export class AssetsController {
 
     const measures = await this.assetService.getMeasureHistory(engineId, id, {
       endAt,
-      size,
       from,
-      startAt,
       query,
+      size,
       sort,
+      startAt,
     });
 
     return { measures };

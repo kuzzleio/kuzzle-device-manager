@@ -29,9 +29,17 @@ deviceManager.models.registerDevice("DummyTemp", {
 
 // Register an asset for the "commons" group
 
-deviceManager.models.registerAsset("commons", "Container", containerAssetDefinition);
+deviceManager.models.registerAsset(
+  "commons",
+  "Container",
+  containerAssetDefinition
+);
 
-deviceManager.models.registerAsset("commons", "Warehouse", warehouseAssetDefinition);
+deviceManager.models.registerAsset(
+  "commons",
+  "Warehouse",
+  warehouseAssetDefinition
+);
 
 deviceManager.models.registerMeasure("acceleration", {
   valuesMappings: {

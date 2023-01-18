@@ -74,7 +74,14 @@ export class AssetService {
       startAt,
       query,
       sort = { measuredAt: "desc" },
-    }: { sort?: JSONObject; query?: JSONObject; from?: number; size?: number; startAt?: string; endAt?: string }
+    }: {
+      sort?: JSONObject;
+      query?: JSONObject;
+      from?: number;
+      size?: number;
+      startAt?: string;
+      endAt?: string;
+    }
   ): Promise<KDocument<MeasureContent>[]> {
     await this.get(engineId, assetId);
 
@@ -96,9 +103,7 @@ export class AssetService {
     }
 
     const searchQuery: JSONObject = {
-      and: [
-        measuredAtRange,
-      ]
+      and: [measuredAtRange],
     };
 
     if (query) {
@@ -109,7 +114,7 @@ export class AssetService {
       engineId,
       InternalCollection.MEASURES,
       { query: searchQuery, sort },
-      { size: size, from, lang: "koncorde" }
+      { from, lang: "koncorde", size: size }
     );
 
     return measures.hits;
