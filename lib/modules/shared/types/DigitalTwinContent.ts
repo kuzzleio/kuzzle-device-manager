@@ -14,6 +14,6 @@ export interface DigitalTwinContent<
   metadata: TMetadata;
 
   measures: {
-    [Property in keyof TMeasures]: EmbeddedMeasure<TMeasures[Property]>;
+    [Property in keyof TMeasures]: EmbeddedMeasure<TMeasures[Property]> | null;
   };
 }

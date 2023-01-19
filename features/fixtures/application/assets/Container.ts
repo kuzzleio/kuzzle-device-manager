@@ -3,9 +3,10 @@ import {
   AssetContent,
   TemperatureMeasurement,
   PositionMeasurement,
+  AssetModelDefinition,
 } from "../../../../index";
 
-interface ContainerMetadata extends Metadata {
+export interface ContainerMetadata extends Metadata {
   height: number;
   width: number;
 
@@ -15,15 +16,30 @@ interface ContainerMetadata extends Metadata {
   };
 }
 
-type ContainerMeasurements = {
+export type ContainerMeasurements = {
   temperatureExt: TemperatureMeasurement;
   position: PositionMeasurement;
 };
 
-interface ContainerAssetContent
+export interface ContainerAssetContent
   extends AssetContent<ContainerMeasurements, ContainerMetadata> {
   model: "Container";
 }
+
+export const containerAssetDefinition: AssetModelDefinition = {
+  measures: [
+    { name: "temperatureExt", type: "temperature" },
+    { name: "temperatureInt", type: "temperature" },
+    { name: "position", type: "position" },
+  ],
+  metadataMappings: {
+    weight: { type: "integer" },
+    height: { type: "integer" },
+  },
+  defaultMetadata: {
+    height: 20,
+  },
+};
 
 // This function is never called and only exists to make sure the types are correct
 function neverCalled() {

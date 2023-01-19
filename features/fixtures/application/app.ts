@@ -3,9 +3,12 @@ import util from "node:util";
 import { Backend, KuzzleRequest } from "kuzzle";
 
 import { DeviceManagerPlugin } from "../../../index";
+
 import { DummyTempDecoder, DummyTempPositionDecoder } from "./decoders";
 import { registerTestPipes } from "./tests/pipes";
 import { TestsController } from "./tests/controller";
+import { containerAssetDefinition } from "./assets/Container";
+import { warehouseAssetDefinition } from "./assets/Warehouse";
 
 const app = new Backend("kuzzle");
 
@@ -27,27 +30,17 @@ deviceManager.models.registerDevice("DummyTemp", {
 
 // Register an asset for the "commons" group
 
-deviceManager.models.registerAsset("commons", "Container", {
-  measures: [
-    { name: "temperatureExt", type: "temperature" },
-    { name: "temperatureInt", type: "temperature" },
-    { name: "position", type: "position" },
-  ],
-  metadataMappings: {
-    weight: { type: "integer" },
-    height: { type: "integer" },
-  },
-  defaultMetadata: {
-    height: 20,
-  },
-});
+deviceManager.models.registerAsset(
+  "commons",
+  "Container",
+  containerAssetDefinition
+);
 
-deviceManager.models.registerAsset("commons", "Warehouse", {
-  measures: [{ name: "position", type: "position" }],
-  metadataMappings: {
-    surface: { type: "integer" },
-  },
-});
+deviceManager.models.registerAsset(
+  "commons",
+  "Warehouse",
+  warehouseAssetDefinition
+);
 
 deviceManager.models.registerMeasure("acceleration", {
   valuesMappings: {

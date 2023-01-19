@@ -28,6 +28,7 @@ import {
 } from "./types/AssetEvents";
 import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetHistoryEventMetadata } from "./types/AssetHistoryContent";
+import { ApiAssetGetMeasuresResult } from "./types/AssetApi";
 
 export class AssetService {
   private context: PluginContext;
@@ -75,13 +76,25 @@ export class AssetService {
     assetId: string,
     {
       size = 25,
-      startAt,
+      from = 0,
       endAt,
-    }: { size?: number; startAt?: string; endAt?: string }
-  ): Promise<KDocument<MeasureContent>[]> {
+      startAt,
+      query,
+      sort = { measuredAt: "desc" },
+      type,
+    }: {
+      sort?: JSONObject;
+      query?: JSONObject;
+      from?: number;
+      size?: number;
+      startAt?: string;
+      endAt?: string;
+      type?: string;
+    }
+  ): Promise<ApiAssetGetMeasuresResult> {
     await this.get(engineId, assetId);
 
-    const query = {
+    const measuredAtRange = {
       range: {
         measuredAt: {
           gte: 0,
@@ -91,23 +104,33 @@ export class AssetService {
     };
 
     if (startAt) {
-      query.range.measuredAt.gte = new Date(startAt).getTime();
+      measuredAtRange.range.measuredAt.gte = new Date(startAt).getTime();
     }
 
     if (endAt) {
-      query.range.measuredAt.lte = new Date(endAt).getTime();
+      measuredAtRange.range.measuredAt.lte = new Date(endAt).getTime();
     }
 
-    const sort = { measuredAt: "desc" };
+    const searchQuery: JSONObject = {
+      and: [{ equals: { "asset._id": assetId } }, measuredAtRange],
+    };
 
-    const measures = await this.sdk.document.search<MeasureContent>(
+    if (type) {
+      searchQuery.and.push({ equals: { type } });
+    }
+
+    if (query) {
+      searchQuery.and.push(query);
+    }
+
+    const result = await this.sdk.document.search<MeasureContent>(
       engineId,
-      "measures",
-      { query, sort },
-      { size: size || 25 }
+      InternalCollection.MEASURES,
+      { query: searchQuery, sort },
+      { from, lang: "koncorde", size: size }
     );
 
-    return measures.hits;
+    return { measures: result.hits, total: result.total };
   }
 
   public async get(
