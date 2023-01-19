@@ -44,7 +44,13 @@ export class AssetService {
   }
 
   private get impersonatedSdk() {
-    return (user: User) => this.sdk.as(user, { checkRights: false });
+    return (user: User) => {
+      if (user?._id) {
+        return this.sdk.as(user, { checkRights: false });
+      }
+
+      return this.sdk;
+    };
   }
 
   constructor(

@@ -7,7 +7,7 @@ import {
   EventMeasureProcessBefore,
   AssetContent,
   DeviceContent,
-} from "../../../index";
+} from "../../../../index";
 
 function checkEventWithDocument(app: Backend, event: string) {
   app.pipe.register(event, async (payload) => {

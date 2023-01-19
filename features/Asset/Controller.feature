@@ -102,3 +102,9 @@ Feature: Asset Controller
     Then I should receive a result matching:
       | measures | [] |
 
+  Scenario: Create asset from backend side
+    When I successfully execute the action "tests":"createDigitalTwinFromBackend" with args:
+      | engineId       | "engine-kuzzle" |
+      | body.reference | "foobar"        |
+    Then The document "engine-kuzzle":"assets":"Container-foobar" exists
+    Then The document "engine-kuzzle":"devices":"DummyTemp-foobar" exists
