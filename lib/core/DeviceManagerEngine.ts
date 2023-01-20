@@ -70,7 +70,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           equals: { type: "engine-device-manager" },
         },
       },
-      { lang: "koncorde", size: 1000 }
+      { lang: "koncorde", size: 5000 }
     );
 
     this.context.log.info(`Update ${result.fetched} existing engines`);
@@ -314,7 +314,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       engineId,
       InternalCollection.MODELS,
       { query },
-      { lang: "koncorde", size: 100 }
+      { lang: "koncorde", size: 5000 }
     );
 
     return result.hits;
