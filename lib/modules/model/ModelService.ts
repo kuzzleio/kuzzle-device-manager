@@ -199,7 +199,7 @@ export class ModelService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query, sort },
-      { lang: "koncorde", size: 100 }
+      { lang: "koncorde", size: 5000 }
     );
 
     return result.hits;
@@ -215,7 +215,7 @@ export class ModelService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query, sort },
-      { lang: "koncorde", size: 100 }
+      { lang: "koncorde", size: 5000 }
     );
 
     return result.hits;
@@ -231,7 +231,7 @@ export class ModelService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query, sort },
-      { lang: "koncorde", size: 100 }
+      { lang: "koncorde", size: 5000 }
     );
 
     return result.hits;
