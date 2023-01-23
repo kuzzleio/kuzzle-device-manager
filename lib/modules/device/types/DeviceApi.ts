@@ -1,5 +1,6 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle";
 
+import { MeasureContent } from "../../measure";
 import { AssetContent } from "../../asset";
 import { Metadata } from "../../shared";
 
@@ -129,4 +130,29 @@ export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
 export type ApiDeviceLinkAssetResult = {
   asset: KDocument<AssetContent>;
   device: KDocument<DeviceContent>;
+};
+
+export interface ApiDeviceGetMeasuresRequest extends DevicesControllerRequest {
+  action: "getMeasures";
+
+  _id: string;
+
+  size?: number;
+
+  from?: number;
+
+  startAt?: string;
+
+  endAt?: string;
+
+  type?: string;
+
+  body?: {
+    query?: JSONObject;
+    sort?: JSONObject;
+  };
+}
+export type ApiDeviceGetMeasuresResult = {
+  measures: Array<KDocument<MeasureContent<JSONObject>>>;
+  total: number;
 };
