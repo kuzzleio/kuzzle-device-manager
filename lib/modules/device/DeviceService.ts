@@ -19,6 +19,7 @@ import {
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
 import { Metadata, lock, ask, onAsk } from "../shared";
 import { AskModelDeviceGet } from "../model";
+import { MeasureContent } from "../measure";
 
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -27,7 +28,10 @@ import {
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
-import { ApiDeviceLinkAssetRequest } from "./exports";
+import {
+  ApiDeviceLinkAssetRequest,
+  ApiDeviceGetMeasuresResult,
+} from "./types/DeviceApi";
 
 export class DeviceService {
   private config: DeviceManagerConfiguration;
@@ -614,6 +618,68 @@ export class DeviceService {
 
       return { asset: updatedAsset, device: updatedDevice };
     });
+  }
+
+  async getMeasureHistory(
+    engineId: string,
+    deviceId: string,
+    {
+      size = 25,
+      from = 0,
+      endAt,
+      startAt,
+      query,
+      sort = { measuredAt: "desc" },
+      type,
+    }: {
+      sort?: JSONObject;
+      query?: JSONObject;
+      from?: number;
+      size?: number;
+      startAt?: string;
+      endAt?: string;
+      type?: string;
+    }
+  ): Promise<ApiDeviceGetMeasuresResult> {
+    await this.get(engineId, deviceId);
+
+    const measuredAtRange = {
+      range: {
+        measuredAt: {
+          gte: 0,
+          lte: Number.MAX_SAFE_INTEGER,
+        },
+      },
+    };
+
+    if (startAt) {
+      measuredAtRange.range.measuredAt.gte = new Date(startAt).getTime();
+    }
+
+    if (endAt) {
+      measuredAtRange.range.measuredAt.lte = new Date(endAt).getTime();
+    }
+
+    const searchQuery: JSONObject = {
+      and: [{ equals: { "origin._id": deviceId } }, measuredAtRange],
+    };
+
+    if (type) {
+      searchQuery.and.push({ equals: { type } });
+    }
+
+    if (query) {
+      searchQuery.and.push(query);
+    }
+
+    const result = await this.sdk.document.search<MeasureContent>(
+      engineId,
+      InternalCollection.MEASURES,
+      { query: searchQuery, sort },
+      { from, lang: "koncorde", size: size }
+    );
+
+    return { measures: result.hits, total: result.total };
   }
 
   private async checkEngineExists(engineId: string) {

@@ -15,6 +15,7 @@ import {
   ApiDeviceSearchResult,
   ApiDeviceUnlinkAssetResult,
   ApiDeviceUpdateResult,
+  ApiDeviceGetMeasuresResult,
 } from "./types/DeviceApi";
 
 export class DevicesController {
@@ -89,6 +90,19 @@ export class DevicesController {
             {
               path: "device-manager/:engineId/devices/:_id/_unlink",
               verb: "delete",
+            },
+          ],
+        },
+        getMeasures: {
+          handler: this.getMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/measures",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/devices/:_id/measures",
+              verb: "post",
             },
           ],
         },
@@ -261,5 +275,37 @@ export class DevicesController {
       asset: AssetSerializer.serialize(asset),
       device: DeviceSerializer.serialize(device),
     };
+  }
+
+  async getMeasures(
+    request: KuzzleRequest
+  ): Promise<ApiDeviceGetMeasuresResult> {
+    const id = request.getId();
+    const engineId = request.getString("engineId");
+    const size = request.input.args.size;
+    const from = request.input.args.from;
+    const startAt = request.input.args.startAt
+      ? request.getDate("startAt")
+      : null;
+    const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
+    const query = request.input.body?.query;
+    const sort = request.input.body?.sort;
+    const type = request.input.args.type;
+
+    const { measures, total } = await this.deviceService.getMeasureHistory(
+      engineId,
+      id,
+      {
+        endAt,
+        from,
+        query,
+        size,
+        sort,
+        startAt,
+        type,
+      }
+    );
+
+    return { measures, total };
   }
 }

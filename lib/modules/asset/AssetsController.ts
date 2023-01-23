@@ -47,7 +47,6 @@ export class AssetsController {
           handler: this.update.bind(this),
           http: [{ path: "device-manager/:engineId/assets/:_id", verb: "put" }],
         },
-
         getMeasures: {
           handler: this.getMeasures.bind(this),
           http: [
