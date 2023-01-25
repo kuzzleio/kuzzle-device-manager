@@ -18,7 +18,12 @@ import {
 } from "./../asset";
 import { InternalCollection, DeviceManagerConfiguration } from "../../core";
 import { Metadata, lock, ask, onAsk } from "../shared";
-import { AskModelDeviceGet } from "../model";
+import {
+  AskModelAssetGet,
+  AskModelDeviceGet,
+  AssetModelContent,
+  DeviceModelContent,
+} from "../model";
 import { MeasureContent } from "../measure";
 
 import { DeviceContent } from "./types/DeviceContent";
@@ -417,13 +422,17 @@ export class DeviceService {
     deviceId: string,
     assetId: string,
     measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"],
-    { refresh }: { refresh?: any } = {}
+    {
+      refresh,
+      implicitMeasuresLinking,
+    }: { refresh?: any; implicitMeasuresLinking?: boolean } = {}
   ): Promise<{
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
     return lock(`device:linkAsset:${deviceId}`, async () => {
       const device = await this.get(this.config.adminIndex, deviceId);
+      const engine = await this.getEngine(engineId);
 
       this.checkAttachedToEngine(device);
 
@@ -445,7 +454,26 @@ export class DeviceService {
         assetId
       );
 
-      this.checkAssetMeasureNamesAvailability(asset, measureNames);
+      const [assetModel, deviceModel] = await Promise.all([
+        ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
+          engineGroup: engine.group,
+          model: asset._source.model,
+        }),
+        ask<AskModelDeviceGet>("ask:device-manager:model:device:get", {
+          model: device._source.model,
+        }),
+      ]);
+
+      this.checkAlreadyProvidedMeasures(asset, measureNames);
+
+      if (implicitMeasuresLinking === true) {
+        this.generateMissingAssetMeasureNames(
+          asset,
+          assetModel,
+          deviceModel,
+          measureNames
+        );
+      }
 
       device._source.assetId = assetId;
       asset._source.linkedDevices.push({
@@ -514,22 +542,68 @@ export class DeviceService {
    * Checks if the asset does not already have a linked device using one of the
    * requested measure names.
    */
-  private checkAssetMeasureNamesAvailability(
+  private checkAlreadyProvidedMeasures(
     asset: KDocument<AssetContent>,
-    measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
+    requestedMeasureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
   ) {
-    const requestedMeasuresNames = measureNames.map((m) => m.asset);
+    const measureAlreadyProvided = (assetMeasureName: string): boolean => {
+      return asset._source.linkedDevices.some((link) =>
+        link.measureNames.some((names) => names.asset === assetMeasureName)
+      );
+    };
 
-    for (const link of asset._source.linkedDevices) {
-      const existingMeasureNames = link.measureNames.map((m) => m.asset);
-
-      for (const requestedMeasuresName of requestedMeasuresNames) {
-        if (existingMeasureNames.includes(requestedMeasuresName)) {
-          throw new BadRequestError(
-            `Measure name "${requestedMeasuresName}" is already used by another device on this asset.`
-          );
-        }
+    for (const name of requestedMeasureNames) {
+      if (measureAlreadyProvided(name.asset)) {
+        throw new BadRequestError(
+          `Measure name "${name.asset}" is already used by another device on this asset.`
+        );
       }
+    }
+  }
+
+  /**
+   * Goes through the device available measures and add them into the link if:
+   *  - they are not already provided by another device
+   *  - they are not already present in the link request
+   *  - they are declared in the asset model
+   */
+  private generateMissingAssetMeasureNames(
+    asset: KDocument<AssetContent>,
+    assetModel: AssetModelContent,
+    deviceModel: DeviceModelContent,
+    requestedMeasureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
+  ) {
+    const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
+      return asset._source.linkedDevices.some((link) =>
+        link.measureNames.some((names) => names.device === deviceMeasureName)
+      );
+    };
+
+    const measureAlreadyRequested = (deviceMeasureName: string): boolean => {
+      return requestedMeasureNames.some(
+        (names) => names.device === deviceMeasureName
+      );
+    };
+
+    const measureUndeclared = (deviceMeasureName: string): boolean => {
+      return !assetModel.asset.measures.some(
+        (measure) => measure.name === deviceMeasureName
+      );
+    };
+
+    for (const deviceMeasure of deviceModel.device.measures) {
+      if (
+        measureAlreadyRequested(deviceMeasure.name) ||
+        measureAlreadyProvided(deviceMeasure.name) ||
+        measureUndeclared(deviceMeasure.name)
+      ) {
+        continue;
+      }
+
+      requestedMeasureNames.push({
+        asset: deviceMeasure.name,
+        device: deviceMeasure.name,
+      });
     }
   }
 
@@ -702,5 +776,15 @@ export class DeviceService {
         `Device "${device._id}" is not attached to an engine.`
       );
     }
+  }
+
+  private async getEngine(engineId: string): Promise<JSONObject> {
+    const engine = await this.sdk.document.get(
+      this.config.adminIndex,
+      InternalCollection.CONFIG,
+      `engine-device-manager--${engineId}`
+    );
+
+    return engine._source.engine;
   }
 }

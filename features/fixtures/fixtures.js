@@ -46,6 +46,16 @@ const deviceAyseUnlinked2 = {
 };
 const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
 
+const deviceAyseUnlinked3 = {
+  model: "DummyTempPosition",
+  reference: "unlinked3",
+  metadata: {},
+  measures: {},
+  engineId: "engine-ayse",
+  assetId: null,
+};
+const deviceAyseUnlinked3Id = `${deviceAyseUnlinked3.model}-${deviceAyseUnlinked3.reference}`;
+
 const assetAyseLinked1 = {
   model: "Container",
   reference: "linked1",
@@ -97,14 +107,21 @@ module.exports = {
     devices: [
       { index: { _id: deviceAyseLinked1Id } },
       deviceAyseLinked1,
+
       { index: { _id: deviceAyseLinked2Id } },
       deviceAyseLinked2,
+
       { index: { _id: deviceDetached1Id } },
       deviceDetached1,
+
       { index: { _id: deviceAyseUnlinked1Id } },
       deviceAyseUnlinked1,
+
       { index: { _id: deviceAyseUnlinked2Id } },
       deviceAyseUnlinked2,
+
+      { index: { _id: deviceAyseUnlinked3Id } },
+      deviceAyseUnlinked3,
     ],
   },
 
@@ -113,18 +130,26 @@ module.exports = {
     devices: [
       { index: { _id: deviceAyseLinked1Id } },
       deviceAyseLinked1,
+
       { index: { _id: deviceAyseLinked2Id } },
       deviceAyseLinked2,
+
       { index: { _id: deviceAyseUnlinked1Id } },
       deviceAyseUnlinked1,
+
       { index: { _id: deviceAyseUnlinked2Id } },
       deviceAyseUnlinked2,
+
+      { index: { _id: deviceAyseUnlinked3Id } },
+      deviceAyseUnlinked3,
     ],
     assets: [
       { index: { _id: assetAyseLinked1Id } },
       assetAyseLinked1,
+
       { index: { _id: assetAyseLinked2Id } },
       assetAyseLinked2,
+
       { index: { _id: assetAyseUnlinkedId } },
       assetAyseUnlinked,
     ],

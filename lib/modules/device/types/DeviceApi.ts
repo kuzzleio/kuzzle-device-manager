@@ -112,9 +112,20 @@ export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
 
   assetId: string;
 
+  /**
+   * If true, then all the measures from the device will be linked to the asset
+   * if possible.
+   *
+   * They will have the same name on the asset as on the device.
+   */
+  implicitMeasuresLinking?: boolean;
+
   body?: {
     /**
-     * Names of the linked measures
+     * Names of the linked measures.
+     *
+     * If a measure is not explicitly linked, it will be linked in the asset with
+     * the same name as in the device.
      *
      * Array<{ asset: string, device: string }>
      *
@@ -124,7 +135,7 @@ export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
      *   { asset: "externalTemperature", device: "temperature" }
      * ]
      */
-    measureNames: Array<{ asset: string; device: string }>;
+    measureNames?: Array<{ asset: string; device: string }>;
   };
 }
 export type ApiDeviceLinkAssetResult = {
