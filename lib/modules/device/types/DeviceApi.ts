@@ -113,19 +113,26 @@ export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
   assetId: string;
 
   /**
-   * If true, then all the measures from the device will be linked to the asset
-   * if possible.
+   * This option allows to not specify the names of all the measures that should
+   * be linked to the asset.
    *
-   * They will have the same name on the asset as on the device.
+   * The algorithm will go through all the measures names provided by the device
+   * and add the one who are present with the same name in the asset.
+   *
+   * It will not add the measure if:
+   *   - it has been specified in the link request
+   *   - it was already present in the asset
+   *
+   * @example
+   *   if the device provide a measure of type "temperature" with the name "temp"
+   *   if the asset has declared a measure of type "temperature" with the name "temp"
+   *   then the measure will be automatically added in the link and will later be propagated to the asset
    */
   implicitMeasuresLinking?: boolean;
 
   body?: {
     /**
      * Names of the linked measures.
-     *
-     * If a measure is not explicitly linked, it will be linked in the asset with
-     * the same name as in the device.
      *
      * Array<{ asset: string, device: string }>
      *
