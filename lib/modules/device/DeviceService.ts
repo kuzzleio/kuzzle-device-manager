@@ -466,7 +466,7 @@ export class DeviceService {
 
       this.checkAlreadyProvidedMeasures(asset, measureNames);
 
-      if (implicitMeasuresLinking === true) {
+      if (implicitMeasuresLinking) {
         this.generateMissingAssetMeasureNames(
           asset,
           assetModel,
