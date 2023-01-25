@@ -237,7 +237,9 @@ export class DevicesController {
     const measureNames = request.getBodyArray(
       "measureNames"
     ) as ApiDeviceLinkAssetRequest["body"]["measureNames"];
-    const implicitMeasuresLinking = request.getBoolean('implicitMeasuresLinking')
+    const implicitMeasuresLinking = request.getBoolean(
+      "implicitMeasuresLinking"
+    );
     const refresh = request.getRefresh();
 
     const { asset, device } = await this.deviceService.linkAsset(
