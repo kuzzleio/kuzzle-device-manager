@@ -11,6 +11,9 @@ import {
   ApiModelListAssetsResult,
   ApiModelListDevicesResult,
   ApiModelListMeasuresResult,
+  ApiModelGetAssetResult,
+  ApiModelGetDeviceResult,
+  ApiModelGetMeasureResult,
 } from "./types/ModelApi";
 
 export class ModelsController {
@@ -36,6 +39,18 @@ export class ModelsController {
           http: [
             { path: "device-manager/models/measure/:_id", verb: "delete" },
           ],
+        },
+        getAsset: {
+          handler: this.getAsset.bind(this),
+          http: [{ path: "device-manager/models/asset/:_id", verb: "get" }],
+        },
+        getDevice: {
+          handler: this.getDevice.bind(this),
+          http: [{ path: "device-manager/models/device/:_id", verb: "get" }],
+        },
+        getMeasure: {
+          handler: this.getMeasure.bind(this),
+          http: [{ path: "device-manager/models/measure/:_id", verb: "get" }],
         },
         listAssets: {
           handler: this.listAssets.bind(this),
@@ -63,6 +78,31 @@ export class ModelsController {
         },
       },
     };
+  }
+
+  async getAsset(request: KuzzleRequest): Promise<ApiModelGetAssetResult> {
+    const model = request.getString("model");
+    const engineGroup = request.getString("engineGroup");
+
+    const assetModel = await this.modelService.getAsset(engineGroup, model);
+
+    return assetModel;
+  }
+
+  async getDevice(request: KuzzleRequest): Promise<ApiModelGetDeviceResult> {
+    const model = request.getString("model");
+
+    const deviceModel = await this.modelService.getDevice(model);
+
+    return deviceModel;
+  }
+
+  async getMeasure(request: KuzzleRequest): Promise<ApiModelGetMeasureResult> {
+    const type = request.getString("type");
+
+    const measureModel = await this.modelService.getMeasure(type);
+
+    return measureModel;
   }
 
   async writeAsset(request: KuzzleRequest): Promise<ApiModelWriteAssetResult> {

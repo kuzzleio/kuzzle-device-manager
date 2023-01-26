@@ -10,6 +10,25 @@ interface ModelsControllerRequest {
   controller: "device-manager/models";
 }
 
+export interface ApiModelGetAssetRequest extends ModelsControllerRequest {
+  action: "getAsset";
+  model: string;
+  engineGroup: string;
+}
+export type ApiModelGetAssetResult = KDocument<AssetModelContent>;
+
+export interface ApiModelGetDeviceRequest extends ModelsControllerRequest {
+  action: "getDevice";
+  model: string;
+}
+export type ApiModelGetDeviceResult = KDocument<DeviceModelContent>;
+
+export interface ApiModelGetMeasureRequest extends ModelsControllerRequest {
+  action: "getMeasure";
+  type: string;
+}
+export type ApiModelGetMeasureResult = KDocument<MeasureModelContent>;
+
 export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   action: "writeAsset";
 

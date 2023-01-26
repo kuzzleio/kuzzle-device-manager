@@ -3,6 +3,7 @@ import {
   Inflector,
   JSONObject,
   KDocument,
+  NotFoundError,
   PluginContext,
 } from "kuzzle";
 
@@ -41,11 +42,19 @@ export class ModelService {
   registerAskEvents() {
     onAsk<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      ({ engineGroup, model }) => this.assetGet(engineGroup, model)
+      async ({ engineGroup, model }) => {
+        const assetModel = await this.getAsset(engineGroup, model);
+
+        return assetModel._source;
+      }
     );
     onAsk<AskModelDeviceGet>(
       "ask:device-manager:model:device:get",
-      ({ model }) => this.deviceGet(model)
+      async ({ model }) => {
+        const deviceModel = await this.getDevice(model);
+
+        return deviceModel._source;
+      }
     );
   }
 
@@ -80,6 +89,8 @@ export class ModelService {
       InternalCollection.MODELS
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+
+    // @todo update assets in every engine to add the new metadata with null value + default metadata
 
     return assetModel;
   }
@@ -273,10 +284,10 @@ export class ModelService {
     return result.total > 0;
   }
 
-  private async assetGet(
+  async getAsset(
     engineGroup: string,
     model: string
-  ): Promise<AssetModelContent> {
+  ): Promise<KDocument<AssetModelContent>> {
     const query = {
       and: [
         { equals: { engineGroup } },
@@ -293,13 +304,13 @@ export class ModelService {
     );
 
     if (result.total === 0) {
-      throw new BadRequestError(`Unknown Asset model "${model}".`);
+      throw new NotFoundError(`Unknown Asset model "${model}".`);
     }
 
-    return result.hits[0]._source;
+    return result.hits[0];
   }
 
-  private async deviceGet(model: string): Promise<DeviceModelContent> {
+  async getDevice(model: string): Promise<KDocument<DeviceModelContent>> {
     const query = {
       and: [
         { equals: { type: "device" } },
@@ -315,9 +326,31 @@ export class ModelService {
     );
 
     if (result.total === 0) {
-      throw new BadRequestError(`Unknown Device model "${model}".`);
+      throw new NotFoundError(`Unknown Device model "${model}".`);
     }
 
-    return result.hits[0]._source;
+    return result.hits[0];
+  }
+
+  async getMeasure(type: string): Promise<KDocument<MeasureModelContent>> {
+    const query = {
+      and: [
+        { equals: { type: "measure" } },
+        { equals: { "measure.type": type } },
+      ],
+    };
+
+    const result = await this.sdk.document.search<MeasureModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      { query },
+      { lang: "koncorde", size: 1 }
+    );
+
+    if (result.total === 0) {
+      throw new NotFoundError(`Unknown Measure type "${type}".`);
+    }
+
+    return result.hits[0];
   }
 }
