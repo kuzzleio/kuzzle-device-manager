@@ -9,6 +9,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
     "device-manager/models": {
       actions: {
         listMeasures: true,
+        getMeasure: true,
       },
     },
  */
@@ -19,6 +20,7 @@ export const RoleMeasuresReader: KuzzleRole = {
       "device-manager/models": {
         actions: {
           listMeasures: true,
+          getMeasure: true,
         },
       },
     },

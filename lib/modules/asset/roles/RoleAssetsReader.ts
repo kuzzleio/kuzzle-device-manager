@@ -16,6 +16,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
     "device-manager/models": {
       actions: {
         listAssets: true,
+        getAsset: true,
       },
     },
  */
@@ -33,6 +34,7 @@ export const RoleAssetsReader: KuzzleRole = {
       "device-manager/models": {
         actions: {
           listAssets: true,
+          getAsset: true,
         },
       },
     },

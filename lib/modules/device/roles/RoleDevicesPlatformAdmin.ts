@@ -15,6 +15,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
       actions: {
         deleteDevice: true,
         listDevices: true,
+        getDevice: true,
         writeDevice: true,
       },
     },
@@ -32,6 +33,7 @@ export const RoleDevicesPlatformAdmin: KuzzleRole = {
         actions: {
           deleteDevice: true,
           listDevices: true,
+          getDevice: true,
           writeDevice: true,
         },
       },

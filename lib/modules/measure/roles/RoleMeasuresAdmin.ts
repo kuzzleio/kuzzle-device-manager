@@ -10,6 +10,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
       actions: {
         deleteMeasure: true,
         listMeasures: true,
+        getMeasure: true,
         writeMeasure: true,
       },
     },
@@ -22,6 +23,7 @@ export const RoleMeasuresAdmin: KuzzleRole = {
         actions: {
           deleteMeasure: true,
           listMeasures: true,
+          getMeasure: true,
           writeMeasure: true,
         },
       },
