@@ -173,6 +173,17 @@ Feature: Model Controller
       | total         | 3                       |
       | models[0]._id | "model-asset-Container" |
       | models[1]._id | "model-asset-Plane"     |
+    When I successfully execute the action "device-manager/models":"getAsset" with args:
+      | engineGroup | "commons" |
+      | model       | "Plane"   |
+    Then I should receive a result matching:
+      | _id                 | "model-asset-Plane" |
+      | _source.asset.model | "Plane"             |
+    When I execute the action "device-manager/models":"getAsset" with args:
+      | engineGroup | "other_engine" |
+      | model       | "Plane"        |
+    Then I should receive an error matching:
+      | status | 404 |
 
   @models
   Scenario: Create an asset with default metadata values
@@ -278,6 +289,11 @@ Feature: Model Controller
     Then I should receive a result matching:
       | total         | 3                     |
       | models[2]._id | "model-device-Zigbee" |
+    When I successfully execute the action "device-manager/models":"getDevice" with args:
+      | model | "Zigbee" |
+    Then I should receive a result matching:
+      | _id                  | "model-device-Zigbee" |
+      | _source.device.model | "Zigbee"              |
 
   @models
   Scenario: Error if the model name is not PascalCase
@@ -419,6 +435,11 @@ Feature: Model Controller
       | total         | 7                        |
       | models[1]._id | "model-measure-battery"  |
       | models[5]._id | "model-measure-presence" |
+    When I successfully execute the action "device-manager/models":"getMeasure" with args:
+      | type | "battery" |
+    Then I should receive a result matching:
+      | _id                  | "model-measure-battery" |
+      | _source.measure.type | "battery"               |
 
   Scenario: Register models from the framework
     Then The document "device-manager":"models":"model-asset-Container" content match:
