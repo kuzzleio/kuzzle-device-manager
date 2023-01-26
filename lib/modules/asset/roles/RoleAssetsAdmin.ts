@@ -16,6 +16,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
       actions: {
         deleteAsset: true,
         listAssets: true,
+        getAsset: true,
         writeAsset: true,
       },
     },
@@ -33,6 +34,7 @@ export const RoleAssetsAdmin: KuzzleRole = {
         actions: {
           deleteAsset: true,
           listAssets: true,
+          getAsset: true,
           writeAsset: true,
         },
       },

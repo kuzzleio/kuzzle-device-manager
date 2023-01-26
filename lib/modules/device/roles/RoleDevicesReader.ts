@@ -15,6 +15,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
     "device-manager/models": {
       actions: {
         listDevices: true,
+        getDevice: true,
       },
     },
     }
@@ -32,6 +33,7 @@ export const RoleDevicesReader: KuzzleRole = {
       "device-manager/models": {
         actions: {
           listDevices: true,
+          getDevice: true,
         },
       },
     },
