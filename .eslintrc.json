@@ -7,7 +7,7 @@
   ],
   "overrides": [
     {
-      "files": ["**/roles/*.ts", "**/collections/*.ts"],
+      "files": ["**/roles/*.ts", "**/collections/*.ts", "**tests/**/*.ts"],
       "rules": {
         "sort-keys": ["off"]
       }
