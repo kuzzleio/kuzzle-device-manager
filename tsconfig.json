@@ -15,7 +15,6 @@
   "include": [
     "lib/**/*.ts",
     "features/**/*.ts",
-    "tests/**/*.ts",
     "index.ts"
   ],
   "exclude": [
