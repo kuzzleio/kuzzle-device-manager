@@ -67,6 +67,8 @@ export interface ApiDeviceSearchRequest extends DevicesControllerRequest {
 
   scrollTTL?: string;
 
+  lang?: "koncorde" | "elasticsearch";
+
   body: JSONObject;
 }
 export type ApiDeviceSearchResult = SearchResult<KHit<DeviceContent>>;
