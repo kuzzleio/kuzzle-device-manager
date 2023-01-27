@@ -9,7 +9,7 @@ export async function truncateCollection(
   await sdk.document.deleteByQuery(index, collection, {});
 }
 
-export async function beforeEachTruncateCollections (sdk: Kuzzle) {
+export async function beforeEachTruncateCollections(sdk: Kuzzle) {
   await Promise.all([
     truncateCollection(sdk, "device-manager", "devices"),
     truncateCollection(sdk, "device-manager", "payloads"),

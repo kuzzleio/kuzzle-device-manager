@@ -18,9 +18,9 @@
     "test:functional": "npm run test:cucumber && npm run test:jest",
     "test:cucumber": "cucumber-js --require-module ts-node/register --exit --fail-fast",
     "test:jest": "jest",
-    "test:lint": "eslint ./lib --ext .ts --config .eslintrc.json",
-    "test:lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
-    "prettier": "npx prettier lib/ features/ --write",
+    "test:lint": "eslint ./lib ./tests --ext .ts --config .eslintrc.json",
+    "test:lint:fix": "eslint ./lib ./tests --ext .ts --config .eslintrc.json --fix",
+    "prettier": "npx prettier lib/ features/ tests/ --write",
     "build": "tsc --build tsconfig.json",
     "prepack": "npm run build"
   },

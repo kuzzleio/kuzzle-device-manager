@@ -18,7 +18,7 @@ async function createEngineIfNotExists(sdk: Kuzzle, index: string) {
   });
 }
 
-export async function beforeAllCreateEngines (sdk: Kuzzle) {
+export async function beforeAllCreateEngines(sdk: Kuzzle) {
   await Promise.all([
     createEngineIfNotExists(sdk, "engine-ayse"),
     createEngineIfNotExists(sdk, "engine-kuzzle"),

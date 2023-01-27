@@ -38,7 +38,7 @@ describe("Device SCRUD", () => {
     sdk.disconnect();
   });
 
-  it('should create a device, update metadata then get and search it', async () => {
+  it("should create a device, update metadata then get and search it", async () => {
     await sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
       controller: "device-manager/devices",
       action: "create",
@@ -46,7 +46,7 @@ describe("Device SCRUD", () => {
       body: {
         model: "DummyTemp",
         reference: "scrudme",
-      }
+      },
     });
 
     await sdk.query<ApiDeviceUpdateRequest, ApiDeviceUpdateResult>({
@@ -56,12 +56,15 @@ describe("Device SCRUD", () => {
       _id: "DummyTemp-scrudme",
       body: {
         metadata: {
-          color: "RED"
-        }
-      }
+          color: "RED",
+        },
+      },
     });
 
-    const { result: device } = await sdk.query<ApiDeviceGetRequest, ApiDeviceGetResult>({
+    const { result: device } = await sdk.query<
+      ApiDeviceGetRequest,
+      ApiDeviceGetResult
+    >({
       controller: "device-manager/devices",
       action: "get",
       engineId: "engine-ayse",
@@ -72,33 +75,36 @@ describe("Device SCRUD", () => {
       model: "DummyTemp",
       reference: "scrudme",
       metadata: {
-        color: "RED"
+        color: "RED",
       },
       _kuzzle_info: {
         author: "-1",
         updater: "-1",
-      }
+      },
     });
 
-    await sdk.collection.refresh('engine-ayse', 'devices');
+    await sdk.collection.refresh("engine-ayse", "devices");
 
-    const { result } = await sdk.query<ApiDeviceSearchRequest, ApiDeviceSearchResult>({
+    const { result } = await sdk.query<
+      ApiDeviceSearchRequest,
+      ApiDeviceSearchResult
+    >({
       controller: "device-manager/devices",
       action: "search",
       engineId: "engine-ayse",
       lang: "koncorde",
       body: {
         query: {
-          equals: { reference: "scrudme" }
-        }
-      }
+          equals: { reference: "scrudme" },
+        },
+      },
     });
 
     should(result.total).eql(1);
     should(result.hits[0]._source).match({
       reference: "scrudme",
       metadata: {
-        color: "RED"
+        color: "RED",
       },
     });
 
@@ -109,12 +115,16 @@ describe("Device SCRUD", () => {
       _id: "DummyTemp-scrudme",
     });
 
-    const exists = await sdk.document.exists('engine-ayse', 'devices', 'DummyTemp-scrudme');
+    const exists = await sdk.document.exists(
+      "engine-ayse",
+      "devices",
+      "DummyTemp-scrudme"
+    );
 
     should(exists).eql(false);
   });
 
-  it('should return an error when creating device of unknown model', async () => {
+  it("should return an error when creating device of unknown model", async () => {
     const promise = sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
       controller: "device-manager/devices",
       action: "create",
@@ -122,9 +132,9 @@ describe("Device SCRUD", () => {
       body: {
         model: "NotExisting",
         reference: "scrudme",
-      }
+      },
     });
 
-    should(promise).rejectedWith("Unknown Device model \"NotExisting\".");
+    should(promise).rejectedWith('Unknown Device model "NotExisting".');
   });
 });
