@@ -123,7 +123,7 @@ export class DevicesController {
   async update(request: KuzzleRequest): Promise<ApiDeviceUpdateResult> {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
-    const metadata = request.getBody();
+    const metadata = request.getBodyObject("metadata");
     const refresh = request.getRefresh();
 
     const updatedDevice = await this.deviceService.update(
