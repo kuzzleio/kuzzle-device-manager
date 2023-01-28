@@ -9,17 +9,17 @@ import { DecodedMeasurement, MeasureContent } from "./MeasureContent";
 /**
  * @internal
  */
-export type EventMeasureIngest = {
+export type AskMeasureIngest = {
   name: "device-manager:measures:ingest";
 
-  args: [
-    {
-      device: KDocument<DeviceContent>;
-      measurements: DecodedMeasurement<JSONObject>[];
-      metadata: Metadata;
-      payloadUuids: string[];
-    }
-  ];
+  payload: {
+    device: KDocument<DeviceContent>;
+    measurements: DecodedMeasurement<JSONObject>[];
+    metadata: Metadata;
+    payloadUuids: string[];
+  };
+
+  result: void;
 };
 
 /**

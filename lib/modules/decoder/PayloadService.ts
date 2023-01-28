@@ -13,10 +13,12 @@ import {
   InternalCollection,
 } from "../../core";
 import { DeviceContent, DeviceSerializer } from "../device";
-import { EventMeasureIngest } from "../measure";
-import { DecodedPayload } from "./DecodedPayload";
+import { AskMeasureIngest, DecodedMeasurement } from "../measure";
+import { ask, onAsk } from "../shared";
 
+import { DecodedPayload } from "./DecodedPayload";
 import { Decoder } from "./Decoder";
+import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
 
 export class PayloadService {
   private config: DeviceManagerConfiguration;
@@ -33,6 +35,15 @@ export class PayloadService {
   constructor(plugin: DeviceManagerPlugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+
+    onAsk<AskPayloadReceiveFormated>(
+      "ask:device-manager:payload:receive-formated",
+      async (payload) => {
+        await this.receiveFormated(payload.device, payload.measure, {
+          payloadUuids: payload.payloadUuids,
+        });
+      }
+    );
   }
 
   /**
@@ -47,6 +58,7 @@ export class PayloadService {
     { refresh }: any = {}
   ) {
     const payload = request.getBody();
+    const apiOrigin = `${request.input.controller}:${request.input.action}`;
 
     const uuid = request.input.args.uuid || uuidv4();
     let valid = true;
@@ -61,7 +73,13 @@ export class PayloadService {
       valid = false;
       throw error;
     } finally {
-      await this.savePayload(decoder.deviceModel, uuid, valid, payload);
+      await this.savePayload(
+        decoder.deviceModel,
+        uuid,
+        valid,
+        payload,
+        apiOrigin
+      );
     }
 
     let decodedPayload = new DecodedPayload<any>(decoder);
@@ -75,20 +93,38 @@ export class PayloadService {
     );
 
     for (const device of devices) {
-      await this.app.trigger<EventMeasureIngest>(
-        "device-manager:measures:ingest",
-        {
-          device,
-          measurements: decodedPayload.getMeasurements(
-            device._source.reference
-          ),
-          metadata: decodedPayload.getMetadata(device._source.reference),
-          payloadUuids: [uuid],
-        }
-      );
+      await ask<AskMeasureIngest>("device-manager:measures:ingest", {
+        device,
+        measurements: decodedPayload.getMeasurements(device._source.reference),
+        metadata: decodedPayload.getMetadata(device._source.reference),
+        payloadUuids: [uuid],
+      });
     }
 
     return { valid };
+  }
+
+  async receiveFormated(
+    device: KDocument<DeviceContent>,
+    measurement: DecodedMeasurement,
+    { payloadUuids }: { payloadUuids?: string[] } = {}
+  ) {
+    const apiOrigin = "device-manager/devices:receiveMeasure";
+
+    // Payload is already formated thus valid
+    await this.savePayload(
+      device._source.model,
+      payloadUuids[0],
+      true,
+      measurement,
+      apiOrigin
+    );
+    await ask<AskMeasureIngest>("device-manager:measures:ingest", {
+      device,
+      measurements: [measurement],
+      metadata: {},
+      payloadUuids,
+    });
   }
 
   /**
@@ -100,13 +136,14 @@ export class PayloadService {
     deviceModel: string,
     uuid: string,
     valid: boolean,
-    payload: JSONObject
+    payload: JSONObject,
+    apiOrigin: string
   ) {
     try {
       await this.sdk.document.create(
         this.config.adminIndex,
         "payloads",
-        { deviceModel, payload, uuid, valid },
+        { apiOrigin, deviceModel, payload, uuid, valid },
         uuid
       );
     } catch (error) {
@@ -237,7 +274,11 @@ export class PayloadService {
     return deleted;
   }
 
-  public async receiveUnknown(deviceModel: string, payload: JSONObject) {
-    await this.savePayload(deviceModel, uuidv4(), false, payload);
+  public async receiveUnknown(
+    deviceModel: string,
+    payload: JSONObject,
+    apiOrigin: string
+  ) {
+    await this.savePayload(deviceModel, uuidv4(), false, payload, apiOrigin);
   }
 }

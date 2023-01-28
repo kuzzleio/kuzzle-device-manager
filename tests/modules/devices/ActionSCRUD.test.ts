@@ -1,5 +1,3 @@
-import should from "should";
-
 import {
   ApiDeviceCreateRequest,
   ApiDeviceCreateResult,
@@ -21,7 +19,7 @@ import { getSdk } from "../../hooks/getSdk";
 
 jest.setTimeout(10000);
 
-describe("Device SCRUD", () => {
+describe("DeviceController: SCRUD", () => {
   const sdk = getSdk();
 
   beforeAll(async () => {
@@ -71,7 +69,7 @@ describe("Device SCRUD", () => {
       _id: "DummyTemp-scrudme",
     });
 
-    should(device._source).match({
+    expect(device._source).toMatchObject({
       model: "DummyTemp",
       reference: "scrudme",
       metadata: {
@@ -100,8 +98,8 @@ describe("Device SCRUD", () => {
       },
     });
 
-    should(result.total).eql(1);
-    should(result.hits[0]._source).match({
+    expect(result.total).toBe(1);
+    expect(result.hits[0]._source).toMatchObject({
       reference: "scrudme",
       metadata: {
         color: "RED",
@@ -121,7 +119,7 @@ describe("Device SCRUD", () => {
       "DummyTemp-scrudme"
     );
 
-    should(exists).eql(false);
+    expect(exists).toBe(false);
   });
 
   it("should return an error when creating device of unknown model", async () => {
@@ -135,6 +133,8 @@ describe("Device SCRUD", () => {
       },
     });
 
-    should(promise).rejectedWith('Unknown Device model "NotExisting".');
+    await expect(promise).rejects.toThrow(
+      'Unknown Device model "NotExisting".'
+    );
   });
 });

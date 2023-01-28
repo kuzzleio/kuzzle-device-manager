@@ -1,6 +1,7 @@
 import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
+import { DecodedMeasurement } from "../measure";
 
 import { DeviceService } from "./DeviceService";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -103,6 +104,15 @@ export class DevicesController {
             {
               path: "device-manager/:engineId/devices/:_id/measures",
               verb: "post",
+            },
+          ],
+        },
+        receiveMeasure: {
+          handler: this.receiveMeasure.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/measures",
+              verb: "put",
             },
           ],
         },
@@ -235,7 +245,8 @@ export class DevicesController {
     const engineId = request.getString("engineId");
     const assetId = request.getString("assetId");
     const measureNames = request.getBodyArray(
-      "measureNames"
+      "measureNames",
+      []
     ) as ApiDeviceLinkAssetRequest["body"]["measureNames"];
     const implicitMeasuresLinking = request.getBoolean(
       "implicitMeasuresLinking"
@@ -310,5 +321,28 @@ export class DevicesController {
     );
 
     return { measures, total };
+  }
+
+  async receiveMeasure(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
+    const deviceId = request.getId();
+    const measure: DecodedMeasurement = {
+      measureName: request.getBodyString("measure.measureName"),
+      measuredAt: request.getBodyNumber("measure.measuredAt"),
+      type: request.getBodyString("measure.type"),
+      values: request.getBodyObject("measure.values"),
+    };
+    const payloadUuids = request.getBodyArray("payloadUuids", []);
+
+    if (payloadUuids.length === 0) {
+      payloadUuids.push(request.id);
+    }
+
+    await this.deviceService.receiveMeasure(
+      engineId,
+      deviceId,
+      measure,
+      payloadUuids
+    );
   }
 }

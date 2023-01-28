@@ -12,7 +12,7 @@ export type AskEventHandler<
   payload?: TAskEventDefinition["payload"]
 ) => Promise<TAskEventDefinition["result"]>;
 
-export async function onAsk<
+export function onAsk<
   TAskEventDefinition extends AskEventDefinition = AskEventDefinition
 >(
   event: TAskEventDefinition["name"],

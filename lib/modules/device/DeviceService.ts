@@ -24,7 +24,10 @@ import {
   AssetModelContent,
   DeviceModelContent,
 } from "../model";
-import { MeasureContent } from "../measure";
+import {
+  DecodedMeasurement,
+  MeasureContent,
+} from "../measure";
 
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -37,6 +40,7 @@ import {
   ApiDeviceLinkAssetRequest,
   ApiDeviceGetMeasuresResult,
 } from "./types/DeviceApi";
+import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 
 export class DeviceService {
   private config: DeviceManagerConfiguration;
@@ -536,6 +540,24 @@ export class DeviceService {
 
       return { asset: updatedAsset, device: updatedDevice };
     });
+  }
+
+  async receiveMeasure(
+    engineId: string,
+    deviceId: string,
+    measure: DecodedMeasurement,
+    payloadUuids: string[]
+  ) {
+    const device = await this.get(engineId, deviceId);
+
+    await ask<AskPayloadReceiveFormated>(
+      "ask:device-manager:payload:receive-formated",
+      {
+        device: device,
+        measure,
+        payloadUuids,
+      }
+    );
   }
 
   /**
