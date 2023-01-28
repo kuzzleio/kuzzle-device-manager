@@ -1,6 +1,7 @@
 import {
   ApiDeviceReceiveMeasureRequest,
   ApiDeviceReceiveMeasureResult,
+  TemperatureMeasurement,
 } from "../../../index";
 
 import { beforeEachTruncateCollections } from "../../hooks/collections";
@@ -30,7 +31,7 @@ describe("DeviceController: receiveMeasure", () => {
 
   it("should receive a formated measure and process it in the ingestion pipeline", async () => {
     await sdk.query<
-      ApiDeviceReceiveMeasureRequest,
+      ApiDeviceReceiveMeasureRequest<TemperatureMeasurement>,
       ApiDeviceReceiveMeasureResult
     >({
       controller: "device-manager/devices",
@@ -123,5 +124,32 @@ describe("DeviceController: receiveMeasure", () => {
         },
       },
     });
+  });
+
+  it("should raise an error when receiving a undeclared measure", async () => {
+    try {
+      await sdk.query<
+      ApiDeviceReceiveMeasureRequest,
+      ApiDeviceReceiveMeasureResult
+    >({
+      controller: "device-manager/devices",
+      action: "receiveMeasure",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-linked1",
+      body: {
+        measure: {
+          measuredAt: 1674906229441,
+          measureName: "temperatureInternal",
+          type: "temperature",
+          values: {
+            temperature: 25.5,
+          },
+        },
+      },
+    });
+    }
+    catch (error) {
+      expect(error.message).toBe("Measure \"temperatureInternal\" is not declared for this device model.");
+    }
   });
 });

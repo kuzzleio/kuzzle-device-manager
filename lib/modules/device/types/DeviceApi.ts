@@ -177,7 +177,7 @@ export type ApiDeviceGetMeasuresResult = {
   total: number;
 };
 
-export interface ApiDeviceReceiveMeasureRequest
+export interface ApiDeviceReceiveMeasureRequest<TMeasureValues extends JSONObject = JSONObject>
   extends DevicesControllerRequest {
   action: "receiveMeasure";
 
@@ -185,7 +185,7 @@ export interface ApiDeviceReceiveMeasureRequest
 
   body: {
     payloadUuids?: string[];
-    measure: DecodedMeasurement;
+    measure: DecodedMeasurement<TMeasureValues>;
   };
 }
 export type ApiDeviceReceiveMeasureResult = void;

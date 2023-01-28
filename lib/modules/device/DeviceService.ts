@@ -107,10 +107,7 @@ export class DeviceService {
     };
 
     return lock(`device:create:${device._id}`, async () => {
-      const deviceModel = await ask<AskModelDeviceGet>(
-        "ask:device-manager:model:device:get",
-        { model }
-      );
+      const deviceModel = await this.getDeviceModel(model);
 
       for (const metadataName of Object.keys(
         deviceModel.device.metadataMappings
@@ -459,13 +456,8 @@ export class DeviceService {
       );
 
       const [assetModel, deviceModel] = await Promise.all([
-        ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
-          engineGroup: engine.group,
-          model: asset._source.model,
-        }),
-        ask<AskModelDeviceGet>("ask:device-manager:model:device:get", {
-          model: device._source.model,
-        }),
+        this.getAssetModel(engine.group, asset._source.model),
+        this.getDeviceModel(device._source.model),
       ]);
 
       this.checkAlreadyProvidedMeasures(asset, measureNames);
@@ -549,6 +541,12 @@ export class DeviceService {
     payloadUuids: string[]
   ) {
     const device = await this.get(engineId, deviceId);
+    const deviceModel = await this.getDeviceModel(device._source.model);
+
+    const declaredMeasure = deviceModel.device.measures.some((m) => m.name === measure.measureName);
+    if (! declaredMeasure) {
+      throw new BadRequestError(`Measure "${measure.measureName}" is not declared for this device model.`)
+    }
 
     await ask<AskPayloadReceiveFormated>(
       "ask:device-manager:payload:receive-formated",
@@ -808,5 +806,19 @@ export class DeviceService {
     );
 
     return engine._source.engine;
+  }
+
+  private getDeviceModel(model: string): Promise<DeviceModelContent> {
+    return ask<AskModelDeviceGet>(
+      "ask:device-manager:model:device:get",
+      { model }
+    );
+  }
+
+  private getAssetModel(engineGroup: string, model: string): Promise<AssetModelContent> {
+    return ask<AskModelAssetGet>(
+      "ask:device-manager:model:asset:get",
+      { engineGroup, model }
+    );
   }
 }

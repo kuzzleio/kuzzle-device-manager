@@ -17,7 +17,7 @@
     "test:unit": "mocha",
     "test:functional": "npm run test:cucumber && npm run test:jest",
     "test:cucumber": "cucumber-js --require-module ts-node/register --exit --fail-fast",
-    "test:jest": "jest",
+    "test:jest": "jest --runInBand",
     "test:lint": "eslint ./lib ./tests --ext .ts --config .eslintrc.json",
     "test:lint:fix": "eslint ./lib ./tests --ext .ts --config .eslintrc.json --fix",
     "prettier": "npx prettier lib/ features/ tests/ --write",

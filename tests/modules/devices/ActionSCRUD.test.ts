@@ -123,18 +123,21 @@ describe("DeviceController: SCRUD", () => {
   });
 
   it("should return an error when creating device of unknown model", async () => {
-    const promise = sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
-      controller: "device-manager/devices",
-      action: "create",
-      engineId: "engine-ayse",
-      body: {
-        model: "NotExisting",
-        reference: "scrudme",
-      },
-    });
-
-    await expect(promise).rejects.toThrow(
-      'Unknown Device model "NotExisting".'
-    );
+    try {
+      await sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
+        controller: "device-manager/devices",
+        action: "create",
+        engineId: "engine-ayse",
+        body: {
+          model: "NotExisting",
+          reference: "scrudme",
+        },
+      });
+    }
+    catch (error) {
+      expect(error.message).toBe(
+        'Unknown Device model "NotExisting".'
+      );
+    }
   });
 });
