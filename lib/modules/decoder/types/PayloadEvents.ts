@@ -11,7 +11,7 @@ export type AskPayloadReceiveFormated = {
 
   payload: {
     device: KDocument<DeviceContent>;
-    measure: DecodedMeasurement;
+    measures: DecodedMeasurement[];
     payloadUuids: string[];
   };
 

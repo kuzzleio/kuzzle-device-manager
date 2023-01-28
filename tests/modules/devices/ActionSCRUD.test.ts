@@ -19,7 +19,7 @@ import { getSdk } from "../../hooks/getSdk";
 
 jest.setTimeout(10000);
 
-describe("DeviceController: SCRUD", () => {
+describe("Device SCRUD", () => {
   const sdk = getSdk();
 
   beforeAll(async () => {
@@ -133,7 +133,8 @@ describe("DeviceController: SCRUD", () => {
           reference: "scrudme",
         },
       });
-    } catch (error) {
+    }
+    catch (error) {
       expect(error.message).toBe('Unknown Device model "NotExisting".');
     }
   });

@@ -39,7 +39,7 @@ export class PayloadService {
     onAsk<AskPayloadReceiveFormated>(
       "ask:device-manager:payload:receive-formated",
       async (payload) => {
-        await this.receiveFormated(payload.device, payload.measure, {
+        await this.receiveFormated(payload.device, payload.measures, {
           payloadUuids: payload.payloadUuids,
         });
       }
@@ -106,7 +106,7 @@ export class PayloadService {
 
   async receiveFormated(
     device: KDocument<DeviceContent>,
-    measurement: DecodedMeasurement,
+    measurements: DecodedMeasurement[],
     { payloadUuids }: { payloadUuids?: string[] } = {}
   ) {
     const apiOrigin = "device-manager/devices:receiveMeasure";
@@ -116,12 +116,12 @@ export class PayloadService {
       device._source.model,
       payloadUuids[0],
       true,
-      measurement,
+      measurements,
       apiOrigin
     );
     await ask<AskMeasureIngest>("device-manager:measures:ingest", {
       device,
-      measurements: [measurement],
+      measurements,
       metadata: {},
       payloadUuids,
     });

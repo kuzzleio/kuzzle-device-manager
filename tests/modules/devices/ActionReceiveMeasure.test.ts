@@ -1,6 +1,6 @@
 import {
-  ApiDeviceReceiveMeasureRequest,
-  ApiDeviceReceiveMeasureResult,
+  ApiDeviceReceiveMeasuresRequest,
+  ApiDeviceReceiveMeasuresResult,
   TemperatureMeasurement,
 } from "../../../index";
 
@@ -31,23 +31,25 @@ describe("DeviceController: receiveMeasure", () => {
 
   it("should receive a formated measure and process it in the ingestion pipeline", async () => {
     await sdk.query<
-      ApiDeviceReceiveMeasureRequest<TemperatureMeasurement>,
-      ApiDeviceReceiveMeasureResult
+      ApiDeviceReceiveMeasuresRequest<TemperatureMeasurement>,
+      ApiDeviceReceiveMeasuresResult
     >({
       controller: "device-manager/devices",
-      action: "receiveMeasure",
+      action: "receiveMeasures",
       engineId: "engine-ayse",
       _id: "DummyTemp-linked1",
       body: {
         payloadUuids: ["foobar-barfoo"],
-        measure: {
-          measuredAt: 1674906229441,
-          measureName: "temperature",
-          type: "temperature",
-          values: {
-            temperature: 25.5,
+        measures: [
+          {
+            measuredAt: 1674906229441,
+            measureName: "temperature",
+            type: "temperature",
+            values: {
+              temperature: 25.5,
+            },
           },
-        },
+        ]
       },
     });
 
@@ -99,14 +101,16 @@ describe("DeviceController: receiveMeasure", () => {
     expect(payloads.hits[0]._source).toMatchObject({
       deviceModel: "DummyTemp",
       apiOrigin: "device-manager/devices:receiveMeasure",
-      payload: {
-        measuredAt: 1674906229441,
-        measureName: "temperature",
-        type: "temperature",
-        values: {
-          temperature: 25.5,
-        },
-      },
+      payload: [
+        {
+          measuredAt: 1674906229441,
+          measureName: "temperature",
+          type: "temperature",
+          values: {
+            temperature: 25.5,
+          },
+        }
+      ],
     });
 
     const device = await sdk.document.get(
@@ -129,22 +133,24 @@ describe("DeviceController: receiveMeasure", () => {
   it("should raise an error when receiving a undeclared measure", async () => {
     try {
       await sdk.query<
-        ApiDeviceReceiveMeasureRequest,
-        ApiDeviceReceiveMeasureResult
+        ApiDeviceReceiveMeasuresRequest,
+        ApiDeviceReceiveMeasuresResult
       >({
         controller: "device-manager/devices",
-        action: "receiveMeasure",
+        action: "receiveMeasures",
         engineId: "engine-ayse",
         _id: "DummyTemp-linked1",
         body: {
-          measure: {
-            measuredAt: 1674906229441,
-            measureName: "temperatureInternal",
-            type: "temperature",
-            values: {
-              temperature: 25.5,
-            },
-          },
+          measures: [
+            {
+              measuredAt: 1674906229441,
+              measureName: "temperatureInternal",
+              type: "temperature",
+              values: {
+                temperature: 25.5,
+              },
+            }
+          ],
         },
       });
     } catch (error) {

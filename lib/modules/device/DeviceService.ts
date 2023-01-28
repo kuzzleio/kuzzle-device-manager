@@ -531,29 +531,32 @@ export class DeviceService {
     });
   }
 
-  async receiveMeasure(
+  async receiveMeasures(
     engineId: string,
     deviceId: string,
-    measure: DecodedMeasurement,
+    measures: DecodedMeasurement[],
     payloadUuids: string[]
   ) {
     const device = await this.get(engineId, deviceId);
     const deviceModel = await this.getDeviceModel(device._source.model);
 
-    const declaredMeasure = deviceModel.device.measures.some(
-      (m) => m.name === measure.measureName && m.type === measure.type
-    );
-    if (!declaredMeasure) {
-      throw new BadRequestError(
-        `Measure "${measure.measureName}" is not declared for this device model.`
+    for (const measure of measures) {
+      const declaredMeasure = deviceModel.device.measures.some(
+        (m) => m.name === measure.measureName && m.type === measure.type
       );
+
+      if (!declaredMeasure) {
+        throw new BadRequestError(
+          `Measure "${measure.measureName}" is not declared for this device model.`
+        );
+      }
     }
 
     await ask<AskPayloadReceiveFormated>(
       "ask:device-manager:payload:receive-formated",
       {
         device: device,
-        measure,
+        measures,
         payloadUuids,
       }
     );
