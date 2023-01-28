@@ -24,10 +24,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
 } from "../model";
-import {
-  DecodedMeasurement,
-  MeasureContent,
-} from "../measure";
+import { DecodedMeasurement, MeasureContent } from "../measure";
 
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -543,9 +540,13 @@ export class DeviceService {
     const device = await this.get(engineId, deviceId);
     const deviceModel = await this.getDeviceModel(device._source.model);
 
-    const declaredMeasure = deviceModel.device.measures.some((m) => m.name === measure.measureName);
-    if (! declaredMeasure) {
-      throw new BadRequestError(`Measure "${measure.measureName}" is not declared for this device model.`)
+    const declaredMeasure = deviceModel.device.measures.some(
+      (m) => m.name === measure.measureName && m.type === measure.type
+    );
+    if (!declaredMeasure) {
+      throw new BadRequestError(
+        `Measure "${measure.measureName}" is not declared for this device model.`
+      );
     }
 
     await ask<AskPayloadReceiveFormated>(
@@ -809,16 +810,18 @@ export class DeviceService {
   }
 
   private getDeviceModel(model: string): Promise<DeviceModelContent> {
-    return ask<AskModelDeviceGet>(
-      "ask:device-manager:model:device:get",
-      { model }
-    );
+    return ask<AskModelDeviceGet>("ask:device-manager:model:device:get", {
+      model,
+    });
   }
 
-  private getAssetModel(engineGroup: string, model: string): Promise<AssetModelContent> {
-    return ask<AskModelAssetGet>(
-      "ask:device-manager:model:asset:get",
-      { engineGroup, model }
-    );
+  private getAssetModel(
+    engineGroup: string,
+    model: string
+  ): Promise<AssetModelContent> {
+    return ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
+      engineGroup,
+      model,
+    });
   }
 }

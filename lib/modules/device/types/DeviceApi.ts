@@ -177,8 +177,9 @@ export type ApiDeviceGetMeasuresResult = {
   total: number;
 };
 
-export interface ApiDeviceReceiveMeasureRequest<TMeasureValues extends JSONObject = JSONObject>
-  extends DevicesControllerRequest {
+export interface ApiDeviceReceiveMeasureRequest<
+  TMeasureValues extends JSONObject = JSONObject
+> extends DevicesControllerRequest {
   action: "receiveMeasure";
 
   _id: string;
