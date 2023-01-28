@@ -327,7 +327,7 @@ export class DevicesController {
   async receiveMeasures(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
-    const measures = request.getBodyArray('measures') as DecodedMeasurement[];
+    const measures = request.getBodyArray("measures") as DecodedMeasurement[];
     const payloadUuids = request.getBodyArray("payloadUuids", []);
 
     if (payloadUuids.length === 0) {
@@ -336,24 +336,27 @@ export class DevicesController {
 
     for (let i = 0; i < measures.length; i++) {
       if (typeof measures[i].measureName !== "string") {
-        throw new BadRequestError(`body.measures[${i}].measureName must be a string`);
+        throw new BadRequestError(
+          `body.measures[${i}].measureName must be a string`
+        );
       }
 
       if (typeof measures[i].measuredAt === "undefined") {
         measures[i].measuredAt = Date.now();
-      }
-      else {
-        if (typeof measures[i].measuredAt !== "number") {
-          throw new BadRequestError(`body.measures[${i}].measuredAt must be a number`);
-        }
+      } else if (typeof measures[i].measuredAt !== "number") {
+        throw new BadRequestError(
+          `body.measures[${i}].measuredAt must be a number`
+        );
       }
 
       if (typeof measures[i].type !== "string") {
         throw new BadRequestError(`body.measures[${i}].type must be a string`);
       }
 
-      if (! _.isPlainObject(measures[i].values)) {
-        throw new BadRequestError(`body.measures[${i}].values must be an object`);
+      if (!_.isPlainObject(measures[i].values)) {
+        throw new BadRequestError(
+          `body.measures[${i}].values must be an object`
+        );
       }
     }
 

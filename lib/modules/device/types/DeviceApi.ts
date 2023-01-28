@@ -187,10 +187,10 @@ export interface ApiDeviceReceiveMeasuresRequest<
   body: {
     payloadUuids?: string[];
     measures: Array<{
-      measureName: DecodedMeasurement<TMeasureValues>["measureName"],
-      measuredAt?: DecodedMeasurement<TMeasureValues>["measuredAt"],
-      type: DecodedMeasurement<TMeasureValues>["type"],
-      values: DecodedMeasurement<TMeasureValues>["values"],
+      measureName: DecodedMeasurement<TMeasureValues>["measureName"];
+      measuredAt?: DecodedMeasurement<TMeasureValues>["measuredAt"];
+      type: DecodedMeasurement<TMeasureValues>["type"];
+      values: DecodedMeasurement<TMeasureValues>["values"];
     }>;
   };
 }

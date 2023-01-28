@@ -49,7 +49,7 @@ describe("DeviceController: receiveMeasure", () => {
               temperature: 25.5,
             },
           },
-        ]
+        ],
       },
     });
 
@@ -109,7 +109,7 @@ describe("DeviceController: receiveMeasure", () => {
           values: {
             temperature: 25.5,
           },
-        }
+        },
       ],
     });
 
@@ -149,7 +149,7 @@ describe("DeviceController: receiveMeasure", () => {
               values: {
                 temperature: 25.5,
               },
-            }
+            },
           ],
         },
       });

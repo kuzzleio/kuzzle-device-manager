@@ -133,8 +133,7 @@ describe("Device SCRUD", () => {
           reference: "scrudme",
         },
       });
-    }
-    catch (error) {
+    } catch (error) {
       expect(error.message).toBe('Unknown Device model "NotExisting".');
     }
   });
