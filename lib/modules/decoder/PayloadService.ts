@@ -58,7 +58,7 @@ export class PayloadService {
     { refresh }: any = {}
   ) {
     const payload = request.getBody();
-    const apiOrigin = `${request.input.controller}:${request.input.action}`;
+    const apiAction = `${request.input.controller}:${request.input.action}`;
 
     const uuid = request.input.args.uuid || uuidv4();
     let valid = true;
@@ -78,7 +78,7 @@ export class PayloadService {
         uuid,
         valid,
         payload,
-        apiOrigin
+        apiAction
       );
     }
 
@@ -109,7 +109,7 @@ export class PayloadService {
     measurements: DecodedMeasurement[],
     { payloadUuids }: { payloadUuids?: string[] } = {}
   ) {
-    const apiOrigin = "device-manager/devices:receiveMeasure";
+    const apiAction = "device-manager/devices:receiveMeasure";
 
     // Payload is already formated thus valid
     await this.savePayload(
@@ -117,7 +117,7 @@ export class PayloadService {
       payloadUuids[0],
       true,
       measurements,
-      apiOrigin
+      apiAction
     );
     await ask<AskMeasureIngest>("device-manager:measures:ingest", {
       device,
@@ -137,13 +137,13 @@ export class PayloadService {
     uuid: string,
     valid: boolean,
     payload: JSONObject,
-    apiOrigin: string
+    apiAction: string
   ) {
     try {
       await this.sdk.document.create(
         this.config.adminIndex,
         "payloads",
-        { apiOrigin, deviceModel, payload, uuid, valid },
+        { apiAction, deviceModel, payload, uuid, valid },
         uuid
       );
     } catch (error) {
@@ -277,8 +277,8 @@ export class PayloadService {
   public async receiveUnknown(
     deviceModel: string,
     payload: JSONObject,
-    apiOrigin: string
+    apiAction: string
   ) {
-    await this.savePayload(deviceModel, uuidv4(), false, payload, apiOrigin);
+    await this.savePayload(deviceModel, uuidv4(), false, payload, apiAction);
   }
 }

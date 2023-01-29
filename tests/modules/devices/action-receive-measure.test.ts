@@ -100,7 +100,7 @@ describe("DeviceController: receiveMeasure", () => {
     expect(payloads.hits).toHaveLength(1);
     expect(payloads.hits[0]._source).toMatchObject({
       deviceModel: "DummyTemp",
-      apiOrigin: "device-manager/devices:receiveMeasure",
+      apiAction: "device-manager/devices:receiveMeasure",
       payload: [
         {
           measuredAt: 1674906229441,

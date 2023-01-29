@@ -555,7 +555,7 @@ export class DeviceService {
     await ask<AskPayloadReceiveFormated>(
       "ask:device-manager:payload:receive-formated",
       {
-        device: device,
+        device,
         measures,
         payloadUuids,
       }

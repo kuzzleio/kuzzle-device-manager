@@ -8,6 +8,6 @@ export const payloadsMappings = {
     },
     uuid: { type: "keyword" },
     valid: { type: "boolean" },
-    apiOrigin: { type: "keyword" },
+    apiAction: { type: "keyword" },
   },
 };

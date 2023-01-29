@@ -67,8 +67,8 @@ export class PayloadsController {
   ): Promise<ApiPayloadReceiveUnkownResult> {
     const payload = request.getBody();
     const deviceModel = request.getString("deviceModel");
-    const origin = `${request.input.controller}:${request.input.action}`;
+    const apiAction = `${request.input.controller}:${request.input.action}`;
 
-    await this.payloadService.receiveUnknown(deviceModel, payload, origin);
+    await this.payloadService.receiveUnknown(deviceModel, payload, apiAction);
   }
 }
