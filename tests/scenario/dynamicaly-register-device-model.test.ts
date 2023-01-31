@@ -11,12 +11,12 @@ import { beforeEachTruncateCollections } from "../hooks/collections";
 import { beforeAllCreateEngines } from "../hooks/engines";
 import { beforeEachLoadFixtures } from "../hooks/fixtures";
 
-import { getSdk } from "../hooks/getSdk";
+import { useSdk } from "../helpers/sdk";
 
 jest.setTimeout(10000);
 
 describe("DeviceScenario: dynamicaly register device model and receive a measure", () => {
-  const sdk = getSdk();
+  const sdk = useSdk();
 
   beforeAll(async () => {
     await sdk.connect();

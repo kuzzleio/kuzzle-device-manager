@@ -66,7 +66,7 @@ export class PayloadsController {
     request: KuzzleRequest
   ): Promise<ApiPayloadReceiveUnkownResult> {
     const payload = request.getBody();
-    const deviceModel = request.getString("deviceModel");
+    const deviceModel = request.getString("deviceModel", "unknownModel");
     const apiAction = `${request.input.controller}:${request.input.action}`;
 
     await this.payloadService.receiveUnknown(deviceModel, payload, apiAction);

@@ -8,12 +8,12 @@ import { beforeEachTruncateCollections } from "../../hooks/collections";
 import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
-import { getSdk } from "../../hooks/getSdk";
+import { useSdk } from "../../hooks/useSdk";
 
 jest.setTimeout(10000);
 
 describe("DeviceController: receiveMeasure", () => {
-  const sdk = getSdk();
+  const sdk = useSdk();
 
   beforeAll(async () => {
     await sdk.connect();
