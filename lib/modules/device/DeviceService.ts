@@ -24,7 +24,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
 } from "../model";
-import { MeasureContent } from "../measure";
+import { DecodedMeasurement, MeasureContent } from "../measure";
 
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -37,6 +37,7 @@ import {
   ApiDeviceLinkAssetRequest,
   ApiDeviceGetMeasuresResult,
 } from "./types/DeviceApi";
+import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 
 export class DeviceService {
   private config: DeviceManagerConfiguration;
@@ -103,10 +104,7 @@ export class DeviceService {
     };
 
     return lock(`device:create:${device._id}`, async () => {
-      const deviceModel = await ask<AskModelDeviceGet>(
-        "ask:device-manager:model:device:get",
-        { model }
-      );
+      const deviceModel = await this.getDeviceModel(model);
 
       for (const metadataName of Object.keys(
         deviceModel.device.metadataMappings
@@ -455,13 +453,8 @@ export class DeviceService {
       );
 
       const [assetModel, deviceModel] = await Promise.all([
-        ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
-          engineGroup: engine.group,
-          model: asset._source.model,
-        }),
-        ask<AskModelDeviceGet>("ask:device-manager:model:device:get", {
-          model: device._source.model,
-        }),
+        this.getAssetModel(engine.group, asset._source.model),
+        this.getDeviceModel(device._source.model),
       ]);
 
       this.checkAlreadyProvidedMeasures(asset, measureNames);
@@ -536,6 +529,37 @@ export class DeviceService {
 
       return { asset: updatedAsset, device: updatedDevice };
     });
+  }
+
+  async receiveMeasures(
+    engineId: string,
+    deviceId: string,
+    measures: DecodedMeasurement[],
+    payloadUuids: string[]
+  ) {
+    const device = await this.get(engineId, deviceId);
+    const deviceModel = await this.getDeviceModel(device._source.model);
+
+    for (const measure of measures) {
+      const declaredMeasure = deviceModel.device.measures.some(
+        (m) => m.name === measure.measureName && m.type === measure.type
+      );
+
+      if (!declaredMeasure) {
+        throw new BadRequestError(
+          `Measure "${measure.measureName}" is not declared for this device model.`
+        );
+      }
+    }
+
+    await ask<AskPayloadReceiveFormated>(
+      "ask:device-manager:payload:receive-formated",
+      {
+        device,
+        measures,
+        payloadUuids,
+      }
+    );
   }
 
   /**
@@ -786,5 +810,21 @@ export class DeviceService {
     );
 
     return engine._source.engine;
+  }
+
+  private getDeviceModel(model: string): Promise<DeviceModelContent> {
+    return ask<AskModelDeviceGet>("ask:device-manager:model:device:get", {
+      model,
+    });
+  }
+
+  private getAssetModel(
+    engineGroup: string,
+    model: string
+  ): Promise<AssetModelContent> {
+    return ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
+      engineGroup,
+      model,
+    });
   }
 }

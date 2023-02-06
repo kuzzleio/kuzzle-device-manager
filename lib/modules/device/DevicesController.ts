@@ -1,6 +1,8 @@
-import { ControllerDefinition, KuzzleRequest } from "kuzzle";
+import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
+import _ from "lodash";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
+import { DecodedMeasurement } from "../measure";
 
 import { DeviceService } from "./DeviceService";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -103,6 +105,15 @@ export class DevicesController {
             {
               path: "device-manager/:engineId/devices/:_id/measures",
               verb: "post",
+            },
+          ],
+        },
+        receiveMeasures: {
+          handler: this.receiveMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/measures",
+              verb: "put",
             },
           ],
         },
@@ -235,7 +246,8 @@ export class DevicesController {
     const engineId = request.getString("engineId");
     const assetId = request.getString("assetId");
     const measureNames = request.getBodyArray(
-      "measureNames"
+      "measureNames",
+      []
     ) as ApiDeviceLinkAssetRequest["body"]["measureNames"];
     const implicitMeasuresLinking = request.getBoolean(
       "implicitMeasuresLinking"
@@ -310,5 +322,49 @@ export class DevicesController {
     );
 
     return { measures, total };
+  }
+
+  async receiveMeasures(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
+    const deviceId = request.getId();
+    const measures = request.getBodyArray("measures") as DecodedMeasurement[];
+    const payloadUuids = request.getBodyArray("payloadUuids", []);
+
+    if (payloadUuids.length === 0) {
+      payloadUuids.push(request.id);
+    }
+
+    for (let i = 0; i < measures.length; i++) {
+      if (typeof measures[i].measureName !== "string") {
+        throw new BadRequestError(
+          `body.measures[${i}].measureName must be a string`
+        );
+      }
+
+      if (typeof measures[i].measuredAt === "undefined") {
+        measures[i].measuredAt = Date.now();
+      } else if (typeof measures[i].measuredAt !== "number") {
+        throw new BadRequestError(
+          `body.measures[${i}].measuredAt must be a number`
+        );
+      }
+
+      if (typeof measures[i].type !== "string") {
+        throw new BadRequestError(`body.measures[${i}].type must be a string`);
+      }
+
+      if (!_.isPlainObject(measures[i].values)) {
+        throw new BadRequestError(
+          `body.measures[${i}].values must be an object`
+        );
+      }
+    }
+
+    await this.deviceService.receiveMeasures(
+      engineId,
+      deviceId,
+      measures,
+      payloadUuids
+    );
   }
 }

@@ -1,6 +1,6 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle";
 
-import { MeasureContent } from "../../measure";
+import { DecodedMeasurement, MeasureContent } from "../../measure";
 import { AssetContent } from "../../asset";
 import { Metadata } from "../../shared";
 
@@ -176,3 +176,22 @@ export type ApiDeviceGetMeasuresResult = {
   measures: Array<KDocument<MeasureContent<JSONObject>>>;
   total: number;
 };
+
+export interface ApiDeviceReceiveMeasuresRequest<
+  TMeasureValues extends JSONObject = JSONObject
+> extends DevicesControllerRequest {
+  action: "receiveMeasures";
+
+  _id: string;
+
+  body: {
+    payloadUuids?: string[];
+    measures: Array<{
+      measureName: DecodedMeasurement<TMeasureValues>["measureName"];
+      measuredAt?: DecodedMeasurement<TMeasureValues>["measuredAt"];
+      type: DecodedMeasurement<TMeasureValues>["type"];
+      values: DecodedMeasurement<TMeasureValues>["values"];
+    }>;
+  };
+}
+export type ApiDeviceReceiveMeasuresResult = void;

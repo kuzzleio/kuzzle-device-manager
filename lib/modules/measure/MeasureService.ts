@@ -19,11 +19,11 @@ import {
   AssetHistoryEventMeasure,
   AssetHistoryEventMetadata,
 } from "../asset";
-import { Metadata, lock, ask } from "../shared";
+import { Metadata, lock, ask, onAsk } from "../shared";
 import { AssetSerializer } from "../asset";
 
 import {
-  EventMeasureIngest,
+  AskMeasureIngest,
   EventMeasureProcessAfter,
   EventMeasureProcessBefore,
   TenantEventMeasureProcessAfter,
@@ -47,7 +47,7 @@ export class MeasureService {
     this.config = plugin.config as any;
     this.context = plugin.context;
 
-    this.app.pipe.register<EventMeasureIngest>(
+    onAsk<AskMeasureIngest>(
       "device-manager:measures:ingest",
       async (payload) => {
         await this.ingest(
@@ -56,8 +56,6 @@ export class MeasureService {
           payload.metadata,
           payload.payloadUuids
         );
-
-        return payload;
       }
     );
   }
