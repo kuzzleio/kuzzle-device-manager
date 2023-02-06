@@ -10,7 +10,9 @@ export class MeasureModule extends Module {
   public async init(): Promise<void> {
     this.measureService = new MeasureService(this.plugin);
 
-    this.plugin.imports.roles[RoleMeasuresAdmin.name] = RoleMeasuresAdmin.definition;
-    this.plugin.imports.roles[RoleMeasuresReader.name] = RoleMeasuresReader.definition;
+    this.plugin.imports.roles[RoleMeasuresAdmin.name] =
+      RoleMeasuresAdmin.definition;
+    this.plugin.imports.roles[RoleMeasuresReader.name] =
+      RoleMeasuresReader.definition;
   }
 }

@@ -171,7 +171,12 @@ export class DeviceManagerPlugin extends Plugin {
       "generic:document:beforeDelete": [],
     };
     this.hooks = {};
-    this.imports = { roles: {}, users:{}, profiles: {}, onExistingUsers: 'skip' };
+    this.imports = {
+      roles: {},
+      users: {},
+      profiles: {},
+      onExistingUsers: "skip",
+    };
 
     this.config = {
       ignoreStartupErrors: false,
