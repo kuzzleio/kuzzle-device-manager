@@ -159,7 +159,7 @@ export class DeviceManagerPlugin extends Plugin {
 
   constructor() {
     super({
-      kuzzleVersion: ">=2.19.5 <3",
+      kuzzleVersion: ">=2.20.2 <3",
     });
 
     /* eslint-disable sort-keys */
