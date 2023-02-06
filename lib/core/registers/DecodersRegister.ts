@@ -7,9 +7,11 @@ import {
 import { snakeCase } from "../../modules/shared";
 
 import { Decoder, DecoderContent } from "../../modules/decoder";
+import { DeviceManagerPlugin } from "..";
 
 export class DecodersRegister {
   private context: PluginContext;
+  private plugin: DeviceManagerPlugin;
 
   /**
    * Map<deviceModel, Decoder>
@@ -24,7 +26,8 @@ export class DecodersRegister {
     return Array.from(this._decoders.values());
   }
 
-  init(context: PluginContext) {
+  init(plugin: DeviceManagerPlugin, context: PluginContext) {
+    this.plugin = plugin;
     this.context = context;
   }
 
@@ -88,29 +91,22 @@ export class DecodersRegister {
   }
 
   /**
-   * Creates default roles, profiles and users associated to the generated actions
+   * Register default roles, profiles and users associated to the generated actions
    * in the Payload controller.
-   *
-   * This method never returns a rejected promise.
    */
-  async createDefaultRights() {
+  registerDefaultRights() {
     if (this.decoders.length === 0) {
       return;
     }
 
-    await this.createDefaultRoles();
+    this.registerDefaultRoles();
 
-    await this.createDefaultProfiles();
+    this.registerDefaultProfiles();
 
-    await this.createDefaultUsers();
-
-    this.context.log.info(
-      "Default rights for payload controller has been registered."
-    );
+    this.registerDefaultUsers();
   }
 
-  private async createDefaultUsers() {
-    const promises = [];
+  private registerDefaultUsers() {
     const gatewayUser = {
       content: {
         profileIds: [],
@@ -128,32 +124,13 @@ export class DecodersRegister {
 
       gatewayUser.content.profileIds.push(userId);
 
-      promises.push(
-        this.sdk.security.createUser(userId, user).catch((error) => {
-          if (error.id !== "security.user.already_exists") {
-            throw error;
-          }
-          return this.sdk.security.updateUser(userId, user);
-        })
-      );
+      this.plugin.imports.users[userId] = user;
     }
 
-    promises.push(
-      this.sdk.security
-        .createUser("payload_gateway", gatewayUser)
-        .catch((error) => {
-          if (error.id !== "security.user.already_exists") {
-            throw error;
-          }
-          return this.sdk.security.updateUser("payload_gateway", gatewayUser);
-        })
-    );
-
-    await Promise.all(promises);
+    this.plugin.imports.users.payload_gateway = gatewayUser;
   }
 
-  private async createDefaultProfiles() {
-    const promises = [];
+  private registerDefaultProfiles() {
     const gatewayProfile = {
       policies: [],
     };
@@ -166,24 +143,14 @@ export class DecodersRegister {
       };
 
       gatewayProfile.policies.push({ roleId: profileId });
-      promises.push(
-        this.sdk.security.createOrReplaceProfile(profileId, profile)
-      );
+
+      this.plugin.imports.profiles[profileId] = profile;
     }
 
-    promises.push(
-      this.sdk.security.createOrReplaceProfile(
-        "payload_gateway",
-        gatewayProfile
-      )
-    );
-
-    await Promise.all(promises);
+    this.plugin.imports.profiles.payload_gateway = gatewayProfile;
   }
 
-  private async createDefaultRoles() {
-    const promises = [];
-
+  private registerDefaultRoles() {
     for (const decoder of this.decoders) {
       const roleId = `payload_gateway.${snakeCase(decoder.action)}`;
       const role = {
@@ -196,9 +163,7 @@ export class DecodersRegister {
         },
       };
 
-      promises.push(this.sdk.security.createOrReplaceRole(roleId, role));
+      this.plugin.imports.roles[roleId] = role;
     }
-
-    await Promise.all(promises);
   }
 }

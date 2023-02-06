@@ -18,7 +18,7 @@ export class AssetModule extends Module {
 
     this.plugin.api["device-manager/assets"] = this.assetController.definition;
 
-    this.plugin.roles.push(RoleAssetsAdmin);
-    this.plugin.roles.push(RoleAssetsReader);
+    this.plugin.imports.roles[RoleAssetsAdmin.name] = RoleAssetsAdmin.definition;
+    this.plugin.imports.roles[RoleAssetsReader.name] = RoleAssetsReader.definition;
   }
 }
