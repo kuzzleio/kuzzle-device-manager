@@ -4,7 +4,6 @@ import {
   PluginContext,
   PluginImplementationError,
 } from "kuzzle";
-import { snakeCase } from "../../modules/shared";
 
 import { Decoder, DecoderContent } from "../../modules/decoder";
 import { DeviceManagerPlugin } from "..";
@@ -91,7 +90,7 @@ export class DecodersRegister {
   }
 
   /**
-   * Register default roles, profiles and users associated to the generated actions
+   * Register default role, profile and user associated to the generated actions
    * in the Payload controller.
    */
   registerDefaultRights() {
@@ -99,71 +98,42 @@ export class DecodersRegister {
       return;
     }
 
-    this.registerDefaultRoles();
+    this.registerDefaultRole();
 
-    this.registerDefaultProfiles();
+    this.registerDefaultProfile();
 
-    this.registerDefaultUsers();
+    this.registerDefaultUser();
   }
 
-  private registerDefaultUsers() {
+  private registerDefaultUser() {
     const gatewayUser = {
       content: {
-        profileIds: [],
+        profileIds: ["payload_gateway"],
       },
     };
-
-    for (const decoder of this.decoders) {
-      const userId = `payload_gateway.${snakeCase(decoder.action)}`;
-      const user = {
-        content: {
-          // each created user has only the profile of the same name
-          profileIds: [userId],
-        },
-      };
-
-      gatewayUser.content.profileIds.push(userId);
-
-      this.plugin.imports.users[userId] = user;
-    }
 
     this.plugin.imports.users.payload_gateway = gatewayUser;
   }
 
-  private registerDefaultProfiles() {
+  private registerDefaultProfile() {
     const gatewayProfile = {
-      policies: [],
+      policies: [{ roleId: "payload_gateway" }],
     };
-
-    for (const decoder of this.decoders) {
-      const profileId = `payload_gateway.${snakeCase(decoder.action)}`;
-      const profile = {
-        // each created profile has only the role of the same name
-        policies: [{ roleId: profileId }],
-      };
-
-      gatewayProfile.policies.push({ roleId: profileId });
-
-      this.plugin.imports.profiles[profileId] = profile;
-    }
 
     this.plugin.imports.profiles.payload_gateway = gatewayProfile;
   }
 
-  private registerDefaultRoles() {
-    for (const decoder of this.decoders) {
-      const roleId = `payload_gateway.${snakeCase(decoder.action)}`;
-      const role = {
-        controllers: {
-          "device-manager/payloads": {
-            actions: {
-              [decoder.action]: true,
-            },
+  private registerDefaultRole() {
+    const role = {
+      controllers: {
+        "device-manager/payloads": {
+          actions: {
+            "*": true,
           },
         },
-      };
+      },
+    };
 
-      this.plugin.imports.roles[roleId] = role;
-    }
+    this.plugin.imports.roles.payload_gateway = role;
   }
 }

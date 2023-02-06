@@ -287,6 +287,7 @@ export class DeviceManagerPlugin extends Plugin {
       this.deviceManagerEngine
     );
 
+    this.decodersRegister.registerDefaultRights();
     this.decodersRegister.printDecoders();
 
     try {

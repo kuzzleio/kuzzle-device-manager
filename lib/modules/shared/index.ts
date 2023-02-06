@@ -5,5 +5,4 @@ export * from "./types/KuzzleRole";
 export * from "./utils/lock";
 export * from "./utils/flattenObject";
 export * from "./utils/ask";
-export * from "./utils/snakeCase";
 export * from "./Module";
