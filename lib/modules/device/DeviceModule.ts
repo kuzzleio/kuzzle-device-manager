@@ -17,8 +17,11 @@ export class DeviceModule extends Module {
     this.plugin.api["device-manager/devices"] =
       this.deviceController.definition;
 
-    this.plugin.roles.push(RoleDevicesAdmin);
-    this.plugin.roles.push(RoleDevicesPlatformAdmin);
-    this.plugin.roles.push(RoleDevicesReader);
+    this.plugin.imports.roles[RoleDevicesAdmin.name] =
+      RoleDevicesAdmin.definition;
+    this.plugin.imports.roles[RoleDevicesPlatformAdmin.name] =
+      RoleDevicesPlatformAdmin.definition;
+    this.plugin.imports.roles[RoleDevicesReader.name] =
+      RoleDevicesReader.definition;
   }
 }

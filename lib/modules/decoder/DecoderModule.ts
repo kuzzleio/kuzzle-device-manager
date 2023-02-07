@@ -34,7 +34,9 @@ export class DecoderModule extends Module {
     this.plugin.api["device-manager/payloads"] =
       this.payloadsController.definition;
 
-    this.plugin.roles.push(RoleDecodersAdmin);
-    this.plugin.roles.push(RolePayloadsAll);
+    this.plugin.imports.roles[RoleDecodersAdmin.name] =
+      RoleDecodersAdmin.definition;
+    this.plugin.imports.roles[RolePayloadsAll.name] =
+      RolePayloadsAll.definition;
   }
 }
