@@ -1,5 +1,3 @@
-import should from "should";
-
 import {
   ApiDeviceCreateRequest,
   ApiDeviceCreateResult,
@@ -17,12 +15,12 @@ import { beforeEachTruncateCollections } from "../../hooks/collections";
 import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
-import { getSdk } from "../../hooks/getSdk";
+import { useSdk } from "../../helpers/sdk";
 
 jest.setTimeout(10000);
 
 describe("Device SCRUD", () => {
-  const sdk = getSdk();
+  const sdk = useSdk();
 
   beforeAll(async () => {
     await sdk.connect();
@@ -71,7 +69,7 @@ describe("Device SCRUD", () => {
       _id: "DummyTemp-scrudme",
     });
 
-    should(device._source).match({
+    expect(device._source).toMatchObject({
       model: "DummyTemp",
       reference: "scrudme",
       metadata: {
@@ -100,8 +98,8 @@ describe("Device SCRUD", () => {
       },
     });
 
-    should(result.total).eql(1);
-    should(result.hits[0]._source).match({
+    expect(result.total).toBe(1);
+    expect(result.hits[0]._source).toMatchObject({
       reference: "scrudme",
       metadata: {
         color: "RED",
@@ -121,20 +119,22 @@ describe("Device SCRUD", () => {
       "DummyTemp-scrudme"
     );
 
-    should(exists).eql(false);
+    expect(exists).toBe(false);
   });
 
   it("should return an error when creating device of unknown model", async () => {
-    const promise = sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
-      controller: "device-manager/devices",
-      action: "create",
-      engineId: "engine-ayse",
-      body: {
-        model: "NotExisting",
-        reference: "scrudme",
-      },
-    });
-
-    should(promise).rejectedWith('Unknown Device model "NotExisting".');
+    try {
+      await sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
+        controller: "device-manager/devices",
+        action: "create",
+        engineId: "engine-ayse",
+        body: {
+          model: "NotExisting",
+          reference: "scrudme",
+        },
+      });
+    } catch (error) {
+      expect(error.message).toBe('Unknown Device model "NotExisting".');
+    }
   });
 });

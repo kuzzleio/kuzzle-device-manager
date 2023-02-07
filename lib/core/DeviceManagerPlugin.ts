@@ -28,7 +28,7 @@ import {
   ModelModule,
   modelsMappings,
 } from "../modules/model";
-import { lock, KuzzleRole } from "../modules/shared";
+import { lock } from "../modules/shared";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
@@ -38,7 +38,6 @@ import { ModelsRegister } from "./registers/ModelsRegister";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
-  public roles: KuzzleRole[] = [];
 
   private deviceManagerEngine: DeviceManagerEngine;
   private adminConfigManager: ConfigManager;
@@ -160,7 +159,7 @@ export class DeviceManagerPlugin extends Plugin {
 
   constructor() {
     super({
-      kuzzleVersion: ">=2.19.5 <3",
+      kuzzleVersion: ">=2.20.2 <3",
     });
 
     /* eslint-disable sort-keys */
@@ -172,6 +171,12 @@ export class DeviceManagerPlugin extends Plugin {
       "generic:document:beforeDelete": [],
     };
     this.hooks = {};
+    this.imports = {
+      roles: {},
+      users: {},
+      profiles: {},
+      onExistingUsers: "skip",
+    };
 
     this.config = {
       ignoreStartupErrors: false,
@@ -244,7 +249,7 @@ export class DeviceManagerPlugin extends Plugin {
     await this.measureModule.init();
     await this.modelModule.init();
 
-    this.decodersRegister.init(this.context);
+    this.decodersRegister.init(this, this.context);
     this.modelsRegister.init(this);
 
     this.adminConfigManager = new ConfigManager(this, {
@@ -282,21 +287,7 @@ export class DeviceManagerPlugin extends Plugin {
       this.deviceManagerEngine
     );
 
-    this.hooks["kuzzle:state:live"] = async () => {
-      try {
-        await this.decodersRegister.createDefaultRights();
-        await this.createDefaultRoles();
-      } catch (error) {
-        if (this.config.ignoreStartupErrors) {
-          this.context.log.warn(
-            `WARNING: An error occured during plugin initialization: ${error.message}`
-          );
-        } else {
-          throw error;
-        }
-      }
-    };
-
+    this.decodersRegister.registerDefaultRights();
     this.decodersRegister.printDecoders();
 
     try {
@@ -316,18 +307,6 @@ export class DeviceManagerPlugin extends Plugin {
         'WARNING: The "ignoreStartupErrors" option is enabled. Additional errors may appears at runtime.'
       );
     }
-  }
-
-  private async createDefaultRoles() {
-    const promises = [];
-
-    for (const role of this.roles) {
-      promises.push(
-        this.sdk.security.createOrReplaceRole(role.name, role.definition)
-      );
-    }
-
-    await Promise.all(promises);
   }
 
   /**

@@ -4,12 +4,13 @@ import {
   PluginContext,
   PluginImplementationError,
 } from "kuzzle";
-import { snakeCase } from "../../modules/shared";
 
 import { Decoder, DecoderContent } from "../../modules/decoder";
+import { DeviceManagerPlugin } from "..";
 
 export class DecodersRegister {
   private context: PluginContext;
+  private plugin: DeviceManagerPlugin;
 
   /**
    * Map<deviceModel, Decoder>
@@ -24,7 +25,8 @@ export class DecodersRegister {
     return Array.from(this._decoders.values());
   }
 
-  init(context: PluginContext) {
+  init(plugin: DeviceManagerPlugin, context: PluginContext) {
+    this.plugin = plugin;
     this.context = context;
   }
 
@@ -88,117 +90,50 @@ export class DecodersRegister {
   }
 
   /**
-   * Creates default roles, profiles and users associated to the generated actions
+   * Register default role, profile and user associated to the generated actions
    * in the Payload controller.
-   *
-   * This method never returns a rejected promise.
    */
-  async createDefaultRights() {
+  registerDefaultRights() {
     if (this.decoders.length === 0) {
       return;
     }
 
-    await this.createDefaultRoles();
+    this.registerDefaultRole();
 
-    await this.createDefaultProfiles();
+    this.registerDefaultProfile();
 
-    await this.createDefaultUsers();
-
-    this.context.log.info(
-      "Default rights for payload controller has been registered."
-    );
+    this.registerDefaultUser();
   }
 
-  private async createDefaultUsers() {
-    const promises = [];
+  private registerDefaultUser() {
     const gatewayUser = {
       content: {
-        profileIds: [],
+        profileIds: ["payload_gateway"],
       },
     };
 
-    for (const decoder of this.decoders) {
-      const userId = `payload_gateway.${snakeCase(decoder.action)}`;
-      const user = {
-        content: {
-          // each created user has only the profile of the same name
-          profileIds: [userId],
-        },
-      };
-
-      gatewayUser.content.profileIds.push(userId);
-
-      promises.push(
-        this.sdk.security.createUser(userId, user).catch((error) => {
-          if (error.id !== "security.user.already_exists") {
-            throw error;
-          }
-          return this.sdk.security.updateUser(userId, user);
-        })
-      );
-    }
-
-    promises.push(
-      this.sdk.security
-        .createUser("payload_gateway", gatewayUser)
-        .catch((error) => {
-          if (error.id !== "security.user.already_exists") {
-            throw error;
-          }
-          return this.sdk.security.updateUser("payload_gateway", gatewayUser);
-        })
-    );
-
-    await Promise.all(promises);
+    this.plugin.imports.users.payload_gateway = gatewayUser;
   }
 
-  private async createDefaultProfiles() {
-    const promises = [];
+  private registerDefaultProfile() {
     const gatewayProfile = {
-      policies: [],
+      policies: [{ roleId: "payload_gateway" }],
     };
 
-    for (const decoder of this.decoders) {
-      const profileId = `payload_gateway.${snakeCase(decoder.action)}`;
-      const profile = {
-        // each created profile has only the role of the same name
-        policies: [{ roleId: profileId }],
-      };
-
-      gatewayProfile.policies.push({ roleId: profileId });
-      promises.push(
-        this.sdk.security.createOrReplaceProfile(profileId, profile)
-      );
-    }
-
-    promises.push(
-      this.sdk.security.createOrReplaceProfile(
-        "payload_gateway",
-        gatewayProfile
-      )
-    );
-
-    await Promise.all(promises);
+    this.plugin.imports.profiles.payload_gateway = gatewayProfile;
   }
 
-  private async createDefaultRoles() {
-    const promises = [];
-
-    for (const decoder of this.decoders) {
-      const roleId = `payload_gateway.${snakeCase(decoder.action)}`;
-      const role = {
-        controllers: {
-          "device-manager/payloads": {
-            actions: {
-              [decoder.action]: true,
-            },
+  private registerDefaultRole() {
+    const role = {
+      controllers: {
+        "device-manager/payloads": {
+          actions: {
+            "*": true,
           },
         },
-      };
+      },
+    };
 
-      promises.push(this.sdk.security.createOrReplaceRole(roleId, role));
-    }
-
-    await Promise.all(promises);
+    this.plugin.imports.roles.payload_gateway = role;
   }
 }
