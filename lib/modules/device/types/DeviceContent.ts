@@ -12,9 +12,9 @@ export interface DeviceContent<
   /**
    * Linked asset unique identifier
    */
-  assetId?: string;
+  assetId: string | null;
 
   /**
    */
-  engineId?: string;
+  engineId: string;
 }

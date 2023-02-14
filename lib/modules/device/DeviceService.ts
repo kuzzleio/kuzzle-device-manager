@@ -91,6 +91,8 @@ export class DeviceService {
         metadata,
         model,
         reference,
+        assetId: null,
+        engineId: null
       },
     };
 
