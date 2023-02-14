@@ -1,4 +1,5 @@
-import { JSONObject, BadRequestError } from "kuzzle";
+import { BadRequestError } from "kuzzle";
+import { JSONObject } from "kuzzle-sdk";
 
 import { DecodedMeasurement } from "../measure";
 

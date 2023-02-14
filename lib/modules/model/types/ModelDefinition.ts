@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject } from "kuzzle-sdk";
 
 import { Decoder, NamedMeasures } from "../../../modules/decoder";
 

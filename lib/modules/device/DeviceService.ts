@@ -1,14 +1,5 @@
-import {
-  Backend,
-  BadRequestError,
-  JSONObject,
-  KDocument,
-  KHit,
-  Plugin,
-  PluginContext,
-  SearchResult,
-  User,
-} from "kuzzle";
+import { Backend, BadRequestError, Plugin, PluginContext, User } from "kuzzle";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
   AskAssetHistoryAdd,

@@ -1,9 +1,5 @@
-import {
-  Inflector,
-  JSONObject,
-  PluginContext,
-  PluginImplementationError,
-} from "kuzzle";
+import { Inflector, PluginContext, PluginImplementationError } from "kuzzle";
+import { JSONObject } from "kuzzle-sdk";
 
 import { NamedMeasures } from "../../modules/decoder";
 import { MeasureDefinition } from "../../modules/measure";

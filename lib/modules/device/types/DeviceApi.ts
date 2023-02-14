@@ -1,4 +1,4 @@
-import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import { DecodedMeasurement, MeasureContent } from "../../measure";
 import { AssetContent } from "../../asset";

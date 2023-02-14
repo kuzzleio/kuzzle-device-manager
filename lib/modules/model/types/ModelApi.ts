@@ -1,4 +1,4 @@
-import { JSONObject, KDocument } from "kuzzle";
+import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import {
   AssetModelContent,

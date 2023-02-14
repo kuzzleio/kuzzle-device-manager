@@ -1,4 +1,4 @@
-import { JSONObject, KDocumentContent } from "kuzzle";
+import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 
 import { Metadata } from "../../shared";
 

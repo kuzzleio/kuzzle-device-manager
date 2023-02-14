@@ -1,4 +1,4 @@
-import { JSONObject, KDocument } from "kuzzle";
+import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import { DeviceContent } from "../../../modules/device";
 import { AssetContent } from "../../../modules/asset";

@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject } from "kuzzle-sdk";
 
 /**
  * Represents a measure definition registered by the Device Manager
