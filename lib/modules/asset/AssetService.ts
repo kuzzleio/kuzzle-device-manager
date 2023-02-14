@@ -1,14 +1,6 @@
 import _ from "lodash";
-import {
-  Backend,
-  BadRequestError,
-  JSONObject,
-  KDocument,
-  KHit,
-  PluginContext,
-  SearchResult,
-  User,
-} from "kuzzle";
+import { Backend, BadRequestError, PluginContext, User } from "kuzzle";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import { MeasureContent } from "../measure/";
 import { AskDeviceUnlinkAsset } from "../device";

@@ -1,5 +1,6 @@
 import _ from "lodash";
-import { Backend, InternalError, JSONObject, Plugin } from "kuzzle";
+import { Backend, InternalError, Plugin } from "kuzzle";
+import { JSONObject } from "kuzzle-sdk";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 
 import { assetsMappings, assetsHistoryMappings } from "../modules/asset";

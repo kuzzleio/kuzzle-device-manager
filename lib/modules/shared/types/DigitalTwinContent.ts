@@ -1,4 +1,4 @@
-import { JSONObject, KDocumentContent } from "kuzzle";
+import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 
 import { EmbeddedMeasure } from "./EmbeddedMeasure";
 import { Metadata } from "./Metadata";

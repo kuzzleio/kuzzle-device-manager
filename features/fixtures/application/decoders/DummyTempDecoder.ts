@@ -1,4 +1,5 @@
-import { JSONObject, PreconditionError } from "kuzzle";
+import { PreconditionError } from "kuzzle";
+import { JSONObject } from "kuzzle-sdk";
 
 import {
   Decoder,

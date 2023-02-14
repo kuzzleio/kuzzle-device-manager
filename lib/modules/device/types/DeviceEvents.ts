@@ -1,4 +1,5 @@
-import { KDocument, User } from "kuzzle";
+import { User } from "kuzzle";
+import { KDocument } from "kuzzle-sdk";
 
 import { Metadata } from "../../../modules/shared";
 

@@ -1,4 +1,5 @@
-import { KDocument, PluginContext } from "kuzzle";
+import { PluginContext } from "kuzzle";
+import { KDocument } from "kuzzle-sdk";
 
 import {
   DeviceManagerConfiguration,

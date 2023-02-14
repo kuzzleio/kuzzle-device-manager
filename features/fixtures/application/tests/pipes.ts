@@ -1,5 +1,6 @@
 import _ from "lodash";
-import { Backend, KDocument } from "kuzzle";
+import { Backend } from "kuzzle";
+import { KDocument } from "kuzzle-sdk";
 import should from "should";
 
 import {

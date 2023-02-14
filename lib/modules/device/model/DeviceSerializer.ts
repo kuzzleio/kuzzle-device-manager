@@ -1,4 +1,4 @@
-import { KDocument } from "kuzzle";
+import { KDocument } from "kuzzle-sdk";
 
 import { DeviceContent } from "../types/DeviceContent";
 

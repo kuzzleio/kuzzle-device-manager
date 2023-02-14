@@ -2,11 +2,11 @@ import _ from "lodash";
 import {
   Plugin,
   PluginContext,
-  JSONObject,
   PluginImplementationError,
   KuzzleRequest,
   BadRequestError,
 } from "kuzzle";
+import { JSONObject } from "kuzzle-sdk";
 import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 
 import {

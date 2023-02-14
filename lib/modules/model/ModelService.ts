@@ -1,11 +1,10 @@
 import {
   BadRequestError,
   Inflector,
-  JSONObject,
-  KDocument,
   NotFoundError,
   PluginContext,
 } from "kuzzle";
+import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import {
   AskEngineUpdateAll,

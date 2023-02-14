@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject } from "kuzzle-sdk";
 
 export type EmbeddedMeasure<TMeasureValue extends JSONObject = JSONObject> = {
   /**
