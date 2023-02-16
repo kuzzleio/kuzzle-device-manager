@@ -18,7 +18,9 @@ export interface ContainerMetadata extends Metadata {
 
 export type ContainerMeasurements = {
   temperatureExt: TemperatureMeasurement;
+  temperatureInt: TemperatureMeasurement;
   position: PositionMeasurement;
+  temperatureWeather: TemperatureMeasurement;
 };
 
 export interface ContainerAssetContent
@@ -31,6 +33,7 @@ export const containerAssetDefinition: AssetModelDefinition = {
     { name: "temperatureExt", type: "temperature" },
     { name: "temperatureInt", type: "temperature" },
     { name: "position", type: "position" },
+    { name: "temperatureWeather", type: "temperature" },
   ],
   metadataMappings: {
     weight: { type: "integer" },

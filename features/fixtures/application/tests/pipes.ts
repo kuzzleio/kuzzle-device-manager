@@ -8,7 +8,9 @@ import {
   EventMeasureProcessBefore,
   AssetContent,
   DeviceContent,
+  TemperatureMeasurement,
 } from "../../../../index";
+import { ContainerAssetContent } from "../assets/Container";
 
 function checkEventWithDocument(app: Backend, event: string) {
   app.pipe.register(event, async (payload) => {
@@ -28,7 +30,7 @@ export function registerTestPipes(app: Backend) {
       device,
       measures,
     }: {
-      asset: KDocument<AssetContent>;
+      asset: KDocument<ContainerAssetContent>;
       device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     }) => {
@@ -92,10 +94,61 @@ export function registerTestPipes(app: Backend) {
         }
       }
 
-      if (
-        device._source.metadata.color === "test-metadata-history-with-measure"
-      ) {
+      const color = device._source.metadata.color;
+
+      if (color === "test-metadata-history-with-measure") {
         asset._source.metadata.weight = 42042;
+      }
+
+      if (color === "test-create-new-asset-measure") {
+        const measure: MeasureContent<TemperatureMeasurement> = {
+          measuredAt: Date.now(),
+          asset: {
+            _id: asset._id,
+            measureName: "temperatureWeather",
+            metadata: asset._source.metadata,
+            model: asset._source.model,
+            reference: asset._source.reference,
+          },
+          origin: {
+            type: "computed",
+            _id: "rule-weather-api",
+            measureName: "temperatureWeather",
+            payloadUuids: ["uuid"],
+          },
+          type: "temperature",
+          values: {
+            temperature: 21.21,
+          },
+        };
+
+        measures.push(measure);
+
+        asset._source.measures.temperatureWeather = {
+          name: measure.asset.measureName,
+          measuredAt: measure.measuredAt,
+          payloadUuids: measure.origin.payloadUuids,
+          type: measure.type,
+          values: measure.values,
+        };
+      }
+
+      if (color === "test-create-new-device-measure") {
+        const measure: MeasureContent<TemperatureMeasurement> = {
+          measuredAt: Date.now(),
+          origin: {
+            type: "computed",
+            _id: "rule-weather-api",
+            measureName: "temperatureWeather",
+            payloadUuids: ["uuid"],
+          },
+          type: "temperature",
+          values: {
+            temperature: 21.42,
+          },
+        };
+
+        measures.push(measure);
       }
 
       return { asset, device, measures };

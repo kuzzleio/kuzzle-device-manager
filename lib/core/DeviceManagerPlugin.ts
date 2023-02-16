@@ -28,7 +28,7 @@ import {
   ModelModule,
   modelsMappings,
 } from "../modules/model";
-import { lock } from "../modules/shared";
+import { keepStack, lock } from "../modules/shared";
 
 import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
@@ -330,8 +330,11 @@ export class DeviceManagerPlugin extends Plugin {
       await this.adminConfigManager
         .createCollection(this.config.adminIndex)
         .catch((error) => {
-          throw new PluginImplementationError(
-            `Cannot create admin "config" collection: ${error}`
+          throw keepStack(
+            error,
+            new PluginImplementationError(
+              `Cannot create admin "config" collection: ${error}`
+            )
           );
         });
 
@@ -340,8 +343,11 @@ export class DeviceManagerPlugin extends Plugin {
           mappings: modelsMappings,
         })
         .catch((error) => {
-          throw new PluginImplementationError(
-            `Cannot create admin "models" collection: ${error}`
+          throw keepStack(
+            error,
+            new PluginImplementationError(
+              `Cannot create admin "models" collection: ${error}`
+            )
           );
         });
       await this.modelsRegister.loadModels();
@@ -349,16 +355,22 @@ export class DeviceManagerPlugin extends Plugin {
       await this.deviceManagerEngine
         .createDevicesCollection(this.config.adminIndex)
         .catch((error) => {
-          throw new PluginImplementationError(
-            `Cannot create admin "devices" collection: ${error}`
+          throw keepStack(
+            error,
+            new PluginImplementationError(
+              `Cannot create admin "devices" collection: ${error}`
+            )
           );
         });
 
       await this.sdk.collection
         .create(this.config.adminIndex, "payloads", this.getPayloadsMappings())
         .catch((error) => {
-          throw new PluginImplementationError(
-            `Cannot create admin "payloads" collection: ${error}`
+          throw keepStack(
+            error,
+            new PluginImplementationError(
+              `Cannot create admin "payloads" collection: ${error}`
+            )
           );
         });
 

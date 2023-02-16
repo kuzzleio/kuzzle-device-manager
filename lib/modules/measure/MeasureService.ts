@@ -19,7 +19,7 @@ import {
   AssetHistoryEventMeasure,
   AssetHistoryEventMetadata,
 } from "../asset";
-import { Metadata, lock, ask, onAsk } from "../shared";
+import { Metadata, lock, ask, onAsk, keepStack } from "../shared";
 import { AssetSerializer } from "../asset";
 
 import {
@@ -145,8 +145,11 @@ export class MeasureService {
             device._source
           )
           .catch((error) => {
-            throw new BadRequestError(
-              `Cannot update device "${device._id}": ${error.message}`
+            throw keepStack(
+              error,
+              new BadRequestError(
+                `Cannot update device "${device._id}": ${error.message}`
+              )
             );
           })
       );
@@ -161,8 +164,11 @@ export class MeasureService {
               device._source
             )
             .catch((error) => {
-              throw new BadRequestError(
-                `Cannot update engine device "${device._id}": ${error.message}`
+              throw keepStack(
+                error,
+                new BadRequestError(
+                  `Cannot update engine device "${device._id}": ${error.message}`
+                )
               );
             })
         );
@@ -200,19 +206,19 @@ export class MeasureService {
                   measure: {
                     // Filter measures who are not in the asset device link
                     names: measures
-                      .filter((m) => Boolean(m.asset.measureName))
-                      .map((m) => m.asset.measureName),
+                      .filter((m) => Boolean(m.asset?.measureName))
+                      .map((m) => m.asset?.measureName),
                   },
                   name: "measure",
                 };
 
-                const metadataDiff = this.compareMetadata(
+                const changes = this.compareMetadata(
                   originalAssetMetadata,
                   updatedAsset._source.metadata
                 );
-                if (metadataDiff.length !== 0) {
+                if (changes.length !== 0) {
                   (event as unknown as AssetHistoryEventMetadata).metadata = {
-                    names: metadataDiff,
+                    names: changes,
                   };
                 }
 
@@ -222,8 +228,11 @@ export class MeasureService {
                 );
               })
               .catch((error) => {
-                throw new BadRequestError(
-                  `Cannot update asset "${asset._id}": ${error.message}`
+                throw keepStack(
+                  error,
+                  new BadRequestError(
+                    `Cannot update asset "${asset._id}": ${error.message}`
+                  )
                 );
               })
           );
