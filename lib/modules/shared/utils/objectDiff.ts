@@ -7,9 +7,6 @@ export function objectDiff(base: JSONObject, object: JSONObject) {
   const walkObject = (_base: any, _object: any, path: any = []) => {
     for (const key of Object.keys(_base)) {
       if (_object[key] === undefined) {
-        const ar: [] = [];
-        const ar2: [] = [];
-        ar.concat(ar2);
         changes.push([...path, key].join("."));
       }
     }
