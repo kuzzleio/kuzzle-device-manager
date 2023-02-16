@@ -133,24 +133,6 @@ export function registerTestPipes(app: Backend) {
         };
       }
 
-      if (color === "test-create-new-device-measure") {
-        const measure: MeasureContent<TemperatureMeasurement> = {
-          measuredAt: Date.now(),
-          origin: {
-            type: "computed",
-            _id: "rule-weather-api",
-            measureName: "temperatureWeather",
-            payloadUuids: ["uuid"],
-          },
-          type: "temperature",
-          values: {
-            temperature: 21.42,
-          },
-        };
-
-        measures.push(measure);
-      }
-
       return { asset, device, measures };
     }
   );
