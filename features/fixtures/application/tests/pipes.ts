@@ -96,6 +96,7 @@ export function registerTestPipes(app: Backend) {
         device._source.metadata.color === "test-metadata-history-with-measure"
       ) {
         asset._source.metadata.weight = 42042;
+        asset._source.metadata.trailer.capacity = 2048;
       }
 
       return { asset, device, measures };

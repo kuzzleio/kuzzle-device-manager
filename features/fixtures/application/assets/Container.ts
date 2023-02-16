@@ -35,6 +35,12 @@ export const containerAssetDefinition: AssetModelDefinition = {
   metadataMappings: {
     weight: { type: "integer" },
     height: { type: "integer" },
+    trailer: {
+      properties: {
+        weight: { type: "integer" },
+        capacity: { type: "integer" },
+      },
+    },
   },
   defaultMetadata: {
     height: 20,

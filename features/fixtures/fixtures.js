@@ -62,6 +62,10 @@ const assetAyseLinked1 = {
   metadata: {
     weight: 10,
     height: 11,
+    trailer: {
+      weight: 128,
+      capacity: 1024,
+    },
   },
   linkedDevices: [
     {
