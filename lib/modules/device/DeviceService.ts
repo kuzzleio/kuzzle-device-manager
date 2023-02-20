@@ -87,8 +87,6 @@ export class DeviceService {
     let device: KDocument<DeviceContent> = {
       _id: DeviceSerializer.id(model, reference),
       _source: {
-        assetId: null,
-        engineId: null,
         measures: {},
         metadata,
         model,
