@@ -8,4 +8,3 @@ export * from "./utils/flattenObject";
 export * from "./utils/ask";
 export * from "./utils/keepStack";
 export * from "./utils/objectDiff";
-export * from "./Module";
