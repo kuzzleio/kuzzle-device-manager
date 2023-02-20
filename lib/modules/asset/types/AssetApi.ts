@@ -66,6 +66,8 @@ export interface ApiAssetSearchRequest extends AssetsControllerRequest {
 
   scrollTTL?: string;
 
+  lang?: "koncorde" | "elasticsearch";
+
   body: JSONObject;
 }
 export type ApiAssetSearchResult = SearchResult<KHit<AssetContent>>;
