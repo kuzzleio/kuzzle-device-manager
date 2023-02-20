@@ -19,7 +19,7 @@ import {
   AssetHistoryEventMeasure,
   AssetHistoryEventMetadata,
 } from "../asset";
-import { Metadata, lock, ask, onAsk, keepStack } from "../shared";
+import { Metadata, lock, ask, onAsk, keepStack, objectDiff } from "../shared";
 import { AssetSerializer } from "../asset";
 
 import {
@@ -212,7 +212,7 @@ export class MeasureService {
                   name: "measure",
                 };
 
-                const changes = this.compareMetadata(
+                const changes = objectDiff(
                   originalAssetMetadata,
                   updatedAsset._source.metadata
                 );
@@ -264,18 +264,6 @@ export class MeasureService {
         );
       }
     });
-  }
-
-  private compareMetadata(before: JSONObject, after: JSONObject): string[] {
-    const names: string[] = [];
-
-    for (const [key, value] of Object.entries(before)) {
-      if (after[key] !== value) {
-        names.push(key);
-      }
-    }
-
-    return names;
   }
 
   private updateDeviceMeasures(

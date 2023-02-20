@@ -76,7 +76,7 @@ describe("DeviceController: receiveMeasure", () => {
           names: ["temperatureExt"],
         },
         metadata: {
-          names: ["weight"],
+          names: ["weight", "trailer.capacity"],
         },
       },
     });
