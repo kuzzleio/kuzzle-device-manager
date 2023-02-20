@@ -1,4 +1,4 @@
-import { Backend, KuzzleRequest, PluginContext } from "kuzzle";
+import { Backend, BadRequestError, KuzzleRequest, PluginContext } from "kuzzle";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
 
@@ -80,6 +80,10 @@ export class PayloadService {
     let decodedPayload = new DecodedPayload<any>(decoder);
 
     decodedPayload = await decoder.decode(decodedPayload, payload, request);
+
+    if (decodedPayload.references.length === 0) {
+      throw new BadRequestError("No measurement has been decoded");
+    }
 
     const devices = await this.retrieveDevices(
       decoder.deviceModel,
