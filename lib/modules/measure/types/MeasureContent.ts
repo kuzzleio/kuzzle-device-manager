@@ -38,6 +38,10 @@ export type MeasureOriginDevice = {
 };
 
 export type MeasureOriginComputed = {
+  /**
+   * Computed measures are not automatically added into the asset and device
+   * documents at the end of the ingestion pipeline.
+   */
   type: "computed";
 
   /**
