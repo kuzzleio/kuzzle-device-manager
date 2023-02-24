@@ -122,6 +122,7 @@ describe("DeviceController: receiveMeasure", () => {
     expect(device._source).toMatchObject({
       measures: {
         temperature: {
+          originId: "DummyTemp-linked1",
           values: {
             temperature: 25.5,
           },
