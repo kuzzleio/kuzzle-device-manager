@@ -9,7 +9,10 @@ import {
   DeviceModelContent,
   MeasureModelContent,
 } from "../modules/model";
-import { measuresMappings } from "../modules/measure";
+import {
+  getEmbeddedMeasureMappings,
+  measuresMappings,
+} from "../modules/measure";
 import { devicesMappings } from "../modules/device";
 import { onAsk } from "../modules/shared";
 import { NamedMeasures } from "../modules/decoder";
@@ -225,17 +228,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           );
         }
 
-        mappings.properties.measures.properties[measureName] = {
-          properties: {
-            measuredAt: { type: "date" },
-            name: { type: "keyword" },
-            payloadUuids: { type: "keyword" },
-            type: { type: "keyword" },
-            values: {
-              properties: measureModel._source.measure.valuesMappings,
-            },
-          },
-        };
+        mappings.properties.measures.properties[measureName] =
+          getEmbeddedMeasureMappings(
+            measureModel._source.measure.valuesMappings
+          );
       }
     }
 
