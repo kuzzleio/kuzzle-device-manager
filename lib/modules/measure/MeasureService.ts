@@ -292,6 +292,7 @@ export class MeasureService {
       device._source.measures[measureName] = {
         measuredAt: measurement.measuredAt,
         name: measureName,
+        originId: measurement.origin._id,
         payloadUuids: measurement.origin.payloadUuids,
         type: measurement.type,
         values: measurement.values,
@@ -330,6 +331,7 @@ export class MeasureService {
       asset._source.measures[measureName] = {
         measuredAt: measurement.measuredAt,
         name: measureName,
+        originId: measurement.origin._id,
         payloadUuids: measurement.origin.payloadUuids,
         type: measurement.type,
         values: measurement.values,
