@@ -4,7 +4,7 @@ import { beforeEachTruncateCollections } from "../../hooks/collections";
 import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
-import { sendDummyTemp, useSdk } from "../../helpers";
+import { sendDummyTempPayloads, useSdk } from "../../helpers";
 
 jest.setTimeout(10000);
 
@@ -26,10 +26,12 @@ describe("DeviceController: receiveMeasure", () => {
   });
 
   it("should save asset history when measure is received", async () => {
-    await sendDummyTemp(sdk, {
-      deviceEUI: "linked1",
-      temperature: 21,
-    });
+    await sendDummyTempPayloads(sdk, [
+      {
+        deviceEUI: "linked1",
+        temperature: 21,
+      },
+    ]);
     await sdk.collection.refresh("engine-ayse", "assets-history");
 
     const result = await sdk.document.search<AssetHistoryContent>(
@@ -52,13 +54,15 @@ describe("DeviceController: receiveMeasure", () => {
   });
 
   it("should add a metadata event to the history entry", async () => {
-    await sendDummyTemp(sdk, {
-      deviceEUI: "linked1",
-      temperature: 21,
-      metadata: {
-        color: "test-metadata-history-with-measure",
+    await sendDummyTempPayloads(sdk, [
+      {
+        deviceEUI: "linked1",
+        temperature: 21,
+        metadata: {
+          color: "test-metadata-history-with-measure",
+        },
       },
-    });
+    ]);
     await sdk.collection.refresh("engine-ayse", "assets-history");
 
     const result = await sdk.document.search<AssetHistoryContent>(
