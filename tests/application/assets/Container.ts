@@ -53,7 +53,7 @@ export const containerAssetDefinition: AssetModelDefinition = {
 // This function is never called and only exists to make sure the types are correct
 function neverCalled() {
   // @ts-ignore
-  let container: ContainerAssetContent = {};
+  const container: ContainerAssetContent = {};
 
   container.metadata.height = 40;
   if (container.measures.temperatureExt) {

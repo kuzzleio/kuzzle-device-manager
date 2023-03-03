@@ -1,3 +1,7 @@
 # JS generated files from TS
+
 dist/
 types/dist/
+tests/scenario/migrated
+tests/application/assets/Container.ts
+tests/application/app.ts
