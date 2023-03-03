@@ -4,6 +4,10 @@ const { setWorldConstructor } = require("cucumber");
 
 require("./assertions");
 
+const { JestConverter } = require('./JestConverter');
+
+global.converter = new JestConverter();
+
 class KuzzleWorld {
   constructor(attach, parameters) {
     this.attach = attach.attach;

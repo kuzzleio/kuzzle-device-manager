@@ -22,9 +22,13 @@ Then(
   async function (index, collection, documentId, dataTable) {
     const expectedContent = this.parseObject(dataTable);
 
-    const document = await this.sdk.document.get(index, collection, documentId);
-
-    should(document._source).matchObject(expectedContent);
+    global.converter.write(`
+      await expect(
+        sdk.document.get("${index}", "${collection}", "${documentId}")
+      ).resolves.toMatchObject({
+        _source: ${JSON.stringify(expectedContent, null, 2)}
+      });
+    `);
   }
 );
 
