@@ -1,29 +1,11 @@
 import { AssetHistoryContent } from "../../../index";
 
-import { beforeEachTruncateCollections } from "../../hooks/collections";
-import { beforeAllCreateEngines } from "../../hooks/engines";
-import { beforeEachLoadFixtures } from "../../hooks/fixtures";
-
-import { sendDummyTempPayloads, useSdk } from "../../helpers";
+import { sendDummyTempPayloads, setupHooks } from "../../helpers";
 
 jest.setTimeout(10000);
 
 describe("DeviceController: receiveMeasure", () => {
-  const sdk = useSdk();
-
-  beforeAll(async () => {
-    await sdk.connect();
-    await beforeAllCreateEngines(sdk);
-  });
-
-  beforeEach(async () => {
-    await beforeEachTruncateCollections(sdk);
-    await beforeEachLoadFixtures(sdk);
-  });
-
-  afterAll(async () => {
-    sdk.disconnect();
-  });
+  const sdk = setupHooks();
 
   it("should save asset history when measure is received", async () => {
     await sendDummyTempPayloads(sdk, [

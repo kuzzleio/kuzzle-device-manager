@@ -4,30 +4,12 @@ import {
   TemperatureMeasurement,
 } from "../../../index";
 
-import { beforeEachTruncateCollections } from "../../hooks/collections";
-import { beforeAllCreateEngines } from "../../hooks/engines";
-import { beforeEachLoadFixtures } from "../../hooks/fixtures";
-
-import { useSdk } from "../../helpers/sdk";
+import { setupHooks } from "../../helpers";
 
 jest.setTimeout(10000);
 
 describe("DeviceController: receiveMeasure", () => {
-  const sdk = useSdk();
-
-  beforeAll(async () => {
-    await sdk.connect();
-    await beforeAllCreateEngines(sdk);
-  });
-
-  beforeEach(async () => {
-    await beforeEachTruncateCollections(sdk);
-    await beforeEachLoadFixtures(sdk);
-  });
-
-  afterAll(async () => {
-    sdk.disconnect();
-  });
+  const sdk = setupHooks();
 
   it("should receive a formated measure and process it in the ingestion pipeline", async () => {
     await sdk.query<

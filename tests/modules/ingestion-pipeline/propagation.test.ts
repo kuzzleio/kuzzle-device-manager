@@ -1,28 +1,10 @@
-import { beforeEachTruncateCollections } from "../../hooks/collections";
-import { beforeAllCreateEngines } from "../../hooks/engines";
-import { beforeEachLoadFixtures } from "../../hooks/fixtures";
-
-import { sendDummyTempPayloads, useSdk } from "../../helpers";
+import { sendDummyTempPayloads, setupHooks } from "../../helpers";
 import { MeasureContent } from "../../../lib/modules/measure";
 
 jest.setTimeout(10000);
 
 describe("Ingestion Pipeline: propagation", () => {
-  const sdk = useSdk();
-
-  beforeAll(async () => {
-    await sdk.connect();
-    await beforeAllCreateEngines(sdk);
-  });
-
-  beforeEach(async () => {
-    await beforeEachTruncateCollections(sdk);
-    await beforeEachLoadFixtures(sdk);
-  });
-
-  afterAll(async () => {
-    sdk.disconnect();
-  });
+  const sdk = setupHooks();
 
   it("should add asset info to measure only to linked measures", async () => {
     await sendDummyTempPayloads(sdk, [
