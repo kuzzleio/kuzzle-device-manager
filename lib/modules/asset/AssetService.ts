@@ -166,6 +166,7 @@ export class AssetService {
         { refresh, source: true }
       );
 
+      // @todo fix the metadata path for nested metadata
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(
         engineId,
         {

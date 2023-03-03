@@ -17,6 +17,8 @@ export async function sendPayloads(
   action: string,
   payloads: JSONObject[]
 ) {
+  let response;
+
   for (let i = 0; i < payloads.length; i++) {
     const payload = payloads[i];
 
@@ -31,10 +33,12 @@ export async function sendPayloads(
       payload.date = new Date(Date.now() + delay);
     }
 
-    await sdk.query({
+    response = await sdk.query({
       controller: "device-manager/payloads",
       action,
       body: payload,
     });
   }
+
+  return response;
 }

@@ -9,6 +9,22 @@ export async function truncateCollection(
   await sdk.document.deleteByQuery(index, collection, {});
 }
 
+async function deleteModels(sdk: Kuzzle) {
+  await sdk.collection.refresh("device-manager", "models");
+  await sdk.document.deleteByQuery("device-manager", "models", {
+    query: {
+      ids: {
+        values: [
+          "model-measure-presence",
+          "model-asset-plane",
+          "model-device-Zigbee",
+          "model-device-Enginko",
+        ],
+      },
+    },
+  });
+}
+
 export async function beforeEachTruncateCollections(sdk: Kuzzle) {
   await Promise.all([
     truncateCollection(sdk, "device-manager", "devices"),
@@ -23,5 +39,6 @@ export async function beforeEachTruncateCollections(sdk: Kuzzle) {
     truncateCollection(sdk, "engine-ayse", "assets-history"),
     truncateCollection(sdk, "engine-ayse", "measures"),
     truncateCollection(sdk, "engine-ayse", "devices"),
+    deleteModels(sdk),
   ]);
 }
