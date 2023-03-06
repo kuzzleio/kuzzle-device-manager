@@ -10,7 +10,7 @@ import { DecoderContent } from "./types/DecoderContent";
 /**
  * Array of measures declaration
  */
-export type NamedMeasures = ReadonlyArray<{
+export type NamedMeasures = Array<{
   name: string;
 
   type: string;
