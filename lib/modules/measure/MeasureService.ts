@@ -313,6 +313,10 @@ export class MeasureService {
         continue;
       }
 
+      if (measurement.asset === null) {
+        continue;
+      }
+
       const measureName = measurement.asset.measureName;
       // The measurement was not present in the asset device links so it should
       // not be saved in the asset measures
@@ -358,11 +362,13 @@ export class MeasureService {
         measurement.measureName
       );
 
+      const assetContext =
+        asset === null || assetMeasureName === null
+          ? null
+          : AssetSerializer.measureContext(asset, assetMeasureName);
+
       const measureContent: MeasureContent = {
-        asset:
-          asset === null
-            ? undefined
-            : AssetSerializer.measureContext(asset, assetMeasureName),
+        asset: assetContext,
         measuredAt: measurement.measuredAt,
         origin: {
           _id: device._id,

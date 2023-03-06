@@ -5,10 +5,14 @@ import {
   Decoder,
   DecodedPayload,
   TemperatureMeasurement,
+  BatteryMeasurement,
 } from "../../../../index";
 
 export class DummyTempDecoder extends Decoder {
-  public measures = [{ name: "temperature", type: "temperature" }] as const;
+  public measures = [
+    { name: "temperature", type: "temperature" },
+    { name: "battery", type: "battery" },
+  ] as const;
 
   constructor() {
     super();
@@ -48,6 +52,18 @@ export class DummyTempDecoder extends Decoder {
         type: "temperature",
         values: {
           temperature: payload.temperature,
+        },
+      }
+    );
+
+    decodedPayload.addMeasurement<BatteryMeasurement>(
+      payload.deviceEUI,
+      "battery",
+      {
+        measuredAt: payload.measuredAt || Date.now(),
+        type: "battery",
+        values: {
+          battery: payload.battery || 42,
         },
       }
     );
