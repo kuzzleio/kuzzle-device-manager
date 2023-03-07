@@ -12,7 +12,7 @@
   "scripts": {
     "docker": "docker-compose run kuzzle ",
     "dev": "NODE_ENV=development ergol tests/application/app.ts -c ergol.config.json",
-    "prod": "node ./dist/tests/fixtures/application/app.js",
+    "prod": "node ./dist/tests/application/app.js",
     "test": "npm run test:lint && npm run test:unit && npm run test:functional",
     "test:unit": "mocha",
     "test:functional": "jest --runInBand",
