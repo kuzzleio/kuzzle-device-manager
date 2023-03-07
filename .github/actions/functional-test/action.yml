@@ -9,5 +9,5 @@ runs:
         npm run docker npm ci
         npm run build
         DOCKER_COMMAND="npm run prod" docker-compose up -d
-        bash features/wait-kuzzle.sh
+        bash tests/wait-kuzzle.sh
         npm run test:functional
