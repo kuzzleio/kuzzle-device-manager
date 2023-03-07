@@ -7,30 +7,12 @@ import {
   ApiDeviceReceiveMeasuresResult,
 } from "../../../index";
 
-import { beforeEachTruncateCollections } from "../../hooks/collections";
-import { beforeAllCreateEngines } from "../../hooks/engines";
-import { beforeEachLoadFixtures } from "../../hooks/fixtures";
-
-import { useSdk } from "../../helpers/sdk";
+import { setupHooks } from "../../helpers";
 
 jest.setTimeout(10000);
 
 describe("DeviceScenario: dynamicaly register device model and receive a measure", () => {
-  const sdk = useSdk();
-
-  beforeAll(async () => {
-    await sdk.connect();
-    await beforeAllCreateEngines(sdk);
-  });
-
-  beforeEach(async () => {
-    await beforeEachTruncateCollections(sdk);
-    await beforeEachLoadFixtures(sdk);
-  });
-
-  afterAll(async () => {
-    sdk.disconnect();
-  });
+  const sdk = setupHooks();
 
   it("register a new device model, create a device from this model and receive a formated measure", async () => {
     await sdk.query<ApiModelWriteDeviceRequest, ApiModelWriteDeviceResult>({

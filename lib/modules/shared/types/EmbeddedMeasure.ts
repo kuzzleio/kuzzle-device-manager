@@ -26,4 +26,9 @@ export type EmbeddedMeasure<TMeasureValue extends JSONObject = JSONObject> = {
    * Name of the measure for the digital twin
    */
   name: string;
+
+  /**
+   * Origin ID of the measure (deviceId in most cases)
+   */
+  originId: string;
 };

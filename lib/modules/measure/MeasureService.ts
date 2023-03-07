@@ -292,6 +292,7 @@ export class MeasureService {
       device._source.measures[measureName] = {
         measuredAt: measurement.measuredAt,
         name: measureName,
+        originId: measurement.origin._id,
         payloadUuids: measurement.origin.payloadUuids,
         type: measurement.type,
         values: measurement.values,
@@ -309,6 +310,10 @@ export class MeasureService {
 
     for (const measurement of measurements) {
       if (measurement.origin.type === "computed") {
+        continue;
+      }
+
+      if (measurement.asset === null) {
         continue;
       }
 
@@ -330,6 +335,7 @@ export class MeasureService {
       asset._source.measures[measureName] = {
         measuredAt: measurement.measuredAt,
         name: measureName,
+        originId: measurement.origin._id,
         payloadUuids: measurement.origin.payloadUuids,
         type: measurement.type,
         values: measurement.values,
@@ -356,11 +362,13 @@ export class MeasureService {
         measurement.measureName
       );
 
+      const assetContext =
+        asset === null || assetMeasureName === null
+          ? null
+          : AssetSerializer.measureContext(asset, assetMeasureName);
+
       const measureContent: MeasureContent = {
-        asset:
-          asset === null
-            ? undefined
-            : AssetSerializer.measureContext(asset, assetMeasureName),
+        asset: assetContext,
         measuredAt: measurement.measuredAt,
         origin: {
           _id: device._id,

@@ -65,6 +65,7 @@ export function registerTestPipes(app: Backend) {
               values: {
                 temperature: temperatureInt.values.temperature,
               },
+              originId: device._id,
             };
           }
         }
@@ -111,6 +112,7 @@ export function registerTestPipes(app: Backend) {
           payloadUuids: measure.origin.payloadUuids,
           type: measure.type,
           values: measure.values,
+          originId: device._id,
         };
       }
 

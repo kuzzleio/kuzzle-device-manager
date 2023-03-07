@@ -537,7 +537,10 @@ describe("features/Model/Controller", () => {
         device: {
           model: "DummyTemp",
           metadataMappings: { color: { type: "keyword" } },
-          measures: [{ name: "temperature", type: "temperature" }],
+          measures: [
+            { name: "temperature", type: "temperature" },
+            { name: "battery", type: "battery" },
+          ],
         },
       },
     });

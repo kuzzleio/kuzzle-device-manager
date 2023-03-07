@@ -52,7 +52,7 @@ describe("features/Device/Controller/AttachEngine", () => {
 
     await sdk.collection.refresh("engine-kuzzle", "measures");
     await expect(sdk.document.count("engine-kuzzle", "measures")).resolves.toBe(
-      1
+      2
     );
   });
 

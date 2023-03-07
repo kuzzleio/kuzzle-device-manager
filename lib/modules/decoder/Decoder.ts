@@ -9,8 +9,11 @@ import { DecoderContent } from "./types/DecoderContent";
 
 /**
  * Array of measures declaration
+ *
+ * This need to be read only so we can provide strong typing when decoding measures
+ * with the DecodedPayload
  */
-export type NamedMeasures = Array<{
+export type NamedMeasures = ReadonlyArray<{
   name: string;
 
   type: string;

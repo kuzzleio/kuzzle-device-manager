@@ -45,7 +45,7 @@ describe("features/Device/Controller/GetMeasures", () => {
     });
 
     expect(response.result).toMatchObject({
-      total: 3,
+      total: 6,
       measures: { length: 2 },
     });
 

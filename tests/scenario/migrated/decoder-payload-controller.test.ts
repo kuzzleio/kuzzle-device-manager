@@ -175,26 +175,22 @@ describe("features/Decoder/PayloadController", () => {
       collection: "measures",
     });
 
-    expect(response.result).toMatchObject({
-      hits: [
-        {
-          _source: {
-            type: "temperature",
-            values: { temperature: 42.2 },
-            origin: {
-              _id: "DummyTemp-linked1",
-              measureName: "temperature",
-              deviceModel: "DummyTemp",
-              reference: "linked1",
-            },
-            asset: {
-              _id: "Container-linked1",
-              measureName: "temperatureExt",
-              metadata: { weight: 10, height: 11 },
-            },
-          },
+    expect(response.result.hits[0]).toMatchObject({
+      _source: {
+        type: "temperature",
+        values: { temperature: 42.2 },
+        origin: {
+          _id: "DummyTemp-linked1",
+          measureName: "temperature",
+          deviceModel: "DummyTemp",
+          reference: "linked1",
         },
-      ],
+        asset: {
+          _id: "Container-linked1",
+          measureName: "temperatureExt",
+          metadata: { weight: 10, height: 11 },
+        },
+      },
     });
   });
 

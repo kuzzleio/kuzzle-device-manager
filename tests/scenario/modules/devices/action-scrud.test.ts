@@ -11,30 +11,12 @@ import {
   ApiDeviceDeleteResult,
 } from "../../../../index";
 
-import { beforeEachTruncateCollections } from "../../../hooks/collections";
-import { beforeAllCreateEngines } from "../../../hooks/engines";
-import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
-
-import { useSdk } from "../../../helpers/sdk";
+import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
 
 describe("Device SCRUD", () => {
-  const sdk = useSdk();
-
-  beforeAll(async () => {
-    await sdk.connect();
-    await beforeAllCreateEngines(sdk);
-  });
-
-  beforeEach(async () => {
-    await beforeEachTruncateCollections(sdk);
-    await beforeEachLoadFixtures(sdk);
-  });
-
-  afterAll(async () => {
-    sdk.disconnect();
-  });
+  const sdk = setupHooks();
 
   it("should create a device, update metadata then get and search it", async () => {
     await sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
