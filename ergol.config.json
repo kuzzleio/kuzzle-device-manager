@@ -7,7 +7,7 @@
   ],
   "watch": [
     "index.ts",
-    "features/fixtures/application",
+    "tests/application",
     "lib/",
     "node_modules/"
   ]

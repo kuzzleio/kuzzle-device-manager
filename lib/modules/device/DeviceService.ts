@@ -572,7 +572,7 @@ export class DeviceService {
     for (const name of requestedMeasureNames) {
       if (measureAlreadyProvided(name.asset)) {
         throw new BadRequestError(
-          `Measure name "${name.asset}" is already used by another device on this asset.`
+          `Measure name "${name.asset}" is already provided by another device on this asset.`
         );
       }
     }
