@@ -106,7 +106,7 @@ const assetAyseUnlinked = {
 };
 const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.reference}`;
 
-module.exports = {
+export default {
   "device-manager": {
     devices: [
       { index: { _id: deviceAyseLinked1Id } },
