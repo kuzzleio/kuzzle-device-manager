@@ -254,6 +254,12 @@ export class DevicesController {
     );
     const refresh = request.getRefresh();
 
+    if (measureNames.length === 0 && !implicitMeasuresLinking) {
+      throw new BadRequestError(
+        `You must provide at least one measure name or set "implicitMeasuresLinking" to true.`
+      );
+    }
+
     const { asset, device } = await this.deviceService.linkAsset(
       request.getUser(),
       engineId,

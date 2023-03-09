@@ -1,6 +1,6 @@
 import { Kuzzle } from "kuzzle-sdk";
 
-import fixtures from "../../features/fixtures/fixtures";
+import fixtures from "../fixtures/fixtures";
 
 export async function beforeEachLoadFixtures(sdk: Kuzzle) {
   await sdk.query({
