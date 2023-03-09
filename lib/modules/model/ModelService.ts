@@ -89,7 +89,7 @@ export class ModelService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    // @todo update assets in every engine to add the new metadata with null value + default metadata
+    // @todo update assets in every engine to add the new metadata with null value or default metadata
 
     return assetModel;
   }

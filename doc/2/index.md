@@ -2,8 +2,8 @@
 code: false
 type: root
 order: 0
-title: Kuzzle IoT - Device Manager
-description: Kuzzle IoT - Device Manager Documentation
+title: Kuzzle IoT Platform - Device Manager
+description: Kuzzle IoT Platform - Device Manager Documentation
 ---
 
 <Redirect to="controllers/devices" />
