@@ -15,6 +15,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         search: true,
         unlinkAsset: true,
         update: true,
+        getMeasures: true,
       },
     },
     "device-manager/models": {
@@ -23,6 +24,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         listDevices: true,
         getDevice: true,
         writeDevice: true,
+        listMeasures: true,
       },
     },
  */
@@ -39,6 +41,7 @@ export const RoleDevicesAdmin: KuzzleRole = {
           search: true,
           unlinkAsset: true,
           update: true,
+          getMeasures: true,
         },
       },
       "device-manager/models": {
@@ -47,6 +50,7 @@ export const RoleDevicesAdmin: KuzzleRole = {
           listDevices: true,
           getDevice: true,
           writeDevice: true,
+          listMeasures: true,
         },
       },
     },

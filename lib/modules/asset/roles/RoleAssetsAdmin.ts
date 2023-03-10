@@ -18,6 +18,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         listAssets: true,
         getAsset: true,
         writeAsset: true,
+        listMeasures: true,
       },
     },
  */
@@ -36,6 +37,7 @@ export const RoleAssetsAdmin: KuzzleRole = {
           listAssets: true,
           getAsset: true,
           writeAsset: true,
+          listMeasures: true,
         },
       },
     },
