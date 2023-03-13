@@ -1,3 +1,10 @@
+---
+code: false
+type: page
+title: Permissions
+description: Default available permissions
+---
+
 # Permissions
 
 Each Device Manager module exposes specific roles to actions possible via the API.
