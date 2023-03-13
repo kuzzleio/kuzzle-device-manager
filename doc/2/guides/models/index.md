@@ -25,8 +25,8 @@ A sensor model contains the following information:
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 
-- the API through the action [device-manager/models:writeDevice]
-- the framework with the method [deviceManager.models.registerDevice]
+- the API through the action `device-manager/models:writeDevice`
+- the framework with the method `deviceManager.models.registerDevice`
 
 **Example: declaration of a model via API**
 
@@ -53,8 +53,8 @@ import {
 
 The API also allows to:
 
-- list available models [device-manager/models:listDevices]
-- get a model [device-manager/models:getDevices]
+- list available models `device-manager/models:listDevices`
+- get a model `device-manager/models:getDevices`
 
 ## Asset Model
 
@@ -70,8 +70,8 @@ An asset model contains the following information:
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 
-- the API through the [device-manager/models:writeAsset] action
-- the framework with the method [deviceManager.models.registerAsset]
+- the API through the `device-manager/models:writeAsset` action
+- the framework with the method `deviceManager/models.registerAsset`
 
 **Example: declaration of a model via API**
 
@@ -99,5 +99,5 @@ import {
 
 The API also allows to:
 
-- list available models [device-manager/models:listAssets]
-- get a model [device-manager/models:getAssets]
+- list available models `device-manager/models:listAssets`
+- get a model `device-manager/models:getAssets`

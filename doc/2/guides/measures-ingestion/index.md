@@ -141,7 +141,7 @@ The `decode` method is in charge of transforming the raw data into standardized 
 
 It receives two arguments:
 
-- `decodedPayload`: instance of [DecodedPayload](https://file+.vscode-resource.vscode-cdn.net/home/aschen/projects/kuzzleio/kuzzle-device-manager/doc/2/guides/ingestion-pipeline .md) used to extract measures
+- `decodedPayload`: instance of `DecodedPayload` used to extract measures
 - `payload`: raw data
 
 Each measure must be extracted using the `addMeasurement` method of the `decodedPayload` object.
@@ -149,10 +149,10 @@ Each measure must be extracted using the `addMeasurement` method of the `decoded
 This method has more arguments:
 
 - `reference`: unique reference of the device for which the measure is extracted
-- `measureName`: name of the extracted measure (must match a [declared measure](https://file+.vscode-resource.vscode-cdn.net/home/aschen/projects/kuzzleio/kuzzle-device-manager/ doc/2/guides/ingestion-pipeline.md#declaration-des-mesures))
+- `measureName`: name of the extracted measure (must match a declared measure)
 - `measure`: an object containing the measure with the following properties:
   - `measuredAt`: timestamp at which the measure was made (in milliseconds)
-  - `type`: type of the measure (must match a [declared measure](https://file+.vscode-resource.vscode-cdn.net/home/aschen/projects/kuzzleio/kuzzle-device-manager /doc/2/guides/ingestion-pipeline.md#declaration-of-measures))
+  - `type`: type of the measure (must match a declared measure)
   - `values`: contains the values of the measure
 
 ```jsx
@@ -203,7 +203,7 @@ deviceManager.models.registerDevice("Abeeway", {
 
 The Kuzzle IoT Platform is also able to directly receive standardized measures without going through a Decoder.
 
-The API action [device-manager/devices:receiveMeasures](https://file+.vscode-resource.vscode-cdn.net/home/aschen/projects/kuzzleio/kuzzle-device-manager/doc/2/ guides/ingestion-pipeline.md#) is able to ingest multiple measures from a device.
+The API action `device-manager/devices:receiveMeasures` is able to ingest multiple measures from a device.
 
 This avoids having to go through the step of writing the Decoder and redeploying the application but requires being able to format the data correctly.
 

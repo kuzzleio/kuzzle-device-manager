@@ -34,7 +34,7 @@ Example:
 - electric meter
 - public lighting control
 
-In most cases, the devices transmit their data on communication networks (4G, LoRa, NB-IoT, etc.) but the data reading can also be transmitted in the form of flat files following manual entries ( for example in the case of a standard electricity meter).
+In most cases, the devices transmit their data on communication networks (4G, LoRa, NB-IoT, etc.) but the data reading can also be transmitted in the form of flat files following manual entries (for example in the case of a standard electricity meter).
 
 Each device will be responsible for collecting one or more data points. These measurements then go back to the Kuzzle IoT Platform for standardized processing.
 
@@ -65,10 +65,10 @@ _Support for a new communication protocol is available in the form of plugins._
 
 The feedback of device measurements can be done in two ways:
 
-- reception of data directly in the format accepted by the Kuzzle IoT Platform (see [device-manager/devices:receiveMeasures])
-- reception of raw data and normalization by a [Decoder]
+- reception of data directly in the format accepted by the Kuzzle IoT Platform (see `device-manager/devices:receiveMeasures`)
+- reception of raw data and normalization by a `Decoder`
 
-The normalized measurements then systematically pass through the [Ingestion Pipeline] in order to be used by the [Business Rules Engine].
+The normalized measurements then systematically pass through the Ingestion Pipeline in order to be used by the Rules Engine.
 
 ## Assets
 

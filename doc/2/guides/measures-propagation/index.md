@@ -14,16 +14,16 @@ During this propagation, they will be duplicated several times.
 By default, measurements are stored:
 
 - in the `platform/payloads` collection as raw data frames
-- in the `platform/devices` collection as embedded measures ([EmbeddedMeasure])
+- in the `platform/devices` collection as embedded measures (`EmbeddedMeasure`)
 
 If **the device is assigned to a tenant**, then the measurements are propagated:
 
-- in the `<tenant>/devices` collection as embedded measures ([EmbeddedMeasure])
-- in the `<tenant>/measures` collection as measures ([MeasureContent])
+- in the `<tenant>/devices` collection as embedded measures (`EmbeddedMeasure`)
+- in the `<tenant>/measures` collection as measures (`MeasureContent`)
 
 If **the device is linked to an asset**, then the linked measurements are propagated:
 
-- in the `<tenant>/assets` collection as embedded measures ([EmbeddedMeasure])
+- in the `<tenant>/assets` collection as embedded measures (`EmbeddedMeasure`)
 
 ## Mechanisms of propagation
 
@@ -31,14 +31,14 @@ Propagation is governed by a set of rules contained in devices and assets.
 
 ### Propagation in tenant
 
-Tenant propagation occurs when the device is attached to a tenant with the [device-manager/devices:attachTenant] action.
+Tenant propagation occurs when the device is attached to a tenant with the `device-manager/devices:attachTenant` action.
 
 The `engineId` text field of the device contains the index name of the tenant it was attached to.
 
 The measures are then propagated:
 
-- in the `<tenant>/devices` collection as embedded measures ([EmbeddedMeasure])
-- in the `<tenant>/measures` collection as measures ([MeasureContent])
+- in the `<tenant>/devices` collection as embedded measures (`EmbeddedMeasure`)
+- in the `<tenant>/measures` collection as measures (`MeasureContent`)
 
 If this field is `null`, then the device is not attached to a tenant and measurements are not propagated.
 
@@ -61,7 +61,7 @@ This leads to several changes:
 
 Only measurements declared in the binding (`linkedDevices[].measureNames`) will be propagated from the device to the asset.
 
-The measures are then propagated into the `<tenant>/assets` collection as embedded measures ([EmbeddedMeasure]).
+The measures are then propagated into the `<tenant>/assets` collection as embedded measures (`EmbeddedMeasure`).
 
 It is possible to check the binding in the Admin Console:
 
