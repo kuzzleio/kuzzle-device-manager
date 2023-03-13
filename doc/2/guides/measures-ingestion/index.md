@@ -1,3 +1,10 @@
+---
+code: false
+type: page
+title: Measures ingestion
+description: Measures ingestion
+---
+
 # Measures ingestion
 
 When it comes to receiving data, the Kuzzle IoT Platform is capable of receiving raw data or formatted data in the form of measures.
