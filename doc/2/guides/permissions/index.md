@@ -1,24 +1,46 @@
----
-code: false
-type: page
-title: Permissions
-description: Default permission system
----
-
 # Permissions
 
-Chaque module du Device Manager expose des rôles spécifiques aux actions possible via l'API.
+Each Device Manager module exposes specific roles to actions possible via the API.
 
-Ces rôles peuvent ensuite être composés dans des profiles afin de définir les permissions d'un utilisateur.
+These roles can then be composed into profiles to define a user's permissions.
 
 ## Devices permissions
 
-Ces rôles donnent accès aux API concernant les devices avec notamment des actions sur les contrôleurs `device-manager/devices` et `device-manager/models`.
+These roles give access to the APIs concerning the devices with in particular actions on the `device-manager/devices` and `device-manager/models` controllers.
 
-Les rôles sont définis de manière hiérarchique, les permissions des rôles précédents sont incluses dans le rôle courant:
+Roles are defined hierarchically, permissions from previous roles are included in the following role:
 
-- `devices.reader`: permet de lister les devices et les modèles de devices
-- `devices.admin`: permet de créer, modifier, supprimer et lier des devices ainsi que créer et supprimer les modèles de devices
-- `devices.platform-admin`: permet d'assigner les devices à un tenant
+1. `devices.reader`: allows to list the devices and their measures as well as the models of devices and measures
+2. `devices.admin`: allows creating, modifying, deleting and linking devices as well as creating/deleting device templates
+3. `devices.platform-admin`: allows to assign devices to a tenant
 
-Les rôles `devices.reader` et `devices.admin` sont destinés à des utilisateurs d'un tenant tandis que le rôle `devices.platform-admin` est destiné aux administrateur de la plateforme IoT.
+The `devices.reader` and `devices.admin` roles are for tenant users while the `devices.platform-admin` role is for IoT platform administrators.
+
+## Assets permissions
+
+These roles give access to the APIs concerning the assets with in particular actions on the `device-manager/assets` and `device-manager/models` controllers.
+
+Roles are defined hierarchically, permissions from previous roles are included in the following role:
+
+1. `assets.reader`: allows to list the assets and their measures as well as the models of assets and measures
+2. `assets.admin`: allows to create, modify and delete assets as well as create/delete asset templates
+
+These roles are intended for users of a tenant.
+
+## Permission measures
+
+These roles give access to the APIs concerning the measurements with in particular actions on the `device-manager/models` controller.
+
+Roles are defined hierarchically, permissions from previous roles are included in the following role:
+
+1. `measures.reader`: allows to list the measurement models
+2. `measures.admin`: used to create, modify and delete measurement templates
+
+These roles are intended for users of a tenant.
+
+## Payloads permissions
+
+These roles give access to the data ingestion APIs through the `device-manager/payloads` and `device-manager/decoders` controllers.
+
+- `payloads.all`: allows to ingest raw data on all Decoders
+- `decoders.admin`: allows to list available Decoders
