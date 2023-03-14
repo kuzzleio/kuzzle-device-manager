@@ -9,7 +9,7 @@ description: Links a device with an asset
 
 Links a device with an asset.
 
-The measures that should be linked to the asset must be provided.
+This action is idempotent for a device, meaning that you can replace an existing link (e.g. adding new measures) by sending another request with the same device ID.
 
 ## Query Syntax
 
