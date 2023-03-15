@@ -1,4 +1,4 @@
-import { ApiDeviceLinkAssetRequest } from "../../../../index";
+import { AssetContent, ApiDeviceLinkAssetRequest } from "../../../../index";
 
 import { beforeEachTruncateCollections } from "../../../hooks/collections";
 import { beforeAllCreateEngines } from "../../../hooks/engines";
@@ -98,6 +98,64 @@ describe("DeviceController: receiveMeasure", () => {
     });
   });
 
+  it("should update the link if it already exists", async () => {
+    await sdk.query<ApiDeviceLinkAssetRequest>({
+      controller: "device-manager/devices",
+      action: "linkAsset",
+      engineId: "engine-ayse",
+      _id: "DummyTempPosition-unlinked3",
+      assetId: "Container-linked1",
+      body: {
+        measureNames: [{ device: "temperature", asset: "temperatureInt" }],
+      },
+    });
+
+    // Update the link with a new measure
+    await sdk.query<ApiDeviceLinkAssetRequest>({
+      controller: "device-manager/devices",
+      action: "linkAsset",
+      engineId: "engine-ayse",
+      _id: "DummyTempPosition-unlinked3",
+      assetId: "Container-linked1",
+      body: {
+        measureNames: [
+          { device: "temperature", asset: "temperatureInt" },
+          { device: "position", asset: "position" },
+        ],
+      },
+    });
+
+    await expect(
+      documentGet(
+        sdk,
+        "device-manager",
+        "devices",
+        "DummyTempPosition-unlinked3"
+      )
+    ).resolves.toMatchObject({
+      assetId: "Container-linked1",
+    });
+    await expect(
+      documentGet(sdk, "engine-ayse", "devices", "DummyTempPosition-unlinked3")
+    ).resolves.toMatchObject({
+      assetId: "Container-linked1",
+    });
+    const container = await documentGet<AssetContent>(
+      sdk,
+      "engine-ayse",
+      "assets",
+      "Container-linked1"
+    );
+
+    expect(container.linkedDevices[1]).toMatchObject({
+      _id: "DummyTempPosition-unlinked3",
+      measureNames: [
+        { asset: "temperatureInt", device: "temperature" },
+        { asset: "position", device: "position" },
+      ],
+    });
+  });
+
   it("should link a device measure implictely", async () => {
     await sdk.query<ApiDeviceLinkAssetRequest>({
       controller: "device-manager/devices",
@@ -141,7 +199,7 @@ describe("DeviceController: receiveMeasure", () => {
     });
   });
 
-  it("should throw an error if the device is already linked", async () => {
+  it("should throw an error if the device is linked to another asset", async () => {
     await expect(
       sdk.query<ApiDeviceLinkAssetRequest>({
         controller: "device-manager/devices",
@@ -152,7 +210,7 @@ describe("DeviceController: receiveMeasure", () => {
         implicitMeasuresLinking: true,
       })
     ).rejects.toMatchObject({
-      message: 'Device "DummyTemp-linked1" is already linked to an asset.',
+      message: 'Device "DummyTemp-linked1" is already linked to another asset.',
     });
   });
 
