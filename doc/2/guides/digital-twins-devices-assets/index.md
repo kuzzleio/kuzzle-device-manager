@@ -108,6 +108,8 @@ When linking on the Kuzzle IoT Platform, it is necessary to associate one or mor
 
 Once linked, the measurements collected by the device will be logged for our asset with the name defined during the link.
 
+The API action [device-manager/devices:linkAsset](/official-plugins/device-manager/2/controllers/devices/link-asset) is used to link a device to an asset.
+
 ### Historization of assets state
 
 The successive states of the assets are systematically logged in the Kuzzle IoT Platform.

@@ -29,11 +29,11 @@ Each model of Decoder can be associated with a Decoder in order to normalize the
 
 A Decoder is responsible for
 
-- declare the measures it will process
-- register a corresponding API action
-- modify the mapping of the collection containing the raw data
-- validate the format of the received data
-- extract measures from the received data
+1. declare the measures it will process
+2. register a corresponding API action
+3. (optional) modify the mapping of the collection containing the raw data
+4. (optional) validate the format of the received data
+5. extract measures from the received data
 
 ### Declaration of measures
 
