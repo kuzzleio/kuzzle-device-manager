@@ -268,6 +268,10 @@ The `device-manager:measures:process:before` event is triggered with an object c
 - `measures`: table of measures
 - `asset`: (optional) the last state of the asset linked to the device
 
+::: info
+An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:before`
+:::
+
 ### Enrich existing measures
 
 It is possible to modify the fields of existing measures directly by manipulating the table of measures.
@@ -381,6 +385,10 @@ The `device-manager:measures:process:after` event is triggered with an object co
 - `device`: the new state of the device associated with the measures
 - `measures`: table of measures
 - `asset`: (optional) the new state of the asset linked to the device
+
+::: info
+An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:after`
+:::
 
 ## Ingestion Pipeline Concurrency
 
