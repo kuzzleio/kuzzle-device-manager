@@ -26,6 +26,7 @@ runs:
     - name: Build Typedoc and deploy
       shell: bash
       run: |
+        npm run docker npm ci
         npx typedoc index.ts
         aws s3 sync ./docs s3://$S3_BUCKET$SITE_BASE --delete
         aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths $SITE_BASE*
