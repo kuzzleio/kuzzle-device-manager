@@ -16,7 +16,7 @@ This action is idempotent for a device, meaning that you can replace an existing
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/link/:assetId
+URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/_link/:assetId
 Method: PUT
 ```
 
