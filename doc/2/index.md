@@ -6,4 +6,4 @@ title: Kuzzle IoT Platform - Device Manager
 description: Kuzzle IoT Platform - Device Manager Documentation
 ---
 
-<Redirect to="guides/digital-twins-devices-assets" />
+<Redirect to="concepts/digital-twins-devices-assets" />
