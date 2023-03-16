@@ -21,7 +21,11 @@ import {
 import { DeviceModule, devicesMappings } from "../modules/device";
 import { MeasureModule } from "../modules/measure";
 import { AssetModule } from "../modules/asset";
-import { DecoderModule, payloadsMappings } from "../modules/decoder";
+import {
+  DecoderModule,
+  NamedMeasures,
+  payloadsMappings,
+} from "../modules/decoder";
 import {
   AssetModelDefinition,
   DeviceModelDefinition,
@@ -130,7 +134,7 @@ export class DeviceManagerPlugin extends Plugin {
 
         this.modelsRegister.registerDevice(
           model,
-          definition.decoder.measures,
+          definition.decoder.measures as NamedMeasures,
           definition.metadataMappings,
           definition.defaultMetadata
         );
