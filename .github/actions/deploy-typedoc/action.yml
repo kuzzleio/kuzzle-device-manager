@@ -1,0 +1,31 @@
+name: Typedoc
+description: Build and deploy Typedoc
+inputs:
+  SITE_BASE:
+    description: Destination path of the deployment
+    required: true
+  AWS_ACCESS_KEY_ID:
+    description: AWS Access key ID
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    description: AWS secret key
+    required: true
+  S3_BUCKET:
+    description: S3 bucket name
+    required: true
+  CLOUDFRONT_ID:
+    description: Cloudfront distribution ID
+    required: true
+  REGION:
+    description: AWS default region
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build Typedoc and deploy
+      shell: bash
+      run: |
+        npx typedoc index.ts
+        aws s3 sync ./docs s3://$S3_BUCKET$SITE_BASE --delete
+        aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths $SITE_BASE*

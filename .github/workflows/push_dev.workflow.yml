@@ -42,26 +42,46 @@ jobs:
   #         node-version: "14"
   #     - uses: ./.github/actions/functional-test
 
-  doc-deploy:
-    name: Deploy Doc to NEXT
-    runs-on: ubuntu-latest
+  # doc-deploy:
+  #   name: Deploy Doc to NEXT
+  #   runs-on: ubuntu-latest
+  #   # needs: [functional-tests]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Extract references from context
+  #       shell: bash
+  #       id: extract-refs
+  #       run: |
+  #         echo "::set-output name=version::$(git describe --abbrev=0 --tags | cut -d. -f 1)"
+  #         echo "::set-output name=repo::$(echo $GITHUB_REPOSITORY | cut -d/ -f 2)"
+  #         echo "::set-output name=branch::$(echo $GITHUB_REF | cut -d/ -f 3)"
+  #     - uses: convictional/trigger-workflow-and-wait@v1.3.0
+  #       with:
+  #         owner: kuzzleio
+  #         repo: documentation
+  #         github_token: ${{ secrets.ACCESS_TOKEN_CI }}
+  #         workflow_file_name: child_repo.workflow.yml
+  #         ref: develop
+  #         inputs: '{"repo_name": "${{ steps.extract-refs.outputs.repo }}", "branch": "${{ steps.extract-refs.outputs.branch }}", "version": "${{ steps.extract-refs.outputs.version }}"}'
+
+  deploy-typedoc:
+    name: Deploy Typedoc
+    runs-on: ubuntu-22.04
     # needs: [functional-tests]
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1.4.4
         with:
-          fetch-depth: 0
-      - name: Extract references from context
-        shell: bash
-        id: extract-refs
-        run: |
-          echo "::set-output name=version::$(git describe --abbrev=0 --tags | cut -d. -f 1)"
-          echo "::set-output name=repo::$(echo $GITHUB_REPOSITORY | cut -d/ -f 2)"
-          echo "::set-output name=branch::$(echo $GITHUB_REF | cut -d/ -f 3)"
-      - uses: convictional/trigger-workflow-and-wait@v1.3.0
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/setup-python@v4
         with:
-          owner: kuzzleio
-          repo: documentation
-          github_token: ${{ secrets.ACCESS_TOKEN_CI }}
-          workflow_file_name: child_repo.workflow.yml
-          ref: develop
-          inputs: '{"repo_name": "${{ steps.extract-refs.outputs.repo }}", "branch": "${{ steps.extract-refs.outputs.branch }}", "version": "${{ steps.extract-refs.outputs.version }}"}'
+          python-version: 2.7.18
+      - uses: ./.github/actions/deploy-typedoc
+        with:
+          REGION: us-west-2
+          S3_BUCKET: docs-next.kuzzle.io
+          CLOUDFRONT_ID: E2ZCCEK9GRB49U
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
