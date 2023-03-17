@@ -82,7 +82,7 @@ jobs:
         shell: bash
         run: pip3 --no-cache-dir install awscli==1.17.0
       - uses: ./.github/actions/deploy-typedoc
-        with:
+        env:
           REGION: us-west-2
           S3_BUCKET: docs-next.kuzzle.io
           CLOUDFRONT_ID: E2ZCCEK9GRB49U

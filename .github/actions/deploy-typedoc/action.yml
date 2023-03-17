@@ -1,5 +1,6 @@
 name: Typedoc
 description: Build and deploy Typedoc
+# Inputs should be env variables
 inputs:
   SITE_BASE:
     description: Destination path of the deployment
@@ -28,7 +29,7 @@ runs:
       run: |
         npm run docker npm ci
         npx typedoc index.ts
-        echo "aws s3 sync ./docs s3://docs-next.kuzzle.io/typedoc/device-manager/2/ --delete"
-        echo "aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths /typedoc/device-manager/2/*"
-        aws s3 sync ./docs s3://docs-next.kuzzle.io/typedoc/device-manager/2/ --delete
-        aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths /typedoc/device-manager/2/*
+        echo "aws s3 sync ./docs s3://$S3_BUCKET$SITE_BASE --delete"
+        echo "aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths $SITE_BASE*"
+        aws s3 sync ./docs s3://$S3_BUCKET$SITE_BASE --delete
+        aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths $SITE_BASE*
