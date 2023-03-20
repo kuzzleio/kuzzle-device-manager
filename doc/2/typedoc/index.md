@@ -1,6 +1,6 @@
 ---
 code: false
-type: branch
+type: root
 title: Typedoc
 description: Kuzzle IoT Platform - Device Manager Typedoc
 order: 300
