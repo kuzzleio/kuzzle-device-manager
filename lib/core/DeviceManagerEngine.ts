@@ -98,17 +98,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createMeasuresCollection(index, group));
 
-    promises.push(this.engineConfigManager.createCollection(index));
-
-    await Promise.all(promises);
+    const collections = await Promise.all(promises);
 
     return {
-      collections: [
-        InternalCollection.ASSETS,
-        this.engineConfigManager.collection,
-        InternalCollection.DEVICES,
-        InternalCollection.MEASURES,
-      ],
+      collections: [this.engineConfigManager.collection, ...collections],
     };
   }
 
