@@ -9,7 +9,7 @@ description: Measures ingestion
 
 When it comes to receiving data, the Kuzzle IoT Platform is capable of receiving raw data or formatted data in the form of measures.
 
-These measures are then passed through the ingestion pipeline to allow the rules engine to perform processing at various stages.
+These measures are then passed through the ingestion pipeline to allow to perform processing at various stages.
 
 # Raw data
 
@@ -248,7 +248,7 @@ The `payloadUuids` property contained in the measures allows you to search the `
 
 It is possible to execute additional processing within the ingestion pipeline by using one of the events provided for this purpose.
 
-Adding new business rules is done using the Kuzzle pipe mechanism.
+Adding new business rules is done using the Kuzzle pipe mechanism (See [Event System](/core/2/guides/develop-on-kuzzle/event-system/)).
 
 Depending on the treatments, it is better to choose one or the other and that is what we are going to see now.
 

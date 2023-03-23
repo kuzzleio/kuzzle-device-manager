@@ -68,7 +68,7 @@ The feedback of device measurements can be done in two ways:
 - reception of data directly in the format accepted by the Kuzzle IoT Platform (see `device-manager/devices:receiveMeasures`)
 - reception of raw data and normalization by a `Decoder`
 
-The normalized measurements then systematically pass through the Ingestion Pipeline in order to be used by the Rules Engine.
+The normalized measurements then systematically pass through the Ingestion Pipeline in order to be used by the [Event System](/core/2/guides/develop-on-kuzzle/event-system/).
 
 ## Assets
 
@@ -80,7 +80,7 @@ This makes it possible in particular to manage the life cycle of the devices and
 
 ![Measure history](./measure-history.png)
 
-In the Foobar Kuzzle IoT, the assets carry the business specific to each use case. It is them that we will specialize in order to model the real world and meet the different needs for consultation, business rules, alerts, etc.
+In the Foobar Kuzzle IoT, the assets carry the business specific to each use case. It is them that we will specialize in order to model the real world and meet the different needs for consultation, workflows, alerts, etc.
 
 An asset is characterized by the following information:
 
