@@ -1,3 +1,5 @@
 export class SkipError {
-  constructor(message: string) {}
+  constructor(message: string) {
+    // needed for match Error constructor signature
+  }
 }

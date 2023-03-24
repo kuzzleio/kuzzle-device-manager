@@ -159,7 +159,7 @@ export class PayloadService {
       await this.sdk.document.create(
         this.config.adminIndex,
         "payloads",
-        { apiAction, deviceModel, payload, uuid, reason, state, valid },
+        { apiAction, deviceModel, payload, reason, state, uuid, valid },
         uuid
       );
     } catch (error) {
