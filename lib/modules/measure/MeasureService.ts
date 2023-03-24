@@ -11,8 +11,8 @@ import {
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
-} from "../../core";
-import { DeviceContent } from "./../device";
+} from "../plugin";
+import { DeviceContent } from "../device";
 import {
   AskAssetHistoryAdd,
   AssetContent,

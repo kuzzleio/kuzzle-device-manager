@@ -9,7 +9,7 @@ import {
   DeviceManagerConfiguration,
   InternalCollection,
   DeviceManagerPlugin,
-} from "../../core";
+} from "../plugin";
 import { AskModelAssetGet } from "../model";
 
 import { AssetContent } from "./types/AssetContent";

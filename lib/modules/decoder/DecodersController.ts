@@ -1,7 +1,6 @@
 import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
-import { DecodersRegister } from "../../core/registers/DecodersRegister";
-
+import { DecodersRegister } from "./DecodersRegister";
 import { PayloadService } from "./PayloadService";
 import {
   ApiDecoderListResult,

@@ -16,29 +16,29 @@ import {
   movementMeasureDefinition,
   positionMeasureDefinition,
   temperatureMeasureDefinition,
-} from "../modules/measure";
+} from "../measure";
 
-import { DeviceModule, devicesMappings } from "../modules/device";
-import { MeasureModule } from "../modules/measure";
-import { AssetModule } from "../modules/asset";
+import { DeviceModule, devicesMappings } from "../device";
+import { MeasureModule } from "../measure";
+import { AssetModule } from "../asset";
 import {
   DecoderModule,
   NamedMeasures,
   payloadsMappings,
-} from "../modules/decoder";
+  DecodersRegister,
+} from "../decoder";
 import {
   AssetModelDefinition,
   DeviceModelDefinition,
   ModelModule,
   modelsMappings,
-} from "../modules/model";
-import { keepStack, lock } from "../modules/shared";
+  ModelsRegister,
+} from "../model";
+import { keepStack, lock } from "../shared";
 
-import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
+import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
-import { DecodersRegister } from "./registers/DecodersRegister";
-import { InternalCollection } from "./InternalCollection";
-import { ModelsRegister } from "./registers/ModelsRegister";
+import { InternalCollection } from "./types/InternalCollection";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
