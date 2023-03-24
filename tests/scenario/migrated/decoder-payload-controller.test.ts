@@ -3,6 +3,7 @@ import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
+import { StateDecoder } from '../../../lib/modules/decoder/StateDecoder';
 
 jest.setTimeout(10000);
 
@@ -87,6 +88,51 @@ describe("features/Decoder/PayloadController", () => {
     await expect(
       sdk.document.exists("device-manager", "devices", "DummyTemp-12345")
     ).resolves.toBe(false);
+
+    await sdk.collection.refresh("device-manager", "payloads");
+    let exceptedResult = await sdk.document.search(
+      "device-manager",
+      "payloads",
+      {
+        query: {},
+        sort: { "_kuzzle_info.createdAt": "desc" },
+      }
+    );
+    expect(exceptedResult.hits).toHaveLength(1);
+    let hit = exceptedResult.hits[0]._source;
+    expect(hit.payload).toMatchObject( { deviceEUI: "12345", temperature: 21, invalid: true });
+    expect(hit.valid).toBeFalsy();
+    expect(hit.state).toBe(StateDecoder.SKIP);
+  });
+
+  it("Reject a DummyTemp payload because of validation error", async () => {
+    await expect(sendPayloads(sdk, "dummy-temp", [
+      {
+        temperature: 21,
+        location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
+        battery: 0.8,
+      },
+    ])).rejects.toThrow("Invalid payload: missing \"deviceEUI\"");
+
+    await expect(
+      sdk.document.exists("device-manager", "devices", "DummyTemp-12345")
+    ).resolves.toBe(false);
+
+    await sdk.collection.refresh("device-manager", "payloads");
+    let exceptedResult = await sdk.document.search(
+      "device-manager",
+      "payloads",
+      {
+        query: {},
+        sort: { "_kuzzle_info.createdAt": "desc" },
+      }
+    );
+    expect(exceptedResult.hits).toHaveLength(1);
+    let hit = exceptedResult.hits[0]._source;
+    expect(hit.payload).toMatchObject( { temperature: 21});
+    expect(hit.valid).toBeFalsy();
+    expect(hit.state).toBe(StateDecoder.ERROR);
+    expect(hit.reason).toBe("Invalid payload: missing \"deviceEUI\"");
   });
 
   it("Receive a payload with 3 measures but only 2 are propagated to the asset", async () => {
@@ -156,6 +202,26 @@ describe("features/Decoder/PayloadController", () => {
         length: 1,
       },
     });
+
+    await sdk.collection.refresh("device-manager", "payloads");
+    let exceptedResult = await sdk.document.search(
+      "device-manager",
+      "payloads",
+      {
+        query: {},
+        sort: { "_kuzzle_info.createdAt": "desc" },
+      }
+    );
+    expect(exceptedResult.hits).toHaveLength(1);
+    let hit = exceptedResult.hits[0]._source;
+    expect(hit.payload).toMatchObject({
+            deviceEUI: "linked2",
+            temperature: 21,
+            location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
+            battery: 0.8,
+    });
+    expect(hit.valid).toBeTruthy();
+    expect(hit.state).toBe(StateDecoder.VALID);
   });
 
   it("Historize the measures with device and asset context", async () => {
