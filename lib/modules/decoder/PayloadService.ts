@@ -14,8 +14,8 @@ import { ask, onAsk } from "../shared";
 import { DecodedPayload } from "./DecodedPayload";
 import { Decoder } from "./Decoder";
 import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
-import { StateDecoder } from './StateDecoder';
-import { SkipError } from './SkipError';
+import { StateDecoder } from "./StateDecoder";
+import { SkipError } from "./SkipError";
 
 export class PayloadService {
   private config: DeviceManagerConfiguration;
@@ -59,7 +59,7 @@ export class PayloadService {
 
     const uuid = request.input.args.uuid || uuidv4();
     let valid = true;
-    let state : StateDecoder = StateDecoder.VALID;
+    let state: StateDecoder = StateDecoder.VALID;
     let errorReason;
 
     try {
@@ -72,8 +72,9 @@ export class PayloadService {
       }
     } catch (error) {
       valid = false;
-      errorReason = error.message || (error.toJSON ? error.toJSON().message : undefined);
-      if(error instanceof SkipError){
+      errorReason =
+        error.message || (error.toJSON ? error.toJSON().message : undefined);
+      if (error instanceof SkipError) {
         state = StateDecoder.SKIP;
         return { valid };
       }
@@ -158,7 +159,7 @@ export class PayloadService {
       await this.sdk.document.create(
         this.config.adminIndex,
         "payloads",
-        { apiAction, deviceModel, payload, uuid, valid, state, reason },
+        { apiAction, deviceModel, payload, uuid, reason, state, valid },
         uuid
       );
     } catch (error) {

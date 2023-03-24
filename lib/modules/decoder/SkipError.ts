@@ -1,4 +1,3 @@
 export class SkipError {
-  constructor (message: string) {
-  }
+  constructor(message: string) {}
 }
