@@ -5,8 +5,10 @@ import {
   PluginImplementationError,
 } from "kuzzle";
 
-import { Decoder, DecoderContent } from "../../modules/decoder";
-import { DeviceManagerPlugin } from "..";
+import { DeviceManagerPlugin } from "../plugin";
+
+import { Decoder } from "./Decoder";
+import { DecoderContent } from "./exports";
 
 export class DecodersRegister {
   private context: PluginContext;

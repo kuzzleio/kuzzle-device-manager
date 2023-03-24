@@ -6,7 +6,7 @@ import {
   DeviceManagerPlugin,
   DeviceManagerConfiguration,
   InternalCollection,
-} from "../../core";
+} from "../plugin";
 import { DeviceContent, DeviceSerializer } from "../device";
 import { AskMeasureIngest, DecodedMeasurement } from "../measure";
 import { ask, onAsk } from "../shared";

@@ -11,7 +11,7 @@ import {
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
-} from "../../core";
+} from "../plugin";
 import { ask, onAsk } from "../shared/utils/ask";
 
 import {

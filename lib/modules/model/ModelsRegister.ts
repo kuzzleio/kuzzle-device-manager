@@ -1,19 +1,21 @@
 import { Inflector, PluginContext, PluginImplementationError } from "kuzzle";
 import { JSONObject } from "kuzzle-sdk";
 
-import { NamedMeasures } from "../../modules/decoder";
-import { MeasureDefinition } from "../../modules/measure";
-import { ModelSerializer } from "../../modules/model";
+import {
+  DeviceManagerConfiguration,
+  DeviceManagerPlugin,
+  InternalCollection,
+} from "../plugin";
+import { NamedMeasures } from "../decoder";
+import { MeasureDefinition } from "../measure";
+
 import {
   AssetModelContent,
+  DeviceModelContent,
   MeasureModelContent,
   ModelContent,
-  DeviceModelContent,
-} from "../../modules/model";
-
-import { DeviceManagerConfiguration } from "../DeviceManagerConfiguration";
-import { DeviceManagerPlugin } from "../DeviceManagerPlugin";
-import { InternalCollection } from "../InternalCollection";
+} from "./types/ModelContent";
+import { ModelSerializer } from "./ModelSerializer";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;

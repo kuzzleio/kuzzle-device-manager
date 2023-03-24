@@ -7,7 +7,7 @@ import {
   AssetHistoryEventLink,
   AssetHistoryEventUnlink,
 } from "./../asset";
-import { InternalCollection, DeviceManagerConfiguration } from "../../core";
+import { InternalCollection, DeviceManagerConfiguration } from "../plugin";
 import { Metadata, lock, ask, onAsk } from "../shared";
 import {
   AskModelAssetGet,

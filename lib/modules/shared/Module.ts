@@ -1,4 +1,4 @@
-import { DeviceManagerPlugin } from "../../core/DeviceManagerPlugin";
+import { DeviceManagerPlugin } from "../plugin/DeviceManagerPlugin";
 
 export abstract class Module {
   protected plugin: DeviceManagerPlugin;
