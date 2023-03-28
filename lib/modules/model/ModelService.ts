@@ -76,12 +76,13 @@ export class ModelService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
-    const assetModel = await this.sdk.document.upsert<AssetModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      ModelSerializer.id<AssetModelContent>("asset", modelContent),
-      modelContent
-    );
+    const assetModel =
+      await this.sdk.document.createOrReplace<AssetModelContent>(
+        this.config.adminIndex,
+        InternalCollection.MODELS,
+        ModelSerializer.id<AssetModelContent>("asset", modelContent),
+        modelContent
+      );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
@@ -132,12 +133,13 @@ export class ModelService {
       type: "device",
     };
 
-    const assetModel = await this.sdk.document.upsert<DeviceModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      ModelSerializer.id<DeviceModelContent>("device", modelContent),
-      modelContent
-    );
+    const assetModel =
+      await this.sdk.document.createOrReplace<DeviceModelContent>(
+        this.config.adminIndex,
+        InternalCollection.MODELS,
+        ModelSerializer.id<DeviceModelContent>("device", modelContent),
+        modelContent
+      );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
@@ -157,12 +159,13 @@ export class ModelService {
       type: "measure",
     };
 
-    const assetModel = await this.sdk.document.upsert<MeasureModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      ModelSerializer.id<MeasureModelContent>("measure", modelContent),
-      modelContent
-    );
+    const assetModel =
+      await this.sdk.document.createOrReplace<MeasureModelContent>(
+        this.config.adminIndex,
+        InternalCollection.MODELS,
+        ModelSerializer.id<MeasureModelContent>("measure", modelContent),
+        modelContent
+      );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
