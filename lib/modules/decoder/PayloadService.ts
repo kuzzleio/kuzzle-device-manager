@@ -146,7 +146,7 @@ export class PayloadService {
         uuid
       );
     } catch (error) {
-      this.app.log.error(
+      this.context.log.error(
         `Cannot save the payload from "${deviceModel}": ${error}`
       );
     }
@@ -187,7 +187,7 @@ export class PayloadService {
         });
         devices.push(...newDevices);
       } else {
-        this.app.log.info(
+        this.context.log.info(
           `Skipping new devices "${errors.join(
             ", "
           )}". Auto-provisioning is disabled.`
@@ -232,7 +232,7 @@ export class PayloadService {
       );
 
     for (const error of errors) {
-      this.app.log.error(
+      this.context.log.error(
         `Cannot create device "${error.document._id}": ${error.reason}`
       );
     }
