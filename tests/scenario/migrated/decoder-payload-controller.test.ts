@@ -3,7 +3,6 @@ import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
-import { DecodingState } from "../../../lib/modules/decoder/DecodingState";
 
 jest.setTimeout(10000);
 
