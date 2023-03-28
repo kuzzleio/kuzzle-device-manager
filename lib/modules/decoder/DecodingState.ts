@@ -1,4 +1,4 @@
-export enum StateDecoder {
+export enum DecodingState {
   SKIP,
   ERROR,
   VALID,

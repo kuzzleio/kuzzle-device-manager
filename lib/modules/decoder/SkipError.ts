@@ -1,5 +1,5 @@
-export class SkipError {
+export class SkipError extends Error {
   constructor(message: string) {
-    // needed for match Error constructor signature
+    super(message);
   }
 }

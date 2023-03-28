@@ -14,7 +14,7 @@ import { ask, onAsk } from "../shared";
 import { DecodedPayload } from "./DecodedPayload";
 import { Decoder } from "./Decoder";
 import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
-import { StateDecoder } from "./StateDecoder";
+import { DecodingState } from "./DecodingState";
 import { SkipError } from "./SkipError";
 
 export class PayloadService {
@@ -59,7 +59,7 @@ export class PayloadService {
 
     const uuid = request.input.args.uuid || uuidv4();
     let valid = true;
-    let state: StateDecoder = StateDecoder.VALID;
+    let state = DecodingState.VALID;
     let errorReason;
 
     try {
@@ -72,13 +72,12 @@ export class PayloadService {
       }
     } catch (error) {
       valid = false;
-      errorReason =
-        error.message || (error.toJSON ? error.toJSON().message : undefined);
+      errorReason = error.message;
       if (error instanceof SkipError) {
-        state = StateDecoder.SKIP;
+        state = DecodingState.SKIP;
         return { valid };
       }
-      state = StateDecoder.ERROR;
+      state = DecodingState.ERROR;
       throw error;
     } finally {
       await this.savePayload(
@@ -152,7 +151,7 @@ export class PayloadService {
     valid: boolean,
     payload: JSONObject,
     apiAction: string,
-    state?: StateDecoder,
+    state?: DecodingState,
     reason?: string
   ) {
     try {

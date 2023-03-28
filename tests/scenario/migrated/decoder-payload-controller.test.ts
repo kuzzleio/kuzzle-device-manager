@@ -3,7 +3,7 @@ import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
-import { StateDecoder } from "../../../lib/modules/decoder/StateDecoder";
+import { DecodingState } from "../../../lib/modules/decoder/DecodingState";
 
 jest.setTimeout(10000);
 
@@ -106,7 +106,7 @@ describe("features/Decoder/PayloadController", () => {
       invalid: true,
     });
     expect(hit.valid).toBeFalsy();
-    expect(hit.state).toBe(StateDecoder.SKIP);
+    expect(hit.state).toBe(DecodingState.SKIP);
   });
 
   it("Reject a DummyTemp payload because of validation error", async () => {
@@ -137,7 +137,7 @@ describe("features/Decoder/PayloadController", () => {
     let hit = exceptedResult.hits[0]._source;
     expect(hit.payload).toMatchObject({ temperature: 21 });
     expect(hit.valid).toBeFalsy();
-    expect(hit.state).toBe(StateDecoder.ERROR);
+    expect(hit.state).toBe(DecodingState.ERROR);
     expect(hit.reason).toBe('Invalid payload: missing "deviceEUI"');
   });
 
@@ -227,7 +227,7 @@ describe("features/Decoder/PayloadController", () => {
       battery: 0.8,
     });
     expect(hit.valid).toBeTruthy();
-    expect(hit.state).toBe(StateDecoder.VALID);
+    expect(hit.state).toBe(DecodingState.VALID);
   });
 
   it("Historize the measures with device and asset context", async () => {
