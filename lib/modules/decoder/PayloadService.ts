@@ -86,7 +86,7 @@ export class PayloadService {
         valid,
         payload,
         apiAction,
-        state,
+        DecodingState[state],
         errorReason
       );
     }
@@ -151,7 +151,7 @@ export class PayloadService {
     valid: boolean,
     payload: JSONObject,
     apiAction: string,
-    state?: DecodingState,
+    state?: string,
     reason?: string
   ) {
     try {
