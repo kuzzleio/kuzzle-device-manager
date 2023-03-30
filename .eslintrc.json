@@ -1,9 +1,11 @@
 {
-  "plugins": ["kuzzle"],
+  "plugins": ["kuzzle", "jest"],
   "extends": [
     "plugin:kuzzle/default",
     "plugin:kuzzle/node",
-    "plugin:kuzzle/typescript"
+    "plugin:kuzzle/typescript",
+    "plugin:jest/recommended",
+    "plugin:jest/style"
   ],
   "overrides": [
     {
