@@ -4,7 +4,7 @@ import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import { MeasureContent } from "../measure/";
 import { AskDeviceUnlinkAsset } from "../device";
-import { EmbeddedMeasure, Metadata, lock, ask } from "../shared";
+import { EmbeddedMeasure, Metadata, lock, ask, flattenObject } from "../shared";
 import {
   DeviceManagerConfiguration,
   InternalCollection,
@@ -129,13 +129,11 @@ export class AssetService {
     engineId: string,
     assetId: string
   ): Promise<KDocument<AssetContent>> {
-    const asset = await this.sdk.document.get<AssetContent>(
+    return this.sdk.document.get<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assetId
     );
-
-    return asset;
   }
 
   /**
@@ -166,12 +164,11 @@ export class AssetService {
         { refresh, source: true }
       );
 
-      // @todo fix the metadata path for nested metadata
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(
         engineId,
         {
           metadata: {
-            names: Object.keys(updatedPayload.metadata),
+            names: Object.keys(flattenObject(updatedPayload.metadata)),
           },
           name: "metadata",
         },
@@ -245,7 +242,7 @@ export class AssetService {
         engineId,
         {
           metadata: {
-            names: Object.keys(asset._source.metadata),
+            names: Object.keys(flattenObject(asset._source.metadata)),
           },
           name: "metadata",
         },

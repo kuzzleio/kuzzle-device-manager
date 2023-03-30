@@ -4,18 +4,21 @@ import { Metadata } from "../../shared";
 
 import { AssetContent } from "./AssetContent";
 
+export type AssetHistoryMetadata = {
+  names: string[];
+};
+
 export type AssetHistoryEventMeasure = {
   name: "measure";
   measure: {
     names: string[];
   };
+  metadata?: AssetHistoryMetadata;
 };
 
 export type AssetHistoryEventMetadata = {
   name: "metadata";
-  metadata: {
-    names: string[];
-  };
+  metadata: AssetHistoryMetadata;
 };
 
 export type AssetHistoryEventLink = {
