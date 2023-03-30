@@ -28,7 +28,7 @@ describe("Ingestion Pipeline: propagation", () => {
       (m) => m._source.type === "temperature"
     );
 
-    expect(batteryMeasure?._source.asset).toBe(null);
+    expect(batteryMeasure?._source.asset).toBeNull();
 
     for (const temperatureMeasure of temperatureMeasures) {
       expect(temperatureMeasure._source.asset?._id).toBe("Container-linked1");
