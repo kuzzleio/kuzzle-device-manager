@@ -112,11 +112,15 @@ describe("DeviceController: receiveMeasure", () => {
 
     await sdk.collection.refresh("engine-ayse", "assets");
 
-    expect((await sdk.document.get<AssetContent>(
-      "engine-ayse",
-      "assets",
-      "Container-linked1"
-    ))._source.metadata).toMatchObject({
+    expect(
+      (
+        await sdk.document.get<AssetContent>(
+          "engine-ayse",
+          "assets",
+          "Container-linked1"
+        )
+      )._source.metadata
+    ).toMatchObject({
       height: 11,
       person: {
         company: "Kuzzle",
@@ -178,11 +182,15 @@ describe("DeviceController: receiveMeasure", () => {
 
     await sdk.collection.refresh("engine-ayse", "assets");
 
-    expect((await sdk.document.get<AssetContent>(
-      "engine-ayse",
-      "assets",
-      "Container-linked3"
-    ))._source.metadata).toMatchObject({
+    expect(
+      (
+        await sdk.document.get<AssetContent>(
+          "engine-ayse",
+          "assets",
+          "Container-linked3"
+        )
+      )._source.metadata
+    ).toMatchObject({
       height: 20,
       person: {
         company: "Kuzzle",
