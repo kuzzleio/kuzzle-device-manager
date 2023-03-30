@@ -4,7 +4,14 @@ import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import { MeasureContent } from "../measure/";
 import { AskDeviceUnlinkAsset } from "../device";
-import { EmbeddedMeasure, Metadata, lock, ask, flattenObject } from "../shared";
+import {
+  EmbeddedMeasure,
+  Metadata,
+  lock,
+  ask,
+  onAsk,
+  flattenObject,
+} from "../shared";
 import {
   DeviceManagerConfiguration,
   InternalCollection,
@@ -15,6 +22,7 @@ import { AskModelAssetGet } from "../model";
 import { AssetContent } from "./types/AssetContent";
 import { AssetSerializer } from "./model/AssetSerializer";
 import {
+  AskAssetRefreshModel,
   EventAssetUpdateAfter,
   EventAssetUpdateBefore,
 } from "./types/AssetEvents";
@@ -52,6 +60,43 @@ export class AssetService {
     this.context = plugin.context;
     this.config = plugin.config;
     this.assetHistoryService = assetHistoryService;
+
+    this.registerAskEvents();
+  }
+
+  registerAskEvents() {
+    onAsk<AskAssetRefreshModel>(
+      "ask:device-manager:asset:refresh-model",
+      async ({ assetModel, assetId, engineId }) => {
+        const asset = await this.get(engineId, assetId);
+
+        const modelMetadata = {};
+        for (const metadataName of Object.keys(
+          assetModel.asset.metadataMappings
+        )) {
+          modelMetadata[metadataName] = null;
+        }
+        for (const [metadataName, metadataValue] of Object.entries(
+          assetModel.asset.defaultMetadata
+        )) {
+          _.set(modelMetadata, metadataName, metadataValue);
+        }
+
+        const removedMetadata = _.difference(
+          Object.keys(asset._source.metadata),
+          Object.keys(modelMetadata)
+        );
+
+        const metadata = {
+          ...modelMetadata,
+          ..._.omit(asset._source.metadata, removedMetadata),
+        };
+
+        await this.replace(null, engineId, assetId, metadata, {
+          refresh: "wait_for",
+        });
+      }
+    );
   }
 
   /**
@@ -304,6 +349,68 @@ export class AssetService {
     );
 
     return result;
+  }
+
+  /**
+   * Replace an asset metadata
+   */
+  public async replace(
+    user: User,
+    engineId: string,
+    assetId: string,
+    metadata: Metadata,
+    { refresh }: { refresh: any }
+  ): Promise<KDocument<AssetContent>> {
+    return lock(`asset:${engineId}:${assetId}`, async () => {
+      const asset = await this.get(engineId, assetId);
+
+      const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
+        "device-manager:asset:update:before",
+        { asset, metadata }
+      );
+
+      const updatedAsset = await this.impersonatedSdk(
+        user
+      ).document.replace<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        assetId,
+        {
+          ...asset._source,
+          metadata: updatedPayload.metadata,
+        },
+        { refresh, source: true }
+      );
+
+      const removedMetadata = _.difference(
+        Object.keys(asset._source.metadata),
+        Object.keys(updatedPayload.metadata)
+      );
+
+      // @todo fix the metadata path for nested metadata
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(
+        engineId,
+        {
+          metadata: {
+            names: Object.keys(updatedPayload.metadata).concat(
+              removedMetadata.map((name) => `-${name}`)
+            ),
+          },
+          name: "metadata",
+        },
+        updatedAsset
+      );
+
+      await this.app.trigger<EventAssetUpdateAfter>(
+        "device-manager:asset:update:after",
+        {
+          asset: updatedAsset,
+          metadata: updatedPayload.metadata,
+        }
+      );
+
+      return updatedAsset;
+    });
   }
 
   private async getEngine(engineId: string): Promise<JSONObject> {

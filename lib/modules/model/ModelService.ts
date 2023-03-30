@@ -7,6 +7,7 @@ import {
 import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import {
+  AskEngineList,
   AskEngineUpdateAll,
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
@@ -15,13 +16,18 @@ import {
 import { ask, onAsk } from "../shared/utils/ask";
 
 import {
+  ApiAssetSearchRequest,
+  ApiAssetSearchResult,
+  AskAssetRefreshModel,
+} from "../asset";
+import { flattenObject } from "../shared/utils/flattenObject";
+import { ModelSerializer } from "./ModelSerializer";
+import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
 } from "./types/ModelContent";
-import { ModelSerializer } from "./ModelSerializer";
 import { AskModelAssetGet, AskModelDeviceGet } from "./types/ModelEvents";
-import { flattenObject } from "../shared/utils/flattenObject";
 
 export class ModelService {
   private config: DeviceManagerConfiguration;
@@ -90,7 +96,32 @@ export class ModelService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    // @todo update assets in every engine to add the new metadata with null value or default metadata
+    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+      group: engineGroup,
+    });
+
+    for (const engine of engines) {
+      const assets = await this.sdk.query<
+        ApiAssetSearchRequest,
+        ApiAssetSearchResult
+      >({
+        action: "search",
+        body: { query: { equals: { model } } },
+        controller: "device-manager/assets",
+        engineId: engine.index,
+        lang: "koncorde",
+      });
+
+      await Promise.all(
+        assets.result.hits.map((asset) =>
+          ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
+            assetId: asset._id,
+            assetModel: modelContent,
+            engineId: engine.index,
+          })
+        )
+      );
+    }
 
     return assetModel;
   }
