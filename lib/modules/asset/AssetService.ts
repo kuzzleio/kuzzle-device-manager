@@ -129,7 +129,7 @@ export class AssetService {
     engineId: string,
     assetId: string
   ): Promise<KDocument<AssetContent>> {
-    return await this.sdk.document.get<AssetContent>(
+    return this.sdk.document.get<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assetId

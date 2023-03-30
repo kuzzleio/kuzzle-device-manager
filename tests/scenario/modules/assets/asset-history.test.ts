@@ -112,12 +112,11 @@ describe("DeviceController: receiveMeasure", () => {
 
     await sdk.collection.refresh("engine-ayse", "assets");
 
-    const result2 = await sdk.document.get<AssetContent>(
+    expect((await sdk.document.get<AssetContent>(
       "engine-ayse",
       "assets",
       "Container-linked1"
-    );
-    expect(result2._source.metadata).toMatchObject({
+    ))._source.metadata).toMatchObject({
       height: 11,
       person: {
         company: "Kuzzle",
@@ -179,12 +178,11 @@ describe("DeviceController: receiveMeasure", () => {
 
     await sdk.collection.refresh("engine-ayse", "assets");
 
-    const result2 = await sdk.document.get<AssetContent>(
+    expect((await sdk.document.get<AssetContent>(
       "engine-ayse",
       "assets",
       "Container-linked3"
-    );
-    expect(result2._source.metadata).toMatchObject({
+    ))._source.metadata).toMatchObject({
       height: 20,
       person: {
         company: "Kuzzle",
