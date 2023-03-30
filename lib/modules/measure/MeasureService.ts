@@ -8,20 +8,29 @@ import {
 import _ from "lodash";
 
 import {
-  DeviceManagerConfiguration,
-  DeviceManagerPlugin,
-  InternalCollection,
-} from "../plugin";
-import { DeviceContent } from "../device";
-import {
   AskAssetHistoryAdd,
   AssetContent,
   AssetHistoryEventMeasure,
   AssetHistoryEventMetadata,
+  AssetSerializer,
 } from "../asset";
-import { Metadata, lock, ask, onAsk, keepStack, objectDiff } from "../shared";
-import { AssetSerializer } from "../asset";
+import { DeviceContent } from "../device";
+import {
+  DeviceManagerConfiguration,
+  DeviceManagerPlugin,
+  InternalCollection,
+} from "../plugin";
+import {
+  ask,
+  EmbeddedMeasure,
+  keepStack,
+  lock,
+  Metadata,
+  objectDiff,
+  onAsk,
+} from "../shared";
 
+import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
   AskMeasureIngest,
   EventMeasureProcessAfter,
@@ -29,7 +38,6 @@ import {
   TenantEventMeasureProcessAfter,
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
-import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
@@ -106,7 +114,7 @@ export class MeasureService {
         asset,
         measurements,
         payloadUuids
-      );
+      ).sort((measureA, measureB) => measureA.measuredAt - measureB.measuredAt);
 
       if (asset) {
         asset._source.measures ||= {};
@@ -130,8 +138,13 @@ export class MeasureService {
       }
 
       await this.updateDeviceMeasures(device, measures);
+
+      let assetMeasuresStates: Record<
+        number,
+        KDocument<AssetContent<any, any>>
+      > = {};
       if (asset) {
-        await this.updateAssetMeasures(asset, measures);
+        assetMeasuresStates = await this.updateAssetMeasures(asset, measures);
       }
 
       const promises = [];
@@ -201,32 +214,6 @@ export class MeasureService {
                 asset._id,
                 asset._source
               )
-              .then(async (updatedAsset) => {
-                const event: AssetHistoryEventMeasure = {
-                  measure: {
-                    // Filter measures who are not in the asset device link
-                    names: measures
-                      .filter((m) => Boolean(m.asset?.measureName))
-                      .map((m) => m.asset?.measureName),
-                  },
-                  name: "measure",
-                };
-
-                const changes = objectDiff(
-                  originalAssetMetadata,
-                  updatedAsset._source.metadata
-                );
-                if (changes.length !== 0) {
-                  (event as unknown as AssetHistoryEventMetadata).metadata = {
-                    names: changes,
-                  };
-                }
-
-                await ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
-                  "ask:device-manager:asset:history:add",
-                  { asset: updatedAsset, engineId, event }
-                );
-              })
               .catch((error) => {
                 throw keepStack(
                   error,
@@ -235,6 +222,48 @@ export class MeasureService {
                   )
                 );
               })
+          );
+        }
+
+        for (const [measuredAt, assetState] of Object.entries(
+          assetMeasuresStates
+        )) {
+          const measureNames = [];
+
+          for (const measure of Object.values(assetState._source.measures)) {
+            if (measure.measuredAt === Number(measuredAt)) {
+              measureNames.push(measure.name);
+            }
+          }
+
+          const event: AssetHistoryEventMeasure = {
+            measure: {
+              names: measureNames,
+            },
+            name: "measure",
+          };
+
+          const changes = objectDiff(
+            originalAssetMetadata,
+            asset._source.metadata
+          );
+
+          if (changes.length !== 0) {
+            (event as unknown as AssetHistoryEventMetadata).metadata = {
+              names: changes,
+            };
+          }
+
+          promises.push(
+            ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
+              "ask:device-manager:asset:history:add",
+              {
+                asset: assetState,
+                engineId,
+                event,
+                timestamp: Number(measuredAt),
+              }
+            )
           );
         }
       }
@@ -300,10 +329,16 @@ export class MeasureService {
     }
   }
 
+  // @todo there shouldn't be any logic related to asset historization here, but no other choices for now
   private updateAssetMeasures(
     asset: KDocument<AssetContent>,
     measurements: MeasureContent[]
-  ) {
+  ): Record<number, KDocument<AssetContent<any, any>>> {
+    const assetMeasuresStates: Record<
+      number,
+      KDocument<AssetContent<any, any>>
+    > = {};
+
     if (!asset._source.measures) {
       asset._source.measures = {};
     }
@@ -340,7 +375,13 @@ export class MeasureService {
         type: measurement.type,
         values: measurement.values,
       };
+
+      assetMeasuresStates[measurement.measuredAt] = JSON.parse(
+        JSON.stringify(asset)
+      );
     }
+
+    return assetMeasuresStates;
   }
 
   /**
