@@ -22,22 +22,43 @@ export class DummyTempDecoder extends Decoder {
     };
   }
 
-  async validate(payload: JSONObject) {
-    if (!payload.deviceEUI) {
-      throw new PreconditionError('Invalid payload: missing "deviceEUI"');
-    }
-
-    if (payload.invalid) {
+  async validate(rawPayload: JSONObject) {
+    if (rawPayload.measurements && rawPayload.measurements.length === 0) {
       return false;
     }
 
-    return true;
+    const payloads: any[] = rawPayload.measurements ?? [rawPayload];
+
+    return payloads.every((payload) => {
+      if (!payload.deviceEUI) {
+        throw new PreconditionError('Invalid payload: missing "deviceEUI"');
+      }
+
+      if (payload.invalid) {
+        return false;
+      }
+
+      return true;
+    });
   }
 
   async decode(
     decodedPayload: DecodedPayload<DummyTempDecoder>,
-    payload: JSONObject
+    rawPayload: JSONObject
   ): Promise<DecodedPayload<DummyTempDecoder>> {
+    const payloads: any[] = rawPayload.measurements ?? [rawPayload];
+
+    for (const payload of payloads) {
+      this.decodeSimplePayload(decodedPayload, payload);
+    }
+
+    return decodedPayload;
+  }
+
+  decodeSimplePayload(
+    decodedPayload: DecodedPayload<DummyTempDecoder>,
+    payload: JSONObject
+  ): void {
     if (payload?.metadata?.color) {
       decodedPayload.addMetadata(payload.deviceEUI, {
         color: payload.metadata.color,
@@ -82,7 +103,5 @@ export class DummyTempDecoder extends Decoder {
         }
       );
     }
-
-    return decodedPayload;
   }
 }

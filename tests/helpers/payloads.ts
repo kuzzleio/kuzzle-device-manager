@@ -1,12 +1,18 @@
 import { JSONObject, Kuzzle } from "kuzzle-sdk";
 
-export type DummyTempPayload = {
+export type DummyTempSimplePayload = {
   deviceEUI: string;
   temperature: number;
   measuredAt?: number;
   battery?: number;
   metadata?: JSONObject;
 };
+
+export type DummyTempPayload =
+  | DummyTempSimplePayload
+  | {
+      measurements: DummyTempSimplePayload[];
+    };
 
 export type DummyTempPositionPayload = DummyTempPayload & {
   location: {
