@@ -68,4 +68,14 @@ export interface AssetHistoryContent<
    * Asset content after the event
    */
   asset: AssetContent<TMeasures, TMetadata>;
+
+  /**
+   * Timestamp of the event according to its type
+   *
+   *  - `measure`: the date of measure (`measuredAt`)
+   *  - `metadata`: the current date of the event
+   *  - `link`: the current date of the event
+   *  - `unlink`: the current date of the event
+   */
+  timestamp: number;
 }

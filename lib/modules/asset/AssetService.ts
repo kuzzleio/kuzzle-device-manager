@@ -198,7 +198,8 @@ export class AssetService {
           },
           name: "metadata",
         },
-        updatedAsset
+        updatedAsset,
+        Date.now()
       );
 
       await this.app.trigger<EventAssetUpdateAfter>(
@@ -272,7 +273,8 @@ export class AssetService {
           },
           name: "metadata",
         },
-        asset
+        asset,
+        Date.now()
       );
 
       return asset;

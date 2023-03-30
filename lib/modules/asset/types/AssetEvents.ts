@@ -38,6 +38,7 @@ export type AskAssetHistoryAdd<TAssetHistoryEvent extends AssetHistoryEvent> = {
     engineId: string;
     event: TAssetHistoryEvent;
     asset: KDocument<AssetContent>;
+    timestamp: number;
   };
 
   result: void;

@@ -29,14 +29,16 @@ export class AssetHistoryService {
 
     onAsk<AskAssetHistoryAdd<AssetHistoryEvent>>(
       "ask:device-manager:asset:history:add",
-      async ({ engineId, event, asset }) => this.add(engineId, event, asset)
+      async ({ engineId, event, asset, timestamp }) =>
+        this.add(engineId, event, asset, timestamp)
     );
   }
 
   async add<TAssetHistoryEvent extends AssetHistoryEvent>(
     engineId: string,
     event: TAssetHistoryEvent,
-    asset: KDocument<AssetContent>
+    asset: KDocument<AssetContent>,
+    timestamp: number
   ) {
     await this.sdk.document.create<AssetHistoryContent<TAssetHistoryEvent>>(
       engineId,
@@ -45,6 +47,7 @@ export class AssetHistoryService {
         asset: asset._source,
         event,
         id: asset._id,
+        timestamp,
       }
     );
   }
