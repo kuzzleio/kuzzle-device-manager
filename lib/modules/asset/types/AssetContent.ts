@@ -26,10 +26,10 @@ export interface AssetContent<
      * @example
      *
      * [
-     *   { asset: "externalTemperature", device: "temperature" }
+     *   { asset: "externalTemperature", device: "temperature", type: "temperature" }
      * ]
      */
-    measureNames: Array<{ asset: string; device: string }>;
+    measureNames: Array<{ asset: string; device: string; type: string; }>;
   }>;
 }
 

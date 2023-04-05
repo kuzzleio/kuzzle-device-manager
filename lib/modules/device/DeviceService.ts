@@ -628,6 +628,7 @@ export class DeviceService {
       requestedMeasureNames.push({
         asset: deviceMeasure.name,
         device: deviceMeasure.name,
+        type: deviceMeasure.type
       });
     }
   }
