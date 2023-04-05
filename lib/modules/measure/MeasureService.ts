@@ -20,15 +20,7 @@ import {
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
-import {
-  ask,
-  EmbeddedMeasure,
-  keepStack,
-  lock,
-  Metadata,
-  objectDiff,
-  onAsk,
-} from "../shared";
+import { ask, keepStack, lock, Metadata, objectDiff, onAsk } from "../shared";
 
 import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
@@ -114,7 +106,7 @@ export class MeasureService {
         asset,
         measurements,
         payloadUuids
-      ).sort((measureA, measureB) => measureA.measuredAt - measureB.measuredAt);
+      );
 
       if (asset) {
         asset._source.measures ||= {};
@@ -139,12 +131,9 @@ export class MeasureService {
 
       await this.updateDeviceMeasures(device, measures);
 
-      let assetMeasuresStates: Record<
-        number,
-        KDocument<AssetContent<any, any>>
-      > = {};
+      let assetStates: Record<number, KDocument<AssetContent<any, any>>> = {};
       if (asset) {
-        assetMeasuresStates = await this.updateAssetMeasures(asset, measures);
+        assetStates = await this.updateAssetMeasures(asset, measures);
       }
 
       const promises = [];
@@ -225,47 +214,14 @@ export class MeasureService {
           );
         }
 
-        for (const [measuredAt, assetState] of Object.entries(
-          assetMeasuresStates
-        )) {
-          const measureNames = [];
+        const metadataChanges = objectDiff(
+          originalAssetMetadata,
+          asset._source.metadata
+        );
 
-          for (const measure of Object.values(assetState._source.measures)) {
-            if (measure.measuredAt === Number(measuredAt)) {
-              measureNames.push(measure.name);
-            }
-          }
-
-          const event: AssetHistoryEventMeasure = {
-            measure: {
-              names: measureNames,
-            },
-            name: "measure",
-          };
-
-          const changes = objectDiff(
-            originalAssetMetadata,
-            asset._source.metadata
-          );
-
-          if (changes.length !== 0) {
-            (event as unknown as AssetHistoryEventMetadata).metadata = {
-              names: changes,
-            };
-          }
-
-          promises.push(
-            ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
-              "ask:device-manager:asset:history:add",
-              {
-                asset: assetState,
-                engineId,
-                event,
-                timestamp: Number(measuredAt),
-              }
-            )
-          );
-        }
+        promises.push(
+          historizeAssetStates(assetStates, metadataChanges, engineId)
+        );
       }
 
       await Promise.all(promises);
@@ -329,15 +285,17 @@ export class MeasureService {
     }
   }
 
-  // @todo there shouldn't be any logic related to asset historization here, but no other choices for now
+  // @todo there shouldn't be any logic related to asset historization here, but no other choices for now. It needs to be re-architected
+  /**
+   * Update asset with each non-null non-computed measures.
+   *
+   * @returns An object of each asset state by timestamp.
+   */
   private updateAssetMeasures(
     asset: KDocument<AssetContent>,
     measurements: MeasureContent[]
   ): Record<number, KDocument<AssetContent<any, any>>> {
-    const assetMeasuresStates: Record<
-      number,
-      KDocument<AssetContent<any, any>>
-    > = {};
+    const assetStates: Record<number, KDocument<AssetContent<any, any>>> = {};
 
     if (!asset._source.measures) {
       asset._source.measures = {};
@@ -376,12 +334,10 @@ export class MeasureService {
         values: measurement.values,
       };
 
-      assetMeasuresStates[measurement.measuredAt] = JSON.parse(
-        JSON.stringify(asset)
-      );
+      assetStates[measurement.measuredAt] = JSON.parse(JSON.stringify(asset));
     }
 
-    return assetMeasuresStates;
+    return assetStates;
   }
 
   /**
@@ -426,7 +382,9 @@ export class MeasureService {
       measures.push(measureContent);
     }
 
-    return measures;
+    return measures.sort(
+      (measureA, measureB) => measureA.measuredAt - measureB.measuredAt
+    );
   }
 
   private async tryGetLinkedAsset(
@@ -484,4 +442,52 @@ export class MeasureService {
 
     return measureName.asset;
   }
+}
+
+/**
+ * Create a new document in the collection asset-history, for each asset states
+ */
+function historizeAssetStates(
+  assetStates: Record<number, KDocument<AssetContent<any, any>>>,
+  metadataChanges: string[],
+  engineId: string
+): Promise<any[]> {
+  const promises: Promise<any>[] = [];
+
+  for (const [measuredAt, assetState] of Object.entries(assetStates)) {
+    const measureNames = [];
+
+    for (const measure of Object.values(assetState._source.measures)) {
+      if (measure.measuredAt === Number(measuredAt)) {
+        measureNames.push(measure.name);
+      }
+    }
+
+    const event: AssetHistoryEventMeasure = {
+      measure: {
+        names: measureNames,
+      },
+      name: "measure",
+    };
+
+    if (metadataChanges.length !== 0) {
+      (event as unknown as AssetHistoryEventMetadata).metadata = {
+        names: metadataChanges,
+      };
+    }
+
+    promises.push(
+      ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
+        "ask:device-manager:asset:history:add",
+        {
+          asset: assetState,
+          engineId,
+          event,
+          timestamp: Number(measuredAt),
+        }
+      )
+    );
+  }
+
+  return Promise.all(promises);
 }
