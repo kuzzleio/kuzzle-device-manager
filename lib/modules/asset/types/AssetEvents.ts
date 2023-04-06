@@ -23,8 +23,6 @@ export type AskAssetRefreshModel = {
 
   payload: {
     assetModel: AssetModelContent;
-    assetId: string;
-    engineId: string;
   };
 
   result: void;

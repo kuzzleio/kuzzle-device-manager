@@ -7,7 +7,6 @@ import {
 import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import {
-  AskEngineList,
   AskEngineUpdateAll,
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
@@ -15,11 +14,7 @@ import {
 } from "../plugin";
 import { ask, onAsk } from "../shared/utils/ask";
 
-import {
-  ApiAssetSearchRequest,
-  ApiAssetSearchResult,
-  AskAssetRefreshModel,
-} from "../asset";
+import { AskAssetRefreshModel } from "../asset";
 import { flattenObject } from "../shared/utils/flattenObject";
 import { ModelSerializer } from "./ModelSerializer";
 import {
@@ -96,32 +91,9 @@ export class ModelService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: engineGroup,
+    await ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
+      assetModel: modelContent,
     });
-
-    for (const engine of engines) {
-      const assets = await this.sdk.query<
-        ApiAssetSearchRequest,
-        ApiAssetSearchResult
-      >({
-        action: "search",
-        body: { query: { equals: { model } } },
-        controller: "device-manager/assets",
-        engineId: engine.index,
-        lang: "koncorde",
-      });
-
-      await Promise.all(
-        assets.result.hits.map((asset) =>
-          ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
-            assetId: asset._id,
-            assetModel: modelContent,
-            engineId: engine.index,
-          })
-        )
-      );
-    }
 
     return assetModel;
   }
