@@ -131,7 +131,7 @@ export class MeasureService {
 
       await this.updateDeviceMeasures(device, measures);
 
-      let assetStates: Record<number, KDocument<AssetContent<any, any>>> = {};
+      let assetStates = new Map<number, KDocument<AssetContent>>();
       if (asset) {
         assetStates = await this.updateAssetMeasures(asset, measures);
       }
@@ -294,8 +294,8 @@ export class MeasureService {
   private updateAssetMeasures(
     asset: KDocument<AssetContent>,
     measurements: MeasureContent[]
-  ): Record<number, KDocument<AssetContent<any, any>>> {
-    const assetStates: Record<number, KDocument<AssetContent<any, any>>> = {};
+  ): Map<number, KDocument<AssetContent<any, any>>> {
+    const assetStates = new Map<number, KDocument<AssetContent>>();
 
     if (!asset._source.measures) {
       asset._source.measures = {};
@@ -334,7 +334,10 @@ export class MeasureService {
         values: measurement.values,
       };
 
-      assetStates[measurement.measuredAt] = JSON.parse(JSON.stringify(asset));
+      assetStates.set(
+        measurement.measuredAt,
+        JSON.parse(JSON.stringify(asset))
+      );
     }
 
     return assetStates;
@@ -448,17 +451,17 @@ export class MeasureService {
  * Create a new document in the collection asset-history, for each asset states
  */
 function historizeAssetStates(
-  assetStates: Record<number, KDocument<AssetContent<any, any>>>,
+  assetStates: Map<number, KDocument<AssetContent<any, any>>>,
   metadataChanges: string[],
   engineId: string
 ): Promise<any[]> {
   const promises: Promise<any>[] = [];
 
-  for (const [measuredAt, assetState] of Object.entries(assetStates)) {
+  for (const [measuredAt, assetState] of assetStates) {
     const measureNames = [];
 
     for (const measure of Object.values(assetState._source.measures)) {
-      if (measure.measuredAt === Number(measuredAt)) {
+      if (measure.measuredAt === measuredAt) {
         measureNames.push(measure.name);
       }
     }
