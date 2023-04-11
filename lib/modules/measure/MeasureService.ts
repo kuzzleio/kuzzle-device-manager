@@ -457,6 +457,7 @@ function historizeAssetStates(
 ): Promise<any[]> {
   const promises: Promise<any>[] = [];
 
+  const lastTimestampRecorded = Array.from(assetStates.keys()).pop();
   for (const [measuredAt, assetState] of assetStates) {
     const measureNames = [];
 
@@ -473,7 +474,7 @@ function historizeAssetStates(
       name: "measure",
     };
 
-    if (metadataChanges.length !== 0) {
+    if (metadataChanges.length !== 0 && measuredAt === lastTimestampRecorded) {
       (event as unknown as AssetHistoryEventMetadata).metadata = {
         names: metadataChanges,
       };
