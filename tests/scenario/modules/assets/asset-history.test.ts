@@ -35,7 +35,7 @@ describe("DeviceController: receiveMeasure", () => {
     expect(result.hits[0]._source.event.metadata).toBeUndefined();
   });
 
-  it("Historize asset for each measurements of the same measure received in non-chronological order", async () => {
+  it("should historize asset for each measurements of the same measure received in non-chronological order", async () => {
     await sendDummyTempPayloads(sdk, [
       {
         measurements: [
@@ -267,6 +267,67 @@ describe("DeviceController: receiveMeasure", () => {
       trailer: {
         capacity: 1234,
         weight: 128,
+
+      }
+    });
+  });
+
+  it("should add a metadata event to the last history entry only if multiple measurements received", async () => {
+    await sendDummyTempPayloads(sdk, [
+      {
+        measurements: [
+          {
+            deviceEUI: "linked1",
+            temperature: 21,
+            measuredAt: 1680096360000, // 1:26:00 PM UTC
+            metadata: {
+              color: "test-metadata-history-with-measure",
+            },
+          },
+          {
+            deviceEUI: "linked1",
+            temperature: 42,
+            measuredAt: 1680096420000, // 1:27:00 PM UTC
+          },
+        ],
+      },
+    ]);
+    await sdk.collection.refresh("engine-ayse", "assets-history");
+
+    const result = await sdk.document.search<AssetHistoryContent>(
+      "engine-ayse",
+      "assets-history",
+      { sort: { timestamp: "desc" } }
+    );
+
+    expect(result.hits).toHaveLength(2);
+    expect(result.hits[0]._source).toMatchObject({
+      id: "Container-linked1",
+      event: {
+        name: "measure",
+        measure: {
+          names: ["temperatureExt"],
+        },
+        metadata: {
+          names: ["weight", "trailer.capacity"],
+        },
+      },
+      asset: {
+        measures: { temperatureExt: { values: { temperature: 42 } } },
+        metadata: { weight: 42042, trailer: { capacity: 2048 } },
+      },
+    });
+    expect(result.hits[1]._source).toMatchObject({
+      id: "Container-linked1",
+      event: {
+        name: "measure",
+        measure: {
+          names: ["temperatureExt"],
+        },
+      },
+      asset: {
+        measures: { temperatureExt: { values: { temperature: 21 } } },
+        metadata: { weight: 10, trailer: { capacity: 1024 } },
       },
     });
   });

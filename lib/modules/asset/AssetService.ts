@@ -362,7 +362,8 @@ export class AssetService {
             },
             name: "metadata",
           },
-          asset as KDocument<AssetContent>
+          asset as KDocument<AssetContent>,
+          Date.now()
         )
       )
     );

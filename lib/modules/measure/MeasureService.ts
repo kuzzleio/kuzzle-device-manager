@@ -94,7 +94,7 @@ export class MeasureService {
         engineId,
         device._source.assetId
       );
-      const originalAssetMetadata =
+      const originalAssetMetadata: Metadata =
         asset === null
           ? {}
           : JSON.parse(JSON.stringify(asset._source.metadata));
@@ -213,13 +213,13 @@ export class MeasureService {
               })
           );
 
-          const metadataChanges = objectDiff(
-            originalAssetMetadata,
-            asset._source.metadata
-          );
-
           promises.push(
-            historizeAssetStates(assetStates, metadataChanges, engineId)
+            historizeAssetStates(
+              assetStates,
+              engineId,
+              originalAssetMetadata,
+              asset._source.metadata
+            )
           );
         }
       }
@@ -452,10 +452,12 @@ export class MeasureService {
  */
 function historizeAssetStates(
   assetStates: Map<number, KDocument<AssetContent<any, any>>>,
-  metadataChanges: string[],
-  engineId: string
+  engineId: string,
+  originalAssetMetadata: Metadata,
+  assetMetadata: Metadata
 ): Promise<any[]> {
   const promises: Promise<any>[] = [];
+  const metadataChanges = objectDiff(originalAssetMetadata, assetMetadata);
 
   const lastTimestampRecorded = Array.from(assetStates.keys()).pop();
   for (const [measuredAt, assetState] of assetStates) {
@@ -474,10 +476,14 @@ function historizeAssetStates(
       name: "measure",
     };
 
+    assetState._source.metadata = originalAssetMetadata;
+
     if (metadataChanges.length !== 0 && measuredAt === lastTimestampRecorded) {
       (event as unknown as AssetHistoryEventMetadata).metadata = {
         names: metadataChanges,
       };
+
+      assetState._source.metadata = assetMetadata;
     }
 
     promises.push(
