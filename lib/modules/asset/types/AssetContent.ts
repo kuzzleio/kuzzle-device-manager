@@ -29,7 +29,7 @@ export interface AssetContent<
      *   { asset: "externalTemperature", device: "temperature", type: "temperature" }
      * ]
      */
-    measureNames: Array<{ asset: string; device: string; type: string; }>;
+    measureNames: Array<{ asset: string; device: string; type: string }>;
   }>;
 }
 

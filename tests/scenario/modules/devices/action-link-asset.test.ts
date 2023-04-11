@@ -33,7 +33,13 @@ describe("DeviceController: receiveMeasure", () => {
       _id: "DummyTemp-unlinked1",
       assetId: "Container-unlinked1",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureExt", type: "temperature" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureExt",
+            type: "temperature",
+          },
+        ],
       },
     });
 
@@ -75,7 +81,13 @@ describe("DeviceController: receiveMeasure", () => {
       _id: "DummyTemp-unlinked2",
       assetId: "Container-unlinked1",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureInt", type: "temperature" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureInt",
+            type: "temperature",
+          },
+        ],
       },
     });
 
@@ -106,7 +118,13 @@ describe("DeviceController: receiveMeasure", () => {
       _id: "DummyTempPosition-unlinked3",
       assetId: "Container-linked1",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureInt", type: "temperature" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureInt",
+            type: "temperature",
+          },
+        ],
       },
     });
 
@@ -119,7 +137,11 @@ describe("DeviceController: receiveMeasure", () => {
       assetId: "Container-linked1",
       body: {
         measureNames: [
-          { device: "temperature", asset: "temperatureInt", type: "temperature" },
+          {
+            device: "temperature",
+            asset: "temperatureInt",
+            type: "temperature",
+          },
           { device: "position", asset: "position", type: "position" },
         ],
       },
@@ -164,7 +186,13 @@ describe("DeviceController: receiveMeasure", () => {
       _id: "DummyTemp-unlinked1",
       assetId: "Container-unlinked1",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureExt", type: "temperature" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureExt",
+            type: "temperature",
+          },
+        ],
       },
     });
 
@@ -176,7 +204,13 @@ describe("DeviceController: receiveMeasure", () => {
       assetId: "Container-unlinked1",
       implicitMeasuresLinking: true,
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureInt", type: "temperature" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureInt",
+            type: "temperature",
+          },
+        ],
       },
     });
 
@@ -223,7 +257,13 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-unlinked1",
         assetId: "Container-linked1",
         body: {
-          measureNames: [{ asset: "temperatureExt", device: "temperature", type: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+              type: "temperature",
+            },
+          ],
         },
       })
     ).rejects.toMatchObject({
@@ -241,7 +281,13 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-detached1",
         assetId: "Container-unlinked1",
         body: {
-          measureNames: [{ asset: "temperatureExt", device: "temperature", type: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+              type: "temperature",
+            },
+          ],
         },
       })
     ).rejects.toMatchObject({
@@ -258,7 +304,13 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-unlinked1",
         assetId: "Container-unlinked1",
         body: {
-          measureNames: [{ asset: "temperatureExt", device: "temperature", type: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+              type: "temperature",
+            },
+          ],
         },
       })
     ).rejects.toMatchObject({
@@ -276,7 +328,13 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-unlinked1",
         assetId: "Container-notexisting",
         body: {
-          measureNames: [{ asset: "temperatureExt", device: "temperature", type: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+              type: "temperature",
+            },
+          ],
         },
       })
     ).rejects.toMatchObject({
