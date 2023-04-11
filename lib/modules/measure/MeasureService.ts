@@ -212,16 +212,16 @@ export class MeasureService {
                 );
               })
           );
+
+          const metadataChanges = objectDiff(
+            originalAssetMetadata,
+            asset._source.metadata
+          );
+
+          promises.push(
+            historizeAssetStates(assetStates, metadataChanges, engineId)
+          );
         }
-
-        const metadataChanges = objectDiff(
-          originalAssetMetadata,
-          asset._source.metadata
-        );
-
-        promises.push(
-          historizeAssetStates(assetStates, metadataChanges, engineId)
-        );
       }
 
       await Promise.all(promises);
