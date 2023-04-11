@@ -88,7 +88,7 @@ export class AssetService {
           index: engine.index,
         }));
 
-        const assetSearch = await this.sdk.query<
+        const assets = await this.sdk.query<
           BaseRequest,
           JSONObject // TODO: switch to DocumentSearchResult<AssetContent> once KHit<> has index and collection properties
         >({
@@ -111,40 +111,37 @@ export class AssetService {
 
         const removedMetadata: string[] = [];
 
-        const updatedAssetsPerIndex: {
-          [x: string]: KDocument<AssetContent>[];
-        } = assetSearch.result.hits.reduce(
-          (
-            acc: { [x: string]: KDocument<AssetContent>[] },
-            asset: JSONObject
-          ) => {
-            const assetMetadata = Object.fromEntries(
-              Object.entries(asset._source.metadata).filter(([key]) => {
+        const updatedAssetsPerIndex: Record<string, KDocument<AssetContent>[]> =
+          assets.result.hits.reduce(
+            (
+              acc: Record<string, KDocument<AssetContent>[]>,
+              asset: JSONObject
+            ) => {
+              const assetMetadata = { ...asset._source.metadata };
+
+              for (const key of Object.keys(asset._source.metadata)) {
                 if (!(key in modelMetadata)) {
                   removedMetadata.push(key);
-                  return false;
+                  delete assetMetadata[key];
                 }
+              }
 
-                return true;
-              })
-            );
+              asset._source.metadata = {
+                ...modelMetadata,
+                ...assetMetadata,
+              };
 
-            asset._source.metadata = {
-              ...modelMetadata,
-              ...assetMetadata,
-            };
+              acc[asset.index].push(asset as KDocument<AssetContent>);
 
-            acc[asset.index].push(asset as KDocument<AssetContent>);
-
-            return acc;
-          },
-          Object.fromEntries(
-            engines.map((engine) => [
-              engine.index,
-              [] as KDocument<AssetContent>[],
-            ])
-          )
-        );
+              return acc;
+            },
+            Object.fromEntries(
+              engines.map((engine) => [
+                engine.index,
+                [] as KDocument<AssetContent>[],
+              ])
+            )
+          );
 
         for (const [index, updatedAssets] of Object.entries(
           updatedAssetsPerIndex
