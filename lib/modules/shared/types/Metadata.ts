@@ -1,9 +1,12 @@
+import { JSONObject } from "kuzzle-sdk";
+
 export type MetadataValue =
   | boolean
   | number
   | string
   | { lat: number; lon: number }
-  | null;
+  | null
+  | JSONObject;
 
 export type Metadata = Record<
   string,
