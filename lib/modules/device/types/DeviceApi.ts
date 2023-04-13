@@ -141,10 +141,10 @@ export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
      * @example
      *
      * [
-     *   { asset: "externalTemperature", device: "temperature", type: "temperature" }
+     *   { asset: "externalTemperature", device: "temperature" }
      * ]
      */
-    measureNames?: Array<{ asset: string; device: string; type: string }>;
+    measureNames?: Array<{ asset: string; device: string }>;
   };
 }
 export type ApiDeviceLinkAssetResult = {

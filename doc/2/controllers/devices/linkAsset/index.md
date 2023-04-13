@@ -33,8 +33,7 @@ Method: PUT
     "measureNames": [
       {
         "asset": "<name of the measure in the asset>",
-        "device": "<name of the measure in the device>",
-        "type": "<type of the measure in the device>"
+        "device": "<name of the measure in the device>"
       }
     ]
   },

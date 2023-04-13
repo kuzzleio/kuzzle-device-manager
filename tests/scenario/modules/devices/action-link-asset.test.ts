@@ -37,7 +37,6 @@ describe("DeviceController: receiveMeasure", () => {
           {
             device: "temperature",
             asset: "temperatureExt",
-            type: "temperature",
           },
         ],
       },
@@ -85,7 +84,6 @@ describe("DeviceController: receiveMeasure", () => {
           {
             device: "temperature",
             asset: "temperatureInt",
-            type: "temperature",
           },
         ],
       },
@@ -122,7 +120,6 @@ describe("DeviceController: receiveMeasure", () => {
           {
             device: "temperature",
             asset: "temperatureInt",
-            type: "temperature",
           },
         ],
       },
@@ -140,9 +137,8 @@ describe("DeviceController: receiveMeasure", () => {
           {
             device: "temperature",
             asset: "temperatureInt",
-            type: "temperature",
           },
-          { device: "position", asset: "position", type: "position" },
+          { device: "position", asset: "position" },
         ],
       },
     });
@@ -190,7 +186,6 @@ describe("DeviceController: receiveMeasure", () => {
           {
             device: "temperature",
             asset: "temperatureExt",
-            type: "temperature",
           },
         ],
       },
@@ -208,7 +203,6 @@ describe("DeviceController: receiveMeasure", () => {
           {
             device: "temperature",
             asset: "temperatureInt",
-            type: "temperature",
           },
         ],
       },
@@ -261,7 +255,6 @@ describe("DeviceController: receiveMeasure", () => {
             {
               asset: "temperatureExt",
               device: "temperature",
-              type: "temperature",
             },
           ],
         },
@@ -285,7 +278,6 @@ describe("DeviceController: receiveMeasure", () => {
             {
               asset: "temperatureExt",
               device: "temperature",
-              type: "temperature",
             },
           ],
         },
@@ -308,7 +300,6 @@ describe("DeviceController: receiveMeasure", () => {
             {
               asset: "temperatureExt",
               device: "temperature",
-              type: "temperature",
             },
           ],
         },
@@ -332,7 +323,6 @@ describe("DeviceController: receiveMeasure", () => {
             {
               asset: "temperatureExt",
               device: "temperature",
-              type: "temperature",
             },
           ],
         },

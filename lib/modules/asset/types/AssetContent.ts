@@ -21,7 +21,7 @@ export interface AssetContent<
     /**
      * Names of the linked measures
      *
-     * Array<{ asset: string, device: string }>
+     * Array<{ asset: string, device: string, type: string }>
      *
      * @example
      *
