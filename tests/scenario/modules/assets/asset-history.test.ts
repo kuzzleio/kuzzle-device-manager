@@ -267,8 +267,7 @@ describe("DeviceController: receiveMeasure", () => {
       trailer: {
         capacity: 1234,
         weight: 128,
-
-      }
+      },
     });
   });
 
