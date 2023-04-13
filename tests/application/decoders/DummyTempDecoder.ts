@@ -34,11 +34,7 @@ export class DummyTempDecoder extends Decoder {
         throw new PreconditionError('Invalid payload: missing "deviceEUI"');
       }
 
-      if (payload.invalid) {
-        return false;
-      }
-
-      return true;
+      return !payload.invalid;
     });
   }
 

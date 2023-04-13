@@ -289,12 +289,13 @@ export class MeasureService {
   /**
    * Update asset with each non-null non-computed measures.
    *
-   * @returns An object of each asset state by timestamp.
+   * @returns A map of each asset state by measuredAt timestamp.
    */
   private updateAssetMeasures(
     asset: KDocument<AssetContent>,
     measurements: MeasureContent[]
   ): Map<number, KDocument<AssetContent<any, any>>> {
+    // We use a Map in order to preserve the insertion order to avoid another sort
     const assetStates = new Map<number, KDocument<AssetContent>>();
 
     if (!asset._source.measures) {
