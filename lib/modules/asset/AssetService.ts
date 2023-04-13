@@ -75,7 +75,7 @@ export class AssetService {
   registerAskEvents() {
     onAsk<AskAssetRefreshModel>(
       "ask:device-manager:asset:refresh-model",
-      this.refreshModel
+      this.refreshModel.bind(this)
     );
   }
 
@@ -334,16 +334,13 @@ export class AssetService {
   /**
    * Replace an asset metadata
    */
-  public async mReplace(
-    user: User,
+  public async mReplaceAndHistorize(
     engineId: string,
     assets: KDocument<AssetContent>[],
     removedMetadata: string[],
     { refresh }: { refresh: any }
   ): Promise<mReplaceResponse> {
-    const replacedAssets = await this.impersonatedSdk(
-      user
-    ).document.mReplace<AssetContent>(
+    const replacedAssets = await this.sdk.document.mReplace<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assets.map((asset) => ({ _id: asset._id, body: asset._source })),
@@ -445,7 +442,7 @@ export class AssetService {
 
     await Promise.all(
       Object.entries(updatedAssetsPerIndex).map(([index, updatedAssets]) =>
-        this.mReplace(null, index, updatedAssets, removedMetadata, {
+        this.mReplaceAndHistorize(index, updatedAssets, removedMetadata, {
           refresh: "wait_for",
         })
       )
