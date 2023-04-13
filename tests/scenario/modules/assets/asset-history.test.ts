@@ -41,18 +41,18 @@ describe("DeviceController: receiveMeasure", () => {
         measurements: [
           {
             deviceEUI: "linked1",
-            temperature: 40.2,
-            measuredAt: 1680096420000, // 1:27:00 PM UTC
+            temperature: 13.27,
+            measuredAt: 1680096420000, // 13:27:00 UTC
           },
           {
             deviceEUI: "linked1",
-            temperature: 41.2,
-            measuredAt: 1680096360000, // 1:26:00 PM UTC
+            temperature: 13.25,
+            measuredAt: 1680096300000, // 13:25:00 UTC
           },
           {
             deviceEUI: "linked1",
-            temperature: 42.2,
-            measuredAt: 1680096300000, // 1:25:00 PM UTC
+            temperature: 13.26,
+            measuredAt: 1680096360000, // 13:26:00 UTC
           },
         ],
       },
@@ -75,7 +75,7 @@ describe("DeviceController: receiveMeasure", () => {
         },
       },
       asset: {
-        measures: { temperatureExt: { values: { temperature: 40.2 } } },
+        measures: { temperatureExt: { values: { temperature: 13.27 } } },
       },
     });
     expect(result.hits[1]._source).toMatchObject({
@@ -87,7 +87,7 @@ describe("DeviceController: receiveMeasure", () => {
         },
       },
       asset: {
-        measures: { temperatureExt: { values: { temperature: 41.2 } } },
+        measures: { temperatureExt: { values: { temperature: 13.26 } } },
       },
     });
     expect(result.hits[2]._source).toMatchObject({
@@ -99,7 +99,7 @@ describe("DeviceController: receiveMeasure", () => {
         },
       },
       asset: {
-        measures: { temperatureExt: { values: { temperature: 42.2 } } },
+        measures: { temperatureExt: { values: { temperature: 13.25 } } },
       },
     });
   });
@@ -278,16 +278,16 @@ describe("DeviceController: receiveMeasure", () => {
         measurements: [
           {
             deviceEUI: "linked1",
-            temperature: 21,
-            measuredAt: 1680096360000, // 1:26:00 PM UTC
+            temperature: 13.26,
+            measuredAt: 1680096360000, // 13:26:00 UTC
             metadata: {
               color: "test-metadata-history-with-measure",
             },
           },
           {
             deviceEUI: "linked1",
-            temperature: 42,
-            measuredAt: 1680096420000, // 1:27:00 PM UTC
+            temperature: 13.27,
+            measuredAt: 1680096420000, // 13:27:00 UTC
           },
         ],
       },
@@ -313,7 +313,7 @@ describe("DeviceController: receiveMeasure", () => {
         },
       },
       asset: {
-        measures: { temperatureExt: { values: { temperature: 42 } } },
+        measures: { temperatureExt: { values: { temperature: 13.27 } } },
         metadata: { weight: 42042, trailer: { capacity: 2048 } },
       },
     });
@@ -326,7 +326,7 @@ describe("DeviceController: receiveMeasure", () => {
         },
       },
       asset: {
-        measures: { temperatureExt: { values: { temperature: 21 } } },
+        measures: { temperatureExt: { values: { temperature: 13.26 } } },
         metadata: { weight: 10, trailer: { capacity: 1024 } },
       },
     });
