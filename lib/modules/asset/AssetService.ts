@@ -1,26 +1,42 @@
-import _ from "lodash";
 import { Backend, BadRequestError, PluginContext, User } from "kuzzle";
-import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
+import {
+  BaseRequest,
+  JSONObject,
+  KDocument,
+  KHit,
+  SearchResult,
+  mReplaceResponse,
+} from "kuzzle-sdk";
+import _ from "lodash";
 
-import { MeasureContent } from "../measure/";
 import { AskDeviceUnlinkAsset } from "../device";
-import { EmbeddedMeasure, Metadata, lock, ask, flattenObject } from "../shared";
+import { MeasureContent } from "../measure/";
+import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
+  AskEngineList,
   DeviceManagerConfiguration,
-  InternalCollection,
   DeviceManagerPlugin,
+  InternalCollection,
 } from "../plugin";
-import { AskModelAssetGet } from "../model";
-
-import { AssetContent } from "./types/AssetContent";
-import { AssetSerializer } from "./model/AssetSerializer";
 import {
+  EmbeddedMeasure,
+  Metadata,
+  ask,
+  flattenObject,
+  lock,
+  onAsk,
+} from "../shared";
+
+import { AssetHistoryService } from "./AssetHistoryService";
+import { ApiAssetGetMeasuresResult } from "./exports";
+import { AssetSerializer } from "./model/AssetSerializer";
+import { AssetContent } from "./types/AssetContent";
+import {
+  AskAssetRefreshModel,
   EventAssetUpdateAfter,
   EventAssetUpdateBefore,
 } from "./types/AssetEvents";
-import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetHistoryEventMetadata } from "./types/AssetHistoryContent";
-import { ApiAssetGetMeasuresResult } from "./types/AssetApi";
 
 export class AssetService {
   private context: PluginContext;
@@ -52,6 +68,15 @@ export class AssetService {
     this.context = plugin.context;
     this.config = plugin.config;
     this.assetHistoryService = assetHistoryService;
+
+    this.registerAskEvents();
+  }
+
+  registerAskEvents() {
+    onAsk<AskAssetRefreshModel>(
+      "ask:device-manager:asset:refresh-model",
+      this.refreshModel.bind(this)
+    );
   }
 
   /**
@@ -306,6 +331,42 @@ export class AssetService {
     return result;
   }
 
+  /**
+   * Replace an asset metadata
+   */
+  public async mReplaceAndHistorize(
+    engineId: string,
+    assets: KDocument<AssetContent>[],
+    removedMetadata: string[],
+    { refresh }: { refresh: any }
+  ): Promise<mReplaceResponse> {
+    const replacedAssets = await this.sdk.document.mReplace<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      assets.map((asset) => ({ _id: asset._id, body: asset._source })),
+      { refresh, source: true }
+    );
+
+    await Promise.all(
+      replacedAssets.successes.map((asset) =>
+        this.assetHistoryService.add<AssetHistoryEventMetadata>(
+          engineId,
+          {
+            metadata: {
+              names: Object.keys(flattenObject(asset._source.metadata)).concat(
+                removedMetadata.map((name) => `-${name}`)
+              ),
+            },
+            name: "metadata",
+          },
+          asset as KDocument<AssetContent>
+        )
+      )
+    );
+
+    return replacedAssets;
+  }
+
   private async getEngine(engineId: string): Promise<JSONObject> {
     const engine = await this.sdk.document.get(
       this.config.adminIndex,
@@ -314,5 +375,77 @@ export class AssetService {
     );
 
     return engine._source.engine;
+  }
+
+  private async refreshModel({
+    assetModel,
+  }: {
+    assetModel: AssetModelContent;
+  }): Promise<void> {
+    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+      group: assetModel.engineGroup,
+    });
+
+    const targets = engines.map((engine) => ({
+      collections: [InternalCollection.ASSETS],
+      index: engine.index,
+    }));
+
+    const assets = await this.sdk.query<
+      BaseRequest,
+      JSONObject // TODO: switch to DocumentSearchResult<AssetContent> once KHit<> has index and collection properties
+    >({
+      action: "search",
+      body: { query: { equals: { model: assetModel.asset.model } } },
+      controller: "document",
+      lang: "koncorde",
+      targets,
+    });
+
+    const modelMetadata = {};
+
+    for (const metadataName of Object.keys(assetModel.asset.metadataMappings)) {
+      const defaultMetadata = assetModel.asset.defaultMetadata[metadataName];
+      modelMetadata[metadataName] = defaultMetadata ?? null;
+    }
+
+    const removedMetadata: string[] = [];
+
+    const updatedAssetsPerIndex: Record<string, KDocument<AssetContent>[]> =
+      assets.result.hits.reduce(
+        (acc: Record<string, KDocument<AssetContent>[]>, asset: JSONObject) => {
+          const assetMetadata = { ...asset._source.metadata };
+
+          for (const key of Object.keys(asset._source.metadata)) {
+            if (!(key in modelMetadata)) {
+              removedMetadata.push(key);
+              delete assetMetadata[key];
+            }
+          }
+
+          asset._source.metadata = {
+            ...modelMetadata,
+            ...assetMetadata,
+          };
+
+          acc[asset.index].push(asset as KDocument<AssetContent>);
+
+          return acc;
+        },
+        Object.fromEntries(
+          engines.map((engine) => [
+            engine.index,
+            [] as KDocument<AssetContent>[],
+          ])
+        )
+      );
+
+    await Promise.all(
+      Object.entries(updatedAssetsPerIndex).map(([index, updatedAssets]) =>
+        this.mReplaceAndHistorize(index, updatedAssets, removedMetadata, {
+          refresh: "wait_for",
+        })
+      )
+    );
   }
 }

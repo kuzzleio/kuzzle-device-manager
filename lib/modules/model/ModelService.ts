@@ -14,14 +14,15 @@ import {
 } from "../plugin";
 import { ask, onAsk } from "../shared/utils/ask";
 
+import { AskAssetRefreshModel } from "../asset";
+import { flattenObject } from "../shared/utils/flattenObject";
+import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
 } from "./types/ModelContent";
-import { ModelSerializer } from "./ModelSerializer";
 import { AskModelAssetGet, AskModelDeviceGet } from "./types/ModelEvents";
-import { flattenObject } from "../shared/utils/flattenObject";
 
 export class ModelService {
   private config: DeviceManagerConfiguration;
@@ -90,7 +91,9 @@ export class ModelService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    // @todo update assets in every engine to add the new metadata with null value or default metadata
+    await ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
+      assetModel: modelContent,
+    });
 
     return assetModel;
   }
