@@ -1,3 +1,8 @@
+/**
+ * Base mappings for the "devices" collection.
+ *
+ * Those mappings does not contains the `measures` and `metadata` mappings.
+ */
 export const devicesMappings = {
   dynamic: "strict",
   properties: {

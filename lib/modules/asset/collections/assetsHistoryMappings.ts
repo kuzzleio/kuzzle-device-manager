@@ -1,3 +1,8 @@
+/**
+ * Base mappings for the "assetsHistory" collection.
+ *
+ * Those mappings does not contains the `asset` mappings.
+ */
 export const assetsHistoryMappings = {
   dynamic: "strict",
   properties: {

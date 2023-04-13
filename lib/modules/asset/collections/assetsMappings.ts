@@ -1,3 +1,8 @@
+/**
+ * Base mappings for the "assets" collection.
+ *
+ * Those mappings does not contains the `measures` and `metadata` mappings.
+ */
 export const assetsMappings = {
   dynamic: "strict",
   properties: {
