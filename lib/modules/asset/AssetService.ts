@@ -1,6 +1,7 @@
 import { Backend, BadRequestError, PluginContext, User } from "kuzzle";
 import {
   BaseRequest,
+  DocumentSearchResult,
   JSONObject,
   KDocument,
   KHit,
@@ -393,7 +394,7 @@ export class AssetService {
 
     const assets = await this.sdk.query<
       BaseRequest,
-      JSONObject // TODO: switch to DocumentSearchResult<AssetContent> once KHit<> has index and collection properties
+      DocumentSearchResult<AssetContent>
     >({
       action: "search",
       body: { query: { equals: { model: assetModel.asset.model } } },
