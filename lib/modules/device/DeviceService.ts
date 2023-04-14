@@ -459,7 +459,7 @@ export class DeviceService {
         this.getDeviceModel(device._source.model),
       ]);
 
-      let updatedMeasureNames: MeasureName[] = [];
+      const updatedMeasureNames: MeasureName[] = [];
       for (const measure of measureNames) {
         const type = deviceModel.device.measures.find(
           (deviceMeasure) => deviceMeasure.name === measure.device
@@ -841,18 +841,5 @@ export class DeviceService {
       engineGroup,
       model,
     });
-  }
-
-  private addMeasureTypes(
-    deviceModel: DeviceModelContent,
-    measureNames: MeasureName[]
-  ) {
-    let typeMeasureByNames = [];
-    for (const measure of deviceModel.device.measures) {
-      typeMeasureByNames[measure.name] = measure.type;
-    }
-    for (let measureName of measureNames) {
-      measureName.type = typeMeasureByNames[measureName.asset];
-    }
   }
 }
