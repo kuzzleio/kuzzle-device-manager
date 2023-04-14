@@ -452,7 +452,7 @@ export class MeasureService {
 /**
  * Create a new document in the collection asset-history, for each asset states
  */
-function historizeAssetStates(
+async function historizeAssetStates(
   assetStates: Map<number, KDocument<AssetContent<any, any>>>,
   engineId: string,
   originalAssetMetadata: Metadata,
