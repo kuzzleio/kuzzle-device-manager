@@ -11,7 +11,6 @@ import {
 import _ from "lodash";
 
 import { AskDeviceUnlinkAsset } from "../device";
-import { MeasureContent } from "../measure/";
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
   AskEngineList,
@@ -29,7 +28,6 @@ import {
 } from "../shared";
 
 import { AssetHistoryService } from "./AssetHistoryService";
-import { ApiAssetGetMeasuresResult } from "./exports";
 import { AssetSerializer } from "./model/AssetSerializer";
 import { AssetContent } from "./types/AssetContent";
 import {

@@ -52,7 +52,7 @@ describe("DevicesController:exportMeasures", () => {
       response.data.on("end", resolve);
     });
 
-    expect(csv.length).toBe(25);
+    expect(csv).toHaveLength(25);
     expect(csv[0]).toBe(
       "_id,measuredAt,type,origin._id,origin.deviceModel,asset._id,asset.model,values.temperature,values.battery\n"
     );
@@ -106,7 +106,7 @@ describe("DevicesController:exportMeasures", () => {
       response.data.on("end", resolve);
     });
 
-    expect(csv.length).toBe(3);
+    expect(csv).toHaveLength(3);
     expect(csv[0]).toBe(
       "_id,measuredAt,type,origin._id,origin.deviceModel,asset._id,asset.model,values.temperature,values.battery\n"
     );

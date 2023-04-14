@@ -65,7 +65,7 @@ describe("AssetsController:exportMeasures", () => {
 
     writeFileSync("./asset.csv", csv.join(""));
 
-    expect(csv.length).toBe(5);
+    expect(csv).toHaveLength(5);
     expect(csv[0]).toBe(
       "_id,measuredAt,type,origin._id,origin.deviceModel,asset._id,asset.model,values.temperatureExt,values.temperatureInt,values.position,values.temperatureWeather\n"
     );

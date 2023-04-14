@@ -1,16 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { PassThrough } from "node:stream";
-
-import _ from "lodash";
-import { stringify } from "csv-stringify/sync";
-import {
-  Backend,
-  BadRequestError,
-  NotFoundError,
-  Plugin,
-  PluginContext,
-  User,
-} from "kuzzle";
+import { Backend, BadRequestError, Plugin, PluginContext, User } from "kuzzle";
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
@@ -27,7 +15,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
 } from "../model";
-import { DecodedMeasurement, MeasureContent } from "../measure";
+import { DecodedMeasurement } from "../measure";
 
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -36,10 +24,7 @@ import {
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
-import {
-  ApiDeviceLinkAssetRequest,
-  ApiDeviceGetMeasuresResult,
-} from "./types/DeviceApi";
+import { ApiDeviceLinkAssetRequest } from "./types/DeviceApi";
 import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 
 export class DeviceService {

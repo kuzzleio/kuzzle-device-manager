@@ -116,12 +116,12 @@ export class MeasureExporter {
     );
 
     const exportParams: ExportParams = {
-      target: this.target,
-      model: digitalTwin._source.model,
       from,
+      id: digitalTwinId,
+      model: digitalTwin._source.model,
       query: searchQuery,
       sort,
-      id: digitalTwinId,
+      target: this.target,
     };
 
     const exportId = randomUUID();
@@ -136,10 +136,10 @@ export class MeasureExporter {
 
     if (user._id !== "-1") {
       const { result } = await this.sdk.as(user).query({
-        controller: "auth",
         action: "createToken",
-        singleUse: true,
+        controller: "auth",
         expiresIn: TWO_MINUTES * 1000,
+        singleUse: true,
       });
 
       link += `?jwt=${result.token}`;
@@ -171,8 +171,8 @@ export class MeasureExporter {
       const modelDocument = await ask<AskModelDeviceGet | AskModelAssetGet>(
         `ask:device-manager:model:${target}:get`,
         {
-          model,
           engineGroup: engine.group,
+          model,
         }
       );
 
