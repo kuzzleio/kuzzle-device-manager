@@ -235,7 +235,7 @@ export class AssetsController {
       target: "asset",
     });
 
-    const { exportId } = await exporter.prepareExport(id, {
+    const { link } = await exporter.prepareExport(request.getUser(), id, {
       endAt,
       from,
       query,
@@ -244,6 +244,6 @@ export class AssetsController {
       type,
     });
 
-    return { exportId };
+    return { link };
   }
 }

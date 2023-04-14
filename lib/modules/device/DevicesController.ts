@@ -390,7 +390,7 @@ export class DevicesController {
       target: "device",
     });
 
-    const { exportId } = await exporter.prepareExport(id, {
+    const { link } = await exporter.prepareExport(request.getUser(), id, {
       endAt,
       from,
       query,
@@ -399,7 +399,7 @@ export class DevicesController {
       type,
     });
 
-    return { exportId };
+    return { link };
   }
 
   async receiveMeasures(request: KuzzleRequest) {

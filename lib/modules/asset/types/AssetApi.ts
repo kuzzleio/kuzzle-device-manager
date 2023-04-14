@@ -122,5 +122,5 @@ export interface ApiAssetExportMeasuresRequest extends AssetsControllerRequest {
   };
 }
 export type ApiAssetExportMeasuresResult = {
-  exportId: string;
+  link: string;
 };

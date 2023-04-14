@@ -51,12 +51,9 @@ describe("AssetsController:exportMeasures", () => {
       type: "position",
     });
 
-    const response = await axios.get(
-      `http://localhost:7512/_/device-manager/engine-ayse/assets/Container-linked2/measures/_export/${result.exportId}`,
-      {
-        responseType: "stream",
-      }
-    );
+    const response = await axios.get("http://localhost:7512" + result.link, {
+      responseType: "stream",
+    });
 
     const csv = [];
     response.data.on("data", (chunk) => {

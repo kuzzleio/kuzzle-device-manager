@@ -203,7 +203,7 @@ export interface ApiDeviceExportMeasuresRequest
   };
 }
 export type ApiDeviceExportMeasuresResult = {
-  exportId: string;
+  link: string;
 };
 
 export interface ApiDeviceReceiveMeasuresRequest<

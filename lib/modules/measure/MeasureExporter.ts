@@ -2,7 +2,13 @@ import { randomUUID } from "node:crypto";
 import { PassThrough } from "node:stream";
 
 import _ from "lodash";
-import { InternalError, JSONObject, KDocument, NotFoundError } from "kuzzle";
+import {
+  InternalError,
+  JSONObject,
+  KDocument,
+  NotFoundError,
+  User,
+} from "kuzzle";
 import { stringify } from "csv-stringify/sync";
 
 import { AskModelAssetGet, AskModelDeviceGet } from "../model";
@@ -21,7 +27,7 @@ type ExportOptions = {
   type?: string;
 };
 
-const FIVE_MINUTES = 5 * 60;
+const TWO_MINUTES = 2 * 60;
 
 type ExportParams = {
   query: JSONObject;
@@ -90,6 +96,7 @@ export class MeasureExporter {
    * Never return a rejected promise and write potential error on the stream
    */
   async prepareExport(
+    user: User,
     digitalTwinId: string,
     {
       from = 0,
@@ -99,7 +106,7 @@ export class MeasureExporter {
       sort = { measuredAt: "desc" },
       type,
     }: ExportOptions
-  ): Promise<{ exportId: string }> {
+  ) {
     const { digitalTwin, searchQuery } = await this.prepareMeasureSearch(
       digitalTwinId,
       startAt,
@@ -122,10 +129,23 @@ export class MeasureExporter {
     await this.sdk.ms.setex(
       this.exportRedisKey(exportId),
       JSON.stringify(exportParams),
-      FIVE_MINUTES
+      TWO_MINUTES
     );
 
-    return { exportId };
+    let link = `/_/device-manager/${this.engineId}/${this.target}s/${digitalTwinId}/measures/_export/${exportId}`;
+
+    if (user._id !== "-1") {
+      const { result } = await this.sdk.as(user).query({
+        controller: "auth",
+        action: "createToken",
+        singleUse: true,
+        expiresIn: TWO_MINUTES * 1000,
+      });
+
+      link += `?jwt=${result.token}`;
+    }
+
+    return { link };
   }
 
   /**
