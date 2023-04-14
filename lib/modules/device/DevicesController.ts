@@ -8,7 +8,8 @@ import _ from "lodash";
 import { PassThrough } from "node:stream";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
-import { DecodedMeasurement } from "../measure";
+import { MeasureExporter, DecodedMeasurement } from "../measure";
+import { DeviceManagerPlugin } from "../plugin";
 
 import { DeviceService } from "./DeviceService";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -29,11 +30,10 @@ import {
 export class DevicesController {
   public definition: ControllerDefinition;
 
-  private deviceService: DeviceService;
-
-  constructor(deviceService: DeviceService) {
-    this.deviceService = deviceService;
-
+  constructor(
+    private plugin: DeviceManagerPlugin,
+    private deviceService: DeviceService
+  ) {
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
@@ -332,19 +332,19 @@ export class DevicesController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    const { measures, total } = await this.deviceService.getMeasureHistory(
-      engineId,
-      id,
-      {
-        endAt,
-        from,
-        query,
-        size,
-        sort,
-        startAt,
-        type,
-      }
-    );
+    const exporter = new MeasureExporter(this.plugin, engineId, {
+      target: "device",
+    });
+
+    const { measures, total } = await exporter.search(id, {
+      endAt,
+      from,
+      query,
+      size,
+      sort,
+      startAt,
+      type,
+    });
 
     return { measures, total };
   }
@@ -360,19 +360,18 @@ export class DevicesController {
 
       const stream = new PassThrough();
 
+      const exporter = new MeasureExporter(this.plugin, engineId);
+
+      const { id } = await exporter.getExport(exportId);
+
       request.response.configure({
         headers: {
-          "Content-Disposition": `attachment; filename="export.csv"`,
+          "Content-Disposition": `attachment; filename="${id}.asset.csv"`,
           "Content-Type": "text/csv",
         },
       });
 
-      this.deviceService
-        .sendExport(stream, engineId, exportId)
-        .catch((error) => {
-          stream.write(error.message);
-          stream.end();
-        });
+      exporter.sendExport(stream, exportId);
 
       return new HttpStream(stream);
     }
@@ -387,18 +386,18 @@ export class DevicesController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    const { exportId } = await this.deviceService.createMeasureExport(
-      engineId,
-      id,
-      {
-        endAt,
-        from,
-        query,
-        sort,
-        startAt,
-        type,
-      }
-    );
+    const exporter = new MeasureExporter(this.plugin, engineId, {
+      target: "device",
+    });
+
+    const { exportId } = await exporter.prepareExport(id, {
+      endAt,
+      from,
+      query,
+      sort,
+      startAt,
+      type,
+    });
 
     return { exportId };
   }

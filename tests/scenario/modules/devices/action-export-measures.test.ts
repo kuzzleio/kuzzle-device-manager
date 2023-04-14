@@ -9,8 +9,10 @@ jest.setTimeout(10000);
 describe("DevicesController:exportMeasures", () => {
   const sdk = setupHooks();
 
-  it("should save an export and return an ID", async () => {
+  it("should prepare an export and return a csv as stream", async () => {
     await sendPayloads(sdk, "dummy-temp", [
+      { deviceEUI: "linked2", temperature: 21 },
+
       { deviceEUI: "linked1", temperature: 42 },
       { deviceEUI: "linked1", temperature: 41 },
       { deviceEUI: "linked1", temperature: 40 },
@@ -48,6 +50,7 @@ describe("DevicesController:exportMeasures", () => {
       response.data.on("end", resolve);
     });
 
+    expect(csv.length).toBe(25);
     expect(csv[0]).toBe(
       "_id,measuredAt,type,origin._id,origin.deviceModel,asset._id,asset.model,values.temperature,values.battery\n"
     );

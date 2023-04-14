@@ -14,7 +14,7 @@ export class AssetModule extends Module {
   public async init(): Promise<void> {
     this.assetHistoryService = new AssetHistoryService(this.plugin);
     this.assetService = new AssetService(this.plugin, this.assetHistoryService);
-    this.assetController = new AssetsController(this.assetService);
+    this.assetController = new AssetsController(this.plugin, this.assetService);
 
     this.plugin.api["device-manager/assets"] = this.assetController.definition;
 
