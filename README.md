@@ -9,6 +9,7 @@ It works in a multi-tenant mode where each tenant has its own devices and assets
 ## Usage
 
 In proper way to use this library in your program as an NPM module:
+
 ```
 npm install kuzzle-device-manager
 ```
@@ -17,7 +18,7 @@ npm install kuzzle-device-manager
 
 ### Online
 
-Open [https://docs.kuzzle.io/official-plugins/device-manager/1/guides/devices/](https://docs.kuzzle.io/official-plugins/device-manager/1/guides/devices/)
+Open [https://docs.kuzzle.io/official-plugins/device-manager/2/guides/devices/](https://docs.kuzzle.io/official-plugins/device-manager/2/guides/devices/)
 
 ### Locally
 

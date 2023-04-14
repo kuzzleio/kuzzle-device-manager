@@ -11,17 +11,18 @@ import {
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
-} from "../../core";
+} from "../plugin";
 import { ask, onAsk } from "../shared/utils/ask";
 
+import { AskAssetRefreshModel } from "../asset";
+import { flattenObject } from "../shared/utils/flattenObject";
+import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
 } from "./types/ModelContent";
-import { ModelSerializer } from "./ModelSerializer";
 import { AskModelAssetGet, AskModelDeviceGet } from "./types/ModelEvents";
-import { flattenObject } from "../shared/utils/flattenObject";
 
 export class ModelService {
   private config: DeviceManagerConfiguration;
@@ -76,12 +77,13 @@ export class ModelService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
-    const assetModel = await this.sdk.document.upsert<AssetModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      ModelSerializer.id<AssetModelContent>("asset", modelContent),
-      modelContent
-    );
+    const assetModel =
+      await this.sdk.document.createOrReplace<AssetModelContent>(
+        this.config.adminIndex,
+        InternalCollection.MODELS,
+        ModelSerializer.id<AssetModelContent>("asset", modelContent),
+        modelContent
+      );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
@@ -89,7 +91,9 @@ export class ModelService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    // @todo update assets in every engine to add the new metadata with null value + default metadata
+    await ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
+      assetModel: modelContent,
+    });
 
     return assetModel;
   }
@@ -132,12 +136,13 @@ export class ModelService {
       type: "device",
     };
 
-    const assetModel = await this.sdk.document.upsert<DeviceModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      ModelSerializer.id<DeviceModelContent>("device", modelContent),
-      modelContent
-    );
+    const assetModel =
+      await this.sdk.document.createOrReplace<DeviceModelContent>(
+        this.config.adminIndex,
+        InternalCollection.MODELS,
+        ModelSerializer.id<DeviceModelContent>("device", modelContent),
+        modelContent
+      );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
@@ -157,12 +162,13 @@ export class ModelService {
       type: "measure",
     };
 
-    const assetModel = await this.sdk.document.upsert<MeasureModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      ModelSerializer.id<MeasureModelContent>("measure", modelContent),
-      modelContent
-    );
+    const assetModel =
+      await this.sdk.document.createOrReplace<MeasureModelContent>(
+        this.config.adminIndex,
+        InternalCollection.MODELS,
+        ModelSerializer.id<MeasureModelContent>("measure", modelContent),
+        modelContent
+      );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,

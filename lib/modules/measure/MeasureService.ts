@@ -11,8 +11,8 @@ import {
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
-} from "../../core";
-import { DeviceContent } from "./../device";
+} from "../plugin";
+import { DeviceContent } from "../device";
 import {
   AskAssetHistoryAdd,
   AssetContent,
@@ -71,9 +71,9 @@ export class MeasureService {
    *
    * This method represents the ingestion pipeline:
    *  - build measures documents and update digital twins (device and asset)
-   *  - trigger events to enrich measures documents
+   *  - trigger events `before` (measure enrichment)
    *  - save documents (measures, device and asset)
-   *  - trigger events to trigger business rules
+   *  - trigger events `after`
    */
   public async ingest(
     device: KDocument<DeviceContent>,

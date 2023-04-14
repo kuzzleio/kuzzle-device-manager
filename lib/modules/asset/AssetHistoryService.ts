@@ -5,7 +5,7 @@ import {
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
-} from "../../core";
+} from "../plugin";
 import { onAsk } from "../shared";
 
 import {

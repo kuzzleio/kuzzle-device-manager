@@ -10,12 +10,14 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
       actions: {
         get: true,
         search: true,
+        getMeasures: true,
       },
     },
     "device-manager/models": {
       actions: {
         listDevices: true,
         getDevice: true,
+        listMeasures: true,
       },
     },
     }
@@ -28,12 +30,14 @@ export const RoleDevicesReader: KuzzleRole = {
         actions: {
           get: true,
           search: true,
+          getMeasures: true,
         },
       },
       "device-manager/models": {
         actions: {
           listDevices: true,
           getDevice: true,
+          listMeasures: true,
         },
       },
     },

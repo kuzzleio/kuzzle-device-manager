@@ -6,3 +6,4 @@ export * from "./Decoder";
 export * from "./DecoderModule";
 export * from "./roles/RolePayloadsAll";
 export * from "./roles/RoleDecodersAdmin";
+export * from "./DecodersRegister";

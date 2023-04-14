@@ -1,4 +1,5 @@
 import { KDocument } from "kuzzle-sdk";
+import { AssetModelContent } from "lib/modules/model";
 
 import { Metadata } from "../../../modules/shared";
 
@@ -15,6 +16,16 @@ export type EventAssetUpdateAfter = {
   name: "device-manager:asset:update:after";
 
   args: [{ asset: KDocument<AssetContent>; metadata: Metadata }];
+};
+
+export type AskAssetRefreshModel = {
+  name: "ask:device-manager:asset:refresh-model";
+
+  payload: {
+    assetModel: AssetModelContent;
+  };
+
+  result: void;
 };
 
 /**

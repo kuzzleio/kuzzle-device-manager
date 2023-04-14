@@ -114,8 +114,8 @@ describe("DeviceController: receiveMeasure", () => {
   });
 
   it("should raise an error when receiving a undeclared measure", async () => {
-    try {
-      await sdk.query<
+    await expect(
+      sdk.query<
         ApiDeviceReceiveMeasuresRequest,
         ApiDeviceReceiveMeasuresResult
       >({
@@ -135,11 +135,9 @@ describe("DeviceController: receiveMeasure", () => {
             },
           ],
         },
-      });
-    } catch (error) {
-      expect(error.message).toBe(
-        'Measure "temperatureInternal" is not declared for this device model.'
-      );
-    }
+      })
+    ).rejects.toThrow(
+      'Measure "temperatureInternal" is not declared for this device model.'
+    );
   });
 });

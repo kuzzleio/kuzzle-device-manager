@@ -13,7 +13,7 @@ import { DecoderContent } from "./types/DecoderContent";
  * This need to be read only so we can provide strong typing when decoding measures
  * with the DecodedPayload
  */
-export type NamedMeasures = ReadonlyArray<{
+export type NamedMeasures = Array<{
   name: string;
 
   type: string;
@@ -46,7 +46,7 @@ export abstract class Decoder {
    *   { type: 'temperature', name: 'temperatureExterior' },
    * ];
    */
-  public measures: NamedMeasures = [];
+  public measures: ReadonlyArray<NamedMeasures[0]> = [];
 
   /**
    * Custom name for the associated API action in the "payload" controller
@@ -171,7 +171,7 @@ export abstract class Decoder {
   serialize(): DecoderContent {
     return {
       deviceModel: this.deviceModel,
-      measures: this.measures,
+      measures: this.measures as NamedMeasures,
     };
   }
 }

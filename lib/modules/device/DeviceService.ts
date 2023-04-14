@@ -19,7 +19,7 @@ import {
   AssetHistoryEventLink,
   AssetHistoryEventUnlink,
 } from "./../asset";
-import { InternalCollection, DeviceManagerConfiguration } from "../../core";
+import { InternalCollection, DeviceManagerConfiguration } from "../plugin";
 import { Metadata, lock, ask, onAsk } from "../shared";
 import {
   AskModelAssetGet,
@@ -454,9 +454,9 @@ export class DeviceService {
         );
       }
 
-      if (device._source.assetId) {
+      if (device._source.assetId && device._source.assetId !== assetId) {
         throw new BadRequestError(
-          `Device "${device._id}" is already linked to an asset.`
+          `Device "${device._id}" is already linked to another asset.`
         );
       }
 
@@ -466,12 +466,19 @@ export class DeviceService {
         assetId
       );
 
+      // Remove existing links for this device
+      asset._source.linkedDevices = asset._source.linkedDevices.filter(
+        (link) => {
+          return link._id !== deviceId;
+        }
+      );
+
       const [assetModel, deviceModel] = await Promise.all([
         this.getAssetModel(engine.group, asset._source.model),
         this.getDeviceModel(device._source.model),
       ]);
 
-      this.checkAlreadyProvidedMeasures(asset, measureNames);
+      this.checkAlreadyProvidedMeasures(device, asset, measureNames);
 
       if (implicitMeasuresLinking) {
         this.generateMissingAssetMeasureNames(
@@ -581,6 +588,7 @@ export class DeviceService {
    * requested measure names.
    */
   private checkAlreadyProvidedMeasures(
+    device: KDocument<DeviceContent>,
     asset: KDocument<AssetContent>,
     requestedMeasureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
   ) {
