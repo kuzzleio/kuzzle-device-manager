@@ -1,4 +1,16 @@
-import { Backend, BadRequestError, Plugin, PluginContext, User } from "kuzzle";
+import { randomUUID } from "node:crypto";
+import { PassThrough } from "node:stream";
+
+import _ from "lodash";
+import { stringify } from "csv-stringify/sync";
+import {
+  Backend,
+  BadRequestError,
+  NotFoundError,
+  Plugin,
+  PluginContext,
+  User,
+} from "kuzzle";
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
@@ -29,6 +41,15 @@ import {
   ApiDeviceGetMeasuresResult,
 } from "./types/DeviceApi";
 import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
+
+const FIVE_MINUTES = 5 * 60;
+
+type ExportParams = {
+  query: JSONObject;
+  deviceModel: string;
+  from: number;
+  sort: JSONObject;
+};
 
 export class DeviceService {
   private config: DeviceManagerConfiguration;
@@ -732,7 +753,138 @@ export class DeviceService {
       type?: string;
     }
   ): Promise<ApiDeviceGetMeasuresResult> {
-    await this.get(engineId, deviceId);
+    const { searchQuery } = await this.prepareMeasureSearch(
+      engineId,
+      deviceId,
+      startAt,
+      endAt,
+      query,
+      type
+    );
+
+    const result = await this.sdk.document.search<MeasureContent>(
+      engineId,
+      InternalCollection.MEASURES,
+      { query: searchQuery, sort },
+      { from, lang: "koncorde", size: size }
+    );
+
+    return { measures: result.hits, total: result.total };
+  }
+
+  async createMeasureExport(
+    engineId: string,
+    deviceId: string,
+    {
+      from = 0,
+      endAt,
+      startAt,
+      query,
+      sort = { measuredAt: "desc" },
+      type,
+    }: {
+      sort?: JSONObject;
+      query?: JSONObject;
+      from?: number;
+      startAt?: string;
+      endAt?: string;
+      type?: string;
+    }
+  ): Promise<{ exportId: string }> {
+    const { device, searchQuery } = await this.prepareMeasureSearch(
+      engineId,
+      deviceId,
+      startAt,
+      endAt,
+      query,
+      type
+    );
+
+    const exportParams: ExportParams = {
+      deviceModel: device._source.model,
+      from,
+      query: searchQuery,
+      sort,
+    };
+
+    const exportId = randomUUID();
+
+    await this.sdk.ms.setex(
+      `exports:measures:${engineId}:${exportId}`,
+      JSON.stringify(exportParams),
+      FIVE_MINUTES
+    );
+
+    return { exportId };
+  }
+
+  async sendExport(stream: PassThrough, engineId: string, exportId: string) {
+    const exportParams = await this.sdk.ms.get(
+      `exports:measures:${engineId}:${exportId}`
+    );
+
+    if (!exportParams) {
+      throw new NotFoundError(`Export "${exportId}" not found or expired.`);
+    }
+
+    const { query, from, sort, deviceModel } = JSON.parse(
+      exportParams
+    ) as ExportParams;
+
+    let result = await this.sdk.document.search<MeasureContent>(
+      engineId,
+      InternalCollection.MEASURES,
+      { query, sort },
+      { from, lang: "koncorde", size: 200 }
+    );
+
+    const model = await ask<AskModelDeviceGet>(
+      "ask:device-manager:model:device:get",
+      {
+        model: deviceModel,
+      }
+    );
+    const columns = [
+      "measuredAt",
+      "type",
+      "origin._id",
+      "origin.deviceModel",
+      "asset._id",
+      "asset.model",
+      ...model.device.measures.map((m) => `values.${m.name}`),
+    ];
+
+    stream.write(stringify([["_id", ...columns]]));
+
+    while (result) {
+      for (const hit of result.hits) {
+        stream.write(
+          stringify([
+            [
+              hit._id,
+              ...columns.map((column) => _.get(hit._source, column, null)),
+            ],
+          ])
+        );
+      }
+
+      result = await result.next();
+    }
+
+    await this.sdk.ms.del(`exports:measures:${engineId}:${exportId}`);
+
+    stream.end();
+  }
+
+  private async prepareMeasureSearch(
+    engineId: string,
+    deviceId: string,
+    startAt?: string,
+    endAt?: string,
+    query?: JSONObject,
+    type?: string
+  ) {
+    const device = await this.get(engineId, deviceId);
 
     const measuredAtRange = {
       range: {
@@ -763,14 +915,7 @@ export class DeviceService {
       searchQuery.and.push(query);
     }
 
-    const result = await this.sdk.document.search<MeasureContent>(
-      engineId,
-      InternalCollection.MEASURES,
-      { query: searchQuery, sort },
-      { from, lang: "koncorde", size: size }
-    );
-
-    return { measures: result.hits, total: result.total };
+    return { device, searchQuery };
   }
 
   private async checkEngineExists(engineId: string) {

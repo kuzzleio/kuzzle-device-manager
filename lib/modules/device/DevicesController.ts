@@ -1,5 +1,11 @@
-import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
+import {
+  BadRequestError,
+  ControllerDefinition,
+  HttpStream,
+  KuzzleRequest,
+} from "kuzzle";
 import _ from "lodash";
+import { PassThrough } from "node:stream";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
 import { DecodedMeasurement } from "../measure";
@@ -104,6 +110,19 @@ export class DevicesController {
             },
             {
               path: "device-manager/:engineId/devices/:_id/measures",
+              verb: "post",
+            },
+          ],
+        },
+        exportMeasures: {
+          handler: this.exportMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/measures/_export/:exportId",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/devices/:_id/measures/_export",
               verb: "post",
             },
           ],
@@ -328,6 +347,60 @@ export class DevicesController {
     );
 
     return { measures, total };
+  }
+
+  async exportMeasures(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
+
+    if (
+      request.context.connection.protocol === "http" &&
+      request.context.connection.misc.verb === "GET"
+    ) {
+      const exportId = request.getString("exportId");
+
+      const stream = new PassThrough();
+
+      request.response.configure({
+        headers: {
+          "Content-Disposition": `attachment; filename="export.csv"`,
+          "Content-Type": "text/csv",
+        },
+      });
+
+      this.deviceService
+        .sendExport(stream, engineId, exportId)
+        .catch((error) => {
+          stream.write(error.message);
+          stream.end();
+        });
+
+      return new HttpStream(stream);
+    }
+
+    const id = request.getId();
+    const from = request.input.args.from;
+    const startAt = request.input.args.startAt
+      ? request.getDate("startAt")
+      : null;
+    const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
+    const query = request.input.body?.query;
+    const sort = request.input.body?.sort;
+    const type = request.input.args.type;
+
+    const { exportId } = await this.deviceService.createMeasureExport(
+      engineId,
+      id,
+      {
+        endAt,
+        from,
+        query,
+        sort,
+        startAt,
+        type,
+      }
+    );
+
+    return { exportId };
   }
 
   async receiveMeasures(request: KuzzleRequest) {

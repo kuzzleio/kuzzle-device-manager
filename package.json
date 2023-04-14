@@ -13,17 +13,16 @@
     "docker": "docker-compose run kuzzle ",
     "dev": "NODE_ENV=development ergol tests/application/app.ts -c ergol.config.json",
     "prod": "node ./dist/tests/application/app.js",
-    "test": "npm run test:lint && npm run test:unit && npm run test:functional",
-    "test:unit": "mocha",
-    "test:functional": "jest --runInBand",
-    "test:lint": "eslint ./lib ./tests --ext .ts --config .eslintrc.json",
-    "test:lint:fix": "eslint ./lib ./tests --ext .ts --config .eslintrc.json --fix",
+    "test": "jest --runInBand",
+    "lint": "eslint ./lib ./tests --ext .ts --config .eslintrc.json",
+    "lint:fix": "eslint ./lib ./tests --ext .ts --config .eslintrc.json --fix",
     "prettier": "npx prettier lib/ tests/ --write",
     "build": "tsc --build tsconfig.json",
     "prepack": "npm run build"
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "csv-stringify": "^6.3.0",
     "kuzzle-plugin-commons": "https://github.com/kuzzleio/kuzzle-plugin-commons/archive/refs/tags/1.0.5.tar.gz",
     "lodash": "^4.17.21",
     "uuid": "~9.0.0"
