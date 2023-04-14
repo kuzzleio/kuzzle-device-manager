@@ -37,7 +37,10 @@ import {
   EventAssetUpdateAfter,
   EventAssetUpdateBefore,
 } from "./types/AssetEvents";
-import { AssetHistoryEventMetadata } from "./types/AssetHistoryContent";
+import {
+  AssetHistoryContent,
+  AssetHistoryEventMetadata,
+} from "./types/AssetHistoryContent";
 
 export class AssetService {
   private context: PluginContext;
@@ -190,17 +193,19 @@ export class AssetService {
         { refresh, source: true }
       );
 
-      await this.assetHistoryService.add<AssetHistoryEventMetadata>(
-        engineId,
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
         {
-          metadata: {
-            names: Object.keys(flattenObject(updatedPayload.metadata)),
+          asset: updatedAsset._source,
+          event: {
+            metadata: {
+              names: Object.keys(flattenObject(updatedPayload.metadata)),
+            },
+            name: "metadata",
           },
-          name: "metadata",
+          id: updatedAsset._id,
+          timestamp: Date.now(),
         },
-        updatedAsset,
-        Date.now()
-      );
+      ]);
 
       await this.app.trigger<EventAssetUpdateAfter>(
         "device-manager:asset:update:after",
@@ -265,17 +270,19 @@ export class AssetService {
         { refresh }
       );
 
-      await this.assetHistoryService.add<AssetHistoryEventMetadata>(
-        engineId,
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
         {
-          metadata: {
-            names: Object.keys(flattenObject(asset._source.metadata)),
+          asset: asset._source,
+          event: {
+            metadata: {
+              names: Object.keys(flattenObject(asset._source.metadata)),
+            },
+            name: "metadata",
           },
-          name: "metadata",
+          id: asset._id,
+          timestamp: Date.now(),
         },
-        asset,
-        Date.now()
-      );
+      ]);
 
       return asset;
     });
@@ -350,22 +357,25 @@ export class AssetService {
       { refresh, source: true }
     );
 
-    await Promise.all(
-      replacedAssets.successes.map((asset) =>
-        this.assetHistoryService.add<AssetHistoryEventMetadata>(
-          engineId,
-          {
-            metadata: {
-              names: Object.keys(flattenObject(asset._source.metadata)).concat(
-                removedMetadata.map((name) => `-${name}`)
-              ),
-            },
-            name: "metadata",
+    const histories: AssetHistoryContent[] = replacedAssets.successes.map(
+      (asset) => ({
+        asset: asset._source as AssetContent,
+        event: {
+          metadata: {
+            names: Object.keys(flattenObject(asset._source.metadata)).concat(
+              removedMetadata.map((name) => `-${name}`)
+            ),
           },
-          asset as KDocument<AssetContent>,
-          Date.now()
-        )
-      )
+          name: "metadata",
+        },
+        id: asset._id,
+        timestamp: Date.now(),
+      })
+    );
+
+    await this.assetHistoryService.add<AssetHistoryEventMetadata>(
+      engineId,
+      histories
     );
 
     return replacedAssets;

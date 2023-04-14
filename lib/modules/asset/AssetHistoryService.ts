@@ -1,5 +1,5 @@
 import { PluginContext } from "kuzzle";
-import { KDocument } from "kuzzle-sdk";
+import { mCreateRequest } from "kuzzle-sdk";
 
 import {
   DeviceManagerConfiguration,
@@ -8,12 +8,11 @@ import {
 } from "../plugin";
 import { onAsk } from "../shared";
 
+import { AskAssetHistoryAdd } from "./types/AssetEvents";
 import {
   AssetHistoryContent,
   AssetHistoryEvent,
 } from "./types/AssetHistoryContent";
-import { AssetContent } from "./types/AssetContent";
-import { AskAssetHistoryAdd } from "./types/AssetEvents";
 
 export class AssetHistoryService {
   private context: PluginContext;
@@ -29,26 +28,33 @@ export class AssetHistoryService {
 
     onAsk<AskAssetHistoryAdd<AssetHistoryEvent>>(
       "ask:device-manager:asset:history:add",
-      async ({ engineId, event, asset, timestamp }) =>
-        this.add(engineId, event, asset, timestamp)
+      async ({ engineId, histories }) => this.add(engineId, histories)
     );
   }
 
   async add<TAssetHistoryEvent extends AssetHistoryEvent>(
     engineId: string,
-    event: TAssetHistoryEvent,
-    asset: KDocument<AssetContent>,
-    timestamp: number
+    histories: AssetHistoryContent[]
   ) {
-    await this.sdk.document.create<AssetHistoryContent<TAssetHistoryEvent>>(
+    const contents: mCreateRequest<
+      AssetHistoryContent<TAssetHistoryEvent, any, any>
+    > = [];
+
+    for (const { asset, event, id, timestamp } of histories) {
+      contents.push({
+        body: {
+          asset,
+          event,
+          id,
+          timestamp,
+        },
+      });
+    }
+
+    await this.sdk.document.mCreate<AssetHistoryContent<TAssetHistoryEvent>>(
       engineId,
       InternalCollection.ASSETS_HISTORY,
-      {
-        asset: asset._source,
-        event,
-        id: asset._id,
-        timestamp,
-      }
+      contents
     );
   }
 }

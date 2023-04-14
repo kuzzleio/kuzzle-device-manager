@@ -10,6 +10,7 @@ import _ from "lodash";
 import {
   AskAssetHistoryAdd,
   AssetContent,
+  AssetHistoryContent,
   AssetHistoryEventMeasure,
   AssetHistoryEventMetadata,
   AssetSerializer,
@@ -456,11 +457,11 @@ function historizeAssetStates(
   engineId: string,
   originalAssetMetadata: Metadata,
   assetMetadata: Metadata
-): Promise<any[]> {
-  const promises: Promise<any>[] = [];
+): Promise<void> {
   const metadataChanges = objectDiff(originalAssetMetadata, assetMetadata);
-
   const lastTimestampRecorded = Array.from(assetStates.keys()).pop();
+
+  const histories: AssetHistoryContent[] = [];
   for (const [measuredAt, assetState] of assetStates) {
     const measureNames = [];
 
@@ -487,18 +488,21 @@ function historizeAssetStates(
       assetState._source.metadata = assetMetadata;
     }
 
-    promises.push(
-      ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
-        "ask:device-manager:asset:history:add",
-        {
-          asset: assetState,
-          engineId,
-          event,
-          timestamp: Number(measuredAt),
-        }
-      )
-    );
+    histories.push({
+      asset: assetState._source,
+      event,
+      id: assetState._id,
+      timestamp: measuredAt,
+    });
   }
 
-  return Promise.all(promises);
+  return ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
+    "ask:device-manager:asset:history:add",
+    {
+      engineId,
+      // Reverse order because for now, measuredAt are sorted in ascending order
+      // While in mCreate the last item will be the first document to be created
+      histories: histories.reverse(),
+    }
+  );
 }

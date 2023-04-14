@@ -243,7 +243,17 @@ export class DeviceService {
 
               await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
                 "ask:device-manager:asset:history:add",
-                { asset: updatedAsset, engineId, event, timestamp: Date.now() }
+                {
+                  engineId,
+                  histories: [
+                    {
+                      asset: updatedAsset._source,
+                      event,
+                      id: updatedAsset._id,
+                      timestamp: Date.now(),
+                    },
+                  ],
+                }
               );
             })
         );
@@ -507,7 +517,17 @@ export class DeviceService {
       };
       await ask<AskAssetHistoryAdd<AssetHistoryEventLink>>(
         "ask:device-manager:asset:history:add",
-        { asset: updatedAsset, engineId, event, timestamp: Date.now() }
+        {
+          engineId,
+          histories: [
+            {
+              asset: updatedAsset._source,
+              event,
+              id: updatedAsset._id,
+              timestamp: Date.now(),
+            },
+          ],
+        }
       );
 
       if (refresh) {
@@ -701,7 +721,17 @@ export class DeviceService {
       };
       await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
         "ask:device-manager:asset:history:add",
-        { asset: updatedAsset, engineId, event, timestamp: Date.now() }
+        {
+          engineId,
+          histories: [
+            {
+              asset: updatedAsset._source,
+              event,
+              id: updatedAsset._id,
+              timestamp: Date.now(),
+            },
+          ],
+        }
       );
 
       if (refresh) {

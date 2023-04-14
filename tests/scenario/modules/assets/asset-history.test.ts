@@ -61,8 +61,7 @@ describe("DeviceController: receiveMeasure", () => {
 
     const result = await sdk.document.search<AssetHistoryContent>(
       "engine-ayse",
-      "assets-history",
-      { sort: { timestamp: "desc" } }
+      "assets-history"
     );
 
     expect(result.hits).toHaveLength(3);
@@ -295,8 +294,7 @@ describe("DeviceController: receiveMeasure", () => {
 
     const result = await sdk.document.search<AssetHistoryContent>(
       "engine-ayse",
-      "assets-history",
-      { sort: { timestamp: "desc" } }
+      "assets-history"
     );
 
     expect(result.hits).toHaveLength(2);
