@@ -54,7 +54,8 @@ export class AssetHistoryService {
     await this.sdk.document.mCreate<AssetHistoryContent<TAssetHistoryEvent>>(
       engineId,
       InternalCollection.ASSETS_HISTORY,
-      contents
+      contents,
+      { strict: true }
     );
   }
 }
