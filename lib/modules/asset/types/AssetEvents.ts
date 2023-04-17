@@ -4,7 +4,7 @@ import { AssetModelContent } from "lib/modules/model";
 import { Metadata } from "../../../modules/shared";
 
 import { AssetContent } from "./AssetContent";
-import { AssetHistoryEvent } from "./AssetHistoryContent";
+import { AssetHistoryContent, AssetHistoryEvent } from "./AssetHistoryContent";
 
 export type EventAssetUpdateBefore = {
   name: "device-manager:asset:update:before";
@@ -36,8 +36,7 @@ export type AskAssetHistoryAdd<TAssetHistoryEvent extends AssetHistoryEvent> = {
 
   payload: {
     engineId: string;
-    event: TAssetHistoryEvent;
-    asset: KDocument<AssetContent>;
+    histories: AssetHistoryContent<TAssetHistoryEvent>[];
   };
 
   result: void;

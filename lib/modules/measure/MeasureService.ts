@@ -8,20 +8,22 @@ import {
 import _ from "lodash";
 
 import {
+  AskAssetHistoryAdd,
+  AssetContent,
+  AssetHistoryContent,
+  AssetHistoryEventMeasure,
+  AssetHistoryEventMetadata,
+  AssetSerializer,
+} from "../asset";
+import { DeviceContent } from "../device";
+import {
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
-import { DeviceContent } from "../device";
-import {
-  AskAssetHistoryAdd,
-  AssetContent,
-  AssetHistoryEventMeasure,
-  AssetHistoryEventMetadata,
-} from "../asset";
-import { Metadata, lock, ask, onAsk, keepStack, objectDiff } from "../shared";
-import { AssetSerializer } from "../asset";
+import { ask, keepStack, lock, Metadata, objectDiff, onAsk } from "../shared";
 
+import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
   AskMeasureIngest,
   EventMeasureProcessAfter,
@@ -29,7 +31,6 @@ import {
   TenantEventMeasureProcessAfter,
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
-import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 
 export class MeasureService {
   private config: DeviceManagerConfiguration;
@@ -94,7 +95,7 @@ export class MeasureService {
         engineId,
         device._source.assetId
       );
-      const originalAssetMetadata =
+      const originalAssetMetadata: Metadata =
         asset === null
           ? {}
           : JSON.parse(JSON.stringify(asset._source.metadata));
@@ -130,8 +131,10 @@ export class MeasureService {
       }
 
       await this.updateDeviceMeasures(device, measures);
+
+      let assetStates = new Map<number, KDocument<AssetContent>>();
       if (asset) {
-        await this.updateAssetMeasures(asset, measures);
+        assetStates = await this.updateAssetMeasures(asset, measures);
       }
 
       const promises = [];
@@ -201,32 +204,6 @@ export class MeasureService {
                 asset._id,
                 asset._source
               )
-              .then(async (updatedAsset) => {
-                const event: AssetHistoryEventMeasure = {
-                  measure: {
-                    // Filter measures who are not in the asset device link
-                    names: measures
-                      .filter((m) => Boolean(m.asset?.measureName))
-                      .map((m) => m.asset?.measureName),
-                  },
-                  name: "measure",
-                };
-
-                const changes = objectDiff(
-                  originalAssetMetadata,
-                  updatedAsset._source.metadata
-                );
-                if (changes.length !== 0) {
-                  (event as unknown as AssetHistoryEventMetadata).metadata = {
-                    names: changes,
-                  };
-                }
-
-                await ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
-                  "ask:device-manager:asset:history:add",
-                  { asset: updatedAsset, engineId, event }
-                );
-              })
               .catch((error) => {
                 throw keepStack(
                   error,
@@ -235,6 +212,15 @@ export class MeasureService {
                   )
                 );
               })
+          );
+
+          promises.push(
+            historizeAssetStates(
+              assetStates,
+              engineId,
+              originalAssetMetadata,
+              asset._source.metadata
+            )
           );
         }
       }
@@ -300,10 +286,19 @@ export class MeasureService {
     }
   }
 
+  // @todo there shouldn't be any logic related to asset historization here, but no other choices for now. It needs to be re-architected
+  /**
+   * Update asset with each non-null non-computed measures.
+   *
+   * @returns A map of each asset state by measuredAt timestamp.
+   */
   private updateAssetMeasures(
     asset: KDocument<AssetContent>,
     measurements: MeasureContent[]
-  ) {
+  ): Map<number, KDocument<AssetContent<any, any>>> {
+    // We use a Map in order to preserve the insertion order to avoid another sort
+    const assetStates = new Map<number, KDocument<AssetContent>>();
+
     if (!asset._source.measures) {
       asset._source.measures = {};
     }
@@ -340,7 +335,14 @@ export class MeasureService {
         type: measurement.type,
         values: measurement.values,
       };
+
+      assetStates.set(
+        measurement.measuredAt,
+        JSON.parse(JSON.stringify(asset))
+      );
     }
+
+    return assetStates;
   }
 
   /**
@@ -385,7 +387,9 @@ export class MeasureService {
       measures.push(measureContent);
     }
 
-    return measures;
+    return measures.sort(
+      (measureA, measureB) => measureA.measuredAt - measureB.measuredAt
+    );
   }
 
   private async tryGetLinkedAsset(
@@ -443,4 +447,62 @@ export class MeasureService {
 
     return measureName.asset;
   }
+}
+
+/**
+ * Create a new document in the collection asset-history, for each asset states
+ */
+async function historizeAssetStates(
+  assetStates: Map<number, KDocument<AssetContent<any, any>>>,
+  engineId: string,
+  originalAssetMetadata: Metadata,
+  assetMetadata: Metadata
+): Promise<void> {
+  const metadataChanges = objectDiff(originalAssetMetadata, assetMetadata);
+  const lastTimestampRecorded = Array.from(assetStates.keys()).pop();
+
+  const histories: AssetHistoryContent[] = [];
+  for (const [measuredAt, assetState] of assetStates) {
+    const measureNames = [];
+
+    for (const measure of Object.values(assetState._source.measures)) {
+      if (measure.measuredAt === measuredAt) {
+        measureNames.push(measure.name);
+      }
+    }
+
+    const event: AssetHistoryEventMeasure = {
+      measure: {
+        names: measureNames,
+      },
+      name: "measure",
+    };
+
+    assetState._source.metadata = originalAssetMetadata;
+
+    if (metadataChanges.length !== 0 && measuredAt === lastTimestampRecorded) {
+      (event as unknown as AssetHistoryEventMetadata).metadata = {
+        names: metadataChanges,
+      };
+
+      assetState._source.metadata = assetMetadata;
+    }
+
+    histories.push({
+      asset: assetState._source,
+      event,
+      id: assetState._id,
+      timestamp: measuredAt,
+    });
+  }
+
+  return ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
+    "ask:device-manager:asset:history:add",
+    {
+      engineId,
+      // Reverse order because for now, measuredAt are sorted in ascending order
+      // While in mCreate the last item will be the first document to be created
+      histories: histories.reverse(),
+    }
+  );
 }

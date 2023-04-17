@@ -46,5 +46,6 @@ export const assetsHistoryMappings = {
         },
       },
     },
+    timestamp: { type: "date" },
   },
 };
