@@ -2,12 +2,12 @@
 code: true
 type: page
 title: exportMeasures
-description: Export measure history from an asset
+description: Export measure history from an device
 ---
 
 # exportMeasures
 
-This action allow to export the measures history of an asset.
+This action allow to export the measures history of an device.
 
 The measures are exported as a CSV stream.
 
@@ -26,7 +26,7 @@ The generated export link does not have protocol, host and port. They should be 
 For example:
 
 ```js
-// Query to `device-manager/assets:exportMeasures`
+// Query to `device-manager/devices:exportMeasures`
 const { result } = await sdk.query({ ... });
 
 const fullLink = `http${sdk.protocol.ssl ? 's' : ''}://${sdk.protocol.host}:${sdk.protocol.port}${result.link}`;
@@ -41,18 +41,18 @@ const fullLink = `http${sdk.protocol.ssl ? 's' : ''}://${sdk.protocol.host}:${sd
 ### HTTP
 
 ```http
-POST: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures/_export
-GET: device-manager/:engineId/assets/:_id/measures/_export/:exportId
+POST: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/measures/_export
+GET: device-manager/:engineId/devices/:_id/measures/_export/:exportId
 ```
 
 ### Other protocols
 
 ```js
 {
-  "controller": "device-manager/assets",
+  "controller": "device-manager/devices",
   "action": "exportMeasures",
   "engineId": "<engineId>",
-  "_id": "<assetId>",
+  "_id": "<deviceId>",
   "body": {
     "query": {
       // ...
@@ -74,7 +74,7 @@ GET: device-manager/:engineId/assets/:_id/measures/_export/:exportId
 ## Arguments
 
 - `engineId`: engine id
-- `_id`: asset id
+- `_id`: device id
   ISO_8601
 - `startAt`: beginning of time range (ISO 8601)
 - `endAt`: end of time range (ISO 8601)
@@ -93,11 +93,11 @@ GET: device-manager/:engineId/assets/:_id/measures/_export/:exportId
 {
   "status": 200,
   "error": null,
-  "controller": "device-manager/assets",
+  "controller": "device-manager/devices",
   "action": "search",
   "requestId": "<unique request identifier>",
   "result": {
-    "link": " /_/device-manager/<engine id>/devices/<asset id>/measures/_export/<export id>?jwt=<token>"
+    "link": " /_/device-manager/<engine id>/devices/<device id>/measures/_export/<export id>?jwt=<token>"
   }
 }
 ```
