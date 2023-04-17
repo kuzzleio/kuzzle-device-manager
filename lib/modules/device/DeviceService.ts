@@ -461,15 +461,15 @@ export class DeviceService {
 
       const updatedMeasureNames: MeasureName[] = [];
       for (const measure of measureNames) {
-        let findedMeasure = deviceModel.device.measures.find(
+        const foundMeasure = deviceModel.device.measures.find(
           (deviceMeasure) => deviceMeasure.name === measure.device
         );
-        if (!findedMeasure && !implicitMeasuresLinking) {
+        if (!foundMeasure && !implicitMeasuresLinking) {
           throw new BadRequestError(
             `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`
           );
         }
-        const { type } = findedMeasure;
+        const { type } = foundMeasure;
         updatedMeasureNames.push({
           asset: measure.asset,
           device: measure.device,
