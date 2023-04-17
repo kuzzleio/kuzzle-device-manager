@@ -6,6 +6,8 @@ It allows to decode the payloads received for the different device models of the
 
 It works in a multi-tenant mode where each tenant has its own devices and assets.
 
+See the [documentation](https://next-docs.kuzzle.io/official-plugins/device-manager/2/)
+
 ## Usage
 
 In proper way to use this library in your program as an NPM module:
@@ -13,18 +15,3 @@ In proper way to use this library in your program as an NPM module:
 ```
 npm install kuzzle-device-manager
 ```
-
-## Documentation
-
-### Online
-
-Open [https://docs.kuzzle.io/official-plugins/device-manager/2/guides/devices/](https://docs.kuzzle.io/official-plugins/device-manager/2/guides/devices/)
-
-### Locally
-
-```bash
-npm run doc:prepare
-npm run doc:dev
-```
-
-Open [http://localhost:8080](http://localhost:8080)
