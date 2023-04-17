@@ -469,7 +469,7 @@ export class DeviceService {
             `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`
           );
         }
-        const type = findedMeasure.type;
+        const { type } = findedMeasure;
         updatedMeasureNames.push({
           asset: measure.asset,
           device: measure.device,
