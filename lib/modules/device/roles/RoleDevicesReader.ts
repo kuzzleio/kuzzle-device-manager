@@ -11,6 +11,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         get: true,
         search: true,
         getMeasures: true,
+        exportMeasures: true,
       },
     },
     "device-manager/models": {
@@ -31,6 +32,7 @@ export const RoleDevicesReader: KuzzleRole = {
           get: true,
           search: true,
           getMeasures: true,
+          exportMeasures: true,
         },
       },
       "device-manager/models": {

@@ -7,3 +7,4 @@ export * from "./MeasureModule";
 export * from "./roles/RoleMeasuresAdmin";
 export * from "./roles/RoleMeasuresReader";
 export * from "./collections/getEmbeddedMeasureMappings";
+export * from "./MeasureExporter";

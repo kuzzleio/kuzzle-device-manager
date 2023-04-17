@@ -10,6 +10,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
       actions: {
         get: true,
         getMeasures: true,
+        exportMeasures: true,
         search: true,
       },
     },
@@ -29,6 +30,7 @@ export const RoleAssetsReader: KuzzleRole = {
         actions: {
           get: true,
           getMeasures: true,
+          exportMeasures: true,
           search: true,
         },
       },

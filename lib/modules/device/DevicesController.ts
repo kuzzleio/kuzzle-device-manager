@@ -1,8 +1,15 @@
-import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
+import {
+  BadRequestError,
+  ControllerDefinition,
+  HttpStream,
+  KuzzleRequest,
+} from "kuzzle";
 import _ from "lodash";
+import { PassThrough } from "node:stream";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
-import { DecodedMeasurement } from "../measure";
+import { MeasureExporter, DecodedMeasurement } from "../measure";
+import { DeviceManagerPlugin } from "../plugin";
 
 import { DeviceService } from "./DeviceService";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -23,11 +30,10 @@ import {
 export class DevicesController {
   public definition: ControllerDefinition;
 
-  private deviceService: DeviceService;
-
-  constructor(deviceService: DeviceService) {
-    this.deviceService = deviceService;
-
+  constructor(
+    private plugin: DeviceManagerPlugin,
+    private deviceService: DeviceService
+  ) {
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
@@ -104,6 +110,19 @@ export class DevicesController {
             },
             {
               path: "device-manager/:engineId/devices/:_id/measures",
+              verb: "post",
+            },
+          ],
+        },
+        exportMeasures: {
+          handler: this.exportMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/measures/_export/:exportId",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/devices/:_id/measures/_export",
               verb: "post",
             },
           ],
@@ -313,21 +332,72 @@ export class DevicesController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    const { measures, total } = await this.deviceService.getMeasureHistory(
-      engineId,
-      id,
-      {
-        endAt,
-        from,
-        query,
-        size,
-        sort,
-        startAt,
-        type,
-      }
-    );
+    const exporter = new MeasureExporter(this.plugin, engineId, {
+      target: "device",
+    });
+
+    const { measures, total } = await exporter.search(id, {
+      endAt,
+      from,
+      query,
+      size,
+      sort,
+      startAt,
+      type,
+    });
 
     return { measures, total };
+  }
+
+  async exportMeasures(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
+
+    if (
+      request.context.connection.protocol === "http" &&
+      request.context.connection.misc.verb === "GET"
+    ) {
+      const exportId = request.getString("exportId");
+
+      const stream = new PassThrough();
+
+      const exporter = new MeasureExporter(this.plugin, engineId);
+
+      const { id } = await exporter.getExport(exportId);
+
+      request.response.configure({
+        headers: {
+          "Content-Disposition": `attachment; filename="${id}.asset.csv"`,
+          "Content-Type": "text/csv",
+        },
+      });
+
+      exporter.sendExport(stream, exportId);
+
+      return new HttpStream(stream);
+    }
+
+    const id = request.getId();
+    const startAt = request.input.args.startAt
+      ? request.getDate("startAt")
+      : null;
+    const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
+    const query = request.input.body?.query;
+    const sort = request.input.body?.sort;
+    const type = request.input.args.type;
+
+    const exporter = new MeasureExporter(this.plugin, engineId, {
+      target: "device",
+    });
+
+    const { link } = await exporter.prepareExport(request.getUser(), id, {
+      endAt,
+      query,
+      sort,
+      startAt,
+      type,
+    });
+
+    return { link };
   }
 
   async receiveMeasures(request: KuzzleRequest) {

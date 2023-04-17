@@ -177,6 +177,33 @@ export type ApiDeviceGetMeasuresResult = {
   total: number;
 };
 
+/**
+ * This action can be used only with WebSocket or POST
+ *
+ * Then the export can be download using HTTP Get and the following route:
+ *  `/_/device-manager/:engineId/devices/:_id/measures/_export/:exportId`
+ */
+export interface ApiDeviceExportMeasuresRequest
+  extends DevicesControllerRequest {
+  action: "exportMeasures";
+
+  _id: string;
+
+  startAt?: string;
+
+  endAt?: string;
+
+  type?: string;
+
+  body?: {
+    query?: JSONObject;
+    sort?: JSONObject;
+  };
+}
+export type ApiDeviceExportMeasuresResult = {
+  link: string;
+};
+
 export interface ApiDeviceReceiveMeasuresRequest<
   TMeasureValues extends JSONObject = JSONObject
 > extends DevicesControllerRequest {

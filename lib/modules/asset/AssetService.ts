@@ -11,7 +11,6 @@ import {
 import _ from "lodash";
 
 import { AskDeviceUnlinkAsset } from "../device";
-import { MeasureContent } from "../measure/";
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
   AskEngineList,
@@ -29,7 +28,6 @@ import {
 } from "../shared";
 
 import { AssetHistoryService } from "./AssetHistoryService";
-import { ApiAssetGetMeasuresResult } from "./exports";
 import { AssetSerializer } from "./model/AssetSerializer";
 import { AssetContent } from "./types/AssetContent";
 import {
@@ -78,77 +76,6 @@ export class AssetService {
       "ask:device-manager:asset:refresh-model",
       this.refreshModel.bind(this)
     );
-  }
-
-  /**
-   * Returns measures history for an asset
-   *
-   * @param engineId Engine ID
-   * @param assetId Asset ID
-   * @param options.size Number of measures to return
-   * @param options.startAt Returns measures starting from this date (ISO8601)
-   * @param options.endAt Returns measures until this date (ISO8601)
-   */
-  async getMeasureHistory(
-    engineId: string,
-    assetId: string,
-    {
-      size = 25,
-      from = 0,
-      endAt,
-      startAt,
-      query,
-      sort = { measuredAt: "desc" },
-      type,
-    }: {
-      sort?: JSONObject;
-      query?: JSONObject;
-      from?: number;
-      size?: number;
-      startAt?: string;
-      endAt?: string;
-      type?: string;
-    }
-  ): Promise<ApiAssetGetMeasuresResult> {
-    await this.get(engineId, assetId);
-
-    const measuredAtRange = {
-      range: {
-        measuredAt: {
-          gte: 0,
-          lte: Number.MAX_SAFE_INTEGER,
-        },
-      },
-    };
-
-    if (startAt) {
-      measuredAtRange.range.measuredAt.gte = new Date(startAt).getTime();
-    }
-
-    if (endAt) {
-      measuredAtRange.range.measuredAt.lte = new Date(endAt).getTime();
-    }
-
-    const searchQuery: JSONObject = {
-      and: [{ equals: { "asset._id": assetId } }, measuredAtRange],
-    };
-
-    if (type) {
-      searchQuery.and.push({ equals: { type } });
-    }
-
-    if (query) {
-      searchQuery.and.push(query);
-    }
-
-    const result = await this.sdk.document.search<MeasureContent>(
-      engineId,
-      InternalCollection.MEASURES,
-      { query: searchQuery, sort },
-      { from, lang: "koncorde", size: size }
-    );
-
-    return { measures: result.hits, total: result.total };
   }
 
   public async get(

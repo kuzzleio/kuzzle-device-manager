@@ -12,7 +12,10 @@ export class DeviceModule extends Module {
 
   public async init(): Promise<void> {
     this.deviceService = new DeviceService(this.plugin);
-    this.deviceController = new DevicesController(this.deviceService);
+    this.deviceController = new DevicesController(
+      this.plugin,
+      this.deviceService
+    );
 
     this.plugin.api["device-manager/devices"] =
       this.deviceController.definition;
