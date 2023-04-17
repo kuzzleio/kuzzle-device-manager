@@ -473,7 +473,7 @@ export class DeviceService {
         updatedMeasureNames.push({
           asset: measure.asset,
           device: measure.device,
-          type
+          type,
         });
       }
 
