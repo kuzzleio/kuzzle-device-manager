@@ -362,9 +362,7 @@ export class AssetService {
         asset: asset._source as AssetContent,
         event: {
           metadata: {
-            names: Object.keys(flattenObject(asset._source.metadata)).concat(
-              removedMetadata.map((name) => `-${name}`)
-            ),
+            names: Object.keys(flattenObject(asset._source.metadata)),
           },
           name: "metadata",
         },
