@@ -33,7 +33,6 @@ type ExportParams = {
   query: JSONObject;
   target: "asset" | "device";
   model: string;
-  from: number;
   sort: JSONObject;
   id: string;
 };
@@ -99,7 +98,6 @@ export class MeasureExporter {
     user: User,
     digitalTwinId: string,
     {
-      from = 0,
       endAt,
       startAt,
       query,
@@ -116,7 +114,6 @@ export class MeasureExporter {
     );
 
     const exportParams: ExportParams = {
-      from,
       id: digitalTwinId,
       model: digitalTwin._source.model,
       query: searchQuery,
@@ -156,15 +153,13 @@ export class MeasureExporter {
    */
   async sendExport(stream: PassThrough, exportId: string) {
     try {
-      const { query, from, sort, model, target } = await this.getExport(
-        exportId
-      );
+      const { query, sort, model, target } = await this.getExport(exportId);
 
       let result = await this.sdk.document.search<MeasureContent>(
         this.engineId,
         InternalCollection.MEASURES,
         { query, sort },
-        { from, lang: "koncorde", size: 200 }
+        { lang: "koncorde", size: 200 }
       );
 
       const engine = await this.getEngine();

@@ -108,8 +108,6 @@ export interface ApiAssetExportMeasuresRequest extends AssetsControllerRequest {
 
   _id: string;
 
-  from?: number;
-
   startAt?: string;
 
   endAt?: string;

@@ -222,7 +222,6 @@ export class AssetsController {
     }
 
     const id = request.getId();
-    const from = request.input.args.from;
     const startAt = request.input.args.startAt
       ? request.getDate("startAt")
       : null;
@@ -237,7 +236,6 @@ export class AssetsController {
 
     const { link } = await exporter.prepareExport(request.getUser(), id, {
       endAt,
-      from,
       query,
       sort,
       startAt,

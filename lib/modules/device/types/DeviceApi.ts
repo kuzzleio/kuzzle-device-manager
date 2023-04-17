@@ -189,8 +189,6 @@ export interface ApiDeviceExportMeasuresRequest
 
   _id: string;
 
-  from?: number;
-
   startAt?: string;
 
   endAt?: string;
