@@ -4,3 +4,5 @@ export * from "./types/AssetEvents";
 export * from "./types/AssetApi";
 export * from "./roles/RoleAssetsAdmin";
 export * from "./roles/RoleAssetsReader";
+export * from "./collections/assetsMappings";
+export * from "./collections/assetsHistoryMappings";

@@ -16,6 +16,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         unlinkAsset: true,
         update: true,
         getMeasures: true,
+        exportMeasures: true,
       },
     },
     "device-manager/models": {
@@ -42,6 +43,7 @@ export const RoleDevicesAdmin: KuzzleRole = {
           unlinkAsset: true,
           update: true,
           getMeasures: true,
+          exportMeasures: true,
         },
       },
       "device-manager/models": {

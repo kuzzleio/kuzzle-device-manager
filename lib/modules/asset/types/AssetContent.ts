@@ -21,15 +21,15 @@ export interface AssetContent<
     /**
      * Names of the linked measures
      *
-     * Array<{ asset: string, device: string }>
+     * Array<{ asset: string, device: string, type: string }>
      *
      * @example
      *
      * [
-     *   { asset: "externalTemperature", device: "temperature" }
+     *   { asset: "externalTemperature", device: "temperature", type: "temperature" }
      * ]
      */
-    measureNames: Array<{ asset: string; device: string }>;
+    measureNames: Array<{ asset: string; device: string; type: string }>;
   }>;
 }
 

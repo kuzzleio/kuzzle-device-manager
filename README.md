@@ -11,6 +11,7 @@ See the [documentation](https://next-docs.kuzzle.io/official-plugins/device-mana
 ## Usage
 
 In proper way to use this library in your program as an NPM module:
+
 ```
 npm install kuzzle-device-manager
 ```

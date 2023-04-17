@@ -2,29 +2,37 @@ import _ from "lodash";
 import { Backend, InternalError, Plugin } from "kuzzle";
 import { JSONObject } from "kuzzle-sdk";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
+import { EngineContent } from "kuzzle-plugin-commons/lib/engine/EngineContent";
 
-import { assetsMappings, assetsHistoryMappings } from "../modules/asset";
+import { assetsMappings, assetsHistoryMappings } from "../asset";
 import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
-} from "../modules/model";
-import {
-  getEmbeddedMeasureMappings,
-  measuresMappings,
-} from "../modules/measure";
-import { devicesMappings } from "../modules/device";
-import { onAsk } from "../modules/shared";
-import { NamedMeasures } from "../modules/decoder";
+} from "../model";
+import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
+import { devicesMappings } from "../device";
+import { onAsk } from "../shared";
+import { NamedMeasures } from "../decoder";
 
-import { DeviceManagerConfiguration } from "./DeviceManagerConfiguration";
+import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
-import { InternalCollection } from "./InternalCollection";
+import { InternalCollection } from "./types/InternalCollection";
 
 const digitalTwinMappings = {
   asset: assetsMappings,
   device: devicesMappings,
 } as const;
+
+export type AskEngineList = {
+  name: "ask:device-manager:engine:list";
+
+  payload: {
+    group: string | null;
+  };
+
+  result: EngineContent[];
+};
 
 export type AskEngineUpdateAll = {
   name: "ask:device-manager:engine:updateAll";
@@ -55,6 +63,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     this.context = plugin.context;
+
+    onAsk<AskEngineList>("ask:device-manager:engine:list", async ({ group }) =>
+      this.list(group)
+    );
 
     onAsk<AskEngineUpdateAll>(
       "ask:device-manager:engine:updateAll",
@@ -98,17 +110,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createMeasuresCollection(index, group));
 
-    promises.push(this.engineConfigManager.createCollection(index));
-
-    await Promise.all(promises);
+    const collections = await Promise.all(promises);
 
     return {
-      collections: [
-        InternalCollection.ASSETS,
-        this.engineConfigManager.collection,
-        InternalCollection.DEVICES,
-        InternalCollection.MEASURES,
-      ],
+      collections: [this.engineConfigManager.collection, ...collections],
     };
   }
 

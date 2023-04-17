@@ -1,9 +1,10 @@
 import { KDocument } from "kuzzle-sdk";
+import { AssetModelContent } from "lib/modules/model";
 
 import { Metadata } from "../../../modules/shared";
 
 import { AssetContent } from "./AssetContent";
-import { AssetHistoryEvent } from "./AssetHistoryContent";
+import { AssetHistoryContent, AssetHistoryEvent } from "./AssetHistoryContent";
 
 export type EventAssetUpdateBefore = {
   name: "device-manager:asset:update:before";
@@ -17,6 +18,16 @@ export type EventAssetUpdateAfter = {
   args: [{ asset: KDocument<AssetContent>; metadata: Metadata }];
 };
 
+export type AskAssetRefreshModel = {
+  name: "ask:device-manager:asset:refresh-model";
+
+  payload: {
+    assetModel: AssetModelContent;
+  };
+
+  result: void;
+};
+
 /**
  * @internal
  */
@@ -25,8 +36,7 @@ export type AskAssetHistoryAdd<TAssetHistoryEvent extends AssetHistoryEvent> = {
 
   payload: {
     engineId: string;
-    event: TAssetHistoryEvent;
-    asset: KDocument<AssetContent>;
+    histories: AssetHistoryContent<TAssetHistoryEvent>[];
   };
 
   result: void;

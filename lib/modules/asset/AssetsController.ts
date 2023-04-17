@@ -1,4 +1,8 @@
-import { ControllerDefinition, KuzzleRequest } from "kuzzle";
+import { ControllerDefinition, HttpStream, KuzzleRequest } from "kuzzle";
+import { PassThrough } from "stream";
+
+import { MeasureExporter } from "../measure/";
+import { DeviceManagerPlugin } from "../plugin";
 
 import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
@@ -14,11 +18,10 @@ import {
 export class AssetsController {
   public definition: ControllerDefinition;
 
-  private assetService: AssetService;
-
-  constructor(assetService: AssetService) {
-    this.assetService = assetService;
-
+  constructor(
+    private plugin: DeviceManagerPlugin,
+    private assetService: AssetService
+  ) {
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
@@ -56,6 +59,19 @@ export class AssetsController {
             },
             {
               path: "device-manager/:engineId/assets/:_id/measures",
+              verb: "post",
+            },
+          ],
+        },
+        exportMeasures: {
+          handler: this.exportMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/measures/_export/:exportId",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/assets/:_id/measures/_export",
               verb: "post",
             },
           ],
@@ -161,20 +177,71 @@ export class AssetsController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    const { measures, total } = await this.assetService.getMeasureHistory(
-      engineId,
-      id,
-      {
-        endAt,
-        from,
-        query,
-        size,
-        sort,
-        startAt,
-        type,
-      }
-    );
+    const exporter = new MeasureExporter(this.plugin, engineId, {
+      target: "asset",
+    });
+
+    const { measures, total } = await exporter.search(id, {
+      endAt,
+      from,
+      query,
+      size,
+      sort,
+      startAt,
+      type,
+    });
 
     return { measures, total };
+  }
+
+  async exportMeasures(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
+
+    if (
+      request.context.connection.protocol === "http" &&
+      request.context.connection.misc.verb === "GET"
+    ) {
+      const exportId = request.getString("exportId");
+
+      const stream = new PassThrough();
+
+      const exporter = new MeasureExporter(this.plugin, engineId);
+
+      const { id } = await exporter.getExport(exportId);
+
+      request.response.configure({
+        headers: {
+          "Content-Disposition": `attachment; filename="${id}.asset.csv"`,
+          "Content-Type": "text/csv",
+        },
+      });
+
+      exporter.sendExport(stream, exportId);
+
+      return new HttpStream(stream);
+    }
+
+    const id = request.getId();
+    const startAt = request.input.args.startAt
+      ? request.getDate("startAt")
+      : null;
+    const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
+    const query = request.input.body?.query;
+    const sort = request.input.body?.sort;
+    const type = request.input.args.type;
+
+    const exporter = new MeasureExporter(this.plugin, engineId, {
+      target: "asset",
+    });
+
+    const { link } = await exporter.prepareExport(request.getUser(), id, {
+      endAt,
+      query,
+      sort,
+      startAt,
+      type,
+    });
+
+    return { link };
   }
 }

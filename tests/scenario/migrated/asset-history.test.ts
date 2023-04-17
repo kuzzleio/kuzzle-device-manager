@@ -91,6 +91,16 @@ describe("features/Asset/History", () => {
       },
     });
 
+    expect(
+      response.result.asset._source.linkedDevices[0].measureNames
+    ).toMatchObject([
+      {
+        asset: "temperatureExt",
+        type: "temperature",
+        device: "temperature",
+      },
+    ]);
+
     response = await sdk.query({
       controller: "device-manager/devices",
       action: "unlinkAsset",

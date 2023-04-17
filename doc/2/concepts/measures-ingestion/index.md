@@ -9,7 +9,7 @@ description: Measures ingestion
 
 When it comes to receiving data, the Kuzzle IoT Platform is capable of receiving raw data or formatted data in the form of measures.
 
-These measures are then passed through the ingestion pipeline to allow the rules engine to perform processing at various stages.
+These measures are then passed through the ingestion pipeline to allow to perform processing at various stages.
 
 # Raw data
 
@@ -29,11 +29,11 @@ Each model of Decoder can be associated with a Decoder in order to normalize the
 
 A Decoder is responsible for
 
-- declare the measures it will process
-- register a corresponding API action
-- modify the mapping of the collection containing the raw data
-- validate the format of the received data
-- extract measures from the received data
+1. declare the measures it will process
+2. register a corresponding API action
+3. (optional) modify the mapping of the collection containing the raw data
+4. (optional) validate the format of the received data
+5. extract measures from the received data
 
 ### Declaration of measures
 
@@ -117,6 +117,11 @@ This method takes the raw data frame as a parameter and can indicate that:
 3. the format of this frame is incorrect throwing an exception
 
 Depending on the result of the `validate` method, the API action will return either a `200` status (Case 1 and 2) or a `4**` status (case 3).
+
+For each case, a state and a reason is stored inside the payload document:
+1. the payload has a VALID state.
+2. the payload is discarded by user validation and has a SKIP state and a dedicated reason (which can be overridden by throwing a SkipError exception).
+3. the payload has an ERROR state and a reason equal to the error message.
 
 ```jsx
 class AbeewayDecoder extends Decoder {
@@ -239,6 +244,8 @@ The `payloads` collection of the `platform` index contains the following informa
 - `uuid`: unique identifier of the data received
 - `valid`: boolean indicating whether the data could be processed correctly
 - `apiAction`: API action that was used to send the data
+- `state`: the state of the payload : VALID if it's valid, SKIP if the payload is skipped by the user during validation or ERROR if an error is raised during payload reception.
+- `reason`: the reason of an error if the payload is in error (otherwise it will be undefined).
 
 For each measure contained in the Kuzzle IoT Platform, it is possible to go back to the raw data in order to analyze possible problems in the standardization stage.
 
@@ -248,7 +255,7 @@ The `payloadUuids` property contained in the measures allows you to search the `
 
 It is possible to execute additional processing within the ingestion pipeline by using one of the events provided for this purpose.
 
-Adding new business rules is done using the Kuzzle pipe mechanism.
+Adding new business rules is done using the Kuzzle pipe mechanism (See [Event System](/core/2/guides/develop-on-kuzzle/event-system/)).
 
 Depending on the treatments, it is better to choose one or the other and that is what we are going to see now.
 
@@ -267,6 +274,10 @@ The `device-manager:measures:process:before` event is triggered with an object c
 - `device`: the last state of the device associated with the measures
 - `measures`: table of measures
 - `asset`: (optional) the last state of the asset linked to the device
+
+::: info
+An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:before`
+:::
 
 ### Enrich existing measures
 
@@ -381,6 +392,10 @@ The `device-manager:measures:process:after` event is triggered with an object co
 - `device`: the new state of the device associated with the measures
 - `measures`: table of measures
 - `asset`: (optional) the new state of the asset linked to the device
+
+::: info
+An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:after`
+:::
 
 ## Ingestion Pipeline Concurrency
 

@@ -4,18 +4,21 @@ import { Metadata } from "../../shared";
 
 import { AssetContent } from "./AssetContent";
 
+export type AssetHistoryMetadata = {
+  names: string[];
+};
+
 export type AssetHistoryEventMeasure = {
   name: "measure";
   measure: {
     names: string[];
   };
+  metadata?: AssetHistoryMetadata;
 };
 
 export type AssetHistoryEventMetadata = {
   name: "metadata";
-  metadata: {
-    names: string[];
-  };
+  metadata: AssetHistoryMetadata;
 };
 
 export type AssetHistoryEventLink = {
@@ -65,4 +68,14 @@ export interface AssetHistoryContent<
    * Asset content after the event
    */
   asset: AssetContent<TMeasures, TMetadata>;
+
+  /**
+   * Timestamp of the event according to its type
+   *
+   *  - `measure`: the date of measure (`measuredAt`)
+   *  - `metadata`: the current date of the event
+   *  - `link`: the current date of the event
+   *  - `unlink`: the current date of the event
+   */
+  timestamp: number;
 }

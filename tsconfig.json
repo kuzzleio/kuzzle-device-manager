@@ -14,7 +14,7 @@
   "rootDir": "lib/",
   "include": [
     "lib/**/*.ts",
-    "tests/**/*.ts",
+    "tests/application/**/*.ts",
     "index.ts"
   ],
   "exclude": [

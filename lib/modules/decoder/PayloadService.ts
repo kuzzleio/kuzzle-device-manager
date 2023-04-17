@@ -6,7 +6,7 @@ import {
   DeviceManagerPlugin,
   DeviceManagerConfiguration,
   InternalCollection,
-} from "../../core";
+} from "../plugin";
 import { DeviceContent, DeviceSerializer } from "../device";
 import { AskMeasureIngest, DecodedMeasurement } from "../measure";
 import { ask, onAsk } from "../shared";
@@ -14,6 +14,8 @@ import { ask, onAsk } from "../shared";
 import { DecodedPayload } from "./DecodedPayload";
 import { Decoder } from "./Decoder";
 import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
+import { DecodingState } from "./DecodingState";
+import { SkipError } from "./SkipError";
 
 export class PayloadService {
   private config: DeviceManagerConfiguration;
@@ -57,15 +59,25 @@ export class PayloadService {
 
     const uuid = request.input.args.uuid || uuidv4();
     let valid = true;
+    let state = DecodingState.VALID;
+    let errorReason;
 
     try {
       valid = await decoder.validate(payload, request);
 
+      // TODO: Temporary workaround to prevent breaking anything; in the future,
+      // consider modifying the return value of the 'validate' function to return an object
       if (!valid) {
-        return { valid };
+        throw new SkipError("Skip by user defined validation");
       }
     } catch (error) {
       valid = false;
+      errorReason = error.message;
+      if (error instanceof SkipError) {
+        state = DecodingState.SKIP;
+        return { valid };
+      }
+      state = DecodingState.ERROR;
       throw error;
     } finally {
       await this.savePayload(
@@ -73,7 +85,9 @@ export class PayloadService {
         uuid,
         valid,
         payload,
-        apiAction
+        apiAction,
+        DecodingState[state],
+        errorReason
       );
     }
 
@@ -136,17 +150,19 @@ export class PayloadService {
     uuid: string,
     valid: boolean,
     payload: JSONObject,
-    apiAction: string
+    apiAction: string,
+    state?: string,
+    reason?: string
   ) {
     try {
       await this.sdk.document.create(
         this.config.adminIndex,
         "payloads",
-        { apiAction, deviceModel, payload, uuid, valid },
+        { apiAction, deviceModel, payload, reason, state, uuid, valid },
         uuid
       );
     } catch (error) {
-      this.app.log.error(
+      this.context.log.error(
         `Cannot save the payload from "${deviceModel}": ${error}`
       );
     }
@@ -187,7 +203,7 @@ export class PayloadService {
         });
         devices.push(...newDevices);
       } else {
-        this.app.log.info(
+        this.context.log.info(
           `Skipping new devices "${errors.join(
             ", "
           )}". Auto-provisioning is disabled.`
@@ -232,7 +248,7 @@ export class PayloadService {
       );
 
     for (const error of errors) {
-      this.app.log.error(
+      this.context.log.error(
         `Cannot create device "${error.document._id}": ${error.reason}`
       );
     }

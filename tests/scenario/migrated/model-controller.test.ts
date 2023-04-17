@@ -58,7 +58,10 @@ describe("features/Model/Controller", () => {
       body: {
         engineGroup: "commons",
         model: "Plane",
-        metadataMappings: { company2: { type: "keyword" } },
+        metadataMappings: {
+          company: { type: "keyword" },
+          company2: { type: "keyword" },
+        },
         measures: [
           { name: "temperatureExt", type: "temperature" },
           { name: "position", type: "position" },
@@ -230,7 +233,10 @@ describe("features/Model/Controller", () => {
           { type: "battery", name: "battery" },
           { type: "temperature", name: "temperature" },
         ],
-        metadataMappings: { network2: { type: "keyword" } },
+        metadataMappings: {
+          network: { type: "keyword" },
+          network2: { type: "keyword" },
+        },
       },
     });
 
@@ -360,7 +366,10 @@ describe("features/Model/Controller", () => {
       action: "writeMeasure",
       body: {
         type: "presence",
-        valuesMappings: { presence2: { type: "boolean" } },
+        valuesMappings: {
+          presence: { type: "boolean" },
+          presence2: { type: "boolean" },
+        },
       },
     });
 

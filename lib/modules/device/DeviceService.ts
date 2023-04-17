@@ -7,7 +7,7 @@ import {
   AssetHistoryEventLink,
   AssetHistoryEventUnlink,
 } from "./../asset";
-import { InternalCollection, DeviceManagerConfiguration } from "../../core";
+import { InternalCollection, DeviceManagerConfiguration } from "../plugin";
 import { Metadata, lock, ask, onAsk } from "../shared";
 import {
   AskModelAssetGet,
@@ -15,7 +15,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
 } from "../model";
-import { DecodedMeasurement, MeasureContent } from "../measure";
+import { DecodedMeasurement } from "../measure";
 
 import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -24,11 +24,10 @@ import {
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
-import {
-  ApiDeviceLinkAssetRequest,
-  ApiDeviceGetMeasuresResult,
-} from "./types/DeviceApi";
+import { ApiDeviceLinkAssetRequest } from "./types/DeviceApi";
 import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
+
+type MeasureName = { asset: string; device: string; type: string };
 
 export class DeviceService {
   private config: DeviceManagerConfiguration;
@@ -243,7 +242,17 @@ export class DeviceService {
 
               await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
                 "ask:device-manager:asset:history:add",
-                { asset: updatedAsset, engineId, event }
+                {
+                  engineId,
+                  histories: [
+                    {
+                      asset: updatedAsset._source,
+                      event,
+                      id: updatedAsset._id,
+                      timestamp: Date.now(),
+                    },
+                  ],
+                }
               );
             })
         );
@@ -457,21 +466,39 @@ export class DeviceService {
         this.getDeviceModel(device._source.model),
       ]);
 
-      this.checkAlreadyProvidedMeasures(device, asset, measureNames);
+      const updatedMeasureNames: MeasureName[] = [];
+      for (const measure of measureNames) {
+        const foundMeasure = deviceModel.device.measures.find(
+          (deviceMeasure) => deviceMeasure.name === measure.device
+        );
+        if (!foundMeasure && !implicitMeasuresLinking) {
+          throw new BadRequestError(
+            `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`
+          );
+        }
+        const { type } = foundMeasure;
+        updatedMeasureNames.push({
+          asset: measure.asset,
+          device: measure.device,
+          type,
+        });
+      }
+
+      this.checkAlreadyProvidedMeasures(asset, updatedMeasureNames);
 
       if (implicitMeasuresLinking) {
         this.generateMissingAssetMeasureNames(
           asset,
           assetModel,
           deviceModel,
-          measureNames
+          updatedMeasureNames
         );
       }
 
       device._source.assetId = assetId;
       asset._source.linkedDevices.push({
         _id: deviceId,
-        measureNames,
+        measureNames: updatedMeasureNames,
       });
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
@@ -507,7 +534,17 @@ export class DeviceService {
       };
       await ask<AskAssetHistoryAdd<AssetHistoryEventLink>>(
         "ask:device-manager:asset:history:add",
-        { asset: updatedAsset, engineId, event }
+        {
+          engineId,
+          histories: [
+            {
+              asset: updatedAsset._source,
+              event,
+              id: updatedAsset._id,
+              timestamp: Date.now(),
+            },
+          ],
+        }
       );
 
       if (refresh) {
@@ -567,9 +604,8 @@ export class DeviceService {
    * requested measure names.
    */
   private checkAlreadyProvidedMeasures(
-    device: KDocument<DeviceContent>,
     asset: KDocument<AssetContent>,
-    requestedMeasureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
+    requestedMeasureNames: MeasureName[]
   ) {
     const measureAlreadyProvided = (assetMeasureName: string): boolean => {
       return asset._source.linkedDevices.some((link) =>
@@ -596,7 +632,7 @@ export class DeviceService {
     asset: KDocument<AssetContent>,
     assetModel: AssetModelContent,
     deviceModel: DeviceModelContent,
-    requestedMeasureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
+    requestedMeasureNames: MeasureName[]
   ) {
     const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
       return asset._source.linkedDevices.some((link) =>
@@ -628,6 +664,7 @@ export class DeviceService {
       requestedMeasureNames.push({
         asset: deviceMeasure.name,
         device: deviceMeasure.name,
+        type: deviceMeasure.type,
       });
     }
   }
@@ -701,7 +738,17 @@ export class DeviceService {
       };
       await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
         "ask:device-manager:asset:history:add",
-        { asset: updatedAsset, engineId, event }
+        {
+          engineId,
+          histories: [
+            {
+              asset: updatedAsset._source,
+              event,
+              id: updatedAsset._id,
+              timestamp: Date.now(),
+            },
+          ],
+        }
       );
 
       if (refresh) {
@@ -717,68 +764,6 @@ export class DeviceService {
 
       return { asset: updatedAsset, device: updatedDevice };
     });
-  }
-
-  async getMeasureHistory(
-    engineId: string,
-    deviceId: string,
-    {
-      size = 25,
-      from = 0,
-      endAt,
-      startAt,
-      query,
-      sort = { measuredAt: "desc" },
-      type,
-    }: {
-      sort?: JSONObject;
-      query?: JSONObject;
-      from?: number;
-      size?: number;
-      startAt?: string;
-      endAt?: string;
-      type?: string;
-    }
-  ): Promise<ApiDeviceGetMeasuresResult> {
-    await this.get(engineId, deviceId);
-
-    const measuredAtRange = {
-      range: {
-        measuredAt: {
-          gte: 0,
-          lte: Number.MAX_SAFE_INTEGER,
-        },
-      },
-    };
-
-    if (startAt) {
-      measuredAtRange.range.measuredAt.gte = new Date(startAt).getTime();
-    }
-
-    if (endAt) {
-      measuredAtRange.range.measuredAt.lte = new Date(endAt).getTime();
-    }
-
-    const searchQuery: JSONObject = {
-      and: [{ equals: { "origin._id": deviceId } }, measuredAtRange],
-    };
-
-    if (type) {
-      searchQuery.and.push({ equals: { type } });
-    }
-
-    if (query) {
-      searchQuery.and.push(query);
-    }
-
-    const result = await this.sdk.document.search<MeasureContent>(
-      engineId,
-      InternalCollection.MEASURES,
-      { query: searchQuery, sort },
-      { from, lang: "koncorde", size: size }
-    );
-
-    return { measures: result.hits, total: result.total };
   }
 
   private async checkEngineExists(engineId: string) {

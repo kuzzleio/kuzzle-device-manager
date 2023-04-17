@@ -96,3 +96,29 @@ export type ApiAssetGetMeasuresResult = {
   measures: Array<KDocument<MeasureContent<JSONObject>>>;
   total: number;
 };
+
+/**
+ * This action can be used only with WebSocket or POST
+ *
+ * Then the export can be download using HTTP Get and the following route:
+ *  `/_/device-manager/:engineId/devices/:_id/measures/_export/:exportId`
+ */
+export interface ApiAssetExportMeasuresRequest extends AssetsControllerRequest {
+  action: "exportMeasures";
+
+  _id: string;
+
+  startAt?: string;
+
+  endAt?: string;
+
+  type?: string;
+
+  body?: {
+    query?: JSONObject;
+    sort?: JSONObject;
+  };
+}
+export type ApiAssetExportMeasuresResult = {
+  link: string;
+};

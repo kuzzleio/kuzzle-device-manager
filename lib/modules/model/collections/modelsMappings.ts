@@ -2,6 +2,9 @@ import { CollectionMappings } from "kuzzle";
 
 /* eslint-disable sort-keys */
 
+/**
+ * Mappings for models configuration documents
+ */
 export const modelsMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {
