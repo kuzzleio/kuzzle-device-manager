@@ -4,3 +4,4 @@ export * from "./types/MeasureDefinition";
 export * from "./measures";
 export * from "./roles/RoleMeasuresAdmin";
 export * from "./roles/RoleMeasuresReader";
+export * from "./collections/measuresMappings";
