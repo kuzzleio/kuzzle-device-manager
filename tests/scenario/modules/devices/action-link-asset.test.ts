@@ -33,7 +33,12 @@ describe("DeviceController: receiveMeasure", () => {
       _id: "DummyTemp-unlinked1",
       assetId: "Container-unlinked1",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureExt" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureExt",
+          },
+        ],
       },
     });
 
@@ -75,7 +80,12 @@ describe("DeviceController: receiveMeasure", () => {
       _id: "DummyTemp-unlinked2",
       assetId: "Container-unlinked1",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureInt" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureInt",
+          },
+        ],
       },
     });
 
@@ -106,7 +116,12 @@ describe("DeviceController: receiveMeasure", () => {
       _id: "DummyTempPosition-unlinked3",
       assetId: "Container-linked1",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureInt" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureInt",
+          },
+        ],
       },
     });
 
@@ -119,7 +134,10 @@ describe("DeviceController: receiveMeasure", () => {
       assetId: "Container-linked1",
       body: {
         measureNames: [
-          { device: "temperature", asset: "temperatureInt" },
+          {
+            device: "temperature",
+            asset: "temperatureInt",
+          },
           { device: "position", asset: "position" },
         ],
       },
@@ -164,7 +182,12 @@ describe("DeviceController: receiveMeasure", () => {
       _id: "DummyTemp-unlinked1",
       assetId: "Container-unlinked1",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureExt" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureExt",
+          },
+        ],
       },
     });
 
@@ -176,7 +199,12 @@ describe("DeviceController: receiveMeasure", () => {
       assetId: "Container-unlinked1",
       implicitMeasuresLinking: true,
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureInt" }],
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureInt",
+          },
+        ],
       },
     });
 
@@ -223,7 +251,12 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-unlinked1",
         assetId: "Container-linked1",
         body: {
-          measureNames: [{ asset: "temperatureExt", device: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+            },
+          ],
         },
       })
     ).rejects.toMatchObject({
@@ -241,7 +274,12 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-detached1",
         assetId: "Container-unlinked1",
         body: {
-          measureNames: [{ asset: "temperatureExt", device: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+            },
+          ],
         },
       })
     ).rejects.toMatchObject({
@@ -258,7 +296,12 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-unlinked1",
         assetId: "Container-unlinked1",
         body: {
-          measureNames: [{ asset: "temperatureExt", device: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+            },
+          ],
         },
       })
     ).rejects.toMatchObject({
@@ -276,7 +319,12 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-unlinked1",
         assetId: "Container-notexisting",
         body: {
-          measureNames: [{ asset: "temperatureExt", device: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+            },
+          ],
         },
       })
     ).rejects.toMatchObject({

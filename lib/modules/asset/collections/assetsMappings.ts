@@ -34,6 +34,7 @@ export const assetsMappings = {
           properties: {
             asset: { type: "keyword" },
             device: { type: "keyword" },
+            type: { type: "keyword" },
           },
         },
       },

@@ -30,6 +30,8 @@ import {
 } from "./types/DeviceApi";
 import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 
+type MeasureName = { asset: string; device: string; type: string };
+
 export class DeviceService {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
@@ -457,21 +459,39 @@ export class DeviceService {
         this.getDeviceModel(device._source.model),
       ]);
 
-      this.checkAlreadyProvidedMeasures(device, asset, measureNames);
+      const updatedMeasureNames: MeasureName[] = [];
+      for (const measure of measureNames) {
+        const foundMeasure = deviceModel.device.measures.find(
+          (deviceMeasure) => deviceMeasure.name === measure.device
+        );
+        if (!foundMeasure && !implicitMeasuresLinking) {
+          throw new BadRequestError(
+            `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`
+          );
+        }
+        const { type } = foundMeasure;
+        updatedMeasureNames.push({
+          asset: measure.asset,
+          device: measure.device,
+          type,
+        });
+      }
+
+      this.checkAlreadyProvidedMeasures(asset, updatedMeasureNames);
 
       if (implicitMeasuresLinking) {
         this.generateMissingAssetMeasureNames(
           asset,
           assetModel,
           deviceModel,
-          measureNames
+          updatedMeasureNames
         );
       }
 
       device._source.assetId = assetId;
       asset._source.linkedDevices.push({
         _id: deviceId,
-        measureNames,
+        measureNames: updatedMeasureNames,
       });
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
@@ -567,9 +587,8 @@ export class DeviceService {
    * requested measure names.
    */
   private checkAlreadyProvidedMeasures(
-    device: KDocument<DeviceContent>,
     asset: KDocument<AssetContent>,
-    requestedMeasureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
+    requestedMeasureNames: MeasureName[]
   ) {
     const measureAlreadyProvided = (assetMeasureName: string): boolean => {
       return asset._source.linkedDevices.some((link) =>
@@ -596,7 +615,7 @@ export class DeviceService {
     asset: KDocument<AssetContent>,
     assetModel: AssetModelContent,
     deviceModel: DeviceModelContent,
-    requestedMeasureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"]
+    requestedMeasureNames: MeasureName[]
   ) {
     const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
       return asset._source.linkedDevices.some((link) =>
@@ -628,6 +647,7 @@ export class DeviceService {
       requestedMeasureNames.push({
         asset: deviceMeasure.name,
         device: deviceMeasure.name,
+        type: deviceMeasure.type,
       });
     }
   }
