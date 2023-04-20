@@ -466,7 +466,7 @@ async function historizeAssetStates(
     const measureNames = [];
 
     for (const measure of Object.values(assetState._source.measures)) {
-      if (measure.measuredAt === measuredAt) {
+      if (measure?.measuredAt === measuredAt) {
         measureNames.push(measure.name);
       }
     }
