@@ -2,7 +2,7 @@ import _ from "lodash";
 import { Backend, InternalError, Plugin } from "kuzzle";
 import { JSONObject } from "kuzzle-sdk";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
-import { EngineContent } from "kuzzle-plugin-commons/lib/engine/EngineContent";
+import { EngineContent } from "kuzzle-plugin-commons";
 
 import { assetsMappings, assetsHistoryMappings } from "../asset";
 import {

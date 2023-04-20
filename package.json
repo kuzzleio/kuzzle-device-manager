@@ -1,6 +1,6 @@
 {
   "name": "kuzzle-device-manager",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Manage your IoT devices and assets. Choose a provisioning strategy, receive and decode payload, handle your IoT business logic.",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
@@ -24,7 +24,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "csv-stringify": "^6.3.2",
-    "kuzzle-plugin-commons": "https://github.com/kuzzleio/kuzzle-plugin-commons/archive/refs/tags/1.0.5.tar.gz",
+    "kuzzle-plugin-commons": "^1.0.7",
     "lodash": "^4.17.21",
     "uuid": "~9.0.0"
   },
