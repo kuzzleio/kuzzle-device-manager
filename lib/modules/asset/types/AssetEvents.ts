@@ -1,7 +1,7 @@
 import { KDocument } from "kuzzle-sdk";
 
-import { AssetModelContent } from "../../modules/model";
-import { Metadata } from "../../../modules/shared";
+import { AssetModelContent } from "../../model";
+import { Metadata } from "../../shared";
 
 import { AssetContent } from "./AssetContent";
 import { AssetHistoryContent, AssetHistoryEvent } from "./AssetHistoryContent";
