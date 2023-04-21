@@ -366,7 +366,7 @@ export class DevicesController {
 
       request.response.configure({
         headers: {
-          "Content-Disposition": `attachment; filename="${id}.asset.csv"`,
+          "Content-Disposition": `attachment; filename="device-${id}.csv"`,
           "Content-Type": "text/csv",
         },
       });
