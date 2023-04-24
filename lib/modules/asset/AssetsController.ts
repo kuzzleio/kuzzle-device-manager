@@ -211,7 +211,7 @@ export class AssetsController {
 
       request.response.configure({
         headers: {
-          "Content-Disposition": `attachment; filename="${id}.asset.csv"`,
+          "Content-Disposition": `attachment; filename="asset-${id}.csv"`,
           "Content-Type": "text/csv",
         },
       });
