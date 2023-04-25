@@ -26,8 +26,10 @@ import { ask, keepStack, lock, Metadata, objectDiff, onAsk } from "../shared";
 import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
   AskMeasureIngest,
+  EventMeasurePersistBefore,
   EventMeasureProcessAfter,
   EventMeasureProcessBefore,
+  TenantEventMeasurePersistBefore,
   TenantEventMeasureProcessAfter,
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
@@ -137,14 +139,17 @@ export class MeasureService {
         assetStates = await this.updateAssetMeasures(asset, measures);
       }
 
-      await this.app.trigger("device-manager:measures:persist:before", {
-        asset,
-        device,
-        measures,
-      });
+      await this.app.trigger<EventMeasurePersistBefore>(
+        "device-manager:measures:persist:before",
+        {
+          asset,
+          device,
+          measures,
+        }
+      );
 
       if (engineId) {
-        await this.app.trigger(
+        await this.app.trigger<TenantEventMeasurePersistBefore>(
           `engine:${engineId}:device-manager:measures:persist:before`,
           { asset, device, measures }
         );
