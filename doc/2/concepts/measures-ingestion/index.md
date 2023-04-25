@@ -119,6 +119,7 @@ This method takes the raw data frame as a parameter and can indicate that:
 Depending on the result of the `validate` method, the API action will return either a `200` status (Case 1 and 2) or a `4**` status (case 3).
 
 For each case, a state and a reason is stored inside the payload document:
+
 1. the payload has a VALID state.
 2. the payload is discarded by user validation and has a SKIP state and a dedicated reason (which can be overridden by throwing a SkipError exception).
 3. the payload has an ERROR state and a reason equal to the error message.
@@ -278,6 +279,10 @@ The `device-manager:measures:process:before` event is triggered with an object c
 ::: info
 An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:before`
 :::
+
+Another event is triggered after updating the asset and the device with the latest measures but before being persisted: `device-manager:measures:persist:after`.
+
+The object passed to the event is the same as for the previous event.
 
 ### Enrich existing measures
 

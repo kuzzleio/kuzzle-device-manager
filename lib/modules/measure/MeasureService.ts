@@ -137,6 +137,19 @@ export class MeasureService {
         assetStates = await this.updateAssetMeasures(asset, measures);
       }
 
+      await this.app.trigger("device-manager:measures:persist:before", {
+        asset,
+        device,
+        measures,
+      });
+
+      if (engineId) {
+        await this.app.trigger(
+          `engine:${engineId}:device-manager:measures:persist:before`,
+          { asset, device, measures }
+        );
+      }
+
       const promises = [];
 
       promises.push(

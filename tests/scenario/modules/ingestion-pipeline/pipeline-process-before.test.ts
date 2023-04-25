@@ -4,7 +4,7 @@ import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
 
-describe("Ingestion Pipeline: before ingestion", () => {
+describe("Ingestion Pipeline: process before", () => {
   const sdk = setupHooks();
 
   it("allows to add a new measure only to the asset", async () => {
