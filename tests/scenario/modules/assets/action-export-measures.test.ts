@@ -48,7 +48,7 @@ describe("AssetsController:exportMeasures", () => {
       action: "exportMeasures",
       engineId: "engine-ayse",
       _id: "Container-linked2",
-      type: "position",
+      type: "temperature",
     });
 
     const response = await axios.get("http://localhost:7512" + result.link, {
@@ -67,7 +67,7 @@ describe("AssetsController:exportMeasures", () => {
 
     expect(csv).toHaveLength(5);
     expect(csv[0]).toBe(
-      "_id,measuredAt,type,origin._id,origin.deviceModel,asset._id,asset.model,values.temperatureExt,values.temperatureInt,values.position,values.temperatureWeather\n"
+      "_id,measuredAt,type,deviceId,deviceModel,assetId,assetModel,temperatureExt,temperatureInt,position,temperatureWeather\n"
     );
     const [
       _id,
@@ -77,13 +77,21 @@ describe("AssetsController:exportMeasures", () => {
       originDeviceModel,
       assetId,
       assetModel,
-    ] = csv[1].split(",");
+      temperatureExt,
+      temperatureInt,
+      position,
+      temperatureWeather,
+    ] = csv[1].replace("\n", "").split(",");
     expect(typeof _id).toBe("string");
     expect(typeof parseFloat(measuredAt)).toBe("number");
-    expect(type).toBe("position");
+    expect(type).toBe("temperature");
     expect(originId).toBe("DummyTempPosition-linked2");
     expect(originDeviceModel).toBe("DummyTempPosition");
     expect(assetId).toBe("Container-linked2");
     expect(assetModel).toBe("Container");
+    expect(temperatureExt).toBe("17.3");
+    expect(temperatureInt).toBe("17.3");
+    expect(position).toBe("");
+    expect(temperatureWeather).toBe("17.3");
   });
 });
