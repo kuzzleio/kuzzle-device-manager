@@ -171,25 +171,29 @@ export class MeasureExporter {
         }
       );
 
-      const columns = [
-        "measuredAt",
-        "type",
-        "origin._id",
-        "origin.deviceModel",
-        "asset._id",
-        "asset.model",
-        ...modelDocument[target].measures.map((m) => `values.${m.name}`),
-      ];
+      const columns: Map<string, string> = new Map([
+        ["measuredAt", "measuredAt"],
+        ["type", "type"],
+        ["deviceId", "origin._id"],
+        ["deviceModel", "origin.deviceModel"],
+        ["assetId", "asset._id"],
+        ["assetModel", "asset.model"],
+        ...modelDocument[target].measures.map((m) => [
+          m.name,
+          `values.${m.type}`,
+        ]),
+      ]);
 
-      stream.write(stringify([["_id", ...columns]]));
+      stream.write(stringify([["_id", ...columns.keys()]]));
 
+      const pathsToValue = Array.from(columns.values());
       while (result) {
         for (const hit of result.hits) {
           stream.write(
             stringify([
               [
                 hit._id,
-                ...columns.map((column) => _.get(hit._source, column, null)),
+                ...pathsToValue.map((path) => _.get(hit._source, path, null)),
               ],
             ])
           );

@@ -54,7 +54,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(25);
     expect(csv[0]).toBe(
-      "_id,measuredAt,type,origin._id,origin.deviceModel,asset._id,asset.model,values.temperature,values.battery\n"
+      "_id,measuredAt,type,deviceId,deviceModel,assetId,assetModel,temperature,battery\n"
     );
     const [
       _id,
@@ -108,7 +108,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(3);
     expect(csv[0]).toBe(
-      "_id,measuredAt,type,origin._id,origin.deviceModel,asset._id,asset.model,values.temperature,values.battery\n"
+      "_id,measuredAt,type,deviceId,deviceModel,assetId,assetModel,temperature,battery\n"
     );
   });
 });
