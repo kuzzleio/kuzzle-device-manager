@@ -37,6 +37,12 @@ type ExportParams = {
   id: string;
 };
 
+type Column = {
+  header: string;
+  path: string;
+  isMeasure?: boolean;
+};
+
 export class MeasureExporter {
   private target?: "asset" | "device";
 
@@ -171,30 +177,38 @@ export class MeasureExporter {
         }
       );
 
-      const columns: Map<string, string> = new Map([
-        ["measuredAt", "measuredAt"],
-        ["type", "type"],
-        ["deviceId", "origin._id"],
-        ["deviceModel", "origin.deviceModel"],
-        ["assetId", "asset._id"],
-        ["assetModel", "asset.model"],
-        ...modelDocument[target].measures.map((m) => [
-          m.name,
-          `values.${m.type}`,
-        ]),
-      ]);
+      const columns: Column[] = [
+        { header: "Payload Id", path: "_id" },
+        { header: "Measured At", path: "_source.measuredAt" },
+        { header: "Measure Type", path: "_source.type" },
+        { header: "Device Id", path: "_source.origin._id" },
+        { header: "Device Model", path: "_source.origin.deviceModel" },
+        { header: "Asset Id", path: "_source.asset._id" },
+        { header: "Asset Model", path: "_source.asset.model" },
+        ...modelDocument[target].measures.map((measure) => ({
+          header: measure.name,
+          isMeasure: true,
+          path: `_source.values.${measure.type}`,
+        })),
+      ];
 
-      stream.write(stringify([["_id", ...columns.keys()]]));
+      stream.write(stringify([columns.map((column) => column.header)]));
 
-      const pathsToValue = Array.from(columns.values());
       while (result) {
         for (const hit of result.hits) {
           stream.write(
             stringify([
-              [
-                hit._id,
-                ...pathsToValue.map((path) => _.get(hit._source, path, null)),
-              ],
+              columns.map(({ header: measureName, isMeasure, path }) => {
+                if (
+                  isMeasure &&
+                  target === "asset" &&
+                  hit._source.asset?.measureName !== measureName
+                ) {
+                  return null;
+                }
+
+                return _.get(hit, path, null);
+              }),
             ])
           );
         }
