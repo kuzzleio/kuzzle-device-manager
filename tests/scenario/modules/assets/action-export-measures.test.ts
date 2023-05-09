@@ -67,14 +67,14 @@ describe("AssetsController:exportMeasures", () => {
 
     expect(csv).toHaveLength(5);
     expect(csv[0]).toBe(
-      "_id,measuredAt,type,deviceId,deviceModel,assetId,assetModel,temperatureExt,temperatureInt,position,temperatureWeather\n"
+      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperatureExt,temperatureInt,position,temperatureWeather\n"
     );
     const [
-      _id,
+      payloadId,
       measuredAt,
-      type,
-      originId,
-      originDeviceModel,
+      measureType,
+      deviceId,
+      deviceModel,
       assetId,
       assetModel,
       temperatureExt,
@@ -82,16 +82,16 @@ describe("AssetsController:exportMeasures", () => {
       position,
       temperatureWeather,
     ] = csv[1].replace("\n", "").split(",");
-    expect(typeof _id).toBe("string");
+    expect(typeof payloadId).toBe("string");
     expect(typeof parseFloat(measuredAt)).toBe("number");
-    expect(type).toBe("temperature");
-    expect(originId).toBe("DummyTempPosition-linked2");
-    expect(originDeviceModel).toBe("DummyTempPosition");
+    expect(measureType).toBe("temperature");
+    expect(deviceId).toBe("DummyTempPosition-linked2");
+    expect(deviceModel).toBe("DummyTempPosition");
     expect(assetId).toBe("Container-linked2");
     expect(assetModel).toBe("Container");
     expect(temperatureExt).toBe("17.3");
-    expect(temperatureInt).toBe("17.3");
+    expect(temperatureInt).toBe("");
     expect(position).toBe("");
-    expect(temperatureWeather).toBe("17.3");
+    expect(temperatureWeather).toBe("");
   });
 });

@@ -54,23 +54,23 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(25);
     expect(csv[0]).toBe(
-      "_id,measuredAt,type,deviceId,deviceModel,assetId,assetModel,temperature,battery\n"
+      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,battery\n"
     );
     const [
-      _id,
+      payloadId,
       measuredAt,
-      type,
-      originId,
-      originDeviceModel,
+      measureType,
+      deviceId,
+      deviceModel,
       assetId,
       assetModel,
       temperature,
     ] = csv[1].split(",");
-    expect(typeof _id).toBe("string");
+    expect(typeof payloadId).toBe("string");
     expect(typeof parseFloat(measuredAt)).toBe("number");
-    expect(type).toBe("temperature");
-    expect(originId).toBe("DummyTemp-linked1");
-    expect(originDeviceModel).toBe("DummyTemp");
+    expect(measureType).toBe("temperature");
+    expect(deviceId).toBe("DummyTemp-linked1");
+    expect(deviceModel).toBe("DummyTemp");
     expect(assetId).toBe("Container-linked1");
     expect(assetModel).toBe("Container");
     expect(parseFloat(temperature)).toBe(37);
@@ -108,7 +108,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(3);
     expect(csv[0]).toBe(
-      "_id,measuredAt,type,deviceId,deviceModel,assetId,assetModel,temperature,battery\n"
+      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,battery\n"
     );
   });
 });
