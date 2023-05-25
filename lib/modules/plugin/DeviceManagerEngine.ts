@@ -4,7 +4,11 @@ import { JSONObject } from "kuzzle-sdk";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 import { EngineContent } from "kuzzle-plugin-commons";
 
-import { assetsMappings, assetsHistoryMappings } from "../asset";
+import {
+  assetsMappings,
+  assetsHistoryMappings,
+  assetGroupsMappings,
+} from "../asset";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -106,6 +110,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createAssetsHistoryCollection(index, group));
 
+    promises.push(this.createAssetsGroupsCollection(index));
+
     promises.push(this.createDevicesCollection(index));
 
     promises.push(this.createMeasuresCollection(index, group));
@@ -124,6 +130,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createAssetsHistoryCollection(index, group));
 
+    promises.push(this.createAssetsGroupsCollection(index));
+
     promises.push(this.createDevicesCollection(index));
 
     promises.push(this.createMeasuresCollection(index, group));
@@ -134,28 +142,24 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async onDelete(index: string) {
-    const promises = [];
+    const collections = [
+      InternalCollection.ASSETS,
+      InternalCollection.ASSETS_HISTORY,
+      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.DEVICES,
+      InternalCollection.MEASURES,
+    ];
 
-    promises.push(this.sdk.collection.delete(index, InternalCollection.ASSETS));
-    promises.push(
-      this.sdk.collection.delete(index, InternalCollection.ASSETS_HISTORY)
+    await Promise.all(
+      collections.map(async (collection) => {
+        if (await this.sdk.collection.exists(index, collection)) {
+          await this.sdk.collection.delete(index, collection);
+        }
+      })
     );
-    promises.push(
-      this.sdk.collection.delete(index, InternalCollection.DEVICES)
-    );
-    promises.push(
-      this.sdk.collection.delete(index, InternalCollection.MEASURES)
-    );
-
-    await Promise.all(promises);
 
     return {
-      collections: [
-        InternalCollection.ASSETS,
-        InternalCollection.ASSETS_HISTORY,
-        InternalCollection.DEVICES,
-        InternalCollection.MEASURES,
-      ],
+      collections,
     };
   }
 
@@ -192,6 +196,16 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     return InternalCollection.ASSETS_HISTORY;
+  }
+
+  async createAssetsGroupsCollection(engineId: string) {
+    await this.sdk.collection.create(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      { mappings: assetGroupsMappings }
+    );
+
+    return InternalCollection.ASSETS_GROUPS;
   }
 
   private async getDigitalTwinMappings<

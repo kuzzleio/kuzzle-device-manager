@@ -1,3 +1,5 @@
+import { assetGroupFixtures } from "./assetsGroups";
+
 const deviceDetached1 = {
   model: "DummyTemp",
   reference: "detached1",
@@ -157,5 +159,6 @@ export default {
       { index: { _id: assetAyseUnlinkedId } },
       assetAyseUnlinked,
     ],
+    ...assetGroupFixtures,
   },
 };
