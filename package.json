@@ -20,7 +20,6 @@
     "lint:fix": "eslint ./lib ./tests --ext .ts --config .eslintrc.json --fix",
     "prettier": "npx prettier lib/ tests/ --write",
     "build": "tsc --build tsconfig.json",
-    "postinstall": "node -e \"process.exit(require('fs').existsSync('./dist') ? 1 : 0)\" && npm run build || true",
     "prepack": "npm run build"
   },
   "license": "Apache-2.0",
