@@ -1,26 +1,26 @@
-import { ControllerDefinition, EmbeddedSDK, KuzzleRequest, User } from "kuzzle";
+import {
+  BadRequestError,
+  ControllerDefinition,
+  EmbeddedSDK,
+  KuzzleRequest,
+  User,
+} from "kuzzle";
 
-import { DeviceManagerPlugin } from "../plugin";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import {
   AssetsGroupsBodyRequest,
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
   ApiGroupCreateResult,
   ApiGroupDeleteResult,
-  ApiGroupReadResult,
+  ApiGroupGetResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
 } from "./types/AssetGroupsAPI";
-
-// Fixtures
 import {
-  assetGroupTestId,
-  assetGroupTestBody,
-  assetGroupTestParentId,
-  assetGroupTestParentBody,
-  assetGroupTestChildrenId,
-  assetGroupTestChildrenBody,
-} from "../../../tests/fixtures/assetsGroups";
+  AssetsGroupsBody,
+  AssetsGroupContent,
+} from "./types/AssetGroupContent";
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
@@ -38,8 +38,8 @@ export class AssetsGroupsController {
             },
           ],
         },
-        read: {
-          handler: this.read.bind(this),
+        get: {
+          handler: this.get.bind(this),
           http: [
             { path: "device-manager/:engineId/assetsGroups/:_id", verb: "get" },
           ],
@@ -99,42 +99,75 @@ export class AssetsGroupsController {
     };
   }
 
+  async checkParent(
+    engineId: string,
+    body: AssetsGroupsBodyRequest
+  ): Promise<void> {
+    if (typeof body.parent !== "string") {
+      return;
+    }
+    const parentExist = await this.sdk.document.exists(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      body.parent
+    );
+    if (!parentExist) {
+      throw new BadRequestError(
+        `The parent group "${body.parent}" does not exist`
+      );
+    }
+  }
+
+  async checkChildren(
+    engineId: string,
+    body: AssetsGroupsBodyRequest
+  ): Promise<void> {
+    if (!Array.isArray(body.children)) {
+      throw new BadRequestError("The Children property should be an array");
+    }
+
+    for (const childrenId of body.children) {
+      const childrenExist = await this.sdk.document.exists(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        childrenId
+      );
+      if (!childrenExist) {
+        throw new BadRequestError(
+          `The children group "${childrenId}" does not exist`
+        );
+      }
+    }
+  }
+
   async create(request: KuzzleRequest): Promise<ApiGroupCreateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
     const body = request.getBody() as AssetsGroupsBodyRequest;
 
-    // TODO implement create on database
-    // eslint-disable-next-line no-console
-    console.debug({
-      _id,
-      action: request.getAction(),
-      body,
-      engineId,
-    });
+    await this.checkParent(engineId, body);
 
-    return {
-      _id,
-      _source: { children: [], parent: null, ...body },
-    };
+    return this.as(request.getUser()).document.create<AssetsGroupsBody>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      {
+        children: [],
+        name: body.name,
+        parent: body.parent ?? null,
+      },
+      _id
+    );
   }
 
-  async read(request: KuzzleRequest): Promise<ApiGroupReadResult> {
+  async get(request: KuzzleRequest): Promise<ApiGroupGetResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
 
-    // TODO implement get by id on database
-    // eslint-disable-next-line no-console
-    console.debug({
-      _id,
-      action: request.getAction(),
+    return this.as(request.getUser()).document.get<AssetsGroupsBody>(
       engineId,
-    });
-
-    return {
-      _id,
-      _source: assetGroupTestBody,
-    };
+      InternalCollection.ASSETS_GROUPS,
+      _id
+    );
   }
 
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
@@ -142,32 +175,27 @@ export class AssetsGroupsController {
     const _id = request.getId();
     const body = request.getBody() as AssetsGroupsBodyRequest;
 
-    // TODO implement update on database
-    // eslint-disable-next-line no-console
-    console.debug({
-      _id,
-      action: request.getAction(),
-      body,
-      engineId,
-    });
+    await this.checkParent(engineId, body);
+    await this.checkChildren(engineId, body);
 
-    return {
+    return this.as(request.getUser()).document.update<AssetsGroupsBody>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
       _id,
-      _source: { parent: null, ...body },
-    };
+      { parent: null, ...body },
+      { source: true }
+    );
   }
 
   async delete(request: KuzzleRequest): Promise<ApiGroupDeleteResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
 
-    // TODO implement delete on database
-    // eslint-disable-next-line no-console
-    console.debug({
-      _id,
-      action: request.getAction(),
+    await this.as(request.getUser()).document.delete(
       engineId,
-    });
+      InternalCollection.ASSETS_GROUPS,
+      _id
+    );
   }
 
   async search(request: KuzzleRequest): Promise<ApiGroupSearchResult> {
@@ -180,48 +208,25 @@ export class AssetsGroupsController {
     } = request.getSearchParams();
     const lang = request.getLangParam();
 
-    // TODO implement search on database
-    // eslint-disable-next-line no-console
-    console.debug({
-      action: request.getAction(),
+    return this.as(request.getUser()).document.search<AssetsGroupContent>(
       engineId,
-      from,
-      lang,
-      scroll,
+      InternalCollection.ASSETS_GROUPS,
       searchBody,
-      size,
-    });
-
-    const hits: ApiGroupSearchResult["hits"] = [
-      {
-        _id: assetGroupTestId,
-        _score: 1,
-        _source: assetGroupTestBody,
-      },
-      {
-        _id: assetGroupTestParentId,
-        _score: 1,
-        _source: assetGroupTestParentBody,
-      },
-      {
-        _id: assetGroupTestChildrenId,
-        _score: 1,
-        _source: assetGroupTestChildrenBody,
-      },
-    ];
-
-    return {
-      fetched: hits.length,
-      hits,
-      next: async () => null,
-      total: hits.length,
-    };
+      { from, lang, scroll, size }
+    );
   }
 
   async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
+
+    // ? Get document to check if really exists, even if not indexed
+    await this.sdk.document.get(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id
+    );
 
     // TODO implement addAsset on database
     // eslint-disable-next-line no-console

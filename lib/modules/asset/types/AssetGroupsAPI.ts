@@ -23,7 +23,7 @@ export interface ApiGroupGetRequest extends GroupControllerRequest {
   _id: string;
 }
 
-export type ApiGroupReadResult = KDocument<AssetsGroupContent>;
+export type ApiGroupGetResult = KDocument<AssetsGroupContent>;
 
 export interface ApiGroupUpdateRequest extends GroupControllerRequest {
   action: "update";
