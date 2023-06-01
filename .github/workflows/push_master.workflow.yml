@@ -11,36 +11,46 @@ jobs:
     name: Lint
     runs-on: ubuntu-22.04
     steps:
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
-          known_hosts: unnecessary
       - uses: actions/checkout@v2
-      - uses: ./.github/actions/remove-libs
-      - uses: actions/setup-node@v1.4.4
+      - uses: actions/setup-node@v3
         with:
-          node-version: "14"
-      - uses: ./.github/actions/lint
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+      - name: Run lint
+        run: npm run lint
+
+  check-types:
+    name: Check types
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+      - name: Run types tests
+        run: npm run test:types
 
   functional-tests:
     name: Functional Tests
     runs-on: ubuntu-22.04
-    needs: [lint]
+    needs: [lint, check-types]
     steps:
       - uses: actions/checkout@v2
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
+      - uses: actions/setup-node@v3
         with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
-          known_hosts: unnecessary
-      - uses: ./.github/actions/remove-libs
-      - uses: actions/setup-node@v1.4.4
-        with:
-          node-version: "14"
-      - uses: ./.github/actions/functional-test
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: |
+          docker-compose up -d
+          # Start backend in background (& is mandatory to run process in background otherwise the task never continue)
+          npm run dev &
+          ./tests/wait-kuzzle.sh
+          npm run test:functional
 
   doc-deploy:
     name: Deploy Doc to PROD
@@ -71,12 +81,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [functional-tests]
     steps:
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
-          known_hosts: unnecessary
       - uses: actions/checkout@v2
       - name: Cache node modules
         uses: actions/cache@v2
@@ -92,15 +96,17 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: "14.x"
+          node-version: 16
           registry-url: "https://registry.npmjs.org"
-      # Deploy plugin
-      - run: npm install && npm run build && npm publish
+      - name: Install dependencies
+        run: npm ci
+      - name: Publish package
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # Deploy types
-      - run: cd types/ && npm run build && npm publish
+      - name: Publish types package
+        run: cd types/ && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

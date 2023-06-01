@@ -7,36 +7,46 @@ jobs:
     name: Lint
     runs-on: ubuntu-22.04
     steps:
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
-          known_hosts: unnecessary
       - uses: actions/checkout@v2
-      - uses: ./.github/actions/remove-libs
-      - uses: actions/setup-node@v1.4.4
+      - uses: actions/setup-node@v3
         with:
-          node-version: "14"
-      - uses: ./.github/actions/lint
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+      - name: Run lint
+        run: npm run lint
+
+  check-types:
+    name: Check types
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+      - name: Run types tests
+        run: npm run test:types
 
   functional-tests:
     name: Functional Tests
     runs-on: ubuntu-22.04
-    needs: [lint]
+    needs: [lint, check-types]
     steps:
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
-          known_hosts: unnecessary
       - uses: actions/checkout@v2
-      - uses: ./.github/actions/remove-libs
-      - uses: actions/setup-node@v1.4.4
+      - uses: actions/setup-node@v3
         with:
-          node-version: "14"
-      - uses: ./.github/actions/functional-test
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: |
+          docker-compose up -d
+          # Start backend in background (& is mandatory to run process in background otherwise the task never continue)
+          npm run dev &
+          ./tests/wait-kuzzle.sh
+          npm run test:functional
 
   # doc-dead-links:
   #   name: Check dead-links
