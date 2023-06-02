@@ -38,13 +38,23 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
+      - name: docker pull
+        run: docker compose --profile backend pull
+      - name: docker install dependencies
+        run: docker compose run --no-deps kuzzle /bin/bash -c "npm ci"
+      - name: docker backend
+        run: |
+          # Continue when error
+          set +e
+          export BACKEND_COMMAND="npm run build && npm run prod";
+          docker compose --profile backend up -d --wait
+          exitcode="$?"
+          [[ "$exitcode" == "0" ]] || docker compose logs kuzzle
+          exit "$exitcode"
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: |
-          # Use `--wait` to wait all services are healthy
-          BACKEND_COMMAND="npm run build && npm run prod" docker compose --profile backend up -d --wait
-          npm run test:functional
+        run: npm run test:functional
 
   # doc-dead-links:
   #   name: Check dead-links
