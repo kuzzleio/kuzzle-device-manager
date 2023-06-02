@@ -50,7 +50,7 @@ services:
       - "9229:9229"
       - "1883:1883"
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://kuzzle:7512/_healthCheck']
+      test: ['CMD', 'curl', '-f', 'http://kuzzle:7512/_healthcheck']
       timeout: 1s
       interval: 2s
       retries: 10
