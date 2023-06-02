@@ -228,13 +228,32 @@ export class AssetsGroupsController {
       _id
     );
 
-    // TODO implement addAsset on database
-    // eslint-disable-next-line no-console
-    console.debug({
-      _id,
-      action: request.getAction(),
-      body,
+    const assets = [];
+    for (const assetId of body.assetIds) {
+      const assetContent = (
+        await this.sdk.document.get(
+          engineId,
+          InternalCollection.ASSETS,
+          assetId
+        )
+      )._source;
+
+      if (!Array.isArray(assetContent.groups)) {
+        assetContent.groups = [];
+      }
+
+      assetContent.groups.push(_id);
+
+      assets.push({
+        _id: assetId,
+        body: assetContent,
+      });
+    }
+
+    return this.sdk.document.mReplace(
       engineId,
-    });
+      InternalCollection.ASSETS,
+      assets
+    );
   }
 }

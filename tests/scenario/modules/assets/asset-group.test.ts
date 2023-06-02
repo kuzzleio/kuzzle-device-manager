@@ -317,7 +317,7 @@ describe("AssetsGroupsController", () => {
       /^Document "bad-id" not found in "engine-ayse":"assets-groups".$/
     );
 
-    const { error, status } = await sdk.query<ApiGroupAddAssetsRequest>({
+    const { result } = await sdk.query<ApiGroupAddAssetsRequest>({
       controller: "device-manager/assetsGroup",
       engineId: "engine-ayse",
       action: "addAsset",
@@ -327,9 +327,43 @@ describe("AssetsGroupsController", () => {
       },
     });
 
-    expect({ error, status }).toStrictEqual({
-      error: null,
-      status: 200,
+    expect(result.errors).toHaveLength(0);
+
+    const assetsGroups = result.successes.map(({ _id, _source }) => ({
+      _id,
+      groups: _source.groups,
+    }));
+    expect(assetsGroups).toStrictEqual([
+      { _id: "Container-linked1", groups: [assetGroupTestId] },
+      { _id: "Container-linked2", groups: [assetGroupTestId] },
+    ]);
+
+    // Add assets in an second group
+    const { result: result2 } = await sdk.query<ApiGroupAddAssetsRequest>({
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "addAsset",
+      _id: assetGroupTestParentId,
+      body: {
+        assetIds: ["Container-linked1", "Container-linked2"],
+      },
     });
+
+    expect(result2.errors).toHaveLength(0);
+
+    const assetsGroups2 = result2.successes.map(({ _id, _source }) => ({
+      _id,
+      groups: _source.groups,
+    }));
+    expect(assetsGroups2).toStrictEqual([
+      {
+        _id: "Container-linked1",
+        groups: [assetGroupTestId, assetGroupTestParentId],
+      },
+      {
+        _id: "Container-linked2",
+        groups: [assetGroupTestId, assetGroupTestParentId],
+      },
+    ]);
   });
 });

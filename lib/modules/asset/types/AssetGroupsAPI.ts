@@ -1,4 +1,10 @@
-import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
+import {
+  JSONObject,
+  KDocument,
+  KHit,
+  SearchResult,
+  mUpdateResponse,
+} from "kuzzle-sdk";
 import { AssetsGroupsBody, AssetsGroupContent } from "./AssetGroupContent";
 
 // Make "parent" property to optional for request
@@ -57,4 +63,4 @@ export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupAddAssetsResult = void;
+export type ApiGroupAddAssetsResult = mUpdateResponse;
