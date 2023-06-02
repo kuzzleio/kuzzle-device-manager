@@ -42,10 +42,8 @@ jobs:
         run: npm ci
       - name: Run tests
         run: |
-          docker-compose up -d
-          # Start backend in background (& is mandatory to run process in background otherwise the task never continue)
-          npm run dev &
-          ./tests/wait-kuzzle.sh
+          # Use `--wait` to wait all services are healthy
+          BACKEND_COMMAND="npm run build && npm run prod" docker compose --profile backend up -d --wait
           npm run test:functional
 
   # doc-dead-links:

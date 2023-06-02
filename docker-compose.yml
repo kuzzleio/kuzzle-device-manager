@@ -57,15 +57,15 @@ services:
       start_period: 30s
     volumes:
         - ./docker:/docker:cached
-        - ./index.ts:/var/app/app.ts:cached
+        - ./index.ts:/var/app/index.ts:cached
         - ./package.json:/var/app/package.json:cached
+        - ./package-lock.json:/var/app/package-lock.json:cached
         - ./ergol.config.json:/var/app/ergol.config.json:cached
         - ./tsconfig.json:/var/app/tsconfig.json:cached
         - ./lib:/var/app/lib:cached
         - ./tests:/var/app/tests:cached
         - ~/.npmrc:/root/.npmrc:cached
         # Use persistent volume to persist packages install
-        - backendModules:/var/app/package-lock.json
         - backendModules:/var/app/node_modules/
     environment:
       - kuzzle_services__storageEngine__client__node=http://elasticsearch:9200
