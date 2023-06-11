@@ -548,6 +548,7 @@ describe("features/Model/Controller", () => {
           metadataMappings: { color: { type: "keyword" } },
           measures: [
             { name: "temperature", type: "temperature" },
+            { name: "acceleration", type: "acceleration" },
             { name: "battery", type: "battery" },
           ],
         },
