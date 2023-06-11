@@ -13,8 +13,8 @@ export type PositionMeasurement = {
 
 export const positionMeasureDefinition: MeasureDefinition = {
   valuesMappings: {
+    position: { type: "geo_point" },
     accuracy: { type: "float" },
     altitude: { type: "float" },
-    position: { type: "geo_point" },
   },
 };
