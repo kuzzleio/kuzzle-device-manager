@@ -7,10 +7,12 @@ import {
   TemperatureMeasurement,
   BatteryMeasurement,
 } from "../../../index";
+import { AccelerationMeasurement } from "../measures/AccelerationMeasure";
 
 export class DummyTempDecoder extends Decoder {
   public measures = [
     { name: "temperature", type: "temperature" },
+    { name: "acceleration", type: "acceleration" },
     { name: "battery", type: "battery" },
   ] as const;
 
@@ -72,6 +74,25 @@ export class DummyTempDecoder extends Decoder {
         },
       }
     );
+
+    if (payload.acceleration !== undefined) {
+      decodedPayload.addMeasurement<AccelerationMeasurement>(
+        payload.deviceEUI,
+        "acceleration",
+        {
+          measuredAt: payload.measuredAt || Date.now(),
+          type: "acceleration",
+          values: {
+            acceleration: {
+              x: payload.acceleration.x,
+              y: payload.acceleration.y,
+              z: payload.acceleration.z,
+            },
+            accuracy: payload.acceleration.accuracy,
+          },
+        }
+      );
+    }
 
     decodedPayload.addMeasurement<BatteryMeasurement>(
       payload.deviceEUI,
