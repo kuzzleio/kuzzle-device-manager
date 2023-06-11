@@ -10,7 +10,7 @@ jest.setTimeout(10000);
 describe("AssetsController:exportMeasures", () => {
   const sdk = setupHooks();
 
-  it("should prepare export of position measures and return a CSV as stream", async () => {
+  it("should prepare export of temperature measures and return a CSV as stream", async () => {
     await sendPayloads(sdk, "dummy-temp-position", [
       {
         deviceEUI: "linked2",
