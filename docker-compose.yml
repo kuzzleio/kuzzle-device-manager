@@ -1,23 +1,72 @@
 version: "3"
 
 services:
+  redis:
+    image: redis:5
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  elasticsearch:
+    image: kuzzleio/elasticsearch:7
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+    environment:
+      - ingest.geoip.downloader.enabled=false
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9200']
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    ulimits:
+      nofile: 65536
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data
+
   kuzzle:
-    image: kuzzleio/kuzzle-runner:14
-    command: ${DOCKER_COMMAND:-npm run dev}
+    image: kuzzleio/kuzzle-runner:16.18.0
+    restart: unless-stopped
+    command: "bash /docker/start-backend.sh"
+    profiles: ["backend"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     cap_add:
       - SYS_PTRACE
     ulimits:
       nofile: 65536
     sysctls:
       - net.core.somaxconn=8192
-    volumes:
-      - .:/var/app
     ports:
       - "7512:7512"
       - "9229:9229"
       - "1883:1883"
-    depends_on:
-      - redis
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://kuzzle:7512/_healthcheck']
+      timeout: 1s
+      interval: 2s
+      retries: 10
+      start_period: 30s
+    volumes:
+        - ./docker:/docker:cached
+        - ./index.ts:/var/app/index.ts:cached
+        - ./package.json:/var/app/package.json:cached
+        - ./package-lock.json:/var/app/package-lock.json:cached
+        - ./ergol.config.json:/var/app/ergol.config.json:cached
+        - ./tsconfig.json:/var/app/tsconfig.json:cached
+        - ./lib:/var/app/lib:cached
+        - ./tests:/var/app/tests:cached
+        - ~/.npmrc:/root/.npmrc:cached
+        # Use persistent volume to persist packages install
+        - backendModules:/var/app/node_modules/
     environment:
       - kuzzle_services__storageEngine__client__node=http://elasticsearch:9200
       - kuzzle_services__storageEngine__commonMapping__dynamic=true
@@ -25,14 +74,8 @@ services:
       - kuzzle_services__memoryStorage__node__host=redis
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-none}
-      # - DEBUG=${DEBUG:-kuzzle:*,-kuzzle:entry-point:protocols:websocket,-kuzzle:cluster:heartbeat}
+      - BACKEND_COMMAND=${BACKEND_COMMAND:-npm run dev}
 
-  redis:
-    image: redis:5
-
-  elasticsearch:
-    image: kuzzleio/elasticsearch:7
-    ports:
-      - "9200:9200"
-    ulimits:
-      nofile: 65536
+volumes:
+  esdata01:
+  backendModules:
