@@ -261,23 +261,21 @@ export class MeasureExporter {
 
       for (const measure of mappingsByMeasureType[type]) {
         /**
+         * The path to be used to retrieve the measure values in a Measure Document
+         *
          * @example
          * 'temperature', 'acceleration.x', 'accuracy'
          */
         const path = measure.replace(".type", "").replace(".properties", "");
-        /**
-         * @example
-         * '', 'x', 'accuracy'
-         */
-        const pathWithoutType = path.replace(new RegExp(type + "[.]?"), "");
 
         /**
+         * All of this is here to avoid a long header name like 'accelerationSensor.acceleration.x' (we don't need the 'acceleration' part)
+         *
          * @example
-         * 'temperature', 'acceleration.x', 'acceleration.accuracy'
+         * 'temperatureInt', 'accelerationSensor.x', 'accelerationSensor.accuracy'
          */
-        const header = `${name}${
-          pathWithoutType !== "" ? `.${pathWithoutType}` : ""
-        }`;
+        const header = `${name}.${path}`.replace(`${name}.${type}`, name);
+
         measures.push({
           header,
           isMeasure: true,

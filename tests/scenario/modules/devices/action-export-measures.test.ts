@@ -70,7 +70,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(26);
     expect(csv[0]).toBe(
-      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,acceleration.x,acceleration.y,acceleration.z,acceleration.accuracy,battery\n"
+      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery\n"
     );
     const [
       payloadId,
@@ -145,7 +145,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(3);
     expect(csv[0]).toBe(
-      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,acceleration.x,acceleration.y,acceleration.z,acceleration.accuracy,battery\n"
+      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery\n"
     );
   });
 });

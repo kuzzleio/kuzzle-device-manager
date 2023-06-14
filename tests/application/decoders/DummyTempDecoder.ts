@@ -12,7 +12,7 @@ import { AccelerationMeasurement } from "../measures/AccelerationMeasure";
 export class DummyTempDecoder extends Decoder {
   public measures = [
     { name: "temperature", type: "temperature" },
-    { name: "acceleration", type: "acceleration" },
+    { name: "accelerationSensor", type: "acceleration" },
     { name: "battery", type: "battery" },
   ] as const;
 
@@ -78,7 +78,7 @@ export class DummyTempDecoder extends Decoder {
     if (payload.acceleration !== undefined) {
       decodedPayload.addMeasurement<AccelerationMeasurement>(
         payload.deviceEUI,
-        "acceleration",
+        "accelerationSensor",
         {
           measuredAt: payload.measuredAt || Date.now(),
           type: "acceleration",
