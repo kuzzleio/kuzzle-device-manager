@@ -126,17 +126,24 @@ export class AssetsGroupsController {
       throw new BadRequestError("The Children property should be an array");
     }
 
-    for (const childrenId of body.children) {
-      const childrenExist = await this.sdk.document.exists(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        childrenId
+    if (body.children.length === 0) {
+      return;
+    }
+
+    const { result } = await this.sdk.query({
+      action: "mExists",
+      body: {
+        ids: body.children,
+      },
+      collection: InternalCollection.ASSETS_GROUPS,
+      controller: "document",
+      index: engineId,
+    });
+
+    if (Array.isArray(result.errors) && result.errors.length > 0) {
+      throw new BadRequestError(
+        `The children group "${result.errors.join(",")}" does not exist`
       );
-      if (!childrenExist) {
-        throw new BadRequestError(
-          `The children group "${childrenId}" does not exist`
-        );
-      }
     }
   }
 
