@@ -22,7 +22,11 @@ import {
   DeviceModelContent,
   MeasureModelContent,
 } from "./types/ModelContent";
-import { AskModelAssetGet, AskModelDeviceGet } from "./types/ModelEvents";
+import {
+  AskModelAssetGet,
+  AskModelDeviceGet,
+  AskModelMeasureGet,
+} from "./types/ModelEvents";
 
 export class ModelService {
   private config: DeviceManagerConfiguration;
@@ -54,6 +58,14 @@ export class ModelService {
         const deviceModel = await this.getDevice(model);
 
         return deviceModel._source;
+      }
+    );
+    onAsk<AskModelMeasureGet>(
+      "ask:device-manager:model:measure:get",
+      async ({ type }) => {
+        const measureModel = await this.getMeasure(type);
+
+        return measureModel._source;
       }
     );
   }

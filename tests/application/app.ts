@@ -1,15 +1,15 @@
 import util from "node:util";
 
-import { Backend, HttpStream, KuzzleRequest } from "kuzzle";
+import { Backend, KuzzleRequest } from "kuzzle";
 
 import { DeviceManagerPlugin } from "../../index";
 
-import { DummyTempDecoder, DummyTempPositionDecoder } from "./decoders";
-import { registerTestPipes } from "./tests/pipes";
-import { TestsController } from "./tests/controller";
 import { containerAssetDefinition } from "./assets/Container";
 import { warehouseAssetDefinition } from "./assets/Warehouse";
-import { PassThrough } from "node:stream";
+import { DummyTempDecoder, DummyTempPositionDecoder } from "./decoders";
+import { TestsController } from "./tests/controller";
+import { registerTestPipes } from "./tests/pipes";
+import { accelerationMeasureDefinition } from "./measures/AccelerationMeasure";
 
 const app = new Backend("kuzzle");
 
@@ -43,13 +43,7 @@ deviceManager.models.registerAsset(
   warehouseAssetDefinition
 );
 
-deviceManager.models.registerMeasure("acceleration", {
-  valuesMappings: {
-    x: { type: "float" },
-    y: { type: "float" },
-    z: { type: "float" },
-  },
-});
+deviceManager.models.registerMeasure("acceleration", accelerationMeasureDefinition);
 
 registerTestPipes(app);
 
@@ -69,29 +63,6 @@ app.config.content.plugins["kuzzle-plugin-logger"].services.stdout.level =
   "debug";
 // @ts-ignore
 app.config.content.limits.documentsWriteCount = 5000;
-
-let searchQuery;
-
-async function sendResult(stream, searchQuery) {
-  let result = await app.sdk.document.search(
-    "device-manager",
-    "payloads",
-    {
-      query: searchQuery,
-    },
-    { scroll: "5s" }
-  );
-
-  while (result) {
-    for (const hit of result.hits) {
-      stream.write(JSON.stringify(hit));
-    }
-
-    result = await result.next();
-  }
-
-  stream.end();
-}
 
 app
   .start()
