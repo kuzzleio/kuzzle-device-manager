@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { PassThrough } from "node:stream";
 
-import _ from "lodash";
+import { stringify } from "csv-stringify/sync";
 import {
   InternalError,
   JSONObject,
@@ -9,12 +9,17 @@ import {
   NotFoundError,
   User,
 } from "kuzzle";
-import { stringify } from "csv-stringify/sync";
+import _ from "lodash";
 
-import { AskModelAssetGet, AskModelDeviceGet } from "../model";
+import {
+  AskModelAssetGet,
+  AskModelDeviceGet,
+  AskModelMeasureGet,
+} from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { ask, DigitalTwinContent } from "../shared";
+import { DigitalTwinContent, ask, flattenObject } from "../shared";
 
+import { NamedMeasures } from "../decoder";
 import { MeasureContent } from "./exports";
 
 type ExportOptions = {
@@ -177,6 +182,10 @@ export class MeasureExporter {
         }
       );
 
+      const measureColumns = await this.generateMeasureColumns(
+        modelDocument[target].measures
+      );
+
       const columns: Column[] = [
         { header: "Payload Id", path: "_id" },
         { header: "Measured At", path: "_source.measuredAt" },
@@ -185,11 +194,7 @@ export class MeasureExporter {
         { header: "Device Model", path: "_source.origin.deviceModel" },
         { header: "Asset Id", path: "_source.asset._id" },
         { header: "Asset Model", path: "_source.asset.model" },
-        ...modelDocument[target].measures.map((measure) => ({
-          header: measure.name,
-          isMeasure: true,
-          path: `_source.values.${measure.type}`,
-        })),
+        ...measureColumns,
       ];
 
       stream.write(stringify([columns.map((column) => column.header)]));
@@ -222,6 +227,64 @@ export class MeasureExporter {
     } finally {
       stream.end();
     }
+  }
+
+  private async generateMeasureColumns(
+    documentMeasures: NamedMeasures
+  ): Promise<Array<Column & { isMeasure: true }>> {
+    /**
+     * @example
+     * {
+     *   temperature: ['temperature.type'],
+     *   acceleration: [
+     *     'acceleration.properties.x.type',
+     *     'acceleration.properties.y.type',
+     *     'acceleration.properties.z.type',
+     *     'accuracy.type'
+     *   ]
+     * }
+     */
+    const mappingsByMeasureType: Record<string, string[]> = {};
+    const measures: Array<Column & { isMeasure: true }> = [];
+
+    for (const { name, type } of documentMeasures) {
+      if (!(type in mappingsByMeasureType)) {
+        const { measure } = await ask<AskModelMeasureGet>(
+          "ask:device-manager:model:measure:get",
+          { type }
+        );
+
+        mappingsByMeasureType[type] = Object.keys(
+          flattenObject(measure.valuesMappings)
+        );
+      }
+
+      for (const measure of mappingsByMeasureType[type]) {
+        /**
+         * The path to be used to retrieve the measure values in a Measure Document
+         *
+         * @example
+         * 'temperature', 'acceleration.x', 'accuracy'
+         */
+        const path = measure.replace(".type", "").replace(".properties", "");
+
+        /**
+         * All of this is here to avoid a long header name like 'accelerationSensor.acceleration.x' (we don't need the 'acceleration' part)
+         *
+         * @example
+         * 'temperatureInt', 'accelerationSensor.x', 'accelerationSensor.accuracy'
+         */
+        const header = `${name}.${path}`.replace(`${name}.${type}`, name);
+
+        measures.push({
+          header,
+          isMeasure: true,
+          path: `_source.values.${path}`,
+        });
+      }
+    }
+
+    return measures;
   }
 
   async getExport(exportId: string) {

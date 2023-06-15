@@ -1,4 +1,8 @@
-import { AssetModelContent, DeviceModelContent } from "./ModelContent";
+import {
+  AssetModelContent,
+  DeviceModelContent,
+  MeasureModelContent,
+} from "./ModelContent";
 
 export type AskModelAssetGet = {
   name: "ask:device-manager:model:asset:get";
@@ -14,4 +18,12 @@ export type AskModelDeviceGet = {
   payload: { model: string };
 
   result: DeviceModelContent;
+};
+
+export type AskModelMeasureGet = {
+  name: "ask:device-manager:model:measure:get";
+
+  payload: { type: string };
+
+  result: MeasureModelContent;
 };
