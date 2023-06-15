@@ -64,3 +64,12 @@ export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
   };
 }
 export type ApiGroupAddAssetsResult = mUpdateResponse;
+
+export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
+  action: "removeAsset";
+  _id: string;
+  body: {
+    assetIds: string[];
+  };
+}
+export type ApiGroupRemoveAssetsResult = mUpdateResponse;

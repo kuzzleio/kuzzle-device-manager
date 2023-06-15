@@ -16,11 +16,14 @@ import {
   ApiGroupGetResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
+  ApiGroupRemoveAssetsResult,
+  ApiGroupRemoveAssetsRequest,
 } from "./types/AssetGroupsAPI";
 import {
   AssetsGroupsBody,
   AssetsGroupContent,
 } from "./types/AssetGroupContent";
+import { AssetContent } from "./exports";
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
@@ -77,6 +80,15 @@ export class AssetsGroupsController {
           http: [
             {
               path: "device-manager/:engineId/assetsGroups/:_id/addAsset",
+              verb: "post",
+            },
+          ],
+        },
+        removeAsset: {
+          handler: this.removeAsset.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assetsGroups/:_id/removeAsset",
               verb: "post",
             },
           ],
@@ -250,6 +262,51 @@ export class AssetsGroupsController {
       }
 
       assetContent.groups.push(_id);
+
+      assets.push({
+        _id: assetId,
+        body: assetContent,
+      });
+    }
+
+    return this.sdk.document.mReplace(
+      engineId,
+      InternalCollection.ASSETS,
+      assets
+    );
+  }
+
+  async removeAsset(
+    request: KuzzleRequest
+  ): Promise<ApiGroupRemoveAssetsResult> {
+    const engineId = request.getString("engineId");
+    const _id = request.getId();
+    const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
+
+    // ? Get document to check if really exists, even if not indexed
+    await this.sdk.document.get(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id
+    );
+
+    const assets = [];
+    for (const assetId of body.assetIds) {
+      const assetContent = (
+        await this.sdk.document.get<AssetContent>(
+          engineId,
+          InternalCollection.ASSETS,
+          assetId
+        )
+      )._source;
+
+      if (!Array.isArray(assetContent.groups)) {
+        continue;
+      }
+
+      assetContent.groups = assetContent.groups.filter(
+        (group) => group !== _id
+      );
 
       assets.push({
         _id: assetId,

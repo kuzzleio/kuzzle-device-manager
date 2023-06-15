@@ -18,6 +18,7 @@ import {
   ApiGroupSearchResult,
   ApiGroupUpdateRequest,
   ApiGroupAddAssetsRequest,
+  ApiGroupRemoveAssetsRequest,
 } from "../../../../lib/modules/asset/types/AssetGroupsAPI";
 import { setupHooks } from "../../../helpers";
 
@@ -365,5 +366,61 @@ describe("AssetsGroupsController", () => {
         groups: [assetGroupTestId, assetGroupTestParentId],
       },
     ]);
+  });
+
+  it("can remove asset to group", async () => {
+    const missingIdQuery: Omit<ApiGroupRemoveAssetsRequest, "_id"> = {
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "removeAsset",
+      body: {
+        assetIds: [],
+      },
+    };
+    await expect(sdk.query(missingIdQuery)).rejects.toThrow(
+      /^Missing argument "_id".$/
+    );
+
+    const missingBodyQuery: Omit<ApiGroupRemoveAssetsRequest, "body"> = {
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "removeAsset",
+      _id: assetGroupTestId,
+    };
+    await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
+      /^The request must specify a body.$/
+    );
+
+    const badIdQuery: ApiGroupRemoveAssetsRequest = {
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "removeAsset",
+      _id: "bad-id",
+      body: {
+        assetIds: [],
+      },
+    };
+    await expect(sdk.query(badIdQuery)).rejects.toThrow(
+      /^Document "bad-id" not found in "engine-ayse":"assets-groups".$/
+    );
+
+    const { result } = await sdk.query<ApiGroupRemoveAssetsRequest>({
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "removeAsset",
+      _id: assetGroupTestChildrenId,
+      body: {
+        assetIds: ["Container-grouped"],
+      },
+    });
+
+    expect(result.errors).toHaveLength(0);
+
+    expect(result.successes[0]).toMatchObject({
+      _id: "Container-grouped",
+      _source: {
+        groups: [assetGroupTestParentId],
+      },
+    });
   });
 });
