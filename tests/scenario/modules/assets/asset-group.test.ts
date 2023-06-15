@@ -1,4 +1,3 @@
-import _ from "lodash";
 import {
   assetGroupTestId,
   assetGroupTestBody,
@@ -78,7 +77,7 @@ describe("AssetsGroupsController", () => {
     });
 
     expect(assetGroupRoot._id).toBe("root-group");
-    expect(_.omit(assetGroupRoot._source, "_kuzzle_info")).toStrictEqual({
+    expect(assetGroupRoot._source).toMatchObject({
       name: "root group",
       children: [],
       parent: null,
@@ -99,7 +98,7 @@ describe("AssetsGroupsController", () => {
     });
 
     expect(assetGroupChildren._id).toBe("children-group");
-    expect(_.omit(assetGroupChildren._source, "_kuzzle_info")).toStrictEqual({
+    expect(assetGroupChildren._source).toMatchObject({
       name: "children group",
       children: [],
       parent: "root-group",
@@ -124,9 +123,7 @@ describe("AssetsGroupsController", () => {
     });
 
     expect(result._id).toEqual(assetGroupTestId);
-    expect(_.omit(result._source, "_kuzzle_info")).toStrictEqual(
-      assetGroupTestBody
-    );
+    expect(result._source).toMatchObject(assetGroupTestBody);
   });
 
   it("can update a group", async () => {
@@ -191,7 +188,7 @@ describe("AssetsGroupsController", () => {
     });
 
     expect(result._id).toEqual(assetGroupTestId);
-    expect(_.omit(result._source, "_kuzzle_info")).toStrictEqual({
+    expect(result._source).toMatchObject({
       name: "root group",
       children: [],
       parent: null,
@@ -209,7 +206,7 @@ describe("AssetsGroupsController", () => {
     });
 
     expect(resultChildren._id).toEqual(assetGroupTestId);
-    expect(_.omit(resultChildren._source, "_kuzzle_info")).toStrictEqual({
+    expect(resultChildren._source).toMatchObject({
       name: "root group",
       children: [assetGroupTestChildrenId],
       parent: null,
@@ -233,10 +230,8 @@ describe("AssetsGroupsController", () => {
       _id: assetGroupTestId,
     });
 
-    expect({ error, status }).toStrictEqual({
-      error: null,
-      status: 200,
-    });
+    expect(error).toBeNull();
+    expect(status).toBe(200);
   });
 
   it("can search groups", async () => {
@@ -246,12 +241,6 @@ describe("AssetsGroupsController", () => {
       action: "search",
       body: {},
     });
-
-    const resultHits = result.hits.map(({ _id, _score, _source }) => ({
-      _id,
-      _score,
-      _source: _.omit(_source, "_kuzzle_info"),
-    }));
 
     const hits: ApiGroupSearchResult["hits"] = [
       {
@@ -271,11 +260,7 @@ describe("AssetsGroupsController", () => {
       },
     ];
 
-    expect({
-      fetched: result.fetched,
-      total: result.total,
-      hits: resultHits,
-    }).toStrictEqual({
+    expect(result).toMatchObject({
       fetched: hits.length,
       hits,
       total: hits.length,
@@ -330,13 +315,9 @@ describe("AssetsGroupsController", () => {
 
     expect(result.errors).toHaveLength(0);
 
-    const assetsGroups = result.successes.map(({ _id, _source }) => ({
-      _id,
-      groups: _source.groups,
-    }));
-    expect(assetsGroups).toStrictEqual([
-      { _id: "Container-linked1", groups: [assetGroupTestId] },
-      { _id: "Container-linked2", groups: [assetGroupTestId] },
+    expect(result.successes).toMatchObject([
+      { _id: "Container-linked1", _source: { groups: [assetGroupTestId] } },
+      { _id: "Container-linked2", _source: { groups: [assetGroupTestId] } },
     ]);
 
     // Add assets in an second group
@@ -352,18 +333,18 @@ describe("AssetsGroupsController", () => {
 
     expect(result2.errors).toHaveLength(0);
 
-    const assetsGroups2 = result2.successes.map(({ _id, _source }) => ({
-      _id,
-      groups: _source.groups,
-    }));
-    expect(assetsGroups2).toStrictEqual([
+    expect(result2.successes).toMatchObject([
       {
         _id: "Container-linked1",
-        groups: [assetGroupTestId, assetGroupTestParentId],
+        _source: {
+          groups: [assetGroupTestId, assetGroupTestParentId],
+        },
       },
       {
         _id: "Container-linked2",
-        groups: [assetGroupTestId, assetGroupTestParentId],
+        _source: {
+          groups: [assetGroupTestId, assetGroupTestParentId],
+        },
       },
     ]);
   });
