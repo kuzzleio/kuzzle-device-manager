@@ -18,7 +18,7 @@ import {
   ApiGroupUpdateRequest,
   ApiGroupAddAssetsRequest,
   ApiGroupRemoveAssetsRequest,
-} from "../../../../lib/modules/asset/types/AssetGroupsAPI";
+} from "../../../../lib/modules/asset/types/AssetGroupsApi";
 import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);

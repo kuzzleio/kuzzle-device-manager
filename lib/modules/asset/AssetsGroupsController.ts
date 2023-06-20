@@ -18,7 +18,7 @@ import {
   ApiGroupUpdateResult,
   ApiGroupRemoveAssetsResult,
   ApiGroupRemoveAssetsRequest,
-} from "./types/AssetGroupsAPI";
+} from "./types/AssetGroupsApi";
 import {
   AssetsGroupsBody,
   AssetsGroupContent,
