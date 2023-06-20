@@ -7,7 +7,7 @@ description: Gets an device model
 
 # getDevice
 
-Gets an device model.
+Gets a device model.
 
 ---
 
@@ -16,7 +16,7 @@ Gets an device model.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/models/device/:_id
+URL: http://kuzzle:7512/_/device-manager/models/device/:model
 Method: GET
 ```
 
@@ -26,8 +26,7 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "getDevice",
-  "engineId": "<engineId>",
-  "_id": "<modelId>"
+  "model": "<modelId>"
 }
 ```
 
@@ -35,8 +34,7 @@ Method: GET
 
 ## Arguments
 
-- `engineId`: engine id
-- `_id`: device model id
+- `model`: device model id
 
 ---
 
