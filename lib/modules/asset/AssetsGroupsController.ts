@@ -214,6 +214,61 @@ export class AssetsGroupsController {
     const engineId = request.getString("engineId");
     const _id = request.getId();
 
+    const { _source: assetGroup } =
+      await this.sdk.document.get<AssetsGroupsBody>(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        _id
+      );
+
+    if (assetGroup.parent !== null) {
+      const { _source: parentGroup } =
+        await this.sdk.document.get<AssetsGroupsBody>(
+          engineId,
+          InternalCollection.ASSETS_GROUPS,
+          assetGroup.parent
+        );
+      await this.sdk.document.update(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        assetGroup.parent,
+        {
+          children: parentGroup.children.filter((children) => children !== _id),
+        }
+      );
+    }
+
+    for (const children of assetGroup.children) {
+      await this.sdk.document.update(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        children,
+        { parent: null }
+      );
+    }
+
+    const { hits: assets } = await this.sdk.document.search<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      {
+        query: {
+          terms: {
+            groups: [_id],
+          },
+        },
+      }
+    );
+    for (const asset of assets) {
+      await this.sdk.document.update(
+        engineId,
+        InternalCollection.ASSETS,
+        asset._id,
+        {
+          groups: asset._source.groups.filter((groupId) => groupId !== _id),
+        }
+      );
+    }
+
     await this.as(request.getUser()).document.delete(
       engineId,
       InternalCollection.ASSETS_GROUPS,

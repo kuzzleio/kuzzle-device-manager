@@ -116,7 +116,7 @@ const assetAyseGrouped = {
     height: 22,
   },
   linkedDevices: [],
-  groups: ["test-parent", "test-children"],
+  groups: ["test-parent-asset", "test-children-asset"],
 };
 const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.reference}`;
 
