@@ -3,27 +3,28 @@ import {
   ControllerDefinition,
   EmbeddedSDK,
   KuzzleRequest,
+  NameGenerator,
   User,
 } from "kuzzle";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import { AssetContent } from "./exports";
 import {
-  AssetsGroupsBodyRequest,
+  AssetsGroupContent,
+  AssetsGroupsBody,
+} from "./types/AssetGroupContent";
+import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
   ApiGroupCreateResult,
   ApiGroupDeleteResult,
   ApiGroupGetResult,
+  ApiGroupRemoveAssetsRequest,
+  ApiGroupRemoveAssetsResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
-  ApiGroupRemoveAssetsResult,
-  ApiGroupRemoveAssetsRequest,
+  AssetsGroupsBodyRequest,
 } from "./types/AssetGroupsApi";
-import {
-  AssetsGroupsBody,
-  AssetsGroupContent,
-} from "./types/AssetGroupContent";
-import { AssetContent } from "./exports";
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
@@ -161,7 +162,10 @@ export class AssetsGroupsController {
 
   async create(request: KuzzleRequest): Promise<ApiGroupCreateResult> {
     const engineId = request.getString("engineId");
-    const _id = request.getId();
+    const _id = request.getId({
+      generator: () => NameGenerator.generateRandomName({ prefix: "group" }),
+      ifMissing: "generate",
+    });
     const body = request.getBody() as AssetsGroupsBodyRequest;
 
     await this.checkParent(engineId, body);

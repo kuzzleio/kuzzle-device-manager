@@ -27,18 +27,6 @@ describe("AssetsGroupsController", () => {
   const sdk = setupHooks();
 
   it("can create a group", async () => {
-    const missingIdQuery: Omit<ApiGroupCreateRequest, "_id"> = {
-      controller: "device-manager/assetsGroup",
-      engineId: "engine-ayse",
-      action: "create",
-      body: {
-        name: "root group",
-      },
-    };
-    await expect(sdk.query(missingIdQuery)).rejects.toThrow(
-      /^Missing argument "_id".$/
-    );
-
     const missingBodyQuery: Omit<ApiGroupCreateRequest, "body"> = {
       controller: "device-manager/assetsGroup",
       engineId: "engine-ayse",
@@ -103,6 +91,20 @@ describe("AssetsGroupsController", () => {
       children: [],
       parent: "root-group",
     });
+
+    const { result: assetGroupWithoutIdSpecified } = await sdk.query<
+      ApiGroupCreateRequest,
+      ApiGroupCreateResult
+    >({
+      controller: "device-manager/assetsGroup",
+      action: "create",
+      engineId: "engine-ayse",
+      body: {
+        name: "group",
+      },
+    });
+
+    expect(typeof assetGroupWithoutIdSpecified._id).toBe("string");
   });
 
   it("can get a group", async () => {

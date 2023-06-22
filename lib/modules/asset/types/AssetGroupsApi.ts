@@ -18,7 +18,7 @@ interface GroupControllerRequest {
 
 export interface ApiGroupCreateRequest extends GroupControllerRequest {
   action: "create";
-  _id: string;
+  _id?: string;
   body: Omit<AssetsGroupsBodyRequest, "children">;
 }
 
