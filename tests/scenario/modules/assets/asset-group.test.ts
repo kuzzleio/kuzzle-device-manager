@@ -301,7 +301,17 @@ describe("AssetsGroupsController", () => {
       controller: "device-manager/assetsGroup",
       engineId: "engine-ayse",
       action: "search",
-      body: {},
+      body: {
+        query: {
+          terms: {
+            _id: [
+              assetGroupTestId,
+              assetGroupTestParentId1,
+              assetGroupTestChildrenId1,
+            ],
+          },
+        },
+      },
     });
 
     const hits: ApiGroupSearchResult["hits"] = [
