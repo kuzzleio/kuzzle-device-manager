@@ -57,6 +57,18 @@ describe("AssetsGroupsController", () => {
       /^The parent group "not-exist" does not exist$/
     );
 
+    const duplicateGroupName: ApiGroupCreateRequest = {
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "create",
+      body: {
+        name: "test group",
+      },
+    };
+    await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
+      /^A group with name "test group" already exist$/
+    );
+
     const { result: assetGroupRoot } = await sdk.query<
       ApiGroupCreateRequest,
       ApiGroupCreateResult
@@ -182,6 +194,20 @@ describe("AssetsGroupsController", () => {
     };
     await expect(sdk.query(badChildrenIdQuery)).rejects.toThrow(
       /^The children group "not-exist" does not exist$/
+    );
+
+    const duplicateGroupName: ApiGroupUpdateRequest = {
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "update",
+      _id: assetGroupTestParentId1,
+      body: {
+        name: "test group",
+        children: [],
+      },
+    };
+    await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
+      /^A group with name "test group" already exist$/
     );
 
     const { result } = await sdk.query<ApiGroupUpdateRequest>({

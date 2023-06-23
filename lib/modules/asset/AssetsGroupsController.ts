@@ -160,6 +160,33 @@ export class AssetsGroupsController {
     }
   }
 
+  async checkGroupName(engineId: string, body: AssetsGroupsBodyRequest) {
+    if (typeof body.name !== "string") {
+      return;
+    }
+
+    const groupsCount = await this.sdk.document.count(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      {
+        query: {
+          regexp: {
+            name: {
+              case_insensitive: true,
+              value: body.name,
+            },
+          },
+        },
+      }
+    );
+
+    if (groupsCount) {
+      throw new BadRequestError(
+        `A group with name "${body.name}" already exist`
+      );
+    }
+  }
+
   async create(request: KuzzleRequest): Promise<ApiGroupCreateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId({
@@ -169,6 +196,7 @@ export class AssetsGroupsController {
     const body = request.getBody() as AssetsGroupsBodyRequest;
 
     await this.checkParent(engineId, body);
+    await this.checkGroupName(engineId, body);
 
     return this.as(request.getUser()).document.create<AssetsGroupsBody>(
       engineId,
@@ -200,6 +228,7 @@ export class AssetsGroupsController {
 
     await this.checkParent(engineId, body);
     await this.checkChildren(engineId, body);
+    await this.checkGroupName(engineId, body);
 
     return this.as(request.getUser()).document.update<AssetsGroupsBody>(
       engineId,
