@@ -171,7 +171,11 @@ export class AssetsGroupsController {
     }
   }
 
-  async checkGroupName(engineId: string, body: AssetsGroupsBodyRequest) {
+  async checkGroupName(
+    engineId: string,
+    body: AssetsGroupsBodyRequest,
+    assetId?: string
+  ) {
     if (typeof body.name !== "string") {
       return;
     }
@@ -181,17 +185,30 @@ export class AssetsGroupsController {
       InternalCollection.ASSETS_GROUPS,
       {
         query: {
-          regexp: {
-            name: {
-              case_insensitive: true,
-              value: body.name,
-            },
+          bool: {
+            must: [
+              {
+                regexp: {
+                  name: {
+                    case_insensitive: true,
+                    value: body.name,
+                  },
+                },
+              },
+            ],
+            must_not: [
+              {
+                terms: {
+                  _id: typeof assetId === "string" ? [assetId] : [],
+                },
+              },
+            ],
           },
         },
       }
     );
 
-    if (groupsCount) {
+    if (groupsCount > 0) {
       throw new BadRequestError(
         `A group with name "${body.name}" already exist`
       );
@@ -239,7 +256,7 @@ export class AssetsGroupsController {
 
     await this.checkParent(engineId, body);
     await this.checkChildren(engineId, body);
-    await this.checkGroupName(engineId, body);
+    await this.checkGroupName(engineId, body, _id);
 
     return this.as(request.getUser()).document.update<AssetsGroupsBody>(
       engineId,
