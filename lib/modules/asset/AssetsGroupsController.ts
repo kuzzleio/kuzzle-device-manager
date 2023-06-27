@@ -119,15 +119,26 @@ export class AssetsGroupsController {
     if (typeof body.parent !== "string") {
       return;
     }
-    const parentExist = await this.sdk.document.exists(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      body.parent
-    );
-    if (!parentExist) {
-      throw new BadRequestError(
-        `The parent group "${body.parent}" does not exist`
+
+    try {
+      const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        body.parent
       );
+
+      if (assetGroup._source.parent !== null) {
+        throw new BadRequestError(
+          `Can't create asset group with more than one nesting level`
+        );
+      }
+    } catch (error) {
+      if (error.status === 404) {
+        throw new BadRequestError(
+          `The parent group "${body.parent}" does not exist`
+        );
+      }
+      throw error;
     }
   }
 
@@ -329,7 +340,7 @@ export class AssetsGroupsController {
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
 
     // ? Get document to check if really exists, even if not indexed
-    await this.sdk.document.get(
+    const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
       _id
@@ -347,6 +358,10 @@ export class AssetsGroupsController {
 
       if (!Array.isArray(assetContent.groups)) {
         assetContent.groups = [];
+      }
+
+      if (assetGroup._source.parent !== null) {
+        assetContent.groups.push(assetGroup._source.parent);
       }
 
       assetContent.groups.push(_id);
@@ -372,11 +387,14 @@ export class AssetsGroupsController {
     const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
 
     // ? Get document to check if really exists, even if not indexed
-    await this.sdk.document.get(
+    const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
       _id
     );
+
+    const removedGroups = assetGroup._source.children;
+    removedGroups.push(_id);
 
     const assets = [];
     for (const assetId of body.assetIds) {
@@ -393,7 +411,7 @@ export class AssetsGroupsController {
       }
 
       assetContent.groups = assetContent.groups.filter(
-        (group) => group !== _id
+        (group) => !removedGroups.includes(group)
       );
 
       assets.push({

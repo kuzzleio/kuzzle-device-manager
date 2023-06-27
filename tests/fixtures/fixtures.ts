@@ -120,6 +120,18 @@ const assetAyseGrouped = {
 };
 const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.reference}`;
 
+const assetAyseGrouped2 = {
+  model: "Container",
+  reference: "grouped2",
+  metadata: {
+    weight: 20,
+    height: 22,
+  },
+  linkedDevices: [],
+  groups: ["test-parent-asset", "test-children-asset"],
+};
+const assetAyseGroupedId2 = `${assetAyseGrouped2.model}-${assetAyseGrouped2.reference}`;
+
 export default {
   "device-manager": {
     devices: [
@@ -173,6 +185,9 @@ export default {
 
       { index: { _id: assetAyseGroupedId } },
       assetAyseGrouped,
+
+      { index: { _id: assetAyseGroupedId2 } },
+      assetAyseGrouped2,
     ],
     ...assetGroupFixtures,
   },

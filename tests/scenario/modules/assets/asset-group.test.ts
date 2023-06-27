@@ -69,6 +69,19 @@ describe("AssetsGroupsController", () => {
       /^A group with name "test group" already exist$/
     );
 
+    const tooMuchNested: ApiGroupCreateRequest = {
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "create",
+      body: {
+        name: "nested group",
+        parent: assetGroupTestChildrenId1,
+      },
+    };
+    await expect(sdk.query(tooMuchNested)).rejects.toThrow(
+      /^Can't create asset group with more than one nesting level$/
+    );
+
     const { result: assetGroupRoot } = await sdk.query<
       ApiGroupCreateRequest,
       ApiGroupCreateResult
@@ -208,6 +221,21 @@ describe("AssetsGroupsController", () => {
     };
     await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
       /^A group with name "test group" already exist$/
+    );
+
+    const tooMuchNested: ApiGroupUpdateRequest = {
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "update",
+      _id: assetGroupTestId,
+      body: {
+        name: "Test group",
+        parent: assetGroupTestChildrenId1,
+        children: [],
+      },
+    };
+    await expect(sdk.query(tooMuchNested)).rejects.toThrow(
+      /^Can't create asset group with more than one nesting level$/
     );
 
     const { result } = await sdk.query<ApiGroupUpdateRequest>({
@@ -445,6 +473,28 @@ describe("AssetsGroupsController", () => {
         },
       },
     ]);
+
+    // Add an asset to a subgroup also add the reference of the parent group
+    const { result: result3 } = await sdk.query<ApiGroupAddAssetsRequest>({
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "addAsset",
+      _id: assetGroupTestChildrenId1,
+      body: {
+        assetIds: ["Container-unlinked1"],
+      },
+    });
+
+    expect(result3.errors).toHaveLength(0);
+
+    expect(result3.successes).toMatchObject([
+      {
+        _id: "Container-unlinked1",
+        _source: {
+          groups: [assetGroupTestParentId1, assetGroupTestChildrenId1],
+        },
+      },
+    ]);
   });
 
   it("can remove asset to group", async () => {
@@ -483,7 +533,7 @@ describe("AssetsGroupsController", () => {
       /^Document "bad-id" not found in "engine-ayse":"assets-groups".$/
     );
 
-    const { result } = await sdk.query<ApiGroupRemoveAssetsRequest>({
+    const { result: asset } = await sdk.query<ApiGroupRemoveAssetsRequest>({
       controller: "device-manager/assetsGroup",
       engineId: "engine-ayse",
       action: "removeAsset",
@@ -493,12 +543,31 @@ describe("AssetsGroupsController", () => {
       },
     });
 
-    expect(result.errors).toHaveLength(0);
+    expect(asset.errors).toHaveLength(0);
 
-    expect(result.successes[0]).toMatchObject({
+    expect(asset.successes[0]).toMatchObject({
       _id: "Container-grouped",
       _source: {
         groups: [assetGroupParentWithAssetId],
+      },
+    });
+
+    const { result: asset2 } = await sdk.query<ApiGroupRemoveAssetsRequest>({
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "removeAsset",
+      _id: assetGroupParentWithAssetId,
+      body: {
+        assetIds: ["Container-grouped2"],
+      },
+    });
+
+    expect(asset2.errors).toHaveLength(0);
+
+    expect(asset2.successes[0]).toMatchObject({
+      _id: "Container-grouped2",
+      _source: {
+        groups: [],
       },
     });
   });
