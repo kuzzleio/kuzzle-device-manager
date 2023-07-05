@@ -16,7 +16,7 @@ Retrieves measures from an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/getMeasures
+URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures
 Method: GET or POST
 ```
 
