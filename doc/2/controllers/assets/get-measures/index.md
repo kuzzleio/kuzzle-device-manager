@@ -2,12 +2,12 @@
 code: true
 type: page
 title: getMeasures
-description: Retrieves measure from an asset
+description: Retrieves measures from an asset
 ---
 
 # getMeasures
 
-Retrieves measure from an asset.
+Retrieves measures from an asset.
 
 ---
 
@@ -51,13 +51,12 @@ Method: GET or POST
 ## Arguments
 
 - `engineId`: engine id
-- `_id`: asset id
-  ISO_8601
-- `from`: paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
-- `size`: set the maximum number of documents returned per result page
-- `startAt`: beginning of time range (ISO 8601)
-- `endAt`: end of time range (ISO 8601)
-- `type`: measure type
+- `_id`: asset id (ISO_8601)
+- `from` (optional): paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
+- `size` (optional): set the maximum number of documents returned per result page
+- `startAt` (optional): beginning of time range (ISO 8601)
+- `endAt` (optional): end of time range (ISO 8601)
+- `type` (optional): measure type
 
 ## Body properties
 
@@ -73,7 +72,7 @@ Method: GET or POST
   "status": 200,
   "error": null,
   "controller": "device-manager/assets",
-  "action": "search",
+  "action": "getMeasures",
   "requestId": "<unique request identifier>",
   "result": {
     "measures": [

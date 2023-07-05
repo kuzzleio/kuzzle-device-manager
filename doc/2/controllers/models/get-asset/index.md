@@ -24,10 +24,10 @@ Method: GET
 
 ```js
 {
-  "controller": "device-manager/assets",
+  "controller": "device-manager/models",
   "action": "getAsset",
   "engineGroup": "<engineGroup>",
-  "_id": "<modelId>"
+  "model": "<asset model>"
 }
 ```
 
@@ -36,7 +36,7 @@ Method: GET
 ## Arguments
 
 - `engineGroup`: name of the engine group
-- `_id`: asset model id
+- `model`: asset model
 
 ---
 
