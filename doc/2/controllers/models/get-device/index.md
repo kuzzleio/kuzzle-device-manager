@@ -26,7 +26,7 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "getDevice",
-  "model": "<modelId>"
+  "model": "<device model>"
 }
 ```
 
@@ -34,7 +34,7 @@ Method: GET
 
 ## Arguments
 
-- `model`: device model id
+- `model`: device model
 
 ---
 
