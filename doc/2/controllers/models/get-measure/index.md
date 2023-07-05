@@ -34,7 +34,7 @@ Method: GET
 
 ## Arguments
 
-- `type`: The type of measure you want to retreive.
+- `type`: measure type
 
 ---
 
