@@ -26,7 +26,7 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "getMeasure",
-  "_id": "<modelId>"
+  "type": "<measure type>"
 }
 ```
 
@@ -34,8 +34,7 @@ Method: GET
 
 ## Arguments
 
-- `engineId`: engine id
-- `_id`: measure model id
+- `type`: The type of measure you want to retreive.
 
 ---
 
