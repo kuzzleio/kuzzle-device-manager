@@ -16,7 +16,7 @@ Gets a device model.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/models/device/:model
+URL: http://kuzzle:7512/_/device-manager/models/device/:id
 Method: GET
 ```
 
