@@ -114,9 +114,9 @@ export class AssetsGroupsController {
 
   async checkParent(
     engineId: string,
-    body: AssetsGroupsBodyRequest
+    parent: AssetsGroupsBodyRequest["parent"]
   ): Promise<void> {
-    if (typeof body.parent !== "string") {
+    if (typeof parent !== "string") {
       return;
     }
 
@@ -124,7 +124,7 @@ export class AssetsGroupsController {
       const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
-        body.parent
+        parent
       );
 
       if (assetGroup._source.parent !== null) {
@@ -135,7 +135,7 @@ export class AssetsGroupsController {
     } catch (error) {
       if (error.status === 404) {
         throw new BadRequestError(
-          `The parent group "${body.parent}" does not exist`
+          `The parent group "${parent}" does not exist`
         );
       }
       throw error;
@@ -144,20 +144,20 @@ export class AssetsGroupsController {
 
   async checkChildren(
     engineId: string,
-    body: AssetsGroupsBodyRequest
+    children: AssetsGroupsBodyRequest["children"]
   ): Promise<void> {
-    if (!Array.isArray(body.children)) {
+    if (!Array.isArray(children)) {
       throw new BadRequestError("The Children property should be an array");
     }
 
-    if (body.children.length === 0) {
+    if (children.length === 0) {
       return;
     }
 
     const { result } = await this.sdk.query({
       action: "mExists",
       body: {
-        ids: body.children,
+        ids: children,
       },
       collection: InternalCollection.ASSETS_GROUPS,
       controller: "document",
@@ -173,10 +173,10 @@ export class AssetsGroupsController {
 
   async checkGroupName(
     engineId: string,
-    body: AssetsGroupsBodyRequest,
+    name: AssetsGroupsBodyRequest["name"],
     assetId?: string
   ) {
-    if (typeof body.name !== "string") {
+    if (typeof name !== "string") {
       return;
     }
 
@@ -191,7 +191,7 @@ export class AssetsGroupsController {
                 regexp: {
                   name: {
                     case_insensitive: true,
-                    value: body.name,
+                    value: name,
                   },
                 },
               },
@@ -209,9 +209,7 @@ export class AssetsGroupsController {
     );
 
     if (groupsCount > 0) {
-      throw new BadRequestError(
-        `A group with name "${body.name}" already exist`
-      );
+      throw new BadRequestError(`A group with name "${name}" already exist`);
     }
   }
 
@@ -223,8 +221,8 @@ export class AssetsGroupsController {
     });
     const body = request.getBody() as AssetsGroupsBodyRequest;
 
-    await this.checkParent(engineId, body);
-    await this.checkGroupName(engineId, body);
+    await this.checkParent(engineId, body.parent);
+    await this.checkGroupName(engineId, body.name);
 
     return this.as(request.getUser()).document.create<AssetsGroupsBody>(
       engineId,
@@ -254,9 +252,9 @@ export class AssetsGroupsController {
     const _id = request.getId();
     const body = request.getBody() as AssetsGroupsBodyRequest;
 
-    await this.checkParent(engineId, body);
-    await this.checkChildren(engineId, body);
-    await this.checkGroupName(engineId, body, _id);
+    await this.checkParent(engineId, body.parent);
+    await this.checkChildren(engineId, body.children);
+    await this.checkGroupName(engineId, body.name, _id);
 
     return this.as(request.getUser()).document.update<AssetsGroupsBody>(
       engineId,
