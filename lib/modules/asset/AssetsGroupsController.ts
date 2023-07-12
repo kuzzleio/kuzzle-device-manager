@@ -224,6 +224,26 @@ export class AssetsGroupsController {
     await this.checkParent(engineId, body.parent);
     await this.checkGroupName(engineId, body.name);
 
+    if (typeof body.parent === "string") {
+      const parentGroup = await this.sdk.document.get<AssetsGroupsBody>(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        body.parent
+      );
+
+      const children = parentGroup._source.children ?? [];
+      children.push(_id);
+
+      this.sdk.document.update<AssetsGroupsBody>(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        body.parent,
+        {
+          children,
+        }
+      );
+    }
+
     return this.as(request.getUser()).document.create<AssetsGroupsBody>(
       engineId,
       InternalCollection.ASSETS_GROUPS,

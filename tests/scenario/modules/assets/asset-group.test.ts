@@ -116,6 +116,16 @@ describe("AssetsGroupsController", () => {
       },
     });
 
+    const { _source: rootGroup } = await sdk.document.get<AssetsGroupContent>(
+      "engine-ayse",
+      InternalCollection.ASSETS_GROUPS,
+      "root-group"
+    );
+
+    expect(rootGroup).toMatchObject({
+      children: ["children-group"],
+    });
+
     expect(assetGroupChildren._id).toBe("children-group");
     expect(assetGroupChildren._source).toMatchObject({
       name: "children group",
@@ -322,7 +332,6 @@ describe("AssetsGroupsController", () => {
 
     const { _source: parentGroup } = await sdk.document.get<AssetsGroupContent>(
       "engine-ayse",
-
       InternalCollection.ASSETS_GROUPS,
       assetGroupTestParentId2
     );
