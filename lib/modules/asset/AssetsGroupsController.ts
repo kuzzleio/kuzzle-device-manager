@@ -313,36 +313,34 @@ export class AssetsGroupsController {
       );
     }
 
-    for (const children of assetGroup.children) {
-      await this.sdk.document.update(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        children,
-        { parent: null }
-      );
-    }
+    await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      assetGroup.children.map((childrenId) => ({
+        _id: childrenId,
+        body: { parent: null },
+      })),
+      { strict: true }
+    );
 
     const { hits: assets } = await this.sdk.document.search<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
-      {
-        query: {
-          terms: {
-            groups: [_id],
-          },
-        },
-      }
+      { query: { equals: { groups: _id } } },
+      { lang: "koncorde" }
     );
-    for (const asset of assets) {
-      await this.sdk.document.update(
-        engineId,
-        InternalCollection.ASSETS,
-        asset._id,
-        {
+
+    await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.ASSETS,
+      assets.map((asset) => ({
+        _id: asset._id,
+        body: {
           groups: asset._source.groups.filter((groupId) => groupId !== _id),
-        }
-      );
-    }
+        },
+      })),
+      { strict: true }
+    );
 
     await this.as(request.getUser()).document.delete(
       engineId,
@@ -422,13 +420,14 @@ export class AssetsGroupsController {
     const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
 
     // ? Get document to check if really exists, even if not indexed
-    const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      _id
-    );
+    const { _source: AssetGroupContent } =
+      await this.sdk.document.get<AssetsGroupContent>(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        _id
+      );
 
-    const removedGroups = assetGroup._source.children;
+    const removedGroups = AssetGroupContent.children;
     removedGroups.push(_id);
 
     const assets = [];

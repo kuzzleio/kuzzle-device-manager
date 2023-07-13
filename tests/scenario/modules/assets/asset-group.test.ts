@@ -366,8 +366,8 @@ describe("AssetsGroupsController", () => {
       action: "search",
       body: {
         query: {
-          terms: {
-            _id: [
+          ids: {
+            values: [
               assetGroupTestId,
               assetGroupTestParentId1,
               assetGroupTestChildrenId1,
@@ -375,6 +375,7 @@ describe("AssetsGroupsController", () => {
           },
         },
       },
+      lang: "koncorde",
     });
 
     const hits: ApiGroupSearchResult["hits"] = [
