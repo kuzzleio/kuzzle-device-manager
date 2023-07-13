@@ -224,6 +224,10 @@ export class AssetsGroupsController {
     await this.checkParent(engineId, body.parent);
     await this.checkGroupName(engineId, body.name);
 
+    if (typeof body.name !== "string") {
+      throw new BadRequestError(`A group must have a name`);
+    }
+
     if (typeof body.parent === "string") {
       const parentGroup = await this.sdk.document.get<AssetsGroupsBody>(
         engineId,

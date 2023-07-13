@@ -43,6 +43,16 @@ describe("AssetsGroupsController", () => {
       /^The request must specify a body.$/
     );
 
+    const missingNameQuery = {
+      controller: "device-manager/assetsGroup",
+      engineId: "engine-ayse",
+      action: "create",
+      body: {},
+    };
+    await expect(sdk.query(missingNameQuery)).rejects.toThrow(
+      /^A group must have a name$/
+    );
+
     const badParentIdQuery: ApiGroupCreateRequest = {
       controller: "device-manager/assetsGroup",
       engineId: "engine-ayse",
