@@ -244,6 +244,7 @@ export class AssetsGroupsController {
         body.parent,
         {
           children,
+          lastUpdate: Date.now(),
         }
       );
     }
@@ -253,6 +254,7 @@ export class AssetsGroupsController {
       InternalCollection.ASSETS_GROUPS,
       {
         children: [],
+        lastUpdate: Date.now(),
         name: body.name,
         parent: body.parent ?? null,
       },
@@ -284,7 +286,11 @@ export class AssetsGroupsController {
       engineId,
       InternalCollection.ASSETS_GROUPS,
       _id,
-      { parent: null, ...body },
+      {
+        parent: null,
+        ...body,
+        lastUpdate: Date.now(),
+      },
       { source: true }
     );
   }
@@ -313,6 +319,7 @@ export class AssetsGroupsController {
         assetGroup.parent,
         {
           children: parentGroup.children.filter((children) => children !== _id),
+          lastUpdate: Date.now(),
         }
       );
     }
@@ -322,7 +329,10 @@ export class AssetsGroupsController {
       InternalCollection.ASSETS_GROUPS,
       assetGroup.children.map((childrenId) => ({
         _id: childrenId,
-        body: { parent: null },
+        body: {
+          lastUpdate: Date.now(),
+          parent: null,
+        },
       })),
       { strict: true }
     );

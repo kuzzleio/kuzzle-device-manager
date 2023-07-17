@@ -31,6 +31,7 @@ jest.setTimeout(10000);
 
 describe("AssetsGroupsController", () => {
   const sdk = setupHooks();
+  const now = Date.now();
 
   it("can create a group", async () => {
     const missingBodyQuery: Omit<ApiGroupCreateRequest, "body"> = {
@@ -111,6 +112,7 @@ describe("AssetsGroupsController", () => {
       children: [],
       parent: null,
     });
+    expect(assetGroupRoot._source.lastUpdate).toBeGreaterThanOrEqual(now);
 
     const { result: assetGroupChildren } = await sdk.query<
       ApiGroupCreateRequest,
@@ -135,6 +137,7 @@ describe("AssetsGroupsController", () => {
     expect(rootGroup).toMatchObject({
       children: ["children-group"],
     });
+    expect(rootGroup.lastUpdate).toBeGreaterThanOrEqual(now);
 
     expect(assetGroupChildren._id).toBe("children-group");
     expect(assetGroupChildren._source).toMatchObject({
@@ -142,6 +145,7 @@ describe("AssetsGroupsController", () => {
       children: [],
       parent: "root-group",
     });
+    expect(assetGroupChildren._source.lastUpdate).toBeGreaterThanOrEqual(now);
 
     const { result: assetGroupWithoutIdSpecified } = await sdk.query<
       ApiGroupCreateRequest,
@@ -275,6 +279,7 @@ describe("AssetsGroupsController", () => {
       children: [],
       parent: null,
     });
+    expect(result._source.lastUpdate).toBeGreaterThanOrEqual(now);
 
     const { result: resultChildren } = await sdk.query<ApiGroupUpdateRequest>({
       controller: "device-manager/assetsGroup",
@@ -293,6 +298,7 @@ describe("AssetsGroupsController", () => {
       children: [assetGroupTestChildrenId1],
       parent: null,
     });
+    expect(resultChildren._source.lastUpdate).toBeGreaterThanOrEqual(now);
   });
 
   it("can delete a group", async () => {
@@ -332,6 +338,7 @@ describe("AssetsGroupsController", () => {
     expect(childrenGroup).toMatchObject({
       parent: null,
     });
+    expect(childrenGroup.lastUpdate).toBeGreaterThanOrEqual(now);
 
     await sdk.query<ApiGroupDeleteRequest>({
       controller: "device-manager/assetsGroup",
@@ -349,6 +356,7 @@ describe("AssetsGroupsController", () => {
     expect(parentGroup).toMatchObject({
       children: [],
     });
+    expect(parentGroup.lastUpdate).toBeGreaterThanOrEqual(now);
 
     await sdk.query<ApiGroupDeleteRequest>({
       controller: "device-manager/assetsGroup",

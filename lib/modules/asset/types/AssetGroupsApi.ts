@@ -7,9 +7,11 @@ import {
 } from "kuzzle-sdk";
 import { AssetsGroupsBody, AssetsGroupContent } from "./AssetGroupContent";
 
+// Remove "lastUpdate" property for request
+type AssetsGroupsRequest = Omit<AssetsGroupsBody, "lastUpdate">;
 // Make "parent" property to optional for request
-export type AssetsGroupsBodyRequest = Partial<AssetsGroupsBody> &
-  Omit<AssetsGroupsBody, "parent">;
+export type AssetsGroupsBodyRequest = Partial<AssetsGroupsRequest> &
+  Omit<AssetsGroupsRequest, "parent">;
 
 interface GroupControllerRequest {
   controller: "device-manager/assetsGroup";
