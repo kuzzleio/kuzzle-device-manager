@@ -1,9 +1,11 @@
+import { CollectionMappings } from "kuzzle";
+
 /**
  * Base mappings for the "assets" collection.
  *
  * Those mappings does not contains the `measures` and `metadata` mappings.
  */
-export const assetsMappings = {
+export const assetsMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {
     model: {
@@ -11,6 +13,10 @@ export const assetsMappings = {
       fields: { text: { type: "text" } },
     },
     reference: {
+      type: "keyword",
+      fields: { text: { type: "text" } },
+    },
+    groups: {
       type: "keyword",
       fields: { text: { type: "text" } },
     },

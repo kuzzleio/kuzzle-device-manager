@@ -1,5 +1,6 @@
 export * from "./collections/assetsMappings";
 export * from "./collections/assetsHistoryMappings";
+export * from "./collections/assetsGroupsMapping";
 export * from "./types/AssetContent";
 export * from "./types/AssetHistoryContent";
 export * from "./types/AssetEvents";
