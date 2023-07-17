@@ -31,6 +31,10 @@ export interface AssetContent<
      */
     measureNames: Array<{ asset: string; device: string; type: string }>;
   }>;
+  /**
+   * Id's of asset groups
+   */
+  groups: string[];
 }
 
 /**

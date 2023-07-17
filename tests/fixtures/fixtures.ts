@@ -1,3 +1,5 @@
+import { assetGroupFixtures } from "./assetsGroups";
+
 const deviceDetached1 = {
   model: "DummyTemp",
   reference: "detached1",
@@ -106,6 +108,30 @@ const assetAyseUnlinked = {
 };
 const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.reference}`;
 
+const assetAyseGrouped = {
+  model: "Container",
+  reference: "grouped",
+  metadata: {
+    weight: 20,
+    height: 22,
+  },
+  linkedDevices: [],
+  groups: ["test-parent-asset", "test-children-asset"],
+};
+const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.reference}`;
+
+const assetAyseGrouped2 = {
+  model: "Container",
+  reference: "grouped2",
+  metadata: {
+    weight: 20,
+    height: 22,
+  },
+  linkedDevices: [],
+  groups: ["test-parent-asset", "test-children-asset"],
+};
+const assetAyseGroupedId2 = `${assetAyseGrouped2.model}-${assetAyseGrouped2.reference}`;
+
 export default {
   "device-manager": {
     devices: [
@@ -156,6 +182,13 @@ export default {
 
       { index: { _id: assetAyseUnlinkedId } },
       assetAyseUnlinked,
+
+      { index: { _id: assetAyseGroupedId } },
+      assetAyseGrouped,
+
+      { index: { _id: assetAyseGroupedId2 } },
+      assetAyseGrouped2,
     ],
+    ...assetGroupFixtures,
   },
 };
