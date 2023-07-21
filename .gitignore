@@ -8,6 +8,8 @@ node_modules/
 *~
 front.js
 
+# Package build
+*.tgz
 
 # Doc
 doc/framework

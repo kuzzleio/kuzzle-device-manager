@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Shared types for Kuzzle Device Manager",
   "author": "The Kuzzle Team (support@kuzzle.io)",
+  "main": "index.js",
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
