@@ -47,6 +47,7 @@
     "kuzzle": "^2.21.0"
   },
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "!dist/tests"
   ]
 }
