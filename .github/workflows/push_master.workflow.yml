@@ -71,12 +71,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [functional-tests]
     steps:
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
-          known_hosts: unnecessary
       - uses: actions/checkout@v2
       - name: Cache node modules
         uses: actions/cache@v2
@@ -92,15 +86,17 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: "14.x"
+          node-version: 16
           registry-url: "https://registry.npmjs.org"
-      # Deploy plugin
-      - run: npm install && npm run build && npm publish
+      - name: Install dependencies
+        run: npm ci
+      - name: Publish package
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # Deploy types
-      - run: cd types/ && npm run build && npm publish
+      - name: Publish types package
+        run: cd types/ && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
