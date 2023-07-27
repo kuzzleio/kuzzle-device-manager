@@ -510,6 +510,8 @@ describe("AssetsGroupsController", () => {
     expect(assets[0]._source.groups[0].date).toBeGreaterThan(now);
     expect(assets[1]._source.groups[0].date).toBeGreaterThan(now);
 
+    expect(result.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
+
     // Add assets in an second group
     const { result: result2 } = await sdk.query<
       ApiGroupAddAssetsRequest,
@@ -563,6 +565,8 @@ describe("AssetsGroupsController", () => {
     expect(assets2[1]._source.groups[0].date).toBeLessThan(Date.now());
     expect(assets2[1]._source.groups[1].date).toBeGreaterThan(now);
 
+    expect(result2.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
+
     // Add an asset to a subgroup also add the reference of the parent group
     const { result: result3 } = await sdk.query<
       ApiGroupAddAssetsRequest,
@@ -599,6 +603,8 @@ describe("AssetsGroupsController", () => {
     const assets3 = result3.successes as KDocument<AssetContent>[];
     expect(assets3[0]._source.groups[0].date).toBeGreaterThan(now);
     expect(assets3[0]._source.groups[1].date).toBeGreaterThan(now);
+
+    expect(result3.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
   });
 
   it("can remove asset to group", async () => {
@@ -663,6 +669,8 @@ describe("AssetsGroupsController", () => {
       },
     });
 
+    expect(result.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
+
     const { result: result2 } = await sdk.query<
       ApiGroupRemoveAssetsRequest,
       ApiGroupRemoveAssetsResult
@@ -684,5 +692,7 @@ describe("AssetsGroupsController", () => {
         groups: [],
       },
     });
+
+    expect(result2.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
   });
 });

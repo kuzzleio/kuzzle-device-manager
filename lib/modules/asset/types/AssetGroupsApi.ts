@@ -13,6 +13,10 @@ type AssetsGroupsRequest = Omit<AssetsGroupsBody, "lastUpdate">;
 export type AssetsGroupsBodyRequest = Partial<AssetsGroupsRequest> &
   Omit<AssetsGroupsRequest, "parent">;
 
+export type UpdateAssetLinkResponse = mUpdateResponse & {
+  assetsGroups: KDocument<AssetsGroupContent>;
+};
+
 interface GroupControllerRequest {
   controller: "device-manager/assetsGroup";
   engineId: string;
@@ -65,7 +69,7 @@ export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupAddAssetsResult = mUpdateResponse;
+export type ApiGroupAddAssetsResult = UpdateAssetLinkResponse;
 
 export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
   action: "removeAsset";
@@ -74,4 +78,4 @@ export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupRemoveAssetsResult = mUpdateResponse;
+export type ApiGroupRemoveAssetsResult = UpdateAssetLinkResponse;

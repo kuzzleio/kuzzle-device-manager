@@ -427,11 +427,28 @@ export class AssetsGroupsController {
       });
     }
 
-    return this.sdk.document.mReplace(
+    const assetsGroupsUpdate = await this.as(
+      request.getUser()
+    ).document.update<AssetsGroupsBody>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id,
+      {
+        lastUpdate: Date.now(),
+      },
+      { source: true }
+    );
+
+    const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.ASSETS,
       assets
     );
+
+    return {
+      ...update,
+      assetsGroups: assetsGroupsUpdate,
+    };
   }
 
   async removeAsset(
@@ -476,10 +493,27 @@ export class AssetsGroupsController {
       });
     }
 
-    return this.sdk.document.mReplace(
+    const assetsGroupsUpdate = await this.as(
+      request.getUser()
+    ).document.update<AssetsGroupsBody>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id,
+      {
+        lastUpdate: Date.now(),
+      },
+      { source: true }
+    );
+
+    const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.ASSETS,
       assets
     );
+
+    return {
+      ...update,
+      assetsGroups: assetsGroupsUpdate,
+    };
   }
 }
