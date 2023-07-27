@@ -17,8 +17,13 @@ export const assetsMappings: CollectionMappings = {
       fields: { text: { type: "text" } },
     },
     groups: {
-      type: "keyword",
-      fields: { text: { type: "text" } },
+      properties: {
+        id: {
+          type: "keyword",
+          fields: { text: { type: "text" } },
+        },
+        date: { type: "date" },
+      },
     },
 
     metadata: {

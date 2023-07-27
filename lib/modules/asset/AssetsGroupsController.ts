@@ -340,7 +340,7 @@ export class AssetsGroupsController {
     const { hits: assets } = await this.sdk.document.search<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
-      { query: { equals: { groups: _id } } },
+      { query: { equals: { "groups.id": _id } } },
       { lang: "koncorde" }
     );
 
@@ -350,7 +350,9 @@ export class AssetsGroupsController {
       assets.map((asset) => ({
         _id: asset._id,
         body: {
-          groups: asset._source.groups.filter((groupId) => groupId !== _id),
+          groups: asset._source.groups.filter(
+            ({ id: groupId }) => groupId !== _id
+          ),
         },
       })),
       { strict: true }
@@ -408,10 +410,16 @@ export class AssetsGroupsController {
       }
 
       if (assetGroup._source.parent !== null) {
-        assetContent.groups.push(assetGroup._source.parent);
+        assetContent.groups.push({
+          date: Date.now(),
+          id: assetGroup._source.parent,
+        });
       }
 
-      assetContent.groups.push(_id);
+      assetContent.groups.push({
+        date: Date.now(),
+        id: _id,
+      });
 
       assets.push({
         _id: assetId,
@@ -459,7 +467,7 @@ export class AssetsGroupsController {
       }
 
       assetContent.groups = assetContent.groups.filter(
-        (group) => !removedGroups.includes(group)
+        ({ id: groupId }) => !removedGroups.includes(groupId)
       );
 
       assets.push({

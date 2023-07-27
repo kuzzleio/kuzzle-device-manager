@@ -116,7 +116,16 @@ const assetAyseGrouped = {
     height: 22,
   },
   linkedDevices: [],
-  groups: ["test-parent-asset", "test-children-asset"],
+  groups: [
+    {
+      id: "test-parent-asset",
+      date: Date.now(),
+    },
+    {
+      id: "test-children-asset",
+      date: Date.now(),
+    },
+  ],
 };
 const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.reference}`;
 
@@ -128,7 +137,16 @@ const assetAyseGrouped2 = {
     height: 22,
   },
   linkedDevices: [],
-  groups: ["test-parent-asset", "test-children-asset"],
+  groups: [
+    {
+      id: "test-parent-asset",
+      date: Date.now(),
+    },
+    {
+      id: "test-children-asset",
+      date: Date.now(),
+    },
+  ],
 };
 const assetAyseGroupedId2 = `${assetAyseGrouped2.model}-${assetAyseGrouped2.reference}`;
 
