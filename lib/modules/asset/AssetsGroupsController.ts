@@ -238,7 +238,7 @@ export class AssetsGroupsController {
       const children = parentGroup._source.children ?? [];
       children.push(_id);
 
-      this.sdk.document.update<AssetsGroupsBody>(
+      await this.sdk.document.update<AssetsGroupsBody>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
         body.parent,
