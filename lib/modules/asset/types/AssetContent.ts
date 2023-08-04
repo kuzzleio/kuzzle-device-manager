@@ -34,7 +34,10 @@ export interface AssetContent<
   /**
    * Id's of asset groups
    */
-  groups: string[];
+  groups: Array<{
+    id: string;
+    date: number;
+  }>;
 }
 
 /**

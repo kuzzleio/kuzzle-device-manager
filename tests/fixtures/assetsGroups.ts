@@ -11,42 +11,49 @@ export const assetGroupChildrenWithAssetId = "test-children-asset";
 export const assetGroupTestBody: AssetsGroupsBody = {
   name: "Test group",
   children: [],
+  lastUpdate: Date.now(),
   parent: null,
 };
 
 export const assetGroupTestParentBody1: AssetsGroupsBody = {
   name: "Test parent 1",
   children: [assetGroupTestChildrenId1],
+  lastUpdate: Date.now(),
   parent: null,
 };
 
 export const assetGroupTestParentBody2: AssetsGroupsBody = {
   name: "Test parent 2",
   children: [assetGroupTestChildrenId2],
+  lastUpdate: Date.now(),
   parent: null,
 };
 
 export const assetGroupTestChildrenBody1: AssetsGroupsBody = {
   name: "Test children 1",
   children: [],
+  lastUpdate: Date.now(),
   parent: assetGroupTestParentId1,
 };
 
 export const assetGroupTestChildrenBody2: AssetsGroupsBody = {
   name: "Test children 2",
   children: [],
+  lastUpdate: Date.now(),
   parent: assetGroupTestParentId2,
 };
 
 export const assetGroupParentWithAssetBody: AssetsGroupsBody = {
   name: "Parent Group with asset",
   children: [assetGroupChildrenWithAssetId],
+  lastUpdate: Date.now(),
   parent: null,
 };
 
 export const assetGroupChildrenWithAssetBody: AssetsGroupsBody = {
   name: "Children Group with asset",
   children: [],
+  lastUpdate: Date.now(),
   parent: assetGroupParentWithAssetId,
 };
 

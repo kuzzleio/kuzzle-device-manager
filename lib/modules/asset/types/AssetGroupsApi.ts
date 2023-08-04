@@ -7,9 +7,15 @@ import {
 } from "kuzzle-sdk";
 import { AssetsGroupsBody, AssetsGroupContent } from "./AssetGroupContent";
 
+// Remove "lastUpdate" property for request
+type AssetsGroupsRequest = Omit<AssetsGroupsBody, "lastUpdate">;
 // Make "parent" property to optional for request
-export type AssetsGroupsBodyRequest = Partial<AssetsGroupsBody> &
-  Omit<AssetsGroupsBody, "parent">;
+export type AssetsGroupsBodyRequest = Partial<AssetsGroupsRequest> &
+  Omit<AssetsGroupsRequest, "parent">;
+
+export type UpdateAssetLinkResponse = mUpdateResponse & {
+  assetsGroups: KDocument<AssetsGroupContent>;
+};
 
 interface GroupControllerRequest {
   controller: "device-manager/assetsGroup";
@@ -63,7 +69,7 @@ export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupAddAssetsResult = mUpdateResponse;
+export type ApiGroupAddAssetsResult = UpdateAssetLinkResponse;
 
 export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
   action: "removeAsset";
@@ -72,4 +78,4 @@ export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupRemoveAssetsResult = mUpdateResponse;
+export type ApiGroupRemoveAssetsResult = UpdateAssetLinkResponse;

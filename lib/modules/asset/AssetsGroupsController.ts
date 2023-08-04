@@ -238,12 +238,13 @@ export class AssetsGroupsController {
       const children = parentGroup._source.children ?? [];
       children.push(_id);
 
-      this.sdk.document.update<AssetsGroupsBody>(
+      await this.sdk.document.update<AssetsGroupsBody>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
         body.parent,
         {
           children,
+          lastUpdate: Date.now(),
         }
       );
     }
@@ -253,6 +254,7 @@ export class AssetsGroupsController {
       InternalCollection.ASSETS_GROUPS,
       {
         children: [],
+        lastUpdate: Date.now(),
         name: body.name,
         parent: body.parent ?? null,
       },
@@ -284,7 +286,11 @@ export class AssetsGroupsController {
       engineId,
       InternalCollection.ASSETS_GROUPS,
       _id,
-      { parent: null, ...body },
+      {
+        parent: null,
+        ...body,
+        lastUpdate: Date.now(),
+      },
       { source: true }
     );
   }
@@ -313,6 +319,7 @@ export class AssetsGroupsController {
         assetGroup.parent,
         {
           children: parentGroup.children.filter((children) => children !== _id),
+          lastUpdate: Date.now(),
         }
       );
     }
@@ -322,7 +329,10 @@ export class AssetsGroupsController {
       InternalCollection.ASSETS_GROUPS,
       assetGroup.children.map((childrenId) => ({
         _id: childrenId,
-        body: { parent: null },
+        body: {
+          lastUpdate: Date.now(),
+          parent: null,
+        },
       })),
       { strict: true }
     );
@@ -330,7 +340,7 @@ export class AssetsGroupsController {
     const { hits: assets } = await this.sdk.document.search<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
-      { query: { equals: { groups: _id } } },
+      { query: { equals: { "groups.id": _id } } },
       { lang: "koncorde" }
     );
 
@@ -340,7 +350,9 @@ export class AssetsGroupsController {
       assets.map((asset) => ({
         _id: asset._id,
         body: {
-          groups: asset._source.groups.filter((groupId) => groupId !== _id),
+          groups: asset._source.groups.filter(
+            ({ id: groupId }) => groupId !== _id
+          ),
         },
       })),
       { strict: true }
@@ -398,10 +410,16 @@ export class AssetsGroupsController {
       }
 
       if (assetGroup._source.parent !== null) {
-        assetContent.groups.push(assetGroup._source.parent);
+        assetContent.groups.push({
+          date: Date.now(),
+          id: assetGroup._source.parent,
+        });
       }
 
-      assetContent.groups.push(_id);
+      assetContent.groups.push({
+        date: Date.now(),
+        id: _id,
+      });
 
       assets.push({
         _id: assetId,
@@ -409,11 +427,28 @@ export class AssetsGroupsController {
       });
     }
 
-    return this.sdk.document.mReplace(
+    const assetsGroupsUpdate = await this.as(
+      request.getUser()
+    ).document.update<AssetsGroupsBody>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id,
+      {
+        lastUpdate: Date.now(),
+      },
+      { source: true }
+    );
+
+    const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.ASSETS,
       assets
     );
+
+    return {
+      ...update,
+      assetsGroups: assetsGroupsUpdate,
+    };
   }
 
   async removeAsset(
@@ -449,7 +484,7 @@ export class AssetsGroupsController {
       }
 
       assetContent.groups = assetContent.groups.filter(
-        (group) => !removedGroups.includes(group)
+        ({ id: groupId }) => !removedGroups.includes(groupId)
       );
 
       assets.push({
@@ -458,10 +493,27 @@ export class AssetsGroupsController {
       });
     }
 
-    return this.sdk.document.mReplace(
+    const assetsGroupsUpdate = await this.as(
+      request.getUser()
+    ).document.update<AssetsGroupsBody>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id,
+      {
+        lastUpdate: Date.now(),
+      },
+      { source: true }
+    );
+
+    const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.ASSETS,
       assets
     );
+
+    return {
+      ...update,
+      assetsGroups: assetsGroupsUpdate,
+    };
   }
 }
