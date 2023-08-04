@@ -6,6 +6,8 @@ import { AssetService } from "./AssetService";
 import { AssetsGroupsController } from "./AssetsGroupsController";
 import { RoleAssetsAdmin } from "./roles/RoleAssetsAdmin";
 import { RoleAssetsReader } from "./roles/RoleAssetsReader";
+import { RoleAssetsGroupsAdmin } from "./roles/RoleAssetsGroupsAdmin";
+import { RoleAssetsGroupsReader } from "./roles/RoleAssetsGroupsReader";
 
 export class AssetModule extends Module {
   private assetService: AssetService;
@@ -28,5 +30,10 @@ export class AssetModule extends Module {
       RoleAssetsAdmin.definition;
     this.plugin.imports.roles[RoleAssetsReader.name] =
       RoleAssetsReader.definition;
+
+    this.plugin.imports.roles[RoleAssetsGroupsAdmin.name] =
+      RoleAssetsGroupsAdmin.definition;
+    this.plugin.imports.roles[RoleAssetsGroupsReader.name] =
+      RoleAssetsGroupsReader.definition;
   }
 }

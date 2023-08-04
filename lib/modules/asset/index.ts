@@ -9,3 +9,5 @@ export * from "./model/AssetSerializer";
 export * from "./AssetModule";
 export * from "./roles/RoleAssetsAdmin";
 export * from "./roles/RoleAssetsReader";
+export * from "./roles/RoleAssetsGroupsAdmin";
+export * from "./roles/RoleAssetsGroupsReader";
