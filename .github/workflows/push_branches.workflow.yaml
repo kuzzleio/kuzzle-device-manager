@@ -39,6 +39,7 @@ jobs:
         run: npx semantic-release
 
   release-types:
+    needs: [release-device-manager]
     name: Release type package
     runs-on: ubuntu-20.04
     permissions:
@@ -64,10 +65,10 @@ jobs:
       - name: Publish package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: cd dist && npm publish
+        run: cd types && npm publish
 
   documentation_deploy:
-    needs: [release-device-manager, release-types]
+    needs: [release-types]
     name: Documentation - Deploy
     runs-on: ubuntu-20.04
     steps:
