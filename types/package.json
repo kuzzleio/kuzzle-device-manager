@@ -14,12 +14,6 @@
     "build": "./copy-types.sh && node scripts/copy-version.js"
   },
   "license": "Apache-2.0",
-  "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "semantic-release-config-kuzzle": "^1.0.0",
-    "semantic-release-slack-bot": "^4.0.2"
-  },
   "files": [
     "dist/**/*.d.ts"
   ]

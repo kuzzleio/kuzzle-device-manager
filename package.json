@@ -5,7 +5,7 @@
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kuzzleio/kuzzle-plugin-device-manager"
+    "url": "git+https://github.com/kuzzleio/kuzzle-plugin-device-manager.git"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
