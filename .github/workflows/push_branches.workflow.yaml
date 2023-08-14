@@ -8,7 +8,7 @@ on:
 
 jobs:
   release-device-manager:
-    name: Release process
+    name: Release package
     runs-on: ubuntu-20.04
     permissions:
       contents: write
@@ -32,14 +32,14 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_CI }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           SEMANTIC_RELEASE_NPM_PUBLISH: "true"
           SEMANTIC_RELEASE_SLACK_WEBHOOK: ${{ secrets.SEMANTIC_RELEASE_SLACK_WEBHOOK }}
         run: npx semantic-release
 
   release-types:
-    name: Release process
+    name: Release type package
     runs-on: ubuntu-20.04
     permissions:
       contents: write
@@ -63,20 +63,22 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_CI }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           SEMANTIC_RELEASE_NPM_PUBLISH: "true"
           SEMANTIC_RELEASE_SLACK_WEBHOOK: ${{ secrets.SEMANTIC_RELEASE_SLACK_WEBHOOK }}
-        run: npx semantic-release
+        run: |
+          pwd
+          npx semantic-release
 
   documentation_deploy:
-    needs: [release]
+    needs: [release-device-manager, release-types]
     name: Documentation - Deploy
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.ACCESS_TOKEN }}
+          token: ${{ secrets.ACCESS_TOKEN_CI }}
 
       - uses: convictional/trigger-workflow-and-wait@v1.6.3
         with:
