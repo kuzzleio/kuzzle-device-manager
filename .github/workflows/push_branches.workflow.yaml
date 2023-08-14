@@ -9,7 +9,7 @@ on:
 jobs:
   release-device-manager:
     name: Release package
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
       issues: write
@@ -41,7 +41,7 @@ jobs:
   release-types:
     needs: [release-device-manager]
     name: Release type package
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
       issues: write
@@ -70,7 +70,7 @@ jobs:
   documentation_deploy:
     needs: [release-types]
     name: Documentation - Deploy
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
