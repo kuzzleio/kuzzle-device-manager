@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.3.0...v2.3.1) (2023-08-14)
+
+
+### Bug Fixes
+
+* **types:** correct type package publish ([fa9163a](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/fa9163ab18f7cc4900bb2a8321c815d535f6c41b))
+
 # [2.3.0](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.2.8...v2.3.0) (2023-08-14)
 
 
