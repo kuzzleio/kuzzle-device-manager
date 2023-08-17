@@ -38,6 +38,8 @@ export const assetsMappings: CollectionMappings = {
       },
     },
 
+    lastMeasuredAt: { type: "date" },
+
     linkedDevices: {
       properties: {
         _id: { type: "keyword" },

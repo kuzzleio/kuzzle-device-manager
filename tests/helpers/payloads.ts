@@ -1,10 +1,38 @@
 import { JSONObject, Kuzzle } from "kuzzle-sdk";
 
+type MeasureDated<T> = { value: T; measuredAt: number };
+export type MeasureValue<T> = T | MeasureDated<T>;
+
+export function isMeasureDated<T>(
+  measure: MeasureValue<T>
+): measure is MeasureDated<T> {
+  if (measure === undefined || measure === null) {
+    return false;
+  }
+
+  const test = measure as MeasureDated<T>;
+  return test.value !== undefined && test.measuredAt !== undefined;
+}
+
+export interface Location {
+  lat: number;
+  lon: number;
+  accuracy?: number;
+}
+
+export interface Acceleration {
+  x: number;
+  y: number;
+  z: number;
+  accuracy: number;
+}
+
 export type DummyTempSimplePayload = {
   deviceEUI: string;
-  temperature: number;
+  temperature: MeasureValue<number>;
   measuredAt?: number;
-  battery?: number;
+  battery?: MeasureValue<number>;
+  acceleration?: MeasureValue<Acceleration>;
   metadata?: JSONObject;
 };
 
@@ -15,11 +43,7 @@ export type DummyTempPayload =
     };
 
 export type DummyTempPositionPayload = DummyTempPayload & {
-  location: {
-    lat: number;
-    lon: number;
-    accuracy?: number;
-  };
+  location: MeasureValue<Location>;
 };
 
 export async function sendDummyTempPayloads(

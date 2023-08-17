@@ -8,6 +8,7 @@ import {
   BatteryMeasurement,
 } from "../../../index";
 import { AccelerationMeasurement } from "../measures/AccelerationMeasure";
+import { isMeasureDated } from "../../helpers/payloads";
 
 export class DummyTempDecoder extends Decoder {
   public measures = [
@@ -67,28 +68,38 @@ export class DummyTempDecoder extends Decoder {
       payload.deviceEUI,
       "temperature",
       {
-        measuredAt: payload.measuredAt || Date.now(),
+        measuredAt: isMeasureDated(payload.temperature)
+          ? payload.temperature.measuredAt
+          : payload.measuredAt ?? Date.now(),
         type: "temperature",
         values: {
-          temperature: payload.temperature,
+          temperature: isMeasureDated(payload.temperature)
+            ? payload.temperature.value
+            : payload.temperature,
         },
       }
     );
 
     if (payload.acceleration !== undefined) {
+      const acceleration = isMeasureDated(payload.acceleration)
+        ? payload.acceleration.value
+        : payload.acceleration;
+
       decodedPayload.addMeasurement<AccelerationMeasurement>(
         payload.deviceEUI,
         "accelerationSensor",
         {
-          measuredAt: payload.measuredAt || Date.now(),
+          measuredAt: isMeasureDated(payload.acceleration)
+            ? payload.acceleration.measuredAt
+            : payload.measuredAt ?? Date.now(),
           type: "acceleration",
           values: {
             acceleration: {
-              x: payload.acceleration.x,
-              y: payload.acceleration.y,
-              z: payload.acceleration.z,
+              x: acceleration.x,
+              y: acceleration.y,
+              z: acceleration.z,
             },
-            accuracy: payload.acceleration.accuracy,
+            accuracy: acceleration.accuracy,
           },
         }
       );
@@ -98,10 +109,14 @@ export class DummyTempDecoder extends Decoder {
       payload.deviceEUI,
       "battery",
       {
-        measuredAt: payload.measuredAt || Date.now(),
+        measuredAt: isMeasureDated(payload.battery)
+          ? payload.battery.measuredAt
+          : payload.measuredAt ?? Date.now(),
         type: "battery",
         values: {
-          battery: payload.battery || 42,
+          battery: isMeasureDated(payload.battery)
+            ? payload.battery.value
+            : payload.battery,
         },
       }
     );

@@ -1,5 +1,3 @@
-import { ContainerAssetContent } from "../../../application/assets/Container";
-
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);

@@ -278,6 +278,8 @@ export class MeasureService {
       device._source.measures = {};
     }
 
+    let lastMeasuredAt = 0;
+
     for (const measurement of measurements) {
       if (measurement.origin.type === "computed") {
         continue;
@@ -293,6 +295,10 @@ export class MeasureService {
         continue;
       }
 
+      if (measurement.measuredAt > lastMeasuredAt) {
+        lastMeasuredAt = measurement.measuredAt;
+      }
+
       device._source.measures[measureName] = {
         measuredAt: measurement.measuredAt,
         name: measureName,
@@ -302,6 +308,8 @@ export class MeasureService {
         values: measurement.values,
       };
     }
+
+    device._source.lastMeasuredAt = lastMeasuredAt;
   }
 
   // @todo there shouldn't be any logic related to asset historization here, but no other choices for now. It needs to be re-architected
@@ -320,6 +328,8 @@ export class MeasureService {
     if (!asset._source.measures) {
       asset._source.measures = {};
     }
+
+    let lastMeasuredAt = 0;
 
     for (const measurement of measurements) {
       if (measurement.origin.type === "computed") {
@@ -345,6 +355,10 @@ export class MeasureService {
         continue;
       }
 
+      if (measurement.measuredAt > lastMeasuredAt) {
+        lastMeasuredAt = measurement.measuredAt;
+      }
+
       asset._source.measures[measureName] = {
         measuredAt: measurement.measuredAt,
         name: measureName,
@@ -359,6 +373,8 @@ export class MeasureService {
         JSON.parse(JSON.stringify(asset))
       );
     }
+
+    asset._source.lastMeasuredAt = lastMeasuredAt;
 
     return assetStates;
   }

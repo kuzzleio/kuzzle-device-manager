@@ -227,6 +227,7 @@ export class PayloadService {
       const body: DeviceContent = {
         assetId: null,
         engineId: null,
+        lastMeasuredAt: 0,
         measures: {},
         metadata: {},
         model: deviceModel,
