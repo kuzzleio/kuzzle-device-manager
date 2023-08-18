@@ -5,11 +5,10 @@ import {
   KuzzleRequest,
 } from "kuzzle";
 import _ from "lodash";
-import { PassThrough } from "node:stream";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
 import { MeasureExporter, DecodedMeasurement } from "../measure";
-import { DeviceManagerPlugin } from "../plugin";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 
 import { DeviceService } from "./DeviceService";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -29,6 +28,7 @@ import {
 
 export class DevicesController {
   public definition: ControllerDefinition;
+  private measureExporter: MeasureExporter;
 
   constructor(
     private plugin: DeviceManagerPlugin,
@@ -139,6 +139,11 @@ export class DevicesController {
       },
     };
     /* eslint-enable sort-keys */
+
+    this.measureExporter = new MeasureExporter(
+      this.plugin,
+      InternalCollection.DEVICES
+    );
   }
 
   async get(request: KuzzleRequest): Promise<ApiDeviceGetResult> {
@@ -332,19 +337,18 @@ export class DevicesController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    const exporter = new MeasureExporter(this.plugin, engineId, {
-      target: "device",
-    });
-
-    const { measures, total } = await exporter.search(id, {
-      endAt,
-      from,
-      query,
-      size,
-      sort,
-      startAt,
-      type,
-    });
+    const { measures, total } = await this.measureExporter.search(
+      engineId,
+      {
+        endAt,
+        id,
+        query,
+        sort,
+        startAt,
+        type,
+      },
+      { from, size }
+    );
 
     return { measures, total };
   }
@@ -358,11 +362,7 @@ export class DevicesController {
     ) {
       const exportId = request.getString("exportId");
 
-      const stream = new PassThrough();
-
-      const exporter = new MeasureExporter(this.plugin, engineId);
-
-      const { id } = await exporter.getExport(exportId);
+      const { id } = await this.measureExporter.getExport(engineId, exportId);
 
       request.response.configure({
         headers: {
@@ -371,7 +371,7 @@ export class DevicesController {
         },
       });
 
-      exporter.sendExport(stream, exportId);
+      const stream = await this.measureExporter.sendExport(engineId, exportId);
 
       return new HttpStream(stream);
     }
@@ -385,17 +385,18 @@ export class DevicesController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    const exporter = new MeasureExporter(this.plugin, engineId, {
-      target: "device",
-    });
-
-    const { link } = await exporter.prepareExport(request.getUser(), id, {
-      endAt,
-      query,
-      sort,
-      startAt,
-      type,
-    });
+    const link = await this.measureExporter.prepareExport(
+      engineId,
+      request.getUser(),
+      {
+        endAt,
+        id,
+        query,
+        sort,
+        startAt,
+        type,
+      }
+    );
 
     return { link };
   }

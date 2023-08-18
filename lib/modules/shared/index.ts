@@ -1,3 +1,4 @@
+export * from "./services";
 export * from "./Module";
 export * from "./types/DigitalTwinContent";
 export * from "./types/Metadata";

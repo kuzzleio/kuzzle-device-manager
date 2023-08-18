@@ -1,5 +1,4 @@
 import axios from "axios";
-import { writeFileSync } from "fs";
 
 import { ApiAssetExportMeasuresRequest } from "../../../../index";
 
@@ -62,8 +61,6 @@ describe("AssetsController:exportMeasures", () => {
     await new Promise((resolve) => {
       response.data.on("end", resolve);
     });
-
-    writeFileSync("./asset.csv", csv.join(""));
 
     expect(csv).toHaveLength(5);
     expect(csv[0]).toBe(

@@ -1,8 +1,7 @@
 import { ControllerDefinition, HttpStream, KuzzleRequest } from "kuzzle";
-import { PassThrough } from "stream";
 
 import { MeasureExporter } from "../measure/";
-import { DeviceManagerPlugin } from "../plugin";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 
 import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
@@ -17,6 +16,7 @@ import {
 
 export class AssetsController {
   public definition: ControllerDefinition;
+  private measureExporter: MeasureExporter;
 
   constructor(
     private plugin: DeviceManagerPlugin,
@@ -79,6 +79,11 @@ export class AssetsController {
       },
     };
     /* eslint-enable sort-keys */
+
+    this.measureExporter = new MeasureExporter(
+      this.plugin,
+      InternalCollection.ASSETS
+    );
   }
 
   async get(request: KuzzleRequest): Promise<ApiAssetGetResult> {
@@ -177,19 +182,21 @@ export class AssetsController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    const exporter = new MeasureExporter(this.plugin, engineId, {
-      target: "asset",
-    });
-
-    const { measures, total } = await exporter.search(id, {
-      endAt,
-      from,
-      query,
-      size,
-      sort,
-      startAt,
-      type,
-    });
+    const { measures, total } = await this.measureExporter.search(
+      engineId,
+      {
+        endAt,
+        id,
+        query,
+        sort,
+        startAt,
+        type,
+      },
+      {
+        from,
+        size,
+      }
+    );
 
     return { measures, total };
   }
@@ -203,11 +210,7 @@ export class AssetsController {
     ) {
       const exportId = request.getString("exportId");
 
-      const stream = new PassThrough();
-
-      const exporter = new MeasureExporter(this.plugin, engineId);
-
-      const { id } = await exporter.getExport(exportId);
+      const { id } = await this.measureExporter.getExport(engineId, exportId);
 
       request.response.configure({
         headers: {
@@ -216,7 +219,7 @@ export class AssetsController {
         },
       });
 
-      exporter.sendExport(stream, exportId);
+      const stream = await this.measureExporter.sendExport(engineId, exportId);
 
       return new HttpStream(stream);
     }
@@ -230,17 +233,18 @@ export class AssetsController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
 
-    const exporter = new MeasureExporter(this.plugin, engineId, {
-      target: "asset",
-    });
-
-    const { link } = await exporter.prepareExport(request.getUser(), id, {
-      endAt,
-      query,
-      sort,
-      startAt,
-      type,
-    });
+    const link = await this.measureExporter.prepareExport(
+      engineId,
+      request.getUser(),
+      {
+        endAt,
+        id,
+        query,
+        sort,
+        startAt,
+        type,
+      }
+    );
 
     return { link };
   }
