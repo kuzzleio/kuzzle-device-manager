@@ -32,5 +32,6 @@ export const devicesMappings = {
         // populated with measure models
       },
     },
+    lastMeasuredAt: { type: "date" },
   },
 };

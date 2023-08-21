@@ -88,6 +88,7 @@ export class DeviceService {
       _source: {
         assetId: null,
         engineId: null,
+        lastMeasuredAt: 0,
         measures: {},
         metadata,
         model,

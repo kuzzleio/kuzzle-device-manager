@@ -16,4 +16,6 @@ export interface DigitalTwinContent<
   measures: {
     [Property in keyof TMeasures]: EmbeddedMeasure<TMeasures[Property]> | null;
   };
+
+  lastMeasuredAt: number;
 }
