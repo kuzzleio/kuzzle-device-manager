@@ -10,6 +10,7 @@ import {
   User,
 } from "kuzzle";
 import { EngineContent } from "kuzzle-plugin-commons";
+import _ from "lodash";
 
 import { DeviceManagerPlugin, InternalCollection } from "../../plugin";
 
@@ -37,7 +38,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   };
 
   constructor(
-    private plugin: DeviceManagerPlugin,
+    protected plugin: DeviceManagerPlugin,
     protected target: InternalCollection,
     config: Partial<ExporterOption> = {}
   ) {
@@ -87,11 +88,6 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
    */
   abstract sendExport(engineId: string, exportId: string): Promise<Readable>;
 
-  protected abstract formatHit(
-    columns: Column[],
-    hit: KHit<KDocumentContentGeneric>
-  ): string[];
-
   async prepareExport(engineId: string, user: User, params: P) {
     const exportId = randomUUID();
 
@@ -114,6 +110,13 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     }
 
     return link;
+  }
+
+  protected formatHit(
+    columns: Column[],
+    hit: KHit<KDocumentContentGeneric>
+  ): string[] {
+    return columns.map(({ path }) => _.get(hit, path, null));
   }
 
   async getExport(engineId: string, exportId: string): Promise<P> {

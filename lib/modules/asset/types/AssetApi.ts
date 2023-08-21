@@ -122,3 +122,15 @@ export interface ApiAssetExportMeasuresRequest extends AssetsControllerRequest {
 export type ApiAssetExportMeasuresResult = {
   link: string;
 };
+
+export interface ApiAssetExportRequest extends AssetsControllerRequest {
+  action: "export";
+
+  body?: {
+    query?: JSONObject;
+    sort?: JSONObject;
+  };
+}
+export type ApiAssetExportResult = {
+  link: string;
+};

@@ -2,6 +2,7 @@ import { ControllerDefinition, HttpStream, KuzzleRequest } from "kuzzle";
 
 import { MeasureExporter } from "../measure/";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import { DigitalTwinExporter } from "../shared";
 
 import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
@@ -16,6 +17,7 @@ import {
 
 export class AssetsController {
   public definition: ControllerDefinition;
+  private exporter: DigitalTwinExporter;
   private measureExporter: MeasureExporter;
 
   constructor(
@@ -76,10 +78,27 @@ export class AssetsController {
             },
           ],
         },
+        export: {
+          handler: this.export.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/_export/:exportId",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/assets/_export",
+              verb: "post",
+            },
+          ],
+        },
       },
     };
     /* eslint-enable sort-keys */
 
+    this.exporter = new DigitalTwinExporter(
+      this.plugin,
+      InternalCollection.ASSETS
+    );
     this.measureExporter = new MeasureExporter(
       this.plugin,
       InternalCollection.ASSETS
@@ -243,6 +262,42 @@ export class AssetsController {
         sort,
         startAt,
         type,
+      }
+    );
+
+    return { link };
+  }
+
+  async export(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
+
+    if (
+      request.context.connection.protocol === "http" &&
+      request.context.connection.misc.verb === "GET"
+    ) {
+      const exportId = request.getString("exportId");
+
+      request.response.configure({
+        headers: {
+          "Content-Disposition": `attachment; filename="${InternalCollection.ASSETS}.csv"`,
+          "Content-Type": "text/csv",
+        },
+      });
+
+      const stream = await this.exporter.sendExport(engineId, exportId);
+
+      return new HttpStream(stream);
+    }
+
+    const query = request.input.body?.query;
+    const sort = request.input.body?.sort;
+
+    const link = await this.exporter.prepareExport(
+      engineId,
+      request.getUser(),
+      {
+        query,
+        sort,
       }
     );
 

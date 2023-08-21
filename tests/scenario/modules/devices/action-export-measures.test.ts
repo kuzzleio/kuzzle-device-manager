@@ -1,4 +1,5 @@
 import axios from "axios";
+import { parse as csvParse } from "csv-parse/sync";
 
 import { ApiDeviceExportMeasuresRequest } from "../../../../index";
 
@@ -72,6 +73,7 @@ describe("DevicesController:exportMeasures", () => {
     expect(csv[0]).toBe(
       "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery\n"
     );
+
     const [
       payloadId,
       measuredAt,
@@ -81,7 +83,7 @@ describe("DevicesController:exportMeasures", () => {
       assetId,
       assetModel,
       temperature,
-    ] = csv[1].split(",");
+    ] = csvParse(csv[1])[0];
     const [
       ,
       ,
@@ -95,7 +97,7 @@ describe("DevicesController:exportMeasures", () => {
       accelerationY,
       accelerationZ,
       accelerationAccuracy,
-    ] = csv[2].split(",");
+    ] = csvParse(csv[2])[0];
 
     expect(typeof payloadId).toBe("string");
     expect(typeof parseFloat(measuredAt)).toBe("number");

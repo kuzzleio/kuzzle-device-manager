@@ -1,4 +1,5 @@
 import axios from "axios";
+import { parse as csvParse } from "csv-parse/sync";
 
 import { ApiAssetExportMeasuresRequest } from "../../../../index";
 
@@ -78,7 +79,8 @@ describe("AssetsController:exportMeasures", () => {
       temperatureInt,
       position,
       temperatureWeather,
-    ] = csv[1].replace("\n", "").split(",");
+    ] = csvParse(csv[1])[0];
+
     expect(typeof payloadId).toBe("string");
     expect(typeof parseFloat(measuredAt)).toBe("number");
     expect(measureType).toBe("temperature");
