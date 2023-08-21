@@ -9,6 +9,7 @@ import _ from "lodash";
 import { AssetSerializer } from "../asset/model/AssetSerializer";
 import { MeasureExporter, DecodedMeasurement } from "../measure";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import { DigitalTwinExporter } from "../shared";
 
 import { DeviceService } from "./DeviceService";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -28,6 +29,7 @@ import {
 
 export class DevicesController {
   public definition: ControllerDefinition;
+  private exporter: DigitalTwinExporter;
   private measureExporter: MeasureExporter;
 
   constructor(
@@ -136,10 +138,27 @@ export class DevicesController {
             },
           ],
         },
+        export: {
+          handler: this.export.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/_export/:exportId",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/devices/_export",
+              verb: "post",
+            },
+          ],
+        },
       },
     };
     /* eslint-enable sort-keys */
 
+    this.exporter = new DigitalTwinExporter(
+      this.plugin,
+      InternalCollection.DEVICES
+    );
     this.measureExporter = new MeasureExporter(
       this.plugin,
       InternalCollection.DEVICES
@@ -443,5 +462,41 @@ export class DevicesController {
       measures,
       payloadUuids
     );
+  }
+
+  async export(request: KuzzleRequest) {
+    const engineId = request.getString("engineId");
+
+    if (
+      request.context.connection.protocol === "http" &&
+      request.context.connection.misc.verb === "GET"
+    ) {
+      const exportId = request.getString("exportId");
+
+      request.response.configure({
+        headers: {
+          "Content-Disposition": `attachment; filename="${InternalCollection.DEVICES}.csv"`,
+          "Content-Type": "text/csv",
+        },
+      });
+
+      const stream = await this.exporter.sendExport(engineId, exportId);
+
+      return new HttpStream(stream);
+    }
+
+    const query = request.input.body?.query;
+    const sort = request.input.body?.sort;
+
+    const link = await this.exporter.prepareExport(
+      engineId,
+      request.getUser(),
+      {
+        query,
+        sort,
+      }
+    );
+
+    return { link };
   }
 }
