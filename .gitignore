@@ -22,4 +22,4 @@ dist/
 types/dist/
 
 # Test files
-asset.csv
+/*.csv

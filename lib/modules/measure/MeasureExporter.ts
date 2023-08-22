@@ -1,14 +1,5 @@
-import { randomUUID } from "node:crypto";
-import { PassThrough } from "node:stream";
-
-import { stringify } from "csv-stringify/sync";
-import {
-  InternalError,
-  JSONObject,
-  KDocument,
-  NotFoundError,
-  User,
-} from "kuzzle";
+import { UUID } from "node:crypto";
+import { InternalError, JSONObject, KHit, User } from "kuzzle";
 import _ from "lodash";
 
 import {
@@ -16,81 +7,71 @@ import {
   AskModelDeviceGet,
   AskModelMeasureGet,
 } from "../model";
-import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { DigitalTwinContent, ask, flattenObject } from "../shared";
+import { InternalCollection } from "../plugin";
+import {
+  AbstractExporter,
+  Column,
+  DigitalTwinContent,
+  ExportParams,
+  ask,
+  flattenObject,
+} from "../shared";
 
 import { NamedMeasures } from "../decoder";
 import { MeasureContent } from "./exports";
 
-type ExportOptions = {
-  sort?: JSONObject;
-  query?: JSONObject;
-  from?: number;
-  size?: number;
+interface MeasureSearchParams extends ExportParams {
+  id: string;
+  type?: string;
   startAt?: string;
   endAt?: string;
-  type?: string;
-};
+}
 
-const TWO_MINUTES = 2 * 60;
+interface MeasuresSearchOptions {
+  from?: number;
+  size?: number;
+}
 
-type ExportParams = {
-  query: JSONObject;
-  target: "asset" | "device";
-  model: string;
-  sort: JSONObject;
+interface MeasureExportParams extends ExportParams {
   id: string;
-};
+  model: string;
+}
 
-type Column = {
-  header: string;
-  path: string;
-  isMeasure?: boolean;
-};
-
-export class MeasureExporter {
-  private target?: "asset" | "device";
-
-  private get sdk() {
-    return this.plugin.context.accessors.sdk;
+export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
+  protected exportRedisKey(engineId: string, exportId: string) {
+    return `exports:measures:${engineId}:${exportId}`;
   }
 
-  constructor(
-    private plugin: DeviceManagerPlugin,
-    private engineId: string,
-    { target }: { target?: "asset" | "device" } = {}
+  protected getLink(
+    engineId: string,
+    exportId: UUID,
+    params: MeasureExportParams
   ) {
-    this.target = target;
+    return `/_/device-manager/${engineId}/${this.target}/${params.id}/measures/_export/${exportId}`;
   }
 
   /**
    * Searches for measures and return them in a standard JSON
    */
   async search(
-    digitalTwinId: string,
-    {
-      size = 25,
-      from = 0,
-      endAt,
-      startAt,
-      query,
-      sort = { measuredAt: "desc" },
-      type,
-    }: ExportOptions
+    engineId: string,
+    params: MeasureSearchParams,
+    options?: MeasuresSearchOptions
   ) {
-    const { searchQuery } = await this.prepareMeasureSearch(
-      digitalTwinId,
-      startAt,
-      endAt,
-      query,
-      type
-    );
+    const searchQuery = this.prepareMeasureSearch(params);
 
     const result = await this.sdk.document.search<MeasureContent>(
-      this.engineId,
+      engineId,
       InternalCollection.MEASURES,
-      { query: searchQuery, sort },
-      { from, lang: "koncorde", size: size }
+      {
+        query: searchQuery,
+        sort: params.sort ?? { measuredAt: "desc" },
+      },
+      {
+        from: options?.from ?? 0,
+        lang: "koncorde",
+        size: options?.size ?? 25,
+      }
     );
 
     return { measures: result.hits, total: result.total };
@@ -106,54 +87,40 @@ export class MeasureExporter {
    * Never return a rejected promise and write potential error on the stream
    */
   async prepareExport(
+    engineId: string,
     user: User,
-    digitalTwinId: string,
-    {
-      endAt,
-      startAt,
-      query,
-      sort = { measuredAt: "desc" },
-      type,
-    }: ExportOptions
+    params: MeasureSearchParams
   ) {
-    const { digitalTwin, searchQuery } = await this.prepareMeasureSearch(
-      digitalTwinId,
-      startAt,
-      endAt,
-      query,
-      type
+    const digitalTwin = await this.sdk.document.get<DigitalTwinContent>(
+      engineId,
+      this.target,
+      params.id
     );
 
-    const exportParams: ExportParams = {
-      id: digitalTwinId,
+    const searchQuery = this.prepareMeasureSearch(params);
+
+    const exportParams: MeasureExportParams = {
+      id: params.id,
       model: digitalTwin._source.model,
       query: searchQuery,
-      sort,
-      target: this.target,
+      sort: params.sort ?? { measuredAt: "desc" },
     };
 
-    const exportId = randomUUID();
+    return super.prepareExport(engineId, user, exportParams);
+  }
 
-    await this.sdk.ms.setex(
-      this.exportRedisKey(exportId),
-      JSON.stringify(exportParams),
-      TWO_MINUTES
-    );
+  protected formatHit(columns: Column[], hit: KHit<MeasureContent>) {
+    return columns.map(({ header: measureName, isMeasure, path }) => {
+      if (
+        isMeasure &&
+        this.target === InternalCollection.ASSETS &&
+        hit._source.asset?.measureName !== measureName
+      ) {
+        return null;
+      }
 
-    let link = `/_/device-manager/${this.engineId}/${this.target}s/${digitalTwinId}/measures/_export/${exportId}`;
-
-    if (user._id !== "-1") {
-      const { result } = await this.sdk.as(user).query({
-        action: "createToken",
-        controller: "auth",
-        expiresIn: TWO_MINUTES * 1000,
-        singleUse: true,
-      });
-
-      link += `?jwt=${result.token}`;
-    }
-
-    return { link };
+      return _.get(hit, path, null);
+    });
   }
 
   /**
@@ -162,20 +129,22 @@ export class MeasureExporter {
    * This method never returns a rejected promise, but write potential error in
    * the stream.
    */
-  async sendExport(stream: PassThrough, exportId: string) {
+  async sendExport(engineId: string, exportId: string) {
     try {
-      const { query, sort, model, target } = await this.getExport(exportId);
+      const { query, sort, model } = await this.getExport(engineId, exportId);
 
-      let result = await this.sdk.document.search<MeasureContent>(
-        this.engineId,
+      const result = await this.sdk.document.search<MeasureContent>(
+        engineId,
         InternalCollection.MEASURES,
         { query, sort },
         { lang: "koncorde", size: 200 }
       );
 
-      const engine = await this.getEngine();
+      const targetModel =
+        this.target === InternalCollection.ASSETS ? "asset" : "device";
+      const engine = await this.getEngine(engineId);
       const modelDocument = await ask<AskModelDeviceGet | AskModelAssetGet>(
-        `ask:device-manager:model:${target}:get`,
+        `ask:device-manager:model:${targetModel}:get`,
         {
           engineGroup: engine.group,
           model,
@@ -183,7 +152,7 @@ export class MeasureExporter {
       );
 
       const measureColumns = await this.generateMeasureColumns(
-        modelDocument[target].measures
+        modelDocument[targetModel].measures
       );
 
       const columns: Column[] = [
@@ -197,35 +166,12 @@ export class MeasureExporter {
         ...measureColumns,
       ];
 
-      stream.write(stringify([columns.map((column) => column.header)]));
+      const stream = this.getExportStream(result, columns);
+      await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
 
-      while (result) {
-        for (const hit of result.hits) {
-          stream.write(
-            stringify([
-              columns.map(({ header: measureName, isMeasure, path }) => {
-                if (
-                  isMeasure &&
-                  target === "asset" &&
-                  hit._source.asset?.measureName !== measureName
-                ) {
-                  return null;
-                }
-
-                return _.get(hit, path, null);
-              }),
-            ])
-          );
-        }
-
-        result = await result.next();
-      }
-
-      await this.sdk.ms.del(this.exportRedisKey(exportId));
+      return stream;
     } catch (error) {
-      stream.write(error.message);
-    } finally {
-      stream.end();
+      this.log.error(error);
     }
   }
 
@@ -287,39 +233,10 @@ export class MeasureExporter {
     return measures;
   }
 
-  async getExport(exportId: string) {
-    const exportParams = await this.sdk.ms.get(this.exportRedisKey(exportId));
-
-    if (!exportParams) {
-      throw new NotFoundError(`Export "${exportId}" not found or expired.`);
-    }
-
-    return JSON.parse(exportParams) as ExportParams;
-  }
-
-  private exportRedisKey(exportId: string) {
-    return `exports:measures:${this.engineId}:${exportId}`;
-  }
-
-  private async prepareMeasureSearch(
-    digitalTwinId: string,
-    startAt?: string,
-    endAt?: string,
-    query?: JSONObject,
-    type?: string
-  ) {
+  private prepareMeasureSearch(params: MeasureSearchParams) {
     if (!this.target) {
       throw new InternalError('Missing "target" parameter');
     }
-
-    const digitalTwin: KDocument<DigitalTwinContent> =
-      await this.sdk.document.get(
-        this.engineId,
-        this.target === "asset"
-          ? InternalCollection.ASSETS
-          : InternalCollection.DEVICES,
-        digitalTwinId
-      );
 
     const measuredAtRange = {
       range: {
@@ -330,46 +247,36 @@ export class MeasureExporter {
       },
     };
 
-    if (startAt) {
-      measuredAtRange.range.measuredAt.gte = new Date(startAt).getTime();
+    if (params.startAt) {
+      measuredAtRange.range.measuredAt.gte = new Date(params.startAt).getTime();
     }
 
-    if (endAt) {
-      measuredAtRange.range.measuredAt.lte = new Date(endAt).getTime();
+    if (params.endAt) {
+      measuredAtRange.range.measuredAt.lte = new Date(params.endAt).getTime();
     }
 
     const searchQuery: JSONObject = {
       and: [measuredAtRange],
     };
 
-    if (this.target === "asset") {
+    if (this.target === InternalCollection.ASSETS) {
       searchQuery.and.push({
-        equals: { "asset._id": digitalTwinId },
+        equals: { "asset._id": params.id },
       });
     } else {
       searchQuery.and.push({
-        equals: { "origin._id": digitalTwinId },
+        equals: { "origin._id": params.id },
       });
     }
 
-    if (type) {
-      searchQuery.and.push({ equals: { type } });
+    if (params.type) {
+      searchQuery.and.push({ equals: { type: params.type } });
     }
 
-    if (query) {
-      searchQuery.and.push(query);
+    if (params.query) {
+      searchQuery.and.push(params.query);
     }
 
-    return { digitalTwin, searchQuery };
-  }
-
-  private async getEngine(): Promise<JSONObject> {
-    const engine = await this.sdk.document.get(
-      this.plugin.config.adminIndex,
-      InternalCollection.CONFIG,
-      `engine-device-manager--${this.engineId}`
-    );
-
-    return engine._source.engine;
+    return searchQuery;
   }
 }

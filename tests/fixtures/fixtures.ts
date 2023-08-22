@@ -58,6 +58,31 @@ const deviceAyseUnlinked3 = {
 };
 const deviceAyseUnlinked3Id = `${deviceAyseUnlinked3.model}-${deviceAyseUnlinked3.reference}`;
 
+const deviceAyseWarehouse = {
+  model: "DummyTempPosition",
+  reference: "warehouse",
+  metadata: {},
+  measures: {},
+  engineId: "engine-ayse",
+  assetId: "Warehouse-linked",
+};
+const deviceAyseWarehouseId = `${deviceAyseWarehouse.model}-${deviceAyseWarehouse.reference}`;
+
+const assetAyseWarehouseLinked = {
+  model: "Warehouse",
+  reference: "linked",
+  metadata: {
+    surface: 512,
+  },
+  linkedDevices: [
+    {
+      measureNames: [{ asset: "position", device: "position" }],
+      _id: "DummyTempPosition-warehouse",
+    },
+  ],
+};
+const assetAyseWarehouseLinkedId = `${assetAyseWarehouseLinked.model}-${assetAyseWarehouseLinked.reference}`;
+
 const assetAyseLinked1 = {
   model: "Container",
   reference: "linked1",
@@ -170,6 +195,9 @@ export default {
 
       { index: { _id: deviceAyseUnlinked3Id } },
       deviceAyseUnlinked3,
+
+      { index: { _id: deviceAyseWarehouseId } },
+      deviceAyseWarehouse,
     ],
   },
 
@@ -190,6 +218,9 @@ export default {
 
       { index: { _id: deviceAyseUnlinked3Id } },
       deviceAyseUnlinked3,
+
+      { index: { _id: deviceAyseWarehouseId } },
+      deviceAyseWarehouse,
     ],
     assets: [
       { index: { _id: assetAyseLinked1Id } },
@@ -206,6 +237,9 @@ export default {
 
       { index: { _id: assetAyseGroupedId2 } },
       assetAyseGrouped2,
+
+      { index: { _id: assetAyseWarehouseLinkedId } },
+      assetAyseWarehouseLinked,
     ],
     ...assetGroupFixtures,
   },

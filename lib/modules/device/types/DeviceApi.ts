@@ -222,3 +222,15 @@ export interface ApiDeviceReceiveMeasuresRequest<
   };
 }
 export type ApiDeviceReceiveMeasuresResult = void;
+
+export interface ApiDeviceExportRequest extends DevicesControllerRequest {
+  action: "export";
+
+  body?: {
+    query?: JSONObject;
+    sort?: JSONObject;
+  };
+}
+export type ApiDeviceExportResult = {
+  link: string;
+};

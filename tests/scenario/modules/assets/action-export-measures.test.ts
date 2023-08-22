@@ -1,5 +1,5 @@
 import axios from "axios";
-import { writeFileSync } from "fs";
+import { parse as csvParse } from "csv-parse/sync";
 
 import { ApiAssetExportMeasuresRequest } from "../../../../index";
 
@@ -63,8 +63,6 @@ describe("AssetsController:exportMeasures", () => {
       response.data.on("end", resolve);
     });
 
-    writeFileSync("./asset.csv", csv.join(""));
-
     expect(csv).toHaveLength(5);
     expect(csv[0]).toBe(
       "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperatureExt,temperatureInt,position,position.accuracy,position.altitude,temperatureWeather\n"
@@ -81,7 +79,8 @@ describe("AssetsController:exportMeasures", () => {
       temperatureInt,
       position,
       temperatureWeather,
-    ] = csv[1].replace("\n", "").split(",");
+    ] = csvParse(csv[1])[0];
+
     expect(typeof payloadId).toBe("string");
     expect(typeof parseFloat(measuredAt)).toBe("number");
     expect(measureType).toBe("temperature");
