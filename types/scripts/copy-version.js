@@ -6,4 +6,4 @@ const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
 
 packageJson.version = packageVersion;
 
-fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
+fs.writeFileSync("./package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
