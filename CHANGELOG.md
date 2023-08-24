@@ -1,6 +1,19 @@
 # [2.4.0-beta.1](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.3.2...v2.4.0-beta.1) (2023-08-24)
 
 
+### Bug Fixes
+
+* copy-version script ([72b5e49](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/72b5e496c81700fddd9b475cb77965c3b6091de7))
+
+
+### Features
+
+* digitaltwin exports ([#315](https://github.com/kuzzleio/kuzzle-plugin-device-manager/issues/315)) ([aab65af](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/aab65afbc13205ea695c503fbbdf2326fe3cafd2))
+* **measures:** add lastMeasuredAt on DigitalTwin ([#314](https://github.com/kuzzleio/kuzzle-plugin-device-manager/issues/314)) ([05b8a53](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/05b8a53970e76cc2d2a3de3b98173c43b8cb54e0))
+
+# [2.4.0-beta.1](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.3.2...v2.4.0-beta.1) (2023-08-24)
+
+
 ### Features
 
 * digitaltwin exports ([#315](https://github.com/kuzzleio/kuzzle-plugin-device-manager/issues/315)) ([aab65af](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/aab65afbc13205ea695c503fbbdf2326fe3cafd2))
