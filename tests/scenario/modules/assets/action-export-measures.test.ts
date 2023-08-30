@@ -49,6 +49,7 @@ describe("AssetsController:exportMeasures", () => {
       engineId: "engine-ayse",
       _id: "Container-linked2",
       type: "temperature",
+      lang: "koncorde",
     });
 
     const response = await axios.get("http://localhost:7512" + result.link, {

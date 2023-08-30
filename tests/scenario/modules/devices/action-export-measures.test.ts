@@ -55,6 +55,7 @@ describe("DevicesController:exportMeasures", () => {
       action: "exportMeasures",
       engineId: "engine-ayse",
       _id: "DummyTemp-linked1",
+      lang: "koncorde",
     });
 
     const response = await axios.get("http://localhost:7512" + result.link, {
@@ -131,6 +132,7 @@ describe("DevicesController:exportMeasures", () => {
       action: "exportMeasures",
       engineId: "engine-ayse",
       _id: "DummyTemp-linked1",
+      lang: "koncorde",
     });
 
     const response = await axios.get("http://localhost:7512" + result.link, {
