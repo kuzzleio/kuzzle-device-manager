@@ -147,7 +147,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
           stream.write(stringify([this.formatHit(columns, hit)]));
         }
 
-        result = await result.next();
+        result = result.fetched < 10000 ? await result.next() : null;
       }
     } catch (error) {
       stream.write(error.message);
