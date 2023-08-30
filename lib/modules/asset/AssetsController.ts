@@ -1,4 +1,9 @@
-import { ControllerDefinition, HttpStream, KuzzleRequest } from "kuzzle";
+import {
+  ControllerDefinition,
+  HttpStream,
+  KuzzleError,
+  KuzzleRequest,
+} from "kuzzle";
 
 import { MeasureExporter } from "../measure/";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
@@ -229,20 +234,34 @@ export class AssetsController {
       request.context.connection.protocol === "http" &&
       request.context.connection.misc.verb === "GET"
     ) {
-      const exportId = request.getString("exportId");
+      try {
+        const exportId = request.getString("exportId");
 
-      const { id } = await this.measureExporter.getExport(engineId, exportId);
+        const { id } = await this.measureExporter.getExport(engineId, exportId);
+        const stream = await this.measureExporter.sendExport(
+          engineId,
+          exportId
+        );
 
-      request.response.configure({
-        headers: {
-          "Content-Disposition": `attachment; filename="asset-${id}.csv"`,
-          "Content-Type": "text/csv",
-        },
-      });
+        request.response.configure({
+          headers: {
+            "Content-Disposition": `attachment; filename="asset-${id}.csv"`,
+            "Content-Type": "text/csv",
+          },
+        });
 
-      const stream = await this.measureExporter.sendExport(engineId, exportId);
+        return new HttpStream(stream);
+      } catch (error) {
+        request.response.configure({
+          format: "raw",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+          status: (error as KuzzleError).status,
+        });
 
-      return new HttpStream(stream);
+        return error.message;
+      }
     }
 
     const id = request.getId();
@@ -279,18 +298,29 @@ export class AssetsController {
       request.context.connection.protocol === "http" &&
       request.context.connection.misc.verb === "GET"
     ) {
-      const exportId = request.getString("exportId");
+      try {
+        const exportId = request.getString("exportId");
+        const stream = await this.exporter.sendExport(engineId, exportId);
 
-      request.response.configure({
-        headers: {
-          "Content-Disposition": `attachment; filename="${InternalCollection.ASSETS}.csv"`,
-          "Content-Type": "text/csv",
-        },
-      });
+        request.response.configure({
+          headers: {
+            "Content-Disposition": `attachment; filename="${InternalCollection.ASSETS}.csv"`,
+            "Content-Type": "text/csv",
+          },
+        });
 
-      const stream = await this.exporter.sendExport(engineId, exportId);
+        return new HttpStream(stream);
+      } catch (error) {
+        request.response.configure({
+          format: "raw",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+          status: (error as KuzzleError).status,
+        });
 
-      return new HttpStream(stream);
+        return error.message;
+      }
     }
 
     const query = request.input.body?.query;

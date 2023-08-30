@@ -131,54 +131,50 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
    * the stream.
    */
   async sendExport(engineId: string, exportId: string) {
-    try {
-      const {
-        query,
-        sort,
+    const {
+      query,
+      sort,
+      model,
+      lang = "elasticsearch",
+    } = await this.getExport(engineId, exportId);
+
+    const result = await this.sdk.document.search<MeasureContent>(
+      engineId,
+      InternalCollection.MEASURES,
+      { query, sort },
+      { lang, size: 200 }
+    );
+
+    const targetModel =
+      this.target === InternalCollection.ASSETS ? "asset" : "device";
+    const engine = await this.getEngine(engineId);
+    const modelDocument = await ask<AskModelDeviceGet | AskModelAssetGet>(
+      `ask:device-manager:model:${targetModel}:get`,
+      {
+        engineGroup: engine.group,
         model,
-        lang = "elasticsearch",
-      } = await this.getExport(engineId, exportId);
+      }
+    );
 
-      const result = await this.sdk.document.search<MeasureContent>(
-        engineId,
-        InternalCollection.MEASURES,
-        { query, sort },
-        { lang, size: 200 }
-      );
+    const measureColumns = await this.generateMeasureColumns(
+      modelDocument[targetModel].measures
+    );
 
-      const targetModel =
-        this.target === InternalCollection.ASSETS ? "asset" : "device";
-      const engine = await this.getEngine(engineId);
-      const modelDocument = await ask<AskModelDeviceGet | AskModelAssetGet>(
-        `ask:device-manager:model:${targetModel}:get`,
-        {
-          engineGroup: engine.group,
-          model,
-        }
-      );
+    const columns: Column[] = [
+      { header: "Payload Id", path: "_id" },
+      { header: "Measured At", path: "_source.measuredAt" },
+      { header: "Measure Type", path: "_source.type" },
+      { header: "Device Id", path: "_source.origin._id" },
+      { header: "Device Model", path: "_source.origin.deviceModel" },
+      { header: "Asset Id", path: "_source.asset._id" },
+      { header: "Asset Model", path: "_source.asset.model" },
+      ...measureColumns,
+    ];
 
-      const measureColumns = await this.generateMeasureColumns(
-        modelDocument[targetModel].measures
-      );
+    const stream = this.getExportStream(result, columns);
+    await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
 
-      const columns: Column[] = [
-        { header: "Payload Id", path: "_id" },
-        { header: "Measured At", path: "_source.measuredAt" },
-        { header: "Measure Type", path: "_source.type" },
-        { header: "Device Id", path: "_source.origin._id" },
-        { header: "Device Model", path: "_source.origin.deviceModel" },
-        { header: "Asset Id", path: "_source.asset._id" },
-        { header: "Asset Model", path: "_source.asset.model" },
-        ...measureColumns,
-      ];
-
-      const stream = this.getExportStream(result, columns);
-      await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
-
-      return stream;
-    } catch (error) {
-      this.log.error(error);
-    }
+    return stream;
   }
 
   private async generateMeasureColumns(
