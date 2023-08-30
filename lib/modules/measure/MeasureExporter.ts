@@ -101,6 +101,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
 
     const exportParams: MeasureExportParams = {
       id: params.id,
+      lang: params.lang,
       model: digitalTwin._source.model,
       query: searchQuery,
       sort: params.sort ?? { measuredAt: "desc" },
@@ -131,13 +132,18 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
    */
   async sendExport(engineId: string, exportId: string) {
     try {
-      const { query, sort, model } = await this.getExport(engineId, exportId);
+      const {
+        query,
+        sort,
+        model,
+        lang = "elasticsearch",
+      } = await this.getExport(engineId, exportId);
 
       const result = await this.sdk.document.search<MeasureContent>(
         engineId,
         InternalCollection.MEASURES,
         { query, sort },
-        { lang: "koncorde", size: 200 }
+        { lang, size: 200 }
       );
 
       const targetModel =

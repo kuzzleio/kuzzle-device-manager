@@ -26,13 +26,17 @@ export class DigitalTwinExporter extends AbstractExporter {
 
   async sendExport(engineId: string, exportId: string) {
     try {
-      const { query, sort } = await this.getExport(engineId, exportId);
+      const {
+        query,
+        sort,
+        lang = "elasticsearch",
+      } = await this.getExport(engineId, exportId);
 
       const digitalTwins = await this.sdk.document.search<DigitalTwinContent>(
         engineId,
         this.target,
         { query, sort },
-        { lang: "koncorde", size: 200 }
+        { lang, size: 200 }
       );
 
       const namedMeasures = await this.getNamedMeasures(engineId);

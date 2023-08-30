@@ -355,12 +355,14 @@ export class DevicesController {
     const query = request.input.body?.query;
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
+    const lang = request.getLangParam();
 
     const { measures, total } = await this.measureExporter.search(
       engineId,
       {
         endAt,
         id,
+        lang,
         query,
         sort,
         startAt,
@@ -403,6 +405,7 @@ export class DevicesController {
     const query = request.input.body?.query;
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
+    const lang = request.getLangParam();
 
     const link = await this.measureExporter.prepareExport(
       engineId,
@@ -410,6 +413,7 @@ export class DevicesController {
       {
         endAt,
         id,
+        lang,
         query,
         sort,
         startAt,
@@ -487,11 +491,13 @@ export class DevicesController {
 
     const query = request.input.body?.query;
     const sort = request.input.body?.sort;
+    const lang = request.getLangParam();
 
     const link = await this.exporter.prepareExport(
       engineId,
       request.getUser(),
       {
+        lang,
         query,
         sort,
       }

@@ -24,6 +24,7 @@ export interface ExporterOption {
 export interface ExportParams {
   query: JSONObject;
   sort?: JSONObject;
+  lang?: "elasticsearch" | "koncorde";
 }
 
 export interface Column {
