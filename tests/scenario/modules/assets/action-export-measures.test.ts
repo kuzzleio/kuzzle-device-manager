@@ -1,3 +1,4 @@
+import { JSONObject } from "kuzzle";
 import axios from "axios";
 import { parse as csvParse } from "csv-parse/sync";
 
@@ -9,6 +10,53 @@ jest.setTimeout(10000);
 
 describe("AssetsController:exportMeasures", () => {
   const sdk = setupHooks();
+
+  it("should support elasticsearch and koncorde query", async () => {
+    async function testQuery(
+      query: JSONObject,
+      lang: ApiAssetExportMeasuresRequest["lang"]
+    ) {
+      const { result } = await sdk.query<ApiAssetExportMeasuresRequest>({
+        controller: "device-manager/assets",
+        action: "exportMeasures",
+        engineId: "engine-ayse",
+        _id: "Container-linked2",
+        body: {
+          query,
+        },
+        lang,
+      });
+
+      return await axios.get("http://localhost:7512" + result.link, {
+        // ? accept all status minor than 500 to accept BadRequest error
+        validateStatus: (status) => status < 500,
+      });
+    }
+
+    const esError = await testQuery(
+      {
+        equals: { type: "temperature" },
+      },
+      "elasticsearch"
+    );
+    expect(esError.status).toBe(400);
+
+    const esResponse = await testQuery(
+      {
+        term: { type: "temperature" },
+      },
+      "elasticsearch"
+    );
+    expect(esResponse.status).toBe(200);
+
+    const koncordeResponse = await testQuery(
+      {
+        equals: { type: "temperature" },
+      },
+      "koncorde"
+    );
+    expect(koncordeResponse.status).toBe(200);
+  });
 
   it("should prepare export of temperature measures and return a CSV as stream", async () => {
     await sendPayloads(sdk, "dummy-temp-position", [
@@ -49,6 +97,7 @@ describe("AssetsController:exportMeasures", () => {
       engineId: "engine-ayse",
       _id: "Container-linked2",
       type: "temperature",
+      lang: "koncorde",
     });
 
     const response = await axios.get("http://localhost:7512" + result.link, {

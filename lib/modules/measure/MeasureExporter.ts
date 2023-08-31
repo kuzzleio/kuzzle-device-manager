@@ -1,6 +1,8 @@
 import { UUID } from "node:crypto";
 import { InternalError, JSONObject, KHit, User } from "kuzzle";
 import _ from "lodash";
+// ? queryTranslator is not exposed by package kuzzle so we need to import directly th file
+import QueryTranslator from "kuzzle/lib/service/storage/queryTranslator.js";
 
 import {
   AskModelAssetGet,
@@ -69,7 +71,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       },
       {
         from: options?.from ?? 0,
-        lang: "koncorde",
+        lang: params.lang,
         size: options?.size ?? 25,
       }
     );
@@ -101,10 +103,19 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
 
     const exportParams: MeasureExportParams = {
       id: params.id,
+      lang: params.lang,
       model: digitalTwin._source.model,
       query: searchQuery,
       sort: params.sort ?? { measuredAt: "desc" },
     };
+
+    /**
+     * ? Prevent error duplicate result on search with sort.
+     * "Unable to retrieve all results from search: the sort combination must identify one item only. Add document "_id" to the sort."
+     */
+    if (exportParams.sort._id === undefined) {
+      exportParams.sort._id = "asc";
+    }
 
     return super.prepareExport(engineId, user, exportParams);
   }
@@ -130,49 +141,50 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
    * the stream.
    */
   async sendExport(engineId: string, exportId: string) {
-    try {
-      const { query, sort, model } = await this.getExport(engineId, exportId);
+    const {
+      query,
+      sort,
+      model,
+      lang = "elasticsearch",
+    } = await this.getExport(engineId, exportId);
 
-      const result = await this.sdk.document.search<MeasureContent>(
-        engineId,
-        InternalCollection.MEASURES,
-        { query, sort },
-        { lang: "koncorde", size: 200 }
-      );
+    const result = await this.sdk.document.search<MeasureContent>(
+      engineId,
+      InternalCollection.MEASURES,
+      { query, sort },
+      { lang, size: 200 }
+    );
 
-      const targetModel =
-        this.target === InternalCollection.ASSETS ? "asset" : "device";
-      const engine = await this.getEngine(engineId);
-      const modelDocument = await ask<AskModelDeviceGet | AskModelAssetGet>(
-        `ask:device-manager:model:${targetModel}:get`,
-        {
-          engineGroup: engine.group,
-          model,
-        }
-      );
+    const targetModel =
+      this.target === InternalCollection.ASSETS ? "asset" : "device";
+    const engine = await this.getEngine(engineId);
+    const modelDocument = await ask<AskModelDeviceGet | AskModelAssetGet>(
+      `ask:device-manager:model:${targetModel}:get`,
+      {
+        engineGroup: engine.group,
+        model,
+      }
+    );
 
-      const measureColumns = await this.generateMeasureColumns(
-        modelDocument[targetModel].measures
-      );
+    const measureColumns = await this.generateMeasureColumns(
+      modelDocument[targetModel].measures
+    );
 
-      const columns: Column[] = [
-        { header: "Payload Id", path: "_id" },
-        { header: "Measured At", path: "_source.measuredAt" },
-        { header: "Measure Type", path: "_source.type" },
-        { header: "Device Id", path: "_source.origin._id" },
-        { header: "Device Model", path: "_source.origin.deviceModel" },
-        { header: "Asset Id", path: "_source.asset._id" },
-        { header: "Asset Model", path: "_source.asset.model" },
-        ...measureColumns,
-      ];
+    const columns: Column[] = [
+      { header: "Payload Id", path: "_id" },
+      { header: "Measured At", path: "_source.measuredAt" },
+      { header: "Measure Type", path: "_source.type" },
+      { header: "Device Id", path: "_source.origin._id" },
+      { header: "Device Model", path: "_source.origin.deviceModel" },
+      { header: "Asset Id", path: "_source.asset._id" },
+      { header: "Asset Model", path: "_source.asset.model" },
+      ...measureColumns,
+    ];
 
-      const stream = this.getExportStream(result, columns);
-      await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
+    const stream = this.getExportStream(result, columns);
+    await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
 
-      return stream;
-    } catch (error) {
-      this.log.error(error);
-    }
+    return stream;
   }
 
   private async generateMeasureColumns(
@@ -273,7 +285,16 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       searchQuery.and.push({ equals: { type: params.type } });
     }
 
-    if (params.query) {
+    // ? Like previous filters are write in koncorde we need to translate to elasticsearch when query is in this language
+    if (params.lang === "elasticsearch") {
+      const esQuery = new QueryTranslator().translate(searchQuery);
+      if (params.query !== undefined) {
+        esQuery.bool.filter.push(params.query);
+      }
+      return esQuery;
+    }
+
+    if (params.query !== undefined) {
       searchQuery.and.push(params.query);
     }
 

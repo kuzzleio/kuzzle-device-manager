@@ -87,6 +87,8 @@ export interface ApiAssetGetMeasuresRequest extends AssetsControllerRequest {
 
   type?: string;
 
+  lang?: "koncorde" | "elasticsearch";
+
   body?: {
     query?: JSONObject;
     sort?: JSONObject;
@@ -114,6 +116,8 @@ export interface ApiAssetExportMeasuresRequest extends AssetsControllerRequest {
 
   type?: string;
 
+  lang?: "koncorde" | "elasticsearch";
+
   body?: {
     query?: JSONObject;
     sort?: JSONObject;
@@ -125,6 +129,8 @@ export type ApiAssetExportMeasuresResult = {
 
 export interface ApiAssetExportRequest extends AssetsControllerRequest {
   action: "export";
+
+  lang?: "koncorde" | "elasticsearch";
 
   body?: {
     query?: JSONObject;

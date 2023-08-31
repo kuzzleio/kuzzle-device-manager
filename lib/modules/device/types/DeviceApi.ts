@@ -167,6 +167,8 @@ export interface ApiDeviceGetMeasuresRequest extends DevicesControllerRequest {
 
   type?: string;
 
+  lang?: "koncorde" | "elasticsearch";
+
   body?: {
     query?: JSONObject;
     sort?: JSONObject;
@@ -194,6 +196,8 @@ export interface ApiDeviceExportMeasuresRequest
   endAt?: string;
 
   type?: string;
+
+  lang?: "koncorde" | "elasticsearch";
 
   body?: {
     query?: JSONObject;
@@ -225,6 +229,8 @@ export type ApiDeviceReceiveMeasuresResult = void;
 
 export interface ApiDeviceExportRequest extends DevicesControllerRequest {
   action: "export";
+
+  lang?: "koncorde" | "elasticsearch";
 
   body?: {
     query?: JSONObject;

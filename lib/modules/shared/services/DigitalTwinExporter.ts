@@ -25,33 +25,33 @@ export class DigitalTwinExporter extends AbstractExporter {
   }
 
   async sendExport(engineId: string, exportId: string) {
-    try {
-      const { query, sort } = await this.getExport(engineId, exportId);
+    const {
+      query,
+      sort,
+      lang = "elasticsearch",
+    } = await this.getExport(engineId, exportId);
 
-      const digitalTwins = await this.sdk.document.search<DigitalTwinContent>(
-        engineId,
-        this.target,
-        { query, sort },
-        { lang: "koncorde", size: 200 }
-      );
+    const digitalTwins = await this.sdk.document.search<DigitalTwinContent>(
+      engineId,
+      this.target,
+      { query, sort },
+      { lang, size: 200 }
+    );
 
-      const namedMeasures = await this.getNamedMeasures(engineId);
-      const measureColumns = await this.generateMeasureColumns(namedMeasures);
+    const namedMeasures = await this.getNamedMeasures(engineId);
+    const measureColumns = await this.generateMeasureColumns(namedMeasures);
 
-      const columns: Column[] = [
-        { header: "Model", path: "_source.model" },
-        { header: "Reference", path: "_source.reference" },
-        ...measureColumns,
-        { header: "lastMeasuredAt", path: "_source.lastMeasuredAt" },
-      ];
+    const columns: Column[] = [
+      { header: "Model", path: "_source.model" },
+      { header: "Reference", path: "_source.reference" },
+      ...measureColumns,
+      { header: "lastMeasuredAt", path: "_source.lastMeasuredAt" },
+    ];
 
-      const stream = this.getExportStream(digitalTwins, columns);
-      await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
+    const stream = this.getExportStream(digitalTwins, columns);
+    await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
 
-      return stream;
-    } catch (error) {
-      this.log.error(error);
-    }
+    return stream;
   }
 
   /**
