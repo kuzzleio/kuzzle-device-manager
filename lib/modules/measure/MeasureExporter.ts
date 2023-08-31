@@ -71,7 +71,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       },
       {
         from: options?.from ?? 0,
-        lang: "koncorde",
+        lang: params.lang,
         size: options?.size ?? 25,
       }
     );
