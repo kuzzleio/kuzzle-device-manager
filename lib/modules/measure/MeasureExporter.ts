@@ -1,6 +1,8 @@
 import { UUID } from "node:crypto";
 import { InternalError, JSONObject, KHit, User } from "kuzzle";
 import _ from "lodash";
+// ? queryTranslator is not exposed by package kuzzle so we need to import directly th file
+import QueryTranslator from "kuzzle/lib/service/storage/queryTranslator.js";
 
 import {
   AskModelAssetGet,
@@ -283,7 +285,16 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       searchQuery.and.push({ equals: { type: params.type } });
     }
 
-    if (params.query) {
+    // ? Like previous filters are write in koncorde we need to translate to elasticsearch when query is in this language
+    if (params.lang === "elasticsearch") {
+      const esQuery = new QueryTranslator().translate(searchQuery);
+      if (params.query !== undefined) {
+        esQuery.bool.filter.push(params.query);
+      }
+      return esQuery;
+    }
+
+    if (params.query !== undefined) {
       searchQuery.and.push(params.query);
     }
 
