@@ -252,6 +252,7 @@ export class AssetsController {
 
         return new HttpStream(stream);
       } catch (error) {
+        // ? Like this endpoint is mostly called by browser prefer return raw message for essyier readable error
         request.response.configure({
           format: "raw",
           headers: {
@@ -311,6 +312,7 @@ export class AssetsController {
 
         return new HttpStream(stream);
       } catch (error) {
+        // ? Like this endpoint is mostly called by browser prefer return raw message for essyier readable error
         request.response.configure({
           format: "raw",
           headers: {

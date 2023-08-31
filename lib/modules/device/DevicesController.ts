@@ -400,6 +400,7 @@ export class DevicesController {
 
         return new HttpStream(stream);
       } catch (error) {
+        // ? Like this endpoint is mostly called by browser prefer return raw message for essyier readable error
         request.response.configure({
           format: "raw",
           headers: {
@@ -503,6 +504,7 @@ export class DevicesController {
 
         return new HttpStream(stream);
       } catch (error) {
+        // ? Like this endpoint is mostly called by browser prefer return raw message for essyier readable error
         request.response.configure({
           format: "raw",
           headers: {
