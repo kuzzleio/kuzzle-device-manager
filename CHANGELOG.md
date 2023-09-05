@@ -1,3 +1,10 @@
+# [2.4.0-beta.3](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.2...v2.4.0-beta.3) (2023-09-05)
+
+
+### Bug Fixes
+
+* **ci:** correct github token in ci ([a5a6b69](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/a5a6b69898defc1cdb22b57d389ad745ee75de8e))
+
 # [2.4.0-beta.2](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.1...v2.4.0-beta.2) (2023-09-05)
 
 
