@@ -1,3 +1,15 @@
+# [2.4.0-beta.2](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.1...v2.4.0-beta.2) (2023-09-05)
+
+
+### Bug Fixes
+
+* copy-version script ([72b5e49](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/72b5e496c81700fddd9b475cb77965c3b6091de7))
+
+
+### Features
+
+* improve export ([#316](https://github.com/kuzzleio/kuzzle-plugin-device-manager/issues/316)) ([51db84a](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/51db84a5f50fa3381454697cee0a06300b07b4ea))
+
 # [2.4.0-beta.1](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.3.2...v2.4.0-beta.1) (2023-08-24)
 
 
