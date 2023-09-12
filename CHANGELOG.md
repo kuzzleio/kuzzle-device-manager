@@ -1,3 +1,10 @@
+# [2.4.0-beta.4](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.3...v2.4.0-beta.4) (2023-09-12)
+
+
+### Bug Fixes
+
+* **export:** correct scroll in getNamedMeasures ([05fe4fd](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/05fe4fd081e049978e1fab06f82bce1bb1dc0950))
+
 # [2.4.0-beta.3](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.2...v2.4.0-beta.3) (2023-09-05)
 
 
