@@ -76,7 +76,7 @@ export class DigitalTwinExporter extends AbstractExporter {
       {
         query: { equals: { type } },
       },
-      { lang: "koncorde" }
+      { lang: "koncorde", size: 20 }
     );
 
     // ? Use a map to dedup the NamedMeasures get from models
