@@ -96,6 +96,15 @@ export class AssetsController {
             },
           ],
         },
+        migrateTenant: {
+          handler: this.migrateTenant.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/_migrateTenant",
+              verb: "post",
+            },
+          ],
+        },
       },
     };
     /* eslint-enable sort-keys */
@@ -340,5 +349,17 @@ export class AssetsController {
     );
 
     return { link };
+  }
+
+  async migrateTenant(request: KuzzleRequest) {
+    const assetsList = request.getBodyArray("assetsList");
+    const engineId = request.getString("engineId");
+    const newEngineId = request.getBodyString("newEngineId");
+    await this.assetService.migrateTenant(
+      request.getUser(),
+      assetsList,
+      engineId,
+      newEngineId
+    );
   }
 }

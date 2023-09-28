@@ -21,8 +21,11 @@ import { DeviceContent } from "./types/DeviceContent";
 import { DeviceSerializer } from "./model/DeviceSerializer";
 import {
   AskDeviceUnlinkAsset,
+  AskDeviceDetachEngine,
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
+  AskDeviceAttachEngine,
+  AskDeviceLinkAsset,
 } from "./types/DeviceEvents";
 import { ApiDeviceLinkAssetRequest } from "./types/DeviceApi";
 import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
@@ -54,11 +57,35 @@ export class DeviceService {
   constructor(plugin: Plugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+    this.registerAskEvents();
+  }
+
+  registerAskEvents() {
+    onAsk<AskDeviceLinkAsset>(
+      "ask:device-manager:device:link-asset",
+      async ({ deviceId, engineId, user, assetId, measureNames }) => {
+        await this.linkAsset(user, engineId, deviceId, assetId, measureNames);
+      }
+    );
 
     onAsk<AskDeviceUnlinkAsset>(
       "ask:device-manager:device:unlink-asset",
       async ({ deviceId, user }) => {
         await this.unlinkAsset(user, deviceId);
+      }
+    );
+
+    onAsk<AskDeviceDetachEngine>(
+      "ask:device-manager:device:detach-engine",
+      async ({ deviceId, user }) => {
+        await this.detachEngine(user, deviceId);
+      }
+    );
+
+    onAsk<AskDeviceAttachEngine>(
+      "ask:device-manager:device:attach-engine",
+      async ({ deviceId, engineId, user }) => {
+        await this.attachEngine(user, engineId, deviceId);
       }
     );
   }

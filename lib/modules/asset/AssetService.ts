@@ -10,7 +10,12 @@ import {
 } from "kuzzle-sdk";
 import _ from "lodash";
 
-import { AskDeviceUnlinkAsset } from "../device";
+import {
+  AskDeviceAttachEngine,
+  AskDeviceDetachEngine,
+  AskDeviceLinkAsset,
+  AskDeviceUnlinkAsset,
+} from "../device";
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
   AskEngineList,
@@ -39,6 +44,7 @@ import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
 } from "./types/AssetHistoryContent";
+import { RecoveryQueue } from "../shared/utils/recoveryQueue";
 
 export class AssetService {
   private context: PluginContext;
@@ -266,6 +272,195 @@ export class AssetService {
     );
 
     return result;
+  }
+
+  public async migrateTenant(
+    user: User,
+    assetsList: string[],
+    engineId: string,
+    newEngineId: string
+  ) {
+    return lock(`engine:${engineId}:${newEngineId}`, async () => {
+      const recovery = new RecoveryQueue();
+
+      try {
+        // check if tenant destination of the the same group
+        const engine = await this.getEngine(engineId);
+        const newEngine = await this.getEngine(newEngineId);
+
+        if (engine.group !== newEngine.group) {
+          throw new BadRequestError(
+            `Tenant ${newEngineId} is not in the same group as ${engineId}`
+          );
+        }
+
+        const assets = await this.sdk.document.mGet<AssetContent>(
+          engineId,
+          InternalCollection.ASSETS,
+          assetsList
+        );
+
+        // check if the assets exists in the other engine
+        const existingAssets = await this.sdk.document.mGet<AssetContent>(
+          newEngineId,
+          InternalCollection.ASSETS,
+          assetsList
+        );
+
+        if (existingAssets.successes.length > 0) {
+          throw new BadRequestError(
+            `Assets ${existingAssets.successes
+              .map((asset) => asset._id)
+              .join(", ")} already exists in engine ${newEngineId}`
+          );
+        }
+        const assetsToMigrate = assets.successes.map((asset) => ({
+          _id: asset._id,
+          body: asset._source,
+        }));
+
+        const devices = await this.sdk.document.search<AssetContent>(
+          engineId,
+          InternalCollection.DEVICES,
+          {
+            query: {
+              bool: {
+                filter: {
+                  terms: {
+                    assetId: assetsList,
+                  },
+                },
+              },
+            },
+          }
+        );
+
+        // Map linked devices for assets.
+        const assetLinkedDevices = assets.successes
+          .filter((asset) => asset._source.linkedDevices.length > 0)
+          .map((asset) => ({
+            assetId: asset._id,
+            linkedDevices: asset._source.linkedDevices,
+          }));
+
+        // Extra recovery step to relink back assets to their devices in case of rollback
+        recovery.addRecovery(async () => {
+          // Link the devices to the new assets
+          for (const asset of assetLinkedDevices) {
+            const assetId = asset.assetId;
+            for (const device of asset.linkedDevices) {
+              const deviceId = device._id;
+              const measureNames = device.measureNames;
+              await ask<AskDeviceLinkAsset>(
+                "ask:device-manager:device:link-asset",
+                {
+                  assetId,
+                  deviceId,
+                  engineId,
+                  measureNames: measureNames,
+                  user,
+                }
+              );
+            }
+          }
+        });
+
+        // detach from current tenant
+        for (const device of devices.hits) {
+          await ask<AskDeviceDetachEngine>(
+            "ask:device-manager:device:detach-engine",
+            { deviceId: device._id, user }
+          );
+          await ask<AskDeviceAttachEngine>(
+            "ask:device-manager:device:attach-engine",
+            { deviceId: device._id, engineId: newEngineId, user }
+          );
+        }
+
+        // recovery function to reattach devices to the old tenant
+        recovery.addRecovery(async () => {
+          for (const device of devices.hits) {
+            await ask<AskDeviceDetachEngine>(
+              "ask:device-manager:device:detach-engine",
+              { deviceId: device._id, user }
+            );
+            await ask<AskDeviceAttachEngine>(
+              "ask:device-manager:device:attach-engine",
+              { deviceId: device._id, engineId, user }
+            );
+          }
+        });
+
+        // Create the assets in the new tenant
+        await this.sdk.document.mCreate(
+          newEngineId,
+          InternalCollection.ASSETS,
+          assetsToMigrate
+        );
+
+        recovery.addRecovery(async () => {
+          await this.sdk.document.mDelete(
+            newEngineId,
+            InternalCollection.ASSETS,
+            assetsList
+          );
+        });
+
+        // Delete the assets in the old tenant
+        await this.sdk.document.mDelete(
+          engineId,
+          InternalCollection.ASSETS,
+          assetsList
+        );
+
+        recovery.addRecovery(async () => {
+          await this.sdk.document.mCreate(
+            engineId,
+            InternalCollection.ASSETS,
+            assetsToMigrate
+          );
+        });
+
+        // Link the devices to the new assets
+        for (const asset of assetLinkedDevices) {
+          const assetId = asset.assetId;
+          for (const device of asset.linkedDevices) {
+            const deviceId = device._id;
+            const measureNames = device.measureNames;
+            await ask<AskDeviceLinkAsset>(
+              "ask:device-manager:device:link-asset",
+              {
+                assetId,
+                deviceId,
+                engineId: newEngineId,
+                measureNames: measureNames,
+                user,
+              }
+            );
+          }
+        }
+
+        recovery.addRecovery(async () => {
+          for (const asset of assetLinkedDevices) {
+            for (const device of asset.linkedDevices) {
+              const deviceId = device._id;
+              await ask<AskDeviceUnlinkAsset>(
+                "ask:device-manager:device:unlink-asset",
+                {
+                  deviceId,
+                  user,
+                }
+              );
+            }
+          }
+        });
+      } catch (error) {
+        await recovery.rollback();
+        throw new BadRequestError(
+          `An error occured while migrating assets: ${error}`
+        );
+      }
+    });
   }
 
   /**
