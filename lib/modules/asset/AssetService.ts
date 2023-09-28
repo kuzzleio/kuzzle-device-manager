@@ -283,6 +283,12 @@ export class AssetService {
     return lock(`engine:${engineId}:${newEngineId}`, async () => {
       const recovery = new RecoveryQueue();
 
+      if (user.profileIds.includes("admin")) {
+        throw new BadRequestError(
+          `User ${user._id} is not authorized to migrate assets`
+        );
+      }
+
       try {
         // check if tenant destination of the the same group
         const engine = await this.getEngine(engineId);
