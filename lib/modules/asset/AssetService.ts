@@ -460,6 +460,18 @@ export class AssetService {
             }
           }
         });
+
+        // clear the groups
+        await this.sdk.document.mUpdate<AssetContent>(
+          newEngineId,
+          InternalCollection.ASSETS,
+          assetsList.map((assetId) => ({
+            _id: assetId,
+            body: {
+              groups: [],
+            },
+          }))
+        );
       } catch (error) {
         await recovery.rollback();
         throw new BadRequestError(
