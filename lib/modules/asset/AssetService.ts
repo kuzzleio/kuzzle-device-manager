@@ -283,7 +283,7 @@ export class AssetService {
     return lock(`engine:${engineId}:${newEngineId}`, async () => {
       const recovery = new RecoveryQueue();
 
-      if (user.profileIds.includes("admin")) {
+      if (!user.profileIds.includes("admin")) {
         throw new BadRequestError(
           `User ${user._id} is not authorized to migrate assets`
         );
