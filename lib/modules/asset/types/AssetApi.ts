@@ -140,3 +140,14 @@ export interface ApiAssetExportRequest extends AssetsControllerRequest {
 export type ApiAssetExportResult = {
   link: string;
 };
+
+export interface ApiAssetMigrateTenantRequest extends AssetsControllerRequest {
+  action: "migrateTenant";
+  engineId: string;
+  body: {
+    assetsList: string[];
+    newEngineId: string;
+  };
+}
+
+export type ApiAssetMigrateTenantResult = void;

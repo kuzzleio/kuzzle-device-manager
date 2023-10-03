@@ -41,6 +41,13 @@ export async function beforeEachTruncateCollections(sdk: Kuzzle) {
     truncateCollection(sdk, "engine-ayse", "assets-groups"),
     truncateCollection(sdk, "engine-ayse", "measures"),
     truncateCollection(sdk, "engine-ayse", "devices"),
+
+    truncateCollection(sdk, "engine-other-group", "assets"),
+    truncateCollection(sdk, "engine-other-group", "assets-history"),
+    truncateCollection(sdk, "engine-other-group", "assets-groups"),
+    truncateCollection(sdk, "engine-other-group", "measures"),
+    truncateCollection(sdk, "engine-other-group", "devices"),
+
     deleteModels(sdk),
   ]);
 }
