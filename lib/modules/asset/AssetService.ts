@@ -279,7 +279,7 @@ export class AssetService {
     assetsList: string[],
     engineId: string,
     newEngineId: string
-  ) {
+  ): Promise<void> {
     return lock(`engine:${engineId}:${newEngineId}`, async () => {
       const recovery = new RecoveryQueue();
 
@@ -296,8 +296,12 @@ export class AssetService {
 
         if (engine.group !== newEngine.group) {
           throw new BadRequestError(
-            `Tenant ${newEngineId} is not in the same group as ${engineId}`
+            `Engine ${newEngineId} is not in the same group as ${engineId}`
           );
+        }
+
+        if (assetsList.length === 0) {
+          throw new BadRequestError("No assets to migrate");
         }
 
         const assets = await this.sdk.document.mGet<AssetContent>(
@@ -352,49 +356,69 @@ export class AssetService {
         // Extra recovery step to relink back assets to their devices in case of rollback
         recovery.addRecovery(async () => {
           // Link the devices to the new assets
+          const promises: Promise<void>[] = [];
+
           for (const asset of assetLinkedDevices) {
             const assetId = asset.assetId;
             for (const device of asset.linkedDevices) {
               const deviceId = device._id;
               const measureNames = device.measureNames;
-              await ask<AskDeviceLinkAsset>(
-                "ask:device-manager:device:link-asset",
-                {
-                  assetId,
-                  deviceId,
-                  engineId,
-                  measureNames: measureNames,
-                  user,
-                }
+              promises.push(
+                ask<AskDeviceLinkAsset>(
+                  "ask:device-manager:device:link-asset",
+                  {
+                    assetId,
+                    deviceId,
+                    engineId,
+                    measureNames: measureNames,
+                    user,
+                  }
+                )
               );
             }
           }
+          await Promise.all(promises);
         });
 
         // detach from current tenant
-        for (const device of devices.hits) {
-          await ask<AskDeviceDetachEngine>(
-            "ask:device-manager:device:detach-engine",
-            { deviceId: device._id, user }
-          );
-          await ask<AskDeviceAttachEngine>(
-            "ask:device-manager:device:attach-engine",
-            { deviceId: device._id, engineId: newEngineId, user }
-          );
-        }
-
-        // recovery function to reattach devices to the old tenant
-        recovery.addRecovery(async () => {
-          for (const device of devices.hits) {
-            await ask<AskDeviceDetachEngine>(
+        await Promise.all(
+          devices.hits.map((device) => {
+            return ask<AskDeviceDetachEngine>(
               "ask:device-manager:device:detach-engine",
               { deviceId: device._id, user }
             );
-            await ask<AskDeviceAttachEngine>(
+          })
+        );
+
+        // Attach to new tenant
+        await Promise.all(
+          devices.hits.map((device) => {
+            return ask<AskDeviceAttachEngine>(
               "ask:device-manager:device:attach-engine",
-              { deviceId: device._id, engineId, user }
+              { deviceId: device._id, engineId: newEngineId, user }
             );
-          }
+          })
+        );
+
+        // recovery function to reattach devices to the old tenant
+        recovery.addRecovery(async () => {
+          await Promise.all(
+            devices.hits.map((device) => {
+              return ask<AskDeviceDetachEngine>(
+                "ask:device-manager:device:detach-engine",
+                { deviceId: device._id, user }
+              );
+            })
+          );
+
+          await Promise.all(
+            devices.hits.map((device) => {
+              return ask<AskDeviceAttachEngine>(
+                "ask:device-manager:device:attach-engine",
+                { deviceId: device._id, engineId, user }
+              );
+            })
+          );
         });
 
         // Create the assets in the new tenant
@@ -428,37 +452,46 @@ export class AssetService {
         });
 
         // Link the devices to the new assets
+        const promises: Promise<void>[] = [];
+
         for (const asset of assetLinkedDevices) {
           const assetId = asset.assetId;
           for (const device of asset.linkedDevices) {
             const deviceId = device._id;
             const measureNames = device.measureNames;
-            await ask<AskDeviceLinkAsset>(
-              "ask:device-manager:device:link-asset",
-              {
+            promises.push(
+              ask<AskDeviceLinkAsset>("ask:device-manager:device:link-asset", {
                 assetId,
                 deviceId,
                 engineId: newEngineId,
                 measureNames: measureNames,
                 user,
-              }
+              })
             );
           }
         }
 
+        await Promise.all(promises);
+
         recovery.addRecovery(async () => {
+          const promiseRecoveries: Promise<void>[] = [];
+
           for (const asset of assetLinkedDevices) {
             for (const device of asset.linkedDevices) {
               const deviceId = device._id;
-              await ask<AskDeviceUnlinkAsset>(
-                "ask:device-manager:device:unlink-asset",
-                {
-                  deviceId,
-                  user,
-                }
+              promiseRecoveries.push(
+                ask<AskDeviceUnlinkAsset>(
+                  "ask:device-manager:device:unlink-asset",
+                  {
+                    deviceId,
+                    user,
+                  }
+                )
               );
             }
           }
+
+          await Promise.all(promiseRecoveries);
         });
 
         // clear the groups
