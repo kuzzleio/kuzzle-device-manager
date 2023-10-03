@@ -1,3 +1,17 @@
+# [2.4.0-beta.5](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.4...v2.4.0-beta.5) (2023-10-03)
+
+
+### Bug Fixes
+
+* **assets:** migrate tenant only if user is admin ([c24f942](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/c24f942673b37e798c9f89a098ad6747fd4977bd))
+* **assetsMigrateTenant:** add type for frontend and fix admin only ([e249f13](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/e249f13d3e2bba70023177374c0874d982f78226))
+* **migrateTenant:** clear groups of newly created assets ([79f6a5a](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/79f6a5a84a34fd526e3820455cdf999364c49ad1))
+
+
+### Features
+
+* **assets:** assets migrate tenant ([5f05101](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/5f0510120428cbaffaa4569a705a5f20644d8c83))
+
 # [2.4.0-beta.4](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.3...v2.4.0-beta.4) (2023-09-12)
 
 
