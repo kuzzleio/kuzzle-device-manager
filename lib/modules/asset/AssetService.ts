@@ -15,7 +15,6 @@ import {
   AskDeviceDetachEngine,
   AskDeviceLinkAsset,
   AskDeviceUnlinkAsset,
-  DeviceContent,
 } from "../device";
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
@@ -283,7 +282,6 @@ export class AssetService {
     let migrated = 0;
 
     await lock(`engine:${engineId}:${newEngineId}`, async () => {
-
       if (!user.profileIds.includes("admin")) {
         throw new BadRequestError(
           `User ${user._id} is not authorized to migrate assets`
@@ -314,33 +312,36 @@ export class AssetService {
 
         //Iterate over all asset, and migrate each one
         for (const asset of assets.successes) {
-
-          //Check if an existing asset reference already exists in the new tenant         
-          if (await this.sdk.document.exists(newEngineId, InternalCollection.ASSETS, asset._id)) {
+          //Check if an existing asset reference already exists in the new tenant
+          if (
+            await this.sdk.document.exists(
+              newEngineId,
+              InternalCollection.ASSETS,
+              asset._id
+            )
+          ) {
             continue;
           }
 
-          // Create the assets in the new tenant, with empty linkedDevices and groups          
-          let assetContent = Object.assign({}, asset._source);
+          // Create the assets in the new tenant, with empty linkedDevices and groups
+          const assetContent = Object.assign({}, asset._source);
           assetContent.linkedDevices = [];
           assetContent.groups = [];
           await this.sdk.document.create<AssetContent>(
             newEngineId,
             InternalCollection.ASSETS,
             assetContent,
-            asset._id,
+            asset._id
           );
 
           // get linked devices to this asset, if any
-          const linkedDevices = asset._source.linkedDevices
-          .map((d) => ({
+          const linkedDevices = asset._source.linkedDevices.map((d) => ({
             id: d._id,
             measureNames: d.measureNames,
           }));
 
           // ... ant iterate over this list
           for (const device of linkedDevices) {
-
             // detach linked devices from current tenant (it also unkinks asset)
             await ask<AskDeviceDetachEngine>(
               "ask:device-manager:device:detach-engine",
@@ -352,14 +353,14 @@ export class AssetService {
               "ask:device-manager:device:attach-engine",
               { deviceId: device.id, engineId: newEngineId, user }
             );
-          
+
             // ... and link this device to the asset in the new tenant
             await ask<AskDeviceLinkAsset>(
               "ask:device-manager:device:link-asset",
               {
-                engineId: newEngineId,
                 assetId: asset._id,
                 deviceId: device.id,
+                engineId: newEngineId,
                 measureNames: device.measureNames,
                 user,
               }
@@ -370,10 +371,10 @@ export class AssetService {
           await this.sdk.document.delete(
             engineId,
             InternalCollection.ASSETS,
-            asset._id,
+            asset._id
           );
 
-          migrated ++;
+          migrated++;
         }
       } catch (error) {
         throw new BadRequestError(
@@ -381,16 +382,25 @@ export class AssetService {
         );
       }
 
-      if(migrated == 0) {
+      if (!migrated) {
         throw new BadRequestError(
           `Error occured while migrating all the assets !`
         );
       } else {
         await this.sdk.collection.refresh(engineId, InternalCollection.ASSETS);
         await this.sdk.collection.refresh(engineId, InternalCollection.DEVICES);
-        await this.sdk.collection.refresh(newEngineId, InternalCollection.ASSETS);
-        await this.sdk.collection.refresh(newEngineId, InternalCollection.DEVICES);
-        await this.sdk.collection.refresh(this.config.adminIndex, InternalCollection.DEVICES);
+        await this.sdk.collection.refresh(
+          newEngineId,
+          InternalCollection.ASSETS
+        );
+        await this.sdk.collection.refresh(
+          newEngineId,
+          InternalCollection.DEVICES
+        );
+        await this.sdk.collection.refresh(
+          this.config.adminIndex,
+          InternalCollection.DEVICES
+        );
       }
     });
   }
