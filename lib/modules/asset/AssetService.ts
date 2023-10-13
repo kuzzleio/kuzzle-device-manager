@@ -279,9 +279,9 @@ export class AssetService {
     engineId: string,
     newEngineId: string
   ): Promise<void> {
-    let migrated = 0;
-
     return await lock(`engine:${engineId}:${newEngineId}`, async () => {
+      let migrated = 0;
+
       if (!user.profileIds.includes("admin")) {
         throw new BadRequestError(
           `User ${user._id} is not authorized to migrate assets`
