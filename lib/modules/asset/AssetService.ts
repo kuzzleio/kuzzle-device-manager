@@ -289,7 +289,7 @@ export class AssetService {
       }
 
       try {
-        // check if tenant destination of the the same group
+        // check if tenant destination is of the same group
         const engine = await this.getEngine(engineId);
         const newEngine = await this.getEngine(newEngineId);
 
@@ -303,26 +303,30 @@ export class AssetService {
           throw new BadRequestError("No assets to migrate");
         }
 
-        //Get all assets to migrate
+        //For all assets, check if they already exists in the destination tenant
+        const assetsInDest = await this.sdk.document.mGet<AssetContent>(
+          newEngineId,
+          InternalCollection.ASSETS,
+          assetsList
+        );
+        const assetsIdInDest = assetsInDest.successes.map((a) => a._id);
+        //And if yes, remove them from the list to use
+        const assetsListFiltered = assetsList.filter(
+          (id) => !assetsIdInDest.includes(id)
+        );
+        if (assetsListFiltered.length === 0) {
+          throw new BadRequestError("No available assets to migrate");
+        }
+
+        //Get all true/available assets to migrate
         const assets = await this.sdk.document.mGet<AssetContent>(
           engineId,
           InternalCollection.ASSETS,
-          assetsList
+          assetsListFiltered
         );
 
         //Iterate over all asset, and migrate each one
         for (const asset of assets.successes) {
-          //Check if an existing asset reference already exists in the new tenant
-          if (
-            await this.sdk.document.exists(
-              newEngineId,
-              InternalCollection.ASSETS,
-              asset._id
-            )
-          ) {
-            continue;
-          }
-
           // Create the assets in the new tenant, with empty linkedDevices and groups
           const assetContent = Object.assign({}, asset._source);
           assetContent.linkedDevices = [];
@@ -336,7 +340,7 @@ export class AssetService {
 
           // get linked devices to this asset, if any
           const linkedDevices = asset._source.linkedDevices.map((d) => ({
-            id: d._id,
+            _id: d._id,
             measureNames: d.measureNames,
           }));
 
@@ -345,13 +349,13 @@ export class AssetService {
             // detach linked devices from current tenant (it also unkinks asset)
             await ask<AskDeviceDetachEngine>(
               "ask:device-manager:device:detach-engine",
-              { deviceId: device.id, user }
+              { deviceId: device._id, user }
             );
 
             // ... and attach to new tenant
             await ask<AskDeviceAttachEngine>(
               "ask:device-manager:device:attach-engine",
-              { deviceId: device.id, engineId: newEngineId, user }
+              { deviceId: device._id, engineId: newEngineId, user }
             );
 
             // ... and link this device to the asset in the new tenant
@@ -359,7 +363,7 @@ export class AssetService {
               "ask:device-manager:device:link-asset",
               {
                 assetId: asset._id,
-                deviceId: device.id,
+                deviceId: device._id,
                 engineId: newEngineId,
                 measureNames: device.measureNames,
                 user,
@@ -387,20 +391,32 @@ export class AssetService {
           `Error occured while migrating all the assets !`
         );
       } else {
-        await this.sdk.collection.refresh(engineId, InternalCollection.ASSETS);
-        await this.sdk.collection.refresh(engineId, InternalCollection.DEVICES);
-        await this.sdk.collection.refresh(
-          newEngineId,
-          InternalCollection.ASSETS
-        );
-        await this.sdk.collection.refresh(
-          newEngineId,
-          InternalCollection.DEVICES
-        );
-        await this.sdk.collection.refresh(
-          this.config.adminIndex,
-          InternalCollection.DEVICES
-        );
+        const collectionsToRefresh = [
+          {
+            collection: InternalCollection.ASSETS,
+            engine: engineId,
+          },
+          {
+            collection: InternalCollection.DEVICES,
+            engine: engineId,
+          },
+          {
+            collection: InternalCollection.ASSETS,
+            engine: newEngineId,
+          },
+          {
+            collection: InternalCollection.DEVICES,
+            engine: newEngineId,
+          },
+          {
+            collection: InternalCollection.DEVICES,
+            engine: this.config.adminIndex,
+          },
+        ].map(({ engine, collection }) => {
+          return this.sdk.collection.refresh(engine, collection);
+        });
+
+        await Promise.all(collectionsToRefresh);
       }
     });
   }
