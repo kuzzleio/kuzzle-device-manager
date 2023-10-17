@@ -30,7 +30,7 @@ describe("AssetsController:migrateTenant", () => {
         action: "migrateTenant",
         engineId: "engine-ayse",
         body: {
-          assetsList: [],
+          assetsList: ["Container-linked1", "Container-linked2"],
           newEngineId: "engine-kuzzle",
         },
       })
@@ -52,7 +52,7 @@ describe("AssetsController:migrateTenant", () => {
         action: "migrateTenant",
         engineId: "engine-ayse",
         body: {
-          assetsList: [],
+          assetsList: ["Container-linked1", "Container-linked2"],
           newEngineId: "engine-other-group",
         },
       })
