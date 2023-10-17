@@ -18,6 +18,7 @@ import {
   ApiAssetGetResult,
   ApiAssetSearchResult,
   ApiAssetUpdateResult,
+  ApiAssetMigrateTenantResult,
 } from "./types/AssetApi";
 
 export class AssetsController {
@@ -351,15 +352,20 @@ export class AssetsController {
     return { link };
   }
 
-  async migrateTenant(request: KuzzleRequest) {
+  async migrateTenant(
+    request: KuzzleRequest
+  ): Promise<ApiAssetMigrateTenantResult> {
     const assetsList = request.getBodyArray("assetsList");
     const engineId = request.getString("engineId");
     const newEngineId = request.getBodyString("newEngineId");
-    await this.assetService.migrateTenant(
+
+    const { errors, successes } = await this.assetService.migrateTenant(
       request.getUser(),
       assetsList,
       engineId,
       newEngineId
     );
+
+    return { errors, successes };
   }
 }

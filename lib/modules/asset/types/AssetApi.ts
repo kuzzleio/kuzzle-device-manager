@@ -149,5 +149,7 @@ export interface ApiAssetMigrateTenantRequest extends AssetsControllerRequest {
     newEngineId: string;
   };
 }
-
-export type ApiAssetMigrateTenantResult = void;
+export type ApiAssetMigrateTenantResult = {
+  errors: string[];
+  successes: string[];
+};

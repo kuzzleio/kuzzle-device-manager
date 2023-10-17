@@ -44,6 +44,7 @@ import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
 } from "./types/AssetHistoryContent";
+import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
 
 export class AssetService {
   private context: PluginContext;
@@ -278,147 +279,158 @@ export class AssetService {
     assetsList: string[],
     engineId: string,
     newEngineId: string
-  ): Promise<void> {
-    return await lock(`engine:${engineId}:${newEngineId}`, async () => {
-      let migrated = 0;
+  ): Promise<ApiAssetMigrateTenantResult> {
+    const errors = [];
+    const successes = [];
 
+    //Sanity check
+    if (assetsList.length === 0) {
+      this.context.log.error("No assets to migrate");
+      return { errors, successes };
+    }
+
+    await lock(`engine:${engineId}:${newEngineId}`, async () => {
       if (!user.profileIds.includes("admin")) {
         throw new BadRequestError(
           `User ${user._id} is not authorized to migrate assets`
         );
       }
 
-      try {
-        // check if tenant destination is of the same group
-        const engine = await this.getEngine(engineId);
-        const newEngine = await this.getEngine(newEngineId);
+      // check if tenant destination is in the same group
+      const engine = await this.getEngine(engineId);
+      const newEngine = await this.getEngine(newEngineId);
 
-        if (engine.group !== newEngine.group) {
-          throw new BadRequestError(
-            `Engine ${newEngineId} is not in the same group as ${engineId}`
-          );
-        }
-
-        if (assetsList.length === 0) {
-          throw new BadRequestError("No assets to migrate");
-        }
-
-        //For all assets, check if they already exists in the destination tenant
-        const assetsInDest = await this.sdk.document.mGet<AssetContent>(
-          newEngineId,
-          InternalCollection.ASSETS,
-          assetsList
-        );
-        const assetsIdInDest = assetsInDest.successes.map((a) => a._id);
-        //And if yes, remove them from the list to use
-        const assetsListFiltered = assetsList.filter(
-          (id) => !assetsIdInDest.includes(id)
-        );
-        if (assetsListFiltered.length === 0) {
-          throw new BadRequestError("No available assets to migrate");
-        }
-
-        //Get all true/available assets to migrate
-        const assets = await this.sdk.document.mGet<AssetContent>(
-          engineId,
-          InternalCollection.ASSETS,
-          assetsListFiltered
-        );
-
-        //Iterate over all asset, and migrate each one
-        for (const asset of assets.successes) {
-          // Create the assets in the new tenant, with empty linkedDevices and groups
-          const assetContent = Object.assign({}, asset._source);
-          assetContent.linkedDevices = [];
-          assetContent.groups = [];
-          await this.sdk.document.create<AssetContent>(
-            newEngineId,
-            InternalCollection.ASSETS,
-            assetContent,
-            asset._id
-          );
-
-          // get linked devices to this asset, if any
-          const linkedDevices = asset._source.linkedDevices.map((d) => ({
-            _id: d._id,
-            measureNames: d.measureNames,
-          }));
-
-          // ... ant iterate over this list
-          for (const device of linkedDevices) {
-            // detach linked devices from current tenant (it also unkinks asset)
-            await ask<AskDeviceDetachEngine>(
-              "ask:device-manager:device:detach-engine",
-              { deviceId: device._id, user }
-            );
-
-            // ... and attach to new tenant
-            await ask<AskDeviceAttachEngine>(
-              "ask:device-manager:device:attach-engine",
-              { deviceId: device._id, engineId: newEngineId, user }
-            );
-
-            // ... and link this device to the asset in the new tenant
-            await ask<AskDeviceLinkAsset>(
-              "ask:device-manager:device:link-asset",
-              {
-                assetId: asset._id,
-                deviceId: device._id,
-                engineId: newEngineId,
-                measureNames: device.measureNames,
-                user,
-              }
-            );
-          }
-
-          // Finally here, we can delete the asset in the source engine !
-          await this.sdk.document.delete(
-            engineId,
-            InternalCollection.ASSETS,
-            asset._id
-          );
-
-          migrated++;
-        }
-      } catch (error) {
+      if (engine.group !== newEngine.group) {
         throw new BadRequestError(
-          `An error occured while migrating assets: ${error}`
+          `Engine ${newEngineId} is not in the same group as ${engineId}`
         );
       }
 
-      if (!migrated) {
-        throw new BadRequestError(
-          `Error occured while migrating all the assets !`
-        );
-      } else {
-        const collectionsToRefresh = [
-          {
-            collection: InternalCollection.ASSETS,
-            engine: engineId,
-          },
-          {
-            collection: InternalCollection.DEVICES,
-            engine: engineId,
-          },
-          {
-            collection: InternalCollection.ASSETS,
-            engine: newEngineId,
-          },
-          {
-            collection: InternalCollection.DEVICES,
-            engine: newEngineId,
-          },
-          {
-            collection: InternalCollection.DEVICES,
-            engine: this.config.adminIndex,
-          },
-        ].map(({ engine, collection }) => {
-          return this.sdk.collection.refresh(engine, collection);
-        });
+      //Get all assets to migrate
+      const assets = await this.sdk.document.mGet<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        assetsList
+      );
+      errors.push(...assets.errors);
 
-        await Promise.all(collectionsToRefresh);
+      if (assets.successes.length === 0) {
+        this.context.log.error("No assets found to migrate");
+        return { errors, successes };
       }
+
+      //Get all the asset content, in order to create thm by batch
+      const assetsContent = assets.successes.map((asset) => ({
+        _id: asset._id,
+        body: asset._source,
+      }));
+
+      //We want to create the new asset with linked devices and groups empty
+      const assetsContentCopy = _.cloneDeep(assetsContent);
+      for (const asset of assetsContentCopy) {
+        asset.body.linkedDevices = [];
+        asset.body.groups = [];
+      }
+
+      //Whateever they exist in the destination tenant, try to create them all,
+      //using batch
+      const assetsCreated = await this.sdk.document.mCreate(
+        newEngineId,
+        InternalCollection.ASSETS,
+        assetsContentCopy
+      );
+      //We consider here we will return as success what we have been able
+      //to create, and related errors
+      const assetsCreatedId = assetsCreated.successes.map((a) => a._id);
+      const assetsNotCreatedId = assetsCreated.errors.map(
+        (a) => a.document._id
+      );
+      successes.push(...assetsCreatedId);
+      errors.push(...assetsNotCreatedId);
+
+      //Iterate over all created asset, and migrate each one
+      for (const asset of assetsCreated.successes) {
+        //We need to recover the linked devices to this asset,
+        //because we reset them when we create the asset
+        const assetOriginal = assets.successes.find((a) => a._id === asset._id);
+        if (!assetOriginal) {
+          this.context.log.error(
+            `Impossible to recover the original asset with id = ${asset._id}`
+          );
+          continue;
+        }
+
+        // get linked devices to this asset, if any
+        const linkedDevices = assetOriginal._source.linkedDevices.map((d) => ({
+          _id: d._id,
+          measureNames: d.measureNames,
+        }));
+
+        // ... and iterate over this list
+        for (const device of linkedDevices) {
+          // detach linked devices from current tenant (it also unkinks asset)
+          await ask<AskDeviceDetachEngine>(
+            "ask:device-manager:device:detach-engine",
+            { deviceId: device._id, user }
+          );
+
+          // ... and attach to new tenant
+          await ask<AskDeviceAttachEngine>(
+            "ask:device-manager:device:attach-engine",
+            { deviceId: device._id, engineId: newEngineId, user }
+          );
+
+          // ... and link this device to the asset in the new tenant
+          await ask<AskDeviceLinkAsset>(
+            "ask:device-manager:device:link-asset",
+            {
+              assetId: asset._id,
+              deviceId: device._id,
+              engineId: newEngineId,
+              measureNames: device.measureNames,
+              user,
+            }
+          );
+        }
+      }
+
+      // Finally here, we can delete the newly create assets in the source engine !
+      await this.sdk.document.mDelete(
+        engineId,
+        InternalCollection.ASSETS,
+        assetsCreatedId
+      );
+
+      //Refresh ES indexes and collections
+      const collectionsToRefresh = [
+        {
+          collection: InternalCollection.ASSETS,
+          index: engineId,
+        },
+        {
+          collection: InternalCollection.DEVICES,
+          index: engineId,
+        },
+        {
+          collection: InternalCollection.ASSETS,
+          index: newEngineId,
+        },
+        {
+          collection: InternalCollection.DEVICES,
+          index: newEngineId,
+        },
+        {
+          collection: InternalCollection.DEVICES,
+          index: this.config.adminIndex,
+        },
+      ].map(({ index, collection }) => {
+        return this.sdk.collection.refresh(index, collection);
+      });
+
+      await Promise.all(collectionsToRefresh);
     });
+
+    return { errors, successes };
   }
 
   /**
