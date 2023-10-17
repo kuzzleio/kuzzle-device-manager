@@ -57,7 +57,7 @@ describe("AssetsController:migrateTenant", () => {
         },
       })
     ).rejects.toThrow(
-      "An error occured while migrating assets: BadRequestError: Engine engine-other-group is not in the same group as engine-ayse"
+      "Engine engine-other-group is not in the same group as engine-ayse"
     );
   });
 
@@ -72,9 +72,7 @@ describe("AssetsController:migrateTenant", () => {
           newEngineId: "engine-kuzzle",
         },
       })
-    ).rejects.toThrow(
-      "An error occured while migrating assets: BadRequestError: No assets to migrate"
-    );
+    ).rejects.toThrow("No assets to migrate");
   });
 
   it("should copy assets from engine-ayse to engine-kuzzle", async () => {
