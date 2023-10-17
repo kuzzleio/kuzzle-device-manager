@@ -285,8 +285,7 @@ export class AssetService {
 
     //Sanity check
     if (assetsList.length === 0) {
-      this.context.log.error("No assets to migrate");
-      return { errors, successes };
+      throw new BadRequestError("No assets to migrate");
     }
 
     await lock(`engine:${engineId}:${newEngineId}`, async () => {
