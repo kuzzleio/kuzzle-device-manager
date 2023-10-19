@@ -280,8 +280,8 @@ export class AssetService {
     engineId: string,
     newEngineId: string
   ): Promise<ApiAssetMigrateTenantResult> {
-    const errors = [];
-    const successes = [];
+    let errors = [];
+    let successes = [];
 
     //Sanity check
     if (assetsList.length === 0) {
@@ -305,13 +305,26 @@ export class AssetService {
         );
       }
 
-      //Get all assets to migrate
-      const assets = await this.sdk.document.mGet<AssetContent>(
-        engineId,
+      //First of all, as mCreate seems to be buggy, ensure some assets don't
+      //already exists in the destination tenant
+      const assetsCheck = await this.sdk.document.mGet<AssetContent>(
+        newEngineId,
         InternalCollection.ASSETS,
         assetsList
       );
-      errors.push(...assets.errors);
+      const assetsCheckedIdExisting = assetsCheck.successes.map((a) => a._id);
+      errors = [...assetsCheckedIdExisting];
+
+      //Get all assets to migrate
+      const assetsCheckedList = assetsList.filter(
+        (id) => !assetsCheckedIdExisting.includes(id)
+      );
+      const assets = await this.sdk.document.mGet<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        assetsCheckedList
+      );
+      errors = errors.concat(...assets.errors);
 
       if (assets.successes.length === 0) {
         this.context.log.error("No assets found to migrate");
@@ -325,39 +338,34 @@ export class AssetService {
       }));
 
       //We want to create the new asset with linked devices and groups empty
-      const assetsContentCopy = _.cloneDeep(assetsContent);
+      const assetsContentCopy = structuredClone(assetsContent);
       for (const asset of assetsContentCopy) {
         asset.body.linkedDevices = [];
         asset.body.groups = [];
       }
 
-      //Whateever they exist in the destination tenant, try to create them all,
+      //Even if they exist in the destination tenant, try creating them all
       //using batch
       const assetsCreated = await this.sdk.document.mCreate(
         newEngineId,
         InternalCollection.ASSETS,
         assetsContentCopy
       );
+
       //We consider here we will return as success what we have been able
       //to create, and related errors
       const assetsCreatedId = assetsCreated.successes.map((a) => a._id);
       const assetsNotCreatedId = assetsCreated.errors.map(
         (a) => a.document._id
       );
-      successes.push(...assetsCreatedId);
-      errors.push(...assetsNotCreatedId);
+      successes = [...assetsCreatedId];
+      errors = errors.concat(...assetsNotCreatedId);
 
       //Iterate over all created asset, and migrate each one
       for (const asset of assetsCreated.successes) {
         //We need to recover the linked devices to this asset,
         //because we reset them when we create the asset
         const assetOriginal = assets.successes.find((a) => a._id === asset._id);
-        if (!assetOriginal) {
-          this.context.log.error(
-            `Impossible to recover the original asset with id = ${asset._id}`
-          );
-          continue;
-        }
 
         // get linked devices to this asset, if any
         const linkedDevices = assetOriginal._source.linkedDevices.map((d) => ({
