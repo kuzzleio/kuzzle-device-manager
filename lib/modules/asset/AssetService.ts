@@ -338,7 +338,7 @@ export class AssetService {
       }));
 
       //We want to create the new asset with linked devices and groups empty
-      const assetsContentCopy = structuredClone(assetsContent);
+      const assetsContentCopy = _.cloneDeep(assetsContent);
       for (const asset of assetsContentCopy) {
         asset.body.linkedDevices = [];
         asset.body.groups = [];
