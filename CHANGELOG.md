@@ -1,3 +1,10 @@
+# [2.4.0-beta.6](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.5...v2.4.0-beta.6) (2023-10-20)
+
+
+### Bug Fixes
+
+* **asset_migration:** fixes multiple assets migration and optimize ([fd546cf](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/fd546cf4141208f2742f3f0a0b303e6e5903ef56))
+
 # [2.4.0-beta.5](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.4...v2.4.0-beta.5) (2023-10-03)
 
 
