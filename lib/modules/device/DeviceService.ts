@@ -1,4 +1,4 @@
-import { Backend, BadRequestError, Plugin, PluginContext, User } from "kuzzle";
+import { BadRequestError, User } from "kuzzle";
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
@@ -7,8 +7,8 @@ import {
   AssetHistoryEventLink,
   AssetHistoryEventUnlink,
 } from "./../asset";
-import { InternalCollection, DeviceManagerConfiguration } from "../plugin";
-import { Metadata, lock, ask, onAsk } from "../shared";
+import { InternalCollection, DeviceManagerPlugin } from "../plugin";
+import { Metadata, lock, ask, onAsk, BaseService } from "../shared";
 import {
   AskModelAssetGet,
   AskModelDeviceGet,
@@ -32,31 +32,10 @@ import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 
 type MeasureName = { asset: string; device: string; type: string };
 
-export class DeviceService {
-  private config: DeviceManagerConfiguration;
-  private context: PluginContext;
+export class DeviceService extends BaseService {
+  constructor(plugin: DeviceManagerPlugin) {
+    super(plugin);
 
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
-  private get app(): Backend {
-    return global.app;
-  }
-
-  private get impersonatedSdk() {
-    return (user: User) => {
-      if (user?._id) {
-        return this.sdk.as(user, { checkRights: false });
-      }
-
-      return this.sdk;
-    };
-  }
-
-  constructor(plugin: Plugin) {
-    this.config = plugin.config as any;
-    this.context = plugin.context;
     this.registerAskEvents();
   }
 

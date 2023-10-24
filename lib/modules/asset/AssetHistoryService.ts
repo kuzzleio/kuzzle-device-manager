@@ -1,12 +1,7 @@
-import { PluginContext } from "kuzzle";
 import { mCreateRequest } from "kuzzle-sdk";
 
-import {
-  DeviceManagerConfiguration,
-  DeviceManagerPlugin,
-  InternalCollection,
-} from "../plugin";
-import { onAsk } from "../shared";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import { onAsk, BaseService } from "../shared";
 
 import { AskAssetHistoryAdd } from "./types/AssetEvents";
 import {
@@ -14,17 +9,9 @@ import {
   AssetHistoryEvent,
 } from "./types/AssetHistoryContent";
 
-export class AssetHistoryService {
-  private context: PluginContext;
-  private config: DeviceManagerConfiguration;
-
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
+export class AssetHistoryService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
-    this.context = plugin.context;
-    this.config = plugin.config;
+    super(plugin);
 
     onAsk<AskAssetHistoryAdd<AssetHistoryEvent>>(
       "ask:device-manager:asset:history:add",

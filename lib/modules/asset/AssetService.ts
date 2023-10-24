@@ -1,4 +1,4 @@
-import { Backend, BadRequestError, PluginContext, User } from "kuzzle";
+import { BadRequestError, User } from "kuzzle";
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -19,7 +19,6 @@ import {
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
   AskEngineList,
-  DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
@@ -30,6 +29,7 @@ import {
   flattenObject,
   lock,
   onAsk,
+  BaseService,
 } from "../shared";
 
 import { AssetHistoryService } from "./AssetHistoryService";
@@ -46,35 +46,15 @@ import {
 } from "./types/AssetHistoryContent";
 import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
 
-export class AssetService {
-  private context: PluginContext;
-  private config: DeviceManagerConfiguration;
+export class AssetService extends BaseService {
   private assetHistoryService: AssetHistoryService;
-
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
-  private get app(): Backend {
-    return global.app;
-  }
-
-  private get impersonatedSdk() {
-    return (user: User) => {
-      if (user?._id) {
-        return this.sdk.as(user, { checkRights: false });
-      }
-
-      return this.sdk;
-    };
-  }
 
   constructor(
     plugin: DeviceManagerPlugin,
     assetHistoryService: AssetHistoryService
   ) {
-    this.context = plugin.context;
-    this.config = plugin.config;
+    super(plugin);
+
     this.assetHistoryService = assetHistoryService;
 
     this.registerAskEvents();
@@ -327,7 +307,7 @@ export class AssetService {
       errors = errors.concat(...assets.errors);
 
       if (assets.successes.length === 0) {
-        this.context.log.error("No assets found to migrate");
+        this.app.log.error("No assets found to migrate");
         return { errors, successes };
       }
 
