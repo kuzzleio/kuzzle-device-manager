@@ -91,9 +91,9 @@ describe("DevicesController:exportMeasures", () => {
          * Here we specify a measuredAt, because of a side effect in the decoder.
          * Sometimes the acceleration measurement would be registered earlier than the temperature's one.
          *
-         * The +1sec is to ensure that those two measures will always remain the last ones.
+         * The +10sec is to ensure that those two measures will always remain the last ones.
          */
-        measuredAt: Date.now() + 1000,
+        measuredAt: Date.now() + 10000,
       },
     ]);
     await sdk.collection.refresh("engine-ayse", "measures");

@@ -1,15 +1,11 @@
-import { Backend, BadRequestError, KuzzleRequest, PluginContext } from "kuzzle";
+import { BadRequestError, KuzzleRequest } from "kuzzle";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  DeviceManagerPlugin,
-  DeviceManagerConfiguration,
-  InternalCollection,
-} from "../plugin";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { DeviceContent, DeviceSerializer } from "../device";
 import { AskMeasureIngest, DecodedMeasurement } from "../measure";
-import { ask, onAsk } from "../shared";
+import { BaseService, ask, onAsk } from "../shared";
 
 import { DecodedPayload } from "./DecodedPayload";
 import { Decoder } from "./Decoder";
@@ -17,21 +13,9 @@ import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
 import { DecodingState } from "./DecodingState";
 import { SkipError } from "./SkipError";
 
-export class PayloadService {
-  private config: DeviceManagerConfiguration;
-  private context: PluginContext;
-
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
-  private get app(): Backend {
-    return global.app;
-  }
-
+export class PayloadService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
-    this.config = plugin.config as any;
-    this.context = plugin.context;
+    super(plugin);
 
     onAsk<AskPayloadReceiveFormated>(
       "ask:device-manager:payload:receive-formated",
@@ -162,7 +146,7 @@ export class PayloadService {
         uuid
       );
     } catch (error) {
-      this.context.log.error(
+      this.app.log.error(
         `Cannot save the payload from "${deviceModel}": ${error}`
       );
     }
@@ -203,7 +187,7 @@ export class PayloadService {
         });
         devices.push(...newDevices);
       } else {
-        this.context.log.info(
+        this.app.log.info(
           `Skipping new devices "${errors.join(
             ", "
           )}". Auto-provisioning is disabled.`
@@ -249,7 +233,7 @@ export class PayloadService {
       );
 
     for (const error of errors) {
-      this.context.log.error(
+      this.app.log.error(
         `Cannot create device "${error.document._id}": ${error.reason}`
       );
     }
@@ -281,7 +265,7 @@ export class PayloadService {
       filter.push({ term: { deviceModel } });
     }
 
-    const deleted = await this.context.accessors.sdk.bulk.deleteByQuery(
+    const deleted = await this.sdk.bulk.deleteByQuery(
       this.config.adminIndex,
       "payloads",
       { query: { bool: { filter } } }
