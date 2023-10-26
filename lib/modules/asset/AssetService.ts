@@ -207,11 +207,13 @@ export class AssetService extends BaseService {
   }
 
   public async delete(
-    user: User,
     engineId: string,
     assetId: string,
-    { refresh, strict }: { refresh: any; strict: boolean }
+    request: KuzzleRequest
   ) {
+    const user = request.getUser();
+    const strict = request.getBoolean("strict");
+
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
 
@@ -228,14 +230,10 @@ export class AssetService extends BaseService {
         );
       }
 
-      await this.sdk.document.delete(
+      await this.deleteDocument(request, assetId, {
+        collection: InternalCollection.ASSETS,
         engineId,
-        InternalCollection.ASSETS,
-        assetId,
-        {
-          refresh,
-        }
-      );
+      });
     });
   }
 

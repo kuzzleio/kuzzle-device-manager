@@ -1,10 +1,13 @@
 import {
   ArgsDocumentControllerCreate,
+  ArgsDocumentControllerDelete,
   ArgsDocumentControllerUpdate,
   Backend,
   EmbeddedSDK,
+  EventGenericDocumentAfterDelete,
   EventGenericDocumentAfterUpdate,
   EventGenericDocumentAfterWrite,
+  EventGenericDocumentBeforeDelete,
   EventGenericDocumentBeforeUpdate,
   EventGenericDocumentBeforeWrite,
   KDocument,
@@ -120,6 +123,48 @@ export abstract class BaseService {
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterUpdate<T>
     >("generic:document:afterUpdate", [updatedDocument], request);
+
+    return endDocument;
+  }
+
+  /**
+   * Wrapper to SDK delete method with trigger generic:document events
+   *
+   * @param {KuzzleRequest} request
+   * @param {string} documentId
+   * @param {ArgsDocumentControllerUpdate} [options]
+   * @returns {Promise<{ _id: string }>}
+   */
+  protected async deleteDocument(
+    request: KuzzleRequest,
+    documentId: string,
+    { engineId, collection }: PayloadRequest,
+    options: ArgsDocumentControllerDelete = {}
+  ): Promise<{ _id: string }> {
+    const user = request.getUser();
+    const refresh = request.getRefresh();
+
+    request.input.args.collection = collection;
+    const [modifiedDocument] =
+      await this.app.trigger<EventGenericDocumentBeforeDelete>(
+        "generic:document:beforeDelete",
+        [{ _id: documentId }],
+        request
+      );
+
+    const deletedDocument = await this.impersonatedSdk(user).document.delete(
+      engineId,
+      collection,
+      modifiedDocument._id,
+      { refresh, ...options }
+    );
+
+    const [endDocument] =
+      await this.app.trigger<EventGenericDocumentAfterDelete>(
+        "generic:document:afterDelete",
+        [{ _id: deletedDocument }],
+        request
+      );
 
     return endDocument;
   }

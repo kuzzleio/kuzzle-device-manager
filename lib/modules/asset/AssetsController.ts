@@ -164,13 +164,8 @@ export class AssetsController {
   async delete(request: KuzzleRequest): Promise<ApiAssetDeleteResult> {
     const engineId = request.getString("engineId");
     const assetId = request.getId();
-    const refresh = request.getRefresh();
-    const strict = request.getBoolean("strict");
 
-    await this.assetService.delete(request.getUser(), engineId, assetId, {
-      refresh,
-      strict,
-    });
+    await this.assetService.delete(engineId, assetId, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiAssetSearchResult> {
