@@ -30,6 +30,15 @@ export const measuresMappings = {
             // populated with asset models metadata mappings
           },
         },
+        groups: {
+          properties: {
+            id: {
+              type: "keyword",
+              fields: { text: { type: "text" } },
+            },
+            date: { type: "date" },
+          },
+        },
       },
     },
 

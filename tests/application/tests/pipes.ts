@@ -55,6 +55,7 @@ export function registerTestPipes(app: Backend) {
             const temperatureInt: MeasureContent = {
               asset: {
                 _id: asset._id,
+                groups: asset._source.groups,
                 measureName: "temperatureInt",
                 metadata: asset._source.metadata,
                 model: asset._source.model,
@@ -105,6 +106,7 @@ export function registerTestPipes(app: Backend) {
           measuredAt: Date.now(),
           asset: {
             _id: asset._id,
+            groups: asset._source.groups,
             measureName: "temperatureWeather",
             metadata: asset._source.metadata,
             model: asset._source.model,
