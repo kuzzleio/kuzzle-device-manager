@@ -1,8 +1,11 @@
 import {
   ArgsDocumentControllerCreate,
+  ArgsDocumentControllerUpdate,
   Backend,
   EmbeddedSDK,
+  EventGenericDocumentAfterUpdate,
   EventGenericDocumentAfterWrite,
+  EventGenericDocumentBeforeUpdate,
   EventGenericDocumentBeforeWrite,
   KDocument,
   KDocumentContent,
@@ -79,6 +82,44 @@ export abstract class BaseService {
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterWrite<T>
     >("generic:document:afterWrite", [newDocument], request);
+
+    return endDocument;
+  }
+
+  /**
+   * Wrapper to SDK update method with trigger generic:document events
+   *
+   * @param {KuzzleRequest} request
+   * @param {KDocument} document
+   * @param {PayloadRequest} payload
+   * @param {ArgsDocumentControllerUpdate} [options]
+   * @returns {Promise<KDocument>}
+   */
+  protected async updateDocument<T extends KDocumentContent = KDocumentContent>(
+    request: KuzzleRequest,
+    document: KDocument<Partial<T>>,
+    { engineId, collection }: PayloadRequest,
+    options: ArgsDocumentControllerUpdate = {}
+  ): Promise<KDocument<T>> {
+    const user = request.getUser();
+    const refresh = request.getRefresh();
+
+    request.input.args.collection = collection;
+    const [modifiedDocument] = await this.app.trigger<
+      EventGenericDocumentBeforeUpdate<Partial<T>>
+    >("generic:document:beforeUpdate", [document], request);
+
+    const updatedDocument = await this.impersonatedSdk(user).document.update<T>(
+      engineId,
+      collection,
+      modifiedDocument._id,
+      modifiedDocument._source,
+      { refresh, ...options }
+    );
+
+    const [endDocument] = await this.app.trigger<
+      EventGenericDocumentAfterUpdate<T>
+    >("generic:document:afterUpdate", [updatedDocument], request);
 
     return endDocument;
   }

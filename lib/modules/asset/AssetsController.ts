@@ -133,16 +133,12 @@ export class AssetsController {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
     const metadata = request.getBodyObject("metadata");
-    const refresh = request.getRefresh();
 
     const updatedAsset = await this.assetService.update(
-      request.getUser(),
       engineId,
       assetId,
       metadata,
-      {
-        refresh,
-      }
+      request
     );
 
     return AssetSerializer.serialize(updatedAsset);

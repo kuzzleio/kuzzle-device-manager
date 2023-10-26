@@ -82,11 +82,10 @@ export class AssetService extends BaseService {
    * Updates an asset metadata
    */
   public async update(
-    user: User,
     engineId: string,
     assetId: string,
     metadata: Metadata,
-    { refresh }: { refresh: any }
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId);
@@ -96,14 +95,17 @@ export class AssetService extends BaseService {
         { asset, metadata }
       );
 
-      const updatedAsset = await this.impersonatedSdk(
-        user
-      ).document.update<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
-        assetId,
-        { metadata: updatedPayload.metadata },
-        { refresh, source: true }
+      const updatedAsset = await this.updateDocument<AssetContent>(
+        request,
+        {
+          _id: assetId,
+          _source: { metadata: updatedPayload.metadata },
+        },
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        },
+        { source: true }
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
