@@ -153,17 +153,13 @@ export class AssetsController {
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata", {});
-    const refresh = request.getRefresh();
 
     const asset = await this.assetService.create(
-      request.getUser(),
       engineId,
       model,
       reference,
       metadata,
-      {
-        refresh,
-      }
+      request
     );
 
     return AssetSerializer.serialize(asset);

@@ -1,4 +1,4 @@
-import { BadRequestError, User } from "kuzzle";
+import { BadRequestError, KuzzleRequest, User } from "kuzzle";
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -133,12 +133,11 @@ export class AssetService extends BaseService {
   }
 
   public async create(
-    user: User,
     engineId: string,
     model: string,
     reference: string,
     metadata: JSONObject,
-    { refresh }: { refresh: any }
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
     const assetId = AssetSerializer.id(model, reference);
 
@@ -167,20 +166,24 @@ export class AssetService extends BaseService {
         measures[name] = null;
       }
 
-      const asset = await this.impersonatedSdk(
-        user
-      ).document.create<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
+      const asset = await this.createDocument<AssetContent>(
+        request,
         {
-          linkedDevices: [],
-          measures,
-          metadata: { ...assetMetadata, ...metadata },
-          model,
-          reference,
+          _id: assetId,
+          _source: {
+            groups: [],
+            lastMeasuredAt: null,
+            linkedDevices: [],
+            measures,
+            metadata: { ...assetMetadata, ...metadata },
+            model,
+            reference,
+          },
         },
-        assetId,
-        { refresh }
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        }
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
