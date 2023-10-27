@@ -1,2 +1,2 @@
-export * from "./types/DeviceManagerConfiguration";
+export * from "./types/exports";
 export * from "./DeviceManagerPlugin";

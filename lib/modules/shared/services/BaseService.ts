@@ -3,6 +3,8 @@ import {
   ArgsDocumentControllerDelete,
   ArgsDocumentControllerUpdate,
   Backend,
+  BaseRequest,
+  DocumentSearchResult,
   EmbeddedSDK,
   EventGenericDocumentAfterDelete,
   EventGenericDocumentAfterUpdate,
@@ -12,7 +14,9 @@ import {
   EventGenericDocumentBeforeWrite,
   KDocument,
   KDocumentContent,
+  KHit,
   KuzzleRequest,
+  SearchResult,
   User,
 } from "kuzzle";
 
@@ -20,12 +24,17 @@ import {
   DeviceManagerPlugin,
   DeviceManagerConfiguration,
   InternalCollection,
+  EventGenericDocumentBeforeSearch,
+  EventGenericDocumentAfterSearch,
+  SearchQueryResult,
 } from "../../plugin";
 
 interface PayloadRequest {
   collection: InternalCollection;
   engineId: string;
 }
+
+export type SearchParams = ReturnType<KuzzleRequest["getSearchParams"]>;
 
 export abstract class BaseService {
   constructor(private plugin: DeviceManagerPlugin) {}
@@ -167,5 +176,66 @@ export abstract class BaseService {
       );
 
     return endDocument;
+  }
+
+  /**
+   * Wrapper to SDK search method with trigger generic:document events
+   * ! Caution the pipes are not applied on next()
+   *
+   * @param {KuzzleRequest} request
+   * @param {string} documentId
+   * @param {ArgsDocumentControllerUpdate} [options]
+   * @returns {Promise<{ _id: string }>}
+   */
+  protected async searchDocument<T extends KDocumentContent = KDocumentContent>(
+    request: KuzzleRequest,
+    { from, size, scrollTTL: scroll }: SearchParams,
+    { engineId, collection }: PayloadRequest
+  ): Promise<SearchResult<KHit<T>>> {
+    const {
+      protocol,
+      misc: { verb = "POST" },
+    } = request.context.connection;
+
+    const lang = request.getLangParam();
+    const searchBody = request.getSearchBody();
+
+    request.input.args.collection = collection;
+    const modifiedBody =
+      await this.app.trigger<EventGenericDocumentBeforeSearch>(
+        "generic:document:beforeSearch",
+        searchBody,
+        request
+      );
+
+    const query = {
+      action: "search",
+      body: null,
+      collection,
+      controller: "document",
+      from,
+      index: engineId,
+      lang,
+      scroll,
+      searchBody: null,
+      size,
+      verb,
+    };
+
+    if (protocol === "http" && verb === "GET") {
+      query.searchBody = modifiedBody;
+    } else {
+      query.body = modifiedBody;
+    }
+
+    const { result } = await this.sdk.query<BaseRequest, SearchQueryResult<T>>(
+      query
+    );
+
+    const modifiedResult = await this.app.trigger<
+      EventGenericDocumentAfterSearch<T>
+    >("generic:document:afterSearch", result, request);
+
+    return new DocumentSearchResult(global, query, {}, modifiedResult);
   }
 }

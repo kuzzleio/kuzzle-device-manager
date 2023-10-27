@@ -169,23 +169,11 @@ export class AssetsController {
   }
 
   async search(request: KuzzleRequest): Promise<ApiAssetSearchResult> {
-    const engineId = request.getString("engineId");
-    const {
-      searchBody,
-      from,
-      size,
-      scrollTTL: scroll,
-    } = request.getSearchParams();
-    const lang = request.getLangParam();
-
-    const result = await this.assetService.search(engineId, searchBody, {
-      from,
-      lang,
-      scroll,
-      size,
-    });
-
-    return result;
+    return await this.assetService.search(
+      request.getString("engineId"),
+      request.getSearchParams(),
+      request
+    );
   }
 
   async getMeasures(

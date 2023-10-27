@@ -30,6 +30,7 @@ import {
   lock,
   onAsk,
   BaseService,
+  SearchParams,
 } from "../shared";
 
 import { AssetHistoryService } from "./AssetHistoryService";
@@ -239,22 +240,13 @@ export class AssetService extends BaseService {
 
   public async search(
     engineId: string,
-    searchBody: JSONObject,
-    {
-      from,
-      size,
-      scroll,
-      lang,
-    }: { from?: number; size?: number; scroll?: string; lang?: string }
+    searchParams: SearchParams,
+    request: KuzzleRequest
   ): Promise<SearchResult<KHit<AssetContent>>> {
-    const result = await this.sdk.document.search<AssetContent>(
+    return await this.searchDocument<AssetContent>(request, searchParams, {
+      collection: InternalCollection.ASSETS,
       engineId,
-      InternalCollection.ASSETS,
-      searchBody,
-      { from, lang, scroll, size }
-    );
-
-    return result;
+    });
   }
 
   public async migrateTenant(
