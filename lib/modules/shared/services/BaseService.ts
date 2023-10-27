@@ -7,9 +7,11 @@ import {
   DocumentSearchResult,
   EmbeddedSDK,
   EventGenericDocumentAfterDelete,
+  EventGenericDocumentAfterGet,
   EventGenericDocumentAfterUpdate,
   EventGenericDocumentAfterWrite,
   EventGenericDocumentBeforeDelete,
+  EventGenericDocumentBeforeGet,
   EventGenericDocumentBeforeUpdate,
   EventGenericDocumentBeforeWrite,
   KDocument,
@@ -59,6 +61,44 @@ export abstract class BaseService {
 
       return this.sdk;
     };
+  }
+
+  /**
+   * Wrapper to SDK create method with trigger generic:document events
+   *
+   * @param {KuzzleRequest} request
+   * @param {KDocument} documentId
+   * @param {PayloadRequest} payload
+   * @param {ArgsDocumentControllerCreate} [options]
+   * @returns {Promise<KDocument>}
+   */
+  protected async getDocument<T extends KDocumentContent = KDocumentContent>(
+    request: KuzzleRequest,
+    documentId: string,
+    { engineId, collection }: PayloadRequest,
+    options: ArgsDocumentControllerCreate = {}
+  ): Promise<KDocument<T>> {
+    const refresh = request.getRefresh();
+
+    request.input.args.collection = collection;
+    const [{ _id }] = await this.app.trigger<EventGenericDocumentBeforeGet>(
+      "generic:document:beforeGet",
+      [{ _id: documentId }],
+      request
+    );
+
+    const newDocument = await this.sdk.document.get<T>(
+      engineId,
+      collection,
+      _id,
+      { refresh, ...options }
+    );
+
+    const [endDocument] = await this.app.trigger<
+      EventGenericDocumentAfterGet<T>
+    >("generic:document:afterGet", [newDocument], request);
+
+    return endDocument;
   }
 
   /**

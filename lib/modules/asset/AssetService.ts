@@ -70,13 +70,13 @@ export class AssetService extends BaseService {
 
   public async get(
     engineId: string,
-    assetId: string
+    assetId: string,
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
-    return this.sdk.document.get<AssetContent>(
+    return this.getDocument<AssetContent>(request, assetId, {
+      collection: InternalCollection.ASSETS,
       engineId,
-      InternalCollection.ASSETS,
-      assetId
-    );
+    });
   }
 
   /**
@@ -89,7 +89,7 @@ export class AssetService extends BaseService {
     request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
     return lock(`asset:${engineId}:${assetId}`, async () => {
-      const asset = await this.get(engineId, assetId);
+      const asset = await this.get(engineId, assetId, request);
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
         "device-manager:asset:update:before",
@@ -216,7 +216,7 @@ export class AssetService extends BaseService {
     const strict = request.getBoolean("strict");
 
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
-      const asset = await this.get(engineId, assetId);
+      const asset = await this.get(engineId, assetId, request);
 
       if (strict && asset._source.linkedDevices.length !== 0) {
         throw new BadRequestError(

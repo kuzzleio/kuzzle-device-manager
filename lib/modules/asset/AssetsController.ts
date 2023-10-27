@@ -124,7 +124,7 @@ export class AssetsController {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
 
-    const asset = await this.assetService.get(engineId, assetId);
+    const asset = await this.assetService.get(engineId, assetId, request);
 
     return AssetSerializer.serialize(asset);
   }
