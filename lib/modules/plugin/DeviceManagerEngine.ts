@@ -4,29 +4,19 @@ import { JSONObject } from "kuzzle-sdk";
 import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
 import { EngineContent } from "kuzzle-plugin-commons";
 
-import {
-  assetsMappings,
-  assetsHistoryMappings,
-  assetGroupsMappings,
-} from "../asset";
+import { assetsHistoryMappings, assetGroupsMappings } from "../asset";
 import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
 } from "../model";
 import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
-import { devicesMappings } from "../device";
 import { onAsk } from "../shared";
 import { NamedMeasures } from "../decoder";
 
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { InternalCollection } from "./types/InternalCollection";
-
-const digitalTwinMappings = {
-  asset: assetsMappings,
-  device: devicesMappings,
-} as const;
 
 export type AskEngineList = {
   name: "ask:device-manager:engine:list";
@@ -211,6 +201,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   private async getDigitalTwinMappings<
     TDigitalTwinModelContent extends AssetModelContent | DeviceModelContent
   >(digitalTwinType: "asset" | "device", engineGroup?: string) {
+    if (
+      this.config.engineCollections[digitalTwinType] === undefined ||
+      this.config.engineCollections[digitalTwinType].mappings === undefined
+    ) {
+      throw new InternalError(`Cannot find mapping for "${digitalTwinType}"`);
+    }
     const models = await this.getModels<TDigitalTwinModelContent>(
       this.config.adminIndex,
       digitalTwinType,
@@ -223,7 +219,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     const mappings = JSON.parse(
-      JSON.stringify(digitalTwinMappings[digitalTwinType])
+      JSON.stringify(this.config.engineCollections[digitalTwinType].mappings)
     );
 
     for (const model of models) {
