@@ -1,4 +1,4 @@
-import { BadRequestError, User } from "kuzzle";
+import { BadRequestError, KuzzleRequest, User } from "kuzzle";
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -30,6 +30,7 @@ import {
   lock,
   onAsk,
   BaseService,
+  SearchParams,
 } from "../shared";
 
 import { AssetHistoryService } from "./AssetHistoryService";
@@ -69,41 +70,43 @@ export class AssetService extends BaseService {
 
   public async get(
     engineId: string,
-    assetId: string
+    assetId: string,
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
-    return this.sdk.document.get<AssetContent>(
+    return this.getDocument<AssetContent>(request, assetId, {
+      collection: InternalCollection.ASSETS,
       engineId,
-      InternalCollection.ASSETS,
-      assetId
-    );
+    });
   }
 
   /**
    * Updates an asset metadata
    */
   public async update(
-    user: User,
     engineId: string,
     assetId: string,
     metadata: Metadata,
-    { refresh }: { refresh: any }
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
     return lock(`asset:${engineId}:${assetId}`, async () => {
-      const asset = await this.get(engineId, assetId);
+      const asset = await this.get(engineId, assetId, request);
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
         "device-manager:asset:update:before",
         { asset, metadata }
       );
 
-      const updatedAsset = await this.impersonatedSdk(
-        user
-      ).document.update<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
-        assetId,
-        { metadata: updatedPayload.metadata },
-        { refresh, source: true }
+      const updatedAsset = await this.updateDocument<AssetContent>(
+        request,
+        {
+          _id: assetId,
+          _source: { metadata: updatedPayload.metadata },
+        },
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        },
+        { source: true }
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
@@ -133,12 +136,11 @@ export class AssetService extends BaseService {
   }
 
   public async create(
-    user: User,
     engineId: string,
     model: string,
     reference: string,
     metadata: JSONObject,
-    { refresh }: { refresh: any }
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
     const assetId = AssetSerializer.id(model, reference);
 
@@ -167,20 +169,24 @@ export class AssetService extends BaseService {
         measures[name] = null;
       }
 
-      const asset = await this.impersonatedSdk(
-        user
-      ).document.create<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
+      const asset = await this.createDocument<AssetContent>(
+        request,
         {
-          linkedDevices: [],
-          measures,
-          metadata: { ...assetMetadata, ...metadata },
-          model,
-          reference,
+          _id: assetId,
+          _source: {
+            groups: [],
+            lastMeasuredAt: null,
+            linkedDevices: [],
+            measures,
+            metadata: { ...assetMetadata, ...metadata },
+            model,
+            reference,
+          },
         },
-        assetId,
-        { refresh }
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        }
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
@@ -202,13 +208,15 @@ export class AssetService extends BaseService {
   }
 
   public async delete(
-    user: User,
     engineId: string,
     assetId: string,
-    { refresh, strict }: { refresh: any; strict: boolean }
+    request: KuzzleRequest
   ) {
+    const user = request.getUser();
+    const strict = request.getBoolean("strict");
+
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
-      const asset = await this.get(engineId, assetId);
+      const asset = await this.get(engineId, assetId, request);
 
       if (strict && asset._source.linkedDevices.length !== 0) {
         throw new BadRequestError(
@@ -223,35 +231,22 @@ export class AssetService extends BaseService {
         );
       }
 
-      await this.sdk.document.delete(
+      await this.deleteDocument(request, assetId, {
+        collection: InternalCollection.ASSETS,
         engineId,
-        InternalCollection.ASSETS,
-        assetId,
-        {
-          refresh,
-        }
-      );
+      });
     });
   }
 
   public async search(
     engineId: string,
-    searchBody: JSONObject,
-    {
-      from,
-      size,
-      scroll,
-      lang,
-    }: { from?: number; size?: number; scroll?: string; lang?: string }
+    searchParams: SearchParams,
+    request: KuzzleRequest
   ): Promise<SearchResult<KHit<AssetContent>>> {
-    const result = await this.sdk.document.search<AssetContent>(
+    return await this.searchDocument<AssetContent>(request, searchParams, {
+      collection: InternalCollection.ASSETS,
       engineId,
-      InternalCollection.ASSETS,
-      searchBody,
-      { from, lang, scroll, size }
-    );
-
-    return result;
+    });
   }
 
   public async migrateTenant(

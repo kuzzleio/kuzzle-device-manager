@@ -170,7 +170,7 @@ export class DevicesController {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
 
-    const device = await this.deviceService.get(engineId, deviceId);
+    const device = await this.deviceService.get(engineId, deviceId, request);
 
     return DeviceSerializer.serialize(device);
   }
@@ -179,16 +179,12 @@ export class DevicesController {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
     const metadata = request.getBodyObject("metadata");
-    const refresh = request.getRefresh();
 
     const updatedDevice = await this.deviceService.update(
-      request.getUser(),
       engineId,
       deviceId,
       metadata,
-      {
-        refresh,
-      }
+      request
     );
 
     return DeviceSerializer.serialize(updatedDevice);
@@ -197,52 +193,31 @@ export class DevicesController {
   async delete(request: KuzzleRequest): Promise<ApiDeviceDeleteResult> {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
-    const refresh = request.getRefresh();
 
-    await this.deviceService.delete(request.getUser(), engineId, deviceId, {
-      refresh,
-    });
+    await this.deviceService.delete(engineId, deviceId, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiDeviceSearchResult> {
-    const engineId = request.getString("engineId");
-    const {
-      searchBody,
-      from,
-      size,
-      scrollTTL: scroll,
-    } = request.getSearchParams();
-    const lang = request.getLangParam();
-
-    const result = await this.deviceService.search(engineId, searchBody, {
-      from,
-      lang,
-      scroll,
-      size,
-    });
-
-    return result;
+    return await this.deviceService.search(
+      request.getString("engineId"),
+      request.getSearchParams(),
+      request
+    );
   }
 
   /**
    * Create and provision a new device
    */
   async create(request: KuzzleRequest): Promise<ApiDeviceCreateResult> {
-    const engineId = request.getString("engineId");
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata", {});
-    const refresh = request.getRefresh();
 
     const device = await this.deviceService.create(
-      request.getUser(),
       model,
       reference,
       metadata,
-      {
-        engineId,
-        refresh,
-      }
+      request
     );
 
     return DeviceSerializer.serialize(device);
@@ -256,16 +231,8 @@ export class DevicesController {
   ): Promise<ApiDeviceAttachEngineResult> {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
-    const refresh = request.getRefresh();
 
-    await this.deviceService.attachEngine(
-      request.getUser(),
-      engineId,
-      deviceId,
-      {
-        refresh,
-      }
-    );
+    await this.deviceService.attachEngine(engineId, deviceId, request);
   }
 
   /**
@@ -275,11 +242,8 @@ export class DevicesController {
     request: KuzzleRequest
   ): Promise<ApiDeviceDetachEngineResult> {
     const deviceId = request.getId();
-    const refresh = request.getRefresh();
 
-    await this.deviceService.detachEngine(request.getUser(), deviceId, {
-      refresh,
-    });
+    await this.deviceService.detachEngine(deviceId, request);
   }
 
   /**
@@ -296,7 +260,6 @@ export class DevicesController {
     const implicitMeasuresLinking = request.getBoolean(
       "implicitMeasuresLinking"
     );
-    const refresh = request.getRefresh();
 
     if (measureNames.length === 0 && !implicitMeasuresLinking) {
       throw new BadRequestError(
@@ -305,12 +268,12 @@ export class DevicesController {
     }
 
     const { asset, device } = await this.deviceService.linkAsset(
-      request.getUser(),
       engineId,
       deviceId,
       assetId,
       measureNames,
-      { implicitMeasuresLinking, refresh }
+      implicitMeasuresLinking,
+      request
     );
 
     return {
@@ -326,14 +289,10 @@ export class DevicesController {
     request: KuzzleRequest
   ): Promise<ApiDeviceUnlinkAssetResult> {
     const deviceId = request.getId();
-    const refresh = request.getRefresh();
 
     const { asset, device } = await this.deviceService.unlinkAsset(
-      request.getUser(),
       deviceId,
-      {
-        refresh,
-      }
+      request
     );
 
     return {
@@ -480,7 +439,8 @@ export class DevicesController {
       engineId,
       deviceId,
       measures,
-      payloadUuids
+      payloadUuids,
+      request
     );
   }
 
