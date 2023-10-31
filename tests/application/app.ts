@@ -15,6 +15,17 @@ const app = new Backend("kuzzle");
 
 const deviceManager = new DeviceManagerPlugin();
 
+//? Add custom mapping properties
+deviceManager.config.engineCollections.asset.mappings.properties["softTenant"] = {
+  type: "keyword",
+  fields: { text: { type: "text" } },
+};
+deviceManager.config.engineCollections.device.mappings.properties["softTenant"] = {
+  type: "keyword",
+  fields: { text: { type: "text" } },
+};
+
+
 deviceManager.models.registerDevice("DummyTempPosition", {
   decoder: new DummyTempPositionDecoder(),
   metadataMappings: {

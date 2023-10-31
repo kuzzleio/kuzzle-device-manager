@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle-sdk";
+import { CollectionMappings, JSONObject } from "kuzzle-sdk";
 
 export type DeviceManagerConfiguration = {
   /**
@@ -51,6 +51,14 @@ export type DeviceManagerConfiguration = {
       name: string;
       mappings: JSONObject;
       settings: JSONObject;
+    };
+    asset: {
+      name: string;
+      mappings: CollectionMappings;
+    };
+    device: {
+      name: string;
+      mappings: CollectionMappings;
     };
   };
 };
