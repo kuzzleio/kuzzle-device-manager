@@ -20,7 +20,7 @@ import {
 
 import { DeviceModule, devicesMappings } from "../device";
 import { MeasureModule } from "../measure";
-import { AssetModule } from "../asset";
+import { AssetModule, assetsMappings } from "../asset";
 import {
   DecoderModule,
   NamedMeasures,
@@ -216,6 +216,14 @@ export class DeviceManagerPlugin extends Plugin {
             properties: {},
           },
           settings: {},
+        },
+        asset: {
+          name: InternalCollection.ASSETS,
+          mappings: assetsMappings,
+        },
+        device: {
+          name: InternalCollection.DEVICES,
+          mappings: devicesMappings,
         },
       },
     };

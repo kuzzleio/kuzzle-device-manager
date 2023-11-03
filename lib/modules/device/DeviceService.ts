@@ -1,4 +1,4 @@
-import { Backend, BadRequestError, Plugin, PluginContext, User } from "kuzzle";
+import { BadRequestError, KuzzleRequest } from "kuzzle";
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
@@ -7,8 +7,15 @@ import {
   AssetHistoryEventLink,
   AssetHistoryEventUnlink,
 } from "./../asset";
-import { InternalCollection, DeviceManagerConfiguration } from "../plugin";
-import { Metadata, lock, ask, onAsk } from "../shared";
+import { InternalCollection, DeviceManagerPlugin } from "../plugin";
+import {
+  Metadata,
+  lock,
+  ask,
+  onAsk,
+  BaseService,
+  SearchParams,
+} from "../shared";
 import {
   AskModelAssetGet,
   AskModelDeviceGet,
@@ -32,31 +39,10 @@ import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 
 type MeasureName = { asset: string; device: string; type: string };
 
-export class DeviceService {
-  private config: DeviceManagerConfiguration;
-  private context: PluginContext;
+export class DeviceService extends BaseService {
+  constructor(plugin: DeviceManagerPlugin) {
+    super(plugin);
 
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
-  private get app(): Backend {
-    return global.app;
-  }
-
-  private get impersonatedSdk() {
-    return (user: User) => {
-      if (user?._id) {
-        return this.sdk.as(user, { checkRights: false });
-      }
-
-      return this.sdk;
-    };
-  }
-
-  constructor(plugin: Plugin) {
-    this.config = plugin.config as any;
-    this.context = plugin.context;
     this.registerAskEvents();
   }
 
@@ -64,28 +50,39 @@ export class DeviceService {
     onAsk<AskDeviceLinkAsset>(
       "ask:device-manager:device:link-asset",
       async ({ deviceId, engineId, user, assetId, measureNames }) => {
-        await this.linkAsset(user, engineId, deviceId, assetId, measureNames);
+        const request = new KuzzleRequest({ refresh: "false" }, { user });
+        await this.linkAsset(
+          engineId,
+          deviceId,
+          assetId,
+          measureNames,
+          false,
+          request
+        );
       }
     );
 
     onAsk<AskDeviceUnlinkAsset>(
       "ask:device-manager:device:unlink-asset",
       async ({ deviceId, user }) => {
-        await this.unlinkAsset(user, deviceId);
+        const request = new KuzzleRequest({ refresh: "false" }, { user });
+        await this.unlinkAsset(deviceId, request);
       }
     );
 
     onAsk<AskDeviceDetachEngine>(
       "ask:device-manager:device:detach-engine",
       async ({ deviceId, user }) => {
-        await this.detachEngine(user, deviceId);
+        const request = new KuzzleRequest({ refresh: "false" }, { user });
+        await this.detachEngine(deviceId, request);
       }
     );
 
     onAsk<AskDeviceAttachEngine>(
       "ask:device-manager:device:attach-engine",
       async ({ deviceId, engineId, user }) => {
-        await this.attachEngine(user, engineId, deviceId);
+        const request = new KuzzleRequest({ refresh: "false" }, { user });
+        await this.attachEngine(engineId, deviceId, request);
       }
     );
   }
@@ -98,17 +95,10 @@ export class DeviceService {
    * required as an argument (in part to check the tenant rights)
    */
   async create(
-    user: User,
     model: string,
     reference: string,
     metadata: JSONObject,
-    {
-      engineId,
-      refresh,
-    }: {
-      engineId?: string;
-      refresh?: any;
-    } = {}
+    request: KuzzleRequest
   ): Promise<KDocument<DeviceContent>> {
     let device: KDocument<DeviceContent> = {
       _id: DeviceSerializer.id(model, reference),
@@ -125,6 +115,7 @@ export class DeviceService {
 
     return lock(`device:create:${device._id}`, async () => {
       const deviceModel = await this.getDeviceModel(model);
+      const engineId = request.getString("engineId");
 
       for (const metadataName of Object.keys(
         deviceModel.device.metadataMappings
@@ -137,13 +128,13 @@ export class DeviceService {
         collection: string;
       }> = [];
 
-      const { _source } = await this.impersonatedSdk(
-        user
-      ).document.create<DeviceContent>(
-        this.config.adminIndex,
-        InternalCollection.DEVICES,
-        device._source,
-        device._id
+      const { _source } = await this.createDocument<DeviceContent>(
+        request,
+        device,
+        {
+          collection: InternalCollection.DEVICES,
+          engineId: this.config.adminIndex,
+        }
       );
 
       device._source = _source;
@@ -154,7 +145,7 @@ export class DeviceService {
       });
 
       if (engineId && engineId !== this.config.adminIndex) {
-        device = await this.attachEngine(user, engineId, device._id);
+        device = await this.attachEngine(engineId, device._id, request);
 
         refreshableCollections.push({
           collection: InternalCollection.DEVICES,
@@ -162,7 +153,7 @@ export class DeviceService {
         });
       }
 
-      if (refresh) {
+      if (request.getRefresh() === "wait_for") {
         await Promise.all(
           refreshableCollections.map(({ index, collection }) =>
             this.sdk.collection.refresh(index, collection)
@@ -175,43 +166,40 @@ export class DeviceService {
   }
 
   public async get(
-    index: string,
-    deviceId: string
+    engineId: string,
+    deviceId: string,
+    request: KuzzleRequest
   ): Promise<KDocument<DeviceContent>> {
-    const device = await this.sdk.document.get<DeviceContent>(
-      index,
-      InternalCollection.DEVICES,
-      deviceId
-    );
-
-    return device;
+    return this.getDocument<DeviceContent>(request, deviceId, {
+      collection: InternalCollection.DEVICES,
+      engineId,
+    });
   }
 
   public async update(
-    user: User,
     engineId: string,
     deviceId: string,
     metadata: Metadata,
-    { refresh }: { refresh: any }
+    request: KuzzleRequest
   ): Promise<KDocument<DeviceContent>> {
     return lock<KDocument<DeviceContent>>(
       `device:update:${deviceId}`,
       async () => {
-        const device = await this.get(engineId, deviceId);
+        const device = await this.get(engineId, deviceId, request);
 
         const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
           "device-manager:device:update:before",
           { device, metadata }
         );
 
-        const updatedDevice = await this.impersonatedSdk(
-          user
-        ).document.update<DeviceContent>(
-          engineId,
-          InternalCollection.DEVICES,
-          deviceId,
-          { metadata: updatedPayload.metadata },
-          { refresh, source: true }
+        const updatedDevice = await this.updateDocument<DeviceContent>(
+          request,
+          {
+            _id: deviceId,
+            _source: { metadata: updatedPayload.metadata },
+          },
+          { collection: InternalCollection.DEVICES, engineId },
+          { source: true }
         );
 
         await this.app.trigger<EventDeviceUpdateAfter>(
@@ -228,13 +216,12 @@ export class DeviceService {
   }
 
   public async delete(
-    user: User,
     engineId: string,
     deviceId: string,
-    { refresh }: { refresh: any }
+    request: KuzzleRequest
   ) {
     return lock<void>(`device:delete:${deviceId}`, async () => {
-      const device = await this.get(engineId, deviceId);
+      const device = await this.get(engineId, deviceId, request);
 
       const promises = [];
 
@@ -252,56 +239,51 @@ export class DeviceService {
         promises.push(
           // Potential race condition if someone update the asset linkedDevices
           // at the same time (e.g link or unlink asset)
-          this.impersonatedSdk(user)
-            .document.update<AssetContent>(
-              engineId,
-              InternalCollection.ASSETS,
-              device._source.assetId,
-              { linkedDevices },
-              { refresh }
-            )
-            .then(async (updatedAsset) => {
-              const event: AssetHistoryEventUnlink = {
-                name: "unlink",
-                unlink: {
-                  deviceId,
-                },
-              };
+          this.updateDocument<AssetContent>(
+            request,
+            {
+              _id: device._source.assetId,
+              _source: { linkedDevices },
+            },
+            { collection: InternalCollection.ASSETS, engineId }
+          ).then(async (updatedAsset) => {
+            const event: AssetHistoryEventUnlink = {
+              name: "unlink",
+              unlink: {
+                deviceId,
+              },
+            };
 
-              await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
-                "ask:device-manager:asset:history:add",
-                {
-                  engineId,
-                  histories: [
-                    {
-                      asset: updatedAsset._source,
-                      event,
-                      id: updatedAsset._id,
-                      timestamp: Date.now(),
-                    },
-                  ],
-                }
-              );
-            })
+            await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
+              "ask:device-manager:asset:history:add",
+              {
+                engineId,
+                histories: [
+                  {
+                    asset: updatedAsset._source,
+                    event,
+                    id: updatedAsset._id,
+                    timestamp: Date.now(),
+                  },
+                ],
+              }
+            );
+          })
         );
       }
 
       promises.push(
-        this.sdk.document.delete(
-          this.config.adminIndex,
-          InternalCollection.DEVICES,
-          deviceId,
-          { refresh }
-        )
+        this.deleteDocument(request, deviceId, {
+          collection: InternalCollection.DEVICES,
+          engineId: this.config.adminIndex,
+        })
       );
 
       promises.push(
-        this.sdk.document.delete(
+        this.deleteDocument(request, deviceId, {
+          collection: InternalCollection.DEVICES,
           engineId,
-          InternalCollection.DEVICES,
-          deviceId,
-          { refresh }
-        )
+        })
       );
 
       await Promise.all(promises);
@@ -310,22 +292,13 @@ export class DeviceService {
 
   public async search(
     engineId: string,
-    searchBody: JSONObject,
-    {
-      from,
-      size,
-      scroll,
-      lang,
-    }: { from?: number; size?: number; scroll?: string; lang?: string }
+    searchParams: SearchParams,
+    request: KuzzleRequest
   ): Promise<SearchResult<KHit<DeviceContent>>> {
-    const result = await this.sdk.document.search<DeviceContent>(
+    return await this.searchDocument<DeviceContent>(request, searchParams, {
+      collection: InternalCollection.DEVICES,
       engineId,
-      InternalCollection.DEVICES,
-      searchBody,
-      { from, lang, scroll, size }
-    );
-
-    return result;
+    });
   }
 
   /**
@@ -337,13 +310,12 @@ export class DeviceService {
    * @param options.strict If true, throw if an operation isn't possible
    */
   async attachEngine(
-    user: User,
     engineId: string,
     deviceId: string,
-    { refresh }: { refresh?: any } = {}
+    request: KuzzleRequest
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:attachEngine:${deviceId}`, async () => {
-      const device = await this.get(this.config.adminIndex, deviceId);
+      const device = await this.get(this.config.adminIndex, deviceId, request);
 
       if (device._source.engineId) {
         throw new BadRequestError(
@@ -356,23 +328,18 @@ export class DeviceService {
       device._source.engineId = engineId;
 
       const [updatedDevice] = await Promise.all([
-        this.impersonatedSdk(user).document.update<DeviceContent>(
-          this.config.adminIndex,
-          InternalCollection.DEVICES,
-          device._id,
-          { engineId },
-          { source: true }
-        ),
+        this.updateDocument<DeviceContent>(request, device, {
+          collection: InternalCollection.DEVICES,
+          engineId: this.config.adminIndex,
+        }),
 
-        this.impersonatedSdk(user).document.create<DeviceContent>(
-          device._source.engineId,
-          InternalCollection.DEVICES,
-          device._source,
-          device._id
-        ),
+        this.createDocument<DeviceContent>(request, device, {
+          collection: InternalCollection.DEVICES,
+          engineId,
+        }),
       ]);
 
-      if (refresh) {
+      if (request.getRefresh() === "wait_for") {
         await Promise.all([
           this.sdk.collection.refresh(
             this.config.adminIndex,
@@ -392,29 +359,33 @@ export class DeviceService {
   /**
    * Detach a device from its attached engine
    *
-   * @param deviceId Device id
-   * @param options.refresh Wait for ES indexation
+   * @param {string} deviceId Id of the device
+   * @param {KuzzleRequest} request kuzzle request
    */
   async detachEngine(
-    user: User,
     deviceId: string,
-    { refresh }: { refresh?: any } = {}
+    request: KuzzleRequest
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:detachEngine:${deviceId}`, async () => {
-      const device = await this.get(this.config.adminIndex, deviceId);
+      const device = await this.get(this.config.adminIndex, deviceId, request);
 
       this.checkAttachedToEngine(device);
 
       if (device._source.assetId) {
-        await this.unlinkAsset(user, deviceId, { refresh });
+        await this.unlinkAsset(deviceId, request);
       }
 
       await Promise.all([
-        this.impersonatedSdk(user).document.update(
-          this.config.adminIndex,
-          InternalCollection.DEVICES,
-          device._id,
-          { engineId: null }
+        this.updateDocument<DeviceContent>(
+          request,
+          {
+            _id: device._id,
+            _source: { engineId: null },
+          },
+          {
+            collection: InternalCollection.DEVICES,
+            engineId: this.config.adminIndex,
+          }
         ),
 
         this.sdk.document.delete(
@@ -424,7 +395,7 @@ export class DeviceService {
         ),
       ]);
 
-      if (refresh) {
+      if (request.getRefresh() === "wait_for") {
         await Promise.all([
           this.sdk.collection.refresh(
             this.config.adminIndex,
@@ -445,21 +416,18 @@ export class DeviceService {
    * Link a device to an asset.
    */
   async linkAsset(
-    user: User,
     engineId: string,
     deviceId: string,
     assetId: string,
     measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"],
-    {
-      refresh,
-      implicitMeasuresLinking,
-    }: { refresh?: any; implicitMeasuresLinking?: boolean } = {}
+    implicitMeasuresLinking: boolean,
+    request: KuzzleRequest
   ): Promise<{
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
     return lock(`device:linkAsset:${deviceId}`, async () => {
-      const device = await this.get(this.config.adminIndex, deviceId);
+      const device = await this.get(this.config.adminIndex, deviceId, request);
       const engine = await this.getEngine(engineId);
 
       this.checkAttachedToEngine(device);
@@ -530,26 +498,28 @@ export class DeviceService {
       });
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
-        this.impersonatedSdk(user).document.update<DeviceContent>(
-          this.config.adminIndex,
-          InternalCollection.DEVICES,
-          device._id,
-          { assetId },
+        this.updateDocument<DeviceContent>(
+          request,
+          device,
+          {
+            collection: InternalCollection.DEVICES,
+            engineId: this.config.adminIndex,
+          },
           { source: true }
         ),
 
-        this.impersonatedSdk(user).document.update<DeviceContent>(
-          device._source.engineId,
-          InternalCollection.DEVICES,
-          device._id,
-          { assetId }
-        ),
+        this.updateDocument<DeviceContent>(request, device, {
+          collection: InternalCollection.DEVICES,
+          engineId: device._source.engineId,
+        }),
 
-        this.impersonatedSdk(user).document.update<AssetContent>(
-          device._source.engineId,
-          InternalCollection.ASSETS,
-          asset._id,
-          { linkedDevices: asset._source.linkedDevices },
+        this.updateDocument<AssetContent>(
+          request,
+          asset,
+          {
+            collection: InternalCollection.ASSETS,
+            engineId: device._source.engineId,
+          },
           { source: true }
         ),
       ]);
@@ -575,7 +545,7 @@ export class DeviceService {
         }
       );
 
-      if (refresh) {
+      if (request.getRefresh() === "wait_for") {
         await Promise.all([
           this.sdk.collection.refresh(
             this.config.adminIndex,
@@ -600,9 +570,10 @@ export class DeviceService {
     engineId: string,
     deviceId: string,
     measures: DecodedMeasurement[],
-    payloadUuids: string[]
+    payloadUuids: string[],
+    request: KuzzleRequest
   ) {
-    const device = await this.get(engineId, deviceId);
+    const device = await this.get(engineId, deviceId, request);
     const deviceModel = await this.getDeviceModel(device._source.model);
 
     for (const measure of measures) {
@@ -700,19 +671,18 @@ export class DeviceService {
   /**
    * Unlink a device of an asset
    *
-   * @param deviceId Id of the device
-   * @param options.refresh Wait for ES indexation
+   * @param {string} deviceId Id of the device
+   * @param {KuzzleRequest} request kuzzle request
    */
   async unlinkAsset(
-    user: User,
     deviceId: string,
-    { refresh }: { refresh?: any } = {}
+    request: KuzzleRequest
   ): Promise<{
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
     return lock(`device:unlinkAsset:${deviceId}`, async () => {
-      const device = await this.get(this.config.adminIndex, deviceId);
+      const device = await this.get(this.config.adminIndex, deviceId, request);
       const engineId = device._source.engineId;
 
       this.checkAttachedToEngine(device);
@@ -734,26 +704,32 @@ export class DeviceService {
       );
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
-        this.impersonatedSdk(user).document.update<DeviceContent>(
-          this.config.adminIndex,
-          InternalCollection.DEVICES,
-          device._id,
-          { assetId: null },
+        this.updateDocument<DeviceContent>(
+          request,
+          { _id: device._id, _source: { assetId: null } },
+          {
+            collection: InternalCollection.DEVICES,
+            engineId: this.config.adminIndex,
+          },
           { source: true }
         ),
 
-        this.impersonatedSdk(user).document.update<DeviceContent>(
-          engineId,
-          InternalCollection.DEVICES,
-          device._id,
-          { assetId: null }
+        this.updateDocument<DeviceContent>(
+          request,
+          { _id: device._id, _source: { assetId: null } },
+          {
+            collection: InternalCollection.DEVICES,
+            engineId,
+          }
         ),
 
-        this.impersonatedSdk(user).document.update<AssetContent>(
-          engineId,
-          InternalCollection.ASSETS,
-          asset._id,
-          { linkedDevices },
+        this.updateDocument<AssetContent>(
+          request,
+          { _id: asset._id, _source: { linkedDevices } },
+          {
+            collection: InternalCollection.ASSETS,
+            engineId,
+          },
           { source: true }
         ),
       ]);
@@ -779,7 +755,7 @@ export class DeviceService {
         }
       );
 
-      if (refresh) {
+      if (request.getRefresh() === "wait_for") {
         await Promise.all([
           this.sdk.collection.refresh(
             this.config.adminIndex,

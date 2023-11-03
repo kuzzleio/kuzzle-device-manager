@@ -1,21 +1,15 @@
-import {
-  BadRequestError,
-  Inflector,
-  NotFoundError,
-  PluginContext,
-} from "kuzzle";
+import { BadRequestError, Inflector, NotFoundError } from "kuzzle";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import {
   AskEngineUpdateAll,
-  DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
 import { ask, onAsk } from "../shared/utils/ask";
 
 import { AskAssetRefreshModel } from "../asset";
-import { flattenObject } from "../shared/utils/flattenObject";
+import { BaseService, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
@@ -28,17 +22,9 @@ import {
   AskModelMeasureGet,
 } from "./types/ModelEvents";
 
-export class ModelService {
-  private config: DeviceManagerConfiguration;
-  private context: PluginContext;
-
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
+export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
-    this.config = plugin.config as any;
-    this.context = plugin.context;
+    super(plugin);
 
     this.registerAskEvents();
   }

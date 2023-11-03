@@ -80,20 +80,31 @@ describe("DevicesController:exportMeasures", () => {
       { deviceEUI: "linked1", temperature: 38 },
       {
         deviceEUI: "linked1",
-        temperature: 37,
-        acceleration: {
-          x: 1,
-          y: 2.5,
-          z: -1,
-          accuracy: 0.1,
+        temperature: {
+          value: 37,
+          /**
+           * Here we specify a measuredAt, because of a side effect in the decoder.
+           * Sometimes the acceleration measurement would be registered earlier than the temperature's one.
+           *
+           * The +10sec is to ensure that those two measures will always remain the last ones.
+           */
+          measuredAt: Date.now() + 10000,
         },
-        /**
-         * Here we specify a measuredAt, because of a side effect in the decoder.
-         * Sometimes the acceleration measurement would be registered earlier than the temperature's one.
-         *
-         * The +1sec is to ensure that those two measures will always remain the last ones.
-         */
-        measuredAt: Date.now() + 1000,
+        acceleration: {
+          value: {
+            x: 1,
+            y: 2.5,
+            z: -1,
+            accuracy: 0.1,
+          },
+          /**
+           * Here we specify a measuredAt, because of a side effect in the decoder.
+           * Sometimes the battery measurement would be registered earlier than the acceleration's one.
+           *
+           * The +5sec is to ensure that those two measures will always remain the last ones.
+           */
+          measuredAt: Date.now() + 5000,
+        },
       },
     ]);
     await sdk.collection.refresh("engine-ayse", "measures");

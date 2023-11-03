@@ -27,6 +27,7 @@ export class AssetSerializer {
   ): AssetMeasureContext {
     return {
       _id: asset._id,
+      groups: asset._source.groups,
       measureName,
       metadata: asset._source.metadata,
       model: asset._source.model,

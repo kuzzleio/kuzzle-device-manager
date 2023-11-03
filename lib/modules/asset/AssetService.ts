@@ -1,4 +1,4 @@
-import { Backend, BadRequestError, PluginContext, User } from "kuzzle";
+import { BadRequestError, KuzzleRequest, User } from "kuzzle";
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -19,7 +19,6 @@ import {
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
   AskEngineList,
-  DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
@@ -30,6 +29,8 @@ import {
   flattenObject,
   lock,
   onAsk,
+  BaseService,
+  SearchParams,
 } from "../shared";
 
 import { AssetHistoryService } from "./AssetHistoryService";
@@ -46,35 +47,15 @@ import {
 } from "./types/AssetHistoryContent";
 import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
 
-export class AssetService {
-  private context: PluginContext;
-  private config: DeviceManagerConfiguration;
+export class AssetService extends BaseService {
   private assetHistoryService: AssetHistoryService;
-
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
-  private get app(): Backend {
-    return global.app;
-  }
-
-  private get impersonatedSdk() {
-    return (user: User) => {
-      if (user?._id) {
-        return this.sdk.as(user, { checkRights: false });
-      }
-
-      return this.sdk;
-    };
-  }
 
   constructor(
     plugin: DeviceManagerPlugin,
     assetHistoryService: AssetHistoryService
   ) {
-    this.context = plugin.context;
-    this.config = plugin.config;
+    super(plugin);
+
     this.assetHistoryService = assetHistoryService;
 
     this.registerAskEvents();
@@ -89,41 +70,43 @@ export class AssetService {
 
   public async get(
     engineId: string,
-    assetId: string
+    assetId: string,
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
-    return this.sdk.document.get<AssetContent>(
+    return this.getDocument<AssetContent>(request, assetId, {
+      collection: InternalCollection.ASSETS,
       engineId,
-      InternalCollection.ASSETS,
-      assetId
-    );
+    });
   }
 
   /**
    * Updates an asset metadata
    */
   public async update(
-    user: User,
     engineId: string,
     assetId: string,
     metadata: Metadata,
-    { refresh }: { refresh: any }
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
     return lock(`asset:${engineId}:${assetId}`, async () => {
-      const asset = await this.get(engineId, assetId);
+      const asset = await this.get(engineId, assetId, request);
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
         "device-manager:asset:update:before",
         { asset, metadata }
       );
 
-      const updatedAsset = await this.impersonatedSdk(
-        user
-      ).document.update<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
-        assetId,
-        { metadata: updatedPayload.metadata },
-        { refresh, source: true }
+      const updatedAsset = await this.updateDocument<AssetContent>(
+        request,
+        {
+          _id: assetId,
+          _source: { metadata: updatedPayload.metadata },
+        },
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        },
+        { source: true }
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
@@ -153,12 +136,11 @@ export class AssetService {
   }
 
   public async create(
-    user: User,
     engineId: string,
     model: string,
     reference: string,
     metadata: JSONObject,
-    { refresh }: { refresh: any }
+    request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
     const assetId = AssetSerializer.id(model, reference);
 
@@ -187,20 +169,24 @@ export class AssetService {
         measures[name] = null;
       }
 
-      const asset = await this.impersonatedSdk(
-        user
-      ).document.create<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
+      const asset = await this.createDocument<AssetContent>(
+        request,
         {
-          linkedDevices: [],
-          measures,
-          metadata: { ...assetMetadata, ...metadata },
-          model,
-          reference,
+          _id: assetId,
+          _source: {
+            groups: [],
+            lastMeasuredAt: null,
+            linkedDevices: [],
+            measures,
+            metadata: { ...assetMetadata, ...metadata },
+            model,
+            reference,
+          },
         },
-        assetId,
-        { refresh }
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        }
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
@@ -222,13 +208,15 @@ export class AssetService {
   }
 
   public async delete(
-    user: User,
     engineId: string,
     assetId: string,
-    { refresh, strict }: { refresh: any; strict: boolean }
+    request: KuzzleRequest
   ) {
+    const user = request.getUser();
+    const strict = request.getBoolean("strict");
+
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
-      const asset = await this.get(engineId, assetId);
+      const asset = await this.get(engineId, assetId, request);
 
       if (strict && asset._source.linkedDevices.length !== 0) {
         throw new BadRequestError(
@@ -243,35 +231,22 @@ export class AssetService {
         );
       }
 
-      await this.sdk.document.delete(
+      await this.deleteDocument(request, assetId, {
+        collection: InternalCollection.ASSETS,
         engineId,
-        InternalCollection.ASSETS,
-        assetId,
-        {
-          refresh,
-        }
-      );
+      });
     });
   }
 
   public async search(
     engineId: string,
-    searchBody: JSONObject,
-    {
-      from,
-      size,
-      scroll,
-      lang,
-    }: { from?: number; size?: number; scroll?: string; lang?: string }
+    searchParams: SearchParams,
+    request: KuzzleRequest
   ): Promise<SearchResult<KHit<AssetContent>>> {
-    const result = await this.sdk.document.search<AssetContent>(
+    return await this.searchDocument<AssetContent>(request, searchParams, {
+      collection: InternalCollection.ASSETS,
       engineId,
-      InternalCollection.ASSETS,
-      searchBody,
-      { from, lang, scroll, size }
-    );
-
-    return result;
+    });
   }
 
   public async migrateTenant(
@@ -327,7 +302,7 @@ export class AssetService {
       errors = errors.concat(...assets.errors);
 
       if (assets.successes.length === 0) {
-        this.context.log.error("No assets found to migrate");
+        this.app.log.error("No assets found to migrate");
         return { errors, successes };
       }
 

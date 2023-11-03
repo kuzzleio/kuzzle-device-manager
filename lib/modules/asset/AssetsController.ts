@@ -124,7 +124,7 @@ export class AssetsController {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
 
-    const asset = await this.assetService.get(engineId, assetId);
+    const asset = await this.assetService.get(engineId, assetId, request);
 
     return AssetSerializer.serialize(asset);
   }
@@ -133,16 +133,12 @@ export class AssetsController {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
     const metadata = request.getBodyObject("metadata");
-    const refresh = request.getRefresh();
 
     const updatedAsset = await this.assetService.update(
-      request.getUser(),
       engineId,
       assetId,
       metadata,
-      {
-        refresh,
-      }
+      request
     );
 
     return AssetSerializer.serialize(updatedAsset);
@@ -153,17 +149,13 @@ export class AssetsController {
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata", {});
-    const refresh = request.getRefresh();
 
     const asset = await this.assetService.create(
-      request.getUser(),
       engineId,
       model,
       reference,
       metadata,
-      {
-        refresh,
-      }
+      request
     );
 
     return AssetSerializer.serialize(asset);
@@ -172,33 +164,16 @@ export class AssetsController {
   async delete(request: KuzzleRequest): Promise<ApiAssetDeleteResult> {
     const engineId = request.getString("engineId");
     const assetId = request.getId();
-    const refresh = request.getRefresh();
-    const strict = request.getBoolean("strict");
 
-    await this.assetService.delete(request.getUser(), engineId, assetId, {
-      refresh,
-      strict,
-    });
+    await this.assetService.delete(engineId, assetId, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiAssetSearchResult> {
-    const engineId = request.getString("engineId");
-    const {
-      searchBody,
-      from,
-      size,
-      scrollTTL: scroll,
-    } = request.getSearchParams();
-    const lang = request.getLangParam();
-
-    const result = await this.assetService.search(engineId, searchBody, {
-      from,
-      lang,
-      scroll,
-      size,
-    });
-
-    return result;
+    return await this.assetService.search(
+      request.getString("engineId"),
+      request.getSearchParams(),
+      request
+    );
   }
 
   async getMeasures(

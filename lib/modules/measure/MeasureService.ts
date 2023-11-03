@@ -1,10 +1,4 @@
-import {
-  Backend,
-  BadRequestError,
-  JSONObject,
-  KDocument,
-  PluginContext,
-} from "kuzzle";
+import { BadRequestError, JSONObject, KDocument } from "kuzzle";
 import _ from "lodash";
 
 import {
@@ -16,12 +10,16 @@ import {
   AssetSerializer,
 } from "../asset";
 import { DeviceContent } from "../device";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import {
-  DeviceManagerConfiguration,
-  DeviceManagerPlugin,
-  InternalCollection,
-} from "../plugin";
-import { ask, keepStack, lock, Metadata, objectDiff, onAsk } from "../shared";
+  ask,
+  BaseService,
+  keepStack,
+  lock,
+  Metadata,
+  objectDiff,
+  onAsk,
+} from "../shared";
 
 import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
@@ -34,21 +32,9 @@ import {
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
 
-export class MeasureService {
-  private config: DeviceManagerConfiguration;
-  private context: PluginContext;
-
-  private get sdk() {
-    return this.context.accessors.sdk;
-  }
-
-  private get app(): Backend {
-    return global.app;
-  }
-
+export class MeasureService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
-    this.config = plugin.config as any;
-    this.context = plugin.context;
+    super(plugin);
 
     onAsk<AskMeasureIngest>(
       "device-manager:measures:ingest",
