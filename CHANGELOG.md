@@ -1,3 +1,11 @@
+# [2.4.0-beta.7](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.6...v2.4.0-beta.7) (2023-11-03)
+
+
+### Features
+
+* **digitalTwin:** allow to modify mapping from application ([#322](https://github.com/kuzzleio/kuzzle-plugin-device-manager/issues/322)) ([89d375a](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/89d375a97892aad6b4cf976a38581cb0d7a14936))
+* **digitalTwin:** implement generic document pipes triggers ([#321](https://github.com/kuzzleio/kuzzle-plugin-device-manager/issues/321)) ([60a21fc](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/60a21fc8ced1e925efbad9b79cc0de511efac46c))
+
 # [2.4.0-beta.6](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.5...v2.4.0-beta.6) (2023-10-20)
 
 
