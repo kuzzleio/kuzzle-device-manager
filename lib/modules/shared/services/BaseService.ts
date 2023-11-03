@@ -63,6 +63,16 @@ export abstract class BaseService {
     };
   }
 
+  protected normalizeKuzzleRequest(
+    request: KuzzleRequest,
+    { collection, engineId }: PayloadRequest
+  ) {
+    request.input.args.collection = collection;
+    request.input.args.index = engineId;
+
+    return request;
+  }
+
   /**
    * Wrapper to SDK create method with trigger generic:document events
    *
@@ -75,16 +85,19 @@ export abstract class BaseService {
   protected async getDocument<T extends KDocumentContent = KDocumentContent>(
     request: KuzzleRequest,
     documentId: string,
-    { engineId, collection }: PayloadRequest,
+    { collection, engineId }: PayloadRequest,
     options: ArgsDocumentControllerCreate = {}
   ): Promise<KDocument<T>> {
-    const refresh = request.getRefresh();
+    const kuzzleRequest = this.normalizeKuzzleRequest(request, {
+      collection,
+      engineId,
+    });
+    const refresh = kuzzleRequest.getRefresh();
 
-    request.input.args.collection = collection;
     const [{ _id }] = await this.app.trigger<EventGenericDocumentBeforeGet>(
       "generic:document:beforeGet",
       [{ _id: documentId }],
-      request
+      kuzzleRequest
     );
 
     const newDocument = await this.sdk.document.get<T>(
@@ -96,7 +109,7 @@ export abstract class BaseService {
 
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterGet<T>
-    >("generic:document:afterGet", [newDocument], request);
+    >("generic:document:afterGet", [newDocument], kuzzleRequest);
 
     return endDocument;
   }
@@ -113,16 +126,19 @@ export abstract class BaseService {
   protected async createDocument<T extends KDocumentContent = KDocumentContent>(
     request: KuzzleRequest,
     document: KDocument<T>,
-    { engineId, collection }: PayloadRequest,
+    { collection, engineId }: PayloadRequest,
     options: ArgsDocumentControllerCreate = {}
   ): Promise<KDocument<T>> {
-    const user = request.getUser();
-    const refresh = request.getRefresh();
+    const kuzzleRequest = this.normalizeKuzzleRequest(request, {
+      collection,
+      engineId,
+    });
+    const user = kuzzleRequest.getUser();
+    const refresh = kuzzleRequest.getRefresh();
 
-    request.input.args.collection = collection;
     const [modifiedDocument] = await this.app.trigger<
       EventGenericDocumentBeforeWrite<T>
-    >("generic:document:beforeWrite", [document], request);
+    >("generic:document:beforeWrite", [document], kuzzleRequest);
 
     const newDocument = await this.impersonatedSdk(user).document.create<T>(
       engineId,
@@ -133,7 +149,7 @@ export abstract class BaseService {
     );
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterWrite<T>
-    >("generic:document:afterWrite", [newDocument], request);
+    >("generic:document:afterWrite", [newDocument], kuzzleRequest);
 
     return endDocument;
   }
@@ -150,16 +166,19 @@ export abstract class BaseService {
   protected async updateDocument<T extends KDocumentContent = KDocumentContent>(
     request: KuzzleRequest,
     document: KDocument<Partial<T>>,
-    { engineId, collection }: PayloadRequest,
+    { collection, engineId }: PayloadRequest,
     options: ArgsDocumentControllerUpdate = {}
   ): Promise<KDocument<T>> {
-    const user = request.getUser();
-    const refresh = request.getRefresh();
+    const kuzzleRequest = this.normalizeKuzzleRequest(request, {
+      collection,
+      engineId,
+    });
+    const user = kuzzleRequest.getUser();
+    const refresh = kuzzleRequest.getRefresh();
 
-    request.input.args.collection = collection;
     const [modifiedDocument] = await this.app.trigger<
       EventGenericDocumentBeforeUpdate<Partial<T>>
-    >("generic:document:beforeUpdate", [document], request);
+    >("generic:document:beforeUpdate", [document], kuzzleRequest);
 
     const updatedDocument = await this.impersonatedSdk(user).document.update<T>(
       engineId,
@@ -171,7 +190,7 @@ export abstract class BaseService {
 
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterUpdate<T>
-    >("generic:document:afterUpdate", [updatedDocument], request);
+    >("generic:document:afterUpdate", [updatedDocument], kuzzleRequest);
 
     return endDocument;
   }
@@ -181,24 +200,28 @@ export abstract class BaseService {
    *
    * @param {KuzzleRequest} request
    * @param {string} documentId
+   * @param {PayloadRequest} payload
    * @param {ArgsDocumentControllerUpdate} [options]
    * @returns {Promise<{ _id: string }>}
    */
   protected async deleteDocument(
     request: KuzzleRequest,
     documentId: string,
-    { engineId, collection }: PayloadRequest,
+    { collection, engineId }: PayloadRequest,
     options: ArgsDocumentControllerDelete = {}
   ): Promise<{ _id: string }> {
-    const user = request.getUser();
-    const refresh = request.getRefresh();
+    const kuzzleRequest = this.normalizeKuzzleRequest(request, {
+      collection,
+      engineId,
+    });
+    const user = kuzzleRequest.getUser();
+    const refresh = kuzzleRequest.getRefresh();
 
-    request.input.args.collection = collection;
     const [modifiedDocument] =
       await this.app.trigger<EventGenericDocumentBeforeDelete>(
         "generic:document:beforeDelete",
         [{ _id: documentId }],
-        request
+        kuzzleRequest
       );
 
     const deletedDocument = await this.impersonatedSdk(user).document.delete(
@@ -212,7 +235,7 @@ export abstract class BaseService {
       await this.app.trigger<EventGenericDocumentAfterDelete>(
         "generic:document:afterDelete",
         [{ _id: deletedDocument }],
-        request
+        kuzzleRequest
       );
 
     return endDocument;
@@ -223,29 +246,32 @@ export abstract class BaseService {
    * ! Caution the pipes are not applied on next()
    *
    * @param {KuzzleRequest} request
-   * @param {string} documentId
    * @param {ArgsDocumentControllerUpdate} [options]
-   * @returns {Promise<{ _id: string }>}
+   * @param {PayloadRequest} payload
+   * @returns {Promise<SearchResult<KHit>>}
    */
   protected async searchDocument<T extends KDocumentContent = KDocumentContent>(
     request: KuzzleRequest,
     { from, size, scrollTTL: scroll }: SearchParams,
-    { engineId, collection }: PayloadRequest
+    { collection, engineId }: PayloadRequest
   ): Promise<SearchResult<KHit<T>>> {
+    const kuzzleRequest = this.normalizeKuzzleRequest(request, {
+      collection,
+      engineId,
+    });
     const {
       protocol,
       misc: { verb = "POST" },
-    } = request.context.connection;
+    } = kuzzleRequest.context.connection;
 
-    const lang = request.getLangParam();
-    const searchBody = request.getSearchBody();
+    const lang = kuzzleRequest.getLangParam();
+    const searchBody = kuzzleRequest.getSearchBody();
 
-    request.input.args.collection = collection;
     const modifiedBody =
       await this.app.trigger<EventGenericDocumentBeforeSearch>(
         "generic:document:beforeSearch",
         searchBody,
-        request
+        kuzzleRequest
       );
 
     const query = {
