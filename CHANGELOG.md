@@ -1,3 +1,10 @@
+# [2.4.0-beta.8](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.7...v2.4.0-beta.8) (2023-11-04)
+
+
+### Bug Fixes
+
+* correct KuzzleRequest for pipes ([ef932d1](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/ef932d1b874e3768c091783819e6b063b4f1211a))
+
 # [2.4.0-beta.7](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.6...v2.4.0-beta.7) (2023-11-03)
 
 
