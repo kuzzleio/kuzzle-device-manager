@@ -176,6 +176,14 @@ export class DeviceService extends BaseService {
     });
   }
 
+  private async getInternalDevices(deviceId: string) {
+    return this.sdk.document.get<DeviceContent>(
+      this.config.adminIndex,
+      InternalCollection.DEVICES,
+      deviceId
+    );
+  }
+
   public async update(
     engineId: string,
     deviceId: string,
@@ -315,7 +323,7 @@ export class DeviceService extends BaseService {
     request: KuzzleRequest
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:attachEngine:${deviceId}`, async () => {
-      const device = await this.get(this.config.adminIndex, deviceId, request);
+      const device = await this.getInternalDevices(deviceId);
 
       if (device._source.engineId) {
         throw new BadRequestError(
@@ -367,7 +375,7 @@ export class DeviceService extends BaseService {
     request: KuzzleRequest
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:detachEngine:${deviceId}`, async () => {
-      const device = await this.get(this.config.adminIndex, deviceId, request);
+      const device = await this.getInternalDevices(deviceId);
 
       this.checkAttachedToEngine(device);
 
@@ -427,7 +435,7 @@ export class DeviceService extends BaseService {
     device: KDocument<DeviceContent>;
   }> {
     return lock(`device:linkAsset:${deviceId}`, async () => {
-      const device = await this.get(this.config.adminIndex, deviceId, request);
+      const device = await this.getInternalDevices(deviceId);
       const engine = await this.getEngine(engineId);
 
       this.checkAttachedToEngine(device);
@@ -682,7 +690,7 @@ export class DeviceService extends BaseService {
     device: KDocument<DeviceContent>;
   }> {
     return lock(`device:unlinkAsset:${deviceId}`, async () => {
-      const device = await this.get(this.config.adminIndex, deviceId, request);
+      const device = await this.getInternalDevices(deviceId);
       const engineId = device._source.engineId;
 
       this.checkAttachedToEngine(device);
