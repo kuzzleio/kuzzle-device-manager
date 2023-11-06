@@ -1,3 +1,10 @@
+# [2.4.0-beta.9](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.8...v2.4.0-beta.9) (2023-11-06)
+
+
+### Bug Fixes
+
+* improve get internal devices documents ([03ccb29](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/03ccb297c9f86ee6fe78acfe9dace932c96af568))
+
 # [2.4.0-beta.8](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.7...v2.4.0-beta.8) (2023-11-04)
 
 
