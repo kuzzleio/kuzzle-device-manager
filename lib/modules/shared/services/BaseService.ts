@@ -2,6 +2,7 @@ import {
   ArgsDocumentControllerCreate,
   ArgsDocumentControllerDelete,
   ArgsDocumentControllerUpdate,
+  ArgsDocumentControllerUpsert,
   Backend,
   BaseRequest,
   DocumentSearchResult,

@@ -172,4 +172,68 @@ describe("features/Asset/Controller", () => {
       sdk.document.exists("engine-kuzzle", "devices", "DummyTemp-foobar")
     ).resolves.toBe(true);
   });
+
+  it("Upsert asset", async () => {
+    const response = await sdk.query({
+      controller: "device-manager/assets",
+      action: "upsert",
+      engineId: "engine-kuzzle",
+      _id: "Container-linked2",
+      body: {
+        model: "Container",
+        reference: "linked2",
+        metadata: { height: 21, weight: 42 },
+      },
+    });
+
+    expect(response).toBeDefined();
+    expect(response.result).toBeDefined();
+    expect(response.result._id).toEqual("Container-linked2");
+    expect(response.result._source.model).toEqual("Container");
+    expect(response.result._source.reference).toEqual("linked2");
+    expect(response.result._source.metadata).toEqual({
+      height: 21,
+      trailer: null,
+      weight: 42,
+    });
+  });
+
+  it("Upsert asset - update existing asset", async () => {
+    // create asset
+    await sdk.query({
+      controller: "device-manager/assets",
+      action: "upsert",
+      engineId: "engine-kuzzle",
+      _id: "Container-linked2",
+      body: {
+        model: "Container",
+        reference: "linked2",
+        metadata: { height: 21, trailer: null, weight: 42 },
+      },
+    });
+
+    // update asset
+    const response = await sdk.query({
+      controller: "device-manager/assets",
+      action: "upsert",
+      engineId: "engine-kuzzle",
+      _id: "Container-linked2",
+      body: {
+        model: "Container",
+        reference: "linked2",
+        metadata: { height: 22, trailer: null, weight: 43 },
+      },
+    });
+
+    expect(response).toBeDefined();
+    expect(response.result).toBeDefined();
+    expect(response.result._id).toEqual("Container-linked2");
+    expect(response.result._source.model).toEqual("Container");
+    expect(response.result._source.reference).toEqual("linked2");
+    expect(response.result._source.metadata).toEqual({
+      height: 22,
+      trailer: null,
+      weight: 43,
+    });
+  });
 });

@@ -13,6 +13,7 @@ import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
 import {
   ApiAssetCreateResult,
+  ApiAssetUpsertResult,
   ApiAssetDeleteResult,
   ApiAssetGetMeasuresResult,
   ApiAssetGetResult,
@@ -36,6 +37,12 @@ export class AssetsController {
         create: {
           handler: this.create.bind(this),
           http: [{ path: "device-manager/:engineId/assets", verb: "post" }],
+        },
+        upsert: {
+          handler: this.upsert.bind(this),
+          http: [
+            { path: "device-manager/:engineId/assets/:_id", verb: "post" },
+          ],
         },
         delete: {
           handler: this.delete.bind(this),
@@ -127,6 +134,25 @@ export class AssetsController {
     const asset = await this.assetService.get(engineId, assetId, request);
 
     return AssetSerializer.serialize(asset);
+  }
+
+  async upsert(request: KuzzleRequest): Promise<ApiAssetUpsertResult> {
+    const engineId = request.getString("engineId");
+    const assetId = request.getId();
+    const model = request.getBodyString("model");
+    const reference = request.getBodyString("reference");
+    const metadata = request.getBodyObject("metadata");
+
+    const upsertAsset = await this.assetService.upsert(
+      engineId,
+      assetId,
+      model,
+      reference,
+      metadata,
+      request
+    );
+
+    return AssetSerializer.serialize(upsertAsset);
   }
 
   async update(request: KuzzleRequest): Promise<ApiAssetUpdateResult> {

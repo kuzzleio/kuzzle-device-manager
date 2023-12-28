@@ -80,7 +80,7 @@ export class AssetService extends BaseService {
   }
 
   /**
-   * Updates an asset metadata
+   * Update an asset metadata
    */
   public async update(
     engineId: string,
@@ -135,6 +135,73 @@ export class AssetService extends BaseService {
     });
   }
 
+  /**
+   * Update or Create an asset metadata
+   */
+  public async upsert(
+    engineId: string,
+    assetId: string,
+    model: string,
+    reference: string,
+    metadata: Metadata,
+    request: KuzzleRequest
+  ): Promise<KDocument<AssetContent>> {
+    return lock(`asset:${engineId}:${assetId}`, async () => {
+      const asset = await this.get(engineId, assetId, request).catch(
+        () => null
+      );
+
+      if (!asset) {
+        return this.create(engineId, model, reference, metadata, request);
+      }
+
+      const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
+        "device-manager:asset:update:before",
+        { asset, metadata }
+      );
+
+      const updatedAsset = await this.updateDocument<AssetContent>(
+        request,
+        {
+          _id: assetId,
+          _source: { metadata: updatedPayload.metadata },
+        },
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        },
+        { source: true }
+      );
+
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
+        {
+          asset: updatedAsset._source,
+          event: {
+            metadata: {
+              names: Object.keys(flattenObject(updatedPayload.metadata)),
+            },
+            name: "metadata",
+          },
+          id: updatedAsset._id,
+          timestamp: Date.now(),
+        },
+      ]);
+
+      await this.app.trigger<EventAssetUpdateAfter>(
+        "device-manager:asset:update:after",
+        {
+          asset: updatedAsset,
+          metadata: updatedPayload.metadata,
+        }
+      );
+
+      return updatedAsset;
+    });
+  }
+
+  /**
+   * Create an asset metadata
+   */
   public async create(
     engineId: string,
     model: string,
@@ -207,6 +274,9 @@ export class AssetService extends BaseService {
     });
   }
 
+  /**
+   * Delete an asset metadata
+   */
   public async delete(
     engineId: string,
     assetId: string,
