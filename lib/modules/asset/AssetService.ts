@@ -80,7 +80,7 @@ export class AssetService extends BaseService {
   }
 
   /**
-   * Updates an asset metadata
+   * Update an asset metadata
    */
   public async update(
     engineId: string,
@@ -135,6 +135,97 @@ export class AssetService extends BaseService {
     });
   }
 
+  /**
+   * Update or Create an asset metadata
+   */
+  /**
+   * Update or Create an asset metadata
+   */
+  public async upsert(
+    engineId: string,
+    assetId: string,
+    metadata: Metadata,
+    request: KuzzleRequest
+  ): Promise<KDocument<AssetContent>> {
+    return lock(`asset:${engineId}:${assetId}`, async () => {
+      let asset = null;
+      try {
+        asset = await this.get(engineId, assetId, request);
+      } catch (error) {
+        this.app.log.error(`Asset ${assetId} not found`);
+        asset = {
+          _id: assetId,
+          _source: {
+            groups: [],
+            lastMeasuredAt: 0,
+            linkedDevices: [],
+            measures: undefined,
+            metadata: {},
+            model: "",
+            reference: "",
+          },
+        };
+      }
+
+      const upsertedPayload = await this.app.trigger<EventAssetUpdateBefore>(
+        "device-manager:asset:update:before",
+        { asset, metadata }
+      );
+
+      const _source = asset
+        ? { ...asset._source, metadata: upsertedPayload.metadata }
+        : {
+            groups: [],
+            lastMeasuredAt: 0,
+            linkedDevices: [],
+            measures: undefined,
+            metadata: upsertedPayload.metadata,
+            model: "",
+            reference: "",
+          };
+
+      const upsertedAsset = await this.upsertDocument<AssetContent>(
+        request,
+        {
+          _id: assetId,
+          _source,
+        },
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        },
+        { source: true }
+      );
+
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
+        {
+          asset: upsertedAsset._source,
+          event: {
+            metadata: {
+              names: Object.keys(flattenObject(upsertedPayload.metadata)),
+            },
+            name: "metadata",
+          },
+          id: upsertedAsset._id,
+          timestamp: Date.now(),
+        },
+      ]);
+
+      await this.app.trigger<EventAssetUpdateAfter>(
+        "device-manager:asset:update:after",
+        {
+          asset: upsertedAsset,
+          metadata: upsertedPayload.metadata,
+        }
+      );
+
+      return upsertedAsset;
+    });
+  }
+
+  /**
+   * Create an asset metadata
+   */
   public async create(
     engineId: string,
     model: string,
@@ -207,6 +298,9 @@ export class AssetService extends BaseService {
     });
   }
 
+  /**
+   * Delete an asset metadata
+   */
   public async delete(
     engineId: string,
     assetId: string,

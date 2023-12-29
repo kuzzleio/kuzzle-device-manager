@@ -57,7 +57,7 @@ export class DeviceManagerPlugin extends Plugin {
   private modelsRegister: ModelsRegister;
   private decodersRegister: DecodersRegister;
 
-  public get sdk() {
+  private get sdk() {
     return this.context.accessors.sdk;
   }
 

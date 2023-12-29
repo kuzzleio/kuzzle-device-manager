@@ -3,19 +3,17 @@ import {
   HttpStream,
   KuzzleError,
   KuzzleRequest,
-  DocumentController,
-  KDocument,
-  JSONObject,
 } from "kuzzle";
 
 import { MeasureExporter } from "../measure/";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { DigitalTwinExporter, Metadata } from "../shared";
+import { DigitalTwinExporter } from "../shared";
 
 import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
 import {
   ApiAssetCreateResult,
+  ApiAssetUpsertResult,
   ApiAssetDeleteResult,
   ApiAssetGetMeasuresResult,
   ApiAssetGetResult,
@@ -23,7 +21,6 @@ import {
   ApiAssetUpdateResult,
   ApiAssetMigrateTenantResult,
 } from "./types/AssetApi";
-import { AssetContent } from "./exports";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -139,18 +136,17 @@ export class AssetsController {
     return AssetSerializer.serialize(asset);
   }
 
-  async upsert(request: KuzzleRequest): Promise<ApiAssetUpdateResult> {
-    const DocumentControllerInstance = new DocumentController(this.plugin.sdk);
+  async upsert(request: KuzzleRequest): Promise<ApiAssetUpsertResult> {
     const engineId = request.getString("engineId");
     const assetId = request.getId();
     const metadata = request.getBodyObject("metadata");
-    console.log(metadata);
-    const upsertAsset = (await DocumentControllerInstance.upsert(
+
+    const upsertAsset = await this.assetService.upsert(
       engineId,
-      "assets",
       assetId,
-      metadata
-    )) as KDocument<AssetContent<JSONObject, Metadata>>;
+      metadata,
+      request
+    );
 
     return AssetSerializer.serialize(upsertAsset);
   }
