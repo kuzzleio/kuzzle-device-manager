@@ -138,57 +138,33 @@ export class AssetService extends BaseService {
   /**
    * Update or Create an asset metadata
    */
-  /**
-   * Update or Create an asset metadata
-   */
   public async upsert(
     engineId: string,
     assetId: string,
+    model: string,
+    reference: string,
     metadata: Metadata,
     request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
     return lock(`asset:${engineId}:${assetId}`, async () => {
-      let asset = null;
-      try {
-        asset = await this.get(engineId, assetId, request);
-      } catch (error) {
-        this.app.log.error(`Asset ${assetId} not found`);
-        asset = {
-          _id: assetId,
-          _source: {
-            groups: [],
-            lastMeasuredAt: 0,
-            linkedDevices: [],
-            measures: undefined,
-            metadata: {},
-            model: "",
-            reference: "",
-          },
-        };
+      const asset = await this.get(engineId, assetId, request).catch(
+        () => null
+      );
+
+      if (!asset) {
+        return this.create(engineId, model, reference, metadata, request);
       }
 
-      const upsertedPayload = await this.app.trigger<EventAssetUpdateBefore>(
+      const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
         "device-manager:asset:update:before",
         { asset, metadata }
       );
 
-      const _source = asset
-        ? { ...asset._source, metadata: upsertedPayload.metadata }
-        : {
-            groups: [],
-            lastMeasuredAt: 0,
-            linkedDevices: [],
-            measures: undefined,
-            metadata: upsertedPayload.metadata,
-            model: "",
-            reference: "",
-          };
-
-      const upsertedAsset = await this.upsertDocument<AssetContent>(
+      const updatedAsset = await this.updateDocument<AssetContent>(
         request,
         {
           _id: assetId,
-          _source,
+          _source: { metadata: updatedPayload.metadata },
         },
         {
           collection: InternalCollection.ASSETS,
@@ -199,14 +175,14 @@ export class AssetService extends BaseService {
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
         {
-          asset: upsertedAsset._source,
+          asset: updatedAsset._source,
           event: {
             metadata: {
-              names: Object.keys(flattenObject(upsertedPayload.metadata)),
+              names: Object.keys(flattenObject(updatedPayload.metadata)),
             },
             name: "metadata",
           },
-          id: upsertedAsset._id,
+          id: updatedAsset._id,
           timestamp: Date.now(),
         },
       ]);
@@ -214,12 +190,12 @@ export class AssetService extends BaseService {
       await this.app.trigger<EventAssetUpdateAfter>(
         "device-manager:asset:update:after",
         {
-          asset: upsertedAsset,
-          metadata: upsertedPayload.metadata,
+          asset: updatedAsset,
+          metadata: updatedPayload.metadata,
         }
       );
 
-      return upsertedAsset;
+      return updatedAsset;
     });
   }
 

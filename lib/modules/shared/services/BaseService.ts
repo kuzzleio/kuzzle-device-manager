@@ -156,50 +156,6 @@ export abstract class BaseService {
   }
 
   /**
-   * Wrapper to SDK upsert method with trigger generic:document events
-   *
-   * @param {KuzzleRequest} request
-   * @param {KDocument} document
-   * @param {PayloadRequest} payload
-   * @param {ArgsDocumentControllerUpdate} [options]
-   * @returns {Promise<KDocument>}
-   */
-  protected async upsertDocument<T extends KDocumentContent = KDocumentContent>(
-    request: KuzzleRequest,
-    document: KDocument<T>,
-    { collection, engineId }: PayloadRequest,
-    options: ArgsDocumentControllerUpsert<T> = {}
-  ): Promise<KDocument<T>> {
-    const kuzzleRequest = this.normalizeKuzzleRequest(request, {
-      collection,
-      engineId,
-    });
-    const user = kuzzleRequest.getUser();
-    const refresh = kuzzleRequest.getRefresh();
-    const retryOnConflict = options.retryOnConflict || false;
-
-    const [modifiedDocument] = await this.app.trigger<
-      EventGenericDocumentBeforeWrite<T>
-    >("generic:document:beforeWrite", [document], kuzzleRequest);
-
-    const upsertedDocument = await this.impersonatedSdk(
-      user
-    ).document.upsert<T>(
-      engineId,
-      collection,
-      modifiedDocument._id,
-      modifiedDocument._source,
-      { refresh, retryOnConflict, ...options }
-    );
-
-    const [endDocument] = await this.app.trigger<
-      EventGenericDocumentAfterWrite<T>
-    >("generic:document:afterWrite", [upsertedDocument], kuzzleRequest);
-
-    return endDocument;
-  }
-
-  /**
    * Wrapper to SDK update method with trigger generic:document events
    *
    * @param {KuzzleRequest} request
