@@ -106,7 +106,7 @@ export class AssetsGroupsController {
   private get as() {
     return (user: User | null): EmbeddedSDK => {
       if (user?._id) {
-        return this.sdk.as(user, { checkRights: true });
+        return this.sdk.as(user, { checkRights: false });
       }
       return this.sdk;
     };
