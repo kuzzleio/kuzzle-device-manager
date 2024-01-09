@@ -1,3 +1,10 @@
+# [2.4.0-beta.11](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.10...v2.4.0-beta.11) (2024-01-09)
+
+
+### Bug Fixes
+
+* update semantic-release ([380c8b3](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/380c8b340e925bfca0f1c435c2fcaa6c2f20ced0))
+
 # [2.4.0-beta.10](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.9...v2.4.0-beta.10) (2024-01-09)
 
 
