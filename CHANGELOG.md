@@ -1,3 +1,15 @@
+# [2.4.0-beta.10](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.9...v2.4.0-beta.10) (2024-01-09)
+
+
+### Bug Fixes
+
+* **assetsGroups:** disable checkRights on impersonate ([#325](https://github.com/kuzzleio/kuzzle-plugin-device-manager/issues/325)) ([eaa3edc](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/eaa3edc678529f0a4b1e0f440764e3c8f8504f62))
+
+
+### Features
+
+* **asset:** add upsert method ([#323](https://github.com/kuzzleio/kuzzle-plugin-device-manager/issues/323)) ([5f87787](https://github.com/kuzzleio/kuzzle-plugin-device-manager/commit/5f8778734849386a796eed6ae6071757978bc956))
+
 # [2.4.0-beta.9](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.8...v2.4.0-beta.9) (2023-11-06)
 
 
