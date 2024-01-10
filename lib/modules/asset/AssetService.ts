@@ -1,4 +1,4 @@
-import { BadRequestError, KuzzleRequest, User } from "kuzzle";
+import { BadRequestError, KuzzleRequest, User } from 'kuzzle';
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -7,21 +7,21 @@ import {
   KHit,
   SearchResult,
   mReplaceResponse,
-} from "kuzzle-sdk";
-import _ from "lodash";
+} from 'kuzzle-sdk';
+import _ from 'lodash';
 
 import {
   AskDeviceAttachEngine,
   AskDeviceDetachEngine,
   AskDeviceLinkAsset,
   AskDeviceUnlinkAsset,
-} from "../device";
-import { AskModelAssetGet, AssetModelContent } from "../model";
+} from '../device';
+import { AskModelAssetGet, AssetModelContent } from '../model';
 import {
   AskEngineList,
   DeviceManagerPlugin,
   InternalCollection,
-} from "../plugin";
+} from '../plugin';
 import {
   EmbeddedMeasure,
   Metadata,
@@ -31,21 +31,21 @@ import {
   onAsk,
   BaseService,
   SearchParams,
-} from "../shared";
+} from '../shared';
 
-import { AssetHistoryService } from "./AssetHistoryService";
-import { AssetSerializer } from "./model/AssetSerializer";
-import { AssetContent } from "./types/AssetContent";
+import { AssetHistoryService } from './AssetHistoryService';
+import { AssetSerializer } from './model/AssetSerializer';
+import { AssetContent } from './types/AssetContent';
 import {
   AskAssetRefreshModel,
   EventAssetUpdateAfter,
   EventAssetUpdateBefore,
-} from "./types/AssetEvents";
+} from './types/AssetEvents';
 import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
-} from "./types/AssetHistoryContent";
-import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
+} from './types/AssetHistoryContent';
+import { ApiAssetMigrateTenantResult } from './types/AssetApi';
 
 export class AssetService extends BaseService {
   private assetHistoryService: AssetHistoryService;
@@ -63,7 +63,7 @@ export class AssetService extends BaseService {
 
   registerAskEvents() {
     onAsk<AskAssetRefreshModel>(
-      "ask:device-manager:asset:refresh-model",
+      'ask:device-manager:asset:refresh-model',
       this.refreshModel.bind(this)
     );
   }
@@ -92,7 +92,7 @@ export class AssetService extends BaseService {
       const asset = await this.get(engineId, assetId, request);
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
-        "device-manager:asset:update:before",
+        'device-manager:asset:update:before',
         { asset, metadata }
       );
 
@@ -116,7 +116,7 @@ export class AssetService extends BaseService {
             metadata: {
               names: Object.keys(flattenObject(updatedPayload.metadata)),
             },
-            name: "metadata",
+            name: 'metadata',
           },
           id: updatedAsset._id,
           timestamp: Date.now(),
@@ -124,7 +124,7 @@ export class AssetService extends BaseService {
       ]);
 
       await this.app.trigger<EventAssetUpdateAfter>(
-        "device-manager:asset:update:after",
+        'device-manager:asset:update:after',
         {
           asset: updatedAsset,
           metadata: updatedPayload.metadata,
@@ -140,12 +140,12 @@ export class AssetService extends BaseService {
    */
   public async upsert(
     engineId: string,
-    assetId: string,
     model: string,
     reference: string,
     metadata: Metadata,
     request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
+    const assetId = `${model}-${reference}`;
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request).catch(
         () => null
@@ -156,7 +156,7 @@ export class AssetService extends BaseService {
       }
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
-        "device-manager:asset:update:before",
+        'device-manager:asset:update:before',
         { asset, metadata }
       );
 
@@ -180,7 +180,7 @@ export class AssetService extends BaseService {
             metadata: {
               names: Object.keys(flattenObject(updatedPayload.metadata)),
             },
-            name: "metadata",
+            name: 'metadata',
           },
           id: updatedAsset._id,
           timestamp: Date.now(),
@@ -188,7 +188,7 @@ export class AssetService extends BaseService {
       ]);
 
       await this.app.trigger<EventAssetUpdateAfter>(
-        "device-manager:asset:update:after",
+        'device-manager:asset:update:after',
         {
           asset: updatedAsset,
           metadata: updatedPayload.metadata,
@@ -214,7 +214,7 @@ export class AssetService extends BaseService {
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const engine = await this.getEngine(engineId);
       const assetModel = await ask<AskModelAssetGet>(
-        "ask:device-manager:model:asset:get",
+        'ask:device-manager:model:asset:get',
         { engineGroup: engine.group, model }
       );
 
@@ -263,7 +263,7 @@ export class AssetService extends BaseService {
             metadata: {
               names: Object.keys(flattenObject(asset._source.metadata)),
             },
-            name: "metadata",
+            name: 'metadata',
           },
           id: asset._id,
           timestamp: Date.now(),
@@ -283,7 +283,7 @@ export class AssetService extends BaseService {
     request: KuzzleRequest
   ) {
     const user = request.getUser();
-    const strict = request.getBoolean("strict");
+    const strict = request.getBoolean('strict');
 
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request);
@@ -296,7 +296,7 @@ export class AssetService extends BaseService {
 
       for (const { _id: deviceId } of asset._source.linkedDevices) {
         await ask<AskDeviceUnlinkAsset>(
-          "ask:device-manager:device:unlink-asset",
+          'ask:device-manager:device:unlink-asset',
           { deviceId, user }
         );
       }
@@ -330,11 +330,11 @@ export class AssetService extends BaseService {
 
     //Sanity check
     if (assetsList.length === 0) {
-      throw new BadRequestError("No assets to migrate");
+      throw new BadRequestError('No assets to migrate');
     }
 
     await lock(`engine:${engineId}:${newEngineId}`, async () => {
-      if (!user.profileIds.includes("admin")) {
+      if (!user.profileIds.includes('admin')) {
         throw new BadRequestError(
           `User ${user._id} is not authorized to migrate assets`
         );
@@ -372,7 +372,7 @@ export class AssetService extends BaseService {
       errors = errors.concat(...assets.errors);
 
       if (assets.successes.length === 0) {
-        this.app.log.error("No assets found to migrate");
+        this.app.log.error('No assets found to migrate');
         return { errors, successes };
       }
 
@@ -422,19 +422,19 @@ export class AssetService extends BaseService {
         for (const device of linkedDevices) {
           // detach linked devices from current tenant (it also unkinks asset)
           await ask<AskDeviceDetachEngine>(
-            "ask:device-manager:device:detach-engine",
+            'ask:device-manager:device:detach-engine',
             { deviceId: device._id, user }
           );
 
           // ... and attach to new tenant
           await ask<AskDeviceAttachEngine>(
-            "ask:device-manager:device:attach-engine",
+            'ask:device-manager:device:attach-engine',
             { deviceId: device._id, engineId: newEngineId, user }
           );
 
           // ... and link this device to the asset in the new tenant
           await ask<AskDeviceLinkAsset>(
-            "ask:device-manager:device:link-asset",
+            'ask:device-manager:device:link-asset',
             {
               assetId: asset._id,
               deviceId: device._id,
@@ -508,7 +508,7 @@ export class AssetService extends BaseService {
           metadata: {
             names: Object.keys(flattenObject(asset._source.metadata)),
           },
-          name: "metadata",
+          name: 'metadata',
         },
         id: asset._id,
         timestamp: Date.now(),
@@ -538,7 +538,7 @@ export class AssetService extends BaseService {
   }: {
     assetModel: AssetModelContent;
   }): Promise<void> {
-    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+    const engines = await ask<AskEngineList>('ask:device-manager:engine:list', {
       group: assetModel.engineGroup,
     });
 
@@ -551,10 +551,10 @@ export class AssetService extends BaseService {
       BaseRequest,
       DocumentSearchResult<AssetContent>
     >({
-      action: "search",
+      action: 'search',
       body: { query: { equals: { model: assetModel.asset.model } } },
-      controller: "document",
-      lang: "koncorde",
+      controller: 'document',
+      lang: 'koncorde',
       targets,
     });
 
@@ -599,7 +599,7 @@ export class AssetService extends BaseService {
     await Promise.all(
       Object.entries(updatedAssetsPerIndex).map(([index, updatedAssets]) =>
         this.mReplaceAndHistorize(index, updatedAssets, removedMetadata, {
-          refresh: "wait_for",
+          refresh: 'wait_for',
         })
       )
     );

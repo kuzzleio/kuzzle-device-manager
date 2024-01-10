@@ -2,7 +2,6 @@ import {
   ArgsDocumentControllerCreate,
   ArgsDocumentControllerDelete,
   ArgsDocumentControllerUpdate,
-  ArgsDocumentControllerUpsert,
   Backend,
   BaseRequest,
   DocumentSearchResult,
@@ -21,7 +20,7 @@ import {
   KuzzleRequest,
   SearchResult,
   User,
-} from "kuzzle";
+} from 'kuzzle';
 
 import {
   DeviceManagerPlugin,
@@ -30,14 +29,14 @@ import {
   EventGenericDocumentBeforeSearch,
   EventGenericDocumentAfterSearch,
   SearchQueryResult,
-} from "../../plugin";
+} from '../../plugin';
 
 interface PayloadRequest {
   collection: InternalCollection;
   engineId: string;
 }
 
-export type SearchParams = ReturnType<KuzzleRequest["getSearchParams"]>;
+export type SearchParams = ReturnType<KuzzleRequest['getSearchParams']>;
 
 export abstract class BaseService {
   constructor(private plugin: DeviceManagerPlugin) {}
@@ -96,7 +95,7 @@ export abstract class BaseService {
     const refresh = kuzzleRequest.getRefresh();
 
     const [{ _id }] = await this.app.trigger<EventGenericDocumentBeforeGet>(
-      "generic:document:beforeGet",
+      'generic:document:beforeGet',
       [{ _id: documentId }],
       kuzzleRequest
     );
@@ -110,7 +109,7 @@ export abstract class BaseService {
 
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterGet<T>
-    >("generic:document:afterGet", [newDocument], kuzzleRequest);
+    >('generic:document:afterGet', [newDocument], kuzzleRequest);
 
     return endDocument;
   }
@@ -139,7 +138,7 @@ export abstract class BaseService {
 
     const [modifiedDocument] = await this.app.trigger<
       EventGenericDocumentBeforeWrite<T>
-    >("generic:document:beforeWrite", [document], kuzzleRequest);
+    >('generic:document:beforeWrite', [document], kuzzleRequest);
 
     const newDocument = await this.impersonatedSdk(user).document.create<T>(
       engineId,
@@ -150,7 +149,7 @@ export abstract class BaseService {
     );
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterWrite<T>
-    >("generic:document:afterWrite", [newDocument], kuzzleRequest);
+    >('generic:document:afterWrite', [newDocument], kuzzleRequest);
 
     return endDocument;
   }
@@ -179,7 +178,7 @@ export abstract class BaseService {
 
     const [modifiedDocument] = await this.app.trigger<
       EventGenericDocumentBeforeUpdate<Partial<T>>
-    >("generic:document:beforeUpdate", [document], kuzzleRequest);
+    >('generic:document:beforeUpdate', [document], kuzzleRequest);
 
     const updatedDocument = await this.impersonatedSdk(user).document.update<T>(
       engineId,
@@ -191,7 +190,7 @@ export abstract class BaseService {
 
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterUpdate<T>
-    >("generic:document:afterUpdate", [updatedDocument], kuzzleRequest);
+    >('generic:document:afterUpdate', [updatedDocument], kuzzleRequest);
 
     return endDocument;
   }
@@ -220,7 +219,7 @@ export abstract class BaseService {
 
     const [modifiedDocument] =
       await this.app.trigger<EventGenericDocumentBeforeDelete>(
-        "generic:document:beforeDelete",
+        'generic:document:beforeDelete',
         [{ _id: documentId }],
         kuzzleRequest
       );
@@ -234,7 +233,7 @@ export abstract class BaseService {
 
     const [endDocument] =
       await this.app.trigger<EventGenericDocumentAfterDelete>(
-        "generic:document:afterDelete",
+        'generic:document:afterDelete',
         [{ _id: deletedDocument }],
         kuzzleRequest
       );
@@ -262,7 +261,7 @@ export abstract class BaseService {
     });
     const {
       protocol,
-      misc: { verb = "POST" },
+      misc: { verb = 'POST' },
     } = kuzzleRequest.context.connection;
 
     const lang = kuzzleRequest.getLangParam();
@@ -270,16 +269,16 @@ export abstract class BaseService {
 
     const modifiedBody =
       await this.app.trigger<EventGenericDocumentBeforeSearch>(
-        "generic:document:beforeSearch",
+        'generic:document:beforeSearch',
         searchBody,
         kuzzleRequest
       );
 
     const query = {
-      action: "search",
+      action: 'search',
       body: null,
       collection,
-      controller: "document",
+      controller: 'document',
       from,
       index: engineId,
       lang,
@@ -289,7 +288,7 @@ export abstract class BaseService {
       verb,
     };
 
-    if (protocol === "http" && verb === "GET") {
+    if (protocol === 'http' && verb === 'GET') {
       query.searchBody = modifiedBody;
     } else {
       query.body = modifiedBody;
@@ -301,7 +300,7 @@ export abstract class BaseService {
 
     const modifiedResult = await this.app.trigger<
       EventGenericDocumentAfterSearch<T>
-    >("generic:document:afterSearch", result, request);
+    >('generic:document:afterSearch', result, request);
 
     return new DocumentSearchResult(global, query, {}, modifiedResult);
   }
