@@ -2,6 +2,21 @@
   "extends": ["semantic-release-config-kuzzle"],
   "branches": [
     "master",
-    { "name": "beta", "prerelease": true }
+    { "name": "beta", "prerelease": true },
+    { "name": "temp-ci-debug", "prerelease": true }
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    [
+      "@semantic-release/npm",
+      {
+        "tarballDir": "release",
+        "npmPublish": false
+      }
+    ],
+    "@semantic-release/github",
+    "@semantic-release/git"
   ]
 }
