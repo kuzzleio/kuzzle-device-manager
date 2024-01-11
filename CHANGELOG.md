@@ -1,3 +1,32 @@
+# [2.4.0-temp-ci-debug.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.3.2...v2.4.0-temp-ci-debug.1) (2024-01-11)
+
+
+### Bug Fixes
+
+* **asset_migration:** fixes multiple assets migration and optimize ([fd546cf](https://github.com/kuzzleio/kuzzle-device-manager/commit/fd546cf4141208f2742f3f0a0b303e6e5903ef56))
+* **assetsGroups:** disable checkRights on impersonate ([#325](https://github.com/kuzzleio/kuzzle-device-manager/issues/325)) ([eaa3edc](https://github.com/kuzzleio/kuzzle-device-manager/commit/eaa3edc678529f0a4b1e0f440764e3c8f8504f62))
+* **assets:** migrate tenant only if user is admin ([c24f942](https://github.com/kuzzleio/kuzzle-device-manager/commit/c24f942673b37e798c9f89a098ad6747fd4977bd))
+* **assetsMigrateTenant:** add type for frontend and fix admin only ([e249f13](https://github.com/kuzzleio/kuzzle-device-manager/commit/e249f13d3e2bba70023177374c0874d982f78226))
+* **ci:** correct github token in ci ([a5a6b69](https://github.com/kuzzleio/kuzzle-device-manager/commit/a5a6b69898defc1cdb22b57d389ad745ee75de8e))
+* copy-version script ([72b5e49](https://github.com/kuzzleio/kuzzle-device-manager/commit/72b5e496c81700fddd9b475cb77965c3b6091de7))
+* correct KuzzleRequest for pipes ([ef932d1](https://github.com/kuzzleio/kuzzle-device-manager/commit/ef932d1b874e3768c091783819e6b063b4f1211a))
+* **export:** correct scroll in getNamedMeasures ([05fe4fd](https://github.com/kuzzleio/kuzzle-device-manager/commit/05fe4fd081e049978e1fab06f82bce1bb1dc0950))
+* improve get internal devices documents ([03ccb29](https://github.com/kuzzleio/kuzzle-device-manager/commit/03ccb297c9f86ee6fe78acfe9dace932c96af568))
+* **migrateTenant:** clear groups of newly created assets ([79f6a5a](https://github.com/kuzzleio/kuzzle-device-manager/commit/79f6a5a84a34fd526e3820455cdf999364c49ad1))
+* **npm:** fix repository url ([514dc59](https://github.com/kuzzleio/kuzzle-device-manager/commit/514dc59913950299354b22a99febe525f1190d96))
+* update semantic-release ([380c8b3](https://github.com/kuzzleio/kuzzle-device-manager/commit/380c8b340e925bfca0f1c435c2fcaa6c2f20ced0))
+
+
+### Features
+
+* **asset:** add upsert method ([#323](https://github.com/kuzzleio/kuzzle-device-manager/issues/323)) ([5f87787](https://github.com/kuzzleio/kuzzle-device-manager/commit/5f8778734849386a796eed6ae6071757978bc956))
+* **assets:** assets migrate tenant ([5f05101](https://github.com/kuzzleio/kuzzle-device-manager/commit/5f0510120428cbaffaa4569a705a5f20644d8c83))
+* digitaltwin exports ([#315](https://github.com/kuzzleio/kuzzle-device-manager/issues/315)) ([aab65af](https://github.com/kuzzleio/kuzzle-device-manager/commit/aab65afbc13205ea695c503fbbdf2326fe3cafd2))
+* **digitalTwin:** allow to modify mapping from application ([#322](https://github.com/kuzzleio/kuzzle-device-manager/issues/322)) ([89d375a](https://github.com/kuzzleio/kuzzle-device-manager/commit/89d375a97892aad6b4cf976a38581cb0d7a14936))
+* **digitalTwin:** implement generic document pipes triggers ([#321](https://github.com/kuzzleio/kuzzle-device-manager/issues/321)) ([60a21fc](https://github.com/kuzzleio/kuzzle-device-manager/commit/60a21fc8ced1e925efbad9b79cc0de511efac46c))
+* improve export ([#316](https://github.com/kuzzleio/kuzzle-device-manager/issues/316)) ([51db84a](https://github.com/kuzzleio/kuzzle-device-manager/commit/51db84a5f50fa3381454697cee0a06300b07b4ea))
+* **measures:** add lastMeasuredAt on DigitalTwin ([#314](https://github.com/kuzzleio/kuzzle-device-manager/issues/314)) ([05b8a53](https://github.com/kuzzleio/kuzzle-device-manager/commit/05b8a53970e76cc2d2a3de3b98173c43b8cb54e0))
+
 # [2.4.0-beta.11](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.10...v2.4.0-beta.11) (2024-01-09)
 
 
