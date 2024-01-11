@@ -1,3 +1,10 @@
+# [2.4.0-beta.12](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.11...v2.4.0-beta.12) (2024-01-11)
+
+
+### Bug Fixes
+
+* **npm:** fix repository url ([514dc59](https://github.com/kuzzleio/kuzzle-device-manager/commit/514dc59913950299354b22a99febe525f1190d96))
+
 # [2.4.0-beta.11](https://github.com/kuzzleio/kuzzle-plugin-device-manager/compare/v2.4.0-beta.10...v2.4.0-beta.11) (2024-01-09)
 
 
