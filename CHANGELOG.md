@@ -1,3 +1,10 @@
+# [2.4.0-beta.13](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.12...v2.4.0-beta.13) (2024-01-11)
+
+
+### Bug Fixes
+
+* **ci:** fix npm glob not working anymore ([18e79aa](https://github.com/kuzzleio/kuzzle-device-manager/commit/18e79aa638be41f8e8ecdb42f2d150f730dcebc5))
+
 # [2.4.0-beta.12](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.11...v2.4.0-beta.12) (2024-01-11)
 
 
