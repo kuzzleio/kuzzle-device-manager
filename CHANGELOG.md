@@ -1,3 +1,10 @@
+# [2.4.0-temp-ci-debug.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-temp-ci-debug.1...v2.4.0-temp-ci-debug.2) (2024-01-11)
+
+
+### Bug Fixes
+
+* **npm:** fix glob pattern ([4a92b08](https://github.com/kuzzleio/kuzzle-device-manager/commit/4a92b08247e5022ada503283f8937b0a09ad5daf))
+
 # [2.4.0-temp-ci-debug.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.3.2...v2.4.0-temp-ci-debug.1) (2024-01-11)
 
 
