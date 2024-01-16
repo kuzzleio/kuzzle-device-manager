@@ -138,14 +138,12 @@ export class AssetsController {
 
   async upsert(request: KuzzleRequest): Promise<ApiAssetUpsertResult> {
     const engineId = request.getString("engineId");
-    const assetId = request.getId();
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata");
 
     const upsertAsset = await this.assetService.upsert(
       engineId,
-      assetId,
       model,
       reference,
       metadata,

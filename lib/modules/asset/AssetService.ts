@@ -140,12 +140,12 @@ export class AssetService extends BaseService {
    */
   public async upsert(
     engineId: string,
-    assetId: string,
     model: string,
     reference: string,
     metadata: Metadata,
     request: KuzzleRequest
   ): Promise<KDocument<AssetContent>> {
+    const assetId = `${model}-${reference}`;
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request).catch(
         () => null
