@@ -7,7 +7,8 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kuzzleio/kuzzle-plugin-device-manager.git"
+    "url": "git+https://github.com/kuzzleio/kuzzle-plugin-device-manager.git",
+    "directory": "types"
   },
   "scripts": {
     "prepack": "npm run build",
