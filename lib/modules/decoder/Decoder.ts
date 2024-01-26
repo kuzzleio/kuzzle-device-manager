@@ -170,6 +170,7 @@ export abstract class Decoder {
 
   serialize(): DecoderContent {
     return {
+      action: this.action,
       deviceModel: this.deviceModel,
       measures: this.measures as NamedMeasures,
     };
