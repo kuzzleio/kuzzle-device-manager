@@ -129,7 +129,7 @@ export abstract class Decoder {
   // eslint-disable-next-line no-unused-vars
   async validate(
     payload: JSONObject,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<boolean> | never {
     return true;
   }
@@ -149,7 +149,7 @@ export abstract class Decoder {
   abstract decode(
     decodedPayload: DecodedPayload<any>,
     payload: JSONObject,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<DecodedPayload<any>>;
 
   /**
@@ -170,6 +170,7 @@ export abstract class Decoder {
 
   serialize(): DecoderContent {
     return {
+      action: this.action,
       deviceModel: this.deviceModel,
       measures: this.measures as NamedMeasures,
     };

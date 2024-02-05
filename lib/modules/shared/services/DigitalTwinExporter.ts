@@ -35,7 +35,7 @@ export class DigitalTwinExporter extends AbstractExporter {
       engineId,
       this.target,
       { query, sort },
-      { lang, size: 200 }
+      { lang, size: 200 },
     );
 
     const namedMeasures = await this.getNamedMeasures(engineId);
@@ -76,7 +76,7 @@ export class DigitalTwinExporter extends AbstractExporter {
       {
         query: { equals: { type } },
       },
-      { lang: "koncorde", size: 20 }
+      { lang: "koncorde", size: 20 },
     );
 
     // ? Use a map to dedup the NamedMeasures get from models
@@ -105,7 +105,7 @@ export class DigitalTwinExporter extends AbstractExporter {
   }
 
   private async generateMeasureColumns(
-    namedMeasures: NamedMeasures
+    namedMeasures: NamedMeasures,
   ): Promise<MeasureColumn[]> {
     const columns: MeasureColumn[] = [];
 
@@ -114,11 +114,11 @@ export class DigitalTwinExporter extends AbstractExporter {
       if (!measuresPath.has(name)) {
         const { measure: measureDefinition } = await ask<AskModelMeasureGet>(
           "ask:device-manager:model:measure:get",
-          { type }
+          { type },
         );
 
         const flattenMeasuresPath = Object.keys(
-          flattenObject(measureDefinition.valuesMappings)
+          flattenObject(measureDefinition.valuesMappings),
         ).map((path) => path.replace(".type", "").replace(".properties", ""));
 
         measuresPath.set(name, flattenMeasuresPath);

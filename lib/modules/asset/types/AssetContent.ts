@@ -7,7 +7,7 @@ import { DigitalTwinContent, Metadata } from "../../shared";
  */
 export interface AssetContent<
   TMeasures extends JSONObject = any,
-  TMetadata extends Metadata = any
+  TMetadata extends Metadata = any,
 > extends DigitalTwinContent<TMeasures, TMetadata> {
   /**
    * Link with attached device

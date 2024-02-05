@@ -67,13 +67,13 @@ export class DecodersRegister {
 
     if (decoder.measures.length === 0) {
       throw new PluginImplementationError(
-        `Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property.`
+        `Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property.`,
       );
     }
 
     if (this._decoders.has(decoder.deviceModel)) {
       throw new PluginImplementationError(
-        `Decoder for device model "${decoder.deviceModel}" already registered`
+        `Decoder for device model "${decoder.deviceModel}" already registered`,
       );
     }
 

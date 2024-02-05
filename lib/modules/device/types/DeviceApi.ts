@@ -209,7 +209,7 @@ export type ApiDeviceExportMeasuresResult = {
 };
 
 export interface ApiDeviceReceiveMeasuresRequest<
-  TMeasureValues extends JSONObject = JSONObject
+  TMeasureValues extends JSONObject = JSONObject,
 > extends DevicesControllerRequest {
   action: "receiveMeasures";
 

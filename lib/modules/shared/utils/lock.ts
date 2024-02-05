@@ -2,7 +2,7 @@ import { Mutex } from "kuzzle";
 
 export async function lock<TReturn>(
   lockId: string,
-  cb: () => Promise<TReturn>
+  cb: () => Promise<TReturn>,
 ) {
   const mutex = new Mutex(lockId);
 

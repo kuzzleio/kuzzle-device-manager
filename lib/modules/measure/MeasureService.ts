@@ -43,9 +43,9 @@ export class MeasureService extends BaseService {
           payload.device,
           payload.measurements,
           payload.metadata,
-          payload.payloadUuids
+          payload.payloadUuids,
         );
-      }
+      },
     );
   }
 
@@ -68,12 +68,12 @@ export class MeasureService extends BaseService {
     device: KDocument<DeviceContent>,
     measurements: DecodedMeasurement<JSONObject>[],
     metadata: Metadata,
-    payloadUuids: string[]
+    payloadUuids: string[],
   ) {
     await lock(`measure:ingest:${device._id}`, async () => {
       if (!measurements) {
         this.app.log.warn(
-          `Cannot find measurements for device "${device._source.reference}"`
+          `Cannot find measurements for device "${device._source.reference}"`,
         );
         return;
       }
@@ -81,7 +81,7 @@ export class MeasureService extends BaseService {
       const engineId = device._source.engineId;
       const asset = await this.tryGetLinkedAsset(
         engineId,
-        device._source.assetId
+        device._source.assetId,
       );
       const originalAssetMetadata: Metadata =
         asset === null
@@ -94,7 +94,7 @@ export class MeasureService extends BaseService {
         device,
         asset,
         measurements,
-        payloadUuids
+        payloadUuids,
       );
 
       if (asset) {
@@ -108,13 +108,13 @@ export class MeasureService extends BaseService {
        */
       await this.app.trigger<EventMeasureProcessBefore>(
         "device-manager:measures:process:before",
-        { asset, device, measures }
+        { asset, device, measures },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessBefore>(
           `engine:${engineId}:device-manager:measures:process:before`,
-          { asset, device, measures }
+          { asset, device, measures },
         );
       }
 
@@ -131,13 +131,13 @@ export class MeasureService extends BaseService {
           asset,
           device,
           measures,
-        }
+        },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasurePersistBefore>(
           `engine:${engineId}:device-manager:measures:persist:before`,
-          { asset, device, measures }
+          { asset, device, measures },
         );
       }
 
@@ -149,16 +149,16 @@ export class MeasureService extends BaseService {
             this.config.adminIndex,
             InternalCollection.DEVICES,
             device._id,
-            device._source
+            device._source,
           )
           .catch((error) => {
             throw keepStack(
               error,
               new BadRequestError(
-                `Cannot update device "${device._id}": ${error.message}`
-              )
+                `Cannot update device "${device._id}": ${error.message}`,
+              ),
             );
-          })
+          }),
       );
 
       if (engineId) {
@@ -168,16 +168,16 @@ export class MeasureService extends BaseService {
               engineId,
               InternalCollection.DEVICES,
               device._id,
-              device._source
+              device._source,
             )
             .catch((error) => {
               throw keepStack(
                 error,
                 new BadRequestError(
-                  `Cannot update engine device "${device._id}": ${error.message}`
-                )
+                  `Cannot update engine device "${device._id}": ${error.message}`,
+                ),
               );
-            })
+            }),
         );
 
         promises.push(
@@ -185,15 +185,15 @@ export class MeasureService extends BaseService {
             .mCreate<MeasureContent>(
               engineId,
               InternalCollection.MEASURES,
-              measures.map((measure) => ({ body: measure }))
+              measures.map((measure) => ({ body: measure })),
             )
             .then(({ errors }) => {
               if (errors.length !== 0) {
                 throw new BadRequestError(
-                  `Cannot save measures: ${errors[0].reason}`
+                  `Cannot save measures: ${errors[0].reason}`,
                 );
               }
-            })
+            }),
         );
 
         if (asset) {
@@ -206,16 +206,16 @@ export class MeasureService extends BaseService {
                 engineId,
                 InternalCollection.ASSETS,
                 asset._id,
-                asset._source
+                asset._source,
               )
               .catch((error) => {
                 throw keepStack(
                   error,
                   new BadRequestError(
-                    `Cannot update asset "${asset._id}": ${error.message}`
-                  )
+                    `Cannot update asset "${asset._id}": ${error.message}`,
+                  ),
                 );
-              })
+              }),
           );
 
           promises.push(
@@ -223,8 +223,8 @@ export class MeasureService extends BaseService {
               assetStates,
               engineId,
               originalAssetMetadata,
-              asset._source.metadata
-            )
+              asset._source.metadata,
+            ),
           );
         }
       }
@@ -244,13 +244,13 @@ export class MeasureService extends BaseService {
           asset,
           device,
           measures,
-        }
+        },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessAfter>(
           `engine:${engineId}:device-manager:measures:process:after`,
-          { asset, device, measures }
+          { asset, device, measures },
         );
       }
     });
@@ -258,7 +258,7 @@ export class MeasureService extends BaseService {
 
   private updateDeviceMeasures(
     device: KDocument<DeviceContent>,
-    measurements: MeasureContent[]
+    measurements: MeasureContent[],
   ) {
     if (!device._source.measures) {
       device._source.measures = {};
@@ -306,7 +306,7 @@ export class MeasureService extends BaseService {
    */
   private updateAssetMeasures(
     asset: KDocument<AssetContent>,
-    measurements: MeasureContent[]
+    measurements: MeasureContent[],
   ): Map<number, KDocument<AssetContent<any, any>>> {
     // We use a Map in order to preserve the insertion order to avoid another sort
     const assetStates = new Map<number, KDocument<AssetContent>>();
@@ -356,7 +356,7 @@ export class MeasureService extends BaseService {
 
       assetStates.set(
         measurement.measuredAt,
-        JSON.parse(JSON.stringify(asset))
+        JSON.parse(JSON.stringify(asset)),
       );
     }
 
@@ -372,7 +372,7 @@ export class MeasureService extends BaseService {
     device: KDocument<DeviceContent>,
     asset: KDocument<AssetContent> | null,
     measurements: DecodedMeasurement[],
-    payloadUuids: string[]
+    payloadUuids: string[],
   ): MeasureContent[] {
     const measures: MeasureContent[] = [];
 
@@ -381,7 +381,7 @@ export class MeasureService extends BaseService {
       const assetMeasureName = this.tryFindAssetMeasureName(
         device,
         asset,
-        measurement.measureName
+        measurement.measureName,
       );
 
       const assetContext =
@@ -408,13 +408,13 @@ export class MeasureService extends BaseService {
     }
 
     return measures.sort(
-      (measureA, measureB) => measureA.measuredAt - measureB.measuredAt
+      (measureA, measureB) => measureA.measuredAt - measureB.measuredAt,
     );
   }
 
   private async tryGetLinkedAsset(
     engineId: string,
-    assetId: string
+    assetId: string,
   ): Promise<KDocument<AssetContent>> {
     if (!assetId) {
       return null;
@@ -424,7 +424,7 @@ export class MeasureService extends BaseService {
       const asset = await this.sdk.document.get<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
-        assetId
+        assetId,
       );
 
       return asset;
@@ -441,24 +441,24 @@ export class MeasureService extends BaseService {
   private tryFindAssetMeasureName(
     device: KDocument<DeviceContent>,
     asset: KDocument<AssetContent>,
-    deviceMeasureName: string
+    deviceMeasureName: string,
   ): string | null {
     if (!asset) {
       return null;
     }
 
     const deviceLink = asset._source.linkedDevices.find(
-      (link) => link._id === device._id
+      (link) => link._id === device._id,
     );
 
     if (!deviceLink) {
       throw new BadRequestError(
-        `Device "${device._id}" is not linked to asset "${asset._id}"`
+        `Device "${device._id}" is not linked to asset "${asset._id}"`,
       );
     }
 
     const measureName = deviceLink.measureNames.find(
-      (m) => m.device === deviceMeasureName
+      (m) => m.device === deviceMeasureName,
     );
     // The measure is decoded by the device but is not linked to the asset
     if (!measureName) {
@@ -476,7 +476,7 @@ async function historizeAssetStates(
   assetStates: Map<number, KDocument<AssetContent<any, any>>>,
   engineId: string,
   originalAssetMetadata: Metadata,
-  assetMetadata: Metadata
+  assetMetadata: Metadata,
 ): Promise<void> {
   const metadataChanges = objectDiff(originalAssetMetadata, assetMetadata);
   const lastTimestampRecorded = Array.from(assetStates.keys()).pop();
@@ -523,6 +523,6 @@ async function historizeAssetStates(
       // Reverse order because for now, measuredAt are sorted in ascending order
       // While in mCreate the last item will be the first document to be created
       histories: histories.reverse(),
-    }
+    },
   );
 }

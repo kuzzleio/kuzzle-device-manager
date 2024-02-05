@@ -17,7 +17,7 @@ describe("Ingestion Pipeline: persist before", () => {
             color: "test-persist-before-event-temperature-42",
           },
         },
-      ])
+      ]),
     ).resolves.toBeUndefined();
   });
 });

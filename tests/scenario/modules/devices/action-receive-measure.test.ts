@@ -48,7 +48,7 @@ describe("DeviceController: receiveMeasure", () => {
           equals: { measuredAt: 1674906229441 },
         },
       },
-      { lang: "koncorde", limit: 1 }
+      { lang: "koncorde", limit: 1 },
     );
 
     expect(measures.hits).toHaveLength(1);
@@ -76,7 +76,7 @@ describe("DeviceController: receiveMeasure", () => {
           equals: { uuid: "foobar-barfoo" },
         },
       },
-      { lang: "koncorde", limit: 1 }
+      { lang: "koncorde", limit: 1 },
     );
 
     expect(payloads.hits).toHaveLength(1);
@@ -98,7 +98,7 @@ describe("DeviceController: receiveMeasure", () => {
     const device = await sdk.document.get(
       "engine-ayse",
       "devices",
-      "DummyTemp-linked1"
+      "DummyTemp-linked1",
     );
 
     expect(device._source).toMatchObject({
@@ -135,9 +135,9 @@ describe("DeviceController: receiveMeasure", () => {
             },
           ],
         },
-      })
+      }),
     ).rejects.toThrow(
-      'Measure "temperatureInternal" is not declared for this device model.'
+      'Measure "temperatureInternal" is not declared for this device model.',
     );
   });
 });

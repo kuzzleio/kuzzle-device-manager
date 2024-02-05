@@ -86,7 +86,7 @@ describe("AssetsController:exportMeasures", () => {
     });
 
     expect(csv[0]).toBe(
-      "Model,Reference,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery,position,position.accuracy,position.altitude,temperature,lastMeasuredAt\n"
+      "Model,Reference,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery,position,position.accuracy,position.altitude,temperature,lastMeasuredAt\n",
     );
 
     expect(csv).toHaveLength(deviceCount + 1);

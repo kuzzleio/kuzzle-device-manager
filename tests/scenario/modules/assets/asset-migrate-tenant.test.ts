@@ -33,7 +33,7 @@ describe("AssetsController:migrateTenant", () => {
           assetsList: ["Container-linked1", "Container-linked2"],
           newEngineId: "engine-kuzzle",
         },
-      })
+      }),
     ).rejects.toThrow("User -1 is not authorized to migrate assets");
   });
 
@@ -55,9 +55,9 @@ describe("AssetsController:migrateTenant", () => {
           assetsList: ["Container-linked1", "Container-linked2"],
           newEngineId: "engine-other-group",
         },
-      })
+      }),
     ).rejects.toThrow(
-      "Engine engine-other-group is not in the same group as engine-ayse"
+      "Engine engine-other-group is not in the same group as engine-ayse",
     );
   });
 
@@ -71,7 +71,7 @@ describe("AssetsController:migrateTenant", () => {
           assetsList: [],
           newEngineId: "engine-kuzzle",
         },
-      })
+      }),
     ).rejects.toThrow("No assets to migrate");
   });
 

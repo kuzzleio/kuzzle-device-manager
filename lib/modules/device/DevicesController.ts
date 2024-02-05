@@ -35,7 +35,7 @@ export class DevicesController {
 
   constructor(
     private plugin: DeviceManagerPlugin,
-    private deviceService: DeviceService
+    private deviceService: DeviceService,
   ) {
     /* eslint-disable sort-keys */
     this.definition = {
@@ -158,11 +158,11 @@ export class DevicesController {
 
     this.exporter = new DigitalTwinExporter(
       this.plugin,
-      InternalCollection.DEVICES
+      InternalCollection.DEVICES,
     );
     this.measureExporter = new MeasureExporter(
       this.plugin,
-      InternalCollection.DEVICES
+      InternalCollection.DEVICES,
     );
   }
 
@@ -184,7 +184,7 @@ export class DevicesController {
       engineId,
       deviceId,
       metadata,
-      request
+      request,
     );
 
     return DeviceSerializer.serialize(updatedDevice);
@@ -198,10 +198,10 @@ export class DevicesController {
   }
 
   async search(request: KuzzleRequest): Promise<ApiDeviceSearchResult> {
-    return await this.deviceService.search(
+    return this.deviceService.search(
       request.getString("engineId"),
       request.getSearchParams(),
-      request
+      request,
     );
   }
 
@@ -217,7 +217,7 @@ export class DevicesController {
       model,
       reference,
       metadata,
-      request
+      request,
     );
 
     return DeviceSerializer.serialize(device);
@@ -227,7 +227,7 @@ export class DevicesController {
    * Attach a device to a tenant
    */
   async attachEngine(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiDeviceAttachEngineResult> {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
@@ -239,7 +239,7 @@ export class DevicesController {
    * Detach a device from it's tenant
    */
   async detachEngine(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiDeviceDetachEngineResult> {
     const deviceId = request.getId();
 
@@ -255,15 +255,15 @@ export class DevicesController {
     const assetId = request.getString("assetId");
     const measureNames = request.getBodyArray(
       "measureNames",
-      []
+      [],
     ) as ApiDeviceLinkAssetRequest["body"]["measureNames"];
     const implicitMeasuresLinking = request.getBoolean(
-      "implicitMeasuresLinking"
+      "implicitMeasuresLinking",
     );
 
     if (measureNames.length === 0 && !implicitMeasuresLinking) {
       throw new BadRequestError(
-        `You must provide at least one measure name or set "implicitMeasuresLinking" to true.`
+        `You must provide at least one measure name or set "implicitMeasuresLinking" to true.`,
       );
     }
 
@@ -273,7 +273,7 @@ export class DevicesController {
       assetId,
       measureNames,
       implicitMeasuresLinking,
-      request
+      request,
     );
 
     return {
@@ -286,13 +286,13 @@ export class DevicesController {
    * Unlink a device from an asset.
    */
   async unlinkAsset(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiDeviceUnlinkAssetResult> {
     const deviceId = request.getId();
 
     const { asset, device } = await this.deviceService.unlinkAsset(
       deviceId,
-      request
+      request,
     );
 
     return {
@@ -302,7 +302,7 @@ export class DevicesController {
   }
 
   async getMeasures(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiDeviceGetMeasuresResult> {
     const id = request.getId();
     const engineId = request.getString("engineId");
@@ -328,7 +328,7 @@ export class DevicesController {
         startAt,
         type,
       },
-      { from, size }
+      { from, size },
     );
 
     return { measures, total };
@@ -347,7 +347,7 @@ export class DevicesController {
         const { id } = await this.measureExporter.getExport(engineId, exportId);
         const stream = await this.measureExporter.sendExport(
           engineId,
-          exportId
+          exportId,
         );
 
         request.response.configure({
@@ -393,7 +393,7 @@ export class DevicesController {
         sort,
         startAt,
         type,
-      }
+      },
     );
 
     return { link };
@@ -412,7 +412,7 @@ export class DevicesController {
     for (let i = 0; i < measures.length; i++) {
       if (typeof measures[i].measureName !== "string") {
         throw new BadRequestError(
-          `body.measures[${i}].measureName must be a string`
+          `body.measures[${i}].measureName must be a string`,
         );
       }
 
@@ -420,7 +420,7 @@ export class DevicesController {
         measures[i].measuredAt = Date.now();
       } else if (typeof measures[i].measuredAt !== "number") {
         throw new BadRequestError(
-          `body.measures[${i}].measuredAt must be a number`
+          `body.measures[${i}].measuredAt must be a number`,
         );
       }
 
@@ -430,7 +430,7 @@ export class DevicesController {
 
       if (!_.isPlainObject(measures[i].values)) {
         throw new BadRequestError(
-          `body.measures[${i}].values must be an object`
+          `body.measures[${i}].values must be an object`,
         );
       }
     }
@@ -440,7 +440,7 @@ export class DevicesController {
       deviceId,
       measures,
       payloadUuids,
-      request
+      request,
     );
   }
 
@@ -488,7 +488,7 @@ export class DevicesController {
         lang,
         query,
         sort,
-      }
+      },
     );
 
     return { link };

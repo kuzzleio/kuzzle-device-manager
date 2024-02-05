@@ -3,7 +3,7 @@ import { Kuzzle } from "kuzzle-sdk";
 export async function truncateCollection(
   sdk: Kuzzle,
   index: string,
-  collection: string
+  collection: string,
 ) {
   await sdk.collection.refresh(index, collection);
   await sdk.document.deleteByQuery(index, collection, {});

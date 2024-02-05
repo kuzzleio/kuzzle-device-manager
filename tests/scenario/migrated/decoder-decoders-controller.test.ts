@@ -94,4 +94,52 @@ describe("features/Decoder/DecodersController", () => {
 
     expect(response.result).toMatchObject({ total: 1 });
   });
+
+  it("provide associated payload action when listing decoder capabilities", async () => {
+    let response;
+    let promise;
+    response = await sdk.query({
+      controller: "device-manager/decoders",
+      action: "list",
+    });
+
+    expect(response.result.decoders).toMatchObject([
+      {
+        action: "dummy-temp-position",
+        deviceModel: "DummyTempPosition",
+        measures: [
+          {
+            name: "temperature",
+            type: "temperature",
+          },
+          {
+            name: "battery",
+            type: "battery",
+          },
+          {
+            name: "position",
+            type: "position",
+          },
+        ],
+      },
+      {
+        action: "dummy-temp",
+        deviceModel: "DummyTemp",
+        measures: [
+          {
+            name: "temperature",
+            type: "temperature",
+          },
+          {
+            name: "accelerationSensor",
+            type: "acceleration",
+          },
+          {
+            name: "battery",
+            type: "battery",
+          },
+        ],
+      },
+    ]);
+  });
 });

@@ -47,7 +47,7 @@ export type AssetHistoryEvent =
 export interface AssetHistoryContent<
   TAssetHistoryEvent extends AssetHistoryEvent = any,
   TMeasures extends JSONObject = any,
-  TMetadata extends Metadata = any
+  TMetadata extends Metadata = any,
 > extends KDocumentContent {
   /**
    * Name of the event who caused the historization

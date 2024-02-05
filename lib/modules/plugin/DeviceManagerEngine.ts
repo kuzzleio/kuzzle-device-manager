@@ -46,20 +46,20 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   constructor(
     plugin: Plugin,
     adminConfigManager: ConfigManager,
-    engineConfigManager: ConfigManager
+    engineConfigManager: ConfigManager,
   ) {
     super(
       "device-manager",
       plugin,
       plugin.config.adminIndex,
       adminConfigManager,
-      engineConfigManager
+      engineConfigManager,
     );
 
     this.context = plugin.context;
 
     onAsk<AskEngineList>("ask:device-manager:engine:list", async ({ group }) =>
-      this.list(group)
+      this.list(group),
     );
 
     onAsk<AskEngineUpdateAll>(
@@ -67,7 +67,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       async () => {
         await this.updateEngines();
         await this.createDevicesCollection(this.config.adminIndex);
-      }
+      },
     );
   }
 
@@ -80,7 +80,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           equals: { type: "engine-device-manager" },
         },
       },
-      { lang: "koncorde", size: 5000 }
+      { lang: "koncorde", size: 5000 },
     );
 
     this.context.log.info(`Update ${result.fetched} existing engines`);
@@ -88,7 +88,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     for (const engine of result.hits) {
       await this.onUpdate(
         engine._source.engine.index,
-        engine._source.engine.group
+        engine._source.engine.group,
       );
     }
   }
@@ -145,7 +145,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         if (await this.sdk.collection.exists(index, collection)) {
           await this.sdk.collection.delete(index, collection);
         }
-      })
+      }),
     );
 
     return {
@@ -156,13 +156,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async createAssetsCollection(engineId: string, engineGroup: string) {
     const mappings = await this.getDigitalTwinMappings<AssetModelContent>(
       "asset",
-      engineGroup
+      engineGroup,
     );
 
     await this.sdk.collection.create(
       engineId,
       InternalCollection.ASSETS,
-      mappings
+      mappings,
     );
 
     return InternalCollection.ASSETS;
@@ -172,7 +172,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const assetsCollectionMappings =
       await this.getDigitalTwinMappings<AssetModelContent>(
         "asset",
-        engineGroup
+        engineGroup,
       );
 
     const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
@@ -182,7 +182,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     await this.sdk.collection.create(
       engineId,
       InternalCollection.ASSETS_HISTORY,
-      mappings
+      mappings,
     );
 
     return InternalCollection.ASSETS_HISTORY;
@@ -192,14 +192,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     await this.sdk.collection.create(
       engineId,
       InternalCollection.ASSETS_GROUPS,
-      { mappings: assetGroupsMappings }
+      { mappings: assetGroupsMappings },
     );
 
     return InternalCollection.ASSETS_GROUPS;
   }
 
   private async getDigitalTwinMappings<
-    TDigitalTwinModelContent extends AssetModelContent | DeviceModelContent
+    TDigitalTwinModelContent extends AssetModelContent | DeviceModelContent,
   >(digitalTwinType: "asset" | "device", engineGroup?: string) {
     if (
       this.config.engineCollections[digitalTwinType] === undefined ||
@@ -210,42 +210,42 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const models = await this.getModels<TDigitalTwinModelContent>(
       this.config.adminIndex,
       digitalTwinType,
-      engineGroup
+      engineGroup,
     );
 
     const measureModels = await this.getModels<MeasureModelContent>(
       this.config.adminIndex,
-      "measure"
+      "measure",
     );
 
     const mappings = JSON.parse(
-      JSON.stringify(this.config.engineCollections[digitalTwinType].mappings)
+      JSON.stringify(this.config.engineCollections[digitalTwinType].mappings),
     );
 
     for (const model of models) {
       _.merge(
         mappings.properties.metadata.properties,
-        model._source[digitalTwinType].metadataMappings
+        model._source[digitalTwinType].metadataMappings,
       );
 
       for (const { name: measureName, type: measureType } of model._source[
         digitalTwinType
       ].measures as NamedMeasures) {
         const measureModel = measureModels.find(
-          (m) => m._source.measure.type === measureType
+          (m) => m._source.measure.type === measureType,
         );
 
         if (!measureModel) {
           throw new InternalError(
             `Cannot find measure "${measureType}" declared in ${[
               digitalTwinType,
-            ]} "${model._source[digitalTwinType].model}"`
+            ]} "${model._source[digitalTwinType].model}"`,
           );
         }
 
         mappings.properties.measures.properties[measureName] =
           getEmbeddedMeasureMappings(
-            measureModel._source.measure.valuesMappings
+            measureModel._source.measure.valuesMappings,
           );
       }
     }
@@ -254,14 +254,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async createDevicesCollection(engineId: string) {
-    const mappings = await this.getDigitalTwinMappings<DeviceModelContent>(
-      "device"
-    );
+    const mappings =
+      await this.getDigitalTwinMappings<DeviceModelContent>("device");
 
     await this.sdk.collection.create(
       engineId,
       InternalCollection.DEVICES,
-      mappings
+      mappings,
     );
 
     return InternalCollection.DEVICES;
@@ -273,7 +272,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     await this.sdk.collection.create(
       engineId,
       InternalCollection.MEASURES,
-      mappings
+      mappings,
     );
 
     return InternalCollection.MEASURES;
@@ -282,7 +281,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   private async getMeasuresMappings(engineGroup: string) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.adminIndex,
-      "measure"
+      "measure",
     );
 
     const mappings = JSON.parse(JSON.stringify(measuresMappings));
@@ -290,13 +289,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     for (const model of models) {
       _.merge(
         mappings.properties.values.properties,
-        model._source.measure.valuesMappings
+        model._source.measure.valuesMappings,
       );
     }
 
     const _assetsMappings = await this.getDigitalTwinMappings(
       "asset",
-      engineGroup
+      engineGroup,
     );
     mappings.properties.asset.properties.metadata.properties =
       _assetsMappings.properties.metadata.properties;
@@ -307,7 +306,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   private async getModels<T>(
     engineId: string,
     type: string,
-    engineGroup?: string
+    engineGroup?: string,
   ) {
     const query: JSONObject = {
       and: [{ equals: { type } }],
@@ -326,7 +325,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       engineId,
       InternalCollection.MODELS,
       { query },
-      { lang: "koncorde", size: 5000 }
+      { lang: "koncorde", size: 5000 },
     );
 
     return result.hits;

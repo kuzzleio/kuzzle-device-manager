@@ -98,7 +98,7 @@ describe("Device SCRUD", () => {
     const exists = await sdk.document.exists(
       "engine-ayse",
       "devices",
-      "DummyTemp-scrudme"
+      "DummyTemp-scrudme",
     );
 
     expect(exists).toBe(false);
@@ -114,7 +114,7 @@ describe("Device SCRUD", () => {
           model: "NotExisting",
           reference: "scrudme",
         },
-      })
+      }),
     ).rejects.toThrow('Unknown Device model "NotExisting".');
   });
 });

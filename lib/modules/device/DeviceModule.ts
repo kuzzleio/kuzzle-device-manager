@@ -14,7 +14,7 @@ export class DeviceModule extends Module {
     this.deviceService = new DeviceService(this.plugin);
     this.deviceController = new DevicesController(
       this.plugin,
-      this.deviceService
+      this.deviceService,
     );
 
     this.plugin.api["device-manager/devices"] =

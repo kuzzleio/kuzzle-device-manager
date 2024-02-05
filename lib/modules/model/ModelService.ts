@@ -36,7 +36,7 @@ export class ModelService extends BaseService {
         const assetModel = await this.getAsset(engineGroup, model);
 
         return assetModel._source;
-      }
+      },
     );
     onAsk<AskModelDeviceGet>(
       "ask:device-manager:model:device:get",
@@ -44,7 +44,7 @@ export class ModelService extends BaseService {
         const deviceModel = await this.getDevice(model);
 
         return deviceModel._source;
-      }
+      },
     );
     onAsk<AskModelMeasureGet>(
       "ask:device-manager:model:measure:get",
@@ -52,7 +52,7 @@ export class ModelService extends BaseService {
         const measureModel = await this.getMeasure(type);
 
         return measureModel._source;
-      }
+      },
     );
   }
 
@@ -61,7 +61,7 @@ export class ModelService extends BaseService {
     model: string,
     metadataMappings: JSONObject,
     defaultMetadata: JSONObject,
-    measures: AssetModelContent["asset"]["measures"]
+    measures: AssetModelContent["asset"]["measures"],
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
@@ -80,12 +80,12 @@ export class ModelService extends BaseService {
         this.config.adminIndex,
         InternalCollection.MODELS,
         ModelSerializer.id<AssetModelContent>("asset", modelContent),
-        modelContent
+        modelContent,
       );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
-      InternalCollection.MODELS
+      InternalCollection.MODELS,
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
@@ -98,14 +98,14 @@ export class ModelService extends BaseService {
 
   private checkDefaultValues(
     metadataMappings: JSONObject,
-    defaultMetadata: JSONObject
+    defaultMetadata: JSONObject,
   ) {
     const metadata = Object.keys(
       JSON.parse(
         JSON.stringify(flattenObject(metadataMappings))
           .replace(/properties\./g, "")
-          .replace(/\.type/g, "")
-      )
+          .replace(/\.type/g, ""),
+      ),
     );
 
     const values = Object.keys(flattenObject(defaultMetadata));
@@ -113,7 +113,7 @@ export class ModelService extends BaseService {
     for (let i = 0; i < values.length; i++) {
       if (!metadata.includes(values[i])) {
         throw new BadRequestError(
-          `The default value "${values[i]}" is not in the metadata mappings.`
+          `The default value "${values[i]}" is not in the metadata mappings.`,
         );
       }
     }
@@ -123,7 +123,7 @@ export class ModelService extends BaseService {
     model: string,
     metadataMappings: JSONObject,
     defaultMetadata: JSONObject,
-    measures: DeviceModelContent["device"]["measures"]
+    measures: DeviceModelContent["device"]["measures"],
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Device model "${model}" must be PascalCase.`);
@@ -139,12 +139,12 @@ export class ModelService extends BaseService {
         this.config.adminIndex,
         InternalCollection.MODELS,
         ModelSerializer.id<DeviceModelContent>("device", modelContent),
-        modelContent
+        modelContent,
       );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
-      InternalCollection.MODELS
+      InternalCollection.MODELS,
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
@@ -153,7 +153,7 @@ export class ModelService extends BaseService {
 
   async writeMeasure(
     type: string,
-    valuesMappings: JSONObject
+    valuesMappings: JSONObject,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
       measure: { type, valuesMappings },
@@ -165,12 +165,12 @@ export class ModelService extends BaseService {
         this.config.adminIndex,
         InternalCollection.MODELS,
         ModelSerializer.id<MeasureModelContent>("measure", modelContent),
-        modelContent
+        modelContent,
       );
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
-      InternalCollection.MODELS
+      InternalCollection.MODELS,
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
@@ -181,7 +181,7 @@ export class ModelService extends BaseService {
     await this.sdk.document.delete(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      _id
+      _id,
     );
   }
 
@@ -189,7 +189,7 @@ export class ModelService extends BaseService {
     await this.sdk.document.delete(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      _id
+      _id,
     );
   }
 
@@ -197,12 +197,12 @@ export class ModelService extends BaseService {
     await this.sdk.document.delete(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      _id
+      _id,
     );
   }
 
   async listAsset(
-    engineGroup: string
+    engineGroup: string,
   ): Promise<KDocument<AssetModelContent>[]> {
     const query = {
       and: [{ equals: { type: "asset" } }, { equals: { engineGroup } }],
@@ -213,7 +213,7 @@ export class ModelService extends BaseService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query, sort },
-      { lang: "koncorde", size: 5000 }
+      { lang: "koncorde", size: 5000 },
     );
 
     return result.hits;
@@ -229,7 +229,7 @@ export class ModelService extends BaseService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query, sort },
-      { lang: "koncorde", size: 5000 }
+      { lang: "koncorde", size: 5000 },
     );
 
     return result.hits;
@@ -245,7 +245,7 @@ export class ModelService extends BaseService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query, sort },
-      { lang: "koncorde", size: 5000 }
+      { lang: "koncorde", size: 5000 },
     );
 
     return result.hits;
@@ -263,7 +263,7 @@ export class ModelService extends BaseService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query },
-      { lang: "koncorde", size: 1 }
+      { lang: "koncorde", size: 1 },
     );
 
     return result.total > 0;
@@ -281,7 +281,7 @@ export class ModelService extends BaseService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query },
-      { lang: "koncorde", size: 1 }
+      { lang: "koncorde", size: 1 },
     );
 
     return result.total > 0;
@@ -289,7 +289,7 @@ export class ModelService extends BaseService {
 
   async getAsset(
     engineGroup: string,
-    model: string
+    model: string,
   ): Promise<KDocument<AssetModelContent>> {
     const query = {
       and: [
@@ -303,7 +303,7 @@ export class ModelService extends BaseService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query },
-      { lang: "koncorde", size: 1 }
+      { lang: "koncorde", size: 1 },
     );
 
     if (result.total === 0) {
@@ -325,7 +325,7 @@ export class ModelService extends BaseService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query },
-      { lang: "koncorde", size: 1 }
+      { lang: "koncorde", size: 1 },
     );
 
     if (result.total === 0) {
@@ -347,7 +347,7 @@ export class ModelService extends BaseService {
       this.config.adminIndex,
       InternalCollection.MODELS,
       { query },
-      { lang: "koncorde", size: 1 }
+      { lang: "koncorde", size: 1 },
     );
 
     if (result.total === 0) {

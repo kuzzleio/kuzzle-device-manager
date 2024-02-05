@@ -1,4 +1,4 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject, Kuzzle } from "kuzzle-sdk";
 import axios from "axios";
 import { parse as csvParse } from "csv-parse/sync";
 
@@ -10,7 +10,7 @@ import { loadSecurityDefault } from "../../../hooks/security";
 jest.setTimeout(10000);
 
 describe("DevicesController:exportMeasures", () => {
-  const sdk = setupHooks();
+  const sdk: Kuzzle = setupHooks();
 
   beforeAll(async () => {
     await loadSecurityDefault(sdk);
@@ -19,7 +19,7 @@ describe("DevicesController:exportMeasures", () => {
   it("should support elasticsearch and koncorde query", async () => {
     async function testQuery(
       query: JSONObject,
-      lang: ApiDeviceExportMeasuresRequest["lang"]
+      lang: ApiDeviceExportMeasuresRequest["lang"],
     ) {
       const { result } = await sdk.query<ApiDeviceExportMeasuresRequest>({
         controller: "device-manager/devices",
@@ -32,7 +32,7 @@ describe("DevicesController:exportMeasures", () => {
         lang,
       });
 
-      return await axios.get("http://localhost:7512" + result.link, {
+      return axios.get("http://localhost:7512" + result.link, {
         // ? accept all status minor than 500 to accept BadRequest error
         validateStatus: (status) => status < 500,
       });
@@ -42,7 +42,7 @@ describe("DevicesController:exportMeasures", () => {
       {
         equals: { type: "temperature" },
       },
-      "elasticsearch"
+      "elasticsearch",
     );
     expect(esError.status).toBe(400);
 
@@ -50,7 +50,7 @@ describe("DevicesController:exportMeasures", () => {
       {
         term: { type: "temperature" },
       },
-      "elasticsearch"
+      "elasticsearch",
     );
     expect(esResponse.status).toBe(200);
 
@@ -58,7 +58,7 @@ describe("DevicesController:exportMeasures", () => {
       {
         equals: { type: "temperature" },
       },
-      "koncorde"
+      "koncorde",
     );
     expect(koncordeResponse.status).toBe(200);
   });
@@ -131,7 +131,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(26);
     expect(csv[0]).toBe(
-      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery\n"
+      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery\n",
     );
 
     const [
@@ -208,7 +208,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(3);
     expect(csv[0]).toBe(
-      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery\n"
+      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery\n",
     );
   });
 });

@@ -41,11 +41,11 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
   addMeasurement<TMeasureValues extends JSONObject = JSONObject>(
     deviceReference: string,
     measureName: TDecoder["measures"][number]["name"],
-    measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">
+    measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">,
   ) {
     if (!this.decoder.measureNames.includes(measureName)) {
       throw new BadRequestError(
-        `Decoder "${this.decoder.deviceModel}" has no measure named "${measureName}"`
+        `Decoder "${this.decoder.deviceModel}" has no measure named "${measureName}"`,
       );
     }
 
@@ -97,11 +97,11 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
   }
 
   private validateMeasurement<TMeasureValues>(
-    measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">
+    measurement: Omit<DecodedMeasurement<TMeasureValues>, "measureName">,
   ) {
     if (measurement.measuredAt.toString().length !== 13) {
       throw new BadRequestError(
-        `Invalid payload: "measuredAt" should be a timestamp in milliseconds`
+        `Invalid payload: "measuredAt" should be a timestamp in milliseconds`,
       );
     }
   }

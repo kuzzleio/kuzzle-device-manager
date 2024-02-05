@@ -3,7 +3,7 @@ import { BaseRequest, JSONObject, Kuzzle } from "kuzzle-sdk";
 async function createEngineIfNotExists(
   sdk: Kuzzle,
   index: string,
-  group?: string
+  group?: string,
 ) {
   const { result } = await sdk.query<BaseRequest, JSONObject>({
     controller: "device-manager/engine",

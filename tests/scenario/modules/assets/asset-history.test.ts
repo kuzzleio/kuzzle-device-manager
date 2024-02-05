@@ -21,7 +21,7 @@ describe("DeviceController: receiveMeasure", () => {
       "assets-history",
       {
         sort: { "_kuzzle_info.createdAt": "desc" },
-      }
+      },
     );
     expect(result.hits[0]._source).toMatchObject({
       id: "Container-linked1",
@@ -61,7 +61,7 @@ describe("DeviceController: receiveMeasure", () => {
 
     const result = await sdk.document.search<AssetHistoryContent>(
       "engine-ayse",
-      "assets-history"
+      "assets-history",
     );
 
     expect(result.hits).toHaveLength(3);
@@ -123,7 +123,7 @@ describe("DeviceController: receiveMeasure", () => {
       "assets-history",
       {
         sort: { "_kuzzle_info.createdAt": "desc" },
-      }
+      },
     );
     expect(result.hits[0]._source).toMatchObject({
       id: "Container-linked1",
@@ -165,7 +165,7 @@ describe("DeviceController: receiveMeasure", () => {
       "assets-history",
       {
         sort: { "_kuzzle_info.createdAt": "desc" },
-      }
+      },
     );
 
     expect(result.hits[0]._source).toMatchObject({
@@ -185,9 +185,9 @@ describe("DeviceController: receiveMeasure", () => {
         await sdk.document.get<AssetContent>(
           "engine-ayse",
           "assets",
-          "Container-linked1"
+          "Container-linked1",
         )
-      )._source.metadata
+      )._source.metadata,
     ).toMatchObject({
       height: 11,
       person: {
@@ -227,7 +227,7 @@ describe("DeviceController: receiveMeasure", () => {
       "assets-history",
       {
         sort: { "_kuzzle_info.createdAt": "desc" },
-      }
+      },
     );
 
     // Update metadata from:  { weight: 10, height: 11, trailer: { weight: 128, capacity: 1024 } }
@@ -255,9 +255,9 @@ describe("DeviceController: receiveMeasure", () => {
         await sdk.document.get<AssetContent>(
           "engine-ayse",
           "assets",
-          "Container-linked3"
+          "Container-linked3",
         )
-      )._source.metadata
+      )._source.metadata,
     ).toMatchObject({
       height: 20,
       person: {
@@ -294,7 +294,7 @@ describe("DeviceController: receiveMeasure", () => {
 
     const result = await sdk.document.search<AssetHistoryContent>(
       "engine-ayse",
-      "assets-history"
+      "assets-history",
     );
 
     expect(result.hits).toHaveLength(2);

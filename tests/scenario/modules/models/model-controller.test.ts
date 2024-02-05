@@ -36,8 +36,8 @@ describe("features/Model/Controller", () => {
       sdk.document.get<AssetModelContent>(
         "device-manager",
         "models",
-        "model-asset-Plane"
-      )
+        "model-asset-Plane",
+      ),
     ).resolves.toMatchObject<Partial<KDocument<AssetModelContent>>>({
       _source: {
         type: "asset",
@@ -74,8 +74,8 @@ describe("features/Model/Controller", () => {
       sdk.document.get<AssetModelContent>(
         "device-manager",
         "models",
-        "model-asset-Plane"
-      )
+        "model-asset-Plane",
+      ),
     ).resolves.toMatchObject<Partial<KDocument<AssetModelContent>>>({
       _source: {
         type: "asset",
@@ -113,8 +113,8 @@ describe("features/Model/Controller", () => {
       sdk.document.get<DeviceModelContent>(
         "device-manager",
         "models",
-        "model-device-Zigbee"
-      )
+        "model-device-Zigbee",
+      ),
     ).resolves.toMatchObject<Partial<KDocument<DeviceModelContent>>>({
       _source: {
         type: "device",
@@ -149,8 +149,8 @@ describe("features/Model/Controller", () => {
       sdk.document.get<DeviceModelContent>(
         "device-manager",
         "models",
-        "model-device-Zigbee"
-      )
+        "model-device-Zigbee",
+      ),
     ).resolves.toMatchObject<Partial<KDocument<DeviceModelContent>>>({
       _source: {
         type: "device",
@@ -183,8 +183,8 @@ describe("features/Model/Controller", () => {
       sdk.document.get<MeasureModelContent>(
         "device-manager",
         "models",
-        "model-measure-presence"
-      )
+        "model-measure-presence",
+      ),
     ).resolves.toMatchObject<Partial<KDocument<MeasureModelContent>>>({
       _source: {
         type: "measure",
@@ -213,8 +213,8 @@ describe("features/Model/Controller", () => {
       sdk.document.get<MeasureModelContent>(
         "device-manager",
         "models",
-        "model-measure-presence"
-      )
+        "model-measure-presence",
+      ),
     ).resolves.toMatchObject<Partial<KDocument<MeasureModelContent>>>({
       _source: {
         type: "measure",

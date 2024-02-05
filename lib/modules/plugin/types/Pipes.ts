@@ -15,7 +15,7 @@ export type EventGenericDocumentBeforeSearch = {
 };
 
 export type EventGenericDocumentAfterSearch<
-  T extends KDocumentContent = KDocumentContent
+  T extends KDocumentContent = KDocumentContent,
 > = {
   name: `generic:document:afterSearch`;
   args: [SearchQueryResult<T>, KuzzleRequest];

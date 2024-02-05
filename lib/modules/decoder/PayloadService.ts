@@ -23,7 +23,7 @@ export class PayloadService extends BaseService {
         await this.receiveFormated(payload.device, payload.measures, {
           payloadUuids: payload.payloadUuids,
         });
-      }
+      },
     );
   }
 
@@ -36,7 +36,7 @@ export class PayloadService extends BaseService {
   async receive(
     request: KuzzleRequest,
     decoder: Decoder,
-    { refresh }: any = {}
+    { refresh }: any = {},
   ) {
     const payload = request.getBody();
     const apiAction = `${request.input.controller}:${request.input.action}`;
@@ -71,7 +71,7 @@ export class PayloadService extends BaseService {
         payload,
         apiAction,
         DecodingState[state],
-        errorReason
+        errorReason,
       );
     }
 
@@ -86,7 +86,7 @@ export class PayloadService extends BaseService {
     const devices = await this.retrieveDevices(
       decoder.deviceModel,
       decodedPayload.references,
-      { refresh }
+      { refresh },
     );
 
     for (const device of devices) {
@@ -104,7 +104,7 @@ export class PayloadService extends BaseService {
   async receiveFormated(
     device: KDocument<DeviceContent>,
     measurements: DecodedMeasurement[],
-    { payloadUuids }: { payloadUuids?: string[] } = {}
+    { payloadUuids }: { payloadUuids?: string[] } = {},
   ) {
     const apiAction = "device-manager/devices:receiveMeasure";
 
@@ -114,7 +114,7 @@ export class PayloadService extends BaseService {
       payloadUuids[0],
       true,
       measurements,
-      apiAction
+      apiAction,
     );
     await ask<AskMeasureIngest>("device-manager:measures:ingest", {
       device,
@@ -136,18 +136,18 @@ export class PayloadService extends BaseService {
     payload: JSONObject,
     apiAction: string,
     state?: string,
-    reason?: string
+    reason?: string,
   ) {
     try {
       await this.sdk.document.create(
         this.config.adminIndex,
         "payloads",
         { apiAction, deviceModel, payload, reason, state, uuid, valid },
-        uuid
+        uuid,
       );
     } catch (error) {
       this.app.log.error(
-        `Cannot save the payload from "${deviceModel}": ${error}`
+        `Cannot save the payload from "${deviceModel}": ${error}`,
       );
     }
   }
@@ -162,15 +162,15 @@ export class PayloadService extends BaseService {
       refresh,
     }: {
       refresh?: any;
-    } = {}
+    } = {},
   ) {
     const { successes: devices, errors } =
       await this.sdk.document.mGet<DeviceContent>(
         this.config.adminIndex,
         InternalCollection.DEVICES,
         references.map((reference) =>
-          DeviceSerializer.id(deviceModel, reference)
-        )
+          DeviceSerializer.id(deviceModel, reference),
+        ),
       );
 
     // If we have unknown devices, let's check if we should register them
@@ -178,7 +178,7 @@ export class PayloadService extends BaseService {
       const { _source } = await this.sdk.document.get(
         this.config.adminIndex,
         this.config.adminCollections.config.name,
-        "plugin--device-manager"
+        "plugin--device-manager",
       );
 
       if (_source["device-manager"].provisioningStrategy === "auto") {
@@ -189,8 +189,8 @@ export class PayloadService extends BaseService {
       } else {
         this.app.log.info(
           `Skipping new devices "${errors.join(
-            ", "
-          )}". Auto-provisioning is disabled.`
+            ", ",
+          )}". Auto-provisioning is disabled.`,
         );
       }
     }
@@ -201,7 +201,7 @@ export class PayloadService extends BaseService {
   private async provisionDevices(
     deviceModel: string,
     deviceIds: string[],
-    { refresh }: { refresh: any }
+    { refresh }: { refresh: any },
   ): Promise<KDocument<DeviceContent>[]> {
     const newDevices = deviceIds.map((deviceId) => {
       // Reference may contains a "-"
@@ -229,12 +229,12 @@ export class PayloadService extends BaseService {
         this.config.adminIndex,
         InternalCollection.DEVICES,
         newDevices,
-        { refresh }
+        { refresh },
       );
 
     for (const error of errors) {
       this.app.log.error(
-        `Cannot create device "${error.document._id}": ${error.reason}`
+        `Cannot create device "${error.document._id}": ${error.reason}`,
       );
     }
 
@@ -244,7 +244,7 @@ export class PayloadService extends BaseService {
   public async prune(
     days: number,
     onlyValid: boolean,
-    { deviceModel }: { deviceModel?: string } = {}
+    { deviceModel }: { deviceModel?: string } = {},
   ): Promise<number> {
     const filter = [];
 
@@ -268,7 +268,7 @@ export class PayloadService extends BaseService {
     const deleted = await this.sdk.bulk.deleteByQuery(
       this.config.adminIndex,
       "payloads",
-      { query: { bool: { filter } } }
+      { query: { bool: { filter } } },
     );
 
     return deleted;
@@ -277,7 +277,7 @@ export class PayloadService extends BaseService {
   public async receiveUnknown(
     deviceModel: string,
     payload: JSONObject,
-    apiAction: string
+    apiAction: string,
   ) {
     await this.savePayload(deviceModel, uuidv4(), false, payload, apiAction);
   }

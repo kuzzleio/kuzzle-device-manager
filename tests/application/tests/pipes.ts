@@ -16,13 +16,13 @@ export function registerTestPipes(app: Backend) {
       if (color === "test-persist-before-event-temperature-42") {
         if (asset._source.measures.temperatureExt.values.temperature !== 42) {
           throw new Error(
-            "The asset document in this event should already contains the updated measure"
+            "The asset document in this event should already contains the updated measure",
           );
         }
       }
 
       return { asset, device, measures };
-    }
+    },
   );
 
   app.pipe.register<EventMeasureProcessBefore>(
@@ -37,7 +37,7 @@ export function registerTestPipes(app: Backend) {
                 device._source.measures.temperature.measuredAt
               ) {
                 throw new Error(
-                  `The measure has already been embedded into the device but it shouldn't at this stage of the ingestion pipeline`
+                  `The measure has already been embedded into the device but it shouldn't at this stage of the ingestion pipeline`,
                 );
               }
             }
@@ -137,6 +137,6 @@ export function registerTestPipes(app: Backend) {
       }
 
       return { asset, device, measures };
-    }
+    },
   );
 }

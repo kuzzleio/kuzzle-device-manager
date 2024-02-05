@@ -43,7 +43,7 @@ describe("DeviceController: receiveMeasure", () => {
     });
 
     await expect(
-      documentGet(sdk, "device-manager", "devices", "DummyTemp-unlinked1")
+      documentGet(sdk, "device-manager", "devices", "DummyTemp-unlinked1"),
     ).resolves.toMatchObject({
       assetId: "Container-unlinked1",
       _kuzzle_info: {
@@ -51,7 +51,7 @@ describe("DeviceController: receiveMeasure", () => {
       },
     });
     await expect(
-      documentGet(sdk, "engine-ayse", "devices", "DummyTemp-unlinked1")
+      documentGet(sdk, "engine-ayse", "devices", "DummyTemp-unlinked1"),
     ).resolves.toMatchObject({
       assetId: "Container-unlinked1",
       _kuzzle_info: {
@@ -59,7 +59,7 @@ describe("DeviceController: receiveMeasure", () => {
       },
     });
     await expect(
-      documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1")
+      documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
       linkedDevices: [
         {
@@ -90,7 +90,7 @@ describe("DeviceController: receiveMeasure", () => {
     });
 
     await expect(
-      documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1")
+      documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
       linkedDevices: [
         {
@@ -148,13 +148,13 @@ describe("DeviceController: receiveMeasure", () => {
         sdk,
         "device-manager",
         "devices",
-        "DummyTempPosition-unlinked3"
-      )
+        "DummyTempPosition-unlinked3",
+      ),
     ).resolves.toMatchObject({
       assetId: "Container-linked1",
     });
     await expect(
-      documentGet(sdk, "engine-ayse", "devices", "DummyTempPosition-unlinked3")
+      documentGet(sdk, "engine-ayse", "devices", "DummyTempPosition-unlinked3"),
     ).resolves.toMatchObject({
       assetId: "Container-linked1",
     });
@@ -162,7 +162,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk,
       "engine-ayse",
       "assets",
-      "Container-linked1"
+      "Container-linked1",
     );
 
     expect(container.linkedDevices[1]).toMatchObject({
@@ -209,7 +209,7 @@ describe("DeviceController: receiveMeasure", () => {
     });
 
     await expect(
-      documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1")
+      documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
       linkedDevices: [
         {
@@ -236,7 +236,7 @@ describe("DeviceController: receiveMeasure", () => {
         _id: "DummyTemp-linked1",
         assetId: "Container-unlinked1",
         implicitMeasuresLinking: true,
-      })
+      }),
     ).rejects.toMatchObject({
       message: 'Device "DummyTemp-linked1" is already linked to another asset.',
     });
@@ -258,7 +258,7 @@ describe("DeviceController: receiveMeasure", () => {
             },
           ],
         },
-      })
+      }),
     ).rejects.toMatchObject({
       message:
         'Measure name "temperatureExt" is already provided by another device on this asset.',
@@ -281,7 +281,7 @@ describe("DeviceController: receiveMeasure", () => {
             },
           ],
         },
-      })
+      }),
     ).rejects.toMatchObject({
       message: 'Device "DummyTemp-detached1" is not attached to an engine.',
     });
@@ -303,7 +303,7 @@ describe("DeviceController: receiveMeasure", () => {
             },
           ],
         },
-      })
+      }),
     ).rejects.toMatchObject({
       message:
         'Device "DummyTemp-unlinked1" is not attached to the specified engine.',
@@ -326,7 +326,7 @@ describe("DeviceController: receiveMeasure", () => {
             },
           ],
         },
-      })
+      }),
     ).rejects.toMatchObject({
       message:
         'Document "Container-notexisting" not found in "engine-ayse":"assets".',
@@ -341,7 +341,7 @@ describe("DeviceController: receiveMeasure", () => {
         engineId: "engine-ayse",
         _id: "DummyTempPosition-unlinked3",
         assetId: "Container-unlinked1",
-      })
+      }),
     ).rejects.toMatchObject({
       message:
         'You must provide at least one measure name or set "implicitMeasuresLinking" to true.',

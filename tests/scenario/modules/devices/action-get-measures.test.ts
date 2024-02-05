@@ -24,7 +24,7 @@ describe("DevicesController:GetMeasures", () => {
   it("should support elasticsearch and koncorde query", async () => {
     async function testQuery(
       query: JSONObject,
-      lang: ApiDeviceGetMeasuresRequest["lang"]
+      lang: ApiDeviceGetMeasuresRequest["lang"],
     ) {
       try {
         return await sdk.query<ApiDeviceGetMeasuresRequest>({
@@ -43,19 +43,19 @@ describe("DevicesController:GetMeasures", () => {
 
     const esError = await testQuery(
       { equals: { "values.temperature": 40 } },
-      "elasticsearch"
+      "elasticsearch",
     );
     expect(esError.status).toBe(400);
 
     const esResponse = await testQuery(
       { term: { "values.temperature": 40 } },
-      "elasticsearch"
+      "elasticsearch",
     );
     expect(esResponse.status).toBe(200);
 
     const koncordeResponse = await testQuery(
       { equals: { "values.temperature": 40 } },
-      "koncorde"
+      "koncorde",
     );
     expect(koncordeResponse.status).toBe(200);
   });
