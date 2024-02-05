@@ -41,7 +41,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   constructor(
     protected plugin: DeviceManagerPlugin,
     protected target: InternalCollection,
-    config: Partial<ExporterOption> = {}
+    config: Partial<ExporterOption> = {},
   ) {
     if (Object.keys(config).length > 0) {
       this.config = {
@@ -67,7 +67,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     const engine = await this.sdk.document.get<{ engine: EngineContent }>(
       this.plugin.config.adminIndex,
       InternalCollection.CONFIG,
-      `engine-device-manager--${engineId}`
+      `engine-device-manager--${engineId}`,
     );
 
     return engine._source.engine;
@@ -78,7 +78,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   protected abstract getLink(
     engineId: string,
     exportId: UUID,
-    params: P
+    params: P,
   ): string;
 
   /**
@@ -95,7 +95,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     await this.ms.setex(
       this.exportRedisKey(engineId, exportId),
       JSON.stringify(params),
-      this.config.expireTime
+      this.config.expireTime,
     );
 
     let link = this.getLink(engineId, exportId, params);
@@ -115,14 +115,14 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
 
   protected formatHit(
     columns: Column[],
-    hit: KHit<KDocumentContentGeneric>
+    hit: KHit<KDocumentContentGeneric>,
   ): string[] {
     return columns.map(({ path }) => _.get(hit, path, null));
   }
 
   async getExport(engineId: string, exportId: string): Promise<P> {
     const exportParams = await this.sdk.ms.get(
-      this.exportRedisKey(engineId, exportId)
+      this.exportRedisKey(engineId, exportId),
     );
 
     if (!exportParams) {
@@ -134,7 +134,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
 
   async getExportStream(
     request: SearchResult<KHit<KDocumentContentGeneric>>,
-    columns: Column[]
+    columns: Column[],
   ) {
     const stream = new PassThrough();
 

@@ -12,7 +12,7 @@ export class PayloadsController {
 
   constructor(
     payloadService: PayloadService,
-    decodersRegister: DecodersRegister
+    decodersRegister: DecodersRegister,
   ) {
     this.payloadService = payloadService;
     this.decodersRegister = decodersRegister;
@@ -62,7 +62,7 @@ export class PayloadsController {
   }
 
   async receiveUnknown(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiPayloadReceiveUnkownResult> {
     const payload = request.getBody();
     const deviceModel = request.getString("deviceModel", "unknownModel");

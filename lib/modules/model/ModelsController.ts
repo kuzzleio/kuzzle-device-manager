@@ -117,14 +117,14 @@ export class ModelsController {
       model,
       metadataMappings,
       defaultValues,
-      measures
+      measures,
     );
 
     return assetModel;
   }
 
   async writeDevice(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiModelWriteDeviceResult> {
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
@@ -135,28 +135,28 @@ export class ModelsController {
       model,
       metadataMappings,
       defaultValues,
-      measures
+      measures,
     );
 
     return deviceModel;
   }
 
   async writeMeasure(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiModelWriteMeasureResult> {
     const type = request.getBodyString("type");
     const valuesMappings = request.getBodyObject("valuesMappings");
 
     const measureModel = await this.modelService.writeMeasure(
       type,
-      valuesMappings
+      valuesMappings,
     );
 
     return measureModel;
   }
 
   async deleteAsset(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiModelDeleteAssetResult> {
     const _id = request.getId();
 
@@ -164,7 +164,7 @@ export class ModelsController {
   }
 
   async deleteDevice(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiModelDeleteDeviceResult> {
     const _id = request.getId();
 
@@ -172,7 +172,7 @@ export class ModelsController {
   }
 
   async deleteMeasure(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiModelDeleteMeasureResult> {
     const _id = request.getId();
 

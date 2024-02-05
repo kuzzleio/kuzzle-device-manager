@@ -47,7 +47,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
   protected getLink(
     engineId: string,
     exportId: UUID,
-    params: MeasureExportParams
+    params: MeasureExportParams,
   ) {
     return `/_/device-manager/${engineId}/${this.target}/${params.id}/measures/_export/${exportId}`;
   }
@@ -58,7 +58,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
   async search(
     engineId: string,
     params: MeasureSearchParams,
-    options?: MeasuresSearchOptions
+    options?: MeasuresSearchOptions,
   ) {
     const searchQuery = this.prepareMeasureSearch(params);
 
@@ -73,7 +73,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
         from: options?.from ?? 0,
         lang: params.lang,
         size: options?.size ?? 25,
-      }
+      },
     );
 
     return { measures: result.hits, total: result.total };
@@ -91,12 +91,12 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
   async prepareExport(
     engineId: string,
     user: User,
-    params: MeasureSearchParams
+    params: MeasureSearchParams,
   ) {
     const digitalTwin = await this.sdk.document.get<DigitalTwinContent>(
       engineId,
       this.target,
-      params.id
+      params.id,
     );
 
     const searchQuery = this.prepareMeasureSearch(params);
@@ -152,7 +152,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       engineId,
       InternalCollection.MEASURES,
       { query, sort },
-      { lang, size: 200 }
+      { lang, size: 200 },
     );
 
     const targetModel =
@@ -163,11 +163,11 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       {
         engineGroup: engine.group,
         model,
-      }
+      },
     );
 
     const measureColumns = await this.generateMeasureColumns(
-      modelDocument[targetModel].measures
+      modelDocument[targetModel].measures,
     );
 
     const columns: Column[] = [
@@ -188,7 +188,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
   }
 
   private async generateMeasureColumns(
-    documentMeasures: NamedMeasures
+    documentMeasures: NamedMeasures,
   ): Promise<Array<Column & { isMeasure: true }>> {
     /**
      * @example
@@ -209,11 +209,11 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       if (!(type in mappingsByMeasureType)) {
         const { measure } = await ask<AskModelMeasureGet>(
           "ask:device-manager:model:measure:get",
-          { type }
+          { type },
         );
 
         mappingsByMeasureType[type] = Object.keys(
-          flattenObject(measure.valuesMappings)
+          flattenObject(measure.valuesMappings),
         );
       }
 

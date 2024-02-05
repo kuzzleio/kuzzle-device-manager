@@ -23,7 +23,7 @@ export class AssetSerializer {
    */
   static measureContext(
     asset: KDocument<AssetContent>,
-    measureName: string
+    measureName: string,
   ): AssetMeasureContext {
     return {
       _id: asset._id,

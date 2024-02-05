@@ -27,7 +27,7 @@ export class DummyTempPositionDecoder extends Decoder {
 
   async decode(
     decodedPayload: DecodedPayload<DummyTempPositionDecoder>,
-    payload: JSONObject
+    payload: JSONObject,
   ): Promise<DecodedPayload<DummyTempPositionDecoder>> {
     decodedPayload.addMeasurement<TemperatureMeasurement>(
       payload.deviceEUI,
@@ -42,7 +42,7 @@ export class DummyTempPositionDecoder extends Decoder {
             ? payload.temperature.value
             : payload.temperature,
         },
-      }
+      },
     );
 
     const location = isMeasureDated(payload.location)
@@ -63,7 +63,7 @@ export class DummyTempPositionDecoder extends Decoder {
           },
           accuracy: location.accuracy,
         },
-      }
+      },
     );
 
     const battery = isMeasureDated(payload.battery)
@@ -80,7 +80,7 @@ export class DummyTempPositionDecoder extends Decoder {
         values: {
           battery: battery * 100,
         },
-      }
+      },
     );
 
     return decodedPayload;

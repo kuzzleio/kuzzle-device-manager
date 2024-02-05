@@ -1,4 +1,4 @@
-import { Kuzzle } from "kuzzle";
+import { Kuzzle } from "kuzzle-sdk";
 
 import rights from "../fixtures/rights";
 

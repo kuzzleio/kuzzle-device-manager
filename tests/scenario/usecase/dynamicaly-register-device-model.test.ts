@@ -68,7 +68,7 @@ describe("DeviceScenario: dynamicaly register device model and receive a measure
     const device = await sdk.document.get(
       "device-manager",
       "devices",
-      "Enginko-24BA98"
+      "Enginko-24BA98",
     );
 
     expect(device._source).toMatchObject({

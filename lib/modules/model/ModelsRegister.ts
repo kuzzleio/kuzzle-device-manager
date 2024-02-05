@@ -42,7 +42,7 @@ export class ModelsRegister {
 
     await this.sdk.collection.refresh(
       this.config.adminIndex,
-      InternalCollection.MODELS
+      InternalCollection.MODELS,
     );
   }
 
@@ -51,11 +51,11 @@ export class ModelsRegister {
     model: string,
     measures: NamedMeasures,
     metadataMappings: JSONObject = {},
-    defaultMetadata: JSONObject = {}
+    defaultMetadata: JSONObject = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
-        `Asset model "${model}" must be PascalCase`
+        `Asset model "${model}" must be PascalCase`,
       );
     }
 
@@ -70,11 +70,11 @@ export class ModelsRegister {
     model: string,
     measures: NamedMeasures,
     metadataMappings: JSONObject = {},
-    defaultMetadata: JSONObject = {}
+    defaultMetadata: JSONObject = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
-        `Device model "${model}" must be PascalCase`
+        `Device model "${model}" must be PascalCase`,
       );
     }
 
@@ -100,18 +100,18 @@ export class ModelsRegister {
     });
 
     const modelTitles = models.map((model) =>
-      ModelSerializer.title(type, model)
+      ModelSerializer.title(type, model),
     );
 
     await this.sdk.document.mCreateOrReplace(
       this.config.adminIndex,
       InternalCollection.MODELS,
       documents as any,
-      { strict: true }
+      { strict: true },
     );
 
     this.context.log.info(
-      `Successfully load "${type}" models: ${modelTitles.join(", ")}`
+      `Successfully load "${type}" models: ${modelTitles.join(", ")}`,
     );
   }
 }

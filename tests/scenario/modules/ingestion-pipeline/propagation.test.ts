@@ -18,14 +18,14 @@ describe("Ingestion Pipeline: propagation", () => {
 
     const result = await sdk.document.search<MeasureContent>(
       "engine-ayse",
-      "measures"
+      "measures",
     );
 
     const batteryMeasure = result.hits.find(
-      (m) => m._source.type === "battery"
+      (m) => m._source.type === "battery",
     );
     const temperatureMeasures = result.hits.filter(
-      (m) => m._source.type === "temperature"
+      (m) => m._source.type === "temperature",
     );
 
     expect(batteryMeasure?._source.asset).toBeNull();

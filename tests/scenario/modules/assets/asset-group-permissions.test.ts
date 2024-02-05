@@ -88,7 +88,7 @@ describe("AssetsGroupsController", () => {
     const { _source: rootGroup } = await sdk.document.get<AssetsGroupContent>(
       "engine-ayse",
       InternalCollection.ASSETS_GROUPS,
-      "root-group"
+      "root-group",
     );
 
     expect(rootGroup).toMatchObject({
@@ -193,7 +193,7 @@ describe("AssetsGroupsController", () => {
       await sdk.document.get<AssetsGroupContent>(
         "engine-ayse",
         InternalCollection.ASSETS_GROUPS,
-        assetGroupTestChildrenId1
+        assetGroupTestChildrenId1,
       );
 
     expect(childrenGroup).toMatchObject({
@@ -211,7 +211,7 @@ describe("AssetsGroupsController", () => {
     const { _source: parentGroup } = await sdk.document.get<AssetsGroupContent>(
       "engine-ayse",
       InternalCollection.ASSETS_GROUPS,
-      assetGroupTestParentId2
+      assetGroupTestParentId2,
     );
 
     expect(parentGroup).toMatchObject({
@@ -230,7 +230,7 @@ describe("AssetsGroupsController", () => {
       await sdk.document.get<AssetsGroupContent>(
         "engine-ayse",
         InternalCollection.ASSETS,
-        "Container-grouped"
+        "Container-grouped",
       );
 
     expect(assetGrouped).toMatchObject({

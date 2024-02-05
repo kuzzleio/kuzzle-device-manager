@@ -14,7 +14,7 @@ describe("AssetsController:exportMeasures", () => {
   it("should support elasticsearch and koncorde query", async () => {
     async function testQuery(
       query: JSONObject,
-      lang: ApiAssetExportMeasuresRequest["lang"]
+      lang: ApiAssetExportMeasuresRequest["lang"],
     ) {
       const { result } = await sdk.query<ApiAssetExportMeasuresRequest>({
         controller: "device-manager/assets",
@@ -27,7 +27,7 @@ describe("AssetsController:exportMeasures", () => {
         lang,
       });
 
-      return await axios.get("http://localhost:7512" + result.link, {
+      return axios.get("http://localhost:7512" + result.link, {
         // ? accept all status minor than 500 to accept BadRequest error
         validateStatus: (status) => status < 500,
       });
@@ -37,7 +37,7 @@ describe("AssetsController:exportMeasures", () => {
       {
         equals: { type: "temperature" },
       },
-      "elasticsearch"
+      "elasticsearch",
     );
     expect(esError.status).toBe(400);
 
@@ -45,7 +45,7 @@ describe("AssetsController:exportMeasures", () => {
       {
         term: { type: "temperature" },
       },
-      "elasticsearch"
+      "elasticsearch",
     );
     expect(esResponse.status).toBe(200);
 
@@ -53,7 +53,7 @@ describe("AssetsController:exportMeasures", () => {
       {
         equals: { type: "temperature" },
       },
-      "koncorde"
+      "koncorde",
     );
     expect(koncordeResponse.status).toBe(200);
   });
@@ -114,7 +114,7 @@ describe("AssetsController:exportMeasures", () => {
 
     expect(csv).toHaveLength(5);
     expect(csv[0]).toBe(
-      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperatureExt,temperatureInt,position,position.accuracy,position.altitude,temperatureWeather\n"
+      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperatureExt,temperatureInt,position,position.accuracy,position.altitude,temperatureWeather\n",
     );
     const [
       payloadId,

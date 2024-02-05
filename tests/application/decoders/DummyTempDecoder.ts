@@ -43,7 +43,7 @@ export class DummyTempDecoder extends Decoder {
 
   async decode(
     decodedPayload: DecodedPayload<DummyTempDecoder>,
-    rawPayload: JSONObject
+    rawPayload: JSONObject,
   ): Promise<DecodedPayload<DummyTempDecoder>> {
     const payloads: any[] = rawPayload.measurements ?? [rawPayload];
 
@@ -56,7 +56,7 @@ export class DummyTempDecoder extends Decoder {
 
   decodeSimplePayload(
     decodedPayload: DecodedPayload<DummyTempDecoder>,
-    payload: JSONObject
+    payload: JSONObject,
   ): void {
     if (payload?.metadata?.color) {
       decodedPayload.addMetadata(payload.deviceEUI, {
@@ -77,7 +77,7 @@ export class DummyTempDecoder extends Decoder {
             ? payload.temperature.value
             : payload.temperature,
         },
-      }
+      },
     );
 
     if (payload.acceleration !== undefined) {
@@ -101,7 +101,7 @@ export class DummyTempDecoder extends Decoder {
             },
             accuracy: acceleration.accuracy,
           },
-        }
+        },
       );
     }
 
@@ -118,7 +118,7 @@ export class DummyTempDecoder extends Decoder {
             ? payload.battery.value
             : payload.battery,
         },
-      }
+      },
     );
 
     if (payload.unknownMeasure) {
@@ -132,7 +132,7 @@ export class DummyTempDecoder extends Decoder {
           values: {
             temperature: payload.unknownMeasure,
           },
-        }
+        },
       );
     }
   }

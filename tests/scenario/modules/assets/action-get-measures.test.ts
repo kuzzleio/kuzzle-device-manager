@@ -27,7 +27,7 @@ describe("AssetsController:getMeasures", () => {
   it("should support elasticsearch and koncorde query", async () => {
     async function testQuery(
       query: JSONObject,
-      lang: ApiAssetGetMeasuresRequest["lang"]
+      lang: ApiAssetGetMeasuresRequest["lang"],
     ) {
       try {
         return await sdk.query<ApiAssetGetMeasuresRequest>({
@@ -46,19 +46,19 @@ describe("AssetsController:getMeasures", () => {
 
     const esError = await testQuery(
       { equals: { "values.temperature": 40 } },
-      "elasticsearch"
+      "elasticsearch",
     );
     expect(esError.status).toBe(400);
 
     const esResponse = await testQuery(
       { term: { "values.temperature": 40 } },
-      "elasticsearch"
+      "elasticsearch",
     );
     expect(esResponse.status).toBe(200);
 
     const koncordeResponse = await testQuery(
       { equals: { "values.temperature": 40 } },
-      "koncorde"
+      "koncorde",
     );
     expect(koncordeResponse.status).toBe(200);
   });

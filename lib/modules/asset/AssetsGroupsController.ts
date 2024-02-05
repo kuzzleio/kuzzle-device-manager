@@ -114,7 +114,7 @@ export class AssetsGroupsController {
 
   async checkParent(
     engineId: string,
-    parent: AssetsGroupsBodyRequest["parent"]
+    parent: AssetsGroupsBodyRequest["parent"],
   ): Promise<void> {
     if (typeof parent !== "string") {
       return;
@@ -124,18 +124,18 @@ export class AssetsGroupsController {
       const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
-        parent
+        parent,
       );
 
       if (assetGroup._source.parent !== null) {
         throw new BadRequestError(
-          `Can't create asset group with more than one nesting level`
+          `Can't create asset group with more than one nesting level`,
         );
       }
     } catch (error) {
       if (error.status === 404) {
         throw new BadRequestError(
-          `The parent group "${parent}" does not exist`
+          `The parent group "${parent}" does not exist`,
         );
       }
       throw error;
@@ -144,7 +144,7 @@ export class AssetsGroupsController {
 
   async checkChildren(
     engineId: string,
-    children: AssetsGroupsBodyRequest["children"]
+    children: AssetsGroupsBodyRequest["children"],
   ): Promise<void> {
     if (!Array.isArray(children)) {
       throw new BadRequestError("The Children property should be an array");
@@ -166,7 +166,7 @@ export class AssetsGroupsController {
 
     if (Array.isArray(result.errors) && result.errors.length > 0) {
       throw new BadRequestError(
-        `The children group "${result.errors.join(",")}" does not exist`
+        `The children group "${result.errors.join(",")}" does not exist`,
       );
     }
   }
@@ -174,7 +174,7 @@ export class AssetsGroupsController {
   async checkGroupName(
     engineId: string,
     name: AssetsGroupsBodyRequest["name"],
-    assetId?: string
+    assetId?: string,
   ) {
     if (typeof name !== "string") {
       return;
@@ -205,7 +205,7 @@ export class AssetsGroupsController {
             ],
           },
         },
-      }
+      },
     );
 
     if (groupsCount > 0) {
@@ -232,7 +232,7 @@ export class AssetsGroupsController {
       const parentGroup = await this.sdk.document.get<AssetsGroupsBody>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
-        body.parent
+        body.parent,
       );
 
       const children = parentGroup._source.children ?? [];
@@ -245,7 +245,7 @@ export class AssetsGroupsController {
         {
           children,
           lastUpdate: Date.now(),
-        }
+        },
       );
     }
 
@@ -258,7 +258,7 @@ export class AssetsGroupsController {
         name: body.name,
         parent: body.parent ?? null,
       },
-      _id
+      _id,
     );
   }
 
@@ -269,7 +269,7 @@ export class AssetsGroupsController {
     return this.as(request.getUser()).document.get<AssetsGroupsBody>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
-      _id
+      _id,
     );
   }
 
@@ -291,7 +291,7 @@ export class AssetsGroupsController {
         ...body,
         lastUpdate: Date.now(),
       },
-      { source: true }
+      { source: true },
     );
   }
 
@@ -303,7 +303,7 @@ export class AssetsGroupsController {
       await this.sdk.document.get<AssetsGroupsBody>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
-        _id
+        _id,
       );
 
     if (assetGroup.parent !== null) {
@@ -311,7 +311,7 @@ export class AssetsGroupsController {
         await this.sdk.document.get<AssetsGroupsBody>(
           engineId,
           InternalCollection.ASSETS_GROUPS,
-          assetGroup.parent
+          assetGroup.parent,
         );
       await this.sdk.document.update(
         engineId,
@@ -320,7 +320,7 @@ export class AssetsGroupsController {
         {
           children: parentGroup.children.filter((children) => children !== _id),
           lastUpdate: Date.now(),
-        }
+        },
       );
     }
 
@@ -334,14 +334,14 @@ export class AssetsGroupsController {
           parent: null,
         },
       })),
-      { strict: true }
+      { strict: true },
     );
 
     const { hits: assets } = await this.sdk.document.search<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       { query: { equals: { "groups.id": _id } } },
-      { lang: "koncorde" }
+      { lang: "koncorde" },
     );
 
     await this.sdk.document.mUpdate(
@@ -351,17 +351,17 @@ export class AssetsGroupsController {
         _id: asset._id,
         body: {
           groups: asset._source.groups.filter(
-            ({ id: groupId }) => groupId !== _id
+            ({ id: groupId }) => groupId !== _id,
           ),
         },
       })),
-      { strict: true }
+      { strict: true },
     );
 
     await this.as(request.getUser()).document.delete(
       engineId,
       InternalCollection.ASSETS_GROUPS,
-      _id
+      _id,
     );
   }
 
@@ -379,7 +379,7 @@ export class AssetsGroupsController {
       engineId,
       InternalCollection.ASSETS_GROUPS,
       searchBody,
-      { from, lang, scroll, size }
+      { from, lang, scroll, size },
     );
   }
 
@@ -392,7 +392,7 @@ export class AssetsGroupsController {
     const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
-      _id
+      _id,
     );
 
     const assets = [];
@@ -401,7 +401,7 @@ export class AssetsGroupsController {
         await this.sdk.document.get(
           engineId,
           InternalCollection.ASSETS,
-          assetId
+          assetId,
         )
       )._source;
 
@@ -428,7 +428,7 @@ export class AssetsGroupsController {
     }
 
     const assetsGroupsUpdate = await this.as(
-      request.getUser()
+      request.getUser(),
     ).document.update<AssetsGroupsBody>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
@@ -436,13 +436,13 @@ export class AssetsGroupsController {
       {
         lastUpdate: Date.now(),
       },
-      { source: true }
+      { source: true },
     );
 
     const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.ASSETS,
-      assets
+      assets,
     );
 
     return {
@@ -452,7 +452,7 @@ export class AssetsGroupsController {
   }
 
   async removeAsset(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiGroupRemoveAssetsResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
@@ -463,7 +463,7 @@ export class AssetsGroupsController {
       await this.sdk.document.get<AssetsGroupContent>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
-        _id
+        _id,
       );
 
     const removedGroups = AssetGroupContent.children;
@@ -475,7 +475,7 @@ export class AssetsGroupsController {
         await this.sdk.document.get<AssetContent>(
           engineId,
           InternalCollection.ASSETS,
-          assetId
+          assetId,
         )
       )._source;
 
@@ -484,7 +484,7 @@ export class AssetsGroupsController {
       }
 
       assetContent.groups = assetContent.groups.filter(
-        ({ id: groupId }) => !removedGroups.includes(groupId)
+        ({ id: groupId }) => !removedGroups.includes(groupId),
       );
 
       assets.push({
@@ -494,7 +494,7 @@ export class AssetsGroupsController {
     }
 
     const assetsGroupsUpdate = await this.as(
-      request.getUser()
+      request.getUser(),
     ).document.update<AssetsGroupsBody>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
@@ -502,13 +502,13 @@ export class AssetsGroupsController {
       {
         lastUpdate: Date.now(),
       },
-      { source: true }
+      { source: true },
     );
 
     const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.ASSETS,
-      assets
+      assets,
     );
 
     return {

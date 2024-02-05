@@ -35,7 +35,7 @@ export type EventMeasureProcessBefore = {
       asset: KDocument<AssetContent>;
       device: KDocument<DeviceContent>;
       measures: MeasureContent[];
-    }
+    },
   ];
 };
 
@@ -52,7 +52,7 @@ export type TenantEventMeasureProcessBefore = {
       asset: KDocument<AssetContent>;
       device: KDocument<DeviceContent>;
       measures: MeasureContent[];
-    }
+    },
   ];
 };
 
@@ -68,7 +68,7 @@ export type EventMeasurePersistBefore = {
       asset: KDocument<AssetContent>;
       device: KDocument<DeviceContent>;
       measures: MeasureContent[];
-    }
+    },
   ];
 };
 
@@ -84,7 +84,7 @@ export type TenantEventMeasurePersistBefore = {
       asset: KDocument<AssetContent>;
       device: KDocument<DeviceContent>;
       measures: MeasureContent[];
-    }
+    },
   ];
 };
 
@@ -96,7 +96,7 @@ export type EventMeasureProcessAfter = {
       asset: KDocument<AssetContent>;
       device: KDocument<DeviceContent>;
       measures: MeasureContent[];
-    }
+    },
   ];
 };
 
@@ -108,6 +108,6 @@ export type TenantEventMeasureProcessAfter = {
       asset: KDocument<AssetContent>;
       device: KDocument<DeviceContent>;
       measures: MeasureContent[];
-    }
+    },
   ];
 };

@@ -27,7 +27,7 @@ describe("Ingestion Pipeline: process before", () => {
     const asset = await sdk.document.get<ContainerAssetContent>(
       "engine-ayse",
       "assets",
-      "Container-linked1"
+      "Container-linked1",
     );
     expect(asset._source.measures).toMatchObject({
       temperatureExt: {
@@ -65,7 +65,7 @@ describe("Ingestion Pipeline: process before", () => {
     const device = await sdk.document.get<DeviceContent>(
       "engine-ayse",
       "devices",
-      "DummyTempPosition-linked2"
+      "DummyTempPosition-linked2",
     );
 
     expect(device._source.lastMeasuredAt).toBeGreaterThanOrEqual(now);
@@ -73,7 +73,7 @@ describe("Ingestion Pipeline: process before", () => {
     const asset = await sdk.document.get<ContainerAssetContent>(
       "engine-ayse",
       "assets",
-      "Container-linked2"
+      "Container-linked2",
     );
 
     expect(asset._source.lastMeasuredAt).toBe(1680096420000);

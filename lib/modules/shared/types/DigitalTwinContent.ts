@@ -5,7 +5,7 @@ import { Metadata } from "./Metadata";
 
 export interface DigitalTwinContent<
   TMeasures extends JSONObject = JSONObject,
-  TMetadata extends Metadata = Metadata
+  TMetadata extends Metadata = Metadata,
 > extends KDocumentContent {
   model: string;
 

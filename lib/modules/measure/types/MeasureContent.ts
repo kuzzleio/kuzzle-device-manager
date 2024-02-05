@@ -67,7 +67,7 @@ export type MeasureOrigin = MeasureOriginDevice | MeasureOriginComputed;
  */
 export interface MeasureContent<
   TMeasureValues extends JSONObject = any,
-  TMetadata extends Metadata = any
+  TMetadata extends Metadata = any,
 > extends Measurement<TMeasureValues>,
     KDocumentContent {
   /**

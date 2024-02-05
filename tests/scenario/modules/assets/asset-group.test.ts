@@ -47,7 +47,7 @@ describe("AssetsGroupsController", () => {
       _id: "root-group",
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
-      /^The request must specify a body.$/
+      /^The request must specify a body.$/,
     );
 
     const missingNameQuery = {
@@ -57,7 +57,7 @@ describe("AssetsGroupsController", () => {
       body: {},
     };
     await expect(sdk.query(missingNameQuery)).rejects.toThrow(
-      /^A group must have a name$/
+      /^A group must have a name$/,
     );
 
     const badParentIdQuery: ApiGroupCreateRequest = {
@@ -71,7 +71,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(badParentIdQuery)).rejects.toThrow(
-      /^The parent group "not-exist" does not exist$/
+      /^The parent group "not-exist" does not exist$/,
     );
 
     const duplicateGroupName: ApiGroupCreateRequest = {
@@ -83,7 +83,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
-      /^A group with name "test group" already exist$/
+      /^A group with name "test group" already exist$/,
     );
 
     const tooMuchNested: ApiGroupCreateRequest = {
@@ -96,7 +96,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(tooMuchNested)).rejects.toThrow(
-      /^Can't create asset group with more than one nesting level$/
+      /^Can't create asset group with more than one nesting level$/,
     );
 
     const { result: assetGroupRoot } = await sdk.query<
@@ -137,7 +137,7 @@ describe("AssetsGroupsController", () => {
     const { _source: rootGroup } = await sdk.document.get<AssetsGroupContent>(
       "engine-ayse",
       InternalCollection.ASSETS_GROUPS,
-      "root-group"
+      "root-group",
     );
 
     expect(rootGroup).toMatchObject({
@@ -175,7 +175,7 @@ describe("AssetsGroupsController", () => {
       action: "get",
     };
     await expect(sdk.query(missingIdQuery)).rejects.toThrow(
-      /^Missing argument "_id".$/
+      /^Missing argument "_id".$/,
     );
 
     const { result } = await sdk.query<ApiGroupGetRequest>({
@@ -197,7 +197,7 @@ describe("AssetsGroupsController", () => {
       body: assetGroupTestBody,
     };
     await expect(sdk.query(missingIdQuery)).rejects.toThrow(
-      /^Missing argument "_id".$/
+      /^Missing argument "_id".$/,
     );
 
     const missingBodyQuery: Omit<ApiGroupUpdateRequest, "body"> = {
@@ -207,7 +207,7 @@ describe("AssetsGroupsController", () => {
       _id: assetGroupTestId,
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
-      /^The request must specify a body.$/
+      /^The request must specify a body.$/,
     );
 
     const badParentIdQuery: ApiGroupUpdateRequest = {
@@ -222,7 +222,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(badParentIdQuery)).rejects.toThrow(
-      /^The parent group "not-exist" does not exist$/
+      /^The parent group "not-exist" does not exist$/,
     );
 
     const badChildrenIdQuery: ApiGroupUpdateRequest = {
@@ -236,7 +236,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(badChildrenIdQuery)).rejects.toThrow(
-      /^The children group "not-exist" does not exist$/
+      /^The children group "not-exist" does not exist$/,
     );
 
     const duplicateGroupName: ApiGroupUpdateRequest = {
@@ -250,7 +250,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
-      /^A group with name "test group" already exist$/
+      /^A group with name "test group" already exist$/,
     );
 
     const tooMuchNested: ApiGroupUpdateRequest = {
@@ -265,7 +265,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(tooMuchNested)).rejects.toThrow(
-      /^Can't create asset group with more than one nesting level$/
+      /^Can't create asset group with more than one nesting level$/,
     );
 
     const { result } = await sdk.query<ApiGroupUpdateRequest>({
@@ -314,7 +314,7 @@ describe("AssetsGroupsController", () => {
       action: "delete",
     };
     await expect(sdk.query(missingIdQuery)).rejects.toThrow(
-      /^Missing argument "_id".$/
+      /^Missing argument "_id".$/,
     );
 
     const { error, status } = await sdk.query<ApiGroupDeleteRequest>({
@@ -338,7 +338,7 @@ describe("AssetsGroupsController", () => {
       await sdk.document.get<AssetsGroupContent>(
         "engine-ayse",
         InternalCollection.ASSETS_GROUPS,
-        assetGroupTestChildrenId1
+        assetGroupTestChildrenId1,
       );
 
     expect(childrenGroup).toMatchObject({
@@ -356,7 +356,7 @@ describe("AssetsGroupsController", () => {
     const { _source: parentGroup } = await sdk.document.get<AssetsGroupContent>(
       "engine-ayse",
       InternalCollection.ASSETS_GROUPS,
-      assetGroupTestParentId2
+      assetGroupTestParentId2,
     );
 
     expect(parentGroup).toMatchObject({
@@ -375,7 +375,7 @@ describe("AssetsGroupsController", () => {
       await sdk.document.get<AssetsGroupContent>(
         "engine-ayse",
         InternalCollection.ASSETS,
-        "Container-grouped"
+        "Container-grouped",
       );
 
     expect(assetGrouped).toMatchObject({
@@ -441,7 +441,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(missingIdQuery)).rejects.toThrow(
-      /^Missing argument "_id".$/
+      /^Missing argument "_id".$/,
     );
 
     const missingBodyQuery: Omit<ApiGroupAddAssetsRequest, "body"> = {
@@ -451,7 +451,7 @@ describe("AssetsGroupsController", () => {
       _id: assetGroupTestId,
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
-      /^The request must specify a body.$/
+      /^The request must specify a body.$/,
     );
 
     const badIdQuery: ApiGroupAddAssetsRequest = {
@@ -464,7 +464,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(badIdQuery)).rejects.toThrow(
-      /^Document "bad-id" not found in "engine-ayse":"assets-groups".$/
+      /^Document "bad-id" not found in "engine-ayse":"assets-groups".$/,
     );
 
     const { result } = await sdk.query<
@@ -617,7 +617,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(missingIdQuery)).rejects.toThrow(
-      /^Missing argument "_id".$/
+      /^Missing argument "_id".$/,
     );
 
     const missingBodyQuery: Omit<ApiGroupRemoveAssetsRequest, "body"> = {
@@ -627,7 +627,7 @@ describe("AssetsGroupsController", () => {
       _id: assetGroupTestId,
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
-      /^The request must specify a body.$/
+      /^The request must specify a body.$/,
     );
 
     const badIdQuery: ApiGroupRemoveAssetsRequest = {
@@ -640,7 +640,7 @@ describe("AssetsGroupsController", () => {
       },
     };
     await expect(sdk.query(badIdQuery)).rejects.toThrow(
-      /^Document "bad-id" not found in "engine-ayse":"assets-groups".$/
+      /^Document "bad-id" not found in "engine-ayse":"assets-groups".$/,
     );
 
     const { result } = await sdk.query<

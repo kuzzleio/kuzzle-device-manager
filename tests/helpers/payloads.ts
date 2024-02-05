@@ -4,7 +4,7 @@ type MeasureDated<T> = { value: T; measuredAt: number };
 export type MeasureValue<T> = T | MeasureDated<T>;
 
 export function isMeasureDated<T>(
-  measure: MeasureValue<T>
+  measure: MeasureValue<T>,
 ): measure is MeasureDated<T> {
   if (measure === undefined || measure === null) {
     return false;
@@ -48,7 +48,7 @@ export type DummyTempPositionPayload = DummyTempPayload & {
 
 export async function sendDummyTempPayloads(
   sdk: Kuzzle,
-  payloads: DummyTempPayload[]
+  payloads: DummyTempPayload[],
 ) {
   for (const payload of payloads) {
     await sdk.query({
@@ -61,7 +61,7 @@ export async function sendDummyTempPayloads(
 
 export async function sendDummyTempPositionPayloads(
   sdk: Kuzzle,
-  payloads: DummyTempPositionPayload[]
+  payloads: DummyTempPositionPayload[],
 ) {
   for (const payload of payloads) {
     await sdk.query({
@@ -79,7 +79,7 @@ const deviceDelay = {};
 export async function sendPayloads(
   sdk: Kuzzle,
   action: string,
-  payloads: JSONObject[]
+  payloads: JSONObject[],
 ) {
   let response;
 

@@ -29,7 +29,7 @@ export class AssetsController {
 
   constructor(
     private plugin: DeviceManagerPlugin,
-    private assetService: AssetService
+    private assetService: AssetService,
   ) {
     /* eslint-disable sort-keys */
     this.definition = {
@@ -119,11 +119,11 @@ export class AssetsController {
 
     this.exporter = new DigitalTwinExporter(
       this.plugin,
-      InternalCollection.ASSETS
+      InternalCollection.ASSETS,
     );
     this.measureExporter = new MeasureExporter(
       this.plugin,
-      InternalCollection.ASSETS
+      InternalCollection.ASSETS,
     );
   }
 
@@ -147,7 +147,7 @@ export class AssetsController {
       model,
       reference,
       metadata,
-      request
+      request,
     );
 
     return AssetSerializer.serialize(upsertAsset);
@@ -162,7 +162,7 @@ export class AssetsController {
       engineId,
       assetId,
       metadata,
-      request
+      request,
     );
 
     return AssetSerializer.serialize(updatedAsset);
@@ -179,7 +179,7 @@ export class AssetsController {
       model,
       reference,
       metadata,
-      request
+      request,
     );
 
     return AssetSerializer.serialize(asset);
@@ -193,15 +193,15 @@ export class AssetsController {
   }
 
   async search(request: KuzzleRequest): Promise<ApiAssetSearchResult> {
-    return await this.assetService.search(
+    return this.assetService.search(
       request.getString("engineId"),
       request.getSearchParams(),
-      request
+      request,
     );
   }
 
   async getMeasures(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiAssetGetMeasuresResult> {
     const id = request.getId();
     const engineId = request.getString("engineId");
@@ -230,7 +230,7 @@ export class AssetsController {
       {
         from,
         size,
-      }
+      },
     );
 
     return { measures, total };
@@ -249,7 +249,7 @@ export class AssetsController {
         const { id } = await this.measureExporter.getExport(engineId, exportId);
         const stream = await this.measureExporter.sendExport(
           engineId,
-          exportId
+          exportId,
         );
 
         request.response.configure({
@@ -295,7 +295,7 @@ export class AssetsController {
         sort,
         startAt,
         type,
-      }
+      },
     );
 
     return { link };
@@ -345,14 +345,14 @@ export class AssetsController {
         lang,
         query,
         sort,
-      }
+      },
     );
 
     return { link };
   }
 
   async migrateTenant(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiAssetMigrateTenantResult> {
     const assetsList = request.getBodyArray("assetsList");
     const engineId = request.getString("engineId");
@@ -362,7 +362,7 @@ export class AssetsController {
       request.getUser(),
       assetsList,
       engineId,
-      newEngineId
+      newEngineId,
     );
 
     return { errors, successes };

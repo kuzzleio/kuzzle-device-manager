@@ -1,7 +1,7 @@
 import { JSONObject } from "kuzzle-sdk";
 
 export const getEmbeddedMeasureMappings: (values: JSONObject) => JSONObject = (
-  valuesMappings
+  valuesMappings,
 ) => ({
   properties: {
     measuredAt: { type: "date" },

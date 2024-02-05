@@ -18,7 +18,7 @@ describe("Assets mapping", () => {
   it("asset mapping can be customize by application", async () => {
     const mapping: JSONObject = await sdk.collection.getMapping(
       "engine-ayse",
-      "assets"
+      "assets",
     );
 
     expect(mapping.properties?.softTenant).toBeDefined();
@@ -31,7 +31,7 @@ describe("Assets mapping", () => {
   it("device mapping can be customize by application", async () => {
     const mapping: JSONObject = await sdk.collection.getMapping(
       "engine-ayse",
-      "devices"
+      "devices",
     );
 
     expect(mapping.properties?.softTenant).toBeDefined();

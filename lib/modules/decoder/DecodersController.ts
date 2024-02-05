@@ -15,7 +15,7 @@ export class DecodersController {
 
   constructor(
     payloadService: PayloadService,
-    decodersRegister: DecodersRegister
+    decodersRegister: DecodersRegister,
   ) {
     this.payloadService = payloadService;
     this.decodersRegister = decodersRegister;
@@ -49,7 +49,7 @@ export class DecodersController {
    * Clean payload collection for a time period
    */
   async prunePayloads(
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<ApiDecoderPrunePayloadsResult> {
     const days = request.getBodyNumber("days");
     const deviceModel = request.input.body.deviceModel;

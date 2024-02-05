@@ -21,7 +21,7 @@ describe("Asset model metadata propagation", () => {
       await sdk.document.exists(
         "device-manager",
         "models",
-        "model-asset-Pallet"
+        "model-asset-Pallet",
       )
     ) {
       await sdk.query<ApiModelDeleteAssetRequest>({
@@ -111,7 +111,7 @@ describe("Asset model metadata propagation", () => {
         action: "get",
         engineId: "engine-ayse",
         _id: "Pallet-unlinked1",
-      })
+      }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
       result: {
         _source: {
@@ -130,7 +130,7 @@ describe("Asset model metadata propagation", () => {
         action: "get",
         engineId: "engine-kuzzle",
         _id: "Pallet-unlinked2",
-      })
+      }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
       result: {
         _source: {
@@ -214,7 +214,7 @@ describe("Asset model metadata propagation", () => {
         action: "get",
         engineId: "engine-ayse",
         _id: "Pallet-unlinked3",
-      })
+      }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
       result: {
         _source: {
@@ -233,7 +233,7 @@ describe("Asset model metadata propagation", () => {
         action: "get",
         engineId: "engine-kuzzle",
         _id: "Pallet-unlinked4",
-      })
+      }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
       result: {
         _source: {

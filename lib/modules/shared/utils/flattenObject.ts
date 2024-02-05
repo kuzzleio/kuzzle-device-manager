@@ -33,7 +33,7 @@ export function flattenObject(target: JSONObject): JSONObject {
 function flattenStep(
   output: JSONObject,
   object: JSONObject,
-  prev: string = null
+  prev: string = null,
 ): void {
   const keys = Object.keys(object);
 

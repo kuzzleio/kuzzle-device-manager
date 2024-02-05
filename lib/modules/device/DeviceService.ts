@@ -57,9 +57,9 @@ export class DeviceService extends BaseService {
           assetId,
           measureNames,
           false,
-          request
+          request,
         );
-      }
+      },
     );
 
     onAsk<AskDeviceUnlinkAsset>(
@@ -67,7 +67,7 @@ export class DeviceService extends BaseService {
       async ({ deviceId, user }) => {
         const request = new KuzzleRequest({ refresh: "false" }, { user });
         await this.unlinkAsset(deviceId, request);
-      }
+      },
     );
 
     onAsk<AskDeviceDetachEngine>(
@@ -75,7 +75,7 @@ export class DeviceService extends BaseService {
       async ({ deviceId, user }) => {
         const request = new KuzzleRequest({ refresh: "false" }, { user });
         await this.detachEngine(deviceId, request);
-      }
+      },
     );
 
     onAsk<AskDeviceAttachEngine>(
@@ -83,7 +83,7 @@ export class DeviceService extends BaseService {
       async ({ deviceId, engineId, user }) => {
         const request = new KuzzleRequest({ refresh: "false" }, { user });
         await this.attachEngine(engineId, deviceId, request);
-      }
+      },
     );
   }
 
@@ -98,7 +98,7 @@ export class DeviceService extends BaseService {
     model: string,
     reference: string,
     metadata: JSONObject,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     let device: KDocument<DeviceContent> = {
       _id: DeviceSerializer.id(model, reference),
@@ -118,7 +118,7 @@ export class DeviceService extends BaseService {
       const engineId = request.getString("engineId");
 
       for (const metadataName of Object.keys(
-        deviceModel.device.metadataMappings
+        deviceModel.device.metadataMappings,
       )) {
         device._source.metadata[metadataName] ||= null;
       }
@@ -134,7 +134,7 @@ export class DeviceService extends BaseService {
         {
           collection: InternalCollection.DEVICES,
           engineId: this.config.adminIndex,
-        }
+        },
       );
 
       device._source = _source;
@@ -156,8 +156,8 @@ export class DeviceService extends BaseService {
       if (request.getRefresh() === "wait_for") {
         await Promise.all(
           refreshableCollections.map(({ index, collection }) =>
-            this.sdk.collection.refresh(index, collection)
-          )
+            this.sdk.collection.refresh(index, collection),
+          ),
         );
       }
 
@@ -168,7 +168,7 @@ export class DeviceService extends BaseService {
   public async get(
     engineId: string,
     deviceId: string,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return this.getDocument<DeviceContent>(request, deviceId, {
       collection: InternalCollection.DEVICES,
@@ -180,7 +180,7 @@ export class DeviceService extends BaseService {
     return this.sdk.document.get<DeviceContent>(
       this.config.adminIndex,
       InternalCollection.DEVICES,
-      deviceId
+      deviceId,
     );
   }
 
@@ -188,7 +188,7 @@ export class DeviceService extends BaseService {
     engineId: string,
     deviceId: string,
     metadata: Metadata,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock<KDocument<DeviceContent>>(
       `device:update:${deviceId}`,
@@ -197,7 +197,7 @@ export class DeviceService extends BaseService {
 
         const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
           "device-manager:device:update:before",
-          { device, metadata }
+          { device, metadata },
         );
 
         const updatedDevice = await this.updateDocument<DeviceContent>(
@@ -207,7 +207,7 @@ export class DeviceService extends BaseService {
             _source: { metadata: updatedPayload.metadata },
           },
           { collection: InternalCollection.DEVICES, engineId },
-          { source: true }
+          { source: true },
         );
 
         await this.app.trigger<EventDeviceUpdateAfter>(
@@ -215,18 +215,18 @@ export class DeviceService extends BaseService {
           {
             device: updatedDevice,
             metadata: updatedPayload.metadata,
-          }
+          },
         );
 
         return updatedDevice;
-      }
+      },
     );
   }
 
   public async delete(
     engineId: string,
     deviceId: string,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ) {
     return lock<void>(`device:delete:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId, request);
@@ -237,11 +237,11 @@ export class DeviceService extends BaseService {
         const asset = await this.sdk.document.get<AssetContent>(
           engineId,
           InternalCollection.ASSETS,
-          device._source.assetId
+          device._source.assetId,
         );
 
         const linkedDevices = asset._source.linkedDevices.filter(
-          (link) => link._id !== device._id
+          (link) => link._id !== device._id,
         );
 
         promises.push(
@@ -253,7 +253,7 @@ export class DeviceService extends BaseService {
               _id: device._source.assetId,
               _source: { linkedDevices },
             },
-            { collection: InternalCollection.ASSETS, engineId }
+            { collection: InternalCollection.ASSETS, engineId },
           ).then(async (updatedAsset) => {
             const event: AssetHistoryEventUnlink = {
               name: "unlink",
@@ -274,9 +274,9 @@ export class DeviceService extends BaseService {
                     timestamp: Date.now(),
                   },
                 ],
-              }
+              },
             );
-          })
+          }),
         );
       }
 
@@ -284,14 +284,14 @@ export class DeviceService extends BaseService {
         this.deleteDocument(request, deviceId, {
           collection: InternalCollection.DEVICES,
           engineId: this.config.adminIndex,
-        })
+        }),
       );
 
       promises.push(
         this.deleteDocument(request, deviceId, {
           collection: InternalCollection.DEVICES,
           engineId,
-        })
+        }),
       );
 
       await Promise.all(promises);
@@ -301,9 +301,9 @@ export class DeviceService extends BaseService {
   public async search(
     engineId: string,
     searchParams: SearchParams,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<SearchResult<KHit<DeviceContent>>> {
-    return await this.searchDocument<DeviceContent>(request, searchParams, {
+    return this.searchDocument<DeviceContent>(request, searchParams, {
       collection: InternalCollection.DEVICES,
       engineId,
     });
@@ -320,14 +320,14 @@ export class DeviceService extends BaseService {
   async attachEngine(
     engineId: string,
     deviceId: string,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:attachEngine:${deviceId}`, async () => {
       const device = await this.getInternalDevices(deviceId);
 
       if (device._source.engineId) {
         throw new BadRequestError(
-          `Device "${device._id}" is already attached to an engine.`
+          `Device "${device._id}" is already attached to an engine.`,
         );
       }
 
@@ -351,11 +351,11 @@ export class DeviceService extends BaseService {
         await Promise.all([
           this.sdk.collection.refresh(
             this.config.adminIndex,
-            InternalCollection.DEVICES
+            InternalCollection.DEVICES,
           ),
           this.sdk.collection.refresh(
             device._source.engineId,
-            InternalCollection.DEVICES
+            InternalCollection.DEVICES,
           ),
         ]);
       }
@@ -372,7 +372,7 @@ export class DeviceService extends BaseService {
    */
   async detachEngine(
     deviceId: string,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:detachEngine:${deviceId}`, async () => {
       const device = await this.getInternalDevices(deviceId);
@@ -393,13 +393,13 @@ export class DeviceService extends BaseService {
           {
             collection: InternalCollection.DEVICES,
             engineId: this.config.adminIndex,
-          }
+          },
         ),
 
         this.sdk.document.delete(
           device._source.engineId,
           InternalCollection.DEVICES,
-          device._id
+          device._id,
         ),
       ]);
 
@@ -407,11 +407,11 @@ export class DeviceService extends BaseService {
         await Promise.all([
           this.sdk.collection.refresh(
             this.config.adminIndex,
-            InternalCollection.DEVICES
+            InternalCollection.DEVICES,
           ),
           this.sdk.collection.refresh(
             device._source.engineId,
-            InternalCollection.DEVICES
+            InternalCollection.DEVICES,
           ),
         ]);
       }
@@ -429,7 +429,7 @@ export class DeviceService extends BaseService {
     assetId: string,
     measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"],
     implicitMeasuresLinking: boolean,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<{
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
@@ -442,27 +442,27 @@ export class DeviceService extends BaseService {
 
       if (device._source.engineId !== engineId) {
         throw new BadRequestError(
-          `Device "${device._id}" is not attached to the specified engine.`
+          `Device "${device._id}" is not attached to the specified engine.`,
         );
       }
 
       if (device._source.assetId && device._source.assetId !== assetId) {
         throw new BadRequestError(
-          `Device "${device._id}" is already linked to another asset.`
+          `Device "${device._id}" is already linked to another asset.`,
         );
       }
 
       const asset = await this.sdk.document.get<AssetContent>(
         device._source.engineId,
         InternalCollection.ASSETS,
-        assetId
+        assetId,
       );
 
       // Remove existing links for this device
       asset._source.linkedDevices = asset._source.linkedDevices.filter(
         (link) => {
           return link._id !== deviceId;
-        }
+        },
       );
 
       const [assetModel, deviceModel] = await Promise.all([
@@ -473,11 +473,11 @@ export class DeviceService extends BaseService {
       const updatedMeasureNames: MeasureName[] = [];
       for (const measure of measureNames) {
         const foundMeasure = deviceModel.device.measures.find(
-          (deviceMeasure) => deviceMeasure.name === measure.device
+          (deviceMeasure) => deviceMeasure.name === measure.device,
         );
         if (!foundMeasure && !implicitMeasuresLinking) {
           throw new BadRequestError(
-            `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`
+            `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`,
           );
         }
         const { type } = foundMeasure;
@@ -495,7 +495,7 @@ export class DeviceService extends BaseService {
           asset,
           assetModel,
           deviceModel,
-          updatedMeasureNames
+          updatedMeasureNames,
         );
       }
 
@@ -513,7 +513,7 @@ export class DeviceService extends BaseService {
             collection: InternalCollection.DEVICES,
             engineId: this.config.adminIndex,
           },
-          { source: true }
+          { source: true },
         ),
 
         this.updateDocument<DeviceContent>(request, device, {
@@ -528,7 +528,7 @@ export class DeviceService extends BaseService {
             collection: InternalCollection.ASSETS,
             engineId: device._source.engineId,
           },
-          { source: true }
+          { source: true },
         ),
       ]);
 
@@ -550,22 +550,22 @@ export class DeviceService extends BaseService {
               timestamp: Date.now(),
             },
           ],
-        }
+        },
       );
 
       if (request.getRefresh() === "wait_for") {
         await Promise.all([
           this.sdk.collection.refresh(
             this.config.adminIndex,
-            InternalCollection.DEVICES
+            InternalCollection.DEVICES,
           ),
           this.sdk.collection.refresh(
             device._source.engineId,
-            InternalCollection.DEVICES
+            InternalCollection.DEVICES,
           ),
           this.sdk.collection.refresh(
             device._source.engineId,
-            InternalCollection.ASSETS
+            InternalCollection.ASSETS,
           ),
         ]);
       }
@@ -579,19 +579,19 @@ export class DeviceService extends BaseService {
     deviceId: string,
     measures: DecodedMeasurement[],
     payloadUuids: string[],
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ) {
     const device = await this.get(engineId, deviceId, request);
     const deviceModel = await this.getDeviceModel(device._source.model);
 
     for (const measure of measures) {
       const declaredMeasure = deviceModel.device.measures.some(
-        (m) => m.name === measure.measureName && m.type === measure.type
+        (m) => m.name === measure.measureName && m.type === measure.type,
       );
 
       if (!declaredMeasure) {
         throw new BadRequestError(
-          `Measure "${measure.measureName}" is not declared for this device model.`
+          `Measure "${measure.measureName}" is not declared for this device model.`,
         );
       }
     }
@@ -602,7 +602,7 @@ export class DeviceService extends BaseService {
         device,
         measures,
         payloadUuids,
-      }
+      },
     );
   }
 
@@ -612,18 +612,18 @@ export class DeviceService extends BaseService {
    */
   private checkAlreadyProvidedMeasures(
     asset: KDocument<AssetContent>,
-    requestedMeasureNames: MeasureName[]
+    requestedMeasureNames: MeasureName[],
   ) {
     const measureAlreadyProvided = (assetMeasureName: string): boolean => {
       return asset._source.linkedDevices.some((link) =>
-        link.measureNames.some((names) => names.asset === assetMeasureName)
+        link.measureNames.some((names) => names.asset === assetMeasureName),
       );
     };
 
     for (const name of requestedMeasureNames) {
       if (measureAlreadyProvided(name.asset)) {
         throw new BadRequestError(
-          `Measure name "${name.asset}" is already provided by another device on this asset.`
+          `Measure name "${name.asset}" is already provided by another device on this asset.`,
         );
       }
     }
@@ -639,23 +639,23 @@ export class DeviceService extends BaseService {
     asset: KDocument<AssetContent>,
     assetModel: AssetModelContent,
     deviceModel: DeviceModelContent,
-    requestedMeasureNames: MeasureName[]
+    requestedMeasureNames: MeasureName[],
   ) {
     const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
       return asset._source.linkedDevices.some((link) =>
-        link.measureNames.some((names) => names.device === deviceMeasureName)
+        link.measureNames.some((names) => names.device === deviceMeasureName),
       );
     };
 
     const measureAlreadyRequested = (deviceMeasureName: string): boolean => {
       return requestedMeasureNames.some(
-        (names) => names.device === deviceMeasureName
+        (names) => names.device === deviceMeasureName,
       );
     };
 
     const measureUndeclared = (deviceMeasureName: string): boolean => {
       return !assetModel.asset.measures.some(
-        (measure) => measure.name === deviceMeasureName
+        (measure) => measure.name === deviceMeasureName,
       );
     };
 
@@ -684,7 +684,7 @@ export class DeviceService extends BaseService {
    */
   async unlinkAsset(
     deviceId: string,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<{
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
@@ -697,18 +697,18 @@ export class DeviceService extends BaseService {
 
       if (!device._source.assetId) {
         throw new BadRequestError(
-          `Device "${device._id}" is not linked to an asset.`
+          `Device "${device._id}" is not linked to an asset.`,
         );
       }
 
       const asset = await this.sdk.document.get<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
-        device._source.assetId
+        device._source.assetId,
       );
 
       const linkedDevices = asset._source.linkedDevices.filter(
-        (link) => link._id !== device._id
+        (link) => link._id !== device._id,
       );
 
       const [updatedDevice, , updatedAsset] = await Promise.all([
@@ -719,7 +719,7 @@ export class DeviceService extends BaseService {
             collection: InternalCollection.DEVICES,
             engineId: this.config.adminIndex,
           },
-          { source: true }
+          { source: true },
         ),
 
         this.updateDocument<DeviceContent>(
@@ -728,7 +728,7 @@ export class DeviceService extends BaseService {
           {
             collection: InternalCollection.DEVICES,
             engineId,
-          }
+          },
         ),
 
         this.updateDocument<AssetContent>(
@@ -738,7 +738,7 @@ export class DeviceService extends BaseService {
             collection: InternalCollection.ASSETS,
             engineId,
           },
-          { source: true }
+          { source: true },
         ),
       ]);
 
@@ -760,14 +760,14 @@ export class DeviceService extends BaseService {
               timestamp: Date.now(),
             },
           ],
-        }
+        },
       );
 
       if (request.getRefresh() === "wait_for") {
         await Promise.all([
           this.sdk.collection.refresh(
             this.config.adminIndex,
-            InternalCollection.DEVICES
+            InternalCollection.DEVICES,
           ),
           this.sdk.collection.refresh(engineId, InternalCollection.DEVICES),
           this.sdk.collection.refresh(engineId, InternalCollection.ASSETS),
@@ -795,7 +795,7 @@ export class DeviceService extends BaseService {
   private checkAttachedToEngine(device: KDocument<DeviceContent>) {
     if (!device._source.engineId) {
       throw new BadRequestError(
-        `Device "${device._id}" is not attached to an engine.`
+        `Device "${device._id}" is not attached to an engine.`,
       );
     }
   }
@@ -804,7 +804,7 @@ export class DeviceService extends BaseService {
     const engine = await this.sdk.document.get(
       this.config.adminIndex,
       InternalCollection.CONFIG,
-      `engine-device-manager--${engineId}`
+      `engine-device-manager--${engineId}`,
     );
 
     return engine._source.engine;
@@ -818,7 +818,7 @@ export class DeviceService extends BaseService {
 
   private getAssetModel(
     engineGroup: string,
-    model: string
+    model: string,
   ): Promise<AssetModelContent> {
     return ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
       engineGroup,

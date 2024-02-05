@@ -15,13 +15,13 @@ export class AssetHistoryService extends BaseService {
 
     onAsk<AskAssetHistoryAdd<AssetHistoryEvent>>(
       "ask:device-manager:asset:history:add",
-      async ({ engineId, histories }) => this.add(engineId, histories)
+      async ({ engineId, histories }) => this.add(engineId, histories),
     );
   }
 
   async add<TAssetHistoryEvent extends AssetHistoryEvent>(
     engineId: string,
-    histories: AssetHistoryContent[]
+    histories: AssetHistoryContent[],
   ) {
     const contents: mCreateRequest<
       AssetHistoryContent<TAssetHistoryEvent, any, any>
@@ -42,7 +42,7 @@ export class AssetHistoryService extends BaseService {
       engineId,
       InternalCollection.ASSETS_HISTORY,
       contents,
-      { strict: true }
+      { strict: true },
     );
   }
 }

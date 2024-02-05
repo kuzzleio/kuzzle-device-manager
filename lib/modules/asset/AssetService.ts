@@ -52,7 +52,7 @@ export class AssetService extends BaseService {
 
   constructor(
     plugin: DeviceManagerPlugin,
-    assetHistoryService: AssetHistoryService
+    assetHistoryService: AssetHistoryService,
   ) {
     super(plugin);
 
@@ -64,14 +64,14 @@ export class AssetService extends BaseService {
   registerAskEvents() {
     onAsk<AskAssetRefreshModel>(
       "ask:device-manager:asset:refresh-model",
-      this.refreshModel.bind(this)
+      this.refreshModel.bind(this),
     );
   }
 
   public async get(
     engineId: string,
     assetId: string,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     return this.getDocument<AssetContent>(request, assetId, {
       collection: InternalCollection.ASSETS,
@@ -86,14 +86,14 @@ export class AssetService extends BaseService {
     engineId: string,
     assetId: string,
     metadata: Metadata,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request);
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
         "device-manager:asset:update:before",
-        { asset, metadata }
+        { asset, metadata },
       );
 
       const updatedAsset = await this.updateDocument<AssetContent>(
@@ -106,7 +106,7 @@ export class AssetService extends BaseService {
           collection: InternalCollection.ASSETS,
           engineId,
         },
-        { source: true }
+        { source: true },
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
@@ -128,7 +128,7 @@ export class AssetService extends BaseService {
         {
           asset: updatedAsset,
           metadata: updatedPayload.metadata,
-        }
+        },
       );
 
       return updatedAsset;
@@ -143,12 +143,12 @@ export class AssetService extends BaseService {
     model: string,
     reference: string,
     metadata: Metadata,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     const assetId = `${model}-${reference}`;
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request).catch(
-        () => null
+        () => null,
       );
 
       if (!asset) {
@@ -157,7 +157,7 @@ export class AssetService extends BaseService {
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
         "device-manager:asset:update:before",
-        { asset, metadata }
+        { asset, metadata },
       );
 
       const updatedAsset = await this.updateDocument<AssetContent>(
@@ -170,7 +170,7 @@ export class AssetService extends BaseService {
           collection: InternalCollection.ASSETS,
           engineId,
         },
-        { source: true }
+        { source: true },
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
@@ -192,7 +192,7 @@ export class AssetService extends BaseService {
         {
           asset: updatedAsset,
           metadata: updatedPayload.metadata,
-        }
+        },
       );
 
       return updatedAsset;
@@ -207,7 +207,7 @@ export class AssetService extends BaseService {
     model: string,
     reference: string,
     metadata: JSONObject,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     const assetId = AssetSerializer.id(model, reference);
 
@@ -215,17 +215,17 @@ export class AssetService extends BaseService {
       const engine = await this.getEngine(engineId);
       const assetModel = await ask<AskModelAssetGet>(
         "ask:device-manager:model:asset:get",
-        { engineGroup: engine.group, model }
+        { engineGroup: engine.group, model },
       );
 
       const assetMetadata = {};
       for (const metadataName of Object.keys(
-        assetModel.asset.metadataMappings
+        assetModel.asset.metadataMappings,
       )) {
         assetMetadata[metadataName] = null;
       }
       for (const [metadataName, metadataValue] of Object.entries(
-        assetModel.asset.defaultMetadata
+        assetModel.asset.defaultMetadata,
       )) {
         _.set(assetMetadata, metadataName, metadataValue);
       }
@@ -253,7 +253,7 @@ export class AssetService extends BaseService {
         {
           collection: InternalCollection.ASSETS,
           engineId,
-        }
+        },
       );
 
       await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
@@ -280,7 +280,7 @@ export class AssetService extends BaseService {
   public async delete(
     engineId: string,
     assetId: string,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ) {
     const user = request.getUser();
     const strict = request.getBoolean("strict");
@@ -290,14 +290,14 @@ export class AssetService extends BaseService {
 
       if (strict && asset._source.linkedDevices.length !== 0) {
         throw new BadRequestError(
-          `Asset "${assetId}" is still linked to devices.`
+          `Asset "${assetId}" is still linked to devices.`,
         );
       }
 
       for (const { _id: deviceId } of asset._source.linkedDevices) {
         await ask<AskDeviceUnlinkAsset>(
           "ask:device-manager:device:unlink-asset",
-          { deviceId, user }
+          { deviceId, user },
         );
       }
 
@@ -311,9 +311,9 @@ export class AssetService extends BaseService {
   public async search(
     engineId: string,
     searchParams: SearchParams,
-    request: KuzzleRequest
+    request: KuzzleRequest,
   ): Promise<SearchResult<KHit<AssetContent>>> {
-    return await this.searchDocument<AssetContent>(request, searchParams, {
+    return this.searchDocument<AssetContent>(request, searchParams, {
       collection: InternalCollection.ASSETS,
       engineId,
     });
@@ -323,7 +323,7 @@ export class AssetService extends BaseService {
     user: User,
     assetsList: string[],
     engineId: string,
-    newEngineId: string
+    newEngineId: string,
   ): Promise<ApiAssetMigrateTenantResult> {
     let errors = [];
     let successes = [];
@@ -336,7 +336,7 @@ export class AssetService extends BaseService {
     await lock(`engine:${engineId}:${newEngineId}`, async () => {
       if (!user.profileIds.includes("admin")) {
         throw new BadRequestError(
-          `User ${user._id} is not authorized to migrate assets`
+          `User ${user._id} is not authorized to migrate assets`,
         );
       }
 
@@ -346,7 +346,7 @@ export class AssetService extends BaseService {
 
       if (engine.group !== newEngine.group) {
         throw new BadRequestError(
-          `Engine ${newEngineId} is not in the same group as ${engineId}`
+          `Engine ${newEngineId} is not in the same group as ${engineId}`,
         );
       }
 
@@ -355,19 +355,19 @@ export class AssetService extends BaseService {
       const assetsCheck = await this.sdk.document.mGet<AssetContent>(
         newEngineId,
         InternalCollection.ASSETS,
-        assetsList
+        assetsList,
       );
       const assetsCheckedIdExisting = assetsCheck.successes.map((a) => a._id);
       errors = [...assetsCheckedIdExisting];
 
       //Get all assets to migrate
       const assetsCheckedList = assetsList.filter(
-        (id) => !assetsCheckedIdExisting.includes(id)
+        (id) => !assetsCheckedIdExisting.includes(id),
       );
       const assets = await this.sdk.document.mGet<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
-        assetsCheckedList
+        assetsCheckedList,
       );
       errors = errors.concat(...assets.errors);
 
@@ -394,14 +394,14 @@ export class AssetService extends BaseService {
       const assetsCreated = await this.sdk.document.mCreate(
         newEngineId,
         InternalCollection.ASSETS,
-        assetsContentCopy
+        assetsContentCopy,
       );
 
       //We consider here we will return as success what we have been able
       //to create, and related errors
       const assetsCreatedId = assetsCreated.successes.map((a) => a._id);
       const assetsNotCreatedId = assetsCreated.errors.map(
-        (a) => a.document._id
+        (a) => a.document._id,
       );
       successes = [...assetsCreatedId];
       errors = errors.concat(...assetsNotCreatedId);
@@ -423,13 +423,13 @@ export class AssetService extends BaseService {
           // detach linked devices from current tenant (it also unkinks asset)
           await ask<AskDeviceDetachEngine>(
             "ask:device-manager:device:detach-engine",
-            { deviceId: device._id, user }
+            { deviceId: device._id, user },
           );
 
           // ... and attach to new tenant
           await ask<AskDeviceAttachEngine>(
             "ask:device-manager:device:attach-engine",
-            { deviceId: device._id, engineId: newEngineId, user }
+            { deviceId: device._id, engineId: newEngineId, user },
           );
 
           // ... and link this device to the asset in the new tenant
@@ -441,7 +441,7 @@ export class AssetService extends BaseService {
               engineId: newEngineId,
               measureNames: device.measureNames,
               user,
-            }
+            },
           );
         }
       }
@@ -450,7 +450,7 @@ export class AssetService extends BaseService {
       await this.sdk.document.mDelete(
         engineId,
         InternalCollection.ASSETS,
-        assetsCreatedId
+        assetsCreatedId,
       );
 
       //Refresh ES indexes and collections
@@ -492,13 +492,13 @@ export class AssetService extends BaseService {
     engineId: string,
     assets: KDocument<AssetContent>[],
     removedMetadata: string[],
-    { refresh }: { refresh: any }
+    { refresh }: { refresh: any },
   ): Promise<mReplaceResponse> {
     const replacedAssets = await this.sdk.document.mReplace<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assets.map((asset) => ({ _id: asset._id, body: asset._source })),
-      { refresh, source: true }
+      { refresh, source: true },
     );
 
     const histories: AssetHistoryContent[] = replacedAssets.successes.map(
@@ -512,12 +512,12 @@ export class AssetService extends BaseService {
         },
         id: asset._id,
         timestamp: Date.now(),
-      })
+      }),
     );
 
     await this.assetHistoryService.add<AssetHistoryEventMetadata>(
       engineId,
-      histories
+      histories,
     );
 
     return replacedAssets;
@@ -527,7 +527,7 @@ export class AssetService extends BaseService {
     const engine = await this.sdk.document.get(
       this.config.adminIndex,
       InternalCollection.CONFIG,
-      `engine-device-manager--${engineId}`
+      `engine-device-manager--${engineId}`,
     );
 
     return engine._source.engine;
@@ -592,16 +592,16 @@ export class AssetService extends BaseService {
           engines.map((engine) => [
             engine.index,
             [] as KDocument<AssetContent>[],
-          ])
-        )
+          ]),
+        ),
       );
 
     await Promise.all(
       Object.entries(updatedAssetsPerIndex).map(([index, updatedAssets]) =>
         this.mReplaceAndHistorize(index, updatedAssets, removedMetadata, {
           refresh: "wait_for",
-        })
-      )
+        }),
+      ),
     );
   }
 }

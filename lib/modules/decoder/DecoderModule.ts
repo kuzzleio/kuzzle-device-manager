@@ -21,11 +21,11 @@ export class DecoderModule extends Module {
     this.payloadService = new PayloadService(this.plugin);
     this.decoderController = new DecodersController(
       this.payloadService,
-      this.decodersRegister
+      this.decodersRegister,
     );
     this.payloadsController = new PayloadsController(
       this.payloadService,
-      this.decodersRegister
+      this.decodersRegister,
     );
 
     this.plugin.api["device-manager/decoders"] =
