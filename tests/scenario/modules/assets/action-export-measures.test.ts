@@ -114,7 +114,7 @@ describe("AssetsController:exportMeasures", () => {
 
     expect(csv).toHaveLength(5);
     expect(csv[0]).toBe(
-      "Payload Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperatureExt,temperatureInt,position,position.accuracy,position.altitude,temperatureWeather\n",
+      "Measure Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperatureExt.temperature,temperatureInt.temperature,position.position,position.accuracy,position.altitude,temperatureWeather.temperature\n",
     );
     const [
       payloadId,
