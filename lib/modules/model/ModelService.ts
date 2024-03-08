@@ -61,6 +61,8 @@ export class ModelService extends BaseService {
     model: string,
     metadataMappings: JSONObject,
     defaultMetadata: JSONObject,
+    metadataDetails: JSONObject,
+    metadataGroups: JSONObject,
     measures: AssetModelContent["asset"]["measures"],
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
@@ -68,7 +70,14 @@ export class ModelService extends BaseService {
     }
 
     const modelContent: AssetModelContent = {
-      asset: { defaultMetadata, measures, metadataMappings, model },
+      asset: {
+        defaultMetadata,
+        measures,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+      },
       engineGroup,
       type: "asset",
     };
@@ -123,6 +132,8 @@ export class ModelService extends BaseService {
     model: string,
     metadataMappings: JSONObject,
     defaultMetadata: JSONObject,
+    metadataDetails: JSONObject,
+    metadataGroups: JSONObject,
     measures: DeviceModelContent["device"]["measures"],
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
@@ -130,7 +141,14 @@ export class ModelService extends BaseService {
     }
 
     const modelContent: DeviceModelContent = {
-      device: { defaultMetadata, measures, metadataMappings, model },
+      device: {
+        defaultMetadata,
+        measures,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+      },
       type: "device",
     };
 

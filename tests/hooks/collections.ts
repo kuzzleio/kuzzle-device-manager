@@ -17,6 +17,7 @@ async function deleteModels(sdk: Kuzzle) {
         values: [
           "model-measure-presence",
           "model-asset-plane",
+          "model-asset-AdvancedPlane",
           "model-device-Zigbee",
           "model-device-Enginko",
         ],

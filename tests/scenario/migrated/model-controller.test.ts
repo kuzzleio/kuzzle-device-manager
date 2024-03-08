@@ -497,7 +497,61 @@ describe("features/Model/Controller", () => {
       _source: { measure: { type: "battery" } },
     });
   });
+  it("Write and Retrieve an Asset model with metadata details and groups", async () => {
+    const assetModelWithDetailsAndGroups = {
+      engineGroup: "commons",
+      model: "AdvancedPlane",
+      metadataMappings: {
+        company: { type: "keyword" },
+        year: { type: "integer" }
+      },
+      measures: [
+        { name: "temperatureExt", type: "temperature" },
+      ],
+      metadataDetails: {
+        company: {
+          group: "companyInfo",
+          locales: {
+            en: {
+              friendlyName: "Manufacturer",
+              description: "The company that manufactured the plane"
+            },
+            fr: {
+              friendlyName: "Fabricant",
+              description: "L'entreprise qui a fabriqué l'avion"
+            }
+          }
+        }
+      },
+      metadataGroups: {
+        companyInfo: {
+          locales: {
+            en: { groupFriendlyName: "Company Information" },
+            fr: { groupFriendlyName: "Informations sur l'entreprise" }
+          }
+        }
+      }
+    };
 
+    // Write the asset model with metadata details and groups
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: assetModelWithDetailsAndGroups
+    });
+
+    // Retrieve and assert the asset model
+    const response = await sdk.document.get("device-manager", "models", "model-asset-AdvancedPlane");
+    expect(response._source.asset).toHaveProperty('metadataDetails');
+    expect(response._source.asset).toHaveProperty('metadataGroups');
+    delete assetModelWithDetailsAndGroups.engineGroup
+    expect(response._source).toMatchObject({
+      type: "asset",
+      engineGroup: "commons",
+      asset: assetModelWithDetailsAndGroups
+    });
+  });
+  
   it("Register models from the framework", async () => {
     let response;
     let promise;

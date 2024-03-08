@@ -11,6 +11,41 @@ export interface MeasureModelContent extends KDocumentContent {
     type: string;
   };
 }
+interface MetadataProperty {
+  type: string;
+}
+
+export interface MetadataMappings {
+  [key: string]:
+    | MetadataProperty
+    | { properties: { [key: string]: MetadataProperty } };
+}
+
+interface LocaleDetails {
+  friendlyName: string;
+  description: string;
+}
+
+export interface MetadataDetails {
+  [key: string]: {
+    group?: string;
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
+}
+
+interface MetadataGroupLocale {
+  groupFriendlyName: string;
+}
+
+export interface MetadataGroups {
+  [groupName: string]: {
+    locales: {
+      [locale: string]: MetadataGroupLocale;
+    };
+  };
+}
 
 export interface AssetModelContent extends KDocumentContent {
   type: "asset";
@@ -46,7 +81,41 @@ export interface AssetModelContent extends KDocumentContent {
      * }
      */
     defaultMetadata: JSONObject;
-
+    /**
+     * Metadata details
+     * @example
+     * {
+     *   "extTemp": {
+     *     "group": "buildingEnv",
+     *     "locales": {
+     *     "en": {
+     *        "friendlyName": "External temperature",
+     *        "description": "Building external temperature"
+     *     },
+     *     "fr": {
+     *       "friendlyName": "Température extérieure",
+     *       "description": "Température à l'exterieur du bâtiment"
+     *     },
+     *   }
+     */
+    metadataDetails?: JSONObject;
+    /**
+     * Metadata groups list
+     * @example
+     * {
+     *   "buildingEnv": {
+     *     "locales": {
+     *       "en": {
+     *         "groupFriendlyName": "Building environment"
+     *       },
+     *       "fr": {
+     *         "groupFriendlyName": "Environnement du bâtiment"
+     *       }
+     *     }
+     *   }
+     * }
+     */
+    metadataGroups?: JSONObject;
     /**
      * List of accepted measures for this model
      *
@@ -84,7 +153,6 @@ export interface DeviceModelContent extends KDocumentContent {
      * }
      */
     metadataMappings: JSONObject;
-
     /**
      * Default values for metadata.
      *
@@ -94,7 +162,41 @@ export interface DeviceModelContent extends KDocumentContent {
      * }
      */
     defaultMetadata: JSONObject;
-
+    /**
+     * Metadata details
+     * @example
+     * {
+     *   "sensorVersion": {
+     *     "group": "sensorSpecs",
+     *     "locales": {
+     *     "en": {
+     *        "friendlyName": "Sensor version",
+     *        "description": "Firmware version of the sensor"
+     *     },
+     *     "fr": {
+     *       "friendlyName": "Version du capteur",
+     *       "description": "Version du micrologiciel du capteur"
+     *     },
+     *   }
+     */
+    metadataDetails?: JSONObject;
+    /**
+     * Metadata groups list
+     * @example
+     * {
+     *   "sensorSpecs": {
+     *     "locales": {
+     *       "en": {
+     *         "groupFriendlyName": "Sensor specifications"
+     *       },
+     *       "fr": {
+     *         "groupFriendlyName": "Spécifications techniques"
+     *       }
+     *     }
+     *   }
+     * }
+     */
+    metadataGroups?: JSONObject;
     /**
      * List of decoded measures for this model
      *

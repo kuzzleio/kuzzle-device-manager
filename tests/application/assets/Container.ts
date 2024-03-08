@@ -9,7 +9,6 @@ import {
 export interface ContainerMetadata extends Metadata {
   height: number;
   width: number;
-
   trailer: {
     weight: number;
     capacity: number;
@@ -23,8 +22,7 @@ export type ContainerMeasurements = {
   temperatureWeather: TemperatureMeasurement;
 };
 
-export interface ContainerAssetContent
-  extends AssetContent<ContainerMeasurements, ContainerMetadata> {
+export interface ContainerAssetContent extends AssetContent<ContainerMeasurements, ContainerMetadata> {
   model: "Container";
 }
 
@@ -48,12 +46,94 @@ export const containerAssetDefinition: AssetModelDefinition = {
   defaultMetadata: {
     height: 20,
   },
+  metadataDetails: {
+    extTemp: {
+      group: "environment",
+      locales: {
+        en: {
+          friendlyName: "External Temperature",
+          description: "The temperature outside the container"
+        },
+        fr: {
+          friendlyName: "Température Externe",
+          description: "La température à l'extérieur du conteneur"
+        }
+      }
+    },
+    intTemp: {
+      group: "environment",
+      locales: {
+        en: {
+          friendlyName: "Internal Temperature",
+          description: "The temperature inside the container"
+        },
+        fr: {
+          friendlyName: "Température Interne",
+          description: "La température à l'intérieur du conteneur"
+        }
+      }
+    }
+  },
+  metadataGroups: {
+    environment: {
+      locales: {
+        en: {
+          groupFriendlyName: "Environmental Measurements"
+        },
+        fr: {
+          groupFriendlyName: "Mesures environnementales"
+        }
+      }
+    },
+  },
+};
+
+
+// Mocked data example to match the expected type structure
+const temperatureMeasureExample = {
+  payloadUuids: ["uuid1", "uuid2"],
+  type: "temperature",
+  measuredAt: new Date().getTime(),
+  name: "temperatureExt",
+  originId: "someOriginId",
+  values: {
+    temperature: 20,
+  },
+};
+
+const positionMeasureExample = {
+  payloadUuids: ["uuid3", "uuid4"],
+  type: "position",
+  measuredAt: new Date().getTime(),
+  name: "position",
+  originId: "someOriginId",
+  values: {
+    position: {
+      lat: 0,
+      lon: 0,
+    },
+    accuracy: 10,
+  },
+};
+
+const measures = {
+  temperatureExt: temperatureMeasureExample,
+  temperatureInt: { ...temperatureMeasureExample, name: "temperatureInt", values: { temperature: 22 } },
+  position: positionMeasureExample,
+  temperatureWeather: { ...temperatureMeasureExample, name: "temperatureWeather", values: { temperature: 15 } },
 };
 
 // This function is never called and only exists to make sure the types are correct
 function neverCalled() {
-  // @ts-ignore
-  const container: ContainerAssetContent = {};
+  const container: ContainerAssetContent = {
+    model: "Container",
+    linkedDevices: [],
+    groups: [],
+    reference: "",
+    metadata: undefined,
+    measures,
+    lastMeasuredAt: 0
+  };
 
   container.metadata.height = 40;
   if (container.measures.temperatureExt) {

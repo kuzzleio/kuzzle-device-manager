@@ -38,6 +38,14 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        metadataDetails: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataGroups: {
+          dynamic: "false",
+          properties: {},
+        },
         measures: {
           properties: {
             type: { type: "keyword" },
@@ -58,6 +66,14 @@ export const modelsMappings: CollectionMappings = {
           properties: {},
         },
         defaultMetadata: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataDetails: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataGroups: {
           dynamic: "false",
           properties: {},
         },

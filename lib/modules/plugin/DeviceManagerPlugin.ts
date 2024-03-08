@@ -67,10 +67,13 @@ export class DeviceManagerPlugin extends Plugin {
        * Register an asset model
        *
        * @param engineGroup Engine group name
-       * @param model Name of the asset model
-       * @param definition.measures Array describing measures names and types
-       * @param definition.metadataMappings Metadata mappings definition
-       * @param definition.defaultMetadata Default metadata values
+       * @param model Name of the asset model. Must follow a naming convention in PascalCase.
+       * @param definition Object containing the asset model definition, including:
+       *        - measures: Array describing measure names and their types.
+       *        - metadataMappings: Definition of metadata mappings, specifying types for each metadata field.
+       *        - defaultMetadata: Default values for metadata fields, applied when actual data is not provided.
+       *        - metadataDetails: Optional detailed descriptions for each metadata, including group association and localizations.
+       *        - metadataGroups: Optional description of metadata groups, organizing metadata logically, with localizations for group names.
        *
        * @example
        * ```
@@ -89,6 +92,33 @@ export class DeviceManagerPlugin extends Plugin {
        *     },
        *     defaultMetadata: {
        *       height: 20
+       *     },
+       *     metadataDetails: {
+       *       "extTemp": {
+       *         "group": "environment",
+       *         "locales": {
+       *           "en": {
+       *             "friendlyName": "External Temperature",
+       *             "description": "The temperature outside the container"
+       *           },
+       *           "fr": {
+       *             "friendlyName": "Température Externe",
+       *             "description": "La température à l'extérieur du conteneur"
+       *           }
+       *         }
+       *       }
+       *     },
+       *     metadataGroups: {
+       *       "environment": {
+       *         "locales": {
+       *           "en": {
+       *             "groupFriendlyName": "Environment"
+       *           },
+       *           "fr": {
+       *             "groupFriendlyName": "Environnement"
+       *           }
+       *         }
+       *       }
        *     }
        *   }
        * );
@@ -105,16 +135,21 @@ export class DeviceManagerPlugin extends Plugin {
           definition.measures,
           definition.metadataMappings,
           definition.defaultMetadata,
+          definition.metadataDetails,
+          definition.metadataGroups,
         );
       },
 
       /**
-       * Register a device model
+       * Register a device.
        *
        * @param model Name of the device model
-       * @param definition.decoded Decoder used to decode payloads
-       * @param definition.metadataMappings Metadata mappings definition
-       * @param definition.defaultMetadata Default metadata values
+       * @param definition Object containing the device model definition, including:
+       *                   - decoder: Decoder used to decode payloads
+       *                   - metadataMappings: Metadata mappings definition
+       *                   - defaultMetadata: Default metadata values
+       *                   - metadataDetails: Detailed metadata descriptions and localizations
+       *                   - metadataGroups: Groups for organizing metadata, with localizations
        *
        * @example
        * ```
@@ -124,6 +159,36 @@ export class DeviceManagerPlugin extends Plugin {
        *     decoder: new DummyTempPositionDecoder(),
        *     metadataMappings: {
        *       serial: { type: "keyword" },
+       *     },
+       *     defaultMetadata: {
+       *       company: "Acme Inc"
+       *     },
+       *     metadataDetails: {
+       *       sensorVersion: {
+       *         group: "sensorSpecs",
+       *         locales: {
+       *           en: {
+       *             friendlyName: "Sensor version",
+       *             description: "Firmware version of the sensor"
+       *           },
+       *           fr: {
+       *             friendlyName: "Version du capteur",
+       *             description: "Version du micrologiciel du capteur"
+       *           }
+       *         }
+       *       }
+       *     },
+       *     metadataGroups: {
+       *       sensorSpecs: {
+       *         locales: {
+       *           en: {
+       *             groupFriendlyName: "Sensors specifications"
+       *           },
+       *           fr: {
+       *             groupFriendlyName: "Spécifications des capteurs"
+       *           }
+       *         }
+       *       }
        *     }
        *   }
        * );
@@ -137,6 +202,8 @@ export class DeviceManagerPlugin extends Plugin {
           definition.decoder.measures as NamedMeasures,
           definition.metadataMappings,
           definition.defaultMetadata,
+          definition.metadataDetails,
+          definition.metadataGroups,
         );
       },
 
