@@ -10,7 +10,6 @@ import { MeasureDefinition } from "../measure";
 
 import {
   AssetModelContent,
-  DefaultMetadata,
   DeviceModelContent,
   MeasureModelContent,
   MetadataDetails,
@@ -19,6 +18,7 @@ import {
   ModelContent,
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
+import { JSONObject } from "kuzzle-sdk";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -66,7 +66,7 @@ export class ModelsRegister {
     model: string,
     measures: NamedMeasures,
     metadataMappings: MetadataMappings = {},
-    defaultMetadata: DefaultMetadata = {},
+    defaultMetadata: JSONObject = {},
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
   ) {
@@ -106,7 +106,7 @@ export class ModelsRegister {
     model: string,
     measures: NamedMeasures,
     metadataMappings: MetadataMappings = {},
-    defaultMetadata: DefaultMetadata = {},
+    defaultMetadata: JSONObject = {},
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
   ) {

@@ -1,6 +1,6 @@
+import { JSONObject } from "kuzzle-sdk";
 import { Decoder, NamedMeasures } from "../../../modules/decoder";
 import {
-  DefaultMetadata,
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
@@ -67,7 +67,7 @@ export type AssetModelDefinition = {
   /**
    * Default metadata values
    */
-  defaultMetadata?: DefaultMetadata;
+  defaultMetadata?: JSONObject;
 
   /**
    * Metadata details including tanslations and group.
@@ -136,7 +136,7 @@ export type DeviceModelDefinition = {
   /**
    * Default metadata values
    */
-  defaultMetadata?: DefaultMetadata;
+  defaultMetadata?: JSONObject;
 
   /**
    * Metadata details including tanslations and group.

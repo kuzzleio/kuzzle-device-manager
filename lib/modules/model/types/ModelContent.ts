@@ -1,4 +1,4 @@
-import { KDocumentContent } from "kuzzle-sdk";
+import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 
 import { NamedMeasures } from "../../../modules/decoder";
 
@@ -19,10 +19,6 @@ export interface MetadataMappings {
   [key: string]:
     | MetadataProperty
     | { properties: { [key: string]: MetadataProperty } };
-}
-
-export interface DefaultMetadata {
-  [key: string]: any;
 }
 
 interface LocaleDetails {
@@ -84,7 +80,7 @@ export interface AssetModelContent extends KDocumentContent {
      *    "company.name": "Firebird"
      * }
      */
-    defaultMetadata: DefaultMetadata;
+    defaultMetadata: JSONObject;
     /**
      * Metadata details
      * @example
@@ -165,7 +161,7 @@ export interface DeviceModelContent extends KDocumentContent {
      *    "company.name": "Firebird"
      * }
      */
-    defaultMetadata: DefaultMetadata;
+    defaultMetadata: JSONObject;
     /**
      * Metadata details
      * @example

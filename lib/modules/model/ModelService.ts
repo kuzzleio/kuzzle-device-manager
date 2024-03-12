@@ -13,7 +13,6 @@ import { BaseService, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
-  DefaultMetadata,
   DeviceModelContent,
   MeasureModelContent,
   MetadataDetails,
@@ -64,7 +63,7 @@ export class ModelService extends BaseService {
     engineGroup: string,
     model: string,
     metadataMappings: MetadataMappings,
-    defaultMetadata: DefaultMetadata,
+    defaultMetadata: JSONObject,
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
     measures: AssetModelContent["asset"]["measures"],
@@ -111,7 +110,7 @@ export class ModelService extends BaseService {
 
   private checkDefaultValues(
     metadataMappings: MetadataMappings,
-    defaultMetadata: DefaultMetadata,
+    defaultMetadata: JSONObject,
   ) {
     const metadata = Object.keys(
       JSON.parse(
@@ -135,7 +134,7 @@ export class ModelService extends BaseService {
   async writeDevice(
     model: string,
     metadataMappings: MetadataMappings,
-    defaultMetadata: DefaultMetadata,
+    defaultMetadata: JSONObject,
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
     measures: DeviceModelContent["device"]["measures"],
