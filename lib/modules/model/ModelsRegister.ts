@@ -1,5 +1,4 @@
 import { Inflector, PluginContext, PluginImplementationError } from "kuzzle";
-import { JSONObject } from "kuzzle-sdk";
 
 import {
   DeviceManagerConfiguration,
@@ -11,8 +10,12 @@ import { MeasureDefinition } from "../measure";
 
 import {
   AssetModelContent,
+  DefaultMetadata,
   DeviceModelContent,
   MeasureModelContent,
+  MetadataDetails,
+  MetadataGroups,
+  MetadataMappings,
   ModelContent,
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
@@ -62,10 +65,10 @@ export class ModelsRegister {
     engineGroup: string,
     model: string,
     measures: NamedMeasures,
-    metadataMappings: JSONObject = {},
-    defaultMetadata: JSONObject = {},
-    metadataDetails: JSONObject = {},
-    metadataGroups: JSONObject = {},
+    metadataMappings: MetadataMappings = {},
+    defaultMetadata: DefaultMetadata = {},
+    metadataDetails: MetadataDetails = {},
+    metadataGroups: MetadataGroups = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -102,10 +105,10 @@ export class ModelsRegister {
   registerDevice(
     model: string,
     measures: NamedMeasures,
-    metadataMappings: JSONObject = {},
-    defaultMetadata: JSONObject = {},
-    metadataDetails: JSONObject = {},
-    metadataGroups: JSONObject = {},
+    metadataMappings: MetadataMappings = {},
+    defaultMetadata: DefaultMetadata = {},
+    metadataDetails: MetadataDetails = {},
+    metadataGroups: MetadataGroups = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(

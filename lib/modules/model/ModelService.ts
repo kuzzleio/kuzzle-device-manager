@@ -13,8 +13,12 @@ import { BaseService, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
+  DefaultMetadata,
   DeviceModelContent,
   MeasureModelContent,
+  MetadataDetails,
+  MetadataGroups,
+  MetadataMappings,
 } from "./types/ModelContent";
 import {
   AskModelAssetGet,
@@ -59,10 +63,10 @@ export class ModelService extends BaseService {
   async writeAsset(
     engineGroup: string,
     model: string,
-    metadataMappings: JSONObject,
-    defaultMetadata: JSONObject,
-    metadataDetails: JSONObject,
-    metadataGroups: JSONObject,
+    metadataMappings: MetadataMappings,
+    defaultMetadata: DefaultMetadata,
+    metadataDetails: MetadataDetails,
+    metadataGroups: MetadataGroups,
     measures: AssetModelContent["asset"]["measures"],
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
@@ -106,8 +110,8 @@ export class ModelService extends BaseService {
   }
 
   private checkDefaultValues(
-    metadataMappings: JSONObject,
-    defaultMetadata: JSONObject,
+    metadataMappings: MetadataMappings,
+    defaultMetadata: DefaultMetadata,
   ) {
     const metadata = Object.keys(
       JSON.parse(
@@ -130,10 +134,10 @@ export class ModelService extends BaseService {
 
   async writeDevice(
     model: string,
-    metadataMappings: JSONObject,
-    defaultMetadata: JSONObject,
-    metadataDetails: JSONObject,
-    metadataGroups: JSONObject,
+    metadataMappings: MetadataMappings,
+    defaultMetadata: DefaultMetadata,
+    metadataDetails: MetadataDetails,
+    metadataGroups: MetadataGroups,
     measures: DeviceModelContent["device"]["measures"],
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {

@@ -1,4 +1,4 @@
-import { JSONObject, KDocumentContent } from "kuzzle-sdk";
+import { KDocumentContent } from "kuzzle-sdk";
 
 import { NamedMeasures } from "../../../modules/decoder";
 
@@ -19,6 +19,10 @@ export interface MetadataMappings {
   [key: string]:
     | MetadataProperty
     | { properties: { [key: string]: MetadataProperty } };
+}
+
+export interface DefaultMetadata {
+  [key: string]: any;
 }
 
 interface LocaleDetails {
@@ -70,7 +74,7 @@ export interface AssetModelContent extends KDocumentContent {
      *   }
      * }
      */
-    metadataMappings: JSONObject;
+    metadataMappings: MetadataMappings;
 
     /**
      * Default values for metadata.
@@ -80,7 +84,7 @@ export interface AssetModelContent extends KDocumentContent {
      *    "company.name": "Firebird"
      * }
      */
-    defaultMetadata: JSONObject;
+    defaultMetadata: DefaultMetadata;
     /**
      * Metadata details
      * @example
@@ -98,7 +102,7 @@ export interface AssetModelContent extends KDocumentContent {
      *     },
      *   }
      */
-    metadataDetails?: JSONObject;
+    metadataDetails?: MetadataDetails;
     /**
      * Metadata groups list
      * @example
@@ -115,7 +119,7 @@ export interface AssetModelContent extends KDocumentContent {
      *   }
      * }
      */
-    metadataGroups?: JSONObject;
+    metadataGroups?: MetadataGroups;
     /**
      * List of accepted measures for this model
      *
@@ -152,7 +156,7 @@ export interface DeviceModelContent extends KDocumentContent {
      *   }
      * }
      */
-    metadataMappings: JSONObject;
+    metadataMappings: MetadataMappings;
     /**
      * Default values for metadata.
      *
@@ -161,7 +165,7 @@ export interface DeviceModelContent extends KDocumentContent {
      *    "company.name": "Firebird"
      * }
      */
-    defaultMetadata: JSONObject;
+    defaultMetadata: DefaultMetadata;
     /**
      * Metadata details
      * @example
@@ -179,7 +183,7 @@ export interface DeviceModelContent extends KDocumentContent {
      *     },
      *   }
      */
-    metadataDetails?: JSONObject;
+    metadataDetails?: MetadataDetails;
     /**
      * Metadata groups list
      * @example
@@ -196,7 +200,7 @@ export interface DeviceModelContent extends KDocumentContent {
      *   }
      * }
      */
-    metadataGroups?: JSONObject;
+    metadataGroups?: MetadataGroups;
     /**
      * List of decoded measures for this model
      *

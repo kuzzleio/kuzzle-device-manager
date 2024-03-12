@@ -1,5 +1,10 @@
-import { JSONObject } from "kuzzle-sdk";
 import { Decoder, NamedMeasures } from "../../../modules/decoder";
+import {
+  DefaultMetadata,
+  MetadataDetails,
+  MetadataGroups,
+  MetadataMappings,
+} from "./ModelContent";
 
 /**
  * Define an asset model
@@ -57,40 +62,22 @@ export type AssetModelDefinition = {
   /**
    * Metadata mappings definition
    */
-  metadataMappings?: JSONObject;
+  metadataMappings?: MetadataMappings;
 
   /**
    * Default metadata values
    */
-  defaultMetadata?: JSONObject;
+  defaultMetadata?: DefaultMetadata;
 
   /**
    * Metadata details including tanslations and group.
    */
-  metadataDetails?: {
-    [name: string]: {
-      group: string;
-      locales: {
-        [locale: string]: {
-          friendlyName: string;
-          description: string;
-        };
-      };
-    };
-  };
+  metadataDetails?: MetadataDetails;
 
   /**
    * Metadata groups
    */
-  metadataGroups?: {
-    [groupName: string]: {
-      locales: {
-        [locale: string]: {
-          groupFriendlyName: string;
-        };
-      };
-    };
-  };
+  metadataGroups?: MetadataGroups;
 };
 
 /**
@@ -144,38 +131,20 @@ export type DeviceModelDefinition = {
   /**
    * Metadata mappings definition
    */
-  metadataMappings?: JSONObject;
+  metadataMappings?: MetadataMappings;
 
   /**
    * Default metadata values
    */
-  defaultMetadata?: JSONObject;
+  defaultMetadata?: DefaultMetadata;
 
   /**
    * Metadata details including tanslations and group.
    */
-  metadataDetails?: {
-    [name: string]: {
-      group: string;
-      locales: {
-        [locale: string]: {
-          friendlyName: string;
-          description: string;
-        };
-      };
-    };
-  };
+  metadataDetails?: MetadataDetails;
 
   /**
    * Metadata groups list and details.
    */
-  metadataGroups?: {
-    [groupName: string]: {
-      locales: {
-        [locale: string]: {
-          groupFriendlyName: string;
-        };
-      };
-    };
-  };
+  metadataGroups?: MetadataGroups;
 };
