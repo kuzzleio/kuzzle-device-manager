@@ -120,12 +120,15 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
     return super.prepareExport(engineId, user, exportParams);
   }
 
-  protected formatHit(columns: Column[], hit: KHit<MeasureContent>) {
-    return columns.map(({ header: measureName, isMeasure, path }) => {
+  protected formatHit(
+    columns: Array<Column & { shouldCheckName: boolean; name: string }>,
+    hit: KHit<MeasureContent>,
+  ) {
+    return columns.map(({ name, shouldCheckName, path }) => {
       if (
-        isMeasure &&
+        shouldCheckName &&
         this.target === InternalCollection.ASSETS &&
-        hit._source.asset?.measureName !== measureName
+        hit._source.asset?.measureName !== name
       ) {
         return null;
       }
@@ -169,9 +172,28 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
     const measureColumns = await this.generateMeasureColumns(
       modelDocument[targetModel].measures,
     );
+    // sometimes we have multiple measures with same type
+    // detect them and add them a flag that will be used later
+    const foundDuplicateType = [];
 
+    for (const col of measureColumns) {
+      if (!foundDuplicateType.includes(col.path)) {
+        const pathFilteredColumns = measureColumns.filter(
+          (c) => col.path === c.path,
+        );
+        if (pathFilteredColumns.length > 1) {
+          foundDuplicateType.push(col.path);
+        }
+      }
+    }
+
+    for (const col of measureColumns) {
+      if (foundDuplicateType.includes(col.path)) {
+        col.shouldCheckName = true;
+      }
+    }
     const columns: Column[] = [
-      { header: "Payload Id", path: "_id" },
+      { header: "Measure Id", path: "_id" },
       { header: "Measured At", path: "_source.measuredAt" },
       { header: "Measure Type", path: "_source.type" },
       { header: "Device Id", path: "_source.origin._id" },
@@ -189,7 +211,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
 
   private async generateMeasureColumns(
     documentMeasures: NamedMeasures,
-  ): Promise<Array<Column & { isMeasure: true }>> {
+  ): Promise<Array<Column & { shouldCheckName: boolean; name: string }>> {
     /**
      * @example
      * {
@@ -203,7 +225,8 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
      * }
      */
     const mappingsByMeasureType: Record<string, string[]> = {};
-    const measures: Array<Column & { isMeasure: true }> = [];
+    const measures: Array<Column & { shouldCheckName: boolean; name: string }> =
+      [];
 
     for (const { name, type } of documentMeasures) {
       if (!(type in mappingsByMeasureType)) {
@@ -226,18 +249,12 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
          */
         const path = measure.replace(".type", "").replace(".properties", "");
 
-        /**
-         * All of this is here to avoid a long header name like 'accelerationSensor.acceleration.x' (we don't need the 'acceleration' part)
-         *
-         * @example
-         * 'temperatureInt', 'accelerationSensor.x', 'accelerationSensor.accuracy'
-         */
-        const header = `${name}.${path}`.replace(`${name}.${type}`, name);
-
+        const header = `${name}.${path}`;
         measures.push({
           header,
-          isMeasure: true,
+          name,
           path: `_source.values.${path}`,
+          shouldCheckName: false,
         });
       }
     }
