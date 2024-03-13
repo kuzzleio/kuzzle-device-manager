@@ -1,3 +1,16 @@
+# [2.4.0-beta.14](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.13...v2.4.0-beta.14) (2024-03-13)
+
+
+### Bug Fixes
+
+* improve measure export to be usable with multiple measures in one measure ([#330](https://github.com/kuzzleio/kuzzle-device-manager/issues/330)) ([dab8d57](https://github.com/kuzzleio/kuzzle-device-manager/commit/dab8d57957a4ff2423ae3c29203a1bd7a55a5155))
+
+
+### Features
+
+* **assets:** remove assetId in upsert ([#326](https://github.com/kuzzleio/kuzzle-device-manager/issues/326)) ([2f286de](https://github.com/kuzzleio/kuzzle-device-manager/commit/2f286de85d286bbd13bdc4c1385a9ce4d4ffcb50))
+* implement comprehensible metadata ([#332](https://github.com/kuzzleio/kuzzle-device-manager/issues/332)) ([e80ef8e](https://github.com/kuzzleio/kuzzle-device-manager/commit/e80ef8eb660dd20024b72279007b8aa2f369160c))
+
 # [2.4.0-beta.13](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.12...v2.4.0-beta.13) (2024-01-11)
 
 
