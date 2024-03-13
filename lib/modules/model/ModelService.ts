@@ -15,6 +15,9 @@ import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
+  MetadataDetails,
+  MetadataGroups,
+  MetadataMappings,
 } from "./types/ModelContent";
 import {
   AskModelAssetGet,
@@ -59,8 +62,10 @@ export class ModelService extends BaseService {
   async writeAsset(
     engineGroup: string,
     model: string,
-    metadataMappings: JSONObject,
+    metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
+    metadataDetails: MetadataDetails,
+    metadataGroups: MetadataGroups,
     measures: AssetModelContent["asset"]["measures"],
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
@@ -68,7 +73,14 @@ export class ModelService extends BaseService {
     }
 
     const modelContent: AssetModelContent = {
-      asset: { defaultMetadata, measures, metadataMappings, model },
+      asset: {
+        defaultMetadata,
+        measures,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+      },
       engineGroup,
       type: "asset",
     };
@@ -97,7 +109,7 @@ export class ModelService extends BaseService {
   }
 
   private checkDefaultValues(
-    metadataMappings: JSONObject,
+    metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
   ) {
     const metadata = Object.keys(
@@ -121,8 +133,10 @@ export class ModelService extends BaseService {
 
   async writeDevice(
     model: string,
-    metadataMappings: JSONObject,
+    metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
+    metadataDetails: MetadataDetails,
+    metadataGroups: MetadataGroups,
     measures: DeviceModelContent["device"]["measures"],
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
@@ -130,7 +144,14 @@ export class ModelService extends BaseService {
     }
 
     const modelContent: DeviceModelContent = {
-      device: { defaultMetadata, measures, metadataMappings, model },
+      device: {
+        defaultMetadata,
+        measures,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+      },
       type: "device",
     };
 

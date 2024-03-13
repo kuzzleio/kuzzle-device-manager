@@ -1,5 +1,4 @@
 import { Inflector, PluginContext, PluginImplementationError } from "kuzzle";
-import { JSONObject } from "kuzzle-sdk";
 
 import {
   DeviceManagerConfiguration,
@@ -13,9 +12,13 @@ import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
+  MetadataDetails,
+  MetadataGroups,
+  MetadataMappings,
   ModelContent,
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
+import { JSONObject } from "kuzzle-sdk";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -46,12 +49,26 @@ export class ModelsRegister {
     );
   }
 
+  /**
+   * Registers an asset model.
+   *
+   * @param engineGroup - The engine group name.
+   * @param model - The name of the asset model, which must be in PascalCase.
+   * @param measures - The measures associated with this asset model.
+   * @param metadataMappings - The metadata mappings for the model, defaults to an empty object.
+   * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
+   * @param metadataDetails - Optional detailed metadata descriptions and localizations.
+   * @param metadataGroups - Optional groups for organizing metadata, with localizations.
+   * @throws PluginImplementationError if the model name is not in PascalCase.
+   */
   registerAsset(
     engineGroup: string,
     model: string,
     measures: NamedMeasures,
-    metadataMappings: JSONObject = {},
+    metadataMappings: MetadataMappings = {},
     defaultMetadata: JSONObject = {},
+    metadataDetails: MetadataDetails = {},
+    metadataGroups: MetadataGroups = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -59,18 +76,39 @@ export class ModelsRegister {
       );
     }
 
+    // Construct and push the new asset model to the assetModels array
     this.assetModels.push({
-      asset: { defaultMetadata, measures, metadataMappings, model },
+      asset: {
+        defaultMetadata,
+        measures,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+      },
       engineGroup,
       type: "asset",
     });
   }
 
+  /**
+   * Registers a device model.
+   *
+   * @param model - The name of the device model, which must be in PascalCase.
+   * @param measures - The measures associated with this device model.
+   * @param metadataMappings - The metadata mappings for the model, defaults to an empty object.
+   * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
+   * @param metadataDetails - Optional detailed metadata descriptions and localizations.
+   * @param metadataGroups - Optional groups for organizing metadata, with localizations.
+   * @throws PluginImplementationError if the model name is not in PascalCase.
+   */
   registerDevice(
     model: string,
     measures: NamedMeasures,
-    metadataMappings: JSONObject = {},
+    metadataMappings: MetadataMappings = {},
     defaultMetadata: JSONObject = {},
+    metadataDetails: MetadataDetails = {},
+    metadataGroups: MetadataGroups = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -78,8 +116,16 @@ export class ModelsRegister {
       );
     }
 
+    // Construct and push the new device model to the deviceModels array
     this.deviceModels.push({
-      device: { defaultMetadata, measures, metadataMappings, model },
+      device: {
+        defaultMetadata,
+        measures,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+      },
       type: "device",
     });
   }

@@ -111,12 +111,16 @@ export class ModelsController {
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
     const measures = request.getBodyArray("measures", []);
+    const metadataDetails = request.getBodyObject("metadataDetails", {});
+    const metadataGroups = request.getBodyObject("metadataGroups", {});
 
     const assetModel = await this.modelService.writeAsset(
       engineGroup,
       model,
       metadataMappings,
       defaultValues,
+      metadataDetails,
+      metadataGroups,
       measures,
     );
 
@@ -130,11 +134,15 @@ export class ModelsController {
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
     const measures = request.getBodyArray("measures");
+    const metadataDetails = request.getBodyObject("metadataDetails", {});
+    const metadataGroups = request.getBodyObject("metadataGroups", {});
 
     const deviceModel = await this.modelService.writeDevice(
       model,
       metadataMappings,
       defaultValues,
+      metadataDetails,
+      metadataGroups,
       measures,
     );
 

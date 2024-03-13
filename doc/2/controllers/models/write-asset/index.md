@@ -37,7 +37,35 @@ Method: POST
     },
     "defaultValues": {
       // Default values for metadata
-    }
+    },
+    "metadataDetails": {
+      /*
+        Metadata details including tanslations and group.
+          [name: string]: {
+            group?: string;
+            locales: {
+              [locale: string]: {
+                friendlyName: string;
+                description: string;
+              };
+            };
+          };
+      */
+    },
+    "metadataGroups"; {
+    /*
+      Metadata groups list and details.
+        {
+          [groupName: string]: {
+            locales: {
+              [locale: string]: {
+                groupFriendlyName: string;
+              };
+            };
+          };
+        };
+    */
+    },
     "measures": [
       // Array of measure definition with type and name
     ]
@@ -53,6 +81,8 @@ Method: POST
 - `model`: Asset model name
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
+- `metadataDetails`: Metadata group and translations
+- `metadataGroups`: Groups list with translations for group name 
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 
 ---

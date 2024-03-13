@@ -1,6 +1,10 @@
 import { JSONObject } from "kuzzle-sdk";
-
 import { Decoder, NamedMeasures } from "../../../modules/decoder";
+import {
+  MetadataDetails,
+  MetadataGroups,
+  MetadataMappings,
+} from "./ModelContent";
 
 /**
  * Define an asset model
@@ -18,6 +22,33 @@ import { Decoder, NamedMeasures } from "../../../modules/decoder";
  *     },
  *     defaultMetadata: {
  *       height: 20
+ *     },
+ *     metadataDetails: {
+ *       "extTemp": {
+ *         "group": "buildingEnv",
+ *         "locales": {
+ *           "en": {
+ *             "friendlyName": "External temperature",
+ *             "description": "Container external temperature"
+ *           },
+ *           "fr": {
+ *             "friendlyName": "Température externe",
+ *             "description": "Température externe du conteneur"
+ *           }
+ *         }
+ *       }
+ *     },
+ *     metadataGroups: {
+ *       "buildingEnv": {
+ *         "locales": {
+ *           "en": {
+ *             "groupFriendlyName": "Building environment"
+ *           },
+ *           "fr": {
+ *             "groupFriendlyName": "Environnement du bâtiment"
+ *           }
+ *         }
+ *       }
  *     }
  *   }
  *
@@ -31,12 +62,22 @@ export type AssetModelDefinition = {
   /**
    * Metadata mappings definition
    */
-  metadataMappings?: JSONObject;
+  metadataMappings?: MetadataMappings;
 
   /**
    * Default metadata values
    */
   defaultMetadata?: JSONObject;
+
+  /**
+   * Metadata details including tanslations and group.
+   */
+  metadataDetails?: MetadataDetails;
+
+  /**
+   * Metadata groups
+   */
+  metadataGroups?: MetadataGroups;
 };
 
 /**
@@ -47,6 +88,36 @@ export type AssetModelDefinition = {
  *     decoder: new DummyTempPositionDecoder(),
  *     metadataMappings: {
  *       serial: { type: "keyword" },
+ *     },
+ *     defaultMetadata: {
+ *       company: "Firebird"
+ *     },
+ *     metadataDetails: {
+ *       sensorType: {
+ *         group: "sensorSpecs",
+ *         locales: {
+ *           en: {
+ *             friendlyName: "Sensor type",
+ *             description: "Type of the sensor"
+ *           },
+ *           fr: {
+ *             friendlyName: "Type de traceur",
+ *             description: "Type du traceur"
+ *           }
+ *         }
+ *       }
+ *     },
+ *     metadataGroups: {
+ *       sensorSpecs: {
+ *         locales: {
+ *           en: {
+ *             groupFriendlyName: "Sensors specifications"
+ *           },
+ *           fr: {
+ *             groupFriendlyName: "Spécifications des capteurs"
+ *           }
+ *         }
+ *       }
  *     }
  *   }
  *
@@ -56,12 +127,24 @@ export type DeviceModelDefinition = {
    * Decoder used to decode payloads
    */
   decoder: Decoder;
+
   /**
    * Metadata mappings definition
    */
-  metadataMappings?: JSONObject;
+  metadataMappings?: MetadataMappings;
+
   /**
    * Default metadata values
    */
   defaultMetadata?: JSONObject;
+
+  /**
+   * Metadata details including tanslations and group.
+   */
+  metadataDetails?: MetadataDetails;
+
+  /**
+   * Metadata groups list and details.
+   */
+  metadataGroups?: MetadataGroups;
 };

@@ -22,6 +22,8 @@ A sensor model contains the following information:
 - `decoder`: (optional) instance of a [Decoder] to normalize the data
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
 - `defaultMetadata`: (optional) default metadata values
+- `metadataDetails`: (optional) Metadata group and translations. You can use it to keep consistency on translations between your apps
+- `metadataGroups`: (optional) Groups list with translations for group name. You can use it to group metadatas by their concerns
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 
@@ -66,7 +68,9 @@ An asset model contains the following information:
 - `engineGroup`: engine group to which the model belongs.
 - `measures`: received measurements
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
-- `defaultMetadata`: (optional) default metadata values
+- `defaultMetadata`: (optional) default metadata values- 
+- `metadataDetails`: (optional) Metadata group and translations . You can use it to keep consistency on translations between your apps
+- `metadataGroups`: (optional) Groups list with translations for group name. You can use it to group metadatas by their concerns
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 
