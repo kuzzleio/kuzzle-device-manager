@@ -364,6 +364,13 @@ export class AssetService extends BaseService {
       const assetsCheckedList = assetsList.filter(
         (id) => !assetsCheckedIdExisting.includes(id),
       );
+
+      if (assetsCheckedList.length === 0) {
+        throw new BadRequestError(
+          "All assets to migrate already exists in destination tenant.",
+        );
+      }
+
       const assets = await this.sdk.document.mGet<AssetContent>(
         engineId,
         InternalCollection.ASSETS,
