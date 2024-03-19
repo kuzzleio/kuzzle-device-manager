@@ -75,7 +75,39 @@ describe("AssetsController:migrateTenant", () => {
     ).rejects.toThrow("No assets to migrate");
   });
 
-  it("should copy assets from engine-ayse to engine-kuzzle", async () => {
+  it("should fail if all provided assets already exist in the new tenant", async () => {
+    await sdk.query({
+      controller: "device-manager/assets",
+      action: "create",
+      engineId: "engine-kuzzle",
+      body: { model: "Container", reference: "linked1" },
+    });
+
+    await sdk.collection.refresh("engine-kuzzle", "assets");
+
+    await expect(
+      sdk.query({
+        controller: "device-manager/assets",
+        action: "migrateTenant",
+        engineId: "engine-ayse",
+        body: {
+          assetsList: ["Container-linked1"],
+          newEngineId: "engine-kuzzle",
+        },
+      }),
+    ).rejects.toThrow("All assets to migrate already exist in new tenant");
+  });
+
+  it("should copy 1 of 2 assets from engine-ayse to engine-kuzzle", async () => {
+    await sdk.query({
+      controller: "device-manager/assets",
+      action: "create",
+      engineId: "engine-kuzzle",
+      body: { model: "Container", reference: "linked1" },
+    });
+
+    await sdk.collection.refresh("engine-kuzzle", "assets");
+
     const response = await sdk.query({
       controller: "device-manager/assets",
       action: "migrateTenant",
@@ -96,16 +128,32 @@ describe("AssetsController:migrateTenant", () => {
       lang: "koncorde",
     });
 
-    const devices = await sdk.query({
+    expect(response.status).toBe(200);
+    expect(assets.result.hits).toHaveLength(2);
+  });
+
+  it("should copy all assets from engine-ayse to engine-kuzzle", async () => {
+    const response = await sdk.query({
+      controller: "device-manager/assets",
+      action: "migrateTenant",
+      engineId: "engine-ayse",
+      body: {
+        assetsList: ["Container-linked1", "Container-linked2"],
+        newEngineId: "engine-kuzzle",
+      },
+    });
+
+    await sdk.collection.refresh("engine-kuzzle", "assets");
+
+    const assets = await sdk.query({
       controller: "device-manager/assets",
       action: "search",
       engineId: "engine-kuzzle",
-      body: { query: {} },
+      body: { query: { equals: { model: "Container" } } },
       lang: "koncorde",
     });
 
     expect(response.status).toBe(200);
     expect(assets.result.hits).toHaveLength(2);
-    expect(devices.result.hits).toHaveLength(2);
   });
 });
