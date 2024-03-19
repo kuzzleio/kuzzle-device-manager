@@ -95,7 +95,9 @@ describe("AssetsController:migrateTenant", () => {
           newEngineId: "engine-kuzzle",
         },
       }),
-    ).rejects.toThrow("All assets to migrate already exist in new tenant");
+    ).rejects.toThrow(
+      "All assets to migrate already exists in destination tenant.",
+    );
   });
 
   it("should copy 1 of 2 assets from engine-ayse to engine-kuzzle", async () => {
