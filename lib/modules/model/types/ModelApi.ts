@@ -4,6 +4,9 @@ import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
+  MetadataDetails,
+  MetadataGroups,
+  MetadataMappings,
 } from "./ModelContent";
 
 interface ModelsControllerRequest {
@@ -35,7 +38,9 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   body: {
     engineGroup: string;
     model: string;
-    metadataMappings?: JSONObject;
+    metadataDetails?: MetadataDetails;
+    metadataGroups?: MetadataGroups;
+    metadataMappings?: MetadataMappings;
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
   };
@@ -47,7 +52,9 @@ export interface ApiModelWriteDeviceRequest extends ModelsControllerRequest {
 
   body: {
     model: string;
-    metadataMappings?: JSONObject;
+    metadataDetails?: MetadataDetails;
+    metadataGroups?: MetadataGroups;
+    metadataMappings?: MetadataMappings;
     defaultValues?: JSONObject;
     measures: DeviceModelContent["device"]["measures"];
   };
