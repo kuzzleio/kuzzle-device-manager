@@ -526,8 +526,8 @@ describe("features/Model/Controller", () => {
       metadataGroups: {
         companyInfo: {
           locales: {
-            en: { groupFriendlyName: "Company Information" },
-            fr: { groupFriendlyName: "Informations sur l'entreprise" }
+            en: { groupFriendlyName: "Company Information", description: "All company related informations" },
+            fr: { groupFriendlyName: "Informations sur l'entreprise", description: "Toutes les informations relatives a l'entreprise" }
           }
         }
       }

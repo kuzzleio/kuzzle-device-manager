@@ -60,6 +60,7 @@ Method: POST
             locales: {
               [locale: string]: {
                 groupFriendlyName: string;
+                description: string;
               };
             };
           };

@@ -37,6 +37,7 @@ export interface MetadataDetails {
 
 interface MetadataGroupLocale {
   groupFriendlyName: string;
+  description: string;
 }
 
 export interface MetadataGroups {
@@ -106,10 +107,12 @@ export interface AssetModelContent extends KDocumentContent {
      *   "buildingEnv": {
      *     "locales": {
      *       "en": {
-     *         "groupFriendlyName": "Building environment"
+     *         "groupFriendlyName": "Building environment",
+     *         "description": "The building environment"
      *       },
      *       "fr": {
-     *         "groupFriendlyName": "Environnement du bâtiment"
+     *         "groupFriendlyName": "Environnement du bâtiment",
+     *         "description": "L'environnement du bâtiment"
      *       }
      *     }
      *   }
@@ -187,10 +190,12 @@ export interface DeviceModelContent extends KDocumentContent {
      *   "sensorSpecs": {
      *     "locales": {
      *       "en": {
-     *         "groupFriendlyName": "Sensor specifications"
+     *         "groupFriendlyName": "Sensor specifications",
+     *         "description" : "All sensors specifications"
      *       },
      *       "fr": {
-     *         "groupFriendlyName": "Spécifications techniques"
+     *         "groupFriendlyName": "Spécifications techniques",
+     *         "description": "Toutes les spécifications techniques"
      *       }
      *     }
      *   }

@@ -78,10 +78,12 @@ export const containerAssetDefinition: AssetModelDefinition = {
     environment: {
       locales: {
         en: {
-          groupFriendlyName: "Environmental Measurements"
+          groupFriendlyName: "Environmental Measurements",
+          description: "All environmental relative measurments"
         },
         fr: {
-          groupFriendlyName: "Mesures environnementales"
+          groupFriendlyName: "Mesures environnementales",
+          description: "Toutes les mesures liées a l'environement"
         }
       }
     },
