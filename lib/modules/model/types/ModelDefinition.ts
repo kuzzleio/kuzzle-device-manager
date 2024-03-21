@@ -39,14 +39,16 @@ import {
  *       }
  *     },
  *     metadataGroups: {
- *       "buildingEnv": {
- *         "locales": {
- *           "en": {
- *             "groupFriendlyName": "Building environment"
- *           },
- *           "fr": {
- *             "groupFriendlyName": "Environnement du bâtiment"
- *           }
+ *       buildingEnv: {
+ *         locales: {
+ *          en: {
+ *            groupFriendlyName: "Building environment",
+ *            description: "The building environment"
+ *          },
+ *          fr: {
+ *            groupFriendlyName: "Environnement du bâtiment",
+ *            description: "L'environnement du bâtiment"
+ *          }
  *         }
  *       }
  *     }
@@ -108,19 +110,20 @@ export type AssetModelDefinition = {
  *       }
  *     },
  *     metadataGroups: {
- *       sensorSpecs: {
- *         locales: {
- *           en: {
- *             groupFriendlyName: "Sensors specifications"
- *           },
- *           fr: {
- *             groupFriendlyName: "Spécifications des capteurs"
- *           }
- *         }
- *       }
- *     }
- *   }
- *
+ *      sensorSpecs: {
+ *        locales: {
+ *          en: {
+ *            groupFriendlyName: "Sensor specifications",
+ *            description : "All sensors specifications"
+ *          },
+ *          fr: {
+ *            groupFriendlyName: "Spécifications techniques",
+ *            description: "Toutes les spécifications techniques"
+ *          }
+ *        }
+ *      }
+ *    }
+ *  }
  */
 export type DeviceModelDefinition = {
   /**
