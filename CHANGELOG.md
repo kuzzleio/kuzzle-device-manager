@@ -1,3 +1,15 @@
+# [2.4.0-beta.15](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.14...v2.4.0-beta.15) (2024-03-21)
+
+
+### Bug Fixes
+
+* correct api types ([#333](https://github.com/kuzzleio/kuzzle-device-manager/issues/333)) ([05c426f](https://github.com/kuzzleio/kuzzle-device-manager/commit/05c426fbfaf9602bb46d4b0c8f472fab85280b3a))
+
+
+### Features
+
+* add group descriptions to models ([#335](https://github.com/kuzzleio/kuzzle-device-manager/issues/335)) ([de00fb7](https://github.com/kuzzleio/kuzzle-device-manager/commit/de00fb73161c50e42ca504ed9c829099cd5ba44a))
+
 # [2.4.0-beta.14](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.13...v2.4.0-beta.14) (2024-03-13)
 
 
