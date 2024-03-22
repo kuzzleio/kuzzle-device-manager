@@ -1,17 +1,18 @@
 import { BadRequestError, KuzzleRequest } from "kuzzle";
+import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
 
-import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { DeviceContent, DeviceSerializer } from "../device";
 import { AskMeasureIngest, DecodedMeasurement } from "../measure";
-import { BaseService, ask, onAsk } from "../shared";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import { BaseService } from "../shared";
 
 import { DecodedPayload } from "./DecodedPayload";
 import { Decoder } from "./Decoder";
-import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
 import { DecodingState } from "./DecodingState";
 import { SkipError } from "./SkipError";
+import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
 
 export class PayloadService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {

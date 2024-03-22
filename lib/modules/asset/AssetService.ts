@@ -1,4 +1,5 @@
 import { BadRequestError, KuzzleRequest, User } from "kuzzle";
+import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -23,18 +24,17 @@ import {
   InternalCollection,
 } from "../plugin";
 import {
+  BaseService,
   EmbeddedMeasure,
   Metadata,
-  ask,
+  SearchParams,
   flattenObject,
   lock,
-  onAsk,
-  BaseService,
-  SearchParams,
 } from "../shared";
 
 import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetSerializer } from "./model/AssetSerializer";
+import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
 import { AssetContent } from "./types/AssetContent";
 import {
   AskAssetRefreshModel,
@@ -45,7 +45,6 @@ import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
 } from "./types/AssetHistoryContent";
-import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
 
 export class AssetService extends BaseService {
   private assetHistoryService: AssetHistoryService;

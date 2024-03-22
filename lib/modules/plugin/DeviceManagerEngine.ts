@@ -1,21 +1,24 @@
-import _ from "lodash";
 import { Backend, InternalError, Plugin } from "kuzzle";
+import {
+  AbstractEngine,
+  ConfigManager,
+  EngineContent,
+  onAsk,
+} from "kuzzle-plugin-commons";
 import { JSONObject } from "kuzzle-sdk";
-import { AbstractEngine, ConfigManager } from "kuzzle-plugin-commons";
-import { EngineContent } from "kuzzle-plugin-commons";
+import _ from "lodash";
 
-import { assetsHistoryMappings, assetGroupsMappings } from "../asset";
+import { assetGroupsMappings, assetsHistoryMappings } from "../asset";
+import { NamedMeasures } from "../decoder";
+import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
 import {
   AssetModelContent,
   DeviceModelContent,
   MeasureModelContent,
 } from "../model";
-import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
-import { onAsk } from "../shared";
-import { NamedMeasures } from "../decoder";
 
-import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
+import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
 
 export type AskEngineList = {

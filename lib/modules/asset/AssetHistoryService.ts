@@ -1,7 +1,8 @@
+import { onAsk } from "kuzzle-plugin-commons";
 import { mCreateRequest } from "kuzzle-sdk";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { onAsk, BaseService } from "../shared";
+import { BaseService } from "../shared";
 
 import { AskAssetHistoryAdd } from "./types/AssetEvents";
 import {
