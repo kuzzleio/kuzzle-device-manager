@@ -325,7 +325,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       engineId,
       InternalCollection.ASSETS,
       mappings,
-    );
+      settings,
+    });
 
     return InternalCollection.ASSETS;
   }
@@ -352,7 +353,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     await this.tryCreateCollection(
       engineId,
       InternalCollection.ASSETS_HISTORY,
-      mappings,
+      {
+        mappings,
+        settings,
+      },
     );
 
     return InternalCollection.ASSETS_HISTORY;

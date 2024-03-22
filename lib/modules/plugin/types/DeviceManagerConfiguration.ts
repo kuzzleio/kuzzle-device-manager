@@ -30,19 +30,19 @@ export type DeviceManagerConfiguration = {
     config: {
       name: string;
       mappings: JSONObject;
-      settings: JSONObject;
+      settings?: JSONObject;
     };
 
     devices: {
       name: string;
       mappings: JSONObject;
-      settings: JSONObject;
+      settings?: JSONObject;
     };
 
     payloads: {
       name: string;
       mappings: JSONObject;
-      settings: JSONObject;
+      settings?: JSONObject;
     };
   };
 
@@ -50,15 +50,29 @@ export type DeviceManagerConfiguration = {
     config: {
       name: string;
       mappings: JSONObject;
-      settings: JSONObject;
+      settings?: JSONObject;
     };
     asset: {
       name: string;
       mappings: CollectionMappings;
+      settings?: JSONObject;
+    };
+    assetGroup: {
+      name: string;
+      settings?: JSONObject;
+    };
+    assetHistory: {
+      name: string;
+      settings?: JSONObject;
     };
     device: {
       name: string;
       mappings: CollectionMappings;
+      settings?: JSONObject;
+    };
+    measures: {
+      name: string;
+      settings?: JSONObject;
     };
   };
 };
