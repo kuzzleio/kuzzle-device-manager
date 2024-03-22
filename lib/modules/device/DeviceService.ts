@@ -1,41 +1,35 @@
 import { BadRequestError, KuzzleRequest } from "kuzzle";
+import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
-import {
-  AskAssetHistoryAdd,
-  AssetContent,
-  AssetHistoryEventLink,
-  AssetHistoryEventUnlink,
-} from "./../asset";
-import { InternalCollection, DeviceManagerPlugin } from "../plugin";
-import {
-  Metadata,
-  lock,
-  ask,
-  onAsk,
-  BaseService,
-  SearchParams,
-} from "../shared";
+import { DecodedMeasurement } from "../measure";
 import {
   AskModelAssetGet,
   AskModelDeviceGet,
   AssetModelContent,
   DeviceModelContent,
 } from "../model";
-import { DecodedMeasurement } from "../measure";
-
-import { DeviceContent } from "./types/DeviceContent";
-import { DeviceSerializer } from "./model/DeviceSerializer";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import { BaseService, Metadata, SearchParams, lock } from "../shared";
 import {
-  AskDeviceUnlinkAsset,
+  AskAssetHistoryAdd,
+  AssetContent,
+  AssetHistoryEventLink,
+  AssetHistoryEventUnlink,
+} from "./../asset";
+
+import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
+import { DeviceSerializer } from "./model/DeviceSerializer";
+import { ApiDeviceLinkAssetRequest } from "./types/DeviceApi";
+import { DeviceContent } from "./types/DeviceContent";
+import {
+  AskDeviceAttachEngine,
   AskDeviceDetachEngine,
+  AskDeviceLinkAsset,
+  AskDeviceUnlinkAsset,
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
-  AskDeviceAttachEngine,
-  AskDeviceLinkAsset,
 } from "./types/DeviceEvents";
-import { ApiDeviceLinkAssetRequest } from "./types/DeviceApi";
-import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 
 type MeasureName = { asset: string; device: string; type: string };
 

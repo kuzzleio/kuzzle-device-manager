@@ -1,4 +1,5 @@
 import { BadRequestError, Inflector, NotFoundError } from "kuzzle";
+import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import {
@@ -6,7 +7,6 @@ import {
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
-import { ask, onAsk } from "../shared/utils/ask";
 
 import { AskAssetRefreshModel } from "../asset";
 import { BaseService, flattenObject } from "../shared";
