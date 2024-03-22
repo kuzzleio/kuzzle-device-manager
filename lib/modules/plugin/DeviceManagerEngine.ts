@@ -162,11 +162,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       engineGroup,
     );
 
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.ASSETS,
+    const settings = this.config.engineCollections.asset.settings;
+
+    await this.sdk.collection.create(engineId, InternalCollection.ASSETS, {
       mappings,
-    );
+      settings,
+    });
 
     return InternalCollection.ASSETS;
   }
@@ -182,20 +183,30 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     _.merge(mappings.properties.asset, assetsCollectionMappings);
 
+    const settings = this.config.engineCollections.assetHistory.settings;
+
     await this.sdk.collection.create(
       engineId,
       InternalCollection.ASSETS_HISTORY,
-      mappings,
+      {
+        mappings,
+        settings,
+      },
     );
 
     return InternalCollection.ASSETS_HISTORY;
   }
 
   async createAssetsGroupsCollection(engineId: string) {
+    const settings = this.config.engineCollections.assetGroup.settings;
+
     await this.sdk.collection.create(
       engineId,
       InternalCollection.ASSETS_GROUPS,
-      { mappings: assetGroupsMappings },
+      {
+        mappings: assetGroupsMappings,
+        settings,
+      },
     );
 
     return InternalCollection.ASSETS_GROUPS;
@@ -260,11 +271,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const mappings =
       await this.getDigitalTwinMappings<DeviceModelContent>("device");
 
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.DEVICES,
+    const settings = this.config.engineCollections.device.settings;
+
+    await this.sdk.collection.create(engineId, InternalCollection.DEVICES, {
       mappings,
-    );
+      settings,
+    });
 
     return InternalCollection.DEVICES;
   }
@@ -272,11 +284,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async createMeasuresCollection(engineId: string, engineGroup: string) {
     const mappings = await this.getMeasuresMappings(engineGroup);
 
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.MEASURES,
+    const settings = this.config.engineCollections.measures.settings;
+
+    await this.sdk.collection.create(engineId, InternalCollection.MEASURES, {
       mappings,
-    );
+      settings,
+    });
 
     return InternalCollection.MEASURES;
   }
