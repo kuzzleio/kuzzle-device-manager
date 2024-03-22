@@ -1,14 +1,15 @@
-import { UUID } from "node:crypto";
 import { JSONObject } from "kuzzle";
+import { ask } from "kuzzle-plugin-commons";
+import { UUID } from "node:crypto";
 
+import { DigitalTwinContent, flattenObject } from "../";
 import { NamedMeasures } from "../../decoder";
-import { InternalCollection } from "../../plugin";
 import {
   AskModelMeasureGet,
   AssetModelContent,
   DeviceModelContent,
 } from "../../model";
-import { DigitalTwinContent, ask, flattenObject } from "../";
+import { InternalCollection } from "../../plugin";
 import { AbstractExporter, Column } from "./AbstractExporter";
 
 interface MeasureColumn extends Column {

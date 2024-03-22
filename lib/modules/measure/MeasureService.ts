@@ -1,4 +1,5 @@
 import { BadRequestError, JSONObject, KDocument } from "kuzzle";
+import { ask, onAsk } from "kuzzle-plugin-commons";
 import _ from "lodash";
 
 import {
@@ -11,15 +12,7 @@ import {
 } from "../asset";
 import { DeviceContent } from "../device";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import {
-  ask,
-  BaseService,
-  keepStack,
-  lock,
-  Metadata,
-  objectDiff,
-  onAsk,
-} from "../shared";
+import { BaseService, Metadata, keepStack, lock, objectDiff } from "../shared";
 
 import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
