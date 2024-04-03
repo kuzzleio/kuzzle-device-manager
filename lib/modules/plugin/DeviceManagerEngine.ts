@@ -162,11 +162,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       engineGroup,
     );
 
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.ASSETS,
-      mappings,
-    );
+    try {
+      await this.sdk.collection.create(
+        engineId,
+        InternalCollection.ASSETS,
+        mappings,
+      );
+    } catch (error) {
+      throw new InternalError(
+        `Failed to create the assets collection "${InternalCollection.ASSETS}" for engine "${engineId}": ${error.message}`,
+        error,
+      );
+    }
 
     return InternalCollection.ASSETS;
   }
@@ -182,21 +189,35 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     _.merge(mappings.properties.asset, assetsCollectionMappings);
 
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.ASSETS_HISTORY,
-      mappings,
-    );
+    try {
+      await this.sdk.collection.create(
+        engineId,
+        InternalCollection.ASSETS_HISTORY,
+        mappings,
+      );
+    } catch (error) {
+      throw new InternalError(
+        `Failed to create the assets history collection "${InternalCollection.ASSETS_HISTORY}" for engine "${engineId}": ${error.message}`,
+        error,
+      );
+    }
 
     return InternalCollection.ASSETS_HISTORY;
   }
 
   async createAssetsGroupsCollection(engineId: string) {
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      { mappings: assetGroupsMappings },
-    );
+    try {
+      await this.sdk.collection.create(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        { mappings: assetGroupsMappings },
+      );
+    } catch (error) {
+      throw new InternalError(
+        `Failed to create the assets groups collection "${InternalCollection.ASSETS_GROUPS}" for engine "${engineId}": ${error.message}`,
+        error,
+      );
+    }
 
     return InternalCollection.ASSETS_GROUPS;
   }
@@ -260,11 +281,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const mappings =
       await this.getDigitalTwinMappings<DeviceModelContent>("device");
 
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.DEVICES,
-      mappings,
-    );
+    try {
+      await this.sdk.collection.create(
+        engineId,
+        InternalCollection.DEVICES,
+        mappings,
+      );
+    } catch (error) {
+      throw new InternalError(
+        `Failed to create the devices collection "${InternalCollection.DEVICES}" for engine "${engineId}": ${error.message}`,
+        error,
+      );
+    }
 
     return InternalCollection.DEVICES;
   }
@@ -272,11 +300,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async createMeasuresCollection(engineId: string, engineGroup: string) {
     const mappings = await this.getMeasuresMappings(engineGroup);
 
-    await this.sdk.collection.create(
-      engineId,
-      InternalCollection.MEASURES,
-      mappings,
-    );
+    try {
+      await this.sdk.collection.create(
+        engineId,
+        InternalCollection.MEASURES,
+        mappings,
+      );
+    } catch (error) {
+      throw new InternalError(
+        `Failed to create the measures collection "${InternalCollection.MEASURES}" for engine "${engineId}": ${error.message}`,
+        error,
+      );
+    }
 
     return InternalCollection.MEASURES;
   }
