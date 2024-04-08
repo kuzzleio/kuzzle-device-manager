@@ -456,7 +456,13 @@ export class DeviceManagerPlugin extends Plugin {
       await this.initializeConfig();
 
       if (this.config.engine.autoUpdate) {
-        await this.deviceManagerEngine.updateEngines();
+        try {
+          await this.deviceManagerEngine.updateEngines();
+        } catch (error) {
+          this.context.log.error(
+            `An error occured while updating the engines during startup: ${error}`,
+          );
+        }
       }
     });
   }
