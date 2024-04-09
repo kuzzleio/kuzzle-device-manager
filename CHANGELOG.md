@@ -1,3 +1,10 @@
+# [2.4.0-beta.16](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.15...v2.4.0-beta.16) (2024-04-09)
+
+
+### Bug Fixes
+
+* catch errors when updating the mappings on startup ([#338](https://github.com/kuzzleio/kuzzle-device-manager/issues/338)) ([e09c5a3](https://github.com/kuzzleio/kuzzle-device-manager/commit/e09c5a346d50b645830c82b33f10370e2dcbbd0c))
+
 # [2.4.0-beta.15](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.14...v2.4.0-beta.15) (2024-03-21)
 
 
