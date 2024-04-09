@@ -5,6 +5,7 @@ import {
   PluginImplementationError,
   KuzzleRequest,
   BadRequestError,
+  InternalLogger,
 } from "kuzzle";
 import { JSONObject } from "kuzzle-sdk";
 import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
@@ -127,7 +128,7 @@ export class DeviceManagerPlugin extends Plugin {
       registerAsset: (
         engineGroup: string,
         model: string,
-        definition: AssetModelDefinition,
+        definition: AssetModelDefinition
       ) => {
         this.modelsRegister.registerAsset(
           engineGroup,
@@ -136,7 +137,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataMappings,
           definition.defaultMetadata,
           definition.metadataDetails,
-          definition.metadataGroups,
+          definition.metadataGroups
         );
       },
 
@@ -195,7 +196,8 @@ export class DeviceManagerPlugin extends Plugin {
        * ```
        */
       registerDevice: (model: string, definition: DeviceModelDefinition) => {
-        definition.decoder.logger = definition.logger;
+        definition.decoder.logger = this.context
+          .log as unknown as InternalLogger;
         this.decodersRegister.register(definition.decoder);
 
         this.modelsRegister.registerDevice(
@@ -204,7 +206,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataMappings,
           definition.defaultMetadata,
           definition.metadataDetails,
-          definition.metadataGroups,
+          definition.metadataGroups
         );
       },
 
@@ -358,13 +360,13 @@ export class DeviceManagerPlugin extends Plugin {
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
       this.adminConfigManager,
-      this.engineConfigManager,
+      this.engineConfigManager
     );
 
     this.engineController = new EngineController(
       "device-manager",
       this,
-      this.deviceManagerEngine,
+      this.deviceManagerEngine
     );
 
     this.decodersRegister.registerDefaultRights();
@@ -375,7 +377,7 @@ export class DeviceManagerPlugin extends Plugin {
     } catch (error) {
       if (this.config.ignoreStartupErrors) {
         this.context.log.warn(
-          `WARNING: An error occured during plugin initialization: ${error.message}`,
+          `WARNING: An error occured during plugin initialization: ${error.message}`
         );
       } else {
         throw error;
@@ -384,7 +386,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     if (this.config.ignoreStartupErrors) {
       this.context.log.warn(
-        'WARNING: The "ignoreStartupErrors" option is enabled. Additional errors may appears at runtime.',
+        'WARNING: The "ignoreStartupErrors" option is enabled. Additional errors may appears at runtime.'
       );
     }
   }
@@ -413,8 +415,8 @@ export class DeviceManagerPlugin extends Plugin {
           throw keepStack(
             error,
             new PluginImplementationError(
-              `Cannot create admin "config" collection: ${error}`,
-            ),
+              `Cannot create admin "config" collection: ${error}`
+            )
           );
         });
 
@@ -426,8 +428,8 @@ export class DeviceManagerPlugin extends Plugin {
           throw keepStack(
             error,
             new PluginImplementationError(
-              `Cannot create admin "models" collection: ${error}`,
-            ),
+              `Cannot create admin "models" collection: ${error}`
+            )
           );
         });
       await this.modelsRegister.loadModels();
@@ -438,8 +440,8 @@ export class DeviceManagerPlugin extends Plugin {
           throw keepStack(
             error,
             new PluginImplementationError(
-              `Cannot create admin "devices" collection: ${error}`,
-            ),
+              `Cannot create admin "devices" collection: ${error}`
+            )
           );
         });
 
@@ -449,8 +451,8 @@ export class DeviceManagerPlugin extends Plugin {
           throw keepStack(
             error,
             new PluginImplementationError(
-              `Cannot create admin "payloads" collection: ${error}`,
-            ),
+              `Cannot create admin "payloads" collection: ${error}`
+            )
           );
         });
 
@@ -470,7 +472,7 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private getPayloadsMappings(): JSONObject {
     const { mappings } = JSON.parse(
-      JSON.stringify(this.config.adminCollections.payloads),
+      JSON.stringify(this.config.adminCollections.payloads)
     );
 
     for (const decoder of this.decodersRegister.decoders) {
@@ -490,7 +492,7 @@ export class DeviceManagerPlugin extends Plugin {
     const exists = await this.sdk.document.exists(
       this.config.adminIndex,
       this.adminConfigManager.collection,
-      "plugin--device-manager",
+      "plugin--device-manager"
     );
 
     if (!exists) {
@@ -501,7 +503,7 @@ export class DeviceManagerPlugin extends Plugin {
           "device-manager": { provisioningStrategy: "auto" },
           type: "device-manager",
         },
-        "plugin--device-manager",
+        "plugin--device-manager"
       );
     }
   }
@@ -520,7 +522,7 @@ export class DeviceManagerPlugin extends Plugin {
 
       if (!exists) {
         throw new BadRequestError(
-          `Tenant "${engineId}" does not have a device-manager engine`,
+          `Tenant "${engineId}" does not have a device-manager engine`
         );
       }
     }

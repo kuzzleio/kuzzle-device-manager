@@ -133,11 +133,6 @@ export type DeviceModelDefinition = {
   decoder: Decoder;
 
   /**
-   * Internal instance to use in the decoder.
-   */
-  logger: InternalLogger;
-
-  /**
    * Metadata mappings definition
    */
   metadataMappings?: MetadataMappings;

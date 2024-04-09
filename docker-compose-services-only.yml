@@ -1,0 +1,88 @@
+version: "3"
+name: kuzzle_iot_platform_services_only
+services:
+  # kuzzle:
+  #   image: kuzzleio/kuzzle-runner:18
+  #   command: ${DOCKER_COMMAND:-npm run dev --prefix /var/app/apps/api}
+  #   container_name: kuzzle
+  #   volumes:
+  #     - .:/var/app
+  #     - ~/.npmrc:/.npmrc
+  #     - ./apps/api/environments/local/secrets.enc.json:/var/app/config/secrets.enc.json
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #     elasticsearch:
+  #       condition: service_healthy
+  #   ports:
+  #     - "7512:7512"
+  #     - "7511:7511"
+  #     - "7510:7510"
+  #     - "9229:9229"
+  #     - "1883:1883"
+  #   environment:
+  #     - kuzzle_services__storageEngine__client__node=http://elasticsearch:9200
+  #     - kuzzle_services__storageEngine__commonMapping__dynamic=true
+  #     - kuzzle_services__internalCache__node__host=redis
+  #     - kuzzle_services__memoryStorage__node__host=redis
+  #     - NODE_ENV=${NODE_ENV:-development}
+  #     - KUZZLE_VAULT_KEY=${KUZZLE_VAULT_KEY}
+  #     - DEBUG=${DEBUG:-none}
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://kuzzle:7512/_healthcheck"]
+  #     timeout: 5s
+  #     interval: 5s
+  #     retries: 30
+
+  redis:
+    image: redis:5
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  elasticsearch:
+    image: kuzzleio/elasticsearch:7
+    ports:
+      - "9200:9200"
+    environment:
+      - ingest.geoip.downloader.enabled=false
+    ulimits:
+      nofile: 65536
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # web:
+  #   image: kuzzleio/kuzzle-runner:18
+  #   command: ${DOCKER_COMMAND:-npm run dev --prefix /var/app/apps/web}
+  #   container_name: web
+  #   volumes:
+  #     - .:/var/app
+  #   depends_on:
+  #     kuzzle:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8080:8080"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8080"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 30
+
+
+
+
+
+
+
+
+
+
+
+
