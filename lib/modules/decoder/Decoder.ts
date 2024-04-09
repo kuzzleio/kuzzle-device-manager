@@ -34,7 +34,7 @@ export abstract class Decoder {
 
   /**
    * Internal logger.
-  */
+   */
   public logger?: InternalLogger;
 
   /**
