@@ -195,6 +195,7 @@ export class DeviceManagerPlugin extends Plugin {
        * ```
        */
       registerDevice: (model: string, definition: DeviceModelDefinition) => {
+        definition.decoder.logger = definition.logger;
         this.decodersRegister.register(definition.decoder);
 
         this.modelsRegister.registerDevice(

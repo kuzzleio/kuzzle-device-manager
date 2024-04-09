@@ -5,6 +5,7 @@ import {
   MetadataGroups,
   MetadataMappings,
 } from "./ModelContent";
+import { InternalLogger } from "kuzzle";
 
 /**
  * Define an asset model
@@ -130,6 +131,11 @@ export type DeviceModelDefinition = {
    * Decoder used to decode payloads
    */
   decoder: Decoder;
+
+  /**
+   * Internal instance to use in the decoder.
+   */
+  logger: InternalLogger;
 
   /**
    * Metadata mappings definition
