@@ -27,14 +27,14 @@ deviceManager.config.engineCollections.device.mappings.properties["softTenant"] 
 
 
 deviceManager.models.registerDevice("DummyTempPosition", {
-  decoder: new DummyTempPositionDecoder(),
+  decoder: new DummyTempPositionDecoder(app.log),
   metadataMappings: {
     serial: { type: "keyword" },
   },
 });
 
 deviceManager.models.registerDevice("DummyTemp", {
-  decoder: new DummyTempDecoder(),
+  decoder: new DummyTempDecoder(app.log),
   metadataMappings: {
     color: { type: "keyword" },
   },

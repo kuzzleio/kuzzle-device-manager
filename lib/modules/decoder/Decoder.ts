@@ -1,4 +1,9 @@
-import { HttpRoute, KuzzleRequest, PreconditionError } from "kuzzle";
+import {
+  HttpRoute,
+  InternalLogger,
+  KuzzleRequest,
+  PreconditionError,
+} from "kuzzle";
 import _ from "lodash";
 import { JSONObject } from "kuzzle-sdk";
 
@@ -26,6 +31,11 @@ export type NamedMeasures = Array<{
  */
 export abstract class Decoder {
   private _http?: HttpRoute[];
+
+  /**
+   * Internal logger.
+  */
+  public logger?: InternalLogger;
 
   /**
    * Device model name.

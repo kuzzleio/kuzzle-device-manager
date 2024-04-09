@@ -1,4 +1,4 @@
-import { PreconditionError } from "kuzzle";
+import { InternalLogger, PreconditionError } from "kuzzle";
 import { JSONObject } from "kuzzle-sdk";
 
 import {
@@ -16,6 +16,11 @@ export class DummyTempPositionDecoder extends Decoder {
     { name: "battery", type: "battery" },
     { name: "position", type: "position" },
   ] as const;
+
+  constructor(logger: InternalLogger = undefined) {
+    super();
+    this.logger = logger;
+  }
 
   async validate(payload: JSONObject) {
     if (payload.deviceEUI === undefined) {
