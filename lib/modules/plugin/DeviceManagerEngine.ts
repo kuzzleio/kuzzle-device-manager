@@ -222,6 +222,45 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.ASSETS_GROUPS;
   }
 
+  async createDevicesCollection(engineId: string) {
+    const mappings =
+      await this.getDigitalTwinMappings<DeviceModelContent>("device");
+
+    try {
+      await this.sdk.collection.create(
+        engineId,
+        InternalCollection.DEVICES,
+        mappings,
+      );
+    } catch (error) {
+      throw new InternalError(
+        `Failed to create the devices collection "${InternalCollection.DEVICES}" for engine "${engineId}": ${error.message}`,
+        error,
+      );
+    }
+
+    return InternalCollection.DEVICES;
+  }
+
+  async createMeasuresCollection(engineId: string, engineGroup: string) {
+    const mappings = await this.getMeasuresMappings(engineGroup);
+
+    try {
+      await this.sdk.collection.create(
+        engineId,
+        InternalCollection.MEASURES,
+        mappings,
+      );
+    } catch (error) {
+      throw new InternalError(
+        `Failed to create the measures collection "${InternalCollection.MEASURES}" for engine "${engineId}": ${error.message}`,
+        error,
+      );
+    }
+
+    return InternalCollection.MEASURES;
+  }
+
   private async getDigitalTwinMappings<
     TDigitalTwinModelContent extends AssetModelContent | DeviceModelContent,
   >(digitalTwinType: "asset" | "device", engineGroup?: string) {
@@ -275,45 +314,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     }
 
     return mappings;
-  }
-
-  async createDevicesCollection(engineId: string) {
-    const mappings =
-      await this.getDigitalTwinMappings<DeviceModelContent>("device");
-
-    try {
-      await this.sdk.collection.create(
-        engineId,
-        InternalCollection.DEVICES,
-        mappings,
-      );
-    } catch (error) {
-      throw new InternalError(
-        `Failed to create the devices collection "${InternalCollection.DEVICES}" for engine "${engineId}": ${error.message}`,
-        error,
-      );
-    }
-
-    return InternalCollection.DEVICES;
-  }
-
-  async createMeasuresCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getMeasuresMappings(engineGroup);
-
-    try {
-      await this.sdk.collection.create(
-        engineId,
-        InternalCollection.MEASURES,
-        mappings,
-      );
-    } catch (error) {
-      throw new InternalError(
-        `Failed to create the measures collection "${InternalCollection.MEASURES}" for engine "${engineId}": ${error.message}`,
-        error,
-      );
-    }
-
-    return InternalCollection.MEASURES;
   }
 
   private async getMeasuresMappings(engineGroup: string) {
