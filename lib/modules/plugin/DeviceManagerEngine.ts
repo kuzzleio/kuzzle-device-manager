@@ -3,6 +3,8 @@ import {
   CollectionMappings,
   InternalError,
   KDocumentContent,
+  KDocumentContentGeneric,
+  Plugin,
 } from "kuzzle";
 import {
   AbstractEngine,
@@ -25,6 +27,10 @@ import {
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
+
+export type TwinType = "asset" | "device";
+
+export type TwinModelContent = AssetModelContent | DeviceModelContent;
 
 export interface EngineDocument extends KDocumentContent {
   type: "engine-device-manager";
@@ -179,7 +185,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async createAssetsCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getDigitalTwinMappings<AssetModelContent>(
+    const mappings = await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
       "asset",
       engineGroup,
     );
@@ -194,15 +200,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async createAssetsHistoryCollection(engineId: string, engineGroup: string) {
-    const assetsCollectionMappings =
-      await this.getDigitalTwinMappings<AssetModelContent>(
+    const assetsMappings =
+      await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
         "asset",
         engineGroup,
       );
 
     const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
 
-    _.merge(mappings.properties.asset, assetsCollectionMappings);
+    _.merge(mappings.properties.asset, assetsMappings);
 
     await this.tryCreateCollection(
         engineId,
@@ -223,7 +229,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
   async createDevicesCollection(engineId: string) {
     const mappings =
-      await this.getDigitalTwinMappings<DeviceModelContent>("device");
+      await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
 
     await this.tryCreateCollection(
         engineId,
@@ -235,7 +241,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async createMeasuresCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getMeasuresMappings(engineGroup);
+    const mappings = await this.getMeasuresMappingsFromDB(engineGroup);
 
     await this.tryCreateCollection(
         engineId,
@@ -275,16 +281,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     }
   }
 
-  private async getDigitalTwinMappings<
-    TDigitalTwinModelContent extends AssetModelContent | DeviceModelContent,
-  >(digitalTwinType: "asset" | "device", engineGroup?: string) {
-    if (
-      this.config.engineCollections[digitalTwinType] === undefined ||
-      this.config.engineCollections[digitalTwinType].mappings === undefined
-    ) {
-      throw new InternalError(`Cannot find mapping for "${digitalTwinType}"`);
-    }
-    const models = await this.getModels<TDigitalTwinModelContent>(
+  private async getDigitalTwinMappingsFromDB<
+    TDigitalTwin extends TwinModelContent,
+  >(digitalTwinType: TwinType, engineGroup?: string) {
+    const models = await this.getModels<TDigitalTwin>(
       this.config.adminIndex,
       digitalTwinType,
       engineGroup,
@@ -295,6 +295,32 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       "measure",
     );
 
+    return this.getDigitalTwinMappings<TDigitalTwin>(
+      digitalTwinType,
+      models,
+      measureModels,
+    );
+  }
+
+  /**
+   *
+   * @param digitalTwinType
+   * @param models
+   * @param measureModels
+   * @returns The
+   */
+  private async getDigitalTwinMappings<TDigitalTwin extends TwinModelContent>(
+    digitalTwinType: TwinType,
+    models: TDigitalTwin[],
+    measureModels: MeasureModelContent[],
+  ) {
+    if (
+      this.config.engineCollections[digitalTwinType] === undefined ||
+      this.config.engineCollections[digitalTwinType].mappings === undefined
+    ) {
+      throw new InternalError(`Cannot find mapping for "${digitalTwinType}"`);
+    }
+
     const mappings = JSON.parse(
       JSON.stringify(this.config.engineCollections[digitalTwinType].mappings),
     );
@@ -302,64 +328,70 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     for (const model of models) {
       _.merge(
         mappings.properties.metadata.properties,
-        model._source[digitalTwinType].metadataMappings,
+        model[digitalTwinType].metadataMappings,
       );
 
-      for (const { name: measureName, type: measureType } of model._source[
+      for (const { name: measureName, type: measureType } of model[
         digitalTwinType
       ].measures as NamedMeasures) {
         const measureModel = measureModels.find(
-          (m) => m._source.measure.type === measureType,
+          (m) => m.measure.type === measureType,
         );
 
         if (!measureModel) {
           throw new InternalError(
             `Cannot find measure "${measureType}" declared in ${[
               digitalTwinType,
-            ]} "${model._source[digitalTwinType].model}"`,
+            ]} "${model[digitalTwinType].model}"`,
           );
         }
 
         mappings.properties.measures.properties[measureName] =
-          getEmbeddedMeasureMappings(
-            measureModel._source.measure.valuesMappings,
-          );
+          getEmbeddedMeasureMappings(measureModel.measure.valuesMappings);
       }
     }
 
     return mappings;
   }
 
-  private async getMeasuresMappings(engineGroup: string) {
+  private async getMeasuresMappingsFromDB(engineGroup: string) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.adminIndex,
       "measure",
     );
 
+    const assetsMappings = await this.getDigitalTwinMappingsFromDB(
+      "asset",
+      engineGroup,
+    );
+
+    return this.getMeasuresMappings(models, assetsMappings);
+  }
+
+  private async getMeasuresMappings(
+    models: MeasureModelContent[],
+    assetsMappings: any,
+  ) {
     const mappings = JSON.parse(JSON.stringify(measuresMappings));
 
     for (const model of models) {
       _.merge(
         mappings.properties.values.properties,
-        model._source.measure.valuesMappings,
+        model.measure.valuesMappings,
       );
     }
 
-    const _assetsMappings = await this.getDigitalTwinMappings(
-      "asset",
-      engineGroup,
-    );
     mappings.properties.asset.properties.metadata.properties =
-      _assetsMappings.properties.metadata.properties;
+      assetsMappings.properties.metadata.properties;
 
     return mappings;
   }
 
-  private async getModels<T>(
+  private async getModels<T extends KDocumentContentGeneric>(
     engineId: string,
     type: string,
     engineGroup?: string,
-  ) {
+  ): Promise<T[]> {
     const query: JSONObject = {
       and: [{ equals: { type } }],
     };
@@ -380,6 +412,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       { lang: "koncorde", size: 5000 },
     );
 
-    return result.hits;
+    return result.hits.map((elt) => elt._source);
   }
 }
