@@ -63,9 +63,11 @@ export type AskEngineUpdateConflict = {
   name: "ask:device-manager:engine:doesUpdateConflict";
 
   payload: {
-    twinType: TwinType;
-    models: TwinModelContent[];
-    measuresModel: MeasureModelContent[];
+    twin?: {
+      type: TwinType;
+      models: TwinModelContent[];
+    };
+    measuresModels?: MeasureModelContent[];
   };
 
   result: boolean;
@@ -108,60 +110,55 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     onAsk<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
       async (payload) => {
+        if (
+          payload.twin === undefined &&
+          payload.measuresModels === undefined
+        ) {
+          return false;
+        }
+
+        const measuresModels = await this.getModels<MeasureModelContent>(
+          this.config.adminIndex,
+          "measure",
+        );
+
         const results = await this.getEngines();
 
         for (const document of results) {
-          const conflict = await this.doesUpdateConflicts(
-            document.engine.group,
-            payload.twinType,
-            payload.models,
-            payload.measuresModel,
-          );
+          if (payload.twin) {
+            const twinModels = await this.getModels<TwinModelContent>(
+              this.config.adminIndex,
+              payload.twin.type,
+              document.engine.group,
+            );
 
-          if (conflict) {
-            return true;
+            const conflict = await this.doesTwinUpdateConflicts(
+              payload.twin.type,
+              twinModels,
+              measuresModels,
+              payload.twin.models,
+            );
+
+            if (conflict) {
+              return true;
+            }
+          }
+
+          if (payload.measuresModels) {
+            const conflict = await this.doesMeasuresUpdateConflicts(
+              measuresModels,
+              payload.measuresModels,
+              document.engine.group,
+            );
+
+            if (conflict) {
+              return true;
+            }
           }
         }
 
         return false;
       },
-    );
-  }
-
-  private async doesUpdateConflicts(
-    engineGroup: string,
-    twinType: TwinType,
-    additionalModels: TwinModelContent[],
-    additionalMeasures: MeasureModelContent[],
-  ): Promise<boolean> {
-    if (additionalModels.length + additionalMeasures.length === 0) {
-      return false;
-    }
-
-    const twinModels = await this.getModels<TwinModelContent>(
-      this.config.adminIndex,
-      twinType,
-      engineGroup,
-    );
-
-    const measuresModels = await this.getModels<MeasureModelContent>(
-      this.config.adminIndex,
-      "measure",
-    );
-
-    if (additionalModels.length > 0) {
-      return this.doesTwinUpdateConflicts(
-        twinType,
-        twinModels,
-        measuresModels,
-        additionalModels as AssetModelContent[],
-      );
-    }
-
-    return this.doesMeasuresUpdateConflicts(
-      measuresModels,
-      additionalMeasures,
-      engineGroup,
     );
   }
 
