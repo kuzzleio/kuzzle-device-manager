@@ -184,6 +184,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     };
   }
 
+  /**
+   * Generate assets mappings and create the assets collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the assets collection creation
+   */
   async createAssetsCollection(engineId: string, engineGroup: string) {
     const mappings = await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
       "asset",
@@ -199,6 +207,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.ASSETS;
   }
 
+  /**
+   * Generate assets mappings and create the assets history collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the assets history collection creation
+   */
   async createAssetsHistoryCollection(engineId: string, engineGroup: string) {
     const assetsMappings =
       await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
@@ -219,6 +235,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.ASSETS_HISTORY;
   }
 
+  /**
+   * Create the assets groups collection with the assets groups mappings in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the assets groups collection creation
+   */
   async createAssetsGroupsCollection(engineId: string) {
     await this.tryCreateCollection(engineId, InternalCollection.ASSETS_GROUPS, {
       mappings: assetGroupsMappings,
@@ -227,6 +251,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.ASSETS_GROUPS;
   }
 
+  /**
+   * Generate devices mappings and create the devices collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the devices collection creation
+   */
   async createDevicesCollection(engineId: string) {
     const mappings =
       await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
@@ -240,6 +272,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.DEVICES;
   }
 
+  /**
+   * Generate measures mappings and create the measures collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the measures collection creation
+   */
   async createMeasuresCollection(engineId: string, engineGroup: string) {
     const mappings = await this.getMeasuresMappingsFromDB(engineGroup);
 
@@ -281,6 +321,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     }
   }
 
+  /**
+   * Generate ES mappings from twin models and theirs associated measures, all fetched from the database
+   *
+   * @param digitalTwinType The target twin type
+   * @param engineGroup The twin engine group
+   * @returns The complete ES mappings produces by merging all the target type twins
+   */
   private async getDigitalTwinMappingsFromDB<
     TDigitalTwin extends TwinModelContent,
   >(digitalTwinType: TwinType, engineGroup?: string) {
@@ -303,11 +350,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   /**
+   * Generate ES mappings from twin models and theirs associated measures
    *
-   * @param digitalTwinType
-   * @param models
-   * @param measureModels
-   * @returns The
+   * @param digitalTwinType The target twin type
+   * @param models The twin models
+   * @param measureModels The associated measures
+   * @returns The complete ES mappings produces by merging all the target type twins
    */
   private async getDigitalTwinMappings<TDigitalTwin extends TwinModelContent>(
     digitalTwinType: TwinType,
@@ -354,6 +402,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return mappings;
   }
 
+  /**
+   * Generate ES mappings from measures and theirs associated assets, all fetched via the database
+   *
+   * @param engineGroup The target engine group
+   * @returns The complete ES mappings produced by merging models mappings
+   */
   private async getMeasuresMappingsFromDB(engineGroup: string) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.adminIndex,
@@ -368,6 +422,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return this.getMeasuresMappings(models, assetsMappings);
   }
 
+  /**
+   * Generate ES mappings from measures and theirs associated assets
+   *
+   * @param models The measures models
+   * @param assetsMappings The assets complete mappings
+   * @returns The complete ES mappings produced by merging models mappings
+   */
   private async getMeasuresMappings(
     models: MeasureModelContent[],
     assetsMappings: any,
@@ -387,6 +448,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return mappings;
   }
 
+  /**
+   * Retrieve a certain type of models associated to an engine
+   *
+   * @param engineId The target engine Id
+   * @param type The desired model type
+   * @param engineGroup The target engine group
+   * @returns An array of the generic type provided
+   */
   private async getModels<T extends KDocumentContentGeneric>(
     engineId: string,
     type: string,
