@@ -4,6 +4,7 @@ import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import {
   AskEngineUpdateAll,
+  AskEngineUpdateConflict,
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
@@ -87,6 +88,15 @@ export class ModelService extends BaseService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
+    const updateConflict = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { twin: { models: [modelContent], type: "asset" } },
+    );
+
+    if (updateConflict) {
+      throw new BadRequestError(`New mappings are causing conflicts`);
+    }
+
     const assetModel =
       await this.sdk.document.createOrReplace<AssetModelContent>(
         this.config.adminIndex,
@@ -155,7 +165,16 @@ export class ModelService extends BaseService {
       type: "device",
     };
 
-    const assetModel =
+    const updateConflict = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { twin: { models: [modelContent], type: "device" } },
+    );
+
+    if (updateConflict) {
+      throw new BadRequestError(`New mappings are causing conflicts`);
+    }
+
+    const deviceModel =
       await this.sdk.document.createOrReplace<DeviceModelContent>(
         this.config.adminIndex,
         InternalCollection.MODELS,
@@ -169,7 +188,7 @@ export class ModelService extends BaseService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    return assetModel;
+    return deviceModel;
   }
 
   async writeMeasure(
@@ -181,7 +200,16 @@ export class ModelService extends BaseService {
       type: "measure",
     };
 
-    const assetModel =
+    const updateConflict = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { measuresModels: [modelContent] },
+    );
+
+    if (updateConflict) {
+      throw new BadRequestError(`New mappings are causing conflicts`);
+    }
+
+    const measureModel =
       await this.sdk.document.createOrReplace<MeasureModelContent>(
         this.config.adminIndex,
         InternalCollection.MODELS,
@@ -195,7 +223,7 @@ export class ModelService extends BaseService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    return assetModel;
+    return measureModel;
   }
 
   async deleteAsset(_id: string) {
