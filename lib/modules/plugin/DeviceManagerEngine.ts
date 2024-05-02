@@ -230,12 +230,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         InternalCollection.DEVICES,
         mappings,
       );
-    } catch (error) {
-      throw new InternalError(
-        `Failed to create the devices collection "${InternalCollection.DEVICES}" for engine "${engineId}": ${error.message}`,
-        error,
-      );
-    }
 
     return InternalCollection.DEVICES;
   }
