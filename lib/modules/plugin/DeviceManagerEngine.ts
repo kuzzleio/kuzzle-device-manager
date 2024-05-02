@@ -21,6 +21,15 @@ import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
 
+export interface EngineDocument extends KDocumentContent {
+  type: "engine-device-manager";
+  engine: {
+    group: string;
+    index: string;
+    name: string;
+  };
+}
+
 export type AskEngineList = {
   name: "ask:device-manager:engine:list";
 
@@ -75,7 +84,22 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async updateEngines() {
-    const result = await this.sdk.document.search(
+    const results = await this.getEngines();
+
+    this.context.log.info(`Update ${results.length} existing engines`);
+
+    for (const document of results) {
+      await this.onUpdate(document.engine.index, document.engine.group);
+    }
+  }
+
+  /**
+   * Search and return every engines in use
+   *
+   * @returns An array of the available engines
+   */
+  async getEngines(): Promise<EngineDocument[]> {
+    const result = await this.sdk.document.search<EngineDocument>(
       this.config.adminIndex,
       InternalCollection.CONFIG,
       {
@@ -86,14 +110,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       { lang: "koncorde", size: 5000 },
     );
 
-    this.context.log.info(`Update ${result.fetched} existing engines`);
-
-    for (const engine of result.hits) {
-      await this.onUpdate(
-        engine._source.engine.index,
-        engine._source.engine.group,
-      );
-    }
+    return result.hits.map((elt) => elt._source);
   }
 
   async onCreate(index: string, group = "commons") {
