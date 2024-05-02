@@ -1,4 +1,9 @@
-import { Backend, InternalError, Plugin } from "kuzzle";
+import {
+  Backend,
+  CollectionMappings,
+  InternalError,
+  KDocumentContent,
+} from "kuzzle";
 import {
   AbstractEngine,
   ConfigManager,
