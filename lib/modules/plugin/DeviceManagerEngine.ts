@@ -59,6 +59,18 @@ export type AskEngineUpdateAll = {
   result: void;
 };
 
+export type AskEngineUpdateConflict = {
+  name: "ask:device-manager:engine:doesUpdateConflict";
+
+  payload: {
+    twinType: TwinType;
+    models: TwinModelContent[];
+    measuresModel: MeasureModelContent[];
+  };
+
+  result: boolean;
+};
+
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfiguration;
 
@@ -92,6 +104,127 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         await this.createDevicesCollection(this.config.adminIndex);
       },
     );
+
+    onAsk<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      async (payload) => {
+        const results = await this.getEngines();
+
+        for (const document of results) {
+          const conflict = await this.doesUpdateConflicts(
+            document.engine.group,
+            payload.twinType,
+            payload.models,
+            payload.measuresModel,
+          );
+
+          if (conflict) {
+            return true;
+          }
+        }
+
+        return false;
+      },
+    );
+  }
+
+  private async doesUpdateConflicts(
+    engineGroup: string,
+    twinType: TwinType,
+    additionalModels: TwinModelContent[],
+    additionalMeasures: MeasureModelContent[],
+  ): Promise<boolean> {
+    if (additionalModels.length + additionalMeasures.length === 0) {
+      return false;
+    }
+
+    const twinModels = await this.getModels<TwinModelContent>(
+      this.config.adminIndex,
+      twinType,
+      engineGroup,
+    );
+
+    const measuresModels = await this.getModels<MeasureModelContent>(
+      this.config.adminIndex,
+      "measure",
+    );
+
+    if (additionalModels.length > 0) {
+      return this.doesTwinUpdateConflicts(
+        twinType,
+        twinModels,
+        measuresModels,
+        additionalModels as AssetModelContent[],
+      );
+    }
+
+    return this.doesMeasuresUpdateConflicts(
+      measuresModels,
+      additionalMeasures,
+      engineGroup,
+    );
+  }
+
+  private async doesTwinUpdateConflicts(
+    twinType: TwinType,
+    assetsModels: TwinModelContent[],
+    measuresModels: MeasureModelContent[],
+    additionalModels: TwinModelContent[],
+  ): Promise<boolean> {
+    const twinMappings = await this.getDigitalTwinMappings<TwinModelContent>(
+      twinType,
+      assetsModels,
+      measuresModels,
+    );
+
+    const duplicateFreeModels = assetsModels.filter((value) => {
+      return (
+        additionalModels.find((add) => {
+          return add[twinType].model === value[twinType].model;
+        }) === undefined
+      );
+    });
+
+    const updatedTwinMappings =
+      await this.getDigitalTwinMappings<TwinModelContent>(
+        twinType,
+        [...duplicateFreeModels, ...additionalModels],
+        measuresModels,
+      );
+
+    return !_.isMatch(updatedTwinMappings, twinMappings);
+  }
+
+  private async doesMeasuresUpdateConflicts(
+    measuresModels: MeasureModelContent[],
+    additionalMeasures: MeasureModelContent[],
+    engineGroup: string,
+  ) {
+    const assetsMappings =
+      await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
+        "asset",
+        engineGroup,
+      );
+
+    const mappings = await this.getMeasuresMappings(
+      measuresModels,
+      assetsMappings,
+    );
+
+    const duplicateFreeMeasures = measuresModels.filter((value) => {
+      return (
+        additionalMeasures.find((add) => {
+          return add.measure.type === value.measure.type;
+        }) === undefined
+      );
+    });
+
+    const updatedMappings = await this.getMeasuresMappings(
+      [...duplicateFreeMeasures, ...additionalMeasures],
+      assetsMappings,
+    );
+
+    return !_.isMatch(updatedMappings, mappings);
   }
 
   async updateEngines() {
@@ -199,10 +332,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     await this.tryCreateCollection(
-        engineId,
-        InternalCollection.ASSETS,
-        mappings,
-      );
+      engineId,
+      InternalCollection.ASSETS,
+      mappings,
+    );
 
     return InternalCollection.ASSETS;
   }
@@ -227,10 +360,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     _.merge(mappings.properties.asset, assetsMappings);
 
     await this.tryCreateCollection(
-        engineId,
-        InternalCollection.ASSETS_HISTORY,
-        mappings,
-      );
+      engineId,
+      InternalCollection.ASSETS_HISTORY,
+      mappings,
+    );
 
     return InternalCollection.ASSETS_HISTORY;
   }
@@ -264,10 +397,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
 
     await this.tryCreateCollection(
-        engineId,
-        InternalCollection.DEVICES,
-        mappings,
-      );
+      engineId,
+      InternalCollection.DEVICES,
+      mappings,
+    );
 
     return InternalCollection.DEVICES;
   }
@@ -284,10 +417,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const mappings = await this.getMeasuresMappingsFromDB(engineGroup);
 
     await this.tryCreateCollection(
-        engineId,
-        InternalCollection.MEASURES,
-        mappings,
-      );
+      engineId,
+      InternalCollection.MEASURES,
+      mappings,
+    );
 
     return InternalCollection.MEASURES;
   }
