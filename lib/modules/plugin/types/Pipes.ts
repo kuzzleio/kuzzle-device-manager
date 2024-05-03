@@ -1,4 +1,10 @@
-import { JSONObject, KDocumentContent, KHit, KuzzleRequest } from "kuzzle";
+import {
+  JSONObject,
+  KDocument,
+  KDocumentContent,
+  KHit,
+  KuzzleRequest,
+} from "kuzzle";
 
 export interface SearchQueryResult<T extends KDocumentContent> {
   aggregations?: JSONObject;
@@ -19,4 +25,14 @@ export type EventGenericDocumentAfterSearch<
 > = {
   name: `generic:document:afterSearch`;
   args: [SearchQueryResult<T>, KuzzleRequest];
+};
+
+export type EventGenericDocumentBeforeWrite = {
+  name: `generic:document:beforeWrite`;
+  args: [KDocument<KDocumentContent>[], KuzzleRequest];
+};
+
+export type EventGenericDocumentBeforeUpdate = {
+  name: `generic:document:beforeUpdate`;
+  args: [KDocument<KDocumentContent>[], KuzzleRequest];
 };

@@ -1,4 +1,12 @@
-import { BadRequestError, Inflector, NotFoundError } from "kuzzle";
+import {
+  BadRequestError,
+  EventGenericDocumentBeforeUpdate,
+  EventGenericDocumentBeforeWrite,
+  Inflector,
+  KDocumentContent,
+  KuzzleRequest,
+  NotFoundError,
+} from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 
@@ -19,6 +27,7 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  ModelContent,
 } from "./types/ModelContent";
 import {
   AskModelAssetGet,
@@ -58,6 +67,93 @@ export class ModelService extends BaseService {
         return measureModel._source;
       },
     );
+
+    const genericModelsHandler = async (
+      documents: KDocument<KDocumentContent>[],
+      request: KuzzleRequest,
+    ) => {
+      const { index, collection } = request.input.args;
+
+      if (index === this.config.adminIndex && collection === "models") {
+        const models = documents.map((elt) => {
+          return elt._source;
+        }) as ModelContent[];
+
+        await this.checkModelsConflicts(models);
+      }
+
+      return documents;
+    };
+
+    this.app.pipe.register<EventGenericDocumentBeforeWrite>(
+      "generic:document:beforeWrite",
+      genericModelsHandler,
+    );
+    this.app.pipe.register<EventGenericDocumentBeforeUpdate>(
+      "generic:document:beforeUpdate",
+      genericModelsHandler,
+    );
+  }
+
+  private async checkModelsConflicts(documents: ModelContent[]) {
+    const assets = documents.filter((elt) => {
+      return elt.type === "asset";
+    }) as AssetModelContent[];
+
+    const devices = documents.filter((elt) => {
+      return elt.type === "device";
+    }) as DeviceModelContent[];
+
+    const measures = documents.filter((elt) => {
+      return elt.type === "measure";
+    }) as MeasureModelContent[];
+
+    if (assets.length > 0) {
+      const conflict = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        {
+          twin: {
+            models: assets,
+            type: "asset",
+          },
+        },
+      );
+
+      if (conflict) {
+        throw new BadRequestError(`New assets mappings are causing conflicts`);
+      }
+    }
+
+    if (devices.length > 0) {
+      const conflict = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        {
+          twin: {
+            models: devices,
+            type: "device",
+          },
+        },
+      );
+
+      if (conflict) {
+        throw new BadRequestError(`New devices mappings are causing conflicts`);
+      }
+    }
+
+    if (measures.length > 0) {
+      const conflict = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        {
+          measuresModels: measures,
+        },
+      );
+
+      if (conflict) {
+        throw new BadRequestError(
+          `New measures mappings are causing conflicts`,
+        );
+      }
+    }
   }
 
   async writeAsset(
