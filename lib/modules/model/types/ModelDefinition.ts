@@ -4,6 +4,7 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  TooltipModels,
 } from "./ModelContent";
 
 /**
@@ -80,6 +81,11 @@ export type AssetModelDefinition = {
    * Metadata groups
    */
   metadataGroups?: MetadataGroups;
+
+  /**
+   * Tooltip models
+   */
+  tooltipModels?: TooltipModels;
 };
 
 /**
