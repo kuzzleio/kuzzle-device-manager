@@ -88,8 +88,26 @@ export const containerAssetDefinition: AssetModelDefinition = {
       }
     },
   },
+  tooltipModels: {
+    defaultTooltipKey: {
+      tooltipLabel: "Default Tooltip Model",
+      content: [
+        {
+          category: "measure",
+          label: "Temperature External",
+          measureSlot: "temperatureExt",
+          measureValuePath: "temperatureExt"
+        },
+        {
+          category: "measure",
+          label: "Temperature Internal",
+          measureSlot: "temperatureInt",
+          measureValuePath: "temperatureInt"
+        }
+      ]
+    }
+  }
 };
-
 
 // Mocked data example to match the expected type structure
 const temperatureMeasureExample = {

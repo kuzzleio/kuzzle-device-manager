@@ -48,6 +48,44 @@ export interface MetadataGroups {
   };
 }
 
+export interface MetadataTooltipContent {
+  category: "metadata";
+  label?: string; // TODO: ajouter la possibilité de stocker le locales en anglais aussi
+  metadataPath: string;
+}
+
+export interface MeasureTooltipContent {
+  category: "measure";
+  label?: string; // TODO: dito
+  measureSlot: string;
+  measureValuePath: string;
+}
+
+export interface StandardTooltipContent {
+  category: "standard";
+  label?: string; // TODO: dito²
+  type: StandardTooltipContentType;
+  value: string;
+}
+
+export enum StandardTooltipContentType {
+  link = "link",
+  image = "image",
+  text = "text",
+  title = "title",
+}
+
+export interface TooltipModels {
+  [key: string]: {
+    tooltipLabel: string; // TODO: dito²
+    content: (
+      | MetadataTooltipContent
+      | MeasureTooltipContent
+      | StandardTooltipContent
+    )[];
+  };
+}
+
 export interface AssetModelContent extends KDocumentContent {
   type: "asset";
 
@@ -131,6 +169,30 @@ export interface AssetModelContent extends KDocumentContent {
      * ]
      */
     measures: NamedMeasures;
+    /**
+     * List of tooltip models for this asset model
+     *
+     * @example
+     * [
+     *   "defaultTooltipKey": {
+     *     "tooltipLabel": "Default Tooltip Model",
+     *     "content": [
+     *       {
+     *         "category": "metadata",
+     *         "label": "Etage de la salle",
+     *         "metadataPath": "floor"
+     *       },
+     *       {
+     *         "category": "measure",
+     *         "label": "Température extérieure",
+     *         "measureSlot": "externalTemperature",
+     *         "measureValuePath": "externalTemperature"
+     *       }
+     *     ]
+     *   }
+     * ]
+     */
+    tooltipModels?: TooltipModels;
   };
 }
 

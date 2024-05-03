@@ -1,4 +1,9 @@
-import { BadRequestError, Inflector, NotFoundError } from "kuzzle";
+import {
+  BadRequestError,
+  Inflector,
+  KuzzleRequest,
+  NotFoundError,
+} from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 
@@ -18,6 +23,7 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  TooltipModels,
 } from "./types/ModelContent";
 import {
   AskModelAssetGet,
@@ -67,6 +73,7 @@ export class ModelService extends BaseService {
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
     measures: AssetModelContent["asset"]["measures"],
+    tooltipModels: TooltipModels,
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
@@ -80,6 +87,7 @@ export class ModelService extends BaseService {
         metadataGroups,
         metadataMappings,
         model,
+        tooltipModels,
       },
       engineGroup,
       type: "asset",
@@ -376,5 +384,60 @@ export class ModelService extends BaseService {
     }
 
     return result.hits[0];
+  }
+
+  /**
+   * Update an asset model
+   */
+  async updateAsset(
+    _id: string,
+    engineGroup: string,
+    model: string,
+    metadataMappings: MetadataMappings,
+    defaultMetadata: JSONObject,
+    metadataDetails: MetadataDetails,
+    metadataGroups: MetadataGroups,
+    measures: AssetModelContent["asset"]["measures"],
+    tooltipModels: TooltipModels,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetModelContent>> {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
+    }
+
+    this.checkDefaultValues(metadataMappings, defaultMetadata);
+
+    const assetModel = {
+      _id,
+      _source: {
+        asset: {
+          defaultMetadata,
+          measures,
+          metadataDetails,
+          metadataGroups,
+          metadataMappings,
+          model,
+          tooltipModels,
+        },
+      },
+    };
+
+    await this.updateDocument<AssetModelContent>(
+      request,
+      assetModel,
+      {
+        collection: InternalCollection.MODELS,
+        engineId: this.config.adminIndex,
+      },
+      { source: true },
+    );
+
+    await this.sdk.collection.refresh(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+    );
+
+    const endDocument = await this.getAsset(engineGroup, model);
+    return endDocument;
   }
 }

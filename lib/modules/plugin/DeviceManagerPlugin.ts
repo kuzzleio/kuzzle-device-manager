@@ -137,6 +137,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.defaultMetadata,
           definition.metadataDetails,
           definition.metadataGroups,
+          definition.tooltipModels,
         );
       },
 
