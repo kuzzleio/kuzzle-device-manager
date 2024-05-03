@@ -1,5 +1,6 @@
 import {
   BadRequestError,
+  EventGenericDocumentAfterUpdate,
   EventGenericDocumentBeforeUpdate,
   EventGenericDocumentBeforeWrite,
   Inflector,
@@ -92,6 +93,17 @@ export class ModelService extends BaseService {
     this.app.pipe.register<EventGenericDocumentBeforeUpdate>(
       "generic:document:beforeUpdate",
       genericModelsHandler,
+    );
+
+    this.app.hook.register<EventGenericDocumentAfterUpdate>(
+      "generic:document:afterUpdate",
+      async (documents, request) => {
+        const { index, collection } = request.input.args;
+
+        if (index === this.config.adminIndex && collection === "models") {
+          await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+        }
+      },
     );
   }
 
