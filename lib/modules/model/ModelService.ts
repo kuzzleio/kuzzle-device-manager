@@ -202,7 +202,7 @@ export class ModelService extends BaseService {
     );
 
     if (updateConflict) {
-      throw new BadRequestError(`New mappings are causing conflicts`);
+      throw new BadRequestError(`New assets mappings are causing conflicts`);
     }
 
     const assetModel =
@@ -279,7 +279,7 @@ export class ModelService extends BaseService {
     );
 
     if (updateConflict) {
-      throw new BadRequestError(`New mappings are causing conflicts`);
+      throw new BadRequestError(`New devices mappings are causing conflicts`);
     }
 
     const deviceModel =
@@ -314,7 +314,7 @@ export class ModelService extends BaseService {
     );
 
     if (updateConflict) {
-      throw new BadRequestError(`New mappings are causing conflicts`);
+      throw new BadRequestError(`New measures mappings are causing conflicts`);
     }
 
     const measureModel =
