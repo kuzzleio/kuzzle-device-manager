@@ -52,6 +52,7 @@ export interface MetadataTooltipContent {
   category: "metadata";
   label?: string; // TODO: ajouter la possibilité de stocker le locales en anglais aussi
   metadataPath: string;
+  unit?: string;
 }
 
 export interface MeasureTooltipContent {
@@ -59,6 +60,7 @@ export interface MeasureTooltipContent {
   label?: string; // TODO: dito
   measureSlot: string;
   measureValuePath: string;
+  unit?: string;
 }
 
 export interface StandardTooltipContent {
