@@ -555,12 +555,25 @@ export class ModelService extends BaseService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
+    // The field must be deleted if an element of the table is to be deleted
+    await this.sdk.document.deleteFields(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      _id,
+      ["asset.tooltipModels"],
+      { source: true },
+    );
+
+    const existingAsset = await this.getAsset(engineGroup, model);
+    const measuresUpdated =
+      measures.length === 0 ? existingAsset._source.asset.measures : measures;
+
     const assetModel = {
       _id,
       _source: {
         asset: {
           defaultMetadata,
-          measures,
+          measures: measuresUpdated,
           metadataDetails,
           metadataGroups,
           metadataMappings,
@@ -570,7 +583,7 @@ export class ModelService extends BaseService {
       },
     };
 
-    await this.updateDocument<AssetModelContent>(
+    const endDocument = await this.updateDocument<AssetModelContent>(
       request,
       assetModel,
       {
@@ -580,12 +593,6 @@ export class ModelService extends BaseService {
       { source: true },
     );
 
-    await this.sdk.collection.refresh(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-    );
-
-    const endDocument = await this.getAsset(engineGroup, model);
     return endDocument;
   }
 }
