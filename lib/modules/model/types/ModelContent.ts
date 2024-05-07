@@ -50,14 +50,14 @@ export interface MetadataGroups {
 
 export interface MetadataTooltipContent {
   category: "metadata";
-  label?: string; // TODO: ajouter la possibilité de stocker le locales en anglais aussi
+  label?: string;
   metadataPath: string;
   unit?: string;
 }
 
 export interface MeasureTooltipContent {
   category: "measure";
-  label?: string; // TODO: dito
+  label?: string;
   measureSlot: string;
   measureValuePath: string;
   unit?: string;
@@ -65,7 +65,7 @@ export interface MeasureTooltipContent {
 
 export interface StandardTooltipContent {
   category: "standard";
-  label?: string; // TODO: dito²
+  label?: string;
   type: StandardTooltipContentType;
   value: string;
 }
@@ -79,7 +79,7 @@ export enum StandardTooltipContentType {
 
 export interface TooltipModels {
   [key: string]: {
-    tooltipLabel: string; // TODO: dito²
+    tooltipLabel: string;
     content: (
       | MetadataTooltipContent
       | MeasureTooltipContent
