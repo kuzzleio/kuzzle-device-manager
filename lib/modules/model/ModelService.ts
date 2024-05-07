@@ -35,6 +35,7 @@ import {
   AskModelDeviceGet,
   AskModelMeasureGet,
 } from "./types/ModelEvents";
+import { MappingsConflictsError } from "./MappingsConflictsError";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -121,7 +122,7 @@ export class ModelService extends BaseService {
     }) as MeasureModelContent[];
 
     if (assets.length > 0) {
-      const conflict = await ask<AskEngineUpdateConflict>(
+      const conflicts = await ask<AskEngineUpdateConflict>(
         "ask:device-manager:engine:doesUpdateConflict",
         {
           twin: {
@@ -131,13 +132,16 @@ export class ModelService extends BaseService {
         },
       );
 
-      if (conflict) {
-        throw new BadRequestError(`New assets mappings are causing conflicts`);
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New assets mappings are causing conflicts`,
+          conflicts,
+        );
       }
     }
 
     if (devices.length > 0) {
-      const conflict = await ask<AskEngineUpdateConflict>(
+      const conflicts = await ask<AskEngineUpdateConflict>(
         "ask:device-manager:engine:doesUpdateConflict",
         {
           twin: {
@@ -147,22 +151,26 @@ export class ModelService extends BaseService {
         },
       );
 
-      if (conflict) {
-        throw new BadRequestError(`New devices mappings are causing conflicts`);
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New devices mappings are causing conflicts`,
+          conflicts,
+        );
       }
     }
 
     if (measures.length > 0) {
-      const conflict = await ask<AskEngineUpdateConflict>(
+      const conflicts = await ask<AskEngineUpdateConflict>(
         "ask:device-manager:engine:doesUpdateConflict",
         {
           measuresModels: measures,
         },
       );
 
-      if (conflict) {
-        throw new BadRequestError(
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
           `New measures mappings are causing conflicts`,
+          conflicts,
         );
       }
     }
@@ -196,13 +204,16 @@ export class ModelService extends BaseService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
-    const updateConflict = await ask<AskEngineUpdateConflict>(
+    const conflicts = await ask<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
       { twin: { models: [modelContent], type: "asset" } },
     );
 
-    if (updateConflict) {
-      throw new BadRequestError(`New assets mappings are causing conflicts`);
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `New assets mappings are causing conflicts`,
+        conflicts,
+      );
     }
 
     const assetModel =
@@ -273,13 +284,16 @@ export class ModelService extends BaseService {
       type: "device",
     };
 
-    const updateConflict = await ask<AskEngineUpdateConflict>(
+    const conflicts = await ask<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
       { twin: { models: [modelContent], type: "device" } },
     );
 
-    if (updateConflict) {
-      throw new BadRequestError(`New devices mappings are causing conflicts`);
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `New assets mappings are causing conflicts`,
+        conflicts,
+      );
     }
 
     const deviceModel =
@@ -308,13 +322,16 @@ export class ModelService extends BaseService {
       type: "measure",
     };
 
-    const updateConflict = await ask<AskEngineUpdateConflict>(
+    const conflicts = await ask<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
       { measuresModels: [modelContent] },
     );
 
-    if (updateConflict) {
-      throw new BadRequestError(`New measures mappings are causing conflicts`);
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `New assets mappings are causing conflicts`,
+        conflicts,
+      );
     }
 
     const measureModel =

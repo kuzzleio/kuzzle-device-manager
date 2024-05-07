@@ -27,6 +27,11 @@ import {
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
+import {
+  ConflictChunk,
+  getMeasureConflicts,
+  getTwinConflicts,
+} from "../model/ModelsConflicts";
 
 export type TwinType = "asset" | "device";
 
@@ -70,7 +75,7 @@ export type AskEngineUpdateConflict = {
     measuresModels?: MeasureModelContent[];
   };
 
-  result: boolean;
+  result: ConflictChunk[];
 };
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
@@ -114,10 +119,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           payload.twin === undefined &&
           payload.measuresModels === undefined
         ) {
-          return false;
+          return [];
         }
 
-        const measuresModels = await this.getModels<MeasureModelContent>(
+        const measureModels = await this.getModels<MeasureModelContent>(
           this.config.adminIndex,
           "measure",
         );
@@ -132,96 +137,84 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
               document.engine.group,
             );
 
-            const conflict = await this.doesTwinUpdateConflicts(
+            return this.doesTwinUpdateConflicts(
               payload.twin.type,
               twinModels,
-              measuresModels,
               payload.twin.models,
+              measureModels,
             );
-
-            if (conflict) {
-              return true;
-            }
           }
 
           if (payload.measuresModels) {
-            const conflict = await this.doesMeasuresUpdateConflicts(
-              measuresModels,
+            return this.doesMeasuresUpdateConflicts(
+              measureModels,
               payload.measuresModels,
-              document.engine.group,
             );
-
-            if (conflict) {
-              return true;
-            }
           }
         }
-
-        return false;
       },
     );
   }
 
+  /**
+   * Return conflicts between the new and already present twin models
+   *
+   * @param twinType The target twin type
+   * @param twinModels The already present twin models
+   * @param additionalModels The new or updated twin models
+   * @param measureModels The already present measures models
+   *
+   * @throws If a measure type declared in the twin does not exists
+   * @returns An array of conflict chunk
+   */
   private async doesTwinUpdateConflicts(
     twinType: TwinType,
-    assetsModels: TwinModelContent[],
-    measuresModels: MeasureModelContent[],
+    twinModels: TwinModelContent[],
     additionalModels: TwinModelContent[],
-  ): Promise<boolean> {
-    const twinMappings = await this.getDigitalTwinMappings<TwinModelContent>(
-      twinType,
-      assetsModels,
-      measuresModels,
-    );
+    measureModels: MeasureModelContent[],
+  ): Promise<ConflictChunk[]> {
+    const conflicts: ConflictChunk[] = [];
 
-    const duplicateFreeModels = assetsModels.filter((value) => {
-      return (
-        additionalModels.find((add) => {
-          return add[twinType].model === value[twinType].model;
-        }) === undefined
-      );
-    });
+    for (const additional of additionalModels) {
+      for (const { type: measureType } of additional[twinType]
+        .measures as NamedMeasures) {
+        const measureModel = measureModels.find(
+          (m) => m.measure.type === measureType,
+        );
 
-    const updatedTwinMappings =
-      await this.getDigitalTwinMappings<TwinModelContent>(
-        twinType,
-        [...duplicateFreeModels, ...additionalModels],
-        measuresModels,
-      );
+        if (!measureModel) {
+          throw new InternalError(
+            `Cannot find measure "${measureType}" declared in ${[
+              twinType,
+            ]} "${additional[twinType].model}"`,
+          );
+        }
+      }
 
-    return !_.isMatch(updatedTwinMappings, twinMappings);
+      conflicts.push(...getTwinConflicts(twinType, twinModels, additional));
+    }
+
+    return conflicts;
   }
 
+  /**
+   * Return conflicts between the new and already present measure models
+   *
+   * @param measuresModels The already present measure models
+   * @param additionalMeasures The new or updated measure models
+   * @returns An array of ConflictChunk
+   */
   private async doesMeasuresUpdateConflicts(
     measuresModels: MeasureModelContent[],
     additionalMeasures: MeasureModelContent[],
-    engineGroup: string,
-  ) {
-    const assetsMappings =
-      await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
-        "asset",
-        engineGroup,
-      );
+  ): Promise<ConflictChunk[]> {
+    const conflicts: ConflictChunk[] = [];
 
-    const mappings = await this.getMeasuresMappings(
-      measuresModels,
-      assetsMappings,
-    );
+    for (const model of additionalMeasures) {
+      conflicts.push(...getMeasureConflicts(measuresModels, model));
+    }
 
-    const duplicateFreeMeasures = measuresModels.filter((value) => {
-      return (
-        additionalMeasures.find((add) => {
-          return add.measure.type === value.measure.type;
-        }) === undefined
-      );
-    });
-
-    const updatedMappings = await this.getMeasuresMappings(
-      [...duplicateFreeMeasures, ...additionalMeasures],
-      assetsMappings,
-    );
-
-    return !_.isMatch(updatedMappings, mappings);
+    return conflicts;
   }
 
   async updateEngines() {
