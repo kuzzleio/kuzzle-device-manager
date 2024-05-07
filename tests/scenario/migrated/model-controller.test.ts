@@ -3,6 +3,7 @@ import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
+import { ApiModelWriteAssetRequest, ApiModelWriteMeasureRequest, MeasureModelContent } from "../../../lib/modules/model";
 
 jest.setTimeout(10000);
 
@@ -619,6 +620,81 @@ describe("features/Model/Controller", () => {
           valuesMappings: { temperature: { type: "float" } },
         },
       },
+    });
+  });
+
+  it("Should not allow changing twin metadata mappings type", async () => {
+    async function query() {
+      return sdk.query<ApiModelWriteAssetRequest>({
+        controller: "device-manager/models",
+        action: "writeAsset",
+        body: {
+          model: "Warehouse",
+          metadataMappings: {
+            surface: {
+              type: "keyword",
+            },
+          },
+          engineGroup: "commons",
+        },
+      });
+    }
+
+    await expect(query).rejects.toThrow();
+
+    await expect(
+      sdk.document.get<MeasureModelContent>(
+        "device-manager",
+        "models",
+        "model-asset-Warehouse",
+      ),
+    ).resolves.toMatchObject({
+      _source: {
+        asset: {
+          metadataMappings: {
+            surface: {
+              type: "integer"
+            }
+          }
+        }
+      }
+    });
+  });
+
+  it("Should not allow changing measure metadata mappings type", async () => {
+    async function query() {
+      return sdk.query<ApiModelWriteMeasureRequest>({
+        controller: "device-manager/models",
+        action: "writeMeasure",
+        body: {
+          type: "temperature",
+          valuesMappings: {
+            temperature: {
+              type: "integer",
+            },
+          }
+        },
+      });
+    }
+
+    await expect(query).rejects.toThrow();
+
+    await expect(
+      sdk.document.get<MeasureModelContent>(
+        "device-manager",
+        "models",
+        "model-measure-temperature",
+      ),
+    ).resolves.toMatchObject({
+      _source: {
+        measure: {
+          valuesMappings: {
+            temperature: {
+              type: "float"
+            }
+          }
+        }
+      }
     });
   });
 });

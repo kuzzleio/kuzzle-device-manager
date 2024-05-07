@@ -227,4 +227,61 @@ describe("features/Model/Controller", () => {
       },
     });
   });
+
+  it("Should not allow twins to declare existent metadata with different types", async () => {
+    async function testQuery() {
+      return sdk.query<ApiModelWriteAssetRequest>({
+        controller: "device-manager/models",
+        action: "writeAsset",
+        body: {
+          model: "TestHouse",
+          metadataMappings: {
+            surface: {
+              type: "keyword",
+            },
+          },
+          engineGroup: "commons",
+        },
+      });
+    }
+
+    await expect(testQuery).rejects.toThrow();
+
+    await expect(
+      sdk.document.get<MeasureModelContent>(
+        "device-manager",
+        "models",
+        "model-asset-TestHouse",
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("Should not allow to use incorrect measure type in models", async () => {
+    async function testQuery() {
+      await sdk.query<ApiModelWriteAssetRequest>({
+        controller: "device-manager/models",
+        action: "writeAsset",
+        body: {
+          model: "TestHouse",
+          measures: [
+            {
+              name: "Test",
+              type: "Test",
+            },
+          ],
+          engineGroup: "commons",
+        },
+      });
+    }
+
+    await expect(testQuery).rejects.toThrow();
+
+    await expect(
+      sdk.document.get<MeasureModelContent>(
+        "device-manager",
+        "models",
+        "model-asset-TestHouse",
+      ),
+    ).rejects.toThrow();
+  });
 });
