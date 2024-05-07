@@ -60,7 +60,7 @@ export class ModelsRegister {
    * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
    * @param metadataDetails - Optional detailed metadata descriptions and localizations.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
-   * @param tooltipModels - Optional models for tooltip.
+   * @param tooltipModels - Optional model list for tooltip, containing labels and tooltip content.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerAsset(

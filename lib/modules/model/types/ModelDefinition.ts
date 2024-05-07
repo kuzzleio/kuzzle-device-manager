@@ -42,15 +42,34 @@ import {
  *     metadataGroups: {
  *       buildingEnv: {
  *         locales: {
- *          en: {
- *            groupFriendlyName: "Building environment",
- *            description: "The building environment"
- *          },
- *          fr: {
- *            groupFriendlyName: "Environnement du bâtiment",
- *            description: "L'environnement du bâtiment"
- *          }
+ *           en: {
+ *             groupFriendlyName: "Building environment",
+ *             description: "The building environment"
+ *           },
+ *           fr: {
+ *             groupFriendlyName: "Environnement du bâtiment",
+ *             description: "L'environnement du bâtiment"
+ *           }
  *         }
+ *       }
+ *     },
+ *     tooltipModels: {
+ *       "defaultTooltipKey": {
+ *         "tooltipLabel": "Default Tooltip Model",
+ *         "content": [
+ *           {
+ *             "category": "metadata",
+ *             "label": "Container position",
+ *             "metadataPath": "geolocation"
+ *           },
+ *           {
+ *             "category": "measure",
+ *             "label": "External temperature",
+ *             "measureSlot": "externalTemperature",
+ *             "measureValuePath": "externalTemperature",
+ *             "unit": "°C"
+ *           }
+ *         ]
  *       }
  *     }
  *   }
