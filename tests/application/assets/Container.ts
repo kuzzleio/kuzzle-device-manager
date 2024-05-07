@@ -94,13 +94,13 @@ export const containerAssetDefinition: AssetModelDefinition = {
       content: [
         {
           category: "measure",
-          label: "Temperature External",
+          label: "External Temperature",
           measureSlot: "temperatureExt",
           measureValuePath: "temperatureExt"
         },
         {
           category: "measure",
-          label: "Temperature Internal",
+          label: "Internal Temperature",
           measureSlot: "temperatureInt",
           measureValuePath: "temperatureInt"
         }

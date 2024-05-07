@@ -52,20 +52,49 @@ Method: POST
           };
       */
     },
-    "metadataGroups"; {
-    /*
-      Metadata groups list and details.
-        {
-          [groupName: string]: {
-            locales: {
-              [locale: string]: {
-                groupFriendlyName: string;
-                description: string;
+    "metadataGroups": {
+      /*
+        Metadata groups list and details.
+          {
+            [groupName: string]: {
+              locales: {
+                [locale: string]: {
+                  groupFriendlyName: string;
+                  description: string;
+                };
               };
             };
           };
-        };
-    */
+      */
+    },
+    "tooltipModels": {
+      /*
+        Tooltip models for an asset model.
+          [key: string]: {
+            tooltipLabel: string;
+            content: [
+              {
+                category: "metadata";
+                label?: string;
+                metadataPath: string;
+                unit?: string;
+              },
+              {
+                category: "measure";
+                label?: string;
+                measureSlot: string;
+                measureValuePath: string;
+                unit?: string;
+              },
+              {
+                category: "standard";
+                label?: string;
+                type: "link" | "image" | "text" | "title";
+                value: string;
+              }
+            ];
+          };
+      */
     },
     "measures": [
       // Array of measure definition with type and name
@@ -84,6 +113,7 @@ Method: POST
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Metadata group and translations
 - `metadataGroups`: Groups list with translations for group name 
+- `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 
 ---

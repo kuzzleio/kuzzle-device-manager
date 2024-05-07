@@ -74,6 +74,7 @@ export class DeviceManagerPlugin extends Plugin {
        *        - defaultMetadata: Default values for metadata fields, applied when actual data is not provided.
        *        - metadataDetails: Optional detailed descriptions for each metadata, including group association and localizations.
        *        - metadataGroups: Optional description of metadata groups, organizing metadata logically, with localizations for group names.
+       *        - tooltipModels: Optional tooltip model list, containing each labels and tooltip content to display.
        *
        * @example
        * ```
@@ -118,6 +119,25 @@ export class DeviceManagerPlugin extends Plugin {
        *             "groupFriendlyName": "Environnement"
        *           }
        *         }
+       *       }
+       *     },
+       *     tooltipModels: {
+       *       "defaultTooltipKey": {
+       *         "tooltipLabel": "Default Tooltip Model",
+       *         "content": [
+       *           {
+       *             "category": "metadata",
+       *             "label": "Container position",
+       *             "metadataPath": "geolocation"
+       *           },
+       *           {
+       *             "category": "measure",
+       *             "label": "External temperature",
+       *             "measureSlot": "externalTemperature",
+       *             "measureValuePath": "externalTemperature",
+       *             "unit": "°C"
+       *           }
+       *         ]
        *       }
        *     }
        *   }

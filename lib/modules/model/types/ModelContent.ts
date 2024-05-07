@@ -181,14 +181,15 @@ export interface AssetModelContent extends KDocumentContent {
      *     "content": [
      *       {
      *         "category": "metadata",
-     *         "label": "Etage de la salle",
-     *         "metadataPath": "floor"
+     *         "label": "Container position",
+     *         "metadataPath": "geolocation"
      *       },
      *       {
      *         "category": "measure",
-     *         "label": "Température extérieure",
+     *         "label": "External temperature",
      *         "measureSlot": "externalTemperature",
-     *         "measureValuePath": "externalTemperature"
+     *         "measureValuePath": "externalTemperature",
+     *         "unit": "°C"
      *       }
      *     ]
      *   }
