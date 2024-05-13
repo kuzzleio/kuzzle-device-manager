@@ -5,7 +5,6 @@ import {
   MetadataGroups,
   MetadataMappings,
 } from "./ModelContent";
-import { InternalLogger } from "kuzzle";
 
 /**
  * Define an asset model
