@@ -11,7 +11,7 @@ export type ConflictChunk = {
 
 export type MappingsConflict = {
   path: string;
-  oldType: string | undefined;
+  currentType: string | undefined;
   newType: string | undefined;
 };
 
@@ -144,11 +144,11 @@ function findConflicts(sourceObject: any, objectToCompare: any, basePath = "") {
         return;
       }
 
-      //If the property to compare is not an object and is not equal to the source value, add the old/new value with it's corresponding full path
+      //If the property to compare is not an object and is not equal to the source value, add the current/new value with it's corresponding full path
       if (!_.isEqual(value, toCompare[key])) {
         conflicts.push({
+          currentType: source[key],
           newType: toCompare[key],
-          oldType: source[key],
           path: fullPath,
         });
       }
