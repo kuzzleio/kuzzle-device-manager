@@ -61,3 +61,7 @@ Method: POST
   }
 }
 ```
+
+## Errors
+
+Writing a measure with values mappings can cause conflicts, in this case a [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) will be thrown with the HTTP code **409**.
