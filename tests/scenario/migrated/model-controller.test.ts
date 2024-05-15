@@ -555,98 +555,98 @@ describe("features/Model/Controller", () => {
 
   it("Write and Retrieve an Asset model with tooltip models", async () => {
     const assetModelWithTooltip = {
-        metadataMappings: {
-            location: { type: "geo_point" },
-            floor: { type: "integer" },
+      engineGroup: "commons",
+      model: "AdvancedWarehouse",
+      metadataMappings: {
+        location: { type: "geo_point" },
+        floor: { type: "integer" },
+      },
+      measures: [{ name: "temperatureInt", type: "temperature" }],
+      tooltipModels: {
+        "example-tooltip": {
+          tooltipLabel: "Example Tooltip",
+          content: [
+            { category: "standard", type: "title", value: "Warehouse Info" },
+            { category: "metadata", metadataPath: "floor" },
+          ],
         },
-        measures: [{ name: "temperatureInt", type: "temperature" }],
-        tooltipModels: {
-            "example-tooltip": {
-                tooltipLabel: "Example Tooltip",
-                content: [
-                    { category: "standard", type: "title", value: "Warehouse Info" },
-                    { category: "metadata", metadataPath: "floor" },
-                ],
-            },
-        },
+      },
     };
 
     await sdk.query({
-        controller: "device-manager/models",
-        action: "writeAsset",
-        engineGroup: "commons",
-        model: "AdvancedWarehouse",
-        body: assetModelWithTooltip,
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: assetModelWithTooltip,
     });
 
     const response = await sdk.document.get(
-        "device-manager",
-        "models",
-        "model-asset-AdvancedWarehouse"
+      "device-manager",
+      "models",
+      "model-asset-AdvancedWarehouse"
     );
     expect(response._source.asset).toHaveProperty("tooltipModels");
     expect(response._source).toMatchObject({
-        type: "asset",
-        engineGroup: "commons",
-        model: "AdvancedWarehouse",
-        asset: assetModelWithTooltip,
+      type: "asset",
+      engineGroup: "commons",
+      model: "AdvancedWarehouse",
+      asset: assetModelWithTooltip,
     });
 });
 
 it("Update the tooltip models of an Asset model", async () => {
     await sdk.query({
-        controller: "device-manager/models",
-        action: "writeAsset",
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
         engineGroup: "commons",
         model: "AdvancedWarehouse",
-        body: {
-            metadataMappings: {
-                location: { type: "geo_point" },
-                floor: { type: "integer" },
-            },
-            measures: [{ name: "temperatureInt", type: "temperature" }],
-            tooltipModels: {
-                "example-tooltip": {
-                    tooltipLabel: "Example Tooltip",
-                    content: [
-                        { category: "standard", type: "title", value: "Warehouse Info" },
-                        { category: "metadata", metadataPath: "floor" },
-                    ],
-                },
-            },
-        }
+        metadataMappings: {
+          location: { type: "geo_point" },
+          floor: { type: "integer" },
+        },
+        measures: [{ name: "temperatureInt", type: "temperature" }],
+        tooltipModels: {
+          "example-tooltip": {
+            tooltipLabel: "Example Tooltip",
+            content: [
+              { category: "standard", type: "title", value: "Warehouse Info" },
+              { category: "metadata", metadataPath: "floor" },
+            ],
+          },
+        },
+      }
     });
 
     const updatedTooltipModels = {
-        "example-tooltip": {
-            tooltipLabel: "Updated Tooltip",
-            content: [
-                { category: "standard", type: "title", value: "Updated Warehouse Info" },
-                { category: "metadata", metadataPath: "location" },
-            ],
-        },
+      "example-tooltip": {
+        tooltipLabel: "Updated Tooltip",
+        content: [
+          { category: "standard", type: "title", value: "Updated Warehouse Info" },
+          { category: "metadata", metadataPath: "location" },
+        ],
+      },
     };
 
     await sdk.query({
-        controller: "device-manager/models",
-        action: "updateAsset",
-        _id: "model-asset-AdvancedWarehouse",
-        engineGroup: "commons",
-        model: "AdvancedWarehouse",
-        body: {
-            metadataMappings: {
-                location: { type: "geo_point" },
-                floor: { type: "integer" },
-            },
-            measures: [{ name: "temperatureInt", type: "temperature" }],
-            tooltipModels: updatedTooltipModels,
-        }
+      controller: "device-manager/models",
+      action: "updateAsset",
+      _id: "model-asset-AdvancedWarehouse",
+      engineGroup: "commons",
+      model: "AdvancedWarehouse",
+      body: {
+        metadataMappings: {
+          location: { type: "geo_point" },
+          floor: { type: "integer" },
+        },
+        measures: [{ name: "temperatureInt", type: "temperature" }],
+        tooltipModels: updatedTooltipModels,
+      }
     });
 
     const response = await sdk.document.get(
-        "device-manager",
-        "models",
-        "model-asset-AdvancedWarehouse"
+      "device-manager",
+      "models",
+      "model-asset-AdvancedWarehouse"
     );
     expect(response._source.asset).toHaveProperty("tooltipModels");
     expect(response._source.asset.tooltipModels).toEqual(updatedTooltipModels);
