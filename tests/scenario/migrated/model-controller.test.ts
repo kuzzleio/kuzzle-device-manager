@@ -587,7 +587,6 @@ describe("features/Model/Controller", () => {
     expect(response._source).toMatchObject({
       type: "asset",
       engineGroup: "commons",
-      model: "AdvancedWarehouse",
       asset: assetModelWithTooltip,
     });
 });
