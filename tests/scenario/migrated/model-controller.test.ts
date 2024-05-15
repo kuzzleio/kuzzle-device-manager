@@ -574,24 +574,22 @@ describe("features/Model/Controller", () => {
     };
 
     await sdk.query({
-        controller: "device-manager/models",
-        action: "writeAsset",
-        engineGroup: "commons",
-        model: "AdvancedWarehouse",
-        body: assetModelWithTooltip,
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: assetModelWithTooltip,
     });
 
     const response = await sdk.document.get(
-        "device-manager",
-        "models",
-        "model-asset-AdvancedWarehouse"
+      "device-manager",
+      "models",
+      "model-asset-AdvancedWarehouse"
     );
     expect(response._source.asset).toHaveProperty("tooltipModels");
     expect(response._source).toMatchObject({
-        type: "asset",
-        engineGroup: "commons",
-        model: "AdvancedWarehouse",
-        asset: assetModelWithTooltip,
+      type: "asset",
+      engineGroup: "commons",
+      model: "AdvancedWarehouse",
+      asset: assetModelWithTooltip,
     });
 });
 
@@ -646,9 +644,9 @@ it("Update the tooltip models of an Asset model", async () => {
     });
 
     const response = await sdk.document.get(
-        "device-manager",
-        "models",
-        "model-asset-AdvancedWarehouse"
+      "device-manager",
+      "models",
+      "model-asset-AdvancedWarehouse"
     );
     expect(response._source.asset).toHaveProperty("tooltipModels");
     expect(response._source.asset.tooltipModels).toEqual(updatedTooltipModels);
