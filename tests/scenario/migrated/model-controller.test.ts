@@ -584,6 +584,7 @@ describe("features/Model/Controller", () => {
       "model-asset-AdvancedWarehouse"
     );
     expect(response._source.asset).toHaveProperty("tooltipModels");
+    delete assetModelWithTooltip.engineGroup;
     expect(response._source).toMatchObject({
       type: "asset",
       engineGroup: "commons",
