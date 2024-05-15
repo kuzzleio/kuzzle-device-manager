@@ -227,8 +227,8 @@ export class ModelsController {
     request: KuzzleRequest,
   ): Promise<ApiModelUpdateAssetResult> {
     const _id = request.getId();
-    const engineGroup = request.getBodyString("engineGroup");
-    const model = request.getBodyString("model");
+    const engineGroup = request.getString("engineGroup");
+    const model = request.getString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
     const measures = request.getBodyArray("measures", []);
