@@ -77,10 +77,10 @@ export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
   action: "updateAsset";
 
   _id: string;
+  engineGroup: string;
+  model: string;
 
   body: {
-    engineGroup: string;
-    model: string;
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
