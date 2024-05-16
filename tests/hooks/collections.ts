@@ -20,6 +20,7 @@ async function deleteModels(sdk: Kuzzle) {
           "model-asset-AdvancedPlane",
           "model-device-Zigbee",
           "model-device-Enginko",
+          "model-asset-AdvancedWarehouse",
         ],
       },
     },
