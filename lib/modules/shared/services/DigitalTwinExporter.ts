@@ -47,9 +47,15 @@ export class DigitalTwinExporter extends AbstractExporter {
       { header: "Reference", path: "_source.reference" },
       ...measureColumns,
       { header: "lastMeasuredAt", path: "_source.lastMeasuredAt" },
+      {
+        header: "lastMeasuredAtISO",
+        isIsoDate: true,
+        path: "_source.lastMeasuredAt",
+      },
     ];
 
     const stream = this.getExportStream(digitalTwins, columns);
+
     await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
 
     return stream;

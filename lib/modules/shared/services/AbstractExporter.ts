@@ -31,6 +31,7 @@ export interface Column {
   header: string;
   path: string;
   isMeasure?: boolean;
+  isIsoDate?: boolean;
 }
 
 export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
@@ -117,7 +118,13 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     columns: Column[],
     hit: KHit<KDocumentContentGeneric>,
   ): string[] {
-    return columns.map(({ path }) => _.get(hit, path, null));
+    return columns.map(({ path, isIsoDate }) => {
+      const formattedValue = _.get(hit, path, null);
+      if (formattedValue !== null && isIsoDate) {
+        return new Date(formattedValue).toISOString();
+      }
+      return _.get(hit, path, null);
+    });
   }
 
   async getExport(engineId: string, exportId: string): Promise<P> {
@@ -141,7 +148,6 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     let result = request;
     try {
       stream.write(stringify([columns.map((column) => column.header)]));
-
       while (result) {
         for (const hit of result.hits) {
           stream.write(stringify([this.formatHit(columns, hit)]));

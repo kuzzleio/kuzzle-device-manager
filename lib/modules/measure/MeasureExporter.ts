@@ -124,13 +124,18 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
     columns: Array<Column & { shouldCheckName: boolean; name: string }>,
     hit: KHit<MeasureContent>,
   ) {
-    return columns.map(({ name, shouldCheckName, path }) => {
+    return columns.map(({ name, shouldCheckName, path, isIsoDate }) => {
       if (
         shouldCheckName &&
         this.target === InternalCollection.ASSETS &&
         hit._source.asset?.measureName !== name
       ) {
         return null;
+      }
+
+      const formattedValue = _.get(hit, path, null);
+      if (formattedValue !== null && isIsoDate) {
+        return new Date(formattedValue).toISOString();
       }
 
       return _.get(hit, path, null);
@@ -200,6 +205,11 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       { header: "Device Model", path: "_source.origin.deviceModel" },
       { header: "Asset Id", path: "_source.asset._id" },
       { header: "Asset Model", path: "_source.asset.model" },
+      {
+        header: "Measured At ISO",
+        isIsoDate: true,
+        path: "_source.measuredAt",
+      },
       ...measureColumns,
     ];
 
