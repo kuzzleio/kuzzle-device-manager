@@ -1,4 +1,11 @@
-import { Backend, InternalError, Plugin } from "kuzzle";
+import {
+  Backend,
+  CollectionMappings,
+  InternalError,
+  KDocumentContent,
+  KDocumentContentGeneric,
+  Plugin,
+} from "kuzzle";
 import {
   AbstractEngine,
   ConfigManager,
@@ -20,6 +27,24 @@ import {
 import { DeviceManagerPlugin } from "./DeviceManagerPlugin";
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
+import {
+  ConflictChunk,
+  getMeasureConflicts,
+  getTwinConflicts,
+} from "../model/ModelsConflicts";
+
+export type TwinType = "asset" | "device";
+
+export type TwinModelContent = AssetModelContent | DeviceModelContent;
+
+export interface EngineDocument extends KDocumentContent {
+  type: "engine-device-manager";
+  engine: {
+    group: string;
+    index: string;
+    name: string;
+  };
+}
 
 export type AskEngineList = {
   name: "ask:device-manager:engine:list";
@@ -37,6 +62,20 @@ export type AskEngineUpdateAll = {
   payload: void;
 
   result: void;
+};
+
+export type AskEngineUpdateConflict = {
+  name: "ask:device-manager:engine:doesUpdateConflict";
+
+  payload: {
+    twin?: {
+      type: TwinType;
+      models: TwinModelContent[];
+    };
+    measuresModels?: MeasureModelContent[];
+  };
+
+  result: ConflictChunk[];
 };
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
@@ -72,10 +111,129 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         await this.createDevicesCollection(this.config.adminIndex);
       },
     );
+
+    onAsk<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      async (payload) => {
+        if (
+          payload.twin === undefined &&
+          payload.measuresModels === undefined
+        ) {
+          return [];
+        }
+
+        const measureModels = await this.getModels<MeasureModelContent>(
+          this.config.adminIndex,
+          "measure",
+        );
+
+        const results = await this.getEngines();
+
+        for (const document of results) {
+          if (payload.twin) {
+            const twinModels = await this.getModels<TwinModelContent>(
+              this.config.adminIndex,
+              payload.twin.type,
+              document.engine.group,
+            );
+
+            return this.doesTwinUpdateConflicts(
+              payload.twin.type,
+              twinModels,
+              payload.twin.models,
+              measureModels,
+            );
+          }
+
+          if (payload.measuresModels) {
+            return this.doesMeasuresUpdateConflicts(
+              measureModels,
+              payload.measuresModels,
+            );
+          }
+        }
+      },
+    );
+  }
+
+  /**
+   * Return conflicts between the new and already present twin models
+   *
+   * @param twinType The target twin type
+   * @param twinModels The already present twin models
+   * @param additionalModels The new or updated twin models
+   * @param measureModels The already present measures models
+   *
+   * @throws If a measure type declared in the twin does not exists
+   * @returns An array of conflict chunk
+   */
+  private async doesTwinUpdateConflicts(
+    twinType: TwinType,
+    twinModels: TwinModelContent[],
+    additionalModels: TwinModelContent[],
+    measureModels: MeasureModelContent[],
+  ): Promise<ConflictChunk[]> {
+    const conflicts: ConflictChunk[] = [];
+
+    for (const additional of additionalModels) {
+      for (const { type: measureType } of additional[twinType]
+        .measures as NamedMeasures) {
+        const measureModel = measureModels.find(
+          (m) => m.measure.type === measureType,
+        );
+
+        if (!measureModel) {
+          throw new InternalError(
+            `Cannot find measure "${measureType}" declared in ${[
+              twinType,
+            ]} "${additional[twinType].model}"`,
+          );
+        }
+      }
+
+      conflicts.push(...getTwinConflicts(twinType, twinModels, additional));
+    }
+
+    return conflicts;
+  }
+
+  /**
+   * Return conflicts between the new and already present measure models
+   *
+   * @param measuresModels The already present measure models
+   * @param additionalMeasures The new or updated measure models
+   * @returns An array of ConflictChunk
+   */
+  private async doesMeasuresUpdateConflicts(
+    measuresModels: MeasureModelContent[],
+    additionalMeasures: MeasureModelContent[],
+  ): Promise<ConflictChunk[]> {
+    const conflicts: ConflictChunk[] = [];
+
+    for (const model of additionalMeasures) {
+      conflicts.push(...getMeasureConflicts(measuresModels, model));
+    }
+
+    return conflicts;
   }
 
   async updateEngines() {
-    const result = await this.sdk.document.search(
+    const results = await this.getEngines();
+
+    this.context.log.info(`Update ${results.length} existing engines`);
+
+    for (const document of results) {
+      await this.onUpdate(document.engine.index, document.engine.group);
+    }
+  }
+
+  /**
+   * Search and return every engines in use
+   *
+   * @returns An array of the available engines
+   */
+  async getEngines(): Promise<EngineDocument[]> {
+    const result = await this.sdk.document.search<EngineDocument>(
       this.config.adminIndex,
       InternalCollection.CONFIG,
       {
@@ -86,14 +244,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       { lang: "koncorde", size: 5000 },
     );
 
-    this.context.log.info(`Update ${result.fetched} existing engines`);
-
-    for (const engine of result.hits) {
-      await this.onUpdate(
-        engine._source.engine.index,
-        engine._source.engine.group,
-      );
-    }
+    return result.hits.map((elt) => elt._source);
   }
 
   async onCreate(index: string, group = "commons") {
@@ -156,82 +307,154 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     };
   }
 
+  /**
+   * Generate assets mappings and create the assets collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the assets collection creation
+   */
   async createAssetsCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getDigitalTwinMappings<AssetModelContent>(
+    const mappings = await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
       "asset",
       engineGroup,
     );
 
-    try {
-      await this.sdk.collection.create(
-        engineId,
-        InternalCollection.ASSETS,
-        mappings,
-      );
-    } catch (error) {
-      throw new InternalError(
-        `Failed to create the assets collection "${InternalCollection.ASSETS}" for engine "${engineId}": ${error.message}`,
-        error,
-      );
-    }
+    await this.tryCreateCollection(
+      engineId,
+      InternalCollection.ASSETS,
+      mappings,
+    );
 
     return InternalCollection.ASSETS;
   }
 
+  /**
+   * Generate assets mappings and create the assets history collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the assets history collection creation
+   */
   async createAssetsHistoryCollection(engineId: string, engineGroup: string) {
-    const assetsCollectionMappings =
-      await this.getDigitalTwinMappings<AssetModelContent>(
+    const assetsMappings =
+      await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
         "asset",
         engineGroup,
       );
 
     const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
 
-    _.merge(mappings.properties.asset, assetsCollectionMappings);
+    _.merge(mappings.properties.asset, assetsMappings);
 
-    try {
-      await this.sdk.collection.create(
-        engineId,
-        InternalCollection.ASSETS_HISTORY,
-        mappings,
-      );
-    } catch (error) {
-      throw new InternalError(
-        `Failed to create the assets history collection "${InternalCollection.ASSETS_HISTORY}" for engine "${engineId}": ${error.message}`,
-        error,
-      );
-    }
+    await this.tryCreateCollection(
+      engineId,
+      InternalCollection.ASSETS_HISTORY,
+      mappings,
+    );
 
     return InternalCollection.ASSETS_HISTORY;
   }
 
+  /**
+   * Create the assets groups collection with the assets groups mappings in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the assets groups collection creation
+   */
   async createAssetsGroupsCollection(engineId: string) {
-    try {
-      await this.sdk.collection.create(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        { mappings: assetGroupsMappings },
-      );
-    } catch (error) {
-      throw new InternalError(
-        `Failed to create the assets groups collection "${InternalCollection.ASSETS_GROUPS}" for engine "${engineId}": ${error.message}`,
-        error,
-      );
-    }
+    await this.tryCreateCollection(engineId, InternalCollection.ASSETS_GROUPS, {
+      mappings: assetGroupsMappings,
+    });
 
     return InternalCollection.ASSETS_GROUPS;
   }
 
-  private async getDigitalTwinMappings<
-    TDigitalTwinModelContent extends AssetModelContent | DeviceModelContent,
-  >(digitalTwinType: "asset" | "device", engineGroup?: string) {
-    if (
-      this.config.engineCollections[digitalTwinType] === undefined ||
-      this.config.engineCollections[digitalTwinType].mappings === undefined
-    ) {
-      throw new InternalError(`Cannot find mapping for "${digitalTwinType}"`);
+  /**
+   * Generate devices mappings and create the devices collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the devices collection creation
+   */
+  async createDevicesCollection(engineId: string) {
+    const mappings =
+      await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
+
+    await this.tryCreateCollection(
+      engineId,
+      InternalCollection.DEVICES,
+      mappings,
+    );
+
+    return InternalCollection.DEVICES;
+  }
+
+  /**
+   * Generate measures mappings and create the measures collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the measures collection creation
+   */
+  async createMeasuresCollection(engineId: string, engineGroup: string) {
+    const mappings = await this.getMeasuresMappingsFromDB(engineGroup);
+
+    await this.tryCreateCollection(
+      engineId,
+      InternalCollection.MEASURES,
+      mappings,
+    );
+
+    return InternalCollection.MEASURES;
+  }
+
+  /**
+   * Create a collection with custom mappings in an engine
+   *
+   * @param engineIndex The target engine
+   * @param collection The collection name
+   * @param mappings The collection mappings
+   *
+   * @throws If it failed to create the collection
+   */
+  private async tryCreateCollection(
+    engineIndex: string,
+    collection: string,
+    mappings:
+      | CollectionMappings
+      | {
+          mappings?: CollectionMappings;
+          settings?: JSONObject;
+        },
+  ) {
+    try {
+      await this.sdk.collection.create(engineIndex, collection, mappings);
+    } catch (error) {
+      throw new InternalError(
+        `Failed to create the collection [${collection}] for engine [${engineIndex}]: ${error.message}`,
+        error,
+      );
     }
-    const models = await this.getModels<TDigitalTwinModelContent>(
+  }
+
+  /**
+   * Generate ES mappings from twin models and theirs associated measures, all fetched from the database
+   *
+   * @param digitalTwinType The target twin type
+   * @param engineGroup The twin engine group
+   * @returns The complete ES mappings produces by merging all the target type twins
+   */
+  private async getDigitalTwinMappingsFromDB<
+    TDigitalTwin extends TwinModelContent,
+  >(digitalTwinType: TwinType, engineGroup?: string) {
+    const models = await this.getModels<TDigitalTwin>(
       this.config.adminIndex,
       digitalTwinType,
       engineGroup,
@@ -242,6 +465,33 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       "measure",
     );
 
+    return this.getDigitalTwinMappings<TDigitalTwin>(
+      digitalTwinType,
+      models,
+      measureModels,
+    );
+  }
+
+  /**
+   * Generate ES mappings from twin models and theirs associated measures
+   *
+   * @param digitalTwinType The target twin type
+   * @param models The twin models
+   * @param measureModels The associated measures
+   * @returns The complete ES mappings produces by merging all the target type twins
+   */
+  private async getDigitalTwinMappings<TDigitalTwin extends TwinModelContent>(
+    digitalTwinType: TwinType,
+    models: TDigitalTwin[],
+    measureModels: MeasureModelContent[],
+  ) {
+    if (
+      this.config.engineCollections[digitalTwinType] === undefined ||
+      this.config.engineCollections[digitalTwinType].mappings === undefined
+    ) {
+      throw new InternalError(`Cannot find mapping for "${digitalTwinType}"`);
+    }
+
     const mappings = JSON.parse(
       JSON.stringify(this.config.engineCollections[digitalTwinType].mappings),
     );
@@ -249,103 +499,91 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     for (const model of models) {
       _.merge(
         mappings.properties.metadata.properties,
-        model._source[digitalTwinType].metadataMappings,
+        model[digitalTwinType].metadataMappings,
       );
 
-      for (const { name: measureName, type: measureType } of model._source[
+      for (const { name: measureName, type: measureType } of model[
         digitalTwinType
       ].measures as NamedMeasures) {
         const measureModel = measureModels.find(
-          (m) => m._source.measure.type === measureType,
+          (m) => m.measure.type === measureType,
         );
 
         if (!measureModel) {
           throw new InternalError(
             `Cannot find measure "${measureType}" declared in ${[
               digitalTwinType,
-            ]} "${model._source[digitalTwinType].model}"`,
+            ]} "${model[digitalTwinType].model}"`,
           );
         }
 
         mappings.properties.measures.properties[measureName] =
-          getEmbeddedMeasureMappings(
-            measureModel._source.measure.valuesMappings,
-          );
+          getEmbeddedMeasureMappings(measureModel.measure.valuesMappings);
       }
     }
 
     return mappings;
   }
 
-  async createDevicesCollection(engineId: string) {
-    const mappings =
-      await this.getDigitalTwinMappings<DeviceModelContent>("device");
-
-    try {
-      await this.sdk.collection.create(
-        engineId,
-        InternalCollection.DEVICES,
-        mappings,
-      );
-    } catch (error) {
-      throw new InternalError(
-        `Failed to create the devices collection "${InternalCollection.DEVICES}" for engine "${engineId}": ${error.message}`,
-        error,
-      );
-    }
-
-    return InternalCollection.DEVICES;
-  }
-
-  async createMeasuresCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getMeasuresMappings(engineGroup);
-
-    try {
-      await this.sdk.collection.create(
-        engineId,
-        InternalCollection.MEASURES,
-        mappings,
-      );
-    } catch (error) {
-      throw new InternalError(
-        `Failed to create the measures collection "${InternalCollection.MEASURES}" for engine "${engineId}": ${error.message}`,
-        error,
-      );
-    }
-
-    return InternalCollection.MEASURES;
-  }
-
-  private async getMeasuresMappings(engineGroup: string) {
+  /**
+   * Generate ES mappings from measures and theirs associated assets, all fetched via the database
+   *
+   * @param engineGroup The target engine group
+   * @returns The complete ES mappings produced by merging models mappings
+   */
+  private async getMeasuresMappingsFromDB(engineGroup: string) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.adminIndex,
       "measure",
     );
 
+    const assetsMappings = await this.getDigitalTwinMappingsFromDB(
+      "asset",
+      engineGroup,
+    );
+
+    return this.getMeasuresMappings(models, assetsMappings);
+  }
+
+  /**
+   * Generate ES mappings from measures and theirs associated assets
+   *
+   * @param models The measures models
+   * @param assetsMappings The assets complete mappings
+   * @returns The complete ES mappings produced by merging models mappings
+   */
+  private async getMeasuresMappings(
+    models: MeasureModelContent[],
+    assetsMappings: any,
+  ) {
     const mappings = JSON.parse(JSON.stringify(measuresMappings));
 
     for (const model of models) {
       _.merge(
         mappings.properties.values.properties,
-        model._source.measure.valuesMappings,
+        model.measure.valuesMappings,
       );
     }
 
-    const _assetsMappings = await this.getDigitalTwinMappings(
-      "asset",
-      engineGroup,
-    );
     mappings.properties.asset.properties.metadata.properties =
-      _assetsMappings.properties.metadata.properties;
+      assetsMappings.properties.metadata.properties;
 
     return mappings;
   }
 
-  private async getModels<T>(
+  /**
+   * Retrieve a certain type of models associated to an engine
+   *
+   * @param engineId The target engine Id
+   * @param type The desired model type
+   * @param engineGroup The target engine group
+   * @returns An array of the generic type provided
+   */
+  private async getModels<T extends KDocumentContentGeneric>(
     engineId: string,
     type: string,
     engineGroup?: string,
-  ) {
+  ): Promise<T[]> {
     const query: JSONObject = {
       and: [{ equals: { type } }],
     };
@@ -366,6 +604,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       { lang: "koncorde", size: 5000 },
     );
 
-    return result.hits;
+    return result.hits.map((elt) => elt._source);
   }
 }

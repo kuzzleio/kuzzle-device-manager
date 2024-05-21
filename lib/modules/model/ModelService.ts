@@ -1,9 +1,19 @@
-import { BadRequestError, Inflector, NotFoundError } from "kuzzle";
+import {
+  BadRequestError,
+  EventGenericDocumentAfterUpdate,
+  EventGenericDocumentBeforeUpdate,
+  EventGenericDocumentBeforeWrite,
+  Inflector,
+  KDocumentContent,
+  KuzzleRequest,
+  NotFoundError,
+} from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 
 import {
   AskEngineUpdateAll,
+  AskEngineUpdateConflict,
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
@@ -18,12 +28,14 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  ModelContent,
 } from "./types/ModelContent";
 import {
   AskModelAssetGet,
   AskModelDeviceGet,
   AskModelMeasureGet,
 } from "./types/ModelEvents";
+import { MappingsConflictsError } from "./MappingsConflictsError";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -57,6 +69,111 @@ export class ModelService extends BaseService {
         return measureModel._source;
       },
     );
+
+    const genericModelsHandler = async (
+      documents: KDocument<KDocumentContent>[],
+      request: KuzzleRequest,
+    ) => {
+      const { index, collection } = request.input.args;
+
+      if (index === this.config.adminIndex && collection === "models") {
+        const models = documents.map((elt) => {
+          return elt._source;
+        }) as ModelContent[];
+
+        await this.checkModelsConflicts(models);
+      }
+
+      return documents;
+    };
+
+    this.app.pipe.register<EventGenericDocumentBeforeWrite>(
+      "generic:document:beforeWrite",
+      genericModelsHandler,
+    );
+    this.app.pipe.register<EventGenericDocumentBeforeUpdate>(
+      "generic:document:beforeUpdate",
+      genericModelsHandler,
+    );
+
+    this.app.hook.register<EventGenericDocumentAfterUpdate>(
+      "generic:document:afterUpdate",
+      async (documents, request) => {
+        const { index, collection } = request.input.args;
+
+        if (index === this.config.adminIndex && collection === "models") {
+          await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+        }
+      },
+    );
+  }
+
+  private async checkModelsConflicts(documents: ModelContent[]) {
+    const assets = documents.filter((elt) => {
+      return elt.type === "asset";
+    }) as AssetModelContent[];
+
+    const devices = documents.filter((elt) => {
+      return elt.type === "device";
+    }) as DeviceModelContent[];
+
+    const measures = documents.filter((elt) => {
+      return elt.type === "measure";
+    }) as MeasureModelContent[];
+
+    if (assets.length > 0) {
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        {
+          twin: {
+            models: assets,
+            type: "asset",
+          },
+        },
+      );
+
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New assets mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+    }
+
+    if (devices.length > 0) {
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        {
+          twin: {
+            models: devices,
+            type: "device",
+          },
+        },
+      );
+
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New devices mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+    }
+
+    if (measures.length > 0) {
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        {
+          measuresModels: measures,
+        },
+      );
+
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New measures mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+    }
   }
 
   async writeAsset(
@@ -86,6 +203,18 @@ export class ModelService extends BaseService {
     };
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
+
+    const conflicts = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { twin: { models: [modelContent], type: "asset" } },
+    );
+
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `New assets mappings are causing conflicts`,
+        conflicts,
+      );
+    }
 
     const assetModel =
       await this.sdk.document.createOrReplace<AssetModelContent>(
@@ -155,7 +284,19 @@ export class ModelService extends BaseService {
       type: "device",
     };
 
-    const assetModel =
+    const conflicts = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { twin: { models: [modelContent], type: "device" } },
+    );
+
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `New assets mappings are causing conflicts`,
+        conflicts,
+      );
+    }
+
+    const deviceModel =
       await this.sdk.document.createOrReplace<DeviceModelContent>(
         this.config.adminIndex,
         InternalCollection.MODELS,
@@ -169,7 +310,7 @@ export class ModelService extends BaseService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    return assetModel;
+    return deviceModel;
   }
 
   async writeMeasure(
@@ -181,7 +322,19 @@ export class ModelService extends BaseService {
       type: "measure",
     };
 
-    const assetModel =
+    const conflicts = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { measuresModels: [modelContent] },
+    );
+
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `New assets mappings are causing conflicts`,
+        conflicts,
+      );
+    }
+
+    const measureModel =
       await this.sdk.document.createOrReplace<MeasureModelContent>(
         this.config.adminIndex,
         InternalCollection.MODELS,
@@ -195,7 +348,7 @@ export class ModelService extends BaseService {
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
-    return assetModel;
+    return measureModel;
   }
 
   async deleteAsset(_id: string) {
