@@ -132,7 +132,11 @@ export class ModelsRegister {
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
     this.measureModels.push({
-      measure: { type, valuesMappings: measureDefinition.valuesMappings },
+      measure: {
+        locales: measureDefinition.locales,
+        type,
+        valuesMappings: measureDefinition.valuesMappings,
+      },
       type: "measure",
     });
   }
