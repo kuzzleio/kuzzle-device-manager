@@ -19,7 +19,7 @@ import { JSONObject } from "kuzzle-sdk";
 export interface MeasureLocales {
   [localeString: string]: {
     name: string;
-    unit: string;
+    unit?: string;
   };
 }
 

@@ -8,4 +8,14 @@ export type MovementMeasurement = {
 
 export const movementMeasureDefinition: MeasureDefinition = {
   valuesMappings: { movement: { type: "boolean" } },
+  locales: {
+    en: {
+      name: "Movement detection",
+      unit: "true/false",
+    },
+    fr: {
+      name: "Détection de mouvement",
+      unit: "vrai/faux",
+    },
+  },
 };
