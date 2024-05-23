@@ -42,15 +42,15 @@ export class ModelsController {
         },
         getAsset: {
           handler: this.getAsset.bind(this),
-          http: [{ path: "device-manager/models/asset/:_id", verb: "get" }],
+          http: [{ path: "device-manager/models/asset/:model", verb: "get" }],
         },
         getDevice: {
           handler: this.getDevice.bind(this),
-          http: [{ path: "device-manager/models/device/:_id", verb: "get" }],
+          http: [{ path: "device-manager/models/device/:model", verb: "get" }],
         },
         getMeasure: {
           handler: this.getMeasure.bind(this),
-          http: [{ path: "device-manager/models/measure/:_id", verb: "get" }],
+          http: [{ path: "device-manager/models/measure/:type", verb: "get" }],
         },
         listAssets: {
           handler: this.listAssets.bind(this),
@@ -82,7 +82,7 @@ export class ModelsController {
 
   async getAsset(request: KuzzleRequest): Promise<ApiModelGetAssetResult> {
     const model = request.getString("model");
-    const engineGroup = request.getString("engineGroup");
+    const engineGroup = request.getString("engineGroup", "commons");
 
     const assetModel = await this.modelService.getAsset(engineGroup, model);
 
@@ -154,10 +154,12 @@ export class ModelsController {
   ): Promise<ApiModelWriteMeasureResult> {
     const type = request.getBodyString("type");
     const valuesMappings = request.getBodyObject("valuesMappings");
+    const measureSchema = request.getBodyObject("measureSchema", undefined);
 
     const measureModel = await this.modelService.writeMeasure(
       type,
       valuesMappings,
+      measureSchema,
     );
 
     return measureModel;
