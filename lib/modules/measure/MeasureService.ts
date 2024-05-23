@@ -371,10 +371,10 @@ export class MeasureService extends BaseService {
 
     for (const measurement of measurements) {
       // @todo check if measure type exists
-      const assetMeasureName = this.tryFindAssetMeasureName(
-        device,
-        asset,
+      const assetMeasureName = this.findAssetMeasureNameFromDevice(
+        device._id,
         measurement.measureName,
+        asset._source,
       );
 
       const assetContext =
@@ -429,36 +429,43 @@ export class MeasureService extends BaseService {
   }
 
   /**
-   * Retrieve the measure name for the asset
+   * Find the asset measure name from the device and it's measure type
+   *
+   * @param deviceId The source device ID
+   * @param measureName The device measure name
+   * @param asset The asset the device is linked to
+   *
+   * @returns The asset measure name or null if it is not linked to the asset
+   * @throws If the device is not linked to the asset
    */
-  private tryFindAssetMeasureName(
-    device: KDocument<DeviceContent>,
-    asset: KDocument<AssetContent>,
-    deviceMeasureName: string,
+  private findAssetMeasureNameFromDevice(
+    deviceId: string,
+    measureName: string,
+    asset: AssetContent,
   ): string | null {
     if (!asset) {
       return null;
     }
 
-    const deviceLink = asset._source.linkedDevices.find(
-      (link) => link._id === device._id,
+    const linkedDevice = asset.linkedDevices.find(
+      (link) => link._id === deviceId,
     );
 
-    if (!deviceLink) {
+    if (!linkedDevice) {
       throw new BadRequestError(
-        `Device "${device._id}" is not linked to asset "${asset._id}"`,
+        `Device "${deviceId}" is not linked to "${asset.model}" asset: "${asset.reference}"`,
       );
     }
 
-    const measureName = deviceLink.measureNames.find(
-      (m) => m.device === deviceMeasureName,
+    const assetMeasureName = linkedDevice.measureNames.find(
+      (m) => m.device === measureName,
     );
     // The measure is decoded by the device but is not linked to the asset
-    if (!measureName) {
+    if (!assetMeasureName) {
       return null;
     }
 
-    return measureName.asset;
+    return assetMeasureName.asset;
   }
 }
 
