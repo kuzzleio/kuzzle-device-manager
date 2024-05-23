@@ -24,6 +24,13 @@ import {
   TenantEventMeasureProcessAfter,
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
+import {
+  APIMeasureSource,
+  isSourceAPI,
+  isSourceDevice,
+} from "./types/MeasureSources";
+import { apiSourceToOriginApi, toDeviceSource } from "./MeasureSourcesBuilder";
+import { AskModelAssetGet } from "../model";
 
 export class MeasureService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -32,14 +39,175 @@ export class MeasureService extends BaseService {
     onAsk<AskMeasureIngest>(
       "device-manager:measures:ingest",
       async (payload) => {
-        await this.ingest(
-          payload.device,
-          payload.measurements,
-          payload.metadata,
-          payload.payloadUuids,
-        );
+        const { source, measurements, payloadUuids } = payload;
+
+        if (payload.device) {
+          await this.ingest(
+            payload.device,
+            payload.measurements,
+            payload.metadata,
+            payload.payloadUuids,
+          );
+        }
+
+        if (isSourceAPI(source)) {
+          await this.ingestAPI(source, measurements, payloadUuids);
+        }
       },
     );
+  }
+
+  /**
+   * Register new measures from an API, updates :
+   * - asset
+   * - engine measures
+   *
+   * This method represents the ingestion pipeline:
+   *  - trigger events `before` (measure enrichment)
+   *  - save documents (measures and asset)
+   *  - trigger events `after`
+   */
+  public async ingestAPI(
+    source: APIMeasureSource,
+    measurements: DecodedMeasurement<JSONObject>[],
+    payloadUuids: string[],
+  ) {
+    const { dataSourceId: sourceId, indexId, assetId } = source;
+
+    if (!measurements) {
+      this.app.log.warn(`Cannot find measurements for API "${sourceId}"`);
+      return;
+    }
+
+    const asset = await this.findAsset(indexId, assetId);
+    const originalAssetMetadata: Metadata =
+      asset === null ? {} : JSON.parse(JSON.stringify(asset._source.metadata));
+
+    const measures = await this.buildAPIMeasures(
+      source,
+      asset,
+      measurements,
+      payloadUuids,
+    );
+
+    if (asset) {
+      asset._source.measures ||= {};
+    }
+
+    /**
+     * Event before starting to process new measures.
+     *
+     * Useful to enrich measures before they are saved.
+     */
+    await this.app.trigger<EventMeasureProcessBefore>(
+      "device-manager:measures:process:before",
+      { asset, measures, source },
+    );
+
+    if (indexId) {
+      await this.app.trigger<TenantEventMeasureProcessBefore>(
+        `engine:${indexId}:device-manager:measures:process:before`,
+        { asset, measures, source },
+      );
+    }
+
+    let assetStates = new Map<number, KDocument<AssetContent>>();
+    if (asset) {
+      assetStates = this.updateAssetMeasures(asset, measures);
+    }
+
+    await this.app.trigger<EventMeasurePersistBefore>(
+      "device-manager:measures:persist:before",
+      {
+        asset,
+        measures,
+        source,
+      },
+    );
+
+    if (indexId) {
+      await this.app.trigger<TenantEventMeasurePersistBefore>(
+        `engine:${indexId}:device-manager:measures:persist:before`,
+        { asset, measures, source },
+      );
+    }
+
+    const promises = [];
+
+    if (indexId) {
+      promises.push(
+        this.sdk.document
+          .mCreate<MeasureContent>(
+            indexId,
+            InternalCollection.MEASURES,
+            measures.map((measure) => ({ body: measure })),
+          )
+          .then(({ errors }) => {
+            if (errors.length !== 0) {
+              throw new BadRequestError(
+                `Cannot save measures: ${errors[0].reason}`,
+              );
+            }
+          }),
+      );
+
+      if (asset) {
+        // @todo potential race condition if 2 differents device are linked
+        // to the same asset and get processed at the same time
+        // asset measures update could be protected by mutex
+        promises.push(
+          this.sdk.document
+            .update<AssetContent>(
+              indexId,
+              InternalCollection.ASSETS,
+              asset._id,
+              asset._source,
+            )
+            .catch((error) => {
+              throw keepStack(
+                error,
+                new BadRequestError(
+                  `Cannot update asset "${asset._id}": ${error.message}`,
+                ),
+              );
+            }),
+        );
+
+        promises.push(
+          historizeAssetStates(
+            assetStates,
+            indexId,
+            originalAssetMetadata,
+            asset._source.metadata,
+          ),
+        );
+      }
+    }
+
+    await Promise.all(promises);
+
+    /**
+     * Event at the end of the measure process pipeline.
+     *
+     * Useful to trigger business rules like alerts
+     *
+     * @todo test this
+     */
+    await this.app.trigger<EventMeasureProcessAfter>(
+      "device-manager:measures:process:after",
+      {
+        asset,
+        measures,
+        source,
+      },
+    );
+
+    if (indexId) {
+      await this.app.trigger<TenantEventMeasureProcessAfter>(
+        `engine:${indexId}:device-manager:measures:process:after`,
+        { asset, measures, source },
+      );
+    }
   }
 
   /**
@@ -56,6 +224,8 @@ export class MeasureService extends BaseService {
    *  - trigger events `before` (measure enrichment)
    *  - save documents (measures, device and asset)
    *  - trigger events `after`
+   *
+   * @deprecated
    */
   public async ingest(
     device: KDocument<DeviceContent>,
@@ -91,6 +261,17 @@ export class MeasureService extends BaseService {
         asset._source.measures ||= {};
       }
 
+      const { reference, model, assetId, lastMeasuredAt } = device._source;
+      const source = toDeviceSource(
+        device._id,
+        reference,
+        model,
+        assetId,
+        engineId,
+        device._source.metadata,
+        lastMeasuredAt,
+      );
+
       /**
        * Event before starting to process new measures.
        *
@@ -98,13 +279,13 @@ export class MeasureService extends BaseService {
        */
       await this.app.trigger<EventMeasureProcessBefore>(
         "device-manager:measures:process:before",
-        { asset, device, measures },
+        { asset, device, measures, source },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessBefore>(
           `engine:${engineId}:device-manager:measures:process:before`,
-          { asset, device, measures },
+          { asset, device, measures, source },
         );
       }
 
@@ -121,13 +302,14 @@ export class MeasureService extends BaseService {
           asset,
           device,
           measures,
+          source,
         },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasurePersistBefore>(
           `engine:${engineId}:device-manager:measures:persist:before`,
-          { asset, device, measures },
+          { asset, device, measures, source },
         );
       }
 
@@ -234,13 +416,14 @@ export class MeasureService extends BaseService {
           asset,
           device,
           measures,
+          source,
         },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessAfter>(
           `engine:${engineId}:device-manager:measures:process:after`,
-          { asset, device, measures },
+          { asset, device, measures, source },
         );
       }
     });
@@ -356,6 +539,57 @@ export class MeasureService extends BaseService {
   }
 
   /**
+   *
+   * @param source The API source
+   * @param asset The
+   * @param measurements
+   * @param payloadUuids
+   *
+   * @returns An array of MeasurementContent builded from parameters
+   */
+  private async buildAPIMeasures(
+    source: APIMeasureSource,
+    asset: KDocument<AssetContent> | null,
+    measurements: DecodedMeasurement[],
+    payloadUuids: string[],
+  ): Promise<MeasureContent[]> {
+    const measures: MeasureContent[] = [];
+
+    for (const measurement of measurements) {
+      // @todo check if measure type exists
+      const assetMeasureName = await this.findAssetMeasureNameFromModel(
+        measurement.measureName,
+        asset._source.model,
+      );
+
+      const assetContext =
+        asset === null || assetMeasureName === null
+          ? null
+          : AssetSerializer.measureContext(asset, assetMeasureName);
+
+      const measureSource = apiSourceToOriginApi(
+        source,
+        measurement.measureName,
+        payloadUuids,
+      );
+
+      const measureContent: MeasureContent = {
+        asset: assetContext,
+        measuredAt: measurement.measuredAt,
+        origin: measureSource,
+        type: measurement.type,
+        values: measurement.values,
+      };
+
+      measures.push(measureContent);
+    }
+
+    return measures.sort(
+      (measureA, measureB) => measureA.measuredAt - measureB.measuredAt,
+    );
+  }
+
+  /**
    * Build the measures documents to save
    */
   private buildMeasures(
@@ -430,6 +664,37 @@ export class MeasureService extends BaseService {
 
       return null;
     }
+  }
+
+  private async findAssetMeasureNameFromModel(
+    measureName: string,
+    model: string,
+  ): Promise<string | null> {
+    if (!model) {
+      return null;
+    }
+
+    const assetModel = await ask<AskModelAssetGet>(
+      "ask:device-manager:model:asset:get",
+      {
+        engineGroup: "commons",
+        model: model,
+      },
+    );
+
+    if (!assetModel) {
+      throw new BadRequestError(`"${model}" Model does not exists`);
+    }
+
+    const assetMeasureName = assetModel.asset.measures.find(
+      (m) => m.name === measureName,
+    );
+    // The measure is decoded by the device but is not linked to the asset
+    if (!assetMeasureName) {
+      return null;
+    }
+
+    return assetMeasureName.name;
   }
 
   /**
