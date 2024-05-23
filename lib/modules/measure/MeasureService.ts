@@ -39,20 +39,12 @@ export class MeasureService extends BaseService {
     onAsk<AskMeasureIngest>(
       "device-manager:measures:ingest",
       async (payload) => {
-        const { source, measurements, payloadUuids } = payload;
-
-        if (payload.device) {
           await this.ingest(
             payload.device,
             payload.measurements,
             payload.metadata,
             payload.payloadUuids,
           );
-        }
-
-        if (isSourceAPI(source)) {
-          await this.ingestAPI(source, measurements, payloadUuids);
-        }
       },
     );
   }

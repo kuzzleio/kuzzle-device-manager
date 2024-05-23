@@ -16,8 +16,7 @@ export type AskMeasureIngest = {
   name: "device-manager:measures:ingest";
 
   payload: {
-    device?: KDocument<DeviceContent>;
-    source?: MeasureSource;
+    device: KDocument<DeviceContent>;
     measurements: DecodedMeasurement<JSONObject>[];
     metadata: Metadata;
     payloadUuids: string[];
