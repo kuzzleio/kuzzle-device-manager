@@ -3,14 +3,14 @@ import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 import { Metadata } from "../../../modules/shared";
 import { AssetMeasureContext } from "../../../modules/asset";
 
-export type MeasureOriginDevice = {
+interface AbstractMeasureOrigin {
   /**
    * Origin of the measure
    */
-  type: "device";
+  type: string;
 
   /**
-   * Name of the measure in the device
+   * Name of the measure
    */
   measureName: string;
 
@@ -18,6 +18,10 @@ export type MeasureOriginDevice = {
    * Payload uuids that were used to create this measure.
    */
   payloadUuids: Array<string>;
+}
+
+export interface MeasureOriginDevice extends AbstractMeasureOrigin {
+  type: "device";
 
   /**
    * Model of the device
@@ -35,9 +39,9 @@ export type MeasureOriginDevice = {
    * Device ID
    */
   _id: string;
-};
+}
 
-export type MeasureOriginComputed = {
+export interface MeasureOriginComputed extends AbstractMeasureOrigin {
   /**
    * Computed measures are not automatically added into the asset and device
    * documents at the end of the ingestion pipeline.
@@ -48,19 +52,21 @@ export type MeasureOriginComputed = {
    * String that identify the rule used to compute the measure
    */
   _id: string;
+}
+
+export interface MeasureOriginApi extends AbstractMeasureOrigin {
+  type: "api";
 
   /**
-   * Name of the measure
+   * API ID
    */
-  measureName: string;
+  _id: string;
+}
 
-  /**
-   * Payload uuids that were used to create this measure for traceability.
-   */
-  payloadUuids: Array<string>;
-};
-
-export type MeasureOrigin = MeasureOriginDevice | MeasureOriginComputed;
+export type MeasureOrigin =
+  | MeasureOriginDevice
+  | MeasureOriginComputed
+  | MeasureOriginApi;
 
 /**
  * Represents the content of a measure document.
