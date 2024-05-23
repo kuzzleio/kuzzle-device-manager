@@ -24,11 +24,7 @@ import {
   TenantEventMeasureProcessAfter,
   TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
-import {
-  APIMeasureSource,
-  isSourceAPI,
-  isSourceDevice,
-} from "./types/MeasureSources";
+import { APIMeasureSource } from "./types/MeasureSources";
 import { apiSourceToOriginApi, toDeviceSource } from "./MeasureSourcesBuilder";
 import { AskModelAssetGet } from "../model";
 
@@ -39,18 +35,18 @@ export class MeasureService extends BaseService {
     onAsk<AskMeasureIngest>(
       "device-manager:measures:ingest",
       async (payload) => {
-          await this.ingest(
-            payload.device,
-            payload.measurements,
-            payload.metadata,
-            payload.payloadUuids,
-          );
+        await this.ingest(
+          payload.device,
+          payload.measurements,
+          payload.metadata,
+          payload.payloadUuids,
+        );
       },
     );
   }
 
   /**
-   * Register new measures from an API, updates :
+   * Register new measure from an API, updates :
    * - asset
    * - engine measures
    *
@@ -61,13 +57,12 @@ export class MeasureService extends BaseService {
    */
   public async ingestAPI(
     source: APIMeasureSource,
-    measurements: DecodedMeasurement<JSONObject>[],
-    payloadUuids: string[],
+    measure: DecodedMeasurement<JSONObject>,
   ) {
     const { dataSourceId: sourceId, indexId, assetId } = source;
 
-    if (!measurements) {
-      this.app.log.warn(`Cannot find measurements for API "${sourceId}"`);
+    if (!measure) {
+      this.app.log.warn(`Cannot find measure for API "${sourceId}"`);
       return;
     }
 
@@ -75,12 +70,7 @@ export class MeasureService extends BaseService {
     const originalAssetMetadata: Metadata =
       asset === null ? {} : JSON.parse(JSON.stringify(asset._source.metadata));
 
-    const measures = await this.buildAPIMeasures(
-      source,
-      asset,
-      measurements,
-      payloadUuids,
-    );
+    const apiMeasure = await this.buildAPIMeasures(source, asset, measure);
 
     if (asset) {
       asset._source.measures ||= {};
@@ -93,26 +83,26 @@ export class MeasureService extends BaseService {
      */
     await this.app.trigger<EventMeasureProcessBefore>(
       "device-manager:measures:process:before",
-      { asset, measures, source },
+      { asset, measures: [apiMeasure], source },
     );
 
     if (indexId) {
       await this.app.trigger<TenantEventMeasureProcessBefore>(
         `engine:${indexId}:device-manager:measures:process:before`,
-        { asset, measures, source },
+        { asset, measures: [apiMeasure], source },
       );
     }
 
     let assetStates = new Map<number, KDocument<AssetContent>>();
     if (asset) {
-      assetStates = this.updateAssetMeasures(asset, measures);
+      assetStates = this.updateAssetMeasures(asset, [apiMeasure]);
     }
 
     await this.app.trigger<EventMeasurePersistBefore>(
       "device-manager:measures:persist:before",
       {
         asset,
-        measures,
+        measures: [apiMeasure],
         source,
       },
     );
@@ -120,7 +110,7 @@ export class MeasureService extends BaseService {
     if (indexId) {
       await this.app.trigger<TenantEventMeasurePersistBefore>(
         `engine:${indexId}:device-manager:measures:persist:before`,
-        { asset, measures, source },
+        { asset, measures: [apiMeasure], source },
       );
     }
 
@@ -128,19 +118,11 @@ export class MeasureService extends BaseService {
 
     if (indexId) {
       promises.push(
-        this.sdk.document
-          .mCreate<MeasureContent>(
-            indexId,
-            InternalCollection.MEASURES,
-            measures.map((measure) => ({ body: measure })),
-          )
-          .then(({ errors }) => {
-            if (errors.length !== 0) {
-              throw new BadRequestError(
-                `Cannot save measures: ${errors[0].reason}`,
-              );
-            }
-          }),
+        this.sdk.document.create<MeasureContent>(
+          indexId,
+          InternalCollection.MEASURES,
+          apiMeasure,
+        ),
       );
 
       if (asset) {
@@ -189,7 +171,7 @@ export class MeasureService extends BaseService {
       "device-manager:measures:process:after",
       {
         asset,
-        measures,
+        measures: [apiMeasure],
         source,
       },
     );
@@ -197,7 +179,7 @@ export class MeasureService extends BaseService {
     if (indexId) {
       await this.app.trigger<TenantEventMeasureProcessAfter>(
         `engine:${indexId}:device-manager:measures:process:after`,
-        { asset, measures, source },
+        { asset, measures: [apiMeasure], source },
       );
     }
   }
@@ -537,48 +519,33 @@ export class MeasureService extends BaseService {
    * @param measurements
    * @param payloadUuids
    *
-   * @returns An array of MeasurementContent builded from parameters
+   * @returns A MeasurementContent builded from parameters
    */
   private async buildAPIMeasures(
     source: APIMeasureSource,
     asset: KDocument<AssetContent> | null,
-    measurements: DecodedMeasurement[],
-    payloadUuids: string[],
-  ): Promise<MeasureContent[]> {
-    const measures: MeasureContent[] = [];
-
-    for (const measurement of measurements) {
-      // @todo check if measure type exists
-      const assetMeasureName = await this.findAssetMeasureNameFromModel(
-        measurement.measureName,
-        asset._source.model,
-      );
-
-      const assetContext =
-        asset === null || assetMeasureName === null
-          ? null
-          : AssetSerializer.measureContext(asset, assetMeasureName);
-
-      const measureSource = apiSourceToOriginApi(
-        source,
-        measurement.measureName,
-        payloadUuids,
-      );
-
-      const measureContent: MeasureContent = {
-        asset: assetContext,
-        measuredAt: measurement.measuredAt,
-        origin: measureSource,
-        type: measurement.type,
-        values: measurement.values,
-      };
-
-      measures.push(measureContent);
-    }
-
-    return measures.sort(
-      (measureA, measureB) => measureA.measuredAt - measureB.measuredAt,
+    measure: DecodedMeasurement,
+  ): Promise<MeasureContent> {
+    // @todo check if measure type exists
+    const assetMeasureName = await this.findAssetMeasureNameFromModel(
+      measure.measureName,
+      asset._source.model,
     );
+
+    const assetContext =
+      asset === null || assetMeasureName === null
+        ? null
+        : AssetSerializer.measureContext(asset, assetMeasureName);
+
+    const measureSource = apiSourceToOriginApi(source, measure.measureName);
+
+    return {
+      asset: assetContext,
+      measuredAt: measure.measuredAt,
+      origin: measureSource,
+      type: measure.type,
+      values: measure.values,
+    };
   }
 
   /**

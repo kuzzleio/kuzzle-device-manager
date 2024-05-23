@@ -22,12 +22,11 @@ export function toApiSource(
 export function apiSourceToOriginApi(
   source: APIMeasureSource,
   measureName: string,
-  payloadUuids: string[],
 ): MeasureOriginApi {
   return {
     _id: source.dataSourceId,
     measureName,
-    payloadUuids,
+    payloadUuids: [],
     type: "api",
   };
 }
