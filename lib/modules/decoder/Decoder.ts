@@ -1,6 +1,5 @@
 import {
   HttpRoute,
-  InternalLogger,
   KuzzleRequest,
   PreconditionError,
 } from "kuzzle";
@@ -35,8 +34,14 @@ export abstract class Decoder {
   /**
    * Internal logger.
    */
-  public logger?: InternalLogger;
-
+  public log: {
+    debug: (message: any) => void;
+    error: (message: any) => void;
+    info: (message: any) => void;
+    silly: (message: any) => void;
+    verbose: (message: any) => void;
+    warn: (message: any) => void;
+  };
   /**
    * Device model name.
    *

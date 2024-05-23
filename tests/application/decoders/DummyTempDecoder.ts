@@ -45,6 +45,7 @@ export class DummyTempDecoder extends Decoder {
     decodedPayload: DecodedPayload<DummyTempDecoder>,
     rawPayload: JSONObject,
   ): Promise<DecodedPayload<DummyTempDecoder>> {
+    this.log.info("Decoding payload");
     const payloads: any[] = rawPayload.measurements ?? [rawPayload];
 
     for (const payload of payloads) {
