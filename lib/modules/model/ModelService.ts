@@ -36,6 +36,8 @@ import {
   AskModelMeasureGet,
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
+import { SchemaObject } from "ajv";
+import { addSchemaToCache } from "../shared/utils/AJValidator";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -316,6 +318,7 @@ export class ModelService extends BaseService {
   async writeMeasure(
     type: string,
     valuesMappings: JSONObject,
+    measureSchema?: SchemaObject,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
       measure: { type, valuesMappings },
@@ -332,6 +335,15 @@ export class ModelService extends BaseService {
         `New assets mappings are causing conflicts`,
         conflicts,
       );
+    }
+
+    if (measureSchema) {
+      try {
+        addSchemaToCache(type, measureSchema);
+        modelContent.measure.validationSchema = measureSchema;
+      } catch (error) {
+        throw new BadRequestError(error);
+      }
     }
 
     const measureModel =
