@@ -47,7 +47,7 @@ describe("DeviceController: receiveMeasure", () => {
     ).resolves.toMatchObject({
       assetId: "Container-unlinked1",
       _kuzzle_info: {
-        updater: "-1",
+        updater: "test-admin",
       },
     });
     await expect(
@@ -55,7 +55,7 @@ describe("DeviceController: receiveMeasure", () => {
     ).resolves.toMatchObject({
       assetId: "Container-unlinked1",
       _kuzzle_info: {
-        updater: "-1",
+        updater: "test-admin",
       },
     });
     await expect(
@@ -68,7 +68,7 @@ describe("DeviceController: receiveMeasure", () => {
         },
       ],
       _kuzzle_info: {
-        updater: "-1",
+        updater: "test-admin",
       },
     });
 
@@ -103,7 +103,7 @@ describe("DeviceController: receiveMeasure", () => {
         },
       ],
       _kuzzle_info: {
-        updater: "-1",
+        updater: "test-admin",
       },
     });
   });

@@ -45,7 +45,7 @@ describe("features/Asset/Controller", () => {
           position: null,
         },
         linkedDevices: [],
-        _kuzzle_info: { author: "-1" },
+        _kuzzle_info: { author: "test-admin" },
       },
     });
 
@@ -62,7 +62,7 @@ describe("features/Asset/Controller", () => {
     ).resolves.toMatchObject({
       _source: {
         metadata: { height: 5, weight: 1250 },
-        _kuzzle_info: { updater: "-1" },
+        _kuzzle_info: { updater: "test-admin" },
       },
     });
 

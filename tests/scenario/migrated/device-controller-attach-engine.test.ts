@@ -37,13 +37,13 @@ describe("features/Device/Controller/AttachEngine", () => {
     await expect(
       sdk.document.get("device-manager", "devices", "DummyTemp-detached1")
     ).resolves.toMatchObject({
-      _source: { engineId: "engine-kuzzle", _kuzzle_info: { updater: "-1" } },
+      _source: { engineId: "engine-kuzzle", _kuzzle_info: { updater: "test-admin" } },
     });
 
     await expect(
       sdk.document.get("engine-kuzzle", "devices", "DummyTemp-detached1")
     ).resolves.toMatchObject({
-      _source: { engineId: "engine-kuzzle", _kuzzle_info: { author: "-1" } },
+      _source: { engineId: "engine-kuzzle", _kuzzle_info: { author: "test-admin" } },
     });
 
     response = await sendPayloads(sdk, "dummy-temp", [

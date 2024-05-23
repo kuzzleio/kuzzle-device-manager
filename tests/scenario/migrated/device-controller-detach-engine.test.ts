@@ -44,7 +44,7 @@ describe("features/Device/Controller/DetachEngine", () => {
     await expect(
       sdk.document.get("device-manager", "devices", "DummyTemp-detached1")
     ).resolves.toMatchObject({
-      _source: { engineId: null, _kuzzle_info: { updater: "-1" } },
+      _source: { engineId: null, _kuzzle_info: { updater: "test-admin" } },
     });
 
     await expect(
