@@ -37,6 +37,6 @@ export async function beforeAllCreateEngines(sdk: Kuzzle) {
     createEngineIfNotExists(sdk, "engine-kuzzle"),
     createEngineIfNotExists(sdk, "engine-other-group", "other-group"),
     // Timeout to avoid too many login per seconds error
-    new Promise((resolve) => setTimeout(resolve, 300)),
+    new Promise((resolve) => setTimeout(resolve, 1000)),
   ]);
 }
