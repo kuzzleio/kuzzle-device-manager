@@ -72,10 +72,7 @@ export class MeasureService extends BaseService {
       }
 
       const engineId = device._source.engineId;
-      const asset = await this.tryGetLinkedAsset(
-        engineId,
-        device._source.assetId,
-      );
+      const asset = await this.findAsset(engineId, device._source.assetId);
       const originalAssetMetadata: Metadata =
         asset === null
           ? {}
@@ -405,7 +402,14 @@ export class MeasureService extends BaseService {
     );
   }
 
-  private async tryGetLinkedAsset(
+  /**
+   * Find an asset by its ID and its engine ID.
+   *
+   * @param engineId The target index ID
+   * @param assetId the target asset ID
+   * @returns The asset or null if not found
+   */
+  private async findAsset(
     engineId: string,
     assetId: string,
   ): Promise<KDocument<AssetContent>> {
