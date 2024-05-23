@@ -1,8 +1,4 @@
-import {
-  HttpRoute,
-  KuzzleRequest,
-  PreconditionError,
-} from "kuzzle";
+import { HttpRoute, KuzzleRequest, PreconditionError } from "kuzzle";
 import _ from "lodash";
 import { JSONObject } from "kuzzle-sdk";
 
