@@ -429,7 +429,7 @@ export class MeasureService extends BaseService {
   }
 
   /**
-   * Find the asset measure name from the device and it's measure type
+   * Find the asset measure name from the device and its measure type
    *
    * @param deviceId The source device ID
    * @param measureName The device measure name
