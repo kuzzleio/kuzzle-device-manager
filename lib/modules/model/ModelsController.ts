@@ -154,7 +154,7 @@ export class ModelsController {
   ): Promise<ApiModelWriteMeasureResult> {
     const type = request.getBodyString("type");
     const valuesMappings = request.getBodyObject("valuesMappings");
-    const measureSchema = request.getBodyObject("measureSchema", undefined);
+    const measureSchema = request.getBodyObject("measureSchema", {});
 
     const measureModel = await this.modelService.writeMeasure(
       type,
