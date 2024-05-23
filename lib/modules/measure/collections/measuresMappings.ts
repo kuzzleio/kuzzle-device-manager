@@ -57,6 +57,11 @@ export const measuresMappings = {
 
         reference: { type: "keyword" },
 
+        metadata: {
+          dynamic: "false",
+          properties: {},
+        },
+
         _id: { type: "keyword" },
       },
     },
