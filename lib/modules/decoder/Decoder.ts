@@ -28,6 +28,17 @@ export abstract class Decoder {
   private _http?: HttpRoute[];
 
   /**
+   * Internal logger.
+   */
+  public log: {
+    debug: (message: any) => void;
+    error: (message: any) => void;
+    info: (message: any) => void;
+    silly: (message: any) => void;
+    verbose: (message: any) => void;
+    warn: (message: any) => void;
+  };
+  /**
    * Device model name.
    *
    * Will be infered from the class name if not defined:

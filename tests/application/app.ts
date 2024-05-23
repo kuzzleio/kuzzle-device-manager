@@ -26,19 +26,23 @@ deviceManager.config.engineCollections.device.mappings.properties["softTenant"] 
 };
 
 
-deviceManager.models.registerDevice("DummyTempPosition", {
-  decoder: new DummyTempPositionDecoder(),
-  metadataMappings: {
-    serial: { type: "keyword" },
-  },
-});
+deviceManager.models.registerDevice("DummyTempPosition", 
+  {
+    decoder: new DummyTempPositionDecoder(),
+    metadataMappings: {
+      serial: { type: "keyword" },
+    },
+  }
+);
 
-deviceManager.models.registerDevice("DummyTemp", {
-  decoder: new DummyTempDecoder(),
-  metadataMappings: {
-    color: { type: "keyword" },
-  },
-});
+deviceManager.models.registerDevice("DummyTemp", 
+  { 
+    decoder: new DummyTempDecoder(),
+    metadataMappings: {
+      color: { type: "keyword" },
+    },
+  }
+);
 
 // Register an asset for the "commons" group
 
