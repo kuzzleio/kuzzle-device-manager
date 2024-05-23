@@ -154,11 +154,11 @@ export class ModelsController {
   ): Promise<ApiModelWriteMeasureResult> {
     const type = request.getBodyString("type");
     const valuesMappings = request.getBodyObject("valuesMappings");
-    const locales = request.getBodyObject("locales", {});
+    const valuesDetails = request.getBodyObject("valuesDetails", {});
     const measureModel = await this.modelService.writeMeasure(
       type,
       valuesMappings,
-      locales,
+      valuesDetails,
     );
 
     return measureModel;

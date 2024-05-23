@@ -16,20 +16,23 @@ import { JSONObject } from "kuzzle-sdk";
  *    },
  * }
  */
-export interface MeasureLocales {
+interface MeasureLocales {
   [localeString: string]: {
-    name: string;
+    friendlyName: string;
     unit?: string;
   };
 }
-
+export interface MeasureValuesDetails {
+  [valueName: string]: MeasureLocales;
+}
 /**
  * Represents a measure definition registered by the Device Manager
  *
  * @example
  * {
  *   valuesMappings: { temperature: { type: 'float' } },
- *   locales: {
+ *   valuesDetails: {
+ *        temperature:{
  *              en:{
  *                  name:"Temperature",
  *                  unit:"°C"
@@ -37,6 +40,7 @@ export interface MeasureLocales {
  *                  name:"Température",
  *                  unit:"°C"
  *              }
+ *         }
  *    },
  * }
  */
@@ -45,5 +49,7 @@ export interface MeasureDefinition {
    * Mappings for the measurement values in order to index the fields
    */
   valuesMappings: JSONObject;
-  locales?: MeasureLocales;
+  valuesDetails?: {
+    [valueName: string]: MeasureLocales;
+  };
 }

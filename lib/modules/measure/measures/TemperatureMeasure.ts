@@ -8,14 +8,16 @@ export type TemperatureMeasurement = {
 
 export const temperatureMeasureDefinition: MeasureDefinition = {
   valuesMappings: { temperature: { type: "float" } },
-  locales: {
-    en: {
-      name: "Temperature",
-      unit: "°C",
-    },
-    fr: {
-      name: "Température",
-      unit: "°C",
+  valuesDetails: {
+    temperature: {
+      en: {
+        friendlyName: "Temperature",
+        unit: "°C",
+      },
+      fr: {
+        friendlyName: "Température",
+        unit: "°C",
+      },
     },
   },
 };

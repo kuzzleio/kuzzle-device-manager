@@ -36,7 +36,7 @@ import {
   AskModelMeasureGet,
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
-import { MeasureLocales } from "../measure";
+import { MeasureValuesDetails } from "../measure";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -317,12 +317,12 @@ export class ModelService extends BaseService {
   async writeMeasure(
     type: string,
     valuesMappings: JSONObject,
-    locales?: MeasureLocales,
+    valuesDetails?: MeasureValuesDetails,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
       measure: {
-        locales,
         type,
+        valuesDetails,
         valuesMappings,
       },
       type: "measure",

@@ -8,14 +8,17 @@ export type BatteryMeasurement = {
 
 export const batteryMeasureDefinition: MeasureDefinition = {
   valuesMappings: { battery: { type: "integer" } },
-  locales: {
-    en: {
-      name: "Battery level",
-      unit: "%",
-    },
-    fr: {
-      name: "Niveau de batterie",
-      unit: "%",
+
+  valuesDetails: {
+    battery: {
+      en: {
+        friendlyName: "Battery level",
+        unit: "%",
+      },
+      fr: {
+        friendlyName: "Niveau de batterie",
+        unit: "%",
+      },
     },
   },
 };
