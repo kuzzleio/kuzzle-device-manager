@@ -4,17 +4,17 @@ import { APIMeasureSource, DeviceMeasureSource } from "./types/MeasureSources";
 
 export function toApiSource(
   dataSourceId: string,
-  assetId: string,
-  indexId: string,
+  targetAssetId: string,
+  targetIndexId: string,
   customMetadata: Metadata = {},
   lastMeasuredAt?: number,
 ): APIMeasureSource {
   return {
-    assetId,
     customMetadata,
     dataSourceId,
-    indexId,
     lastMeasuredAt,
+    targetAssetId,
+    targetIndexId,
     type: "api",
   };
 }
@@ -35,19 +35,19 @@ export function toDeviceSource(
   dataSourceId: string,
   reference: string,
   model: string,
-  assetId: string,
-  indexId: string,
+  targetAssetId: string,
+  targetIndexId: string,
   customMetadata: Metadata,
   lastMeasuredAt?: number,
 ): DeviceMeasureSource {
   return {
-    assetId,
     customMetadata,
     dataSourceId,
-    indexId,
     lastMeasuredAt,
     model,
     reference,
+    targetAssetId,
+    targetIndexId,
     type: "device",
   };
 }

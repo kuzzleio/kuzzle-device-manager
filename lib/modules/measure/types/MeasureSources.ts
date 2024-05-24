@@ -3,8 +3,8 @@ import { Metadata } from "../../shared";
 interface AbstractMeasureSource {
   type: string;
   dataSourceId: string;
-  indexId: string;
-  assetId: string;
+  targetIndexId: string;
+  targetAssetId?: string;
   customMetadata: Metadata;
   lastMeasuredAt?: number;
 }

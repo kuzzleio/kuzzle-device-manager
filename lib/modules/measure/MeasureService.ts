@@ -63,14 +63,14 @@ export class MeasureService extends BaseService {
     source: APIMeasureSource,
     measure: DecodedMeasurement<JSONObject>,
   ) {
-    const { dataSourceId: sourceId, indexId, assetId } = source;
+    const { dataSourceId: sourceId, targetIndexId, targetAssetId } = source;
 
     if (!measure) {
       this.app.log.warn(`Cannot find measure for API "${sourceId}"`);
       return;
     }
 
-    const asset = await this.findAsset(indexId, assetId);
+    const asset = await this.findAsset(targetIndexId, targetAssetId);
     const originalAssetMetadata: Metadata =
       asset === null ? {} : JSON.parse(JSON.stringify(asset._source.metadata));
 
@@ -90,9 +90,9 @@ export class MeasureService extends BaseService {
       { asset, measures: [apiMeasure], source },
     );
 
-    if (indexId) {
+    if (targetIndexId) {
       await this.app.trigger<TenantEventMeasureProcessBefore>(
-        `engine:${indexId}:device-manager:measures:process:before`,
+        `engine:${targetIndexId}:device-manager:measures:process:before`,
         { asset, measures: [apiMeasure], source },
       );
     }
@@ -111,19 +111,19 @@ export class MeasureService extends BaseService {
       },
     );
 
-    if (indexId) {
+    if (targetIndexId) {
       await this.app.trigger<TenantEventMeasurePersistBefore>(
-        `engine:${indexId}:device-manager:measures:persist:before`,
+        `engine:${targetIndexId}:device-manager:measures:persist:before`,
         { asset, measures: [apiMeasure], source },
       );
     }
 
     const promises: Promise<any>[] = [];
 
-    if (indexId) {
+    if (targetIndexId) {
       promises.push(
         this.sdk.document.create<MeasureContent>(
-          indexId,
+          targetIndexId,
           InternalCollection.MEASURES,
           apiMeasure,
         ),
@@ -136,7 +136,7 @@ export class MeasureService extends BaseService {
         promises.push(
           this.sdk.document
             .update<AssetContent>(
-              indexId,
+              targetIndexId,
               InternalCollection.ASSETS,
               asset._id,
               asset._source,
@@ -154,7 +154,7 @@ export class MeasureService extends BaseService {
         promises.push(
           historizeAssetStates(
             assetStates,
-            indexId,
+            targetIndexId,
             originalAssetMetadata,
             asset._source.metadata,
           ),
@@ -180,9 +180,9 @@ export class MeasureService extends BaseService {
       },
     );
 
-    if (indexId) {
+    if (targetIndexId) {
       await this.app.trigger<TenantEventMeasureProcessAfter>(
-        `engine:${indexId}:device-manager:measures:process:after`,
+        `engine:${targetIndexId}:device-manager:measures:process:after`,
         { asset, measures: [apiMeasure], source },
       );
     }
