@@ -1,4 +1,4 @@
-import { BadRequestError, JSONObject, KDocument } from "kuzzle";
+import { BadRequestError, InternalError, JSONObject, KDocument } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import _ from "lodash";
 
@@ -35,6 +35,10 @@ export class MeasureService extends BaseService {
     onAsk<AskMeasureIngest>(
       "device-manager:measures:ingest",
       async (payload) => {
+        if (!payload) {
+          return;
+        }
+
         await this.ingest(
           payload.device,
           payload.measurements,
@@ -114,7 +118,7 @@ export class MeasureService extends BaseService {
       );
     }
 
-    const promises = [];
+    const promises: Promise<any>[] = [];
 
     if (indexId) {
       promises.push(
@@ -215,8 +219,10 @@ export class MeasureService extends BaseService {
         return;
       }
 
-      const engineId = device._source.engineId;
-      const asset = await this.findAsset(engineId, device._source.assetId);
+      const { engineId, reference, model, assetId, lastMeasuredAt } =
+        device._source;
+
+      const asset = assetId ? await this.findAsset(engineId, assetId) : null;
       const originalAssetMetadata: Metadata =
         asset === null
           ? {}
@@ -235,12 +241,11 @@ export class MeasureService extends BaseService {
         asset._source.measures ||= {};
       }
 
-      const { reference, model, assetId, lastMeasuredAt } = device._source;
       const source = toDeviceSource(
         device._id,
         reference,
         model,
-        assetId,
+        assetId ?? "",
         engineId,
         device._source.metadata,
         lastMeasuredAt,
@@ -287,7 +292,7 @@ export class MeasureService extends BaseService {
         );
       }
 
-      const promises = [];
+      const promises: Promise<any>[] = [];
 
       promises.push(
         this.sdk.document
@@ -473,7 +478,7 @@ export class MeasureService extends BaseService {
         continue;
       }
 
-      const measureName = measurement.asset.measureName;
+      const measureName = measurement.asset?.measureName ?? null;
       // The measurement was not present in the asset device links so it should
       // not be saved in the asset measures
       if (measureName === null) {
@@ -527,15 +532,17 @@ export class MeasureService extends BaseService {
     measure: DecodedMeasurement,
   ): Promise<MeasureContent> {
     // @todo check if measure type exists
-    const assetMeasureName = await this.findAssetMeasureNameFromModel(
-      measure.measureName,
-      asset._source.model,
-    );
+    let assetContext = null;
+    if (asset) {
+      const assetMeasureName = await this.findAssetMeasureNameFromModel(
+        measure.measureName,
+        asset._source.model,
+      );
 
-    const assetContext =
-      asset === null || assetMeasureName === null
-        ? null
-        : AssetSerializer.measureContext(asset, assetMeasureName);
+      if (assetMeasureName) {
+        assetContext = AssetSerializer.measureContext(asset, assetMeasureName);
+      }
+    }
 
     const measureSource = apiSourceToOriginApi(source, measure.measureName);
 
@@ -561,16 +568,21 @@ export class MeasureService extends BaseService {
 
     for (const measurement of measurements) {
       // @todo check if measure type exists
-      const assetMeasureName = this.findAssetMeasureNameFromDevice(
-        device._id,
-        measurement.measureName,
-        asset._source,
-      );
+      let assetContext = null;
+      if (asset) {
+        const assetMeasureName = this.findAssetMeasureNameFromDevice(
+          device._id,
+          measurement.measureName,
+          asset._source,
+        );
 
-      const assetContext =
-        asset === null || assetMeasureName === null
-          ? null
-          : AssetSerializer.measureContext(asset, assetMeasureName);
+        if (assetMeasureName) {
+          assetContext = AssetSerializer.measureContext(
+            asset,
+            assetMeasureName,
+          );
+        }
+      }
 
       const measureContent: MeasureContent = {
         asset: assetContext,
@@ -605,11 +617,7 @@ export class MeasureService extends BaseService {
   private async findAsset(
     engineId: string,
     assetId: string,
-  ): Promise<KDocument<AssetContent>> {
-    if (!assetId) {
-      return null;
-    }
-
+  ): Promise<KDocument<AssetContent> | null> {
     try {
       const asset = await this.sdk.document.get<AssetContent>(
         engineId,
@@ -625,14 +633,19 @@ export class MeasureService extends BaseService {
     }
   }
 
+  /**
+   * Find the asset measure name from the asset model and its measure type
+   *
+   * @param measureType The target measure type
+   * @param model The asset model the measureName belong
+   *
+   * @returns The asset measure name or null if it does not belong to the link
+   * @throws If the model does not exists
+   */
   private async findAssetMeasureNameFromModel(
-    measureName: string,
+    measureType: string,
     model: string,
   ): Promise<string | null> {
-    if (!model) {
-      return null;
-    }
-
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
       {
@@ -642,39 +655,31 @@ export class MeasureService extends BaseService {
     );
 
     if (!assetModel) {
-      throw new BadRequestError(`"${model}" Model does not exists`);
+      throw new BadRequestError(`Model "${model}" does not exists`);
     }
 
     const assetMeasureName = assetModel.asset.measures.find(
-      (m) => m.name === measureName,
+      (m) => m.name === measureType,
     );
-    // The measure is decoded by the device but is not linked to the asset
-    if (!assetMeasureName) {
-      return null;
-    }
 
-    return assetMeasureName.name;
+    return assetMeasureName?.name ?? null;
   }
 
   /**
    * Find the asset measure name from the device and its measure type
    *
    * @param deviceId The source device ID
-   * @param measureName The device measure name
+   * @param measureType The device measure type
    * @param asset The asset the device is linked to
    *
-   * @returns The asset measure name or null if it is not linked to the asset
+   * @returns The asset measure name or null if it does not belong to the link
    * @throws If the device is not linked to the asset
    */
   private findAssetMeasureNameFromDevice(
     deviceId: string,
-    measureName: string,
+    measureType: string,
     asset: AssetContent,
   ): string | null {
-    if (!asset) {
-      return null;
-    }
-
     const linkedDevice = asset.linkedDevices.find(
       (link) => link._id === deviceId,
     );
@@ -686,14 +691,10 @@ export class MeasureService extends BaseService {
     }
 
     const assetMeasureName = linkedDevice.measureNames.find(
-      (m) => m.device === measureName,
+      (m) => m.device === measureType,
     );
-    // The measure is decoded by the device but is not linked to the asset
-    if (!assetMeasureName) {
-      return null;
-    }
 
-    return assetMeasureName.asset;
+    return assetMeasureName?.asset ?? null;
   }
 }
 
