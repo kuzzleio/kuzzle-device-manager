@@ -11,7 +11,7 @@ interface AbstractMeasureSource {
 
 export interface DeviceMeasureSource extends AbstractMeasureSource {
   type: "device";
-  reference?: string;
+  reference: string;
   model: string;
 }
 
