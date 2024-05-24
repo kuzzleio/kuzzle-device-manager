@@ -117,6 +117,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     onAsk<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
       async (payload) => {
+        if (!payload) {
+          return [];
+        }
+
         if (
           payload.twin === undefined &&
           payload.measuresModels === undefined
@@ -154,6 +158,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
             );
           }
         }
+
+        return [];
       },
     );
   }
