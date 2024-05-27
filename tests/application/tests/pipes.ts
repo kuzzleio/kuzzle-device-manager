@@ -10,11 +10,7 @@ import {
 export function registerTestPipes(app: Backend) {
   app.pipe.register<EventMeasurePersistBefore>(
     "device-manager:measures:persist:before",
-    async ({ source, asset, measures, device }) => {
-      if (!device) {
-        return { source, asset, device, measures };
-      }
-
+    async ({ asset, device, measures }) => {
       const color = device._source.metadata.color;
 
       if (color === "test-persist-before-event-temperature-42") {
@@ -25,17 +21,13 @@ export function registerTestPipes(app: Backend) {
         }
       }
 
-      return { source, asset, device, measures };
+      return { asset, device, measures };
     },
   );
 
   app.pipe.register<EventMeasureProcessBefore>(
     "device-manager:measures:process:before",
-    async ({ source, asset, device, measures }) => {
-      if (!device) {
-        return { source, asset, device, measures };
-      }
-
+    async ({ asset, device, measures }) => {
       if (device._id === "DummyTemp-enrich_me_master") {
         for (const measure of measures) {
           if (measure.values.temperature) {
@@ -144,7 +136,7 @@ export function registerTestPipes(app: Backend) {
         };
       }
 
-      return { source, asset, device, measures };
+      return { asset, device, measures };
     },
   );
 }
