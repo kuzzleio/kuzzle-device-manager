@@ -1,4 +1,4 @@
-import { BadRequestError, InternalError, JSONObject, KDocument } from "kuzzle";
+import { BadRequestError, JSONObject, KDocument } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import _ from "lodash";
 
@@ -70,7 +70,9 @@ export class MeasureService extends BaseService {
       return;
     }
 
-    const asset = await this.findAsset(targetIndexId, targetAssetId);
+    const asset = targetAssetId
+      ? await this.findAsset(targetIndexId, targetAssetId)
+      : null;
     const originalAssetMetadata: Metadata =
       asset === null ? {} : JSON.parse(JSON.stringify(asset._source.metadata));
 
