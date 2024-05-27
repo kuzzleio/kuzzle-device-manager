@@ -178,7 +178,7 @@ export type TenantEventMeasurePersistSourceBefore = {
   args: [
     {
       source: MeasureSource;
-      asset?: KDocument<AssetContent>;
+      asset?: AssetContent;
       measures: MeasureContent[];
     },
   ];
