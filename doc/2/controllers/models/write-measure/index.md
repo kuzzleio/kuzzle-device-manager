@@ -31,6 +31,10 @@ Method: POST
     "valuesMappings": {
       // Values mappings
     },
+      // Optional
+    "valuesDetails":{
+      // Values details and translation
+    }
   }
 }
 ```
@@ -41,6 +45,7 @@ Method: POST
 
 - `model`: Measure model name
 - `valuesMappings`: Mappings of the measure values in Elasticsearch format
+- `valuesDetails`: (optional) Measurement translations and units
 
 ---
 
