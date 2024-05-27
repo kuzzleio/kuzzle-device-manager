@@ -28,6 +28,7 @@ export class MeasureController {
     request: KuzzleRequest,
   ): Promise<IngestExternalMeasuresResult> {
     const source = request.getBodyObject("dataSource");
+    source.type = "api";
     const measure = request.getBodyObject("measure") as DecodedMeasurement;
 
     if (isSourceAPI(source)) {
