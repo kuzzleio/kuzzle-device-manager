@@ -17,6 +17,7 @@ export interface DeviceMeasureSource extends AbstractMeasureSource {
 
 export interface APIMeasureSource extends AbstractMeasureSource {
   type: "api";
+  targetAssetId: string;
 }
 
 export function isSource(source: any): source is AbstractMeasureSource {
@@ -41,7 +42,11 @@ export function isSourceDevice(source: any): source is DeviceMeasureSource {
 }
 
 export function isSourceAPI(source: any): source is APIMeasureSource {
-  return isSource(source) && source.type === "api";
+  if (!isSource(source) && source.type !== "api") {
+    return false;
+  }
+
+  return typeof source.targetAssetId === "string";
 }
 
 export type MeasureSource = DeviceMeasureSource | APIMeasureSource;

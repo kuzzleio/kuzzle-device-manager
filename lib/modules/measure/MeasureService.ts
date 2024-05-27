@@ -17,6 +17,7 @@ import { BaseService, Metadata, keepStack, lock, objectDiff } from "../shared";
 import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
   AskMeasureIngest,
+  AskMeasureSourceIngest,
   EventMeasurePersistBefore,
   EventMeasureProcessAfter,
   EventMeasureProcessBefore,
@@ -31,6 +32,16 @@ import { AskModelAssetGet } from "../model";
 export class MeasureService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
+
+    onAsk<AskMeasureSourceIngest>(
+      "device-manager:measures:sourceIngest",
+
+      async (payload) => {
+        if (!payload) {
+          return;
+        }
+      },
+    );
 
     onAsk<AskMeasureIngest>(
       "device-manager:measures:ingest",
@@ -70,9 +81,7 @@ export class MeasureService extends BaseService {
       return;
     }
 
-    const asset = targetAssetId
-      ? await this.findAsset(targetIndexId, targetAssetId)
-      : null;
+    const asset = await this.findAsset(targetIndexId, targetAssetId);
     const originalAssetMetadata: Metadata =
       asset === null ? {} : JSON.parse(JSON.stringify(asset._source.metadata));
 
