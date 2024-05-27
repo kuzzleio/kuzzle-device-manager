@@ -59,15 +59,37 @@ import {
  *         "content": [
  *           {
  *             "category": "metadata",
- *             "label": "Container position",
+ *             "label": {
+ *               "locales": {
+ *                 "en": {
+ *                   "friendlyName": "Container position",
+ *                   "description": ""
+ *                 },
+ *                 "fr": {
+ *                   "friendlyName": "Position du conteneur",
+ *                   "description": ""
+ *                 }
+ *               }
+ *             },
  *             "metadataPath": "geolocation"
  *           },
  *           {
  *             "category": "measure",
- *             "label": "External temperature",
+ *             "label": {
+ *               "locales": {
+ *                 "en": {
+ *                   "friendlyName": "External temperature",
+ *                   "description": ""
+ *                 },
+ *                 "fr": {
+ *                   "friendlyName": "Température extérieure",
+ *                   "description": ""
+ *                 }
+ *               }
+ *             },
  *             "measureSlot": "externalTemperature",
  *             "measureValuePath": "externalTemperature",
- *             "unit": "°C"
+ *             "suffix": "°C"
  *           }
  *         ]
  *       }

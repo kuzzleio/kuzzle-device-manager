@@ -566,7 +566,7 @@ describe("features/Model/Controller", () => {
         "example-tooltip": {
           tooltipLabel: "Example Tooltip",
           content: [
-            { category: "standard", type: "title", value: "Warehouse Info" },
+            { category: "static", type: "title", value: "Warehouse Info" },
             { category: "metadata", metadataPath: "floor" },
           ],
         },
@@ -609,7 +609,7 @@ it("Update the tooltip models of an Asset model", async () => {
           "example-tooltip": {
             tooltipLabel: "Example Tooltip",
             content: [
-              { category: "standard", type: "title", value: "Warehouse Info" },
+              { category: "static", type: "title", value: "Warehouse Info" },
               { category: "metadata", metadataPath: "floor" },
             ],
           },
@@ -621,7 +621,7 @@ it("Update the tooltip models of an Asset model", async () => {
       "example-tooltip": {
         tooltipLabel: "Updated Tooltip",
         content: [
-          { category: "standard", type: "title", value: "Updated Warehouse Info" },
+          { category: "static", type: "title", value: "Updated Warehouse Info" },
           { category: "metadata", metadataPath: "location" },
         ],
       },
