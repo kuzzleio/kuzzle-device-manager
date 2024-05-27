@@ -19,12 +19,29 @@ export interface APIMeasureSource extends AbstractMeasureSource {
   type: "api";
 }
 
+export function isSource(source: any): source is AbstractMeasureSource {
+  if (!source) {
+    return false;
+  }
+
+  return (
+    typeof source.type === "string" &&
+    typeof source.dataSourceId === "string" &&
+    typeof source.targetIndexId === "string" &&
+    typeof source.customMetadata === "object"
+  );
+}
+
 export function isSourceDevice(source: any): source is DeviceMeasureSource {
-  return source?.type === "device";
+  if (!isSource(source) && source.type !== "device") {
+    return false;
+  }
+
+  return source.reference === "string" && source.model === "string";
 }
 
 export function isSourceAPI(source: any): source is APIMeasureSource {
-  return source?.type === "api";
+  return isSource(source) && source.type === "api";
 }
 
 export type MeasureSource = DeviceMeasureSource | APIMeasureSource;
