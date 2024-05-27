@@ -42,7 +42,7 @@ export class MeasureController {
         }
       }
 
-      await this.measureService.ingestAPI(source, measure);
+      await this.measureService.ingestAPI(source, [measure], []);
     } else {
       throw new BadRequestError(
         "Provided dataSource does not match the API source format",

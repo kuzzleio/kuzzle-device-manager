@@ -19,13 +19,19 @@ import {
   AskMeasureIngest,
   AskMeasureSourceIngest,
   EventMeasurePersistBefore,
+  EventMeasurePersistSourceBefore,
   EventMeasureProcessAfter,
   EventMeasureProcessBefore,
+  EventMeasureProcessSourceAfter,
+  EventMeasureProcessSourceBefore,
   TenantEventMeasurePersistBefore,
+  TenantEventMeasurePersistSourceBefore,
   TenantEventMeasureProcessAfter,
   TenantEventMeasureProcessBefore,
+  TenantEventMeasureProcessSourceAfter,
+  TenantEventMeasureProcessSourceBefore,
 } from "./types/MeasureEvents";
-import { APIMeasureSource } from "./types/MeasureSources";
+import { APIMeasureSource, isSourceAPI } from "./types/MeasureSources";
 import { apiSourceToOriginApi, toDeviceSource } from "./MeasureSourcesBuilder";
 import { AskModelAssetGet } from "../model";
 
@@ -39,6 +45,14 @@ export class MeasureService extends BaseService {
       async (payload) => {
         if (!payload) {
           return;
+        }
+
+        if (isSourceAPI(payload.source)) {
+          await this.ingestAPI(
+            payload.source,
+            payload.measurements,
+            payload.payloadUuids,
+          );
         }
       },
     );
@@ -72,23 +86,41 @@ export class MeasureService extends BaseService {
    */
   public async ingestAPI(
     source: APIMeasureSource,
-    measure: DecodedMeasurement<JSONObject>,
+    measurements: DecodedMeasurement<JSONObject>[],
+    payloadUuids: string[],
   ) {
     const { dataSourceId: sourceId, targetIndexId, targetAssetId } = source;
 
-    if (!measure) {
-      this.app.log.warn(`Cannot find measure for API "${sourceId}"`);
+    if (!measurements) {
+      this.app.log.warn(
+        `No measurements provided for "${sourceId}" API measures ingest`,
+      );
       return;
     }
 
-    const asset = await this.findAsset(targetIndexId, targetAssetId);
-    const originalAssetMetadata: Metadata =
-      asset === null ? {} : JSON.parse(JSON.stringify(asset._source.metadata));
+    const assetDocument = await this.findAsset(targetIndexId, targetAssetId);
 
-    const apiMeasure = await this.buildAPIMeasures(source, asset, measure);
+    if (!assetDocument) {
+      throw new BadRequestError(
+        `"${source.targetAssetId}" is not a valid target asset ID`,
+      );
+    }
+
+    const { _id: assetId, _source: asset } = assetDocument;
+
+    const originalAssetMetadata: Metadata = asset
+      ? JSON.parse(JSON.stringify(asset.metadata))
+      : null;
+
+    const measures = await this.buildAPIMeasures(
+      source,
+      assetDocument,
+      measurements,
+      payloadUuids,
+    );
 
     if (asset) {
-      asset._source.measures ||= {};
+      asset.measures ||= {};
     }
 
     /**
@@ -96,36 +128,36 @@ export class MeasureService extends BaseService {
      *
      * Useful to enrich measures before they are saved.
      */
-    await this.app.trigger<EventMeasureProcessBefore>(
-      "device-manager:measures:process:before",
-      { asset, measures: [apiMeasure], source },
+    await this.app.trigger<EventMeasureProcessSourceBefore>(
+      "device-manager:measures:process:sourceBefore",
+      { asset, measures, source },
     );
 
     if (targetIndexId) {
-      await this.app.trigger<TenantEventMeasureProcessBefore>(
-        `engine:${targetIndexId}:device-manager:measures:process:before`,
-        { asset, measures: [apiMeasure], source },
+      await this.app.trigger<TenantEventMeasureProcessSourceBefore>(
+        `engine:${targetIndexId}:device-manager:measures:process:sourceBefore`,
+        { asset, measures, source },
       );
     }
 
     let assetStates = new Map<number, KDocument<AssetContent>>();
     if (asset) {
-      assetStates = this.updateAssetMeasures(asset, [apiMeasure]);
+      assetStates = this.updateAssetMeasures(assetDocument, measures);
     }
 
-    await this.app.trigger<EventMeasurePersistBefore>(
-      "device-manager:measures:persist:before",
+    await this.app.trigger<EventMeasurePersistSourceBefore>(
+      "device-manager:measures:persist:sourceBefore",
       {
         asset,
-        measures: [apiMeasure],
+        measures,
         source,
       },
     );
 
     if (targetIndexId) {
-      await this.app.trigger<TenantEventMeasurePersistBefore>(
-        `engine:${targetIndexId}:device-manager:measures:persist:before`,
-        { asset, measures: [apiMeasure], source },
+      await this.app.trigger<TenantEventMeasurePersistSourceBefore>(
+        `engine:${targetIndexId}:device-manager:measures:persist:sourceBefore`,
+        { asset, measures, source },
       );
     }
 
@@ -136,7 +168,7 @@ export class MeasureService extends BaseService {
         this.sdk.document.create<MeasureContent>(
           targetIndexId,
           InternalCollection.MEASURES,
-          apiMeasure,
+          measures,
         ),
       );
 
@@ -149,14 +181,14 @@ export class MeasureService extends BaseService {
             .update<AssetContent>(
               targetIndexId,
               InternalCollection.ASSETS,
-              asset._id,
-              asset._source,
+              assetId,
+              asset,
             )
             .catch((error) => {
               throw keepStack(
                 error,
                 new BadRequestError(
-                  `Cannot update asset "${asset._id}": ${error.message}`,
+                  `Cannot update asset "${assetId}": ${error.message}`,
                 ),
               );
             }),
@@ -167,7 +199,7 @@ export class MeasureService extends BaseService {
             assetStates,
             targetIndexId,
             originalAssetMetadata,
-            asset._source.metadata,
+            asset.metadata,
           ),
         );
       }
@@ -182,19 +214,19 @@ export class MeasureService extends BaseService {
      *
      * @todo test this
      */
-    await this.app.trigger<EventMeasureProcessAfter>(
-      "device-manager:measures:process:after",
+    await this.app.trigger<EventMeasureProcessSourceAfter>(
+      "device-manager:measures:process:sourceAfter",
       {
         asset,
-        measures: [apiMeasure],
+        measures,
         source,
       },
     );
 
     if (targetIndexId) {
-      await this.app.trigger<TenantEventMeasureProcessAfter>(
-        `engine:${targetIndexId}:device-manager:measures:process:after`,
-        { asset, measures: [apiMeasure], source },
+      await this.app.trigger<TenantEventMeasureProcessSourceAfter>(
+        `engine:${targetIndexId}:device-manager:measures:process:sourceAfter`,
+        { asset, measures, source },
       );
     }
   }
@@ -529,22 +561,25 @@ export class MeasureService extends BaseService {
   }
 
   /**
+   * Build the measures document received from the API
    *
-   * @param source The API source
-   * @param asset The
-   * @param measurements
-   * @param payloadUuids
+   * @param source The API data source
+   * @param asset The target asset to build the measure for
+   * @param measure The decoded raw measures
+   * @param payloadUuids The uuid's of the payloads used to create the measure
    *
    * @returns A MeasurementContent builded from parameters
    */
   private async buildAPIMeasures(
     source: APIMeasureSource,
-    asset: KDocument<AssetContent> | null,
-    measure: DecodedMeasurement,
-  ): Promise<MeasureContent> {
-    // @todo check if measure type exists
-    let assetContext = null;
-    if (asset) {
+    asset: KDocument<AssetContent>,
+    measures: DecodedMeasurement[],
+    payloadUuids: string[],
+  ): Promise<MeasureContent[]> {
+    const apiMeasures: MeasureContent[] = [];
+
+    for (const measure of measures) {
+      let assetContext = null;
       const assetMeasureName = await this.findAssetMeasureNameFromModel(
         measure.measureName,
         asset._source.model,
@@ -553,17 +588,23 @@ export class MeasureService extends BaseService {
       if (assetMeasureName) {
         assetContext = AssetSerializer.measureContext(asset, assetMeasureName);
       }
+
+      const measureSource = apiSourceToOriginApi(
+        source,
+        measure.measureName,
+        payloadUuids,
+      );
+
+      apiMeasures.push({
+        asset: assetContext,
+        measuredAt: measure.measuredAt,
+        origin: measureSource,
+        type: measure.type,
+        values: measure.values,
+      });
     }
 
-    const measureSource = apiSourceToOriginApi(source, measure.measureName);
-
-    return {
-      asset: assetContext,
-      measuredAt: measure.measuredAt,
-      origin: measureSource,
-      type: measure.type,
-      values: measure.values,
-    };
+    return apiMeasures;
   }
 
   /**
