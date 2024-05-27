@@ -75,21 +75,42 @@ Method: POST
             content: [
               {
                 category: "metadata";
-                label?: string;
+                label?: {
+                  locales: {
+                    [locale: string]: {
+                      friendlyName: string;
+                      description: string;
+                    };
+                  };
+                };
                 metadataPath: string;
-                unit?: string;
+                suffix?: string;
               },
               {
                 category: "measure";
-                label?: string;
+                label?: {
+                  locales: {
+                    [locale: string]: {
+                      friendlyName: string;
+                      description: string;
+                    };
+                  };
+                };
                 measureSlot: string;
                 measureValuePath: string;
-                unit?: string;
+                suffix?: string;
               },
               {
-                category: "standard";
-                label?: string;
-                type: "link" | "image" | "text" | "title";
+                category: "static";
+                label?: {
+                  locales: {
+                    [locale: string]: {
+                      friendlyName: string;
+                      description: string;
+                    };
+                  };
+                };
+                type: "link" | "image" | "text" | "title" | "separator";
                 value: string;
               }
             ];

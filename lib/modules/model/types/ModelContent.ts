@@ -50,31 +50,44 @@ export interface MetadataGroups {
 
 export interface MetadataTooltipContent {
   category: "metadata";
-  label?: string;
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
   metadataPath: string;
-  unit?: string;
+  suffix?: string;
 }
 
 export interface MeasureTooltipContent {
   category: "measure";
-  label?: string;
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
   measureSlot: string;
   measureValuePath: string;
-  unit?: string;
+  suffix?: string;
 }
 
-export interface StandardTooltipContent {
-  category: "standard";
-  label?: string;
-  type: StandardTooltipContentType;
+export interface StaticTooltipContent {
+  category: "static";
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
+  type: StaticTooltipContentType;
   value: string;
 }
 
-export enum StandardTooltipContentType {
+export enum StaticTooltipContentType {
   link = "link",
   image = "image",
   text = "text",
   title = "title",
+  separator = "separator",
 }
 
 export interface TooltipModels {
@@ -83,7 +96,7 @@ export interface TooltipModels {
     content: (
       | MetadataTooltipContent
       | MeasureTooltipContent
-      | StandardTooltipContent
+      | StaticTooltipContent
     )[];
   };
 }
@@ -177,19 +190,41 @@ export interface AssetModelContent extends KDocumentContent {
      * @example
      * [
      *   "defaultTooltipKey": {
-     *     "tooltipLabel": "Default Tooltip Model",
+     *     "tooltipLabel": "Default tooltip model",
      *     "content": [
      *       {
-     *         "category": "metadata",
-     *         "label": "Container position",
-     *         "metadataPath": "geolocation"
+     *         "metadataPath": "geolocation",
+     *         "label": {
+     *           "locales": {
+     *             "en": {
+     *               "description": "",
+     *               "friendlyName": "Container position"
+     *             },
+     *             "fr": {
+     *               "description": "",
+     *               "friendlyName": "Position du conteneur"
+     *             }
+     *           }
+     *         },
+     *         "category": "metadata"
      *       },
      *       {
-     *         "category": "measure",
-     *         "label": "External temperature",
-     *         "measureSlot": "externalTemperature",
      *         "measureValuePath": "externalTemperature",
-     *         "unit": "°C"
+     *         "measureSlot": "externalTemperature",
+     *         "label": {
+     *           "locales": {
+     *             "en": {
+     *               "description": "",
+     *               "friendlyName": "External temperature"
+     *             },
+     *             "fr": {
+     *               "description": "",
+     *               "friendlyName": "Température extérieure"
+     *             }
+     *           }
+     *         },
+     *         "category": "measure",
+     *         "suffix": "°C"
      *       }
      *     ]
      *   }
