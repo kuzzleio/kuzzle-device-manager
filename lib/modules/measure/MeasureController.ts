@@ -5,6 +5,7 @@ import { isSourceAPI } from "./types/MeasureSources";
 import { IngestExternalMeasuresResult } from "./types/MeasureApi";
 import { getValidator } from "../shared/utils/AJValidator";
 import { DecodedMeasurement } from "./exports";
+import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 
 export class MeasureController {
   private measureService: MeasureService;
@@ -39,7 +40,10 @@ export class MeasureController {
           const valid = validator(measure.values);
 
           if (!valid) {
-            throw new BadRequestError(validator.errors);
+            throw new SchemaValidationError(
+              "Provided measures does not respect theirs respective schemas",
+              validator.errors,
+            );
           }
         }
       }
