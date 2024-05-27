@@ -5,7 +5,7 @@ interface AbstractMeasureSource {
   dataSourceId: string;
   targetIndexId: string;
   targetAssetId?: string;
-  customMetadata: Metadata;
+  metadata: Metadata;
   lastMeasuredAt?: number;
 }
 

@@ -6,13 +6,13 @@ export function toApiSource(
   dataSourceId: string,
   targetAssetId: string,
   targetIndexId: string,
-  customMetadata: Metadata = {},
+  metadata: Metadata = {},
   lastMeasuredAt?: number,
 ): APIMeasureSource {
   return {
-    customMetadata,
     dataSourceId,
     lastMeasuredAt,
+    metadata,
     targetAssetId,
     targetIndexId,
     type: "api",
@@ -27,6 +27,7 @@ export function apiSourceToOriginApi(
   return {
     _id: source.dataSourceId,
     measureName,
+    metadata: source.metadata,
     payloadUuids: payloadUuids,
     type: "api",
   };
@@ -38,13 +39,13 @@ export function toDeviceSource(
   model: string,
   targetAssetId: string,
   targetIndexId: string,
-  customMetadata: Metadata,
+  metadata: Metadata = {},
   lastMeasuredAt?: number,
 ): DeviceMeasureSource {
   return {
-    customMetadata,
     dataSourceId,
     lastMeasuredAt,
+    metadata,
     model,
     reference,
     targetAssetId,
@@ -63,6 +64,7 @@ export function deviceSourceToOriginDevice(
     _id: dataSourceId,
     deviceModel: model,
     measureName,
+    metadata: source.metadata,
     payloadUuids,
     reference: reference,
     type: "device",

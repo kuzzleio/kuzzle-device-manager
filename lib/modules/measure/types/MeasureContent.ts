@@ -18,6 +18,11 @@ interface AbstractMeasureOrigin {
    * Payload uuids that were used to create this measure.
    */
   payloadUuids: Array<string>;
+
+  /**
+   * Custom metadata provided by the user
+   */
+  metadata?: Metadata;
 }
 
 export interface MeasureOriginDevice extends AbstractMeasureOrigin {
