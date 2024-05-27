@@ -94,13 +94,35 @@ export const containerAssetDefinition: AssetModelDefinition = {
       content: [
         {
           category: "measure",
-          label: "External Temperature",
+          label: {
+            locales: {
+              en: {
+                friendlyName: "External Temperature",
+                description: ""
+              },
+              fr: {
+                friendlyName: "Température Externe",
+                description: ""
+              }
+            }
+          },
           measureSlot: "temperatureExt",
           measureValuePath: "temperatureExt"
         },
         {
           category: "measure",
-          label: "Internal Temperature",
+          label: {
+            locales: {
+              en: {
+                friendlyName: "Internal Temperature",
+                description: ""
+              },
+              fr: {
+                friendlyName: "Température Interne",
+                description: ""
+              }
+            }
+          },
           measureSlot: "temperatureInt",
           measureValuePath: "temperatureInt"
         }
