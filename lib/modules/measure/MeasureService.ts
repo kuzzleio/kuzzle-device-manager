@@ -165,11 +165,19 @@ export class MeasureService extends BaseService {
 
     if (targetIndexId) {
       promises.push(
-        this.sdk.document.create<MeasureContent>(
-          targetIndexId,
-          InternalCollection.MEASURES,
-          measures,
-        ),
+        this.sdk.document
+          .mCreate<MeasureContent>(
+            targetIndexId,
+            InternalCollection.MEASURES,
+            measures.map((measure) => ({ body: measure })),
+          )
+          .then(({ errors }) => {
+            if (errors.length !== 0) {
+              throw new BadRequestError(
+                `Cannot save measures: ${errors[0].reason}`,
+              );
+            }
+          }),
       );
 
       if (asset) {

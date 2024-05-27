@@ -29,20 +29,22 @@ export class MeasureController {
   ): Promise<IngestExternalMeasuresResult> {
     const source = request.getBodyObject("dataSource");
     source.type = "api";
-    const measure = request.getBodyObject("measure") as DecodedMeasurement;
+    const measures = request.getBodyArray("measures") as DecodedMeasurement[];
 
     if (isSourceAPI(source)) {
-      const validator = getValidator(measure.type);
+      for (const measure of measures) {
+        const validator = getValidator(measure.type);
 
-      if (validator) {
-        const valid = validator(measure.values);
+        if (validator) {
+          const valid = validator(measure.values);
 
-        if (!valid) {
-          throw new BadRequestError(validator.errors);
+          if (!valid) {
+            throw new BadRequestError(validator.errors);
+          }
         }
       }
 
-      await this.measureService.ingestAPI(source, [measure], []);
+      await this.measureService.ingestAPI(source, measures, []);
     } else {
       throw new BadRequestError(
         "Provided dataSource does not match the API source format",
