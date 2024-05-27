@@ -4,6 +4,7 @@ import rights from "../fixtures/rights";
 
 export async function loadSecurityDefault(sdk: Kuzzle) {
   sdk.jwt = null;
+  // TODO check how to load the fixtures in the CI to pass the test
   if (!(await sdk.auth.getCurrentUser())._id.includes("admin")) {
     await sdk.auth.login("local", {
       username: "admin",
