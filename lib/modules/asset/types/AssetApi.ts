@@ -1,9 +1,11 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
-import { MeasureContent } from "../../../modules/measure";
+import { DecodedMeasurement, MeasureContent } from "../../../modules/measure";
 import { Metadata } from "../../shared";
 
 import { AssetContent } from "./AssetContent";
+import { AssetsController } from "../AssetsController";
+import { APIMeasureSource } from "../../measure/types/MeasureSources";
 
 interface AssetsControllerRequest {
   controller: "device-manager/assets";
@@ -115,6 +117,18 @@ export type ApiAssetGetMeasuresResult = {
   measures: Array<KDocument<MeasureContent<JSONObject>>>;
   total: number;
 };
+
+export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
+  action: "ingestMeasures";
+
+  dataSource: APIMeasureSource;
+
+  body: {
+    measurements: DecodedMeasurement<JSONObject>[];
+  };
+}
+
+export type ApiAssetIngestMeasuresResult = void;
 
 /**
  * This action can be used only with WebSocket or POST
