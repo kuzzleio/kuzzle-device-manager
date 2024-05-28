@@ -58,8 +58,8 @@ describe("Device SCRUD", () => {
         color: "RED",
       },
       _kuzzle_info: {
-        author: "test-admin",
-        updater: "test-admin",
+        author: "-1",
+        updater: "-1",
       },
     });
 
