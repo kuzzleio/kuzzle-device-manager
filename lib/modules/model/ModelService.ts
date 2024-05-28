@@ -568,20 +568,35 @@ export class ModelService extends BaseService {
     const measuresUpdated =
       measures.length === 0 ? existingAsset._source.asset.measures : measures;
 
+    const assetModelContent: AssetModelContent = {
+      asset: {
+        defaultMetadata,
+        measures: measuresUpdated,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+        tooltipModels,
+      },
+      engineGroup,
+      type: "asset",
+    };
     const assetModel = {
       _id,
-      _source: {
-        asset: {
-          defaultMetadata,
-          measures: measuresUpdated,
-          metadataDetails,
-          metadataGroups,
-          metadataMappings,
-          model,
-          tooltipModels,
-        },
-      },
+      _source: assetModelContent,
     };
+
+    const conflicts = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { twin: { models: [assetModelContent], type: "asset" } },
+    );
+
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `New assets mappings are causing conflicts`,
+        conflicts,
+      );
+    }
 
     const endDocument = await this.updateDocument<AssetModelContent>(
       request,
