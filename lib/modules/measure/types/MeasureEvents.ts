@@ -52,9 +52,8 @@ export type EventMeasureProcessBefore = {
 
   args: [
     {
-      source?: MeasureSource;
       asset: KDocument<AssetContent>;
-      device?: KDocument<DeviceContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     },
   ];
@@ -89,9 +88,8 @@ export type TenantEventMeasureProcessBefore = {
 
   args: [
     {
-      source?: MeasureSource;
       asset: KDocument<AssetContent>;
-      device?: KDocument<DeviceContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     },
   ];
@@ -125,9 +123,8 @@ export type EventMeasurePersistBefore = {
 
   args: [
     {
-      source?: MeasureSource;
       asset: KDocument<AssetContent>;
-      device?: KDocument<DeviceContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     },
   ];
@@ -160,9 +157,8 @@ export type TenantEventMeasurePersistBefore = {
 
   args: [
     {
-      source?: MeasureSource;
       asset: KDocument<AssetContent>;
-      device?: KDocument<DeviceContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     },
   ];
@@ -194,9 +190,8 @@ export type EventMeasureProcessAfter = {
 
   args: [
     {
-      source?: MeasureSource;
       asset: KDocument<AssetContent>;
-      device?: KDocument<DeviceContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     },
   ];
@@ -227,9 +222,8 @@ export type TenantEventMeasureProcessAfter = {
 
   args: [
     {
-      source?: MeasureSource;
       asset: KDocument<AssetContent>;
-      device?: KDocument<DeviceContent>;
+      device: KDocument<DeviceContent>;
       measures: MeasureContent[];
     },
   ];

@@ -274,6 +274,9 @@ export class MeasureService extends BaseService {
         device._source;
 
       const asset = assetId ? await this.findAsset(engineId, assetId) : null;
+
+      const assetContent = asset?._source;
+
       const originalAssetMetadata: Metadata =
         asset === null
           ? {}
@@ -309,13 +312,32 @@ export class MeasureService extends BaseService {
        */
       await this.app.trigger<EventMeasureProcessBefore>(
         "device-manager:measures:process:before",
-        { asset, device, measures, source },
+        { asset, device, measures },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessBefore>(
           `engine:${engineId}:device-manager:measures:process:before`,
-          { asset, device, measures, source },
+          { asset, device, measures },
+        );
+      }
+
+      /**
+       * Here are the new process before triggers using sources
+       *
+       * Event before starting to process new measures.
+       *
+       * Useful to enrich measures before they are saved.
+       */
+      await this.app.trigger<EventMeasureProcessSourceBefore>(
+        "device-manager:measures:process:sourceBefore",
+        { asset: assetContent, measures, source },
+      );
+
+      if (engineId) {
+        await this.app.trigger<TenantEventMeasureProcessSourceBefore>(
+          `engine:${engineId}:device-manager:measures:process:sourceBefore`,
+          { asset: assetContent, measures, source },
         );
       }
 
@@ -332,14 +354,32 @@ export class MeasureService extends BaseService {
           asset,
           device,
           measures,
-          source,
         },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasurePersistBefore>(
           `engine:${engineId}:device-manager:measures:persist:before`,
-          { asset, device, measures, source },
+          { asset, device, measures },
+        );
+      }
+
+      /**
+       * Here are the new persist before triggers using sources
+       */
+      await this.app.trigger<EventMeasurePersistSourceBefore>(
+        "device-manager:measures:persist:sourceBefore",
+        {
+          asset: assetContent,
+          measures,
+          source,
+        },
+      );
+
+      if (engineId) {
+        await this.app.trigger<TenantEventMeasurePersistSourceBefore>(
+          `engine:${engineId}:device-manager:measures:persist:sourceBefore`,
+          { asset: assetContent, measures, source },
         );
       }
 
@@ -446,14 +486,38 @@ export class MeasureService extends BaseService {
           asset,
           device,
           measures,
-          source,
         },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessAfter>(
           `engine:${engineId}:device-manager:measures:process:after`,
-          { asset, device, measures, source },
+          { asset, device, measures },
+        );
+      }
+
+      /**
+       * Here are the new process after triggers using sources
+       *
+       * Event at the end of the measure process pipeline.
+       *
+       * Useful to trigger business rules like alerts
+       *
+       * @todo test this
+       */
+      await this.app.trigger<EventMeasureProcessSourceAfter>(
+        "device-manager:measures:process:sourceAfter",
+        {
+          asset: assetContent,
+          measures,
+          source,
+        },
+      );
+
+      if (engineId) {
+        await this.app.trigger<TenantEventMeasureProcessSourceAfter>(
+          `engine:${engineId}:device-manager:measures:process:sourceAfter`,
+          { asset: assetContent, measures, source },
         );
       }
     });
