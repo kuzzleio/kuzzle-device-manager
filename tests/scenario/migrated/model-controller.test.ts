@@ -475,12 +475,11 @@ describe("features/Model/Controller", () => {
     });
 
     expect(response.result).toMatchObject({
-      total: 8,
+      total: 7,
       models: [
         { _id: "model-measure-acceleration" },
         { _id: "model-measure-battery" },
         { _id: "model-measure-humidity" },
-        { _id: "model-measure-light" },
         { _id: "model-measure-movement" },
         { _id: "model-measure-position" },
         { _id: "model-measure-presence" },
