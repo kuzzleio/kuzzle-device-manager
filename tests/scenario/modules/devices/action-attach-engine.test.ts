@@ -21,7 +21,7 @@ describe("DevicesController:attachEngine", () => {
       _source: {
         engineId: "engine-kuzzle",
         _kuzzle_info: {
-          updater: "test-admin",
+          updater: "-1",
         },
       },
     });
@@ -32,7 +32,7 @@ describe("DevicesController:attachEngine", () => {
       _source: {
         engineId: "engine-kuzzle",
         _kuzzle_info: {
-          author: "test-admin",
+          author: "-1",
         },
       },
     });
