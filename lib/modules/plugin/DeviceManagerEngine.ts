@@ -152,6 +152,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
             );
           }
         }
+
+        return [];
       },
     );
   }

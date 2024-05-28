@@ -67,7 +67,7 @@ export class ModelsController {
         },
         updateAsset: {
           handler: this.updateAsset.bind(this),
-          http: [{ path: "device-manager/models/assets", verb: "put" }],
+          http: [{ path: "device-manager/models/assets/:model", verb: "put" }],
         },
         writeAsset: {
           handler: this.writeAsset.bind(this),
@@ -226,7 +226,6 @@ export class ModelsController {
   async updateAsset(
     request: KuzzleRequest,
   ): Promise<ApiModelUpdateAssetResult> {
-    const _id = request.getId();
     const engineGroup = request.getString("engineGroup");
     const model = request.getString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
@@ -237,7 +236,6 @@ export class ModelsController {
     const tooltipModels = request.getBodyObject("tooltipModels", {});
 
     const updatedAssetModel = await this.modelService.updateAsset(
-      _id,
       engineGroup,
       model,
       metadataMappings,
