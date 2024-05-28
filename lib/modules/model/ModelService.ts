@@ -538,7 +538,6 @@ export class ModelService extends BaseService {
    * Update an asset model
    */
   async updateAsset(
-    _id: string,
     engineGroup: string,
     model: string,
     metadataMappings: MetadataMappings,
@@ -555,16 +554,17 @@ export class ModelService extends BaseService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
+    const existingAsset = await this.getAsset(engineGroup, model);
+
     // The field must be deleted if an element of the table is to be deleted
     await this.sdk.document.deleteFields(
       this.config.adminIndex,
       InternalCollection.MODELS,
-      _id,
+      existingAsset._id,
       ["asset.tooltipModels"],
       { source: true },
     );
 
-    const existingAsset = await this.getAsset(engineGroup, model);
     const measuresUpdated =
       measures.length === 0 ? existingAsset._source.asset.measures : measures;
 
@@ -582,7 +582,7 @@ export class ModelService extends BaseService {
       type: "asset",
     };
     const assetModel = {
-      _id,
+      _id: existingAsset._id,
       _source: assetModelContent,
     };
 
@@ -593,7 +593,7 @@ export class ModelService extends BaseService {
 
     if (conflicts.length > 0) {
       throw new MappingsConflictsError(
-        `New assets mappings are causing conflicts`,
+        `Assets mappings are causing conflicts`,
         conflicts,
       );
     }

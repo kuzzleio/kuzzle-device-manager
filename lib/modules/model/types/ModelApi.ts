@@ -76,7 +76,6 @@ export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;
 export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
   action: "updateAsset";
 
-  _id: string;
   engineGroup: string;
   model: string;
 
