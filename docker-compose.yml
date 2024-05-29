@@ -30,7 +30,7 @@ services:
       - esdata01:/usr/share/elasticsearch/data
 
   kuzzle:
-    image: kuzzleio/kuzzle-runner:18
+    image: kuzzleio/kuzzle-runner:20
     restart: unless-stopped
     command: "bash /docker/start-backend.sh"
     profiles: ["backend"]
