@@ -121,9 +121,11 @@ export type ApiAssetGetMeasuresResult = {
 export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
   action: "ingestMeasures";
 
-  dataSource: APIMeasureSource;
+  indexId: string;
+  assetId: string;
 
   body: {
+    dataSource: APIMeasureSource;
     measurements: DecodedMeasurement<JSONObject>[];
   };
 }

@@ -34,6 +34,8 @@ import {
 import { APIMeasureSource, isSourceAPI } from "./types/MeasureSources";
 import { apiSourceToOriginApi, toDeviceSource } from "./MeasureSourcesBuilder";
 import { AskModelAssetGet } from "../model";
+import { APIMeasureTarget, isTargetAPI } from "./types/MeasureTarget";
+import { toDeviceTarget } from "./MeasureTargetBuilder";
 
 export class MeasureService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -47,9 +49,10 @@ export class MeasureService extends BaseService {
           return;
         }
 
-        if (isSourceAPI(payload.source)) {
+        if (isSourceAPI(payload.source) && isTargetAPI(payload.target)) {
           await this.ingestAPI(
             payload.source,
+            payload.target,
             payload.measurements,
             payload.payloadUuids,
           );
@@ -86,27 +89,27 @@ export class MeasureService extends BaseService {
    */
   public async ingestAPI(
     source: APIMeasureSource,
+    target: APIMeasureTarget,
     measurements: DecodedMeasurement<JSONObject>[],
     payloadUuids: string[],
   ) {
-    const { dataSourceId: sourceId, targetIndexId, targetAssetId } = source;
+    const { dataSourceId } = source;
+    const { indexId, assetId } = target;
 
     if (!measurements) {
       this.app.log.warn(
-        `No measurements provided for "${sourceId}" API measures ingest`,
+        `No measurements provided for "${dataSourceId}" API measures ingest`,
       );
       return;
     }
 
-    const assetDocument = await this.findAsset(targetIndexId, targetAssetId);
+    const assetDocument = await this.findAsset(indexId, assetId);
 
     if (!assetDocument) {
-      throw new BadRequestError(
-        `"${source.targetAssetId}" is not a valid target asset ID`,
-      );
+      throw new BadRequestError(`"${assetId}" is not a valid target asset ID`);
     }
 
-    const { _id: assetId, _source: asset } = assetDocument;
+    const asset = assetDocument._source;
 
     const originalAssetMetadata: Metadata = asset
       ? JSON.parse(JSON.stringify(asset.metadata))
@@ -117,6 +120,7 @@ export class MeasureService extends BaseService {
       assetDocument,
       measurements,
       payloadUuids,
+      target.engineGroup,
     );
 
     if (asset) {
@@ -130,13 +134,13 @@ export class MeasureService extends BaseService {
      */
     await this.app.trigger<EventMeasureProcessSourceBefore>(
       "device-manager:measures:process:sourceBefore",
-      { asset, measures, source },
+      { asset, measures, source, target },
     );
 
-    if (targetIndexId) {
+    if (indexId) {
       await this.app.trigger<TenantEventMeasureProcessSourceBefore>(
-        `engine:${targetIndexId}:device-manager:measures:process:sourceBefore`,
-        { asset, measures, source },
+        `engine:${indexId}:device-manager:measures:process:sourceBefore`,
+        { asset, measures, source, target },
       );
     }
 
@@ -147,27 +151,23 @@ export class MeasureService extends BaseService {
 
     await this.app.trigger<EventMeasurePersistSourceBefore>(
       "device-manager:measures:persist:sourceBefore",
-      {
-        asset,
-        measures,
-        source,
-      },
+      { asset, measures, source, target },
     );
 
-    if (targetIndexId) {
+    if (indexId) {
       await this.app.trigger<TenantEventMeasurePersistSourceBefore>(
-        `engine:${targetIndexId}:device-manager:measures:persist:sourceBefore`,
-        { asset, measures, source },
+        `engine:${indexId}:device-manager:measures:persist:sourceBefore`,
+        { asset, measures, source, target },
       );
     }
 
     const promises: Promise<any>[] = [];
 
-    if (targetIndexId) {
+    if (indexId) {
       promises.push(
         this.sdk.document
           .mCreate<MeasureContent>(
-            targetIndexId,
+            indexId,
             InternalCollection.MEASURES,
             measures.map((measure) => ({ body: measure })),
           )
@@ -187,7 +187,7 @@ export class MeasureService extends BaseService {
         promises.push(
           this.sdk.document
             .update<AssetContent>(
-              targetIndexId,
+              indexId,
               InternalCollection.ASSETS,
               assetId,
               asset,
@@ -205,7 +205,7 @@ export class MeasureService extends BaseService {
         promises.push(
           historizeAssetStates(
             assetStates,
-            targetIndexId,
+            indexId,
             originalAssetMetadata,
             asset.metadata,
           ),
@@ -224,17 +224,13 @@ export class MeasureService extends BaseService {
      */
     await this.app.trigger<EventMeasureProcessSourceAfter>(
       "device-manager:measures:process:sourceAfter",
-      {
-        asset,
-        measures,
-        source,
-      },
+      { asset, measures, source, target },
     );
 
-    if (targetIndexId) {
+    if (indexId) {
       await this.app.trigger<TenantEventMeasureProcessSourceAfter>(
-        `engine:${targetIndexId}:device-manager:measures:process:sourceAfter`,
-        { asset, measures, source },
+        `engine:${indexId}:device-manager:measures:process:sourceAfter`,
+        { asset, measures, source, target },
       );
     }
   }
@@ -299,10 +295,13 @@ export class MeasureService extends BaseService {
         device._id,
         reference,
         model,
-        assetId ?? "",
-        engineId,
         device._source.metadata,
         lastMeasuredAt,
+      );
+
+      const target = toDeviceTarget(
+        device._source.engineId,
+        device._source.assetId ?? undefined,
       );
 
       /**
@@ -331,13 +330,13 @@ export class MeasureService extends BaseService {
        */
       await this.app.trigger<EventMeasureProcessSourceBefore>(
         "device-manager:measures:process:sourceBefore",
-        { asset: assetContent, measures, source },
+        { asset: assetContent, measures, source, target },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessSourceBefore>(
           `engine:${engineId}:device-manager:measures:process:sourceBefore`,
-          { asset: assetContent, measures, source },
+          { asset: assetContent, measures, source, target },
         );
       }
 
@@ -369,17 +368,13 @@ export class MeasureService extends BaseService {
        */
       await this.app.trigger<EventMeasurePersistSourceBefore>(
         "device-manager:measures:persist:sourceBefore",
-        {
-          asset: assetContent,
-          measures,
-          source,
-        },
+        { asset: assetContent, measures, source, target },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasurePersistSourceBefore>(
           `engine:${engineId}:device-manager:measures:persist:sourceBefore`,
-          { asset: assetContent, measures, source },
+          { asset: assetContent, measures, source, target },
         );
       }
 
@@ -507,17 +502,13 @@ export class MeasureService extends BaseService {
        */
       await this.app.trigger<EventMeasureProcessSourceAfter>(
         "device-manager:measures:process:sourceAfter",
-        {
-          asset: assetContent,
-          measures,
-          source,
-        },
+        { asset: assetContent, measures, source, target },
       );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessSourceAfter>(
           `engine:${engineId}:device-manager:measures:process:sourceAfter`,
-          { asset: assetContent, measures, source },
+          { asset: assetContent, measures, source, target },
         );
       }
     });
@@ -647,6 +638,7 @@ export class MeasureService extends BaseService {
     asset: KDocument<AssetContent>,
     measures: DecodedMeasurement[],
     payloadUuids: string[],
+    engineGroup?: string,
   ): Promise<MeasureContent[]> {
     const apiMeasures: MeasureContent[] = [];
 
@@ -655,6 +647,7 @@ export class MeasureService extends BaseService {
       const assetMeasureName = await this.findAssetMeasureNameFromModel(
         measure.measureName,
         asset._source.model,
+        engineGroup,
       );
 
       if (assetMeasureName) {
@@ -769,11 +762,12 @@ export class MeasureService extends BaseService {
   private async findAssetMeasureNameFromModel(
     measureType: string,
     model: string,
+    engineGroup = "commons",
   ): Promise<string | null> {
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
       {
-        engineGroup: "commons",
+        engineGroup,
         model: model,
       },
     );

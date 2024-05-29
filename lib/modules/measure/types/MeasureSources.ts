@@ -3,8 +3,6 @@ import { Metadata } from "../../shared";
 interface AbstractMeasureSource {
   type: string;
   dataSourceId: string;
-  targetIndexId: string;
-  targetAssetId?: string;
   metadata: Metadata;
   lastMeasuredAt?: number;
 }
@@ -17,7 +15,6 @@ export interface DeviceMeasureSource extends AbstractMeasureSource {
 
 export interface APIMeasureSource extends AbstractMeasureSource {
   type: "api";
-  targetAssetId: string;
 }
 
 export function isSource(source: any): source is AbstractMeasureSource {
@@ -25,11 +22,14 @@ export function isSource(source: any): source is AbstractMeasureSource {
     return false;
   }
 
+  if (source.lastMeasuredAt && typeof source.lastMeasuredAt !== "number") {
+    return false;
+  }
+
   return (
     typeof source.type === "string" &&
     typeof source.dataSourceId === "string" &&
-    typeof source.targetIndexId === "string" &&
-    typeof source.customMetadata === "object"
+    typeof source.metadata === "object"
   );
 }
 
@@ -38,15 +38,13 @@ export function isSourceDevice(source: any): source is DeviceMeasureSource {
     return false;
   }
 
-  return source.reference === "string" && source.model === "string";
+  return (
+    typeof source.reference === "string" && typeof source.model === "string"
+  );
 }
 
 export function isSourceAPI(source: any): source is APIMeasureSource {
-  if (!isSource(source) && source.type !== "api") {
-    return false;
-  }
-
-  return typeof source.targetAssetId === "string";
+  return isSource(source) && source.type === "api";
 }
 
 export type MeasureSource = DeviceMeasureSource | APIMeasureSource;

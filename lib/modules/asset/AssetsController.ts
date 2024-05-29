@@ -27,10 +27,11 @@ import {
   ApiAssetUpdateResult,
   ApiAssetMigrateTenantResult,
 } from "./types/AssetApi";
-import { isSourceAPI } from "../measure/types/MeasureSources";
+import { APIMeasureSource, isSourceAPI } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { ask } from "kuzzle-plugin-commons";
+import { toAPITarget } from "../measure/MeasureTargetBuilder";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -258,14 +259,15 @@ export class AssetsController {
   async ingestMeasures(request: KuzzleRequest) {
     const assetId = request.getId();
     const indexId = request.getString("engineId");
-    const source = request.getBodyObject("dataSource");
+    const engineGroup = request.getString("engineGroup", "commons");
+    const source = request.getBodyObject("dataSource") as APIMeasureSource;
     source.type = "api";
-    source.targetAssetId = assetId;
-    source.targetIndexId = indexId;
 
     const measurements = request.getBodyArray(
       "measurements",
     ) as DecodedMeasurement<JSONObject>[];
+
+    const target = toAPITarget(indexId, assetId, engineGroup);
 
     if (isSourceAPI(source)) {
       for (const measure of measurements) {
@@ -277,7 +279,7 @@ export class AssetsController {
           if (!valid) {
             throw new SchemaValidationError(
               "Provided measures does not respect theirs respective schemas",
-              validator.errors,
+              validator.errors ?? [],
             );
           }
         }
@@ -289,6 +291,7 @@ export class AssetsController {
           measurements,
           payloadUuids: [],
           source,
+          target,
         },
       );
     } else {

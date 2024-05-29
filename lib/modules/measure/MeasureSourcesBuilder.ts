@@ -4,8 +4,6 @@ import { APIMeasureSource, DeviceMeasureSource } from "./types/MeasureSources";
 
 export function toApiSource(
   dataSourceId: string,
-  targetAssetId: string,
-  targetIndexId: string,
   metadata: Metadata = {},
   lastMeasuredAt?: number,
 ): APIMeasureSource {
@@ -13,8 +11,6 @@ export function toApiSource(
     dataSourceId,
     lastMeasuredAt,
     metadata,
-    targetAssetId,
-    targetIndexId,
     type: "api",
   };
 }
@@ -37,8 +33,6 @@ export function toDeviceSource(
   dataSourceId: string,
   reference: string,
   model: string,
-  targetAssetId: string,
-  targetIndexId: string,
   metadata: Metadata = {},
   lastMeasuredAt?: number,
 ): DeviceMeasureSource {
@@ -48,8 +42,6 @@ export function toDeviceSource(
     metadata,
     model,
     reference,
-    targetAssetId,
-    targetIndexId,
     type: "device",
   };
 }

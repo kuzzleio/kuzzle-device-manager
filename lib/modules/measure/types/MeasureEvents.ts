@@ -6,6 +6,7 @@ import { Metadata } from "../../../modules/shared";
 
 import { DecodedMeasurement, MeasureContent } from "./MeasureContent";
 import { MeasureSource } from "./MeasureSources";
+import { MeasureTarget } from "./MeasureTarget";
 
 /**
  * @internal
@@ -33,6 +34,7 @@ export type AskMeasureSourceIngest = {
 
   payload: {
     source: MeasureSource;
+    target: MeasureTarget;
     measurements: DecodedMeasurement<JSONObject>[];
     payloadUuids: string[];
   };
@@ -70,6 +72,7 @@ export type EventMeasureProcessSourceBefore = {
   args: [
     {
       source: MeasureSource;
+      target: MeasureTarget;
       asset?: AssetContent;
       measures: MeasureContent[];
     },
@@ -106,6 +109,7 @@ export type TenantEventMeasureProcessSourceBefore = {
   args: [
     {
       source: MeasureSource;
+      target: MeasureTarget;
       asset?: AssetContent;
       measures: MeasureContent[];
     },
@@ -140,6 +144,7 @@ export type EventMeasurePersistSourceBefore = {
   args: [
     {
       source: MeasureSource;
+      target: MeasureTarget;
       asset?: AssetContent;
       measures: MeasureContent[];
     },
@@ -174,6 +179,7 @@ export type TenantEventMeasurePersistSourceBefore = {
   args: [
     {
       source: MeasureSource;
+      target: MeasureTarget;
       asset?: AssetContent;
       measures: MeasureContent[];
     },
@@ -206,6 +212,7 @@ export type EventMeasureProcessSourceAfter = {
   args: [
     {
       source: MeasureSource;
+      target: MeasureTarget;
       asset?: AssetContent;
       measures: MeasureContent[];
     },
@@ -239,6 +246,7 @@ export type TenantEventMeasureProcessSourceAfter = {
   args: [
     {
       source: MeasureSource;
+      target: MeasureTarget;
       asset?: AssetContent;
       measures: MeasureContent[];
     },
