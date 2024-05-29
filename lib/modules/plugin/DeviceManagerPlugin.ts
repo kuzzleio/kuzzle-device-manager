@@ -280,17 +280,17 @@ export class DeviceManagerPlugin extends Plugin {
             properties: {},
           },
         },
-        asset: {
+        assets: {
           name: InternalCollection.ASSETS,
           mappings: assetsMappings,
         },
-        assetGroup: {
+        assetGroups: {
           name: InternalCollection.ASSETS_GROUPS,
         },
         assetHistory: {
           name: InternalCollection.ASSETS_HISTORY,
         },
-        device: {
+        devices: {
           name: InternalCollection.DEVICES,
           mappings: devicesMappings,
         },
@@ -448,7 +448,10 @@ export class DeviceManagerPlugin extends Plugin {
         });
 
       await this.sdk.collection
-        .create(this.config.adminIndex, "payloads", this.getPayloadsMappings())
+        .create(this.config.adminIndex, "payloads", {
+          mappings: this.getPayloadsMappings(),
+          settings: this.config.adminCollections.payloads.settings,
+        })
         .catch((error) => {
           throw keepStack(
             error,
