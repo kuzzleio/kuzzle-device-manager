@@ -121,8 +121,9 @@ export type ApiAssetGetMeasuresResult = {
 export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
   action: "ingestMeasures";
 
-  indexId: string;
+  engineId: string;
   assetId: string;
+  engineGroup?: string;
 
   body: {
     dataSource: APIMeasureSource;
