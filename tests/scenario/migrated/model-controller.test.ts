@@ -97,9 +97,10 @@ describe("features/Model/Controller", () => {
     });
 
     expect(response.result).toMatchObject({
-      total: 3,
+      total: 4,
       models: [
         { _id: "model-asset-Container" },
+        { _id: "model-asset-MagicHouse"},
         { _id: "model-asset-Plane" },
         { _id: "model-asset-Warehouse" },
       ],
@@ -475,11 +476,12 @@ describe("features/Model/Controller", () => {
     });
 
     expect(response.result).toMatchObject({
-      total: 7,
+      total: 8,
       models: [
         { _id: "model-measure-acceleration" },
         { _id: "model-measure-battery" },
         { _id: "model-measure-humidity" },
+        { _id: "model-measure-magicule" },
         { _id: "model-measure-movement" },
         { _id: "model-measure-position" },
         { _id: "model-measure-presence" },
