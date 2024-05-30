@@ -32,7 +32,7 @@ import { getValidator } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { ask } from "kuzzle-plugin-commons";
 import { toAPITarget } from "../measure/MeasureTargetBuilder";
-import { ErrorObject } from "ajv";
+import { MeasureValidationError } from "../measure/types/MeasureValidationError";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -271,7 +271,7 @@ export class AssetsController {
     const target = toAPITarget(indexId, assetId, engineGroup);
 
     if (isSourceAPI(source)) {
-      const errors: ErrorObject[] = [];
+      const errors: MeasureValidationError[] = [];
       for (const measure of measurements) {
         const validator = getValidator(measure.type);
 
@@ -279,7 +279,10 @@ export class AssetsController {
           const valid = validator(measure.values);
 
           if (!valid) {
-            errors.push(...validator.errors);
+            errors.push({
+              measureName: measure.measureName,
+              validationErrors: validator.errors ?? [],
+            });
           }
         }
       }
