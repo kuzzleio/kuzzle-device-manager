@@ -19,6 +19,7 @@ import {
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
 import { JSONObject } from "kuzzle-sdk";
+import { addSchemaToCache } from "../shared/utils/AJValidator";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -131,8 +132,17 @@ export class ModelsRegister {
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
+    const validationSchema = measureDefinition.validationSchema;
+    if (validationSchema) {
+      addSchemaToCache(type, validationSchema);
+    }
+
     this.measureModels.push({
-      measure: { type, valuesMappings: measureDefinition.valuesMappings },
+      measure: {
+        type,
+        validationSchema: validationSchema,
+        valuesMappings: measureDefinition.valuesMappings,
+      },
       type: "measure",
     });
   }

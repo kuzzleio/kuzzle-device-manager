@@ -211,7 +211,7 @@ export class DeviceManagerPlugin extends Plugin {
        * Register a new measure
        *
        * @param name Name of the measure
-       * @param valuesMappings Mappings for the measure values
+       * @param measureDefinition Values of the measure
        *
        * @example
        * ```
