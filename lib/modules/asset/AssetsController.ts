@@ -32,6 +32,7 @@ import { getValidator } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { ask } from "kuzzle-plugin-commons";
 import { toAPITarget } from "../measure/MeasureTargetBuilder";
+import { ErrorObject } from "ajv";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -270,6 +271,7 @@ export class AssetsController {
     const target = toAPITarget(indexId, assetId, engineGroup);
 
     if (isSourceAPI(source)) {
+      const errors: ErrorObject[] = [];
       for (const measure of measurements) {
         const validator = getValidator(measure.type);
 
@@ -277,12 +279,16 @@ export class AssetsController {
           const valid = validator(measure.values);
 
           if (!valid) {
-            throw new SchemaValidationError(
-              "Provided measures does not respect theirs respective schemas",
-              validator.errors ?? [],
-            );
+            errors.push(...validator.errors);
           }
         }
+      }
+
+      if (errors.length > 0) {
+        throw new SchemaValidationError(
+          "Provided measures does not respect theirs respective schemas",
+          errors,
+        );
       }
 
       await ask<AskMeasureSourceIngest>(

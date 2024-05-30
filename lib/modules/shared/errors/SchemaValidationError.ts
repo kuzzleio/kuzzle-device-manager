@@ -1,9 +1,9 @@
-import { JSONObject, KuzzleError } from "kuzzle";
+import { BadRequestError, JSONObject } from "kuzzle";
 
-export class SchemaValidationError extends KuzzleError {
+export class SchemaValidationError extends BadRequestError {
   private errors: JSONObject;
   constructor(message: string, errors: JSONObject, id?: string, code?: number) {
-    super(message, 400, id, code);
+    super(message, id, code);
     this.errors = errors;
   }
 

@@ -318,7 +318,7 @@ export class ModelService extends BaseService {
   async writeMeasure(
     type: string,
     valuesMappings: JSONObject,
-    measureSchema?: SchemaObject,
+    validationSchema?: SchemaObject,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
       measure: { type, valuesMappings },
@@ -337,10 +337,10 @@ export class ModelService extends BaseService {
       );
     }
 
-    if (measureSchema) {
+    if (validationSchema) {
       try {
-        addSchemaToCache(type, measureSchema);
-        modelContent.measure.validationSchema = measureSchema;
+        addSchemaToCache(type, validationSchema);
+        modelContent.measure.validationSchema = validationSchema;
       } catch (error) {
         throw new BadRequestError(error);
       }
