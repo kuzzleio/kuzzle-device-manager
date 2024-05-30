@@ -10,6 +10,8 @@ import { DummyTempDecoder, DummyTempPositionDecoder } from "./decoders";
 import { TestsController } from "./tests/controller";
 import { registerTestPipes } from "./tests/pipes";
 import { accelerationMeasureDefinition } from "./measures/AccelerationMeasure";
+import { magicHouseAssetDefinition } from "./assets/MagicHouse";
+import { magiculeMeasureDefinition } from "./measures/Magicule";
 
 const app = new Backend("kuzzle");
 
@@ -54,7 +56,14 @@ deviceManager.models.registerAsset(
   warehouseAssetDefinition
 );
 
+deviceManager.models.registerAsset(
+  "commons",
+  "MagicHouse",
+  magicHouseAssetDefinition
+)
+
 deviceManager.models.registerMeasure("acceleration", accelerationMeasureDefinition);
+deviceManager.models.registerMeasure("magicule", magiculeMeasureDefinition)
 
 registerTestPipes(app);
 
