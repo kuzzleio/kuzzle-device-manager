@@ -175,6 +175,15 @@ const assetAyseGrouped2 = {
 };
 const assetAyseGroupedId2 = `${assetAyseGrouped2.model}-${assetAyseGrouped2.reference}`;
 
+const assetAyseDebug1 = {
+  model: "MagicHouse",
+  reference: "debug1",
+  linkedDevices: [],
+  metadata: [],
+};
+
+const assetAyseDebug1Id = `${assetAyseDebug1.model}-${assetAyseDebug1.reference}`;
+
 export default {
   "device-manager": {
     devices: [
@@ -240,6 +249,9 @@ export default {
 
       { index: { _id: assetAyseWarehouseLinkedId } },
       assetAyseWarehouseLinked,
+
+      { index: { _id: assetAyseDebug1Id } },
+      assetAyseDebug1,
     ],
     ...assetGroupFixtures,
   },
