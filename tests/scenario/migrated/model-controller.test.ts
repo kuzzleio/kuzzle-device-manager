@@ -699,4 +699,39 @@ describe("features/Model/Controller", () => {
       }
     });
   });
+
+  it("Should not allow creating measure model with incorrect validation schemas", async () => {
+     async function query() {
+      return sdk.query<ApiModelWriteMeasureRequest>({
+        controller: "device-manager/models",
+        action: "writeMeasure",
+        body: {
+          type: "falseMagic",
+          valuesMappings: {
+            falsy: { type: "integer" }
+          },
+          validationSchema: {
+            type: "object",
+            properties: {
+              magicule: { type: "magicString" },
+            },
+            required: ["magicule"],
+            additionalProperties: false,
+          },
+        }
+      });
+     }
+
+     await expect(query).rejects.toThrow();
+
+     const total = await sdk.document.count("device-manager", "models", {
+      query: {
+        equals: {
+          "measure.type": "falseMagic"
+        }
+      }
+     }, { lang: "koncorde" });
+
+     expect(total).toBe(0);
+  })
 });

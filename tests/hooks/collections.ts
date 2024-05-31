@@ -21,6 +21,7 @@ async function deleteModels(sdk: Kuzzle) {
           "model-device-Zigbee",
           "model-device-Enginko",
           "model-asset-TestHouse",
+          "model-measure-falseMagic",
         ],
       },
     },
