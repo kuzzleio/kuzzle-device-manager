@@ -5,23 +5,24 @@ import { JSONObject } from "kuzzle-sdk";
  *
  * @example
  * {
- *    locales: {
- *              en:{
- *                  name:"Temperature",
- *                  unit:"°C"
- *              },fr:{
- *                  name:"Température",
- *                  unit:"°C"
- *              }
- *    },
- * }
+ *  en: {
+ *    friendlyName: "Temperature",
+ *    unit: "°C",
+ *  },
+ *  fr: {
+ *    friendlyName: "Température",
+ *    unit: "°C",
+ *  },
+ *}
  */
+
 interface MeasureLocales {
   [localeString: string]: {
     friendlyName: string;
     unit?: string;
   };
 }
+
 export interface MeasureValuesDetails {
   [valueName: string]: MeasureLocales;
 }
@@ -29,21 +30,23 @@ export interface MeasureValuesDetails {
  * Represents a measure definition registered by the Device Manager
  *
  * @example
- * {
- *   valuesMappings: { temperature: { type: 'float' } },
- *   valuesDetails: {
- *        temperature:{
- *              en:{
- *                  name:"Temperature",
- *                  unit:"°C"
- *              },fr:{
- *                  name:"Température",
- *                  unit:"°C"
- *              }
- *         }
- *    },
- * }
+ *{
+ * valuesMappings: { temperature: { type: "float" } },
+ * valuesDetails: {
+ *   temperature: {
+ *     en: {
+ *       friendlyName: "Temperature",
+ *       unit: "°C",
+ *     },
+ *     fr: {
+ *       friendlyName: "Température",
+ *       unit: "°C",
+ *     },
+ *   },
+ * },
+ *}
  */
+
 export interface MeasureDefinition {
   /**
    * Mappings for the measurement values in order to index the fields
