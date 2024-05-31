@@ -30,7 +30,7 @@ export const ajv = addFormats(new Ajv({}), [
  * @returns The newly created validator for the schema
  * @throws If the provided schema is not valid
  */
-export async function addSchemaToCache(schemaID: string, schema: SchemaObject) {
+export function addSchemaToCache(schemaID: string, schema: SchemaObject) {
   ajv.removeSchema(schemaID);
   return ajv.addSchema(schema, schemaID);
 }

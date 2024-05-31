@@ -175,6 +175,15 @@ export class ModelService extends BaseService {
           conflicts,
         );
       }
+
+      try {
+        for (const measure of measures) {
+          const { type, validationSchema } = measure.measure;
+          addSchemaToCache(type, validationSchema);
+        }
+      } catch (error) {
+        throw new BadRequestError(error);
+      }
     }
   }
 
