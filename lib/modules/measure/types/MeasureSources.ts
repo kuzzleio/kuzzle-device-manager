@@ -3,7 +3,7 @@ import { Metadata } from "../../shared";
 interface AbstractMeasureSource {
   type: string;
   dataSourceId: string;
-  metadata: Metadata;
+  metadata?: Metadata;
   lastMeasuredAt?: number;
 }
 
@@ -22,14 +22,16 @@ export function isSource(source: any): source is AbstractMeasureSource {
     return false;
   }
 
+  if (source.metadata && typeof source.metadata !== "object") {
+    return false;
+  }
+
   if (source.lastMeasuredAt && typeof source.lastMeasuredAt !== "number") {
     return false;
   }
 
   return (
-    typeof source.type === "string" &&
-    typeof source.dataSourceId === "string" &&
-    typeof source.metadata === "object"
+    typeof source.type === "string" && typeof source.dataSourceId === "string"
   );
 }
 

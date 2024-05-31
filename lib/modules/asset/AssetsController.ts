@@ -261,7 +261,7 @@ export class AssetsController {
     const assetId = request.getId();
     const indexId = request.getString("engineId");
     const engineGroup = request.getString("engineGroup", "commons");
-    const source = request.getBodyObject("dataSource") as APIMeasureSource;
+    const source = request.getBodyObject("dataSource");
     source.type = "api";
 
     const measurements = request.getBodyArray(

@@ -4,7 +4,7 @@ import { APIMeasureSource, DeviceMeasureSource } from "./types/MeasureSources";
 
 export function toApiSource(
   dataSourceId: string,
-  metadata: Metadata = {},
+  metadata?: Metadata,
   lastMeasuredAt?: number,
 ): APIMeasureSource {
   return {
@@ -33,7 +33,7 @@ export function toDeviceSource(
   dataSourceId: string,
   reference: string,
   model: string,
-  metadata: Metadata = {},
+  metadata?: Metadata,
   lastMeasuredAt?: number,
 ): DeviceMeasureSource {
   return {
