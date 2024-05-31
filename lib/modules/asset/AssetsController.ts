@@ -27,12 +27,13 @@ import {
   ApiAssetUpdateResult,
   ApiAssetMigrateTenantResult,
 } from "./types/AssetApi";
-import { APIMeasureSource, isSourceAPI } from "../measure/types/MeasureSources";
+import { isSourceAPI } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { ask } from "kuzzle-plugin-commons";
 import { toAPITarget } from "../measure/MeasureTargetBuilder";
 import { MeasureValidationError } from "../measure/types/MeasureValidationError";
+import { toApiSource } from "../measure/MeasureSourcesBuilder";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -95,6 +96,15 @@ export class AssetsController {
           http: [
             {
               path: "device-manager/:engineId/assets/:_id/ingestMeasures",
+              verb: "post",
+            },
+          ],
+        },
+        ingestMeasure: {
+          handler: this.ingestMeasure.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/ingestMeasure/:measureType/:dataSourceId",
               verb: "post",
             },
           ],
@@ -308,6 +318,53 @@ export class AssetsController {
         "Provided dataSource does not match the API source format",
       );
     }
+  }
+
+  async ingestMeasure(request: KuzzleRequest) {
+    const assetId = request.getId();
+    const indexId = request.getString("engineId");
+    const type = request.getString("measureType");
+    const engineGroup = request.getString("engineGroup", "commons");
+    const sourceId = request.getString("dataSourceId");
+    const sourceMetadata = request.getBodyObject("dataSourceMetadata", {});
+
+    const source = toApiSource(sourceId, sourceMetadata);
+
+    const measureName = request.getBodyString("measureName");
+    const measuredAt = request.getBodyNumber("measuredAt");
+    const values = request.getBodyObject("values");
+
+    const measurement = {
+      measureName,
+      measuredAt,
+      type,
+      values,
+    } satisfies DecodedMeasurement<JSONObject>;
+
+    const target = toAPITarget(indexId, assetId, engineGroup);
+
+    const validator = getValidator(type);
+
+    if (validator) {
+      const valid = validator(values);
+
+      if (!valid) {
+        throw new SchemaValidationError(
+          "Provided measures does not respect theirs respective schemas",
+          {
+            measureName: measureName,
+            validationErrors: validator.errors ?? [],
+          },
+        );
+      }
+    }
+
+    await ask<AskMeasureSourceIngest>("device-manager:measures:sourceIngest", {
+      measurements: [measurement],
+      payloadUuids: [],
+      source,
+      target,
+    });
   }
 
   async exportMeasures(request: KuzzleRequest) {
