@@ -3,14 +3,12 @@ import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 import { NamedMeasures } from "../../../modules/decoder";
 
 import { MeasureDefinition } from "../../measure";
-import { SchemaObject } from "ajv";
 
 export interface MeasureModelContent extends KDocumentContent {
   type: "measure";
 
   measure: MeasureDefinition & {
     type: string;
-    validationSchema?: SchemaObject;
   };
 }
 interface MetadataProperty {
