@@ -23,28 +23,14 @@ describe("AssetsController:migrateTenant", () => {
     sdk.disconnect();
   });
 
-  it("should fail if the user is not an admin", async () => {
-    await expect(
-      sdk.query({
-        controller: "device-manager/assets",
-        action: "migrateTenant",
-        engineId: "engine-ayse",
-        body: {
-          assetsList: ["Container-linked1", "Container-linked2"],
-          newEngineId: "engine-kuzzle",
-        },
-      }),
-    ).rejects.toThrow("User -1 is not authorized to migrate assets");
-  });
-
   it("should fail if both engine does not belong to same group", async () => {
-    // We connect only here to avoid failing the first test
-    // If we do it in the beforeAll hook, the first test will fail
-    // And if we run it each time we might encounter  "Too many login attempts per second"
     await sdk.auth.login("local", {
       username: "test-admin",
       password: "password",
     });
+    // We connect only here to avoid failing the first test
+    // If we do it in the beforeAll hook, the first test will fail
+    // And if we run it each time we might encounter  "Too many login attempts per second"
 
     await expect(
       sdk.query({
@@ -157,5 +143,22 @@ describe("AssetsController:migrateTenant", () => {
 
     expect(response.status).toBe(200);
     expect(assets.result.hits).toHaveLength(2);
+  });
+  it("should fail if the user is not an admin", async () => {
+    await sdk.auth.login("local", {
+      username: "default-user",
+      password: "password",
+    });
+    await expect(
+      sdk.query({
+        controller: "device-manager/assets",
+        action: "migrateTenant",
+        engineId: "engine-ayse",
+        body: {
+          assetsList: ["Container-linked1", "Container-linked2"],
+          newEngineId: "engine-kuzzle",
+        },
+      }),
+    ).rejects.toThrow("User default-user is not authorized to migrate assets");
   });
 });

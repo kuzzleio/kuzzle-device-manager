@@ -1,4 +1,5 @@
 import { BaseRequest, JSONObject, Kuzzle } from "kuzzle-sdk";
+import { loadSecurityDefault } from "./security";
 
 async function createEngineIfNotExists(
   sdk: Kuzzle,
@@ -24,6 +25,7 @@ async function createEngineIfNotExists(
 }
 
 export async function beforeAllCreateEngines(sdk: Kuzzle) {
+  await loadSecurityDefault(sdk);
   await Promise.all([
     createEngineIfNotExists(sdk, "engine-ayse"),
     createEngineIfNotExists(sdk, "engine-kuzzle"),

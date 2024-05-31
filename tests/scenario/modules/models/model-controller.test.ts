@@ -284,4 +284,58 @@ describe("features/Model/Controller", () => {
       ),
     ).rejects.toThrow();
   });
+
+  it("can accept valuesDetails when writing a measure", async () => {
+    await sdk.query<ApiModelWriteMeasureRequest>({
+      controller: "device-manager/models",
+      action: "writeMeasure",
+      body: {
+        type: "light",
+        valuesMappings: {
+          light: { type: "float" },
+        },
+        valuesDetails: {
+          light: {
+            en: {
+              friendlyName: "Light intensity",
+              unit: "lux",
+            },
+            fr: {
+              friendlyName: "Intensité lumineuse",
+              unit: "lux",
+            },
+          },
+        },
+      },
+    });
+    await expect(
+      sdk.document.get<MeasureModelContent>(
+        "device-manager",
+        "models",
+        "model-measure-light",
+      ),
+    ).resolves.toMatchObject<Partial<KDocument<MeasureModelContent>>>({
+      _source: {
+        type: "measure",
+        measure: {
+          type: "light",
+          valuesMappings: {
+            light: { type: "float" },
+          },
+          valuesDetails: {
+            light: {
+              en: {
+                friendlyName: "Light intensity",
+                unit: "lux",
+              },
+              fr: {
+                friendlyName: "Intensité lumineuse",
+                unit: "lux",
+              },
+            },
+          },
+        },
+      },
+    });
+  });
 });
