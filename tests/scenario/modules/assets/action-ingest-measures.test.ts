@@ -25,7 +25,7 @@ describe("AssetsController:getMeasures", () => {
       body: {
         dataSource: {
           type: "api",
-          dataSourceId: "testApi",
+          dataSourceId: "testApi1",
         },
         measurements: [
           {
@@ -57,7 +57,7 @@ describe("AssetsController:getMeasures", () => {
       {
         query: {
           equals: {
-            "origin._id": "testApi",
+            "origin._id": "testApi1",
           },
         },
       },
@@ -78,6 +78,8 @@ describe("AssetsController:getMeasures", () => {
   });
 
   it("should not ingest measures with incorrect values", async () => {
+    const indexId = "engine-ayse";
+
     const query = sdk.query<
       ApiAssetIngestMeasuresRequest,
       ApiAssetIngestMeasuresResult
@@ -89,7 +91,7 @@ describe("AssetsController:getMeasures", () => {
       body: {
         dataSource: {
           type: "api",
-          dataSourceId: "testApi",
+          dataSourceId: "testApi2",
         },
         measurements: [
           {
@@ -97,7 +99,7 @@ describe("AssetsController:getMeasures", () => {
             type: "magicule",
             measuredAt: 170000000,
             values: {
-              magicule: "18",
+              magicule: "99",
             },
           },
         ],
@@ -107,5 +109,69 @@ describe("AssetsController:getMeasures", () => {
     await expect(query).rejects.toThrow(
       "Provided measures does not respect theirs respective schemas",
     );
+
+    const total = await sdk.document.count(
+      indexId,
+      InternalCollection.MEASURES,
+      {
+        query: {
+          equals: {
+            "origin._id": "testApi2",
+          },
+        },
+      },
+      { lang: "koncorde" },
+    );
+
+    expect(total).toBe(0);
+  });
+
+  it("should not ingest measures with unknow asset id", async () => {
+    const indexId = "engine-ayse";
+
+    const query = sdk.query<
+      ApiAssetIngestMeasuresRequest,
+      ApiAssetIngestMeasuresResult
+    >({
+      controller: "device-manager/assets",
+      action: "ingestMeasures",
+      _id: "MagicHouse-debug",
+      engineId: "engine-ayse",
+      body: {
+        dataSource: {
+          type: "api",
+          dataSourceId: "testApi3",
+        },
+        measurements: [
+          {
+            measureName: "magiculeExt",
+            type: "magicule",
+            measuredAt: 170000000,
+            values: {
+              magicule: 59,
+            },
+          },
+        ],
+      },
+    });
+
+    await expect(query).rejects.toThrow(
+      '"MagicHouse-debug" is not a valid target asset ID',
+    );
+
+    const total = await sdk.document.count(
+      indexId,
+      InternalCollection.MEASURES,
+      {
+        query: {
+          equals: {
+            "origin._id": "testApi3",
+          },
+        },
+      },
+      { lang: "koncorde" },
+    );
+
+    expect(total).toBe(0);
   });
 });
