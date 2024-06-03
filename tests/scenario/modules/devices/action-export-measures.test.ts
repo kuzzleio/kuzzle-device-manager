@@ -176,11 +176,6 @@ describe("DevicesController:exportMeasures", () => {
   });
 
   it("should generate a authenticated link", async () => {
-    await sdk.auth.login("local", {
-      username: "test-admin",
-      password: "password",
-    });
-
     await sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: "linked1", temperature: 37 },
     ]);

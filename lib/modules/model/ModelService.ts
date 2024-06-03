@@ -39,6 +39,7 @@ import { MappingsConflictsError } from "./MappingsConflictsError";
 import { SchemaObject } from "ajv";
 import { addSchemaToCache, ajv } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
+import { MeasureValuesDetails } from "../measure";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -320,9 +321,14 @@ export class ModelService extends BaseService {
     type: string,
     valuesMappings: JSONObject,
     validationSchema?: SchemaObject,
+    valuesDetails?: MeasureValuesDetails,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
-      measure: { type, valuesMappings },
+      measure: {
+        type,
+        valuesDetails,
+        valuesMappings,
+      },
       type: "measure",
     };
 

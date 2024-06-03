@@ -155,11 +155,13 @@ export class ModelsController {
     const type = request.getBodyString("type");
     const valuesMappings = request.getBodyObject("valuesMappings");
     const validationSchema = request.getBodyObject("validationSchema", {});
+    const valuesDetails = request.getBodyObject("valuesDetails", {});
 
     const measureModel = await this.modelService.writeMeasure(
       type,
       valuesMappings,
       validationSchema,
+      valuesDetails,
     );
 
     return measureModel;

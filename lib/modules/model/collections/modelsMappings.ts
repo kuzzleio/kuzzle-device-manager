@@ -25,6 +25,10 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        valuesDetails: {
+          dynamic: "false",
+          properties: {},
+        },
       },
     },
 

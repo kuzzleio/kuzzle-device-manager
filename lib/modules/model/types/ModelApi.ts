@@ -9,6 +9,7 @@ import {
   MetadataMappings,
 } from "./ModelContent";
 import { SchemaObject } from "ajv";
+import { MeasureValuesDetails } from "../../measure/types/MeasureDefinition";
 
 interface ModelsControllerRequest {
   controller: "device-manager/models";
@@ -69,6 +70,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
     type: string;
     valuesMappings: JSONObject;
     validationSchema?: SchemaObject;
+    valuesDetails?: MeasureValuesDetails;
   };
 }
 export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;

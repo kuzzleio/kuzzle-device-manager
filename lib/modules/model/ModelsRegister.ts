@@ -133,7 +133,7 @@ export class ModelsRegister {
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
-    const { validationSchema, valuesMappings } = measureDefinition;
+    const { validationSchema, valuesMappings, valuesDetails } = measureDefinition;
     if (validationSchema) {
       try {
         addSchemaToCache(type, validationSchema);
@@ -149,6 +149,7 @@ export class ModelsRegister {
       measure: {
         type,
         validationSchema,
+        valuesDetails,
         valuesMappings,
       },
       type: "measure",

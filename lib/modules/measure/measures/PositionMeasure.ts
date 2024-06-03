@@ -17,4 +17,26 @@ export const positionMeasureDefinition: MeasureDefinition = {
     accuracy: { type: "float" },
     altitude: { type: "float" },
   },
+  valuesDetails: {
+    position: {
+      en: {
+        friendlyName: "Localization",
+        unit: "(lat,lon)",
+      },
+      fr: {
+        friendlyName: "Localisation",
+        unit: "(lat,lon)",
+      },
+    },
+    altitude: {
+      en: {
+        friendlyName: "Altitude",
+        unit: "m",
+      },
+      fr: {
+        friendlyName: "Altitude",
+        unit: "m",
+      },
+    },
+  },
 };

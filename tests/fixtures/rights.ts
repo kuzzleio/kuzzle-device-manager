@@ -22,6 +22,14 @@ export default {
         },
       },
     },
+    "default-user": {
+      content: {
+        profileIds: ["default-user"],
+      },
+      credentials: {
+        local: { username: "default-user", password: "password" },
+      },
+    },
   },
   profiles: {
     "ayse-admin": {
@@ -70,7 +78,21 @@ export default {
         },
       ],
     },
+    "default-user": {
+      rateLimit: 0,
+      policies: [
+        {
+          roleId: "default-user",
+        },
+      ],
+      optimizedPolicies: [
+        {
+          roleId: "default-user",
+        },
+      ],
+    },
   },
+
   roles: {
     tests: {
       controllers: {
@@ -88,6 +110,15 @@ export default {
           actions: {
             get: true,
             deleteByQuery: true,
+          },
+        },
+      },
+    },
+    "default-user": {
+      controllers: {
+        "device-manager/assets": {
+          actions: {
+            "*": true,
           },
         },
       },

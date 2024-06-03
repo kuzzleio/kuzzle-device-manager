@@ -2,7 +2,7 @@
 code: false
 type: page
 title: Models
-description: Assets and Devices Models
+description: Assets, Measure and Devices Models
 ---
 
 # Models
@@ -57,6 +57,53 @@ The API also allows to:
 
 - list available models `device-manager/models:listDevices`
 - get a model `device-manager/models:getDevices`
+
+
+## Measure Model
+
+A measure model contains the following information:
+
+- `model`: model name
+- `measure`: type of the measure
+- `valuesMappings`: measurements mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
+- `valuesDetails`: (optional) Metadata and translations of measurements. You can use it to keep consistency on translations between your apps
+
+It is possible to create new models on the Kuzzle IoT Platform using either:
+
+- the API through the action `device-manager/models:writeMeasure`
+- the framework with the method `deviceManager.models.registerMeasure`
+
+**Example: declaration of a model via API**
+
+```typescript
+await sdk.query({
+      controller: 'device-manager/models',
+      action: 'writeMeasure',
+      body: {
+        type: 'light',
+        valuesMappings: {
+          light: { type: 'integer' },
+        },
+        valuesDetails: {
+          light: {
+            en: {
+              friendlyName: 'Light intensity',
+              unit: 'lux',
+            },
+            fr: {
+              friendlyName: 'Intensité lumineuse',
+              unit: 'lux',
+            },
+          },
+        },
+      },
+    });
+```
+
+The API also allows to:
+
+- list registered measures `device-manager/models:listMeasures`
+- get a measure model `device-manager/models:getMeasure`
 
 ## Asset Model
 
