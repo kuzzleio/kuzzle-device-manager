@@ -111,10 +111,6 @@ export class MeasureService extends BaseService {
 
     const asset = assetDocument._source;
 
-    const originalAssetMetadata: Metadata = asset
-      ? JSON.parse(JSON.stringify(asset.metadata))
-      : null;
-
     const measures = await this.buildApiMeasures(
       source,
       assetDocument,
@@ -123,9 +119,7 @@ export class MeasureService extends BaseService {
       target.engineGroup,
     );
 
-    if (asset) {
-      asset.measures ||= {};
-    }
+    asset.measures ||= {};
 
     /**
      * Event before starting to process new measures.
@@ -144,10 +138,7 @@ export class MeasureService extends BaseService {
       );
     }
 
-    let assetStates = new Map<number, KDocument<AssetContent>>();
-    if (asset) {
-      assetStates = this.updateAssetMeasures(assetDocument, measures);
-    }
+    const assetStates = this.updateAssetMeasures(assetDocument, measures);
 
     await this.app.trigger<EventMeasurePersistSourceBefore>(
       "device-manager:measures:persist:sourceBefore",
@@ -180,37 +171,35 @@ export class MeasureService extends BaseService {
           }),
       );
 
-      if (asset) {
-        // @todo potential race condition if 2 differents device are linked
-        // to the same asset and get processed at the same time
-        // asset measures update could be protected by mutex
-        promises.push(
-          this.sdk.document
-            .update<AssetContent>(
-              indexId,
-              InternalCollection.ASSETS,
-              assetId,
-              asset,
-            )
-            .catch((error) => {
-              throw keepStack(
-                error,
-                new BadRequestError(
-                  `Cannot update asset "${assetId}": ${error.message}`,
-                ),
-              );
-            }),
-        );
-
-        promises.push(
-          historizeAssetStates(
-            assetStates,
+      // @todo potential race condition if 2 differents device are linked
+      // to the same asset and get processed at the same time
+      // asset measures update could be protected by mutex
+      promises.push(
+        this.sdk.document
+          .update<AssetContent>(
             indexId,
-            originalAssetMetadata,
-            asset.metadata,
-          ),
-        );
-      }
+            InternalCollection.ASSETS,
+            assetId,
+            asset,
+          )
+          .catch((error) => {
+            throw keepStack(
+              error,
+              new BadRequestError(
+                `Cannot update asset "${assetId}": ${error.message}`,
+              ),
+            );
+          }),
+      );
+
+      promises.push(
+        historizeAssetStates(
+          assetStates,
+          indexId,
+          JSON.parse(JSON.stringify(asset.metadata)),
+          asset.metadata,
+        ),
+      );
     }
 
     await Promise.all(promises);
