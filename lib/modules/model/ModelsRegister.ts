@@ -19,7 +19,8 @@ import {
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
 import { JSONObject } from "kuzzle-sdk";
-import { addSchemaToCache } from "../shared/utils/AJValidator";
+import { addSchemaToCache, ajv } from "../shared/utils/AJValidator";
+import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -134,7 +135,14 @@ export class ModelsRegister {
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
     const { validationSchema, valuesMappings } = measureDefinition;
     if (validationSchema) {
-      addSchemaToCache(type, validationSchema);
+      try {
+        addSchemaToCache(type, validationSchema);
+      } catch (error) {
+        throw new SchemaValidationError(
+          "Provided schema is not valid",
+          ajv.errors,
+        );
+      }
     }
 
     this.measureModels.push({

@@ -37,7 +37,8 @@ import {
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
 import { SchemaObject } from "ajv";
-import { addSchemaToCache } from "../shared/utils/AJValidator";
+import { addSchemaToCache, ajv } from "../shared/utils/AJValidator";
+import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -174,15 +175,6 @@ export class ModelService extends BaseService {
           `New measures mappings are causing conflicts`,
           conflicts,
         );
-      }
-
-      try {
-        for (const measure of measures) {
-          const { type, validationSchema } = measure.measure;
-          addSchemaToCache(type, validationSchema);
-        }
-      } catch (error) {
-        throw new BadRequestError(error);
       }
     }
   }
@@ -334,6 +326,18 @@ export class ModelService extends BaseService {
       type: "measure",
     };
 
+    if (validationSchema) {
+      try {
+        addSchemaToCache(type, validationSchema);
+        modelContent.measure.validationSchema = validationSchema;
+      } catch (error) {
+        throw new SchemaValidationError(
+          "Provided schema is not valid",
+          ajv.errors,
+        );
+      }
+    }
+
     const conflicts = await ask<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
       { measuresModels: [modelContent] },
@@ -344,15 +348,6 @@ export class ModelService extends BaseService {
         `New assets mappings are causing conflicts`,
         conflicts,
       );
-    }
-
-    if (validationSchema) {
-      try {
-        addSchemaToCache(type, validationSchema);
-        modelContent.measure.validationSchema = validationSchema;
-      } catch (error) {
-        throw new BadRequestError(error);
-      }
     }
 
     const measureModel =
