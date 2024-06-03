@@ -29,11 +29,13 @@ import {
 } from "./types/AssetApi";
 import { isSourceAPI } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
-import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { ask } from "kuzzle-plugin-commons";
 import { toAPITarget } from "../measure/MeasureTargetBuilder";
-import { MeasureValidationError } from "../measure/types/MeasureValidationError";
 import { toApiSource } from "../measure/MeasureSourcesBuilder";
+import {
+  MeasureValidationError,
+  MeasureValidationChunks,
+} from "../measure/MeasureValidationError";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -104,7 +106,7 @@ export class AssetsController {
           handler: this.ingestMeasure.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/ingestMeasure/:measureType/:dataSourceId",
+              path: "device-manager/:engineId/assets/:_id/ingestMeasure/:measureType",
               verb: "post",
             },
           ],
@@ -281,7 +283,7 @@ export class AssetsController {
     const target = toAPITarget(indexId, assetId, engineGroup);
 
     if (isSourceAPI(source)) {
-      const errors: MeasureValidationError[] = [];
+      const errors: MeasureValidationChunks[] = [];
       for (const measure of measurements) {
         const validator = getValidator(measure.type);
 
@@ -298,7 +300,7 @@ export class AssetsController {
       }
 
       if (errors.length > 0) {
-        throw new SchemaValidationError(
+        throw new MeasureValidationError(
           "Provided measures does not respect theirs respective schemas",
           errors,
         );
@@ -325,7 +327,7 @@ export class AssetsController {
     const indexId = request.getString("engineId");
     const type = request.getString("measureType");
     const engineGroup = request.getString("engineGroup", "commons");
-    const sourceId = request.getString("dataSourceId");
+    const sourceId = request.getBodyString("dataSourceId");
     const sourceMetadata = request.getBodyObject("dataSourceMetadata", {});
 
     const source = toApiSource(sourceId, sourceMetadata);
@@ -349,12 +351,14 @@ export class AssetsController {
       const valid = validator(values);
 
       if (!valid) {
-        throw new SchemaValidationError(
-          "Provided measures does not respect theirs respective schemas",
-          {
-            measureName: measureName,
-            validationErrors: validator.errors ?? [],
-          },
+        throw new MeasureValidationError(
+          "Provided measure does not respect its schema",
+          [
+            {
+              measureName: measureName,
+              validationErrors: validator.errors ?? [],
+            },
+          ],
         );
       }
     }
