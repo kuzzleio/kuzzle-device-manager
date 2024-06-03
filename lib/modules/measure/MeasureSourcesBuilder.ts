@@ -1,12 +1,12 @@
 import { Metadata } from "../shared";
 import { MeasureOriginApi, MeasureOriginDevice } from "./types/MeasureContent";
-import { APIMeasureSource, DeviceMeasureSource } from "./types/MeasureSources";
+import { ApiMeasureSource, DeviceMeasureSource } from "./types/MeasureSources";
 
 export function toApiSource(
   dataSourceId: string,
   metadata?: Metadata,
   lastMeasuredAt?: number,
-): APIMeasureSource {
+): ApiMeasureSource {
   return {
     dataSourceId,
     lastMeasuredAt,
@@ -16,7 +16,7 @@ export function toApiSource(
 }
 
 export function apiSourceToOriginApi(
-  source: APIMeasureSource,
+  source: ApiMeasureSource,
   measureName: string,
   payloadUuids: string[],
 ): MeasureOriginApi {

@@ -8,7 +8,7 @@ export interface DeviceMeasureTarget extends AbstractMeasureTarget {
   type: "device";
 }
 
-export interface APIMeasureTarget extends AbstractMeasureTarget {
+export interface ApiMeasureTarget extends AbstractMeasureTarget {
   type: "api";
   assetId: string;
   engineGroup?: string;
@@ -30,7 +30,7 @@ export function isTargetDevice(target: any): target is DeviceMeasureTarget {
   return isTarget(target) && target.type === "device";
 }
 
-export function isTargetAPI(target: any): target is APIMeasureTarget {
+export function isTargetApi(target: any): target is ApiMeasureTarget {
   if (!isTarget(target) && target.type !== "api") {
     return false;
   }
@@ -42,4 +42,4 @@ export function isTargetAPI(target: any): target is APIMeasureTarget {
   return typeof target.assetId === "string";
 }
 
-export type MeasureTarget = DeviceMeasureTarget | APIMeasureTarget;
+export type MeasureTarget = DeviceMeasureTarget | ApiMeasureTarget;

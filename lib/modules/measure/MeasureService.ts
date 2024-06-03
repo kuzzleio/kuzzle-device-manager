@@ -31,10 +31,10 @@ import {
   TenantEventMeasureProcessSourceAfter,
   TenantEventMeasureProcessSourceBefore,
 } from "./types/MeasureEvents";
-import { APIMeasureSource, isSourceAPI } from "./types/MeasureSources";
+import { ApiMeasureSource, isSourceApi } from "./types/MeasureSources";
 import { apiSourceToOriginApi, toDeviceSource } from "./MeasureSourcesBuilder";
 import { AskModelAssetGet } from "../model";
-import { APIMeasureTarget, isTargetAPI } from "./types/MeasureTarget";
+import { ApiMeasureTarget, isTargetApi } from "./types/MeasureTarget";
 import { toDeviceTarget } from "./MeasureTargetBuilder";
 
 export class MeasureService extends BaseService {
@@ -49,8 +49,8 @@ export class MeasureService extends BaseService {
           return;
         }
 
-        if (isSourceAPI(payload.source) && isTargetAPI(payload.target)) {
-          await this.ingestAPI(
+        if (isSourceApi(payload.source) && isTargetApi(payload.target)) {
+          await this.ingestApi(
             payload.source,
             payload.target,
             payload.measurements,
@@ -87,9 +87,9 @@ export class MeasureService extends BaseService {
    *  - save documents (measures and asset)
    *  - trigger events `after`
    */
-  public async ingestAPI(
-    source: APIMeasureSource,
-    target: APIMeasureTarget,
+  public async ingestApi(
+    source: ApiMeasureSource,
+    target: ApiMeasureTarget,
     measurements: DecodedMeasurement<JSONObject>[],
     payloadUuids: string[],
   ) {
@@ -115,7 +115,7 @@ export class MeasureService extends BaseService {
       ? JSON.parse(JSON.stringify(asset.metadata))
       : null;
 
-    const measures = await this.buildAPIMeasures(
+    const measures = await this.buildApiMeasures(
       source,
       assetDocument,
       measurements,
@@ -633,8 +633,8 @@ export class MeasureService extends BaseService {
    *
    * @returns A MeasurementContent builded from parameters
    */
-  private async buildAPIMeasures(
-    source: APIMeasureSource,
+  private async buildApiMeasures(
+    source: ApiMeasureSource,
     asset: KDocument<AssetContent>,
     measures: DecodedMeasurement[],
     payloadUuids: string[],

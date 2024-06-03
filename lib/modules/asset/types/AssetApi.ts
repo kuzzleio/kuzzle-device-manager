@@ -5,7 +5,7 @@ import { Metadata } from "../../shared";
 
 import { AssetContent } from "./AssetContent";
 import { AssetsController } from "../AssetsController";
-import { APIMeasureSource } from "../../measure/types/MeasureSources";
+import { ApiMeasureSource } from "../../measure/types/MeasureSources";
 
 interface AssetsControllerRequest {
   controller: "device-manager/assets";
@@ -127,7 +127,7 @@ export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
   engineGroup?: string;
 
   body: {
-    dataSource: APIMeasureSource;
+    dataSource: ApiMeasureSource;
     measurements: DecodedMeasurement<JSONObject>[];
   };
 }

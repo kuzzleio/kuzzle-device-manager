@@ -13,7 +13,7 @@ export interface DeviceMeasureSource extends AbstractMeasureSource {
   model: string;
 }
 
-export interface APIMeasureSource extends AbstractMeasureSource {
+export interface ApiMeasureSource extends AbstractMeasureSource {
   type: "api";
 }
 
@@ -45,8 +45,8 @@ export function isSourceDevice(source: any): source is DeviceMeasureSource {
   );
 }
 
-export function isSourceAPI(source: any): source is APIMeasureSource {
+export function isSourceApi(source: any): source is ApiMeasureSource {
   return isSource(source) && source.type === "api";
 }
 
-export type MeasureSource = DeviceMeasureSource | APIMeasureSource;
+export type MeasureSource = DeviceMeasureSource | ApiMeasureSource;

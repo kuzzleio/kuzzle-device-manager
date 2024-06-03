@@ -1,10 +1,10 @@
-import { APIMeasureTarget, DeviceMeasureTarget } from "./types/MeasureTarget";
+import { ApiMeasureTarget, DeviceMeasureTarget } from "./types/MeasureTarget";
 
-export function toAPITarget(
+export function toApiTarget(
   indexId: string,
   assetId: string,
   engineGroup?: string,
-): APIMeasureTarget {
+): ApiMeasureTarget {
   return {
     assetId,
     engineGroup,

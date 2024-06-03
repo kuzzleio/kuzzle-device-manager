@@ -27,10 +27,10 @@ import {
   ApiAssetUpdateResult,
   ApiAssetMigrateTenantResult,
 } from "./types/AssetApi";
-import { isSourceAPI } from "../measure/types/MeasureSources";
+import { isSourceApi } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
 import { ask } from "kuzzle-plugin-commons";
-import { toAPITarget } from "../measure/MeasureTargetBuilder";
+import { toApiTarget } from "../measure/MeasureTargetBuilder";
 import { toApiSource } from "../measure/MeasureSourcesBuilder";
 import {
   MeasureValidationError,
@@ -280,9 +280,9 @@ export class AssetsController {
       "measurements",
     ) as DecodedMeasurement<JSONObject>[];
 
-    const target = toAPITarget(indexId, assetId, engineGroup);
+    const target = toApiTarget(indexId, assetId, engineGroup);
 
-    if (isSourceAPI(source)) {
+    if (isSourceApi(source)) {
       const errors: MeasureValidationChunks[] = [];
       for (const measure of measurements) {
         const validator = getValidator(measure.type);
@@ -343,7 +343,7 @@ export class AssetsController {
       values,
     } satisfies DecodedMeasurement<JSONObject>;
 
-    const target = toAPITarget(indexId, assetId, engineGroup);
+    const target = toApiTarget(indexId, assetId, engineGroup);
 
     const validator = getValidator(type);
 
