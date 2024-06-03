@@ -4,7 +4,6 @@ import { DecodedMeasurement, MeasureContent } from "../../../modules/measure";
 import { Metadata } from "../../shared";
 
 import { AssetContent } from "./AssetContent";
-import { AssetsController } from "../AssetsController";
 import { ApiMeasureSource } from "../../measure/types/MeasureSources";
 
 interface AssetsControllerRequest {
