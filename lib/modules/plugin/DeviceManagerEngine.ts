@@ -320,7 +320,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       "asset",
       engineGroup,
     );
-    const settings = this.config.engineCollections.assets.settings;
+    const settings = this.config.engineCollections.asset.settings;
 
     await this.tryCreateCollection(engineId, InternalCollection.ASSETS, {
       mappings,

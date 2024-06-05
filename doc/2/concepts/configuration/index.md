@@ -55,8 +55,8 @@ The following collections are used by the plugin. They're automatically created 
 - `config`: The collection that stores the engine configuration.
 - `devices`: The collection that stores the devices.
 - `measures`: The collection that stores the measures once extracted by the decoders.
-- `assets`: The collection that stores the assets.
-- `assets`: The collection that stores the assets groups.
+- `asset`: The collection that stores the assets.
+- `assetGroups`: The collection that stores the assets groups.
 - `assetHistory`: The collection that stores the assets history.
 
 # Example
@@ -145,7 +145,7 @@ The following collections are used by the plugin. They're automatically created 
             }
           }
         },
-        "assets": {
+        "asset": {
           "name": "assets",
           "mappings": {
             "properties": {

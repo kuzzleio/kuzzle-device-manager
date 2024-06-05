@@ -280,7 +280,7 @@ export class DeviceManagerPlugin extends Plugin {
             properties: {},
           },
         },
-        assets: {
+        asset: {
           name: InternalCollection.ASSETS,
           mappings: assetsMappings,
         },
