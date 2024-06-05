@@ -52,7 +52,6 @@ describe("features/Model/Controller", () => {
         },
       },
     });
-
     response = await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -128,15 +127,25 @@ describe("features/Model/Controller", () => {
   });
 
   it("List on an engine is also returning commons assets models", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroup: "other-group",
+        model: "Car",
+      },
+    });
+    
     const response = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroup: "engine-ayse",
+      engineGroup: "other-group",
     });
 
     expect(response.result).toMatchObject({
-      total: 3,
+      total: 4,
       models: [
+        { _id: "model-asset-Car" },
         { _id: "model-asset-Container" },
         { _id: "model-asset-Plane" },
         { _id: "model-asset-Warehouse" },
