@@ -301,7 +301,7 @@ export class AssetsController {
 
       if (errors.length > 0) {
         throw new MeasureValidationError(
-          "Provided measures does not respect theirs respective schemas",
+          "The provided measures do not comply with their respective schemas",
           errors,
         );
       }
@@ -317,7 +317,7 @@ export class AssetsController {
       );
     } else {
       throw new BadRequestError(
-        "Provided dataSource does not match the API source format",
+        "The provided data source does not match the API source format",
       );
     }
   }
@@ -352,7 +352,7 @@ export class AssetsController {
 
       if (!valid) {
         throw new MeasureValidationError(
-          "Provided measure does not respect its schema",
+          "The provided measure does not respect its schema",
           [
             {
               measureName: measureName,

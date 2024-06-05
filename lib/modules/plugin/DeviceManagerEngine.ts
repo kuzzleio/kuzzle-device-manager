@@ -268,7 +268,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           addSchemaToCache(measure.measure.type, validationSchema);
         } catch (error) {
           this.app.log.error(
-            `The validation schema of the "${measure.type}" measure model is not compliant with the JSON Schema standard, skipping its update...`,
+            `The validation schema for the "${measure.type}" measure model does not comply with the JSON Schema standard, so its update has been skipped`,
           );
         }
       }
