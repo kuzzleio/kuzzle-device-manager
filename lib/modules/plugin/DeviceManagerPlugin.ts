@@ -290,7 +290,7 @@ export class DeviceManagerPlugin extends Plugin {
         assetHistory: {
           name: InternalCollection.ASSETS_HISTORY,
         },
-        devices: {
+        device: {
           name: InternalCollection.DEVICES,
           mappings: devicesMappings,
         },

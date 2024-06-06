@@ -393,7 +393,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async createDevicesCollection(engineId: string) {
     const mappings =
       await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
-    const settings = this.config.engineCollections.devices.settings;
+    const settings = this.config.engineCollections.device.settings;
 
     await this.tryCreateCollection(engineId, InternalCollection.DEVICES, {
       mappings,

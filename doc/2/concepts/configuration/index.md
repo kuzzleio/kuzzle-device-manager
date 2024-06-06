@@ -53,7 +53,7 @@ The following collections are used by the plugin. They're automatically created 
 The following collections are used by the plugin. They're automatically created when the plugin is started and are specific to each engine:
 
 - `config`: The collection that stores the engine configuration.
-- `devices`: The collection that stores the devices.
+- `device`: The collection that stores the devices.
 - `measures`: The collection that stores the measures once extracted by the decoders.
 - `asset`: The collection that stores the assets.
 - `assetGroups`: The collection that stores the assets groups.
