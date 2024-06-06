@@ -107,7 +107,7 @@ describe("AssetsController:getMeasures", () => {
     });
 
     await expect(query).rejects.toThrow(
-      "Provided measures does not respect theirs respective schemas",
+      "The provided measures do not comply with their respective schemas",
     );
 
     const total = await sdk.document.count(
