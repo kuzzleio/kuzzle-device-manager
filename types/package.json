@@ -7,11 +7,12 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kuzzleio/kuzzle-plugin-device-manager.git"
+    "url": "git+https://github.com/kuzzleio/kuzzle-plugin-device-manager.git",
+    "directory": "types"
   },
   "scripts": {
     "prepack": "npm run build",
-    "build": "./copy-types.sh && node scripts/copy-version.js"
+    "build": "./copy-types.sh"
   },
   "license": "Apache-2.0",
   "files": [
