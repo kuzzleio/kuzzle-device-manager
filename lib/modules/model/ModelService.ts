@@ -40,6 +40,9 @@ import { SchemaObject } from "ajv";
 import { addSchemaToCache, ajv } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { MeasureValuesDetails } from "../measure";
+import { NamedMeasures } from "../decoder";
+import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
+import { MeasuresDuplicatesError } from "./MeasuresDuplicatesError";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -187,10 +190,18 @@ export class ModelService extends BaseService {
     defaultMetadata: JSONObject,
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
-    measures: AssetModelContent["asset"]["measures"],
+    measures: NamedMeasures,
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
+    }
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresDuplicatesError(
+        "Asset model measures contain one or multiple duplicate measure name",
+        duplicates,
+      );
     }
 
     const modelContent: AssetModelContent = {
@@ -270,10 +281,19 @@ export class ModelService extends BaseService {
     defaultMetadata: JSONObject,
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
-    measures: DeviceModelContent["device"]["measures"],
+    measures: NamedMeasures,
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Device model "${model}" must be PascalCase.`);
+    }
+
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresDuplicatesError(
+        "Device model measures contain one or multiple duplicate measure name",
+        duplicates,
+      );
     }
 
     const modelContent: DeviceModelContent = {

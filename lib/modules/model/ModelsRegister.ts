@@ -21,6 +21,8 @@ import { ModelSerializer } from "./ModelSerializer";
 import { JSONObject } from "kuzzle-sdk";
 import { addSchemaToCache, ajv } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
+import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
+import { MeasuresDuplicatesError } from "./MeasuresDuplicatesError";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -78,6 +80,15 @@ export class ModelsRegister {
       );
     }
 
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresDuplicatesError(
+        "Asset model measures contain one or multiple duplicate measure name",
+        duplicates,
+      );
+    }
+
     // Construct and push the new asset model to the assetModels array
     this.assetModels.push({
       asset: {
@@ -115,6 +126,15 @@ export class ModelsRegister {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
         `Device model "${model}" must be PascalCase`,
+      );
+    }
+
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresDuplicatesError(
+        "Device model measures contain one or multiple duplicate measure name",
+        duplicates,
       );
     }
 
