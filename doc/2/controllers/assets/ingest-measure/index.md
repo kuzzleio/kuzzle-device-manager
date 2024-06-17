@@ -16,7 +16,7 @@ Ingest a single measure into an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/ingestMeasure/:measureType
+URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/ingestMeasure/:slotName
 Method: POST
 ```
 
@@ -28,14 +28,13 @@ This endpoint is exclusive to HTTP as it's only a simplified version of [ingestM
 
 - `engineId`: target engine id
 - `_id`: target asset id
-- `measureType`: target measure type
+- `slotName`: target measure slot name
 - `engineGroup` (optional): target engine group
 
 ## Body properties
 
 - `dataSourceId`: measure source identifier
 - `dataSourceMetadata`: (optional) additional metadata for the source
-- `measureName`: target measure name
 - `measuredAt`: the timestamp of when the measure was collected
 - `values`: measure values
 
