@@ -78,7 +78,7 @@ export class MeasureService extends BaseService {
   }
 
   /**
-   * Register new measure from an API, updates :
+   * Register new measures from an API, updates :
    * - asset
    * - engine measures
    *
@@ -106,7 +106,9 @@ export class MeasureService extends BaseService {
     const assetDocument = await this.findAsset(indexId, assetId);
 
     if (!assetDocument) {
-      throw new BadRequestError(`"${assetId}" is not a valid target asset ID`);
+      throw new BadRequestError(
+        `Asset "${assetId}" does not exists on index "${indexId}"`,
+      );
     }
 
     const asset = assetDocument._source;
@@ -633,14 +635,17 @@ export class MeasureService extends BaseService {
 
     for (const measure of measures) {
       let assetContext = null;
-      const assetMeasureName = await this.findAssetMeasureNameFromModel(
+      const isInModel = await this.isMeasureNameInModel(
         measure.measureName,
         asset._source.model,
         engineGroup,
       );
 
-      if (assetMeasureName) {
-        assetContext = AssetSerializer.measureContext(asset, assetMeasureName);
+      if (isInModel) {
+        assetContext = AssetSerializer.measureContext(
+          asset,
+          measure.measureName,
+        );
       }
 
       const measureSource = apiSourceToOriginApi(
@@ -740,19 +745,19 @@ export class MeasureService extends BaseService {
   }
 
   /**
-   * Find the asset measure name from the asset model and its measure type
+   * Check if the asset measure name is associated to the asset model
    *
-   * @param measureType The target measure type
-   * @param model The asset model the measureName belong
+   * @param measureName The measure name to check
+   * @param model The asset model the measureName should belong
    *
-   * @returns The asset measure name or null if it does not belong to the link
+   * @returns True if the asset measure name belongs to the asset model, false otherwise
    * @throws If the model does not exists
    */
-  private async findAssetMeasureNameFromModel(
-    measureType: string,
+  private async isMeasureNameInModel(
+    measureName: string,
     model: string,
     engineGroup = "commons",
-  ): Promise<string | null> {
+  ): Promise<boolean> {
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
       {
@@ -766,10 +771,10 @@ export class MeasureService extends BaseService {
     }
 
     const assetMeasureName = assetModel.asset.measures.find(
-      (m) => m.name === measureType,
+      (m) => m.name === measureName,
     );
 
-    return assetMeasureName?.name ?? null;
+    return assetMeasureName?.name ? true : false;
   }
 
   /**

@@ -36,6 +36,8 @@ import {
   MeasureValidationError,
   MeasureValidationChunks,
 } from "../measure/MeasureValidationError";
+import { AskModelAssetGet } from "../model";
+import { AssetContent } from "./exports";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -106,7 +108,7 @@ export class AssetsController {
           handler: this.ingestMeasure.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/ingestMeasure/:measureType",
+              path: "device-manager/:engineId/assets/:_id/ingestMeasure/:slotName",
               verb: "post",
             },
           ],
@@ -269,6 +271,50 @@ export class AssetsController {
     return { measures, total };
   }
 
+  /**
+   *
+   * @param indexId The asset index
+   * @param assetId The target asset ID
+   * @param measureName The measureName to get the type from
+   * @returns The measure type if used in the asset, null otherwise
+   * @throws If the asset does not exists
+   */
+  private async getTypeFromAsset(
+    indexId: string,
+    assetId: string,
+    measureName: string,
+    engineGroup: string,
+  ) {
+    let asset: AssetContent;
+    try {
+      const assetDocument =
+        await this.plugin.context.accessors.sdk.document.get<AssetContent>(
+          indexId,
+          InternalCollection.ASSETS,
+          assetId,
+        );
+
+      asset = assetDocument._source;
+    } catch (error) {
+      throw new BadRequestError(
+        `Asset "${assetId}" does not exists on index "${indexId}"`,
+      );
+    }
+
+    const assetModel = await ask<AskModelAssetGet>(
+      "ask:device-manager:model:asset:get",
+      {
+        engineGroup,
+        model: asset.model,
+      },
+    );
+
+    return (
+      assetModel.asset.measures.find((elt) => elt.name === measureName)?.type ??
+      null
+    );
+  }
+
   async ingestMeasures(request: KuzzleRequest) {
     const assetId = request.getId();
     const indexId = request.getString("engineId");
@@ -325,16 +371,28 @@ export class AssetsController {
   async ingestMeasure(request: KuzzleRequest) {
     const assetId = request.getId();
     const indexId = request.getString("engineId");
-    const type = request.getString("measureType");
+    const measureName = request.getString("slotName");
     const engineGroup = request.getString("engineGroup", "commons");
     const sourceId = request.getBodyString("dataSourceId");
     const sourceMetadata = request.getBodyObject("dataSourceMetadata", {});
 
     const source = toApiSource(sourceId, sourceMetadata);
 
-    const measureName = request.getBodyString("measureName");
     const measuredAt = request.getBodyNumber("measuredAt");
     const values = request.getBodyObject("values");
+
+    const type = await this.getTypeFromAsset(
+      indexId,
+      assetId,
+      measureName,
+      engineGroup,
+    );
+
+    if (!type) {
+      throw new BadRequestError(
+        `Slot name ${measureName} does not exist on Asset ${assetId}`,
+      );
+    }
 
     const measurement = {
       measureName,
