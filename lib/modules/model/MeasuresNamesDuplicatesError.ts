@@ -1,6 +1,6 @@
 import { KuzzleError } from "kuzzle";
 
-export class MeasuresDuplicatesError extends KuzzleError {
+export class MeasuresNamesDuplicatesError extends KuzzleError {
   private duplicates: string[];
   constructor(
     message: string,
@@ -13,7 +13,7 @@ export class MeasuresDuplicatesError extends KuzzleError {
   }
 
   get name() {
-    return "MeasuresDuplicatesError";
+    return "MeasuresNamesDuplicatesError";
   }
 
   public toJSON() {

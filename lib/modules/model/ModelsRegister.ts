@@ -22,7 +22,7 @@ import { JSONObject } from "kuzzle-sdk";
 import { addSchemaToCache, ajv } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
-import { MeasuresDuplicatesError } from "./MeasuresDuplicatesError";
+import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -83,7 +83,7 @@ export class ModelsRegister {
     const duplicates = getNamedMeasuresDuplicates(measures);
 
     if (duplicates.length > 0) {
-      throw new MeasuresDuplicatesError(
+      throw new MeasuresNamesDuplicatesError(
         "Asset model measures contain one or multiple duplicate measure name",
         duplicates,
       );
@@ -132,7 +132,7 @@ export class ModelsRegister {
     const duplicates = getNamedMeasuresDuplicates(measures);
 
     if (duplicates.length > 0) {
-      throw new MeasuresDuplicatesError(
+      throw new MeasuresNamesDuplicatesError(
         "Device model measures contain one or multiple duplicate measure name",
         duplicates,
       );

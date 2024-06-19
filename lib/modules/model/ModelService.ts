@@ -42,7 +42,7 @@ import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { MeasureValuesDetails } from "../measure";
 import { NamedMeasures } from "../decoder";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
-import { MeasuresDuplicatesError } from "./MeasuresDuplicatesError";
+import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -198,7 +198,7 @@ export class ModelService extends BaseService {
     const duplicates = getNamedMeasuresDuplicates(measures);
 
     if (duplicates.length > 0) {
-      throw new MeasuresDuplicatesError(
+      throw new MeasuresNamesDuplicatesError(
         "Asset model measures contain one or multiple duplicate measure name",
         duplicates,
       );
@@ -290,7 +290,7 @@ export class ModelService extends BaseService {
     const duplicates = getNamedMeasuresDuplicates(measures);
 
     if (duplicates.length > 0) {
-      throw new MeasuresDuplicatesError(
+      throw new MeasuresNamesDuplicatesError(
         "Device model measures contain one or multiple duplicate measure name",
         duplicates,
       );
