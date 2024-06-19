@@ -156,7 +156,7 @@ describe("AssetsController:getMeasures", () => {
     });
 
     await expect(query).rejects.toThrow(
-      '"MagicHouse-debug" is not a valid target asset ID',
+      '"Asset "MagicHouse-debug" does not exists on index "engine-ayse""',
     );
 
     const total = await sdk.document.count(
