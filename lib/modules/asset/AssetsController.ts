@@ -69,8 +69,11 @@ export class AssetsController {
         replaceMetadata: {
           handler: this.replaceMetadata.bind(this),
           http: [
-            { path: "device-manager/:engineId/assets/:_id/metadata", verb: "put"}
-          ]
+            {
+              path: "device-manager/:engineId/assets/:_id/metadata",
+              verb: "put",
+            },
+          ],
         },
         getMeasures: {
           handler: this.getMeasures.bind(this),
@@ -175,7 +178,9 @@ export class AssetsController {
     return AssetSerializer.serialize(updatedAsset);
   }
 
-  async replaceMetadata(request: KuzzleRequest): Promise<ApiAssetMetadataReplaceResult> {
+  async replaceMetadata(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetMetadataReplaceResult> {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
     const metadata = request.getBodyObject("metadata");

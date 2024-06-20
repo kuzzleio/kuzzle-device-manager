@@ -27,7 +27,6 @@ import {
   BaseService,
   EmbeddedMeasure,
   Metadata,
-  MetadataValue,
   SearchParams,
   flattenObject,
   lock,
@@ -135,26 +134,31 @@ export class AssetService extends BaseService {
     });
   }
 
-  public async replaceMetadata(engineId: string, assetId: string, metadata: Metadata, request: KuzzleRequest,): Promise<KDocument<AssetContent>> {
+  public async replaceMetadata(
+    engineId: string,
+    assetId: string,
+    metadata: Metadata,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetContent>> {
     const asset = await this.get(engineId, assetId, request);
 
-    Object.keys(metadata).forEach(key => {
-      if(key in asset._source.metadata) {
-        asset._source.metadata[key] = metadata[key]
+    for (const key in metadata) {
+      if (key in asset._source.metadata) {
+        asset._source.metadata[key] = metadata[key];
       }
-    })
+    }
 
     const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
       "device-manager:asset:update:before",
       { asset, metadata },
     );
-    
+
     const updatedAsset = await this.sdk.document.replace<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
       assetId,
-      updatedPayload.asset._source
-    )
+      updatedPayload.asset._source,
+    );
 
     await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
       {
@@ -167,7 +171,7 @@ export class AssetService extends BaseService {
         },
         id: updatedAsset._id,
         timestamp: Date.now(),
-      }
+      },
     ]);
 
     await this.app.trigger<EventAssetUpdateAfter>(
