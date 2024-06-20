@@ -20,7 +20,7 @@ import {
   ApiAssetSearchResult,
   ApiAssetUpdateResult,
   ApiAssetMigrateTenantResult,
-  ApiAssetReplaceMetadataResult,
+  ApiAssetMetadataReplaceResult,
 } from "./types/AssetApi";
 
 export class AssetsController {
@@ -175,7 +175,7 @@ export class AssetsController {
     return AssetSerializer.serialize(updatedAsset);
   }
 
-  async replaceMetadata(request: KuzzleRequest): Promise<ApiAssetReplaceMetadataResult> {
+  async replaceMetadata(request: KuzzleRequest): Promise<ApiAssetMetadataReplaceResult> {
     const assetId = request.getId();
     const engineId = request.getString("engineId");
     const metadata = request.getBodyObject("metadata");

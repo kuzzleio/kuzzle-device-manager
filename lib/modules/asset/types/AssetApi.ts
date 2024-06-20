@@ -31,7 +31,7 @@ export interface ApiAssetUpdateRequest extends AssetsControllerRequest {
 }
 export type ApiAssetUpdateResult = KDocument<AssetContent>;
 
-export interface ApiAssetReplaceMetadataRequest extends AssetsControllerRequest {
+export interface ApiAssetMetadataReplaceRequest extends AssetsControllerRequest {
   action: "replaceMetadata";
 
   _id: string;
@@ -42,7 +42,7 @@ export interface ApiAssetReplaceMetadataRequest extends AssetsControllerRequest 
     metadata: Metadata;
   };
 }
-export type ApiAssetReplaceMetadataResult = KDocument<AssetContent>;
+export type ApiAssetMetadataReplaceResult = KDocument<AssetContent>;
 
 export interface ApiAssetUpsertRequest extends AssetsControllerRequest {
   action: "upsert";
