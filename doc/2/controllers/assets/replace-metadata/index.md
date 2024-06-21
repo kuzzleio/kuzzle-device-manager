@@ -15,7 +15,7 @@ Replace `metadata` of an asset. It will replace only the fields specified in the
 
 ```http
 URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/metadata
-Method: PUT
+Method: PATCH
 ```
 
 ### Other protocols
