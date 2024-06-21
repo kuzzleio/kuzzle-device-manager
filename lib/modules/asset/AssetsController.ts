@@ -71,7 +71,7 @@ export class AssetsController {
           http: [
             {
               path: "device-manager/:engineId/assets/:_id/metadata",
-              verb: "put",
+              verb: "patch",
             },
           ],
         },
