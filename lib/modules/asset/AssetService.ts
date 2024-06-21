@@ -134,6 +134,9 @@ export class AssetService extends BaseService {
     });
   }
 
+  /**
+   * Replace an asset metadata
+   */
   public async replaceMetadata(
     engineId: string,
     assetId: string,
