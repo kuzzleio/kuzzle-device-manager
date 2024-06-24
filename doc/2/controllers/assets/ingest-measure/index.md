@@ -16,7 +16,7 @@ Ingest a single measure into an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/ingestMeasure/:slotName
+URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/ingestMeasures/:slotName
 Method: POST
 ```
 

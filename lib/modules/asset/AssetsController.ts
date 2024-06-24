@@ -108,7 +108,7 @@ export class AssetsController {
           handler: this.ingestMeasure.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/ingestMeasure/:slotName",
+              path: "device-manager/:engineId/assets/:_id/ingestMeasures/:slotName",
               verb: "post",
             },
           ],
