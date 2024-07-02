@@ -67,7 +67,9 @@ export class ModelsController {
         },
         updateAsset: {
           handler: this.updateAsset.bind(this),
-          http: [{ path: "device-manager/models/assets/:model", verb: "put" }],
+          http: [
+            { path: "device-manager/models/assets/:model", verb: "patch" },
+          ],
         },
         writeAsset: {
           handler: this.writeAsset.bind(this),
