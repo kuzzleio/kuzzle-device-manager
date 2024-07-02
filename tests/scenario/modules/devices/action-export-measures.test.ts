@@ -148,8 +148,8 @@ describe("DevicesController:exportMeasures", () => {
     const [
       ,
       ,
-      accMeasureType,
       ,
+      accMeasureType,
       ,
       ,
       ,
