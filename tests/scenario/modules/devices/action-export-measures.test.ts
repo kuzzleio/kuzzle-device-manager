@@ -160,6 +160,8 @@ describe("DevicesController:exportMeasures", () => {
       accelerationAccuracy,
     ] = csvParse(csv[2])[0];
 
+    console.log(csv[2]);
+
     expect(typeof payloadId).toBe("string");
     expect(typeof parseFloat(measuredAt)).toBe("number");
     expect(typeof measuredAtISO).toBe("string");
