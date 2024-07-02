@@ -200,16 +200,16 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
     const columns: Column[] = [
       { header: "Measure Id", path: "_id" },
       { header: "Measured At", path: "_source.measuredAt" },
-      { header: "Measure Type", path: "_source.type" },
-      { header: "Device Id", path: "_source.origin._id" },
-      { header: "Device Model", path: "_source.origin.deviceModel" },
-      { header: "Asset Id", path: "_source.asset._id" },
-      { header: "Asset Model", path: "_source.asset.model" },
       {
         header: "Measured At ISO",
         isIsoDate: true,
         path: "_source.measuredAt",
       },
+      { header: "Measure Type", path: "_source.type" },
+      { header: "Device Id", path: "_source.origin._id" },
+      { header: "Device Model", path: "_source.origin.deviceModel" },
+      { header: "Asset Id", path: "_source.asset._id" },
+      { header: "Asset Model", path: "_source.asset.model" },
       ...measureColumns,
     ];
 
