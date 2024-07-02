@@ -38,14 +38,6 @@ jobs:
           SEMANTIC_RELEASE_SLACK_WEBHOOK: ${{ secrets.SEMANTIC_RELEASE_SLACK_WEBHOOK }}
         run: npx semantic-release
 
-      - name: Build type package
-        run: npm -prefix ./types run build
-
-      - name: Publish package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: cd types && npm publish
-
   documentation_deploy:
     needs: [release-device-manager]
     name: Documentation - Deploy

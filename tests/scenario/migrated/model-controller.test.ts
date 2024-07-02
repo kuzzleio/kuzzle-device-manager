@@ -52,7 +52,6 @@ describe("features/Model/Controller", () => {
         },
       },
     });
-
     response = await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -125,6 +124,33 @@ describe("features/Model/Controller", () => {
     });
 
     await expect(promise).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("List on an engine is also returning commons assets models", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroup: "other-group",
+        model: "Car",
+      },
+    });
+    
+    const response = await sdk.query({
+      controller: "device-manager/models",
+      action: "listAssets",
+      engineGroup: "other-group",
+    });
+
+    expect(response.result).toMatchObject({
+      total: 4,
+      models: [
+        { _id: "model-asset-Car" },
+        { _id: "model-asset-Container" },
+        { _id: "model-asset-Plane" },
+        { _id: "model-asset-Warehouse" },
+      ],
+    });
   });
 
   it("Create an asset with default metadata values", async () => {
@@ -504,52 +530,60 @@ describe("features/Model/Controller", () => {
       model: "AdvancedPlane",
       metadataMappings: {
         company: { type: "keyword" },
-        year: { type: "integer" }
+        year: { type: "integer" },
       },
-      measures: [
-        { name: "temperatureExt", type: "temperature" },
-      ],
+      measures: [{ name: "temperatureExt", type: "temperature" }],
       metadataDetails: {
         company: {
           group: "companyInfo",
           locales: {
             en: {
               friendlyName: "Manufacturer",
-              description: "The company that manufactured the plane"
+              description: "The company that manufactured the plane",
             },
             fr: {
               friendlyName: "Fabricant",
-              description: "L'entreprise qui a fabriqué l'avion"
-            }
-          }
-        }
+              description: "L'entreprise qui a fabriqué l'avion",
+            },
+          },
+        },
       },
       metadataGroups: {
         companyInfo: {
           locales: {
-            en: { groupFriendlyName: "Company Information", description: "All company related informations" },
-            fr: { groupFriendlyName: "Informations sur l'entreprise", description: "Toutes les informations relatives a l'entreprise" }
-          }
-        }
-      }
+            en: {
+              groupFriendlyName: "Company Information",
+              description: "All company related informations",
+            },
+            fr: {
+              groupFriendlyName: "Informations sur l'entreprise",
+              description: "Toutes les informations relatives a l'entreprise",
+            },
+          },
+        },
+      },
     };
 
     // Write the asset model with metadata details and groups
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
-      body: assetModelWithDetailsAndGroups
+      body: assetModelWithDetailsAndGroups,
     });
 
     // Retrieve and assert the asset model
-    const response = await sdk.document.get("device-manager", "models", "model-asset-AdvancedPlane");
-    expect(response._source.asset).toHaveProperty('metadataDetails');
-    expect(response._source.asset).toHaveProperty('metadataGroups');
-    delete assetModelWithDetailsAndGroups.engineGroup
+    const response = await sdk.document.get(
+      "device-manager",
+      "models",
+      "model-asset-AdvancedPlane"
+    );
+    expect(response._source.asset).toHaveProperty("metadataDetails");
+    expect(response._source.asset).toHaveProperty("metadataGroups");
+    delete assetModelWithDetailsAndGroups.engineGroup;
     expect(response._source).toMatchObject({
       type: "asset",
       engineGroup: "commons",
-      asset: assetModelWithDetailsAndGroups
+      asset: assetModelWithDetailsAndGroups,
     });
   });
 

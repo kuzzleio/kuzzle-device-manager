@@ -9,6 +9,7 @@ import {
   MetadataMappings,
   TooltipModels,
 } from "./ModelContent";
+import { MeasureValuesDetails } from "../../measure/types/MeasureDefinition";
 
 interface ModelsControllerRequest {
   controller: "device-manager/models";
@@ -69,6 +70,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
   body: {
     type: string;
     valuesMappings: JSONObject;
+    valuesDetails?: MeasureValuesDetails;
   };
 }
 export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;

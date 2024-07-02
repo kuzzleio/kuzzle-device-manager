@@ -37,6 +37,7 @@ import {
   AskModelMeasureGet,
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
+import { MeasureValuesDetails } from "../measure";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -319,9 +320,14 @@ export class ModelService extends BaseService {
   async writeMeasure(
     type: string,
     valuesMappings: JSONObject,
+    valuesDetails?: MeasureValuesDetails,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
-      measure: { type, valuesMappings },
+      measure: {
+        type,
+        valuesDetails,
+        valuesMappings,
+      },
       type: "measure",
     };
 
@@ -382,8 +388,17 @@ export class ModelService extends BaseService {
     engineGroup: string,
   ): Promise<KDocument<AssetModelContent>[]> {
     const query = {
-      and: [{ equals: { type: "asset" } }, { equals: { engineGroup } }],
+      and: [
+        { equals: { type: "asset" } },
+        {
+          or: [
+            { equals: { engineGroup } },
+            { equals: { engineGroup: "commons" } },
+          ],
+        },
+      ],
     };
+
     const sort = { "asset.model": "asc" };
 
     const result = await this.sdk.document.search<AssetModelContent>(

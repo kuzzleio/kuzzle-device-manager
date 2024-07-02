@@ -8,12 +8,10 @@ import {
 } from "../../../index";
 
 import { setupHooks } from "../../helpers";
-
+const sdk = setupHooks();
 jest.setTimeout(10000);
 
 describe("DeviceScenario: dynamicaly register device model and receive a measure", () => {
-  const sdk = setupHooks();
-
   it("register a new device model, create a device from this model and receive a formated measure", async () => {
     await sdk.query<ApiModelWriteDeviceRequest, ApiModelWriteDeviceResult>({
       controller: "device-manager/models",

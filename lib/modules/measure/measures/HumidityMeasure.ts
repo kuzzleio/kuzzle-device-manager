@@ -8,4 +8,16 @@ export type HumidityMeasurement = {
 
 export const humidityMeasureDefinition: MeasureDefinition = {
   valuesMappings: { humidity: { type: "float" } },
+  valuesDetails: {
+    humidity: {
+      en: {
+        friendlyName: "Relative humidity",
+        unit: "%",
+      },
+      fr: {
+        friendlyName: "Humidité relative",
+        unit: "%",
+      },
+    },
+  },
 };
