@@ -15,10 +15,14 @@ interface MetadataProperty {
   type: string;
 }
 
+interface MetadataObject {
+  properties: {
+    [key: string]: MetadataProperty | MetadataObject;
+  };
+}
+
 export interface MetadataMappings {
-  [key: string]:
-    | MetadataProperty
-    | { properties: { [key: string]: MetadataProperty } };
+  [key: string]: MetadataProperty | MetadataObject;
 }
 
 interface LocaleDetails {
