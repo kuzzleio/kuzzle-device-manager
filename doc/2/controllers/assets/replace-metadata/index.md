@@ -45,7 +45,7 @@ Method: PATCH
 
 ## Response
 
-```json
+```js
 {
     "action": "replaceMetadata",
     "collection": "assets",
