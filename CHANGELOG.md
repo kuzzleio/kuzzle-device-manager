@@ -1,3 +1,21 @@
+# [2.4.0-beta.17](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.16...v2.4.0-beta.17) (2024-07-08)
+
+
+### Bug Fixes
+
+* correct release script ([f02c285](https://github.com/kuzzleio/kuzzle-device-manager/commit/f02c2850b8b767e724df72fc907a8e9799baf966))
+* **engine:** update conflicts ask return values ([0f817c3](https://github.com/kuzzleio/kuzzle-device-manager/commit/0f817c37560fb311f39c18e8d56838414d2a8379))
+* **models:**  list asset returns commons assets ([#345](https://github.com/kuzzleio/kuzzle-device-manager/issues/345)) ([2844437](https://github.com/kuzzleio/kuzzle-device-manager/commit/28444377b536614f0a70d397b5f37775464f50aa))
+
+
+### Features
+
+* add log in decoders ([#339](https://github.com/kuzzleio/kuzzle-device-manager/issues/339)) ([fe08b7c](https://github.com/kuzzleio/kuzzle-device-manager/commit/fe08b7ce093892367a37d6e2f16ee1205071d639))
+* **engine:** add mappings update conflict ask call ([#340](https://github.com/kuzzleio/kuzzle-device-manager/issues/340)) ([5cd6aca](https://github.com/kuzzleio/kuzzle-device-manager/commit/5cd6acabe640e3e908db12f8166cd4c3d4e1f637))
+* **measuremodels:** add optional local names and unit to measure definitions ([#343](https://github.com/kuzzleio/kuzzle-device-manager/issues/343)) ([50038b2](https://github.com/kuzzleio/kuzzle-device-manager/commit/50038b2361bfa24e71e4df296a6a3ec27b332d7c))
+* **metadata:** add support nested metadata properties ([#348](https://github.com/kuzzleio/kuzzle-device-manager/issues/348)) ([17eda8b](https://github.com/kuzzleio/kuzzle-device-manager/commit/17eda8b6c3802991eac3678e60ed614bfa8e172d))
+* **metadata:** improve asset metadata ([#346](https://github.com/kuzzleio/kuzzle-device-manager/issues/346)) ([2eb5887](https://github.com/kuzzleio/kuzzle-device-manager/commit/2eb5887497d1e7449ca7c401274f6ff94453fe26))
+
 # [2.4.0-beta.16](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.15...v2.4.0-beta.16) (2024-04-09)
 
 
