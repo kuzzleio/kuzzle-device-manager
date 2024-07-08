@@ -20,6 +20,7 @@ import {
   ApiAssetSearchResult,
   ApiAssetUpdateResult,
   ApiAssetMigrateTenantResult,
+  ApiAssetMetadataReplaceResult,
 } from "./types/AssetApi";
 
 export class AssetsController {
@@ -64,6 +65,15 @@ export class AssetsController {
         update: {
           handler: this.update.bind(this),
           http: [{ path: "device-manager/:engineId/assets/:_id", verb: "put" }],
+        },
+        replaceMetadata: {
+          handler: this.replaceMetadata.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/metadata",
+              verb: "patch",
+            },
+          ],
         },
         getMeasures: {
           handler: this.getMeasures.bind(this),
@@ -159,6 +169,23 @@ export class AssetsController {
     const metadata = request.getBodyObject("metadata");
 
     const updatedAsset = await this.assetService.update(
+      engineId,
+      assetId,
+      metadata,
+      request,
+    );
+
+    return AssetSerializer.serialize(updatedAsset);
+  }
+
+  async replaceMetadata(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetMetadataReplaceResult> {
+    const assetId = request.getId();
+    const engineId = request.getString("engineId");
+    const metadata = request.getBodyObject("metadata");
+
+    const updatedAsset = await this.assetService.replaceMetadata(
       engineId,
       assetId,
       metadata,

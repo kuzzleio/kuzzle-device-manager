@@ -31,6 +31,20 @@ export interface ApiAssetUpdateRequest extends AssetsControllerRequest {
 }
 export type ApiAssetUpdateResult = KDocument<AssetContent>;
 
+export interface ApiAssetMetadataReplaceRequest
+  extends AssetsControllerRequest {
+  action: "replaceMetadata";
+
+  _id: string;
+
+  refresh?: string;
+
+  body: {
+    metadata: Metadata;
+  };
+}
+export type ApiAssetMetadataReplaceResult = KDocument<AssetContent>;
+
 export interface ApiAssetUpsertRequest extends AssetsControllerRequest {
   action: "upsert";
 

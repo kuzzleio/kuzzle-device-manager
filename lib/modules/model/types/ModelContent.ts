@@ -13,6 +13,8 @@ export interface MeasureModelContent extends KDocumentContent {
 }
 interface MetadataProperty {
   type: string;
+  strategy?: string;
+  format?: string;
 }
 
 interface MetadataObject {
