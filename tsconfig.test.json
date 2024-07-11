@@ -7,7 +7,7 @@
   "include": [
     "lib/**/*.ts",
     "scripts/**/*.mjs",
-    "tests/application/**/*.ts",
+    "tests/**/*.ts",
     ".eslintrc.cjs",
     "index.ts",
     "releaseTypes.mjs"
