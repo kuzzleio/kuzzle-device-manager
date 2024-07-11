@@ -23,6 +23,7 @@ function getExportedColums(row) {
     temperatureInt: parsedRow[6],
     temperatureWeather: parsedRow[7],
     lastMeasuredAt: parsedRow[8],
+    lastMeasuredAtISO: parsedRow[9],
   };
 }
 
@@ -78,7 +79,7 @@ describe("AssetsController:exportMeasures", () => {
     writeFileSync("./assets.csv", csv.join(""));
 
     expect(csv[0]).toBe(
-      "Model,Reference,position,position.accuracy,position.altitude,temperatureExt,temperatureInt,temperatureWeather,lastMeasuredAt\n",
+      "Model,Reference,position,position.accuracy,position.altitude,temperatureExt,temperatureInt,temperatureWeather,lastMeasuredAt,lastMeasuredAtISO\n",
     );
 
     expect(csv).toHaveLength(assetCount + 1);
@@ -94,6 +95,7 @@ describe("AssetsController:exportMeasures", () => {
     expect(typeof parseFloat(row1.temperatureInt)).toBe("number");
     expect(typeof parseFloat(row1.temperatureWeather)).toBe("number");
     expect(typeof parseFloat(row1.lastMeasuredAt)).toBe("number");
+    expect(typeof row1.lastMeasuredAtISO).toBe("string");
 
     const row2 = getExportedColums(csv[2]);
 
@@ -106,5 +108,6 @@ describe("AssetsController:exportMeasures", () => {
     expect(typeof parseFloat(row2.temperatureInt)).toBe("number");
     expect(typeof parseFloat(row2.temperatureWeather)).toBe("number");
     expect(typeof parseFloat(row2.lastMeasuredAt)).toBe("number");
+    expect(typeof row2.lastMeasuredAtISO).toBe("string");
   });
 });
