@@ -1,3 +1,15 @@
+# [2.4.0-beta.18](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.17...v2.4.0-beta.18) (2024-07-12)
+
+
+### Bug Fixes
+
+* **device:** correct device HTTP API ([#354](https://github.com/kuzzleio/kuzzle-device-manager/issues/354)) ([d9fe9e1](https://github.com/kuzzleio/kuzzle-device-manager/commit/d9fe9e10d14c7abe03f17ce0a3331fae948de8d8))
+
+
+### Features
+
+* add UTC export by default for devices and assets ([#342](https://github.com/kuzzleio/kuzzle-device-manager/issues/342)) ([878ca58](https://github.com/kuzzleio/kuzzle-device-manager/commit/878ca5803c2e68786b342bc1f3dd15b8a3514a77))
+
 # [2.4.0-beta.17](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.16...v2.4.0-beta.17) (2024-07-08)
 
 
