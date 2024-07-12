@@ -135,6 +135,60 @@ export class AssetService extends BaseService {
   }
 
   /**
+   * Replace an asset metadata
+   */
+  public async replaceMetadata(
+    engineId: string,
+    assetId: string,
+    metadata: Metadata,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetContent>> {
+    const asset = await this.get(engineId, assetId, request);
+
+    for (const key in metadata) {
+      if (key in asset._source.metadata) {
+        asset._source.metadata[key] = metadata[key];
+      }
+    }
+
+    const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
+      "device-manager:asset:update:before",
+      { asset, metadata },
+    );
+
+    const updatedAsset = await this.sdk.document.replace<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      assetId,
+      updatedPayload.asset._source,
+    );
+
+    await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
+      {
+        asset: updatedAsset._source,
+        event: {
+          metadata: {
+            names: Object.keys(flattenObject(updatedPayload.metadata)),
+          },
+          name: "metadata",
+        },
+        id: updatedAsset._id,
+        timestamp: Date.now(),
+      },
+    ]);
+
+    await this.app.trigger<EventAssetUpdateAfter>(
+      "device-manager:asset:update:after",
+      {
+        asset: updatedAsset,
+        metadata: updatedPayload.metadata,
+      },
+    );
+
+    return updatedAsset;
+  }
+
+  /**
    * Update or Create an asset metadata
    */
   public async upsert(

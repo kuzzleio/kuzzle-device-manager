@@ -52,7 +52,6 @@ describe("features/Model/Controller", () => {
         },
       },
     });
-
     response = await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -126,6 +125,33 @@ describe("features/Model/Controller", () => {
     });
 
     await expect(promise).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("List on an engine is also returning commons assets models", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroup: "other-group",
+        model: "Car",
+      },
+    });
+    
+    const response = await sdk.query({
+      controller: "device-manager/models",
+      action: "listAssets",
+      engineGroup: "other-group",
+    });
+
+    expect(response.result).toMatchObject({
+      total: 4,
+      models: [
+        { _id: "model-asset-Car" },
+        { _id: "model-asset-Container" },
+        { _id: "model-asset-Plane" },
+        { _id: "model-asset-Warehouse" },
+      ],
+    });
   });
 
   it("Create an asset with default metadata values", async () => {

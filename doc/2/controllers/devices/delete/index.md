@@ -14,7 +14,7 @@ Deletes a device.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:deviceId
+URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id
 Method: DELETE
 ```
 

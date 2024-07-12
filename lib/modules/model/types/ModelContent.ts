@@ -13,12 +13,18 @@ export interface MeasureModelContent extends KDocumentContent {
 }
 interface MetadataProperty {
   type: string;
+  strategy?: string;
+  format?: string;
+}
+
+interface MetadataObject {
+  properties: {
+    [key: string]: MetadataProperty | MetadataObject;
+  };
 }
 
 export interface MetadataMappings {
-  [key: string]:
-    | MetadataProperty
-    | { properties: { [key: string]: MetadataProperty } };
+  [key: string]: MetadataProperty | MetadataObject;
 }
 
 interface LocaleDetails {

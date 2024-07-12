@@ -14,7 +14,7 @@ Deletes an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:assetId
+URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id
 Method: DELETE
 ```
 

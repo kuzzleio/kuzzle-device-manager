@@ -114,11 +114,12 @@ describe("AssetsController:exportMeasures", () => {
 
     expect(csv).toHaveLength(5);
     expect(csv[0]).toBe(
-      "Measure Id,Measured At,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperatureExt.temperature,temperatureInt.temperature,position.position,position.accuracy,position.altitude,temperatureWeather.temperature\n",
+      "Measure Id,Measured At,Measured At ISO,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperatureExt.temperature,temperatureInt.temperature,position.position,position.accuracy,position.altitude,temperatureWeather.temperature\n",
     );
     const [
       payloadId,
       measuredAt,
+      measuredAtISO,
       measureType,
       deviceId,
       deviceModel,
@@ -132,6 +133,7 @@ describe("AssetsController:exportMeasures", () => {
 
     expect(typeof payloadId).toBe("string");
     expect(typeof parseFloat(measuredAt)).toBe("number");
+    expect(typeof measuredAtISO).toBe("string");
     expect(measureType).toBe("temperature");
     expect(deviceId).toBe("DummyTempPosition-linked2");
     expect(deviceModel).toBe("DummyTempPosition");

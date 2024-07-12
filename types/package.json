@@ -1,17 +1,18 @@
 {
   "name": "kuzzle-device-manager-types",
-  "version": "2.0.0",
+  "version": "2.4.0-beta.18",
   "description": "Shared types for Kuzzle Device Manager",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "main": "index.js",
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kuzzleio/kuzzle-plugin-device-manager.git"
+    "url": "git+https://github.com/kuzzleio/kuzzle-plugin-device-manager.git",
+    "directory": "types"
   },
   "scripts": {
     "prepack": "npm run build",
-    "build": "./copy-types.sh && node scripts/copy-version.js"
+    "build": "./copy-types.sh"
   },
   "license": "Apache-2.0",
   "files": [
