@@ -53,7 +53,7 @@ export class DevicesController {
         update: {
           handler: this.update.bind(this),
           http: [
-            { path: "device-manager/:engineId/device/:deviceId", verb: "post" },
+            { path: "device-manager/:engineId/devices/:_id", verb: "put" },
           ],
         },
         search: {
@@ -66,7 +66,7 @@ export class DevicesController {
           handler: this.delete.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/device/:deviceId",
+              path: "device-manager/:engineId/devices/:_id",
               verb: "delete",
             },
           ],
