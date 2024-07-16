@@ -116,8 +116,9 @@ An asset model contains the following information:
 - `measures`: received measurements
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
 - `defaultMetadata`: (optional) default metadata values- 
-- `metadataDetails`: (optional) Metadata group and translations . You can use it to keep consistency on translations between your apps
+- `metadataDetails`: (optional) Metadata group and translations. You can use it to keep consistency on translations between your apps
 - `metadataGroups`: (optional) Groups list with translations for group name. You can use it to group metadatas by their concerns
+- `tooltipModels`: (optional) Tooltip model list, each containing labels and tooltip content to be shown. You can use it to create templates that displays relevant information in dashboards
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 

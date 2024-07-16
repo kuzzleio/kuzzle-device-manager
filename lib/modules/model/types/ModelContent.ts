@@ -54,6 +54,59 @@ export interface MetadataGroups {
   };
 }
 
+export interface MetadataTooltipContent {
+  category: "metadata";
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
+  metadataPath: string;
+  suffix?: string;
+}
+
+export interface MeasureTooltipContent {
+  category: "measure";
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
+  measureSlot: string;
+  measureValuePath: string;
+  suffix?: string;
+}
+
+export interface StaticTooltipContent {
+  category: "static";
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
+  type: StaticTooltipContentType;
+  value: string;
+}
+
+export enum StaticTooltipContentType {
+  link = "link",
+  image = "image",
+  text = "text",
+  title = "title",
+  separator = "separator",
+}
+
+export interface TooltipModels {
+  [key: string]: {
+    tooltipLabel: string;
+    content: (
+      | MetadataTooltipContent
+      | MeasureTooltipContent
+      | StaticTooltipContent
+    )[];
+  };
+}
+
 export interface AssetModelContent extends KDocumentContent {
   type: "asset";
 
@@ -137,6 +190,53 @@ export interface AssetModelContent extends KDocumentContent {
      * ]
      */
     measures: NamedMeasures;
+    /**
+     * List of tooltip models for this asset model
+     *
+     * @example
+     * [
+     *   "defaultTooltipKey": {
+     *     "tooltipLabel": "Default tooltip model",
+     *     "content": [
+     *       {
+     *         "metadataPath": "geolocation",
+     *         "label": {
+     *           "locales": {
+     *             "en": {
+     *               "description": "",
+     *               "friendlyName": "Container position"
+     *             },
+     *             "fr": {
+     *               "description": "",
+     *               "friendlyName": "Position du conteneur"
+     *             }
+     *           }
+     *         },
+     *         "category": "metadata"
+     *       },
+     *       {
+     *         "measureValuePath": "externalTemperature",
+     *         "measureSlot": "externalTemperature",
+     *         "label": {
+     *           "locales": {
+     *             "en": {
+     *               "description": "",
+     *               "friendlyName": "External temperature"
+     *             },
+     *             "fr": {
+     *               "description": "",
+     *               "friendlyName": "Température extérieure"
+     *             }
+     *           }
+     *         },
+     *         "category": "measure",
+     *         "suffix": "°C"
+     *       }
+     *     ]
+     *   }
+     * ]
+     */
+    tooltipModels?: TooltipModels;
   };
 }
 

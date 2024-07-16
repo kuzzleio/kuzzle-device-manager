@@ -4,6 +4,7 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  TooltipModels,
 } from "./ModelContent";
 
 /**
@@ -41,15 +42,56 @@ import {
  *     metadataGroups: {
  *       buildingEnv: {
  *         locales: {
- *          en: {
- *            groupFriendlyName: "Building environment",
- *            description: "The building environment"
- *          },
- *          fr: {
- *            groupFriendlyName: "Environnement du bâtiment",
- *            description: "L'environnement du bâtiment"
- *          }
+ *           en: {
+ *             groupFriendlyName: "Building environment",
+ *             description: "The building environment"
+ *           },
+ *           fr: {
+ *             groupFriendlyName: "Environnement du bâtiment",
+ *             description: "L'environnement du bâtiment"
+ *           }
  *         }
+ *       }
+ *     },
+ *     tooltipModels: {
+ *       "defaultTooltipKey": {
+ *         "tooltipLabel": "Default Tooltip Model",
+ *         "content": [
+ *           {
+ *             "category": "metadata",
+ *             "label": {
+ *               "locales": {
+ *                 "en": {
+ *                   "friendlyName": "Container position",
+ *                   "description": ""
+ *                 },
+ *                 "fr": {
+ *                   "friendlyName": "Position du conteneur",
+ *                   "description": ""
+ *                 }
+ *               }
+ *             },
+ *             "metadataPath": "geolocation"
+ *           },
+ *           {
+ *             "category": "measure",
+ *             "label": {
+ *               "locales": {
+ *                 "en": {
+ *                   "friendlyName": "External temperature",
+ *                   "description": ""
+ *                 },
+ *                 "fr": {
+ *                   "friendlyName": "Température extérieure",
+ *                   "description": ""
+ *                 }
+ *               }
+ *             },
+ *             "measureSlot": "externalTemperature",
+ *             "measureValuePath": "externalTemperature",
+ *             "suffix": "°C"
+ *           }
+ *         ]
  *       }
  *     }
  *   }
@@ -80,6 +122,11 @@ export type AssetModelDefinition = {
    * Metadata groups
    */
   metadataGroups?: MetadataGroups;
+
+  /**
+   * Tooltip models
+   */
+  tooltipModels?: TooltipModels;
 };
 
 /**

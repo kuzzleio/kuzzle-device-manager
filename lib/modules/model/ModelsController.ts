@@ -5,6 +5,7 @@ import {
   ApiModelWriteAssetResult,
   ApiModelWriteDeviceResult,
   ApiModelWriteMeasureResult,
+  ApiModelUpdateAssetResult,
   ApiModelDeleteAssetResult,
   ApiModelDeleteDeviceResult,
   ApiModelDeleteMeasureResult,
@@ -64,6 +65,12 @@ export class ModelsController {
           handler: this.listMeasures.bind(this),
           http: [{ path: "device-manager/models/measures", verb: "get" }],
         },
+        updateAsset: {
+          handler: this.updateAsset.bind(this),
+          http: [
+            { path: "device-manager/models/assets/:model", verb: "patch" },
+          ],
+        },
         writeAsset: {
           handler: this.writeAsset.bind(this),
           http: [{ path: "device-manager/models/assets", verb: "post" }],
@@ -113,6 +120,7 @@ export class ModelsController {
     const measures = request.getBodyArray("measures", []);
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
+    const tooltipModels = request.getBodyObject("tooltipModels", {});
 
     const assetModel = await this.modelService.writeAsset(
       engineGroup,
@@ -122,6 +130,7 @@ export class ModelsController {
       metadataDetails,
       metadataGroups,
       measures,
+      tooltipModels,
     );
 
     return assetModel;
@@ -215,5 +224,32 @@ export class ModelsController {
       models,
       total: models.length,
     };
+  }
+
+  async updateAsset(
+    request: KuzzleRequest,
+  ): Promise<ApiModelUpdateAssetResult> {
+    const engineGroup = request.getString("engineGroup");
+    const model = request.getString("model");
+    const metadataMappings = request.getBodyObject("metadataMappings", {});
+    const defaultValues = request.getBodyObject("defaultValues", {});
+    const measures = request.getBodyArray("measures", []);
+    const metadataDetails = request.getBodyObject("metadataDetails", {});
+    const metadataGroups = request.getBodyObject("metadataGroups", {});
+    const tooltipModels = request.getBodyObject("tooltipModels", {});
+
+    const updatedAssetModel = await this.modelService.updateAsset(
+      engineGroup,
+      model,
+      metadataMappings,
+      defaultValues,
+      metadataDetails,
+      metadataGroups,
+      measures,
+      tooltipModels,
+      request,
+    );
+
+    return updatedAssetModel;
   }
 }

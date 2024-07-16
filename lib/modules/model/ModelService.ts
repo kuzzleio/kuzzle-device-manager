@@ -29,6 +29,7 @@ import {
   MetadataGroups,
   MetadataMappings,
   ModelContent,
+  TooltipModels,
 } from "./types/ModelContent";
 import {
   AskModelAssetGet,
@@ -185,6 +186,7 @@ export class ModelService extends BaseService {
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
     measures: AssetModelContent["asset"]["measures"],
+    tooltipModels: TooltipModels,
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
@@ -198,6 +200,7 @@ export class ModelService extends BaseService {
         metadataGroups,
         metadataMappings,
         model,
+        tooltipModels,
       },
       engineGroup,
       type: "asset",
@@ -544,5 +547,82 @@ export class ModelService extends BaseService {
     }
 
     return result.hits[0];
+  }
+
+  /**
+   * Update an asset model
+   */
+  async updateAsset(
+    engineGroup: string,
+    model: string,
+    metadataMappings: MetadataMappings,
+    defaultMetadata: JSONObject,
+    metadataDetails: MetadataDetails,
+    metadataGroups: MetadataGroups,
+    measures: AssetModelContent["asset"]["measures"],
+    tooltipModels: TooltipModels,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetModelContent>> {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
+    }
+
+    this.checkDefaultValues(metadataMappings, defaultMetadata);
+
+    const existingAsset = await this.getAsset(engineGroup, model);
+
+    // The field must be deleted if an element of the table is to be deleted
+    await this.sdk.document.deleteFields(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      existingAsset._id,
+      ["asset.tooltipModels"],
+      { source: true },
+    );
+
+    const measuresUpdated =
+      measures.length === 0 ? existingAsset._source.asset.measures : measures;
+
+    const assetModelContent: AssetModelContent = {
+      asset: {
+        defaultMetadata,
+        measures: measuresUpdated,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+        tooltipModels,
+      },
+      engineGroup,
+      type: "asset",
+    };
+    const assetModel = {
+      _id: existingAsset._id,
+      _source: assetModelContent,
+    };
+
+    const conflicts = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { twin: { models: [assetModelContent], type: "asset" } },
+    );
+
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `Assets mappings are causing conflicts`,
+        conflicts,
+      );
+    }
+
+    const endDocument = await this.updateDocument<AssetModelContent>(
+      request,
+      assetModel,
+      {
+        collection: InternalCollection.MODELS,
+        engineId: this.config.adminIndex,
+      },
+      { source: true },
+    );
+
+    return endDocument;
   }
 }

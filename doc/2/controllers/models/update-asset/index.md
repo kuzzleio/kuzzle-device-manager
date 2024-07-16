@@ -1,23 +1,21 @@
 ---
 code: true
 type: page
-title: writeAsset
-description: Write an asset model
+title: updateAsset
+description: Update an asset model
 ---
 
-# writeAsset
+# updateAsset
 
-Write an asset model.
-
-This action acts like a create or replace
+Update an existing asset model.
 
 ## Query Syntax
 
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/models/assets
-Method: POST
+URL: http://kuzzle:7512/_/device-manager/models/assets/:model?engineGroup=<engine group>
+Method: PUT
 ```
 
 ### Other protocols
@@ -25,10 +23,11 @@ Method: POST
 ```js
 {
   "controller": "device-manager/assets",
-  "action": "writeAsset",
+  "action": "updateAsset",
+  "engineGroup": "<engine group>",
+  "model": "<asset model>",
+
   "body": {
-    "engineGroup": "<engine group>",
-    "model": "<asset model>",
 
     // Optional
 
@@ -40,7 +39,7 @@ Method: POST
     },
     "metadataDetails": {
       /*
-        Metadata details including tanslations and group.
+        Metadata details including translations and group.
           [name: string]: {
             group?: string;
             locales: {
@@ -126,16 +125,21 @@ Method: POST
 
 ---
 
-## Body properties
+## Arguments
 
 - `engineGroup`: Name of the engine group
 - `model`: Asset model name
+
+---
+
+## Body properties
+
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Metadata group and translations
 - `metadataGroups`: Groups list with translations for group name 
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
-- `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
+- `measures`: Array of measure definition. Each item defines `type` and `name` properties for the measure.
 
 ---
 
@@ -146,12 +150,12 @@ Method: POST
   "status": 200,
   "error": null,
   "controller": "device-manager/models",
-  "action": "writeAsset",
+  "action": "updateAsset",
   "requestId": "<unique request identifier>",
   "result": {
     "_id": "<modelId>",
     "_source": {
-      // Asset model content
+      // Updated asset model content
     },
   }
 }
@@ -159,4 +163,4 @@ Method: POST
 
 ## Errors
 
-Writing an asset with metadata mappings can cause conflicts, in this case a [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) will be thrown with the HTTP code **409**.
+Updating an asset with metadata mappings can cause conflicts, in this case a [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) will be thrown with the HTTP code **409**.
