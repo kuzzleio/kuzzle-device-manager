@@ -179,7 +179,7 @@ export class DeviceService extends BaseService {
   }
 
   /**
-   * Update or Create an asset metadata
+   * Update or Create an device metadata
    */
   public async upsert(
     engineId: string,
@@ -195,23 +195,24 @@ export class DeviceService extends BaseService {
         deviceId,
         request,
       ).catch(() => null);
-      
+
       if (!adminIndexDevice) {
         return this.create(model, reference, metadata, request);
       }
 
-      if (adminIndexDevice._source.engineId && adminIndexDevice._source.engineId !== engineId) {
+      if (
+        adminIndexDevice._source.engineId &&
+        adminIndexDevice._source.engineId !== engineId
+      ) {
         throw new BadRequestError(
           `Device "${adminIndexDevice._id}" already exists on another engine. Abort`,
         );
       }
 
-      const engineDevice = await this.get(
-        engineId,
-        deviceId,
-        request,
-      ).catch(() => null);
-      
+      const engineDevice = await this.get(engineId, deviceId, request).catch(
+        () => null,
+      );
+
       if (!engineDevice) {
         await this.attachEngine(engineId, deviceId, request);
       }
