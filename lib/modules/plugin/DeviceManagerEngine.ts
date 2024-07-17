@@ -326,12 +326,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       "asset",
       engineGroup,
     );
+    const settings = this.config.engineCollections.asset.settings;
 
-    await this.tryCreateCollection(
-      engineId,
-      InternalCollection.ASSETS,
+    await this.tryCreateCollection(engineId, InternalCollection.ASSETS, {
       mappings,
-    );
+      settings,
+    });
 
     return InternalCollection.ASSETS;
   }
@@ -355,10 +355,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     _.merge(mappings.properties.asset, assetsMappings);
 
+    const settings = this.config.engineCollections.assetHistory.settings;
+
     await this.tryCreateCollection(
       engineId,
       InternalCollection.ASSETS_HISTORY,
-      mappings,
+      {
+        mappings,
+        settings,
+      },
     );
 
     return InternalCollection.ASSETS_HISTORY;
@@ -373,8 +378,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    * @throws If it failed during the assets groups collection creation
    */
   async createAssetsGroupsCollection(engineId: string) {
+    const settings = this.config.engineCollections.assetGroups.settings;
+
     await this.tryCreateCollection(engineId, InternalCollection.ASSETS_GROUPS, {
       mappings: assetGroupsMappings,
+      settings,
     });
 
     return InternalCollection.ASSETS_GROUPS;
@@ -391,12 +399,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async createDevicesCollection(engineId: string) {
     const mappings =
       await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
+    const settings = this.config.engineCollections.device.settings;
 
-    await this.tryCreateCollection(
-      engineId,
-      InternalCollection.DEVICES,
+    await this.tryCreateCollection(engineId, InternalCollection.DEVICES, {
       mappings,
-    );
+      settings,
+    });
 
     return InternalCollection.DEVICES;
   }
@@ -411,12 +419,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    */
   async createMeasuresCollection(engineId: string, engineGroup: string) {
     const mappings = await this.getMeasuresMappingsFromDB(engineGroup);
+    const settings = this.config.engineCollections.measures.settings;
 
-    await this.tryCreateCollection(
-      engineId,
-      InternalCollection.MEASURES,
+    await this.tryCreateCollection(engineId, InternalCollection.MEASURES, {
       mappings,
-    );
+      settings,
+    });
 
     return InternalCollection.MEASURES;
   }
@@ -433,7 +441,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   private async tryCreateCollection(
     engineIndex: string,
     collection: string,
-    mappings:
+    options:
       | CollectionMappings
       | {
           mappings?: CollectionMappings;
@@ -441,7 +449,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         },
   ) {
     try {
-      await this.sdk.collection.create(engineIndex, collection, mappings);
+      await this.sdk.collection.create(engineIndex, collection, options);
     } catch (error) {
       throw new InternalError(
         `Failed to create the collection [${collection}] for engine [${engineIndex}]: ${error.message}`,
