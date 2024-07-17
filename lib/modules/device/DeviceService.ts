@@ -178,6 +178,74 @@ export class DeviceService extends BaseService {
     );
   }
 
+  /**
+   * Update or Create an asset metadata
+   */
+  public async upsert(
+    engineId: string,
+    model: string,
+    reference: string,
+    metadata: Metadata,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    const deviceId = `${model}-${reference}`;
+    return lock(`device:${engineId}:${deviceId}`, async () => {
+      const adminIndexDevice = await this.get(
+        this.config.adminIndex,
+        deviceId,
+        request,
+      ).catch(() => null);
+      
+      if (!adminIndexDevice) {
+        return this.create(model, reference, metadata, request);
+      }
+
+      if (adminIndexDevice._source.engineId && adminIndexDevice._source.engineId !== engineId) {
+        throw new BadRequestError(
+          `Device "${adminIndexDevice._id}" already exists on another engine. Abort`,
+        );
+      }
+
+      const engineDevice = await this.get(
+        engineId,
+        deviceId,
+        request,
+      ).catch(() => null);
+      
+      if (!engineDevice) {
+        await this.attachEngine(engineId, deviceId, request);
+      }
+
+      const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
+        "device-manager:device:update:before",
+        { device: adminIndexDevice, metadata },
+      );
+
+      const updatedDevice = await this.updateDocument<DeviceContent>(
+        request,
+        {
+          _id: deviceId,
+          _source: { metadata: updatedPayload.metadata },
+        },
+        {
+          collection: InternalCollection.DEVICES,
+          engineId,
+        },
+        { source: true },
+      );
+
+      await this.app.trigger<EventDeviceUpdateAfter>(
+        "device-manager:device:update:after",
+        {
+          device: updatedDevice,
+          metadata: updatedPayload.metadata,
+        },
+      );
+
+      return updatedDevice;
+    });
+  }
+
   public async update(
     engineId: string,
     deviceId: string,
