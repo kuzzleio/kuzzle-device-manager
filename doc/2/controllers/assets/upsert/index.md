@@ -26,7 +26,8 @@ Method: POST
     "controller": "device-manager/assets",
     "action": "upsert",
     "engineId": "<engineId>",
-    "_id": "<assetId>",
+    "reference": "<assetReference>",
+    "model": "<assetModel>",
     "body": {
         "metadata": {
             "<metadata name>": "<metadata value>"
@@ -40,7 +41,8 @@ Method: POST
 ## Arguments
 
 - `engineId`: Engine ID
-- `_id`: Asset ID
+- `reference` : asset reference
+- `model`: asset model
 
 ## Body properties
 
