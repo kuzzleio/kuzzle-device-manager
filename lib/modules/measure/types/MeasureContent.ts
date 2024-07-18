@@ -15,6 +15,11 @@ export type MeasureOriginDevice = {
   measureName: string;
 
   /**
+   * Origin device metadata
+   */
+  deviceMetadata?: Metadata;
+
+  /**
    * Payload uuids that were used to create this measure.
    */
   payloadUuids: Array<string>;
