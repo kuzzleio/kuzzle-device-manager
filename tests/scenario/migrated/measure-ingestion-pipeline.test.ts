@@ -159,4 +159,52 @@ describe("features/Measure/IngestionPipeline", () => {
       },
     });
   });
+
+  it("Should enrich measure with the origin device metadata", async () => {
+    const metadata = {
+      color: "blue"
+    }
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "meta_device", metadata: metadata},
+    });
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "linkAsset",
+      _id: "DummyTemp-meta_device",
+      assetId: "Container-unlinked1",
+      engineId: "engine-ayse",
+      body: {
+        measureNames: [{ device: "temperature", asset: "temperatureExt" }],
+      },
+    });
+
+    await sendPayloads(sdk, "dummy-temp", [
+      { deviceEUI: "meta_device", temperature: 35 },
+      { deviceEUI: "meta_device", temperature: 25 },
+    ]);
+
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const response = await sdk.query({
+      controller: "document",
+      action: "search",
+      index: "engine-ayse",
+      collection: "measures",
+      body: { query: { term: { "asset._id": "Container-unlinked1" } } },
+    });
+
+    console.log(response.result.hits[0]._source.origin)
+
+    expect(response.result).toMatchObject({
+      hits: [
+        { _source: { type: "temperature", values: { temperature: 35 }, origin: { deviceMetadata: metadata} } },
+        { _source: { type: "temperature", values: { temperature: 25 }, origin: { deviceMetadata: metadata} } },
+      ],
+    })
+  })
 });
