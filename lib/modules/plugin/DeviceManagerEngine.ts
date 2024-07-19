@@ -132,29 +132,35 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         );
 
         const results = await this.getEngines();
+        const engineGroups = results.map((elt) => elt.engine.group);
+        const groups = [undefined, ...engineGroups];
 
-        for (const document of results) {
+        for (const group of groups) {
           if (payload.twin) {
             const twinModels = await this.getModels<TwinModelContent>(
               this.config.adminIndex,
               payload.twin.type,
-              document.engine.group,
+              group,
             );
 
-            return this.doesTwinUpdateConflicts(
+            const conflicts = await this.doesTwinUpdateConflicts(
               payload.twin.type,
               twinModels,
               payload.twin.models,
               measureModels,
             );
-          }
 
-          if (payload.measuresModels) {
-            return this.doesMeasuresUpdateConflicts(
-              measureModels,
-              payload.measuresModels,
-            );
+            if (conflicts.length > 0) {
+              return conflicts;
+            }
           }
+        }
+
+        if (payload.measuresModels) {
+          return this.doesMeasuresUpdateConflicts(
+            measureModels,
+            payload.measuresModels,
+          );
         }
 
         return [];
@@ -556,7 +562,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       engineGroup,
     );
 
-    return this.getMeasuresMappings(models, assetsMappings);
+    const deviceMappings = await this.getDigitalTwinMappingsFromDB("device");
+
+    return this.getMeasuresMappings(models, assetsMappings, deviceMappings);
   }
 
   /**
@@ -569,6 +577,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   private async getMeasuresMappings(
     models: MeasureModelContent[],
     assetsMappings: any,
+    deviceMappings: any,
   ) {
     const mappings = JSON.parse(JSON.stringify(measuresMappings));
 
@@ -581,6 +590,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     mappings.properties.asset.properties.metadata.properties =
       assetsMappings.properties.metadata.properties;
+
+    mappings.properties.origin.properties.deviceMetadata.properties =
+      deviceMappings.properties.metadata.properties;
 
     return mappings;
   }
