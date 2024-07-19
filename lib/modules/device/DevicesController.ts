@@ -26,6 +26,7 @@ import {
   ApiDeviceUnlinkAssetResult,
   ApiDeviceUpdateResult,
   ApiDeviceGetMeasuresResult,
+  ApiDeviceUpsertResult,
 } from "./types/DeviceApi";
 
 export class DevicesController {
@@ -54,6 +55,12 @@ export class DevicesController {
           handler: this.update.bind(this),
           http: [
             { path: "device-manager/:engineId/devices/:_id", verb: "put" },
+          ],
+        },
+        upsert: {
+          handler: this.upsert.bind(this),
+          http: [
+            { path: "device-manager/:engineId/devices/:_id", verb: "post" },
           ],
         },
         search: {
@@ -203,6 +210,23 @@ export class DevicesController {
       request.getSearchParams(),
       request,
     );
+  }
+
+  async upsert(request: KuzzleRequest): Promise<ApiDeviceUpsertResult> {
+    const engineId = request.getString("engineId");
+    const model = request.getBodyString("model");
+    const reference = request.getBodyString("reference");
+    const metadata = request.getBodyObject("metadata");
+
+    const upsertDevice = await this.deviceService.upsert(
+      engineId,
+      model,
+      reference,
+      metadata,
+      request,
+    );
+
+    return DeviceSerializer.serialize(upsertDevice);
   }
 
   /**
