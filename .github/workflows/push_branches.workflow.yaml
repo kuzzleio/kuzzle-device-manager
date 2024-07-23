@@ -47,6 +47,14 @@ jobs:
         with:
           token: ${{ secrets.ACCESS_TOKEN_CI }}
 
+      - name: Extract references from context
+        shell: bash
+        id: extract-refs
+        run: |
+          version=$(jq -r .version package.json | cut -d. -f 1)
+          echo "major-version=$(($version == 0 ? 1 : $version))" >> $GITHUB_OUTPUT
+          echo "repo=$(echo $GITHUB_REPOSITORY | cut -d/ -f 2)" >> $GITHUB_OUTPUT
+
       - uses: convictional/trigger-workflow-and-wait@v1.6.3
         with:
           owner: kuzzleio
@@ -54,4 +62,4 @@ jobs:
           github_token: ${{ secrets.ACCESS_TOKEN_CI }}
           workflow_file_name: child_repo.workflow.yml
           ref: ${{ github.ref_name == 'master' && 'master' || 'develop' }}
-          client_payload: '{"repo_name":"kuzzle-plugin-device-manager","branch":"${{ github.ref_name }}","version":"1"}'
+          client_payload: '{"repo_name":"${{ steps.extract-refs.outputs.repo }}","branch":"${{ github.ref_name }}","version":"${{ steps.extract-refs.outputs.major-version }}"}'
