@@ -1,3 +1,54 @@
+# [2.4.0-elasticsearch-8.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.3.2...v2.4.0-elasticsearch-8.1) (2024-08-06)
+
+
+### Bug Fixes
+
+* **asset_migration:** fixes multiple assets migration and optimize ([fd546cf](https://github.com/kuzzleio/kuzzle-device-manager/commit/fd546cf4141208f2742f3f0a0b303e6e5903ef56))
+* **assetsGroups:** disable checkRights on impersonate ([#325](https://github.com/kuzzleio/kuzzle-device-manager/issues/325)) ([eaa3edc](https://github.com/kuzzleio/kuzzle-device-manager/commit/eaa3edc678529f0a4b1e0f440764e3c8f8504f62))
+* **assets:** migrate tenant only if user is admin ([c24f942](https://github.com/kuzzleio/kuzzle-device-manager/commit/c24f942673b37e798c9f89a098ad6747fd4977bd))
+* **assetsMigrateTenant:** add type for frontend and fix admin only ([e249f13](https://github.com/kuzzleio/kuzzle-device-manager/commit/e249f13d3e2bba70023177374c0874d982f78226))
+* catch errors when updating the mappings on startup ([#338](https://github.com/kuzzleio/kuzzle-device-manager/issues/338)) ([e09c5a3](https://github.com/kuzzleio/kuzzle-device-manager/commit/e09c5a346d50b645830c82b33f10370e2dcbbd0c))
+* **ci:** correct github token in ci ([a5a6b69](https://github.com/kuzzleio/kuzzle-device-manager/commit/a5a6b69898defc1cdb22b57d389ad745ee75de8e))
+* **ci:** fix npm glob not working anymore ([18e79aa](https://github.com/kuzzleio/kuzzle-device-manager/commit/18e79aa638be41f8e8ecdb42f2d150f730dcebc5))
+* copy-version script ([72b5e49](https://github.com/kuzzleio/kuzzle-device-manager/commit/72b5e496c81700fddd9b475cb77965c3b6091de7))
+* correct api types ([#333](https://github.com/kuzzleio/kuzzle-device-manager/issues/333)) ([05c426f](https://github.com/kuzzleio/kuzzle-device-manager/commit/05c426fbfaf9602bb46d4b0c8f472fab85280b3a))
+* correct KuzzleRequest for pipes ([ef932d1](https://github.com/kuzzleio/kuzzle-device-manager/commit/ef932d1b874e3768c091783819e6b063b4f1211a))
+* correct release script ([f02c285](https://github.com/kuzzleio/kuzzle-device-manager/commit/f02c2850b8b767e724df72fc907a8e9799baf966))
+* **device:** correct device HTTP API ([#354](https://github.com/kuzzleio/kuzzle-device-manager/issues/354)) ([d9fe9e1](https://github.com/kuzzleio/kuzzle-device-manager/commit/d9fe9e10d14c7abe03f17ce0a3331fae948de8d8))
+* **engine:** update conflicts ask return values ([0f817c3](https://github.com/kuzzleio/kuzzle-device-manager/commit/0f817c37560fb311f39c18e8d56838414d2a8379))
+* **export:** correct scroll in getNamedMeasures ([05fe4fd](https://github.com/kuzzleio/kuzzle-device-manager/commit/05fe4fd081e049978e1fab06f82bce1bb1dc0950))
+* improve get internal devices documents ([03ccb29](https://github.com/kuzzleio/kuzzle-device-manager/commit/03ccb297c9f86ee6fe78acfe9dace932c96af568))
+* improve measure export to be usable with multiple measures in one measure ([#330](https://github.com/kuzzleio/kuzzle-device-manager/issues/330)) ([dab8d57](https://github.com/kuzzleio/kuzzle-device-manager/commit/dab8d57957a4ff2423ae3c29203a1bd7a55a5155))
+* **migrateTenant:** clear groups of newly created assets ([79f6a5a](https://github.com/kuzzleio/kuzzle-device-manager/commit/79f6a5a84a34fd526e3820455cdf999364c49ad1))
+* **models:**  list asset returns commons assets ([#345](https://github.com/kuzzleio/kuzzle-device-manager/issues/345)) ([2844437](https://github.com/kuzzleio/kuzzle-device-manager/commit/28444377b536614f0a70d397b5f37775464f50aa))
+* **npm:** fix repository url ([514dc59](https://github.com/kuzzleio/kuzzle-device-manager/commit/514dc59913950299354b22a99febe525f1190d96))
+* update semantic-release ([380c8b3](https://github.com/kuzzleio/kuzzle-device-manager/commit/380c8b340e925bfca0f1c435c2fcaa6c2f20ced0))
+
+
+### Features
+
+* add group descriptions to models ([#335](https://github.com/kuzzleio/kuzzle-device-manager/issues/335)) ([de00fb7](https://github.com/kuzzleio/kuzzle-device-manager/commit/de00fb73161c50e42ca504ed9c829099cd5ba44a))
+* add log in decoders ([#339](https://github.com/kuzzleio/kuzzle-device-manager/issues/339)) ([fe08b7c](https://github.com/kuzzleio/kuzzle-device-manager/commit/fe08b7ce093892367a37d6e2f16ee1205071d639))
+* add tooltip model by asset model ([#341](https://github.com/kuzzleio/kuzzle-device-manager/issues/341)) ([865ae6d](https://github.com/kuzzleio/kuzzle-device-manager/commit/865ae6d5e898f9519b0fccbf3a0a6be5ce55aa57))
+* add UTC export by default for devices and assets ([#342](https://github.com/kuzzleio/kuzzle-device-manager/issues/342)) ([878ca58](https://github.com/kuzzleio/kuzzle-device-manager/commit/878ca5803c2e68786b342bc1f3dd15b8a3514a77))
+* **asset:** add upsert method ([#323](https://github.com/kuzzleio/kuzzle-device-manager/issues/323)) ([5f87787](https://github.com/kuzzleio/kuzzle-device-manager/commit/5f8778734849386a796eed6ae6071757978bc956))
+* **assets:** assets migrate tenant ([5f05101](https://github.com/kuzzleio/kuzzle-device-manager/commit/5f0510120428cbaffaa4569a705a5f20644d8c83))
+* **assets:** remove assetId in upsert ([#326](https://github.com/kuzzleio/kuzzle-device-manager/issues/326)) ([2f286de](https://github.com/kuzzleio/kuzzle-device-manager/commit/2f286de85d286bbd13bdc4c1385a9ce4d4ffcb50))
+* **configuration:** allow to specify Elasticsearch index settings ([#337](https://github.com/kuzzleio/kuzzle-device-manager/issues/337)) ([6d22fa9](https://github.com/kuzzleio/kuzzle-device-manager/commit/6d22fa9dbee7a662e84af660b061171b61b8d9d6))
+* digitaltwin exports ([#315](https://github.com/kuzzleio/kuzzle-device-manager/issues/315)) ([aab65af](https://github.com/kuzzleio/kuzzle-device-manager/commit/aab65afbc13205ea695c503fbbdf2326fe3cafd2))
+* **digitalTwin:** allow to modify mapping from application ([#322](https://github.com/kuzzleio/kuzzle-device-manager/issues/322)) ([89d375a](https://github.com/kuzzleio/kuzzle-device-manager/commit/89d375a97892aad6b4cf976a38581cb0d7a14936))
+* **digitalTwin:** implement generic document pipes triggers ([#321](https://github.com/kuzzleio/kuzzle-device-manager/issues/321)) ([60a21fc](https://github.com/kuzzleio/kuzzle-device-manager/commit/60a21fc8ced1e925efbad9b79cc0de511efac46c))
+* **engine:** add mappings update conflict ask call ([#340](https://github.com/kuzzleio/kuzzle-device-manager/issues/340)) ([5cd6aca](https://github.com/kuzzleio/kuzzle-device-manager/commit/5cd6acabe640e3e908db12f8166cd4c3d4e1f637))
+* implement comprehensible metadata ([#332](https://github.com/kuzzleio/kuzzle-device-manager/issues/332)) ([e80ef8e](https://github.com/kuzzleio/kuzzle-device-manager/commit/e80ef8eb660dd20024b72279007b8aa2f369160c))
+* improve export ([#316](https://github.com/kuzzleio/kuzzle-device-manager/issues/316)) ([51db84a](https://github.com/kuzzleio/kuzzle-device-manager/commit/51db84a5f50fa3381454697cee0a06300b07b4ea))
+* **measure:** add device metadata to origin ([#356](https://github.com/kuzzleio/kuzzle-device-manager/issues/356)) ([1ed9d8b](https://github.com/kuzzleio/kuzzle-device-manager/commit/1ed9d8bf1885569350d12287ade2da640f825ab7))
+* **measuremodels:** add optional local names and unit to measure definitions ([#343](https://github.com/kuzzleio/kuzzle-device-manager/issues/343)) ([50038b2](https://github.com/kuzzleio/kuzzle-device-manager/commit/50038b2361bfa24e71e4df296a6a3ec27b332d7c))
+* **measures:** add lastMeasuredAt on DigitalTwin ([#314](https://github.com/kuzzleio/kuzzle-device-manager/issues/314)) ([05b8a53](https://github.com/kuzzleio/kuzzle-device-manager/commit/05b8a53970e76cc2d2a3de3b98173c43b8cb54e0))
+* **metadata:** add support nested metadata properties ([#348](https://github.com/kuzzleio/kuzzle-device-manager/issues/348)) ([17eda8b](https://github.com/kuzzleio/kuzzle-device-manager/commit/17eda8b6c3802991eac3678e60ed614bfa8e172d))
+* **metadata:** improve asset metadata ([#346](https://github.com/kuzzleio/kuzzle-device-manager/issues/346)) ([2eb5887](https://github.com/kuzzleio/kuzzle-device-manager/commit/2eb5887497d1e7449ca7c401274f6ff94453fe26))
+* patch-in support for ES 8 ([6afbe79](https://github.com/kuzzleio/kuzzle-device-manager/commit/6afbe799a0f23e606b0e9d612f8ecf4e9e7b14bc))
+* upsert devices ([#355](https://github.com/kuzzleio/kuzzle-device-manager/issues/355)) ([c75abef](https://github.com/kuzzleio/kuzzle-device-manager/commit/c75abef4c313bbe33ad833189dfcc6fdc50fc15d))
+
 # [2.4.0-beta.18](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.17...v2.4.0-beta.18) (2024-07-12)
 
 
