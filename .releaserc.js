@@ -21,5 +21,9 @@ module.exports = {
       name: "beta",
       prerelease: true,
     },
+    {
+      name: "elasticsearch-8",
+      prerelease: true
+    },
   ],
 };
