@@ -38,6 +38,7 @@ export interface MetadataDetails {
     locales: {
       [locale: string]: LocaleDetails;
     };
+    readOnly?: boolean;
   };
 }
 
