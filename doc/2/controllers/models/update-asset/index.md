@@ -48,6 +48,7 @@ Method: PUT
                 description: string;
               };
             };
+            readOnly?: boolean;
           };
       */
     },
