@@ -3,7 +3,11 @@ import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
-import { ApiModelWriteAssetRequest, ApiModelWriteMeasureRequest, MeasureModelContent } from "../../../lib/modules/model";
+import {
+  ApiModelWriteAssetRequest,
+  ApiModelWriteMeasureRequest,
+  MeasureModelContent,
+} from "../../../lib/modules/model";
 
 jest.setTimeout(10000);
 
@@ -135,7 +139,7 @@ describe("features/Model/Controller", () => {
         model: "Car",
       },
     });
-    
+
     const response = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
@@ -353,6 +357,7 @@ describe("features/Model/Controller", () => {
         engineGroup: "commons",
         model: "plane",
         metadataMappings: { size: { type: "integer" } },
+        metadataDetails: { readOnly: true },
         defaultValues: { name: "Firebird" },
         measures: [{ type: "temperature", name: "temperature" }],
       },
@@ -524,6 +529,50 @@ describe("features/Model/Controller", () => {
       _source: { measure: { type: "battery" } },
     });
   });
+
+  it("Write and Retrieve an Device model with metadata details", async () => {
+    const deviceModelWithDetails = {
+      model: "Zigbee",
+      measures: [{ type: "battery", name: "battery" }],
+      metadataMappings: { network: { type: "keyword" } },
+      metadataDetails: {
+        company: {
+          group: "companyInfo",
+          locales: {
+            en: {
+              friendlyName: "Manufacturer",
+              description: "The company that manufactured Zigbee",
+            },
+            fr: {
+              friendlyName: "Fabricant",
+              description: "L'entreprise qui a fabriqué Zigbee",
+            },
+          },
+          readOnly: true,
+        },
+      },
+    };
+
+    // Write the device model with metadata details
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeDevice",
+      body: deviceModelWithDetails,
+    });
+
+    // Retrieve and assert the device model
+    const response = await sdk.document.get(
+      "device-manager",
+      "models",
+      "model-device-Zigbee"
+    );
+    expect(response._source.device).toHaveProperty("metadataDetails");
+    expect(response._source).toMatchObject({
+      type: "device",
+      device: deviceModelWithDetails,
+    });
+  });
+
   it("Write and Retrieve an Asset model with metadata details and groups", async () => {
     const assetModelWithDetailsAndGroups = {
       engineGroup: "commons",
@@ -626,9 +675,9 @@ describe("features/Model/Controller", () => {
       engineGroup: "commons",
       asset: assetModelWithTooltip,
     });
-});
+  });
 
-it("Update the tooltip models of an Asset model", async () => {
+  it("Update the tooltip models of an Asset model", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -649,14 +698,18 @@ it("Update the tooltip models of an Asset model", async () => {
             ],
           },
         },
-      }
+      },
     });
 
     const updatedTooltipModels = {
       "example-tooltip": {
         tooltipLabel: "Updated Tooltip",
         content: [
-          { category: "static", type: "title", value: "Updated Warehouse Info" },
+          {
+            category: "static",
+            type: "title",
+            value: "Updated Warehouse Info",
+          },
           { category: "metadata", metadataPath: "location" },
         ],
       },
@@ -675,7 +728,7 @@ it("Update the tooltip models of an Asset model", async () => {
         },
         measures: [{ name: "temperatureInt", type: "temperature" }],
         tooltipModels: updatedTooltipModels,
-      }
+      },
     });
 
     const response = await sdk.document.get(
@@ -685,7 +738,7 @@ it("Update the tooltip models of an Asset model", async () => {
     );
     expect(response._source.asset).toHaveProperty("tooltipModels");
     expect(response._source.asset.tooltipModels).toEqual(updatedTooltipModels);
-});
+  });
 
   it("Register models from the framework", async () => {
     let response;
@@ -780,18 +833,18 @@ it("Update the tooltip models of an Asset model", async () => {
       sdk.document.get<MeasureModelContent>(
         "device-manager",
         "models",
-        "model-asset-Warehouse",
-      ),
+        "model-asset-Warehouse"
+      )
     ).resolves.toMatchObject({
       _source: {
         asset: {
           metadataMappings: {
             surface: {
-              type: "integer"
-            }
-          }
-        }
-      }
+              type: "integer",
+            },
+          },
+        },
+      },
     });
   });
 
@@ -806,7 +859,7 @@ it("Update the tooltip models of an Asset model", async () => {
             temperature: {
               type: "integer",
             },
-          }
+          },
         },
       });
     }
@@ -817,18 +870,18 @@ it("Update the tooltip models of an Asset model", async () => {
       sdk.document.get<MeasureModelContent>(
         "device-manager",
         "models",
-        "model-measure-temperature",
-      ),
+        "model-measure-temperature"
+      )
     ).resolves.toMatchObject({
       _source: {
         measure: {
           valuesMappings: {
             temperature: {
-              type: "float"
-            }
-          }
-        }
-      }
+              type: "float",
+            },
+          },
+        },
+      },
     });
   });
 });
