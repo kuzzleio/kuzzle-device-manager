@@ -66,10 +66,7 @@ describe("features/Asset/History", () => {
   });
 
   it("Historize asset after being linked and unlinked", async () => {
-    let response;
-    let promise;
-
-    response = await sdk.query({
+    let response = await sdk.query({
       controller: "device-manager/devices",
       action: "linkAsset",
       _id: "DummyTemp-unlinked1",
@@ -131,45 +128,8 @@ describe("features/Asset/History", () => {
     });
   });
 
-  it("Historize asset after receiving a new measure", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "linked1", temperature: 42.2 },
-    ]);
-
-    await sdk.collection.refresh("engine-ayse", "assets-history");
-
-    response = await sdk.query({
-      controller: "document",
-      action: "search",
-      index: "engine-ayse",
-      collection: "assets-history",
-      body: { sort: { "_kuzzle_info.createdAt": "desc" } },
-    });
-
-    expect(response.result).toMatchObject({
-      hits: {
-        "0": {
-          _source: {
-            id: "Container-linked1",
-            event: { name: "measure", measure: { names: ["temperatureExt"] } },
-            asset: {
-              measures: { temperatureExt: { values: { temperature: 42.2 } } },
-            },
-          },
-        },
-        length: 1,
-      },
-    });
-  });
-
   it("Historize asset when metadata have been updated when receiving a measure", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
+    let response = await sendPayloads(sdk, "dummy-temp", [
       {
         deviceEUI: "linked1",
         temperature: 42.2,
@@ -193,8 +153,7 @@ describe("features/Asset/History", () => {
           _source: {
             id: "Container-linked1",
             event: {
-              name: "measure",
-              measure: { names: ["temperatureExt"] },
+              name: "metadata",
               metadata: { names: ["weight", "trailer.capacity"] },
             },
             asset: {

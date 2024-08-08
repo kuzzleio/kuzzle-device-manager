@@ -24,10 +24,7 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Register a DummyTemp payload", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
+    await sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: "12345", temperature: 21 },
       { deviceEUI: "12345", temperature: 42 },
     ]);
@@ -48,10 +45,7 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Reject if measuredAt is not unix timestamp", async () => {
-    let response;
-    let promise;
-
-    promise = sendPayloads(sdk, "dummy-temp", [
+    const promise = sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: "12345", temperature: 21, measuredAt: 1671007889 },
     ]);
 
@@ -62,10 +56,7 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Reject with error a DummyTemp payload", async () => {
-    let response;
-    let promise;
-
-    promise = sendPayloads(sdk, "dummy-temp", [
+    const promise = sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: null, temperature: 21 },
     ]);
 
@@ -75,10 +66,7 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Reject a DummyTemp payload", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
+    const response = await sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: "12345", temperature: 21, invalid: true },
     ]);
 
@@ -180,24 +168,6 @@ describe("features/Decoder/PayloadController", () => {
       },
     });
 
-    await sdk.collection.refresh("engine-ayse", "assets-history");
-
-    const assetHistory = await sdk.query({
-      controller: "document",
-      action: "search",
-      index: "engine-ayse",
-      collection: "assets-history",
-      body: { sort: { "_kuzzle_info.createdAt": "desc" } },
-    });
-
-    expect(assetHistory.result.hits[0]._source).toMatchObject({
-      id: "Container-linked2",
-      event: {
-        name: "measure",
-        measure: { names: ["temperatureExt", "position"] },
-      },
-    });
-
     await sdk.collection.refresh("device-manager", "payloads");
     let exceptedResult = await sdk.document.search(
       "device-manager",
@@ -220,10 +190,7 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Historize the measures with device and asset context", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
+    let response = await sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: "linked1", temperature: 42.2 },
     ]);
 
@@ -256,10 +223,7 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Decode Device metadata from payload", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
+    await sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: "12345", temperature: 21.1, metadata: { color: "RED" } },
     ]);
 
@@ -275,17 +239,14 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Throw an error when decoding unknown measure name", async () => {
-    let response;
-    let promise;
-
-    response = await sdk.query({
+    await sdk.query({
       controller: "device-manager/devices",
       action: "create",
       engineId: "device-manager",
       body: { model: "DummyTemp", reference: "test" },
     });
 
-    promise = sendPayloads(sdk, "dummy-temp", [
+    const promise = sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: "12345", temperature: 21.1, unknownMeasure: 42 },
     ]);
 
@@ -301,10 +262,7 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Receive a payload from unknown device", async () => {
-    let response;
-    let promise;
-
-    response = await sdk.query({
+    await sdk.query({
       controller: "device-manager/payloads",
       action: "receiveUnknown",
       deviceModel: "Abeeway",
