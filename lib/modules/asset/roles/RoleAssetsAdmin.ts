@@ -40,6 +40,9 @@ export const RoleAssetsAdmin: KuzzleRole = {
           listMeasures: true,
         },
       },
+      "device-manager/devices": {
+        actions: { linkAsset: true, unlinkAsset: true },
+      },
     },
   },
 };
