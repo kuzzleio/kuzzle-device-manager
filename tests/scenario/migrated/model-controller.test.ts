@@ -546,6 +546,7 @@ describe("features/Model/Controller", () => {
               description: "L'entreprise qui a fabriqué l'avion",
             },
           },
+          readOnly: true,
         },
       },
       metadataGroups: {

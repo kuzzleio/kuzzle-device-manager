@@ -38,6 +38,7 @@ export interface MetadataDetails {
     locales: {
       [locale: string]: LocaleDetails;
     };
+    readOnly?: boolean;
   };
 }
 
@@ -148,14 +149,15 @@ export interface AssetModelContent extends KDocumentContent {
      *   "extTemp": {
      *     "group": "buildingEnv",
      *     "locales": {
-     *     "en": {
-     *        "friendlyName": "External temperature",
-     *        "description": "Building external temperature"
-     *     },
-     *     "fr": {
-     *       "friendlyName": "Température extérieure",
-     *       "description": "Température à l'exterieur du bâtiment"
-     *     },
+     *       "en": {
+     *          "friendlyName": "External temperature",
+     *          "description": "Building external temperature"
+     *       },
+     *       "fr": {
+     *         "friendlyName": "Température extérieure",
+     *         "description": "Température à l'exterieur du bâtiment"
+     *       },
+     *     "readOnly": true,
      *   }
      */
     metadataDetails?: MetadataDetails;
@@ -278,14 +280,15 @@ export interface DeviceModelContent extends KDocumentContent {
      *   "sensorVersion": {
      *     "group": "sensorSpecs",
      *     "locales": {
-     *     "en": {
-     *        "friendlyName": "Sensor version",
-     *        "description": "Firmware version of the sensor"
-     *     },
-     *     "fr": {
-     *       "friendlyName": "Version du capteur",
-     *       "description": "Version du micrologiciel du capteur"
-     *     },
+     *       "en": {
+     *          "friendlyName": "Sensor version",
+     *          "description": "Firmware version of the sensor"
+     *       },
+     *       "fr": {
+     *         "friendlyName": "Version du capteur",
+     *         "description": "Version du micrologiciel du capteur"
+     *       },
+     *     "readOnly": true,
      *   }
      */
     metadataDetails?: MetadataDetails;
@@ -302,7 +305,7 @@ export interface DeviceModelContent extends KDocumentContent {
      *       "fr": {
      *         "groupFriendlyName": "Spécifications techniques",
      *         "description": "Toutes les spécifications techniques"
-     *       }
+     *       },
      *     }
      *   }
      * }

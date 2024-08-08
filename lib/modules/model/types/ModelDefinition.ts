@@ -36,7 +36,8 @@ import {
  *             "friendlyName": "Température externe",
  *             "description": "Température externe du conteneur"
  *           }
- *         }
+ *         },
+ *         "readOnly": true,
  *       }
  *     },
  *     metadataGroups: {
@@ -153,7 +154,8 @@ export type AssetModelDefinition = {
  *             friendlyName: "Type de traceur",
  *             description: "Type du traceur"
  *           }
- *         }
+ *         },
+ *         readOnly: true,
  *       }
  *     },
  *     metadataGroups: {

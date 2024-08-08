@@ -49,6 +49,7 @@ Method: POST
                 description: string;
               };
             };
+            readOnly?: boolean;
           };
       */
     },
