@@ -23,3 +23,18 @@ export function setupHooks(): Kuzzle {
 
   return sdk;
 }
+
+export function setupSdK(): Kuzzle {
+  const sdk = useSdk();
+
+  beforeAll(async () => {
+    await sdk.connect();
+    await beforeAllCreateEngines(sdk);
+  });
+
+  afterAll(async () => {
+    sdk.disconnect();
+  });
+
+  return sdk;
+}
