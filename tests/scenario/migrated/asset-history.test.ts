@@ -24,17 +24,14 @@ describe("features/Asset/History", () => {
   });
 
   it("Historize asset after creation and metadata update", async () => {
-    let response;
-    let promise;
-
-    response = await sdk.query({
+    await sdk.query({
       controller: "device-manager/assets",
       action: "create",
       engineId: "engine-kuzzle",
       body: { model: "Container", reference: "A1", metadata: { height: 5 } },
     });
 
-    response = await sdk.query({
+    await sdk.query({
       controller: "device-manager/assets",
       action: "update",
       engineId: "engine-kuzzle",
@@ -44,7 +41,7 @@ describe("features/Asset/History", () => {
 
     await sdk.collection.refresh("engine-kuzzle", "assets-history");
 
-    response = await sdk.query({
+    const assetHistory = await sdk.query({
       controller: "document",
       action: "search",
       index: "engine-kuzzle",
@@ -52,27 +49,19 @@ describe("features/Asset/History", () => {
       body: { sort: { "_kuzzle_info.createdAt": "desc" } },
     });
 
-    expect(response.result).toMatchObject({
-      hits: {
-        "0": {
-          _source: {
-            id: "Container-A1",
-            event: { name: "metadata", metadata: { names: ["weight"] } },
-            asset: { metadata: { height: 5, weight: 1250 } },
-          },
-        },
-        "1": {
-          _source: {
-            id: "Container-A1",
-            event: {
-              name: "metadata",
-              metadata: { names: ["weight", "height", "trailer"] },
-            },
-            asset: { metadata: { height: 5, weight: null } },
-          },
-        },
-        length: 2,
+    expect(assetHistory.result.hits.length).toBe(2);
+    expect(assetHistory.result.hits[0]._source).toMatchObject({
+      id: "Container-A1",
+      event: { name: "metadata", metadata: { names: ["weight"] } },
+      asset: { metadata: { height: 5, weight: 1250 } },
+    });
+    expect(assetHistory.result.hits[1]._source).toMatchObject({
+      id: "Container-A1",
+      event: {
+        name: "metadata",
+        metadata: { names: ["weight", "height", "trailer", "person"] },
       },
+      asset: { metadata: { height: 5, weight: null } },
     });
   });
 
