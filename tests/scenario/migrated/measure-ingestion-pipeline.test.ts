@@ -198,8 +198,6 @@ describe("features/Measure/IngestionPipeline", () => {
       body: { query: { term: { "asset._id": "Container-unlinked1" } } },
     });
 
-    console.log(response.result.hits[0]._source.origin)
-
     expect(response.result).toMatchObject({
       hits: [
         { _source: { type: "temperature", values: { temperature: 35 }, origin: { deviceMetadata: metadata} } },
