@@ -1,3 +1,11 @@
+# [2.4.0-beta.20](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.19...v2.4.0-beta.20) (2024-08-12)
+
+
+### Features
+
+* **assetrole:** add link / unlink device action to asset admin role ([#357](https://github.com/kuzzleio/kuzzle-device-manager/issues/357)) ([febf3a6](https://github.com/kuzzleio/kuzzle-device-manager/commit/febf3a6762e5525563c61776d27aaf31659a4748))
+* **metadata:** add option field readOnly to prevent editing ([#358](https://github.com/kuzzleio/kuzzle-device-manager/issues/358)) ([e0641b4](https://github.com/kuzzleio/kuzzle-device-manager/commit/e0641b41c82bdbbc6f37a0f275bfd3199fce8156))
+
 # [2.4.0-beta.19](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.18...v2.4.0-beta.19) (2024-07-19)
 
 
