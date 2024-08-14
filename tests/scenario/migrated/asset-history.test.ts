@@ -154,7 +154,6 @@ describe("features/Asset/History", () => {
         metadata: { names: ["weight", "trailer.capacity"] },
       },
       asset: {
-        measures: { temperatureExt: { values: { temperature: 42.2 } } },
         metadata: { weight: 42042 },
        },
      });

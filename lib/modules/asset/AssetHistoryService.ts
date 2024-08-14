@@ -25,7 +25,7 @@ export class AssetHistoryService extends BaseService {
     histories: AssetHistoryContent[],
   ) {
     const contents: mCreateRequest<
-      AssetHistoryContent<TAssetHistoryEvent, any, any>
+      AssetHistoryContent<TAssetHistoryEvent, any>
     > = [];
 
     for (const { asset, event, id, timestamp } of histories) {

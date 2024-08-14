@@ -295,10 +295,8 @@ export class AssetService extends DigitalTwinService {
           _id: assetId,
           _source: {
             groups: [],
-            lastMeasuredAt: null,
             linkedDevices: [],
             measureSlots: assetModel.asset.measures,
-            measures,
             metadata: { ...assetMetadata, ...metadata },
             model,
             reference,

@@ -1,11 +1,8 @@
-import { DeviceContent } from "lib/modules/device";
-import { ContainerAssetContent } from "../../../application/assets/Container";
-
 import {
-  sendDummyTempPayloads,
-  sendDummyTempPositionPayloads,
-  setupHooks,
-} from "../../../helpers";
+  ApiAssetGetRequest,
+  ApiAssetGetResult,
+} from "../../../../lib/modules/asset";
+import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
 
@@ -24,58 +21,42 @@ describe("Ingestion Pipeline: process before", () => {
       },
     ]);
 
-    const asset = await sdk.document.get<ContainerAssetContent>(
-      "engine-ayse",
-      "assets",
-      "Container-linked1",
-    );
-    expect(asset._source.measures).toMatchObject({
-      temperatureExt: {
-        values: {
-          temperature: 21,
-        },
-      },
-      temperatureWeather: {
-        values: {
-          temperature: 21.21,
-        },
+    await sdk.collection.refresh("engine-ayse", "measures");
+    await expect(
+      sdk.query({
+        _id: "Container-linked1",
+        action: "getLastMeasures",
+        controller: "device-manager/assets",
+        engineId: "engine-ayse",
+      }),
+    ).resolves.toMatchObject({
+      result: {
+        temperatureExt: { values: { temperature: 21 } },
+        temperatureWeather: { values: { temperature: 21.21 } },
       },
     });
   });
 
-  it("should update lastReceive for new measures", async () => {
-    const now = Date.now();
-    await sendDummyTempPositionPayloads(sdk, [
+  it("should update the asset document with the new metadata", async () => {
+    await sendDummyTempPayloads(sdk, [
       {
-        deviceEUI: "linked2",
-        temperature: {
-          value: 21,
-          measuredAt: 1680096420000, // 13:27:00 UTC
-        },
-        location: {
-          value: {
-            lat: 21,
-            lon: 21,
-          },
-          measuredAt: 1680096300000, // 13:25:00 UTC
+        deviceEUI: "linked1",
+        temperature: 21,
+        metadata: {
+          // search this string to find the associated pipe
+          color: "test-update-asset-metadata-with-payload",
         },
       },
     ]);
+    await sdk.collection.refresh("engine-ayse", "assets");
 
-    const device = await sdk.document.get<DeviceContent>(
-      "engine-ayse",
-      "devices",
-      "DummyTempPosition-linked2",
-    );
+    const { result } = await sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
+      controller: "device-manager/assets",
+      action: "get",
+      engineId: "engine-ayse",
+      _id: "Container-linked1",
+    });
 
-    expect(device._source.lastMeasuredAt).toBeGreaterThanOrEqual(now);
-
-    const asset = await sdk.document.get<ContainerAssetContent>(
-      "engine-ayse",
-      "assets",
-      "Container-linked2",
-    );
-
-    expect(asset._source.lastMeasuredAt).toBe(1680096420000);
+    expect(result._source.metadata.weight).toBe(1337);
   });
 });

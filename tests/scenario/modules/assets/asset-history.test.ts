@@ -208,7 +208,6 @@ describe("DeviceController: receiveMeasure", () => {
         },
       },
       asset: {
-        measures: { temperatureExt: { values: { temperature: 13.27 } } },
         metadata: { weight: 42042, trailer: { capacity: 2048 } },
       },
     });

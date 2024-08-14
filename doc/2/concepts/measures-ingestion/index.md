@@ -280,7 +280,7 @@ The `device-manager:measures:process:before` event is triggered with an object c
 An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:before`
 :::
 
-Another event is triggered after updating the asset and the device with the latest measures but before being persisted: `device-manager:measures:persist:after`.
+Another event is triggered after updating the asset and the device with the latest measures but before being persisted: `device-manager:measures:persist:before`.
 
 The object passed to the event is the same as for the previous event.
 
@@ -309,7 +309,7 @@ It is possible to modify the fields of existing measures directly by manipulatin
 
 New measures can be created and added to the measure table.
 
-If these measures are present in the device or device, then they must also be added to them.
+If these measures are present in the device, then they must also be added to it.
 
 - **_Example: retrieving the temperature from an API from the current position_**
 
@@ -348,16 +348,6 @@ If these measures are present in the device or device, then they must also be ad
 
           // Add the new measure to the array so it will be persisted
           measures.push(temperatureMeasure);
-
-          // Embed the new measure in the asset so it will be persisted
-          asset._source.measures.temperature = {
-            name: "temperature",
-            type: "temperature",
-            measuredAt: Date.now(),
-            originId: "weather-api",
-            values: { temperature },
-            payloadUuids: measure.origin.payloadUuids,
-          };
         }
       }
 

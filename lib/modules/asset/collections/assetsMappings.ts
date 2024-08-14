@@ -3,7 +3,7 @@ import { CollectionMappings } from "kuzzle";
 /**
  * Base mappings for the "assets" collection.
  *
- * Those mappings does not contains the `measures` and `metadata` mappings.
+ * Those mappings does not contains the `metadata` mappings.
  */
 export const assetsMappings: CollectionMappings = {
   dynamic: "strict",
@@ -31,14 +31,6 @@ export const assetsMappings: CollectionMappings = {
         // populated with asset models
       },
     },
-
-    measures: {
-      properties: {
-        // populated with asset models
-      },
-    },
-
-    lastMeasuredAt: { type: "date" },
 
     linkedDevices: {
       properties: {

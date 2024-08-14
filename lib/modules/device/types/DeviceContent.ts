@@ -1,6 +1,10 @@
 import { JSONObject } from "kuzzle-sdk";
 
-import { DigitalTwinContent, Metadata } from "../../shared";
+import {
+  DigitalTwinContent,
+  DigitalTwinMeasures,
+  Metadata,
+} from "../../shared";
 
 /**
  * Device document content
@@ -8,7 +12,7 @@ import { DigitalTwinContent, Metadata } from "../../shared";
 export interface DeviceContent<
   TMeasures extends JSONObject = any,
   TMetadata extends Metadata = any,
-> extends DigitalTwinContent<TMeasures, TMetadata> {
+> extends DigitalTwinContent<TMetadata> {
   /**
    * Linked asset unique identifier
    */
@@ -17,4 +21,8 @@ export interface DeviceContent<
   /**
    */
   engineId: string;
+
+  measures: DigitalTwinMeasures<TMeasures>;
+
+  lastMeasuredAt: number;
 }

@@ -157,14 +157,18 @@ describe("features/Decoder/PayloadController", () => {
       },
     });
 
+    await sdk.collection.refresh("engine-ayse", "measures");
     await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-linked2")
+      sdk.query({
+        _id: "Container-linked2",
+        action: "getLastMeasures",
+        controller: "device-manager/assets",
+        engineId: "engine-ayse",
+      })
     ).resolves.toMatchObject({
-      _source: {
-        measures: {
-          temperatureExt: { values: { temperature: 21 } },
-          position: { values: { position: { lat: 42.2, lon: 2.42 } } },
-        },
+      result: {
+        temperatureExt: { values: { temperature: 21 } },
+        position: { values: { position: { lat: 42.2, lon: 2.42 } } },
       },
     });
 

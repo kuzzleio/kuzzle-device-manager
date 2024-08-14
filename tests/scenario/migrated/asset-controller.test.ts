@@ -57,11 +57,6 @@ describe("features/Asset/Controller", () => {
             type: "temperature",
           },
         ],
-        measures: {
-          temperatureExt: null,
-          temperatureInt: null,
-          position: null,
-        },
         linkedDevices: [],
         _kuzzle_info: { author: "-1" },
       },

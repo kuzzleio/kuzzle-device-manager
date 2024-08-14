@@ -25,7 +25,7 @@ export type ContainerMeasurements = {
   temperatureWeather: TemperatureMeasurement;
 };
 
-export interface ContainerAssetContent extends AssetContent<ContainerMeasurements, ContainerMetadata> {
+export interface ContainerAssetContent extends AssetContent<ContainerMetadata> {
   model: "Container";
 }
 
@@ -182,17 +182,9 @@ function neverCalled() {
     reference: "",
     measureSlots: containerAssetDefinition.measures,
     metadata: undefined,
-    measures,
-    lastMeasuredAt: 0
   };
 
   container.metadata.height = 40;
-  if (container.measures.temperatureExt) {
-    container.measures.temperatureExt.values.temperature = 20;
-  }
-  if (container.measures.position) {
-    container.measures.position.values.accuracy = 10;
-  }
   // @ts-expect-error
   container.measures.unexistingMeasure;
   // @ts-expect-error

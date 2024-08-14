@@ -44,7 +44,7 @@ export class MeasureService extends BaseService {
    * Register new measures from a device, updates :
    * - admin device
    * - engine device
-   * - linked asset
+   * - linked asset, if metadata has changed
    * - engine measures
    *
    * A mutex ensure that a device can ingest one measure at a time.
@@ -52,7 +52,7 @@ export class MeasureService extends BaseService {
    * This method represents the ingestion pipeline:
    *  - build measures documents and update digital twins (device and asset)
    *  - trigger events `before` (measure enrichment)
-   *  - save documents (measures, device and asset)
+   *  - save documents (measures; device and asset if their metadata changed)
    *  - trigger events `after`
    */
   public async ingest(
@@ -88,10 +88,6 @@ export class MeasureService extends BaseService {
         payloadUuids,
       );
 
-      if (asset) {
-        asset._source.measures ||= {};
-      }
-
       /**
        * Event before starting to process new measures.
        *
@@ -110,10 +106,6 @@ export class MeasureService extends BaseService {
       }
 
       this.updateDeviceMeasures(device, measures);
-
-      if (asset) {
-        this.updateAssetMeasures(asset, measures);
-      }
 
       await this.app.trigger<EventMeasurePersistBefore>(
         "device-manager:measures:persist:before",
@@ -187,34 +179,36 @@ export class MeasureService extends BaseService {
         );
 
         if (asset) {
-          // @todo potential race condition if 2 differents device are linked
-          // to the same asset and get processed at the same time
-          // asset measures update could be protected by mutex
-          promises.push(
-            this.sdk.document
-              .update<AssetContent>(
-                engineId,
-                InternalCollection.ASSETS,
-                asset._id,
-                asset._source,
-              )
-              .catch((error) => {
-                throw keepStack(
-                  error,
-                  new BadRequestError(
-                    `Cannot update asset "${asset._id}": ${error.message}`,
-                  ),
-                );
-              }),
-          );
-
           // Historize any change in metadata
-          const metadataChanges = objectDiff(
+          const assetMetadataChanges = objectDiff(
             originalAssetMetadata,
             asset._source.metadata,
           );
 
-          if (metadataChanges.length > 0) {
+          if (assetMetadataChanges.length > 0) {
+            // @todo potential race condition if 2 differents device are linked
+            // to the same asset and get processed at the same time
+            // asset measures update could be protected by mutex
+            promises.push(
+              this.sdk.document
+                .update<AssetContent>(
+                  engineId,
+                  InternalCollection.ASSETS,
+                  asset._id,
+                  {
+                    metadata: asset._source.metadata,
+                  },
+                )
+                .catch((error) => {
+                  throw keepStack(
+                    error,
+                    new BadRequestError(
+                      `Cannot update asset "${asset._id}": ${error.message}`,
+                    ),
+                  );
+                }),
+            );
+
             promises.push(
               ask<AskAssetHistoryAdd<AssetHistoryEventMetadata>>(
                 "ask:device-manager:asset:history:add",
@@ -225,7 +219,7 @@ export class MeasureService extends BaseService {
                       asset: asset._source,
                       event: {
                         metadata: {
-                          names: metadataChanges,
+                          names: assetMetadataChanges,
                         },
                         name: "metadata",
                       },
@@ -307,73 +301,6 @@ export class MeasureService extends BaseService {
     }
 
     device._source.lastMeasuredAt = lastMeasuredAt;
-  }
-
-  // @todo there shouldn't be any logic related to asset historization here, but no other choices for now. It needs to be re-architected
-  /**
-   * Update asset with each non-null non-computed measures.
-   *
-   * @returns A map of each asset state by measuredAt timestamp.
-   */
-  private updateAssetMeasures(
-    asset: KDocument<AssetContent>,
-    measurements: MeasureContent[],
-  ): Map<number, KDocument<AssetContent<any, any>>> {
-    // We use a Map in order to preserve the insertion order to avoid another sort
-    const assetStates = new Map<number, KDocument<AssetContent>>();
-
-    if (!asset._source.measures) {
-      asset._source.measures = {};
-    }
-
-    let lastMeasuredAt = 0;
-
-    for (const measurement of measurements) {
-      if (measurement.origin.type === "computed") {
-        continue;
-      }
-
-      if (measurement.asset === null) {
-        continue;
-      }
-
-      const measureName = measurement.asset.measureName;
-      // The measurement was not present in the asset device links so it should
-      // not be saved in the asset measures
-      if (measureName === null) {
-        continue;
-      }
-      const previousMeasure = asset._source.measures[measureName];
-
-      if (
-        previousMeasure &&
-        previousMeasure.measuredAt >= measurement.measuredAt
-      ) {
-        continue;
-      }
-
-      if (measurement.measuredAt > lastMeasuredAt) {
-        lastMeasuredAt = measurement.measuredAt;
-      }
-
-      asset._source.measures[measureName] = {
-        measuredAt: measurement.measuredAt,
-        name: measureName,
-        originId: measurement.origin._id,
-        payloadUuids: measurement.origin.payloadUuids,
-        type: measurement.type,
-        values: measurement.values,
-      };
-
-      assetStates.set(
-        measurement.measuredAt,
-        JSON.parse(JSON.stringify(asset)),
-      );
-    }
-
-    asset._source.lastMeasuredAt = lastMeasuredAt;
-
-    return assetStates;
   }
 
   /**

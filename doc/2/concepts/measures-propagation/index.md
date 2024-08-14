@@ -21,10 +21,6 @@ If **the device is assigned to a tenant**, then the measurements are propagated:
 - in the `<tenant>/devices` collection as embedded measures (`EmbeddedMeasure`)
 - in the `<tenant>/measures` collection as measures (`MeasureContent`)
 
-If **the device is linked to an asset**, then the linked measurements are propagated:
-
-- in the `<tenant>/assets` collection as embedded measures (`EmbeddedMeasure`)
-
 ## Mechanisms of propagation
 
 Propagation is governed by a set of rules contained in devices and assets.

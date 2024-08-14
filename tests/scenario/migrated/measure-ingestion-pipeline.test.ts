@@ -81,10 +81,15 @@ describe("features/Measure/IngestionPipeline", () => {
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-unlinked1")
+      sdk.query({
+        _id: "Container-unlinked1",
+        action: "getLastMeasures",
+        controller: "device-manager/assets",
+        engineId: "engine-ayse",
+      })
     ).resolves.toMatchObject({
-      _source: {
-        measures: { temperatureExt: { values: { temperature: 42 } } },
+      result: {
+        temperatureExt: { values: { temperature: 42 } },
       },
     });
   });
@@ -143,13 +148,16 @@ describe("features/Measure/IngestionPipeline", () => {
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-unlinked1")
+      sdk.query({
+        _id: "Container-unlinked1",
+        action: "getLastMeasures",
+        controller: "device-manager/assets",
+        engineId: "engine-ayse",
+      })
     ).resolves.toMatchObject({
-      _source: {
-        measures: {
-          temperatureExt: { values: { temperature: 20 } },
-          temperatureInt: { values: { temperature: 40 } },
-        },
+      result: {
+        temperatureExt: { values: { temperature: 20 } },
+        temperatureInt: { values: { temperature: 40 } },
       },
     });
   });

@@ -522,23 +522,29 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         model[digitalTwinType].metadataMappings,
       );
 
-      for (const { name: measureName, type: measureType } of model[
-        digitalTwinType
-      ].measures as NamedMeasures) {
-        const measureModel = measureModels.find(
-          (m) => m.measure.type === measureType,
-        );
-
-        if (!measureModel) {
-          throw new InternalError(
-            `Cannot find measure "${measureType}" declared in ${[
-              digitalTwinType,
-            ]} "${model[digitalTwinType].model}"`,
+      // TODO: Remove this entirely when removing measures from devices
+      if (digitalTwinType !== "asset") {
+        for (const { name: measureName, type: measureType } of model[
+          digitalTwinType
+        ].measures as NamedMeasures) {
+          const measureModel = measureModels.find(
+            (m) => m.measure.type === measureType,
           );
-        }
 
-        mappings.properties.measures.properties[measureName] =
-          getEmbeddedMeasureMappings(measureModel.measure.valuesMappings);
+          if (!measureModel) {
+            throw new InternalError(
+              `Cannot find measure "${measureType}" declared in ${[
+                digitalTwinType,
+              ]} "${model[digitalTwinType].model}"`,
+            );
+          }
+
+          mappings.properties.measures.properties[measureName] =
+            getEmbeddedMeasureMappings(measureModel.measure.valuesMappings);
+        }
+      } else {
+        delete mappings.properties.measures;
+        delete mappings.properties.lastMeasuredAt;
       }
     }
 

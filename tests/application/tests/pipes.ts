@@ -3,28 +3,10 @@ import { Backend } from "kuzzle";
 import {
   MeasureContent,
   EventMeasureProcessBefore,
-  EventMeasurePersistBefore,
   TemperatureMeasurement,
 } from "../../../index";
 
 export function registerTestPipes(app: Backend) {
-  app.pipe.register<EventMeasurePersistBefore>(
-    "device-manager:measures:persist:before",
-    async ({ asset, device, measures }) => {
-      const color = device._source.metadata.color;
-
-      if (color === "test-persist-before-event-temperature-42") {
-        if (asset._source.measures.temperatureExt.values.temperature !== 42) {
-          throw new Error(
-            "The asset document in this event should already contains the updated measure",
-          );
-        }
-      }
-
-      return { asset, device, measures };
-    },
-  );
-
   app.pipe.register<EventMeasureProcessBefore>(
     "device-manager:measures:process:before",
     async ({ asset, device, measures }) => {
@@ -75,17 +57,6 @@ export function registerTestPipes(app: Backend) {
             };
 
             computedMeasures.push(temperatureInt);
-
-            asset._source.measures.temperatureInt = {
-              measuredAt: temperatureInt.measuredAt,
-              name: "temperatureInt",
-              payloadUuids: temperatureInt.origin.payloadUuids,
-              type: "temperature",
-              values: {
-                temperature: temperatureInt.values.temperature,
-              },
-              originId: device._id,
-            };
           }
         }
 
@@ -125,15 +96,10 @@ export function registerTestPipes(app: Backend) {
         };
 
         measures.push(measure);
+      }
 
-        asset._source.measures.temperatureWeather = {
-          name: measure.asset?.measureName as string,
-          measuredAt: measure.measuredAt,
-          payloadUuids: measure.origin.payloadUuids,
-          type: measure.type,
-          values: measure.values,
-          originId: device._id,
-        };
+      if (color === "test-update-asset-metadata-with-payload") {
+        asset._source.metadata.weight = 1337;
       }
 
       return { asset, device, measures };
