@@ -114,9 +114,7 @@ The API action [device-manager/devices:linkAsset](/official-plugins/device-manag
 
 The successive states of the assets are systematically logged in the Kuzzle IoT Platform.
 
-Each reception of a measurement by a device linked to an asset leads to a change in the state of the asset which will be logged.
-
-It is the same for the modification of the metadata of an asset.
+Each modification of the metadata of an asset (either directly or through a received measure) is saved in the asset state history.
 
 The state history entries contain all the necessary information:
 
@@ -127,7 +125,6 @@ The state history entries contain all the necessary information:
 
 The different types of state changes are:
 
-- receipt of a new measurement
 - modification of a metadata
 - associate a new device
 - dissociate from a device

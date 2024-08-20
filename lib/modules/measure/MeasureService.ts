@@ -5,8 +5,6 @@ import _ from "lodash";
 import {
   AskAssetHistoryAdd,
   AssetContent,
-  AssetHistoryContent,
-  AssetHistoryEventMeasure,
   AssetHistoryEventMetadata,
   AssetSerializer,
 } from "../asset";
@@ -111,11 +109,10 @@ export class MeasureService extends BaseService {
         );
       }
 
-      await this.updateDeviceMeasures(device, measures);
+      this.updateDeviceMeasures(device, measures);
 
-      let assetStates = new Map<number, KDocument<AssetContent>>();
       if (asset) {
-        assetStates = await this.updateAssetMeasures(asset, measures);
+        this.updateAssetMeasures(asset, measures);
       }
 
       await this.app.trigger<EventMeasurePersistBefore>(
@@ -211,14 +208,35 @@ export class MeasureService extends BaseService {
               }),
           );
 
-          promises.push(
-            historizeAssetStates(
-              assetStates,
-              engineId,
-              originalAssetMetadata,
-              asset._source.metadata,
-            ),
+          // Historize any change in metadata
+          const metadataChanges = objectDiff(
+            originalAssetMetadata,
+            asset._source.metadata,
           );
+
+          if (metadataChanges.length > 0) {
+            promises.push(
+              ask<AskAssetHistoryAdd<AssetHistoryEventMetadata>>(
+                "ask:device-manager:asset:history:add",
+                {
+                  engineId,
+                  histories: [
+                    {
+                      asset: asset._source,
+                      event: {
+                        metadata: {
+                          names: metadataChanges,
+                        },
+                        name: "metadata",
+                      },
+                      id: asset._id,
+                      timestamp: Date.now(),
+                    },
+                  ],
+                },
+              ),
+            );
+          }
         }
       }
 
@@ -461,62 +479,4 @@ export class MeasureService extends BaseService {
 
     return measureName.asset;
   }
-}
-
-/**
- * Create a new document in the collection asset-history, for each asset states
- */
-async function historizeAssetStates(
-  assetStates: Map<number, KDocument<AssetContent<any, any>>>,
-  engineId: string,
-  originalAssetMetadata: Metadata,
-  assetMetadata: Metadata,
-): Promise<void> {
-  const metadataChanges = objectDiff(originalAssetMetadata, assetMetadata);
-  const lastTimestampRecorded = Array.from(assetStates.keys()).pop();
-
-  const histories: AssetHistoryContent[] = [];
-  for (const [measuredAt, assetState] of assetStates) {
-    const measureNames = [];
-
-    for (const measure of Object.values(assetState._source.measures)) {
-      if (measure?.measuredAt === measuredAt) {
-        measureNames.push(measure.name);
-      }
-    }
-
-    const event: AssetHistoryEventMeasure = {
-      measure: {
-        names: measureNames,
-      },
-      name: "measure",
-    };
-
-    assetState._source.metadata = originalAssetMetadata;
-
-    if (metadataChanges.length !== 0 && measuredAt === lastTimestampRecorded) {
-      (event as unknown as AssetHistoryEventMetadata).metadata = {
-        names: metadataChanges,
-      };
-
-      assetState._source.metadata = assetMetadata;
-    }
-
-    histories.push({
-      asset: assetState._source,
-      event,
-      id: assetState._id,
-      timestamp: measuredAt,
-    });
-  }
-
-  return ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
-    "ask:device-manager:asset:history:add",
-    {
-      engineId,
-      // Reverse order because for now, measuredAt are sorted in ascending order
-      // While in mCreate the last item will be the first document to be created
-      histories: histories.reverse(),
-    },
-  );
 }

@@ -8,14 +8,6 @@ export type AssetHistoryMetadata = {
   names: string[];
 };
 
-export type AssetHistoryEventMeasure = {
-  name: "measure";
-  measure: {
-    names: string[];
-  };
-  metadata?: AssetHistoryMetadata;
-};
-
 export type AssetHistoryEventMetadata = {
   name: "metadata";
   metadata: AssetHistoryMetadata;
@@ -36,7 +28,6 @@ export type AssetHistoryEventUnlink = {
 };
 
 export type AssetHistoryEvent =
-  | AssetHistoryEventMeasure
   | AssetHistoryEventMetadata
   | AssetHistoryEventLink
   | AssetHistoryEventUnlink;
@@ -52,7 +43,6 @@ export interface AssetHistoryContent<
   /**
    * Name of the event who caused the historization
    *
-   *  - `measure` a new measure has been received
    *  - `metadata` the asset metadata has been updated
    *  - `link` a device has been linked or unlinked to the asset
    *  - `unlink` a device has been unlinked from the asset
@@ -72,7 +62,6 @@ export interface AssetHistoryContent<
   /**
    * Timestamp of the event according to its type
    *
-   *  - `measure`: the date of measure (`measuredAt`)
    *  - `metadata`: the current date of the event
    *  - `link`: the current date of the event
    *  - `unlink`: the current date of the event
