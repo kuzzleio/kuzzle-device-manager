@@ -121,6 +121,53 @@ describe("ModelsController:devices", () => {
     });
   });
 
+  it("Write and Search a Device model", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeDevice",
+      body: {
+        model: "Zigbee",
+        measures: [{ type: "battery", name: "battery" }],
+        metadataMappings: { network: { type: "keyword" } },
+      },
+    });
+
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeDevice",
+      body: {
+        model: "Bluetooth",
+        measures: [
+          { type: "battery", name: "battery" },
+          { type: "temperature", name: "temperature" },
+        ],
+        metadataMappings: {
+          network: { type: "keyword" },
+          network2: { type: "keyword" },
+        },
+      },
+    });
+
+    await sdk.collection.refresh("device-manager", "models");
+
+    const searchDevices = await sdk.query({
+      controller: "device-manager/models",
+      action: "searchDevices",
+      body: {
+        query: {
+          match: {
+            "device.model": "Zigbee",
+          },
+        },
+      },
+    });
+
+    expect(searchDevices.result).toMatchObject({
+      total: 1,
+      hits: [{ _id: "model-device-Zigbee" }],
+    });
+  });
+
   it("Error if the model name is not PascalCase", async () => {
     const badModelName = sdk.query({
       controller: "device-manager/models",

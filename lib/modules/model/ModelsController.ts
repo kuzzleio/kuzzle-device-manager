@@ -15,6 +15,9 @@ import {
   ApiModelGetAssetResult,
   ApiModelGetDeviceResult,
   ApiModelGetMeasureResult,
+  ApiModelSearchAssetsResult,
+  ApiModelSearchDevicesResult,
+  ApiModelSearchMeasuresResult,
 } from "./types/ModelApi";
 
 export class ModelsController {
@@ -64,6 +67,24 @@ export class ModelsController {
         listMeasures: {
           handler: this.listMeasures.bind(this),
           http: [{ path: "device-manager/models/measures", verb: "get" }],
+        },
+        searchAssets: {
+          handler: this.searchAssets.bind(this),
+          http: [
+            { path: "device-manager/models/assets/_search", verb: "post" },
+          ],
+        },
+        searchDevices: {
+          handler: this.searchDevices.bind(this),
+          http: [
+            { path: "device-manager/models/devices/_search", verb: "post" },
+          ],
+        },
+        searchMeasures: {
+          handler: this.searchMeasures.bind(this),
+          http: [
+            { path: "device-manager/models/measures/_search", verb: "post" },
+          ],
         },
         updateAsset: {
           handler: this.updateAsset.bind(this),
@@ -224,6 +245,27 @@ export class ModelsController {
       models,
       total: models.length,
     };
+  }
+
+  async searchAssets(
+    request: KuzzleRequest,
+  ): Promise<ApiModelSearchAssetsResult> {
+    return this.modelService.searchAssets(
+      request.getString("engineGroup"),
+      request.getSearchParams(),
+    );
+  }
+
+  async searchDevices(
+    request: KuzzleRequest,
+  ): Promise<ApiModelSearchDevicesResult> {
+    return this.modelService.searchDevices(request.getSearchParams());
+  }
+
+  async searchMeasures(
+    request: KuzzleRequest,
+  ): Promise<ApiModelSearchMeasuresResult> {
+    return this.modelService.searchMeasures(request.getSearchParams());
   }
 
   async updateAsset(
