@@ -37,7 +37,7 @@ Method: POST
 
   // optional:
   "from": "<starting offset>",
-  "size": "<page size>",
+  "size": "<page size>"
 }
 ```
 
