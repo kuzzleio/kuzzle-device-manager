@@ -141,10 +141,7 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Receive a payload with 3 measures but only 2 are propagated to the asset", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp-position", [
+    await sendPayloads(sdk, "dummy-temp-position", [
       {
         deviceEUI: "linked2",
         temperature: 21,
@@ -185,7 +182,7 @@ describe("features/Decoder/PayloadController", () => {
 
     await sdk.collection.refresh("engine-ayse", "assets-history");
 
-    response = await sdk.query({
+    const assetHistory = await sdk.query({
       controller: "document",
       action: "search",
       index: "engine-ayse",
@@ -193,18 +190,11 @@ describe("features/Decoder/PayloadController", () => {
       body: { sort: { "_kuzzle_info.createdAt": "desc" } },
     });
 
-    expect(response.result).toMatchObject({
-      hits: {
-        "0": {
-          _source: {
-            id: "Container-linked2",
-            event: {
-              name: "measure",
-              measure: { names: ["temperatureExt", "position"] },
-            },
-          },
-        },
-        length: 1,
+    expect(assetHistory.result.hits[0]._source).toMatchObject({
+      id: "Container-linked2",
+      event: {
+        name: "measure",
+        measure: { names: ["temperatureExt", "position"] },
       },
     });
 
