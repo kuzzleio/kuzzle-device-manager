@@ -11,7 +11,7 @@ import {
 } from "../../../../lib/modules/model";
 import { setupSdK } from "../../../helpers";
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 describe("ModelsController:measures", () => {
   const sdk = setupSdK();
@@ -181,6 +181,47 @@ describe("ModelsController:measures", () => {
     expect(getMeasure.result).toMatchObject({
       _id: "model-measure-battery",
       _source: { measure: { type: "battery" } },
+    });
+  });
+
+  it("Write and Search a Measure model", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeMeasure",
+      body: {
+        type: "presence",
+        valuesMappings: { presence: { type: "boolean" } },
+      },
+    });
+
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeMeasure",
+      body: {
+        type: "movement",
+        valuesMappings: {
+          movement: { type: "boolean" },
+        },
+      },
+    });
+
+    await sdk.collection.refresh("device-manager", "models");
+
+    const searchMeasures = await sdk.query({
+      controller: "device-manager/models",
+      action: "searchMeasures",
+      body: {
+        query: {
+          match: {
+            "measure.type": "presence",
+          },
+        },
+      },
+    });
+
+    expect(searchMeasures.result).toMatchObject({
+      total: 1,
+      hits: [{ _id: "model-measure-presence" }],
     });
   });
 

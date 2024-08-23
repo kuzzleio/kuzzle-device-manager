@@ -107,6 +107,56 @@ describe("ModelsController:assets", () => {
     await expect(getAssetNotExist).rejects.toMatchObject({ status: 404 });
   });
 
+  it("Write and Search an Asset model", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroup: "commons",
+        model: "Plane",
+        metadataMappings: { company: { type: "keyword" } },
+        measures: [{ name: "temperatureExt", type: "temperature" }],
+      },
+    });
+
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroup: "commons",
+        model: "Car",
+        metadataMappings: {
+          company: { type: "keyword" },
+          company2: { type: "keyword" },
+        },
+        measures: [
+          { name: "temperatureExt", type: "temperature" },
+          { name: "position", type: "position" },
+        ],
+      },
+    });
+
+    await sdk.collection.refresh("device-manager", "models");
+
+    const searchAssets = await sdk.query({
+      controller: "device-manager/models",
+      action: "searchAssets",
+      engineGroup: "commons",
+      body: {
+        query: {
+          match: {
+            "asset.model": "Plane",
+          },
+        },
+      },
+    });
+
+    expect(searchAssets.result).toMatchObject({
+      total: 1,
+      hits: [{ _id: "model-asset-Plane" }],
+    });
+  });
+
   it("Error if the model name is not PascalCase", async () => {
     const badModelName = sdk.query({
       controller: "device-manager/models",
