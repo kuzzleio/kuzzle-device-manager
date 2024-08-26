@@ -50,6 +50,7 @@ describe("AssetsController:exportMeasures", () => {
       },
     ]);
     await sdk.collection.refresh("engine-ayse", "assets");
+    await sdk.collection.refresh("engine-ayse", "measures");
     const { result } = await sdk.query<
       ApiAssetExportRequest,
       ApiAssetExportResult

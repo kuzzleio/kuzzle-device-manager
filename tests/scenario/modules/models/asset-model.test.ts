@@ -1,9 +1,9 @@
-import { setupSdK } from "../../../helpers";
+import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
 
 describe("ModelsController:assets", () => {
-  const sdk = setupSdK();
+  const sdk = setupHooks();
 
   it("Write and List an Asset model", async () => {
     await sdk.query({
@@ -69,6 +69,8 @@ describe("ModelsController:assets", () => {
         ],
       },
     });
+
+    await sdk.collection.refresh("device-manager", "models");
 
     const listAssets = await sdk.query({
       controller: "device-manager/models",
@@ -223,6 +225,8 @@ describe("ModelsController:assets", () => {
         model: "Car",
       },
     });
+
+    await sdk.collection.refresh("device-manager", "models");
 
     const listAssets = await sdk.query({
       controller: "device-manager/models",

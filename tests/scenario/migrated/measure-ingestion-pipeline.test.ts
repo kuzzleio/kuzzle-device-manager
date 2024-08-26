@@ -24,10 +24,7 @@ describe("features/Measure/IngestionPipeline", () => {
   });
 
   it("Enrich a measure for a device linked to an asset with asset info", async () => {
-    let response;
-    let promise;
-
-    response = await sdk.query({
+    let response = await sdk.query({
       controller: "device-manager/devices",
       action: "create",
       engineId: "engine-ayse",
@@ -92,11 +89,8 @@ describe("features/Measure/IngestionPipeline", () => {
     });
   });
 
-  it("Additional computed measures should be added automatically to digital twin by using measureNames", async () => {
-    let response;
-    let promise;
-
-    response = await sdk.query({
+  it("Additional computed measures should be added automatically to the digital twin last measures", async () => {
+    let response = await sdk.query({
       controller: "device-manager/devices",
       action: "create",
       engineId: "engine-ayse",

@@ -11,7 +11,11 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         get: true,
         search: true,
         getMeasures: true,
+        getLastMeasures: true,
+        mGetLastMeasures: true,
         exportMeasures: true,
+        getLastMeasuredAt: true,
+        mGetLastMeasuredAt: true,
       },
     },
     "device-manager/models": {
@@ -32,7 +36,11 @@ export const RoleDevicesReader: KuzzleRole = {
           get: true,
           search: true,
           getMeasures: true,
+          getLastMeasures: true,
+          mGetLastMeasures: true,
           exportMeasures: true,
+          getLastMeasuredAt: true,
+          mGetLastMeasuredAt: true,
         },
       },
       "device-manager/models": {

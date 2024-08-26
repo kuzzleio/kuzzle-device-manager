@@ -2,12 +2,24 @@ import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import { DecodedMeasurement, MeasureContent } from "../../measure";
 import { AssetContent } from "../../asset";
-import { Metadata } from "../../shared";
+import {
+  ApiDigitalTwinGetLastMeasuredAtRequest,
+  ApiDigitalTwinGetLastMeasuredAtResult,
+  ApiDigitalTwinGetLastMeasuresRequest,
+  ApiDigitalTwinGetLastMeasuresResult,
+  ApiDigitalTwinMGetLastMeasuredAtRequest,
+  ApiDigitalTwinMGetLastMeasuredAtResult,
+  ApiDigitalTwinMGetLastMeasuresRequest,
+  ApiDigitalTwinMGetLastMeasuresResult,
+  Metadata,
+} from "../../shared";
 
 import { DeviceContent } from "./DeviceContent";
 
+type DevicesControllerName = "device-manager/devices";
+
 interface DevicesControllerRequest {
-  controller: "device-manager/devices";
+  controller: DevicesControllerName;
 
   engineId: string;
 }
@@ -197,6 +209,16 @@ export type ApiDeviceGetMeasuresResult = {
   total: number;
 };
 
+export type ApiDeviceGetLastMeasuresRequest =
+  ApiDigitalTwinGetLastMeasuresRequest<DevicesControllerName>;
+export type ApiDeviceGetLastMeasuresResult =
+  ApiDigitalTwinGetLastMeasuresResult;
+
+export type ApiDeviceMGetLastMeasuresRequest =
+  ApiDigitalTwinMGetLastMeasuresRequest<DevicesControllerName>;
+export type ApiDeviceMGetLastMeasuresResult =
+  ApiDigitalTwinMGetLastMeasuresResult;
+
 /**
  * This action can be used only with WebSocket or POST
  *
@@ -258,3 +280,13 @@ export interface ApiDeviceExportRequest extends DevicesControllerRequest {
 export type ApiDeviceExportResult = {
   link: string;
 };
+
+export type ApiDeviceGetLastMeasuredAtRequest =
+  ApiDigitalTwinGetLastMeasuredAtRequest<DevicesControllerName>;
+export type ApiDeviceGetLastMeasuredAtResult =
+  ApiDigitalTwinGetLastMeasuredAtResult;
+
+export type ApiDeviceMGetLastMeasuredAtRequest =
+  ApiDigitalTwinMGetLastMeasuredAtRequest<DevicesControllerName>;
+export type ApiDeviceMGetLastMeasuredAtResult =
+  ApiDigitalTwinMGetLastMeasuredAtResult;

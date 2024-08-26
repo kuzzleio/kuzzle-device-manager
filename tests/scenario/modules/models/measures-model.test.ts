@@ -9,12 +9,12 @@ import {
   DeviceModelContent,
   MeasureModelContent,
 } from "../../../../lib/modules/model";
-import { setupSdK } from "../../../helpers";
+import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(20000);
 
 describe("ModelsController:measures", () => {
-  const sdk = setupSdK();
+  const sdk = setupHooks();
 
   beforeAll(async () => {
     await Promise.allSettled([

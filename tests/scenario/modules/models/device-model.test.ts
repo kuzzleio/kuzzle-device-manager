@@ -1,9 +1,9 @@
-import { setupSdK } from "../../../helpers";
+import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
 
 describe("ModelsController:devices", () => {
-  const sdk = setupSdK();
+  const sdk = setupHooks();
 
   it("Write and List a Device model", async () => {
     await sdk.query({

@@ -1,7 +1,7 @@
 import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 
-import { EmbeddedMeasure } from "./EmbeddedMeasure";
 import { Metadata } from "./Metadata";
+import { DigitalTwinMeasures } from "./DigitalTwinMeasures";
 
 export interface DigitalTwinContent<
   TMeasures extends JSONObject = JSONObject,
@@ -13,9 +13,7 @@ export interface DigitalTwinContent<
 
   metadata: TMetadata;
 
-  measures: {
-    [Property in keyof TMeasures]: EmbeddedMeasure<TMeasures[Property]> | null;
-  };
+  measures: DigitalTwinMeasures<TMeasures>;
 
   lastMeasuredAt: number;
 }

@@ -1,12 +1,24 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import { MeasureContent } from "../../../modules/measure";
-import { Metadata } from "../../shared";
+import {
+  ApiDigitalTwinGetLastMeasuredAtRequest,
+  ApiDigitalTwinGetLastMeasuredAtResult,
+  ApiDigitalTwinGetLastMeasuresRequest,
+  ApiDigitalTwinGetLastMeasuresResult,
+  ApiDigitalTwinMGetLastMeasuredAtRequest,
+  ApiDigitalTwinMGetLastMeasuredAtResult,
+  ApiDigitalTwinMGetLastMeasuresRequest,
+  ApiDigitalTwinMGetLastMeasuresResult,
+  Metadata,
+} from "../../shared";
 
 import { AssetContent } from "./AssetContent";
 
+type AssetsControllerName = "device-manager/assets";
+
 interface AssetsControllerRequest {
-  controller: "device-manager/assets";
+  controller: AssetsControllerName;
 
   engineId: string;
 }
@@ -130,6 +142,15 @@ export type ApiAssetGetMeasuresResult = {
   total: number;
 };
 
+export type ApiAssetGetLastMeasuresRequest =
+  ApiDigitalTwinGetLastMeasuresRequest<AssetsControllerName>;
+export type ApiAssetGetLastMeasuresResult = ApiDigitalTwinGetLastMeasuresResult;
+
+export type ApiAssetMGetLastMeasuresRequest =
+  ApiDigitalTwinMGetLastMeasuresRequest<AssetsControllerName>;
+export type ApiAssetMGetLastMeasuresResult =
+  ApiDigitalTwinMGetLastMeasuresResult;
+
 /**
  * This action can be used only with WebSocket or POST
  *
@@ -184,3 +205,13 @@ export type ApiAssetMigrateTenantResult = {
   errors: string[];
   successes: string[];
 };
+
+export type ApiAssetGetLastMeasuredAtRequest =
+  ApiDigitalTwinGetLastMeasuredAtRequest<AssetsControllerName>;
+export type ApiAssetGetLastMeasuredAtResult =
+  ApiDigitalTwinGetLastMeasuredAtResult;
+
+export type ApiAssetMGetLastMeasuredAtRequest =
+  ApiDigitalTwinMGetLastMeasuredAtRequest<AssetsControllerName>;
+export type ApiAssetMGetLastMeasuredAtResult =
+  ApiDigitalTwinMGetLastMeasuredAtResult;

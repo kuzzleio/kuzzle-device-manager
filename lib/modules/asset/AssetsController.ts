@@ -7,7 +7,7 @@ import {
 
 import { MeasureExporter } from "../measure/";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { DigitalTwinExporter } from "../shared";
+import { DigitalTwinExporter, EmbeddedMeasure } from "../shared";
 
 import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
@@ -21,6 +21,10 @@ import {
   ApiAssetUpdateResult,
   ApiAssetMigrateTenantResult,
   ApiAssetMetadataReplaceResult,
+  ApiAssetGetLastMeasuresResult,
+  ApiAssetMGetLastMeasuredAtResult,
+  ApiAssetMGetLastMeasuresResult,
+  ApiAssetGetLastMeasuredAtResult,
 } from "./types/AssetApi";
 
 export class AssetsController {
@@ -88,6 +92,28 @@ export class AssetsController {
             },
           ],
         },
+        getLastMeasures: {
+          handler: this.getLastMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/lastMeasures",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/assets/:_id/lastMeasures",
+              verb: "post",
+            },
+          ],
+        },
+        mGetLastMeasures: {
+          handler: this.mGetLastMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/_mGetLastMeasures",
+              verb: "post",
+            },
+          ],
+        },
         exportMeasures: {
           handler: this.exportMeasures.bind(this),
           http: [
@@ -119,6 +145,28 @@ export class AssetsController {
           http: [
             {
               path: "device-manager/:engineId/assets/_migrateTenant",
+              verb: "post",
+            },
+          ],
+        },
+        getLastMeasuredAt: {
+          handler: this.getLastMeasuredAt.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/lastMeasuredAt",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/assets/:_id/lastMeasuredAt",
+              verb: "post",
+            },
+          ],
+        },
+        mGetLastMeasuredAt: {
+          handler: this.mGetLastMeasuredAt.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/_mGetLastMeasuredAt",
               verb: "post",
             },
           ],
@@ -263,6 +311,78 @@ export class AssetsController {
     return { measures, total };
   }
 
+  async getLastMeasures(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetGetLastMeasuresResult> {
+    const assetId = request.getId();
+    const engineId = request.getString("engineId");
+    const measureCount = request.getNumber("measureCount", 100);
+
+    const results = await this.assetService.getLastMeasures(
+      engineId,
+      assetId,
+      measureCount,
+    );
+
+    return results.reduce<ApiAssetGetLastMeasuresResult>(
+      (accumulator, result) => {
+        const measure: EmbeddedMeasure = {
+          measuredAt: result.measuredAt,
+          name: result.asset.measureName,
+          originId: result.origin._id,
+          payloadUuids: result.origin.payloadUuids,
+          type: result.type,
+          values: result.values,
+        };
+
+        return {
+          ...accumulator,
+          [result.asset.measureName]: measure,
+        };
+      },
+      {},
+    );
+  }
+
+  async mGetLastMeasures(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetMGetLastMeasuresResult> {
+    const engineId = request.getString("engineId");
+    const measureCount = request.getNumber("measureCount", 100);
+    const assetIds = request.getBodyArray("ids");
+
+    const results = await this.assetService.mGetLastMeasures(
+      engineId,
+      assetIds,
+      measureCount,
+    );
+
+    const response: ApiAssetMGetLastMeasuresResult = {};
+
+    for (const [assetId, measures] of Object.entries(results)) {
+      response[assetId] = measures.reduce<ApiAssetGetLastMeasuresResult>(
+        (accumulator, result) => {
+          const measure: EmbeddedMeasure = {
+            measuredAt: result.measuredAt,
+            name: result.asset.measureName,
+            originId: result.origin._id,
+            payloadUuids: result.origin.payloadUuids,
+            type: result.type,
+            values: result.values,
+          };
+
+          return {
+            ...accumulator,
+            [result.asset.measureName]: measure,
+          };
+        },
+        {},
+      );
+    }
+
+    return response;
+  }
+
   async exportMeasures(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
 
@@ -393,5 +513,30 @@ export class AssetsController {
     );
 
     return { errors, successes };
+  }
+
+  async getLastMeasuredAt(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetGetLastMeasuredAtResult> {
+    const assetId = request.getId();
+    const engineId = request.getString("engineId");
+
+    const lastMeasuredAt = await this.assetService.getLastMeasuredAt(
+      engineId,
+      assetId,
+    );
+
+    return {
+      lastMeasuredAt,
+    };
+  }
+
+  async mGetLastMeasuredAt(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetMGetLastMeasuredAtResult> {
+    const engineId = request.getString("engineId");
+    const assetIds = request.getBodyArray("ids");
+
+    return this.assetService.mGetLastMeasuredAt(engineId, assetIds);
   }
 }
