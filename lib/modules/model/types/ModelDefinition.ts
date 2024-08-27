@@ -37,7 +37,12 @@ import {
  *             "description": "Température externe du conteneur"
  *           }
  *         },
- *         "readOnly": true,
+ *         "definition": {
+ *           "isReadOnly": true,
+ *           "type": "string",
+ *           "values": ["red", "blue", "green"],
+ *           "isAllowedToCustom": true,
+ *         }
  *       }
  *     },
  *     metadataGroups: {
@@ -155,7 +160,12 @@ export type AssetModelDefinition = {
  *             description: "Type du traceur"
  *           }
  *         },
- *         readOnly: true,
+ *         definition: {
+ *           isReadOnly: true,
+ *           type: "string",
+ *           values: ["red", "blue", "green"],
+ *           isAllowedToCustom: true,
+ *         }
  *       }
  *     },
  *     metadataGroups: {

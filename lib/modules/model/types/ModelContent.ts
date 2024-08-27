@@ -162,8 +162,15 @@ export interface AssetModelContent extends KDocumentContent {
      *         "friendlyName": "Température extérieure",
      *         "description": "Température à l'exterieur du bâtiment"
      *       },
-     *     "readOnly": true,
+     *     },
+     *     "definition": {
+     *       "isReadOnly": true,
+     *       "type": "string",
+     *       "values": ["red", "blue", "green"],
+     *       "isAllowedToCustom": true,
+     *     }
      *   }
+     * }
      */
     metadataDetails?: MetadataDetails;
     /**
@@ -293,8 +300,14 @@ export interface DeviceModelContent extends KDocumentContent {
      *         "friendlyName": "Version du capteur",
      *         "description": "Version du micrologiciel du capteur"
      *       },
-     *     "readOnly": true,
+     *     "definition": {
+     *       "isReadOnly": true,
+     *       "type": "string",
+     *       "values": ["red", "blue", "green"],
+     *       "isAllowedToCustom": true,
+     *     }
      *   }
+     * }
      */
     metadataDetails?: MetadataDetails;
     /**

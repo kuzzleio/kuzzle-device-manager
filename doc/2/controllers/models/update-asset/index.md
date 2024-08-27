@@ -48,7 +48,12 @@ Method: PUT
                 description: string;
               };
             };
-            readOnly?: boolean;
+            definition: {
+              isReadOnly?: boolean;
+              type: string;
+              values?: string[] | number[] | boolean [];
+              isAllowedToCustom?: boolean;
+            }
           };
       */
     },
