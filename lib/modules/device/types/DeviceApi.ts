@@ -32,6 +32,8 @@ export interface ApiDeviceUpdateRequest extends DevicesControllerRequest {
 }
 export type ApiDeviceUpdateResult = KDocument<DeviceContent>;
 
+export type ApiDeviceMetadataReplaceResult = KDocument<DeviceContent>;
+
 export interface ApiDeviceUpsertRequest extends DevicesControllerRequest {
   action: "upsert";
 
