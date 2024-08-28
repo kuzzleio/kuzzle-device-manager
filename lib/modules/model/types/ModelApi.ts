@@ -143,11 +143,20 @@ export interface ApiModelSearchAssetsRequest extends ModelsControllerRequest {
   action: "searchAssets";
 
   engineGroup: string;
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
 }
 export type ApiModelSearchAssetsResult = SearchResult<KHit<AssetModelContent>>;
 
 export interface ApiModelSearchDevicesRequest extends ModelsControllerRequest {
   action: "searchDevices";
+
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
 }
 export type ApiModelSearchDevicesResult = SearchResult<
   KHit<DeviceModelContent>
@@ -155,6 +164,11 @@ export type ApiModelSearchDevicesResult = SearchResult<
 
 export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
   action: "searchMeasures";
+
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
 }
 export type ApiModelSearchMeasuresResult = SearchResult<
   KHit<MeasureModelContent>
