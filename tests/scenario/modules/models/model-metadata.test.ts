@@ -35,10 +35,10 @@ describe("ModelsController:metadata", () => {
           },
           definition: {
             isReadOnly: true,
-            type: 'string',
-            values: ['red', 'blue'],
-            isAllowedToCustom: true
-          }
+            type: "string",
+            values: ["red", "blue"],
+            isAllowedToCustom: true,
+          },
         },
       },
       metadataGroups: {
@@ -100,10 +100,10 @@ describe("ModelsController:metadata", () => {
           },
           definition: {
             isReadOnly: true,
-            type: 'string',
-            values: ['red', 'blue'],
-            isAllowedToCustom: true
-          }
+            type: "string",
+            values: ["red", "blue"],
+            isAllowedToCustom: true,
+          },
         },
       },
     };
