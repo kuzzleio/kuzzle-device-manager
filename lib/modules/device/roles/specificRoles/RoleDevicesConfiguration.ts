@@ -10,7 +10,7 @@ export const RoleDevicesConfiguration: KuzzleRole = {
   definition: {
     controllers: {
       "device-manager/devices": {
-        actions: { replaceMetadata: true },
+        actions: { replaceMetadata: true, update: true },
       },
     },
   },

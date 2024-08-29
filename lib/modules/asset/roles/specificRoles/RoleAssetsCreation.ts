@@ -13,7 +13,6 @@ export const RoleAssetsCreation: KuzzleRole = {
         actions: {
           create: true,
           delete: true,
-          update: true,
           upsert: true,
         },
       },
