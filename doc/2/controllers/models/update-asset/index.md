@@ -48,9 +48,9 @@ Method: PUT
                 description: string;
               };
             };
-            definition: {
+            definition?: {
               isReadOnly?: boolean;
-              type: string;
+              type?: string;
               values?: string[] | number[] | boolean [];
               isAllowedToCustom?: boolean;
             }
