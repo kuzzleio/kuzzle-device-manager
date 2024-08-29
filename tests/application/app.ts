@@ -5,6 +5,8 @@ import { Backend, KuzzleRequest } from "kuzzle";
 import { DeviceManagerPlugin } from "../../index";
 
 import { containerAssetDefinition } from "./assets/Container";
+import { roomAssetDefinition } from "./assets/Room";
+import { streetLampAssetDefinition } from "./assets/StreetLamp";
 import { warehouseAssetDefinition } from "./assets/Warehouse";
 import { DummyTempDecoder, DummyTempPositionDecoder } from "./decoders";
 import { TestsController } from "./tests/controller";
@@ -26,7 +28,7 @@ deviceManager.config.engineCollections.device.mappings.properties["softTenant"] 
 };
 
 
-deviceManager.models.registerDevice("DummyTempPosition", 
+deviceManager.models.registerDevice("DummyTempPosition",
   {
     decoder: new DummyTempPositionDecoder(),
     metadataMappings: {
@@ -35,8 +37,8 @@ deviceManager.models.registerDevice("DummyTempPosition",
   }
 );
 
-deviceManager.models.registerDevice("DummyTemp", 
-  { 
+deviceManager.models.registerDevice("DummyTemp",
+  {
     decoder: new DummyTempDecoder(),
     metadataMappings: {
       color: { type: "keyword" },
@@ -44,8 +46,7 @@ deviceManager.models.registerDevice("DummyTemp",
   }
 );
 
-// Register an asset for the "commons" group
-
+// Register assets for the "commons" group
 deviceManager.models.registerAsset(
   "commons",
   "Container",
@@ -56,6 +57,19 @@ deviceManager.models.registerAsset(
   "commons",
   "Warehouse",
   warehouseAssetDefinition
+);
+
+// Register assets for specialized groups
+deviceManager.models.registerAsset(
+  "air_quality",
+  "Room",
+  roomAssetDefinition
+);
+
+deviceManager.models.registerAsset(
+  "public_lighting",
+  "StreetLamp",
+  streetLampAssetDefinition
 );
 
 deviceManager.models.registerMeasure("acceleration", accelerationMeasureDefinition);

@@ -1,9 +1,9 @@
-import { setupSdK } from "../../../helpers";
+import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
 
 describe("ModelsController:assets", () => {
-  const sdk = setupSdK();
+  const sdk = setupHooks();
 
   it("Write and List an Asset model", async () => {
     await sdk.query({
@@ -107,6 +107,23 @@ describe("ModelsController:assets", () => {
     await expect(getAssetNotExist).rejects.toMatchObject({ status: 404 });
   });
 
+  it("List asset models only from the requested engine group and the common ones", async () => {
+    const listAssets = await sdk.query({
+      controller: "device-manager/models",
+      action: "listAssets",
+      engineGroup: "air_quality",
+    });
+
+    expect(listAssets.result).toMatchObject({
+      total: 3,
+      models: [
+        { _id: "model-asset-Container" },
+        { _id: "model-asset-Room" },
+        { _id: "model-asset-Warehouse" },
+      ],
+    });
+  });
+
   it("Write and Search an Asset model", async () => {
     await sdk.query({
       controller: "device-manager/models",
@@ -154,6 +171,62 @@ describe("ModelsController:assets", () => {
     expect(searchAssets.result).toMatchObject({
       total: 1,
       hits: [{ _id: "model-asset-Plane" }],
+    });
+  });
+
+  it("Search asset models only from the requested engine group and the common ones", async () => {
+    let searchAssets = await sdk.query({
+      controller: "device-manager/models",
+      action: "searchAssets",
+      engineGroup: "air_quality",
+      body: {
+        query: {
+          match: {
+            "asset.model": "Warehouse",
+          },
+        },
+      },
+    });
+
+    expect(searchAssets.result).toMatchObject({
+      total: 1,
+      hits: [{ _id: "model-asset-Warehouse" }],
+    });
+
+    searchAssets = await sdk.query({
+      controller: "device-manager/models",
+      action: "searchAssets",
+      engineGroup: "air_quality",
+      body: {
+        query: {
+          match: {
+            "asset.model": "Room",
+          },
+        },
+      },
+    });
+
+    expect(searchAssets.result).toMatchObject({
+      total: 1,
+      hits: [{ _id: "model-asset-Room" }],
+    });
+
+    searchAssets = await sdk.query({
+      controller: "device-manager/models",
+      action: "searchAssets",
+      engineGroup: "air_quality",
+      body: {
+        query: {
+          match: {
+            "asset.model": "StreetLamp",
+          },
+        },
+      },
+    });
+
+    expect(searchAssets.result).toMatchObject({
+      total: 0,
+      hits: [],
     });
   });
 
@@ -211,33 +284,6 @@ describe("ModelsController:assets", () => {
         metadataMappings: { surface: { type: "integer" } },
         measures: [{ name: "position", type: "position" }],
       },
-    });
-  });
-
-  it("List on an engine is also returning commons assets models", async () => {
-    await sdk.query({
-      controller: "device-manager/models",
-      action: "writeAsset",
-      body: {
-        engineGroup: "other-group",
-        model: "Car",
-      },
-    });
-
-    const listAssets = await sdk.query({
-      controller: "device-manager/models",
-      action: "listAssets",
-      engineGroup: "other-group",
-    });
-
-    expect(listAssets.result).toMatchObject({
-      total: 4,
-      models: [
-        { _id: "model-asset-Car" },
-        { _id: "model-asset-Container" },
-        { _id: "model-asset-Plane" },
-        { _id: "model-asset-Warehouse" },
-      ],
     });
   });
 
