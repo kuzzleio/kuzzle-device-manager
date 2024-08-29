@@ -38,9 +38,9 @@ export interface MetadataDetails {
     locales: {
       [locale: string]: LocaleDetails;
     };
-    definition: {
+    definition?: {
       isReadOnly?: boolean;
-      type: string;
+      type?: string;
       values?: string[] | number[] | boolean [];
       isAllowedToCustom?: boolean;
     }

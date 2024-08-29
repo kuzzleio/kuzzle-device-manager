@@ -33,7 +33,12 @@ describe("ModelsController:metadata", () => {
               description: "L'entreprise qui a fabriqué l'avion",
             },
           },
-          readOnly: true,
+          definition: {
+            isReadOnly: true,
+            type: 'string',
+            values: ['red', 'blue'],
+            isAllowedToCustom: true
+          }
         },
       },
       metadataGroups: {
@@ -93,7 +98,12 @@ describe("ModelsController:metadata", () => {
               description: "L'entreprise qui a fabriqué Zigbee",
             },
           },
-          readOnly: true,
+          definition: {
+            isReadOnly: true,
+            type: 'string',
+            values: ['red', 'blue'],
+            isAllowedToCustom: true
+          }
         },
       },
     };
