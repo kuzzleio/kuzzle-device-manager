@@ -425,10 +425,17 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<AssetModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { match: { type: "asset" } }],
-        should: [
-          { match: { engineGroup } },
-          { match: { engineGroup: "commons" } },
+        must: [
+          searchParams.searchBody.query,
+          { match: { type: "asset" } },
+          {
+            bool: {
+              should: [
+                { match: { engineGroup } },
+                { match: { engineGroup: "commons" } },
+              ],
+            },
+          },
         ],
       },
     };

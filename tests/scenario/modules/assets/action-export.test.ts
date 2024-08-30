@@ -16,14 +16,20 @@ function getExportedColums(row) {
   return {
     model: parsedRow[0],
     reference: parsedRow[1],
-    position: parsedRow[2],
-    positionAccuracy: parsedRow[3],
-    positionAltitude: parsedRow[4],
-    temperatureExt: parsedRow[5],
-    temperatureInt: parsedRow[6],
-    temperatureWeather: parsedRow[7],
-    lastMeasuredAt: parsedRow[8],
-    lastMeasuredAtISO: parsedRow[9],
+    brightnessLumens: parsedRow[2],
+    co2: parsedRow[3],
+    humidity: parsedRow[4],
+    illuminance: parsedRow[5],
+    position: parsedRow[6],
+    positionAccuracy: parsedRow[7],
+    positionAltitude: parsedRow[8],
+    powerConsumptionWatt: parsedRow[9],
+    temperature: parsedRow[10],
+    temperatureExt: parsedRow[11],
+    temperatureInt: parsedRow[12],
+    temperatureWeather: parsedRow[13],
+    lastMeasuredAt: parsedRow[14],
+    lastMeasuredAtISO: parsedRow[15],
   };
 }
 
@@ -80,7 +86,7 @@ describe("AssetsController:exportMeasures", () => {
     writeFileSync("./assets.csv", csv.join(""));
 
     expect(csv[0]).toBe(
-      "Model,Reference,position,position.accuracy,position.altitude,temperatureExt,temperatureInt,temperatureWeather,lastMeasuredAt,lastMeasuredAtISO\n",
+      "Model,Reference,brightness.lumens,co2,humidity,illuminance,position,position.accuracy,position.altitude,powerConsumption.watt,temperature,temperatureExt,temperatureInt,temperatureWeather,lastMeasuredAt,lastMeasuredAtISO\n",
     );
 
     expect(csv).toHaveLength(assetCount + 1);
@@ -89,9 +95,15 @@ describe("AssetsController:exportMeasures", () => {
 
     expect(row1.model).toBe("Container");
     expect(typeof row1.reference).toBe("string");
+    expect(typeof parseFloat(row1.brightnessLumens)).toBe("number");
+    expect(typeof parseFloat(row1.co2)).toBe("number");
+    expect(typeof parseFloat(row1.humidity)).toBe("number");
+    expect(typeof parseFloat(row1.illuminance)).toBe("number");
     expect(typeof row1.position).toBe("string");
     expect(typeof parseFloat(row1.positionAccuracy)).toBe("number");
     expect(typeof parseFloat(row1.positionAltitude)).toBe("number");
+    expect(typeof parseFloat(row1.powerConsumptionWatt)).toBe("number");
+    expect(typeof parseFloat(row1.temperature)).toBe("number");
     expect(typeof parseFloat(row1.temperatureExt)).toBe("number");
     expect(typeof parseFloat(row1.temperatureInt)).toBe("number");
     expect(typeof parseFloat(row1.temperatureWeather)).toBe("number");
@@ -102,9 +114,15 @@ describe("AssetsController:exportMeasures", () => {
 
     expect(row2.model).toBe("Warehouse");
     expect(typeof row2.reference).toBe("string");
+    expect(typeof parseFloat(row2.brightnessLumens)).toBe("number");
+    expect(typeof parseFloat(row2.co2)).toBe("number");
+    expect(typeof parseFloat(row2.humidity)).toBe("number");
+    expect(typeof parseFloat(row2.illuminance)).toBe("number");
     expect(typeof row2.position).toBe("string");
     expect(typeof parseFloat(row2.positionAccuracy)).toBe("number");
     expect(typeof parseFloat(row2.positionAltitude)).toBe("number");
+    expect(typeof parseFloat(row2.powerConsumptionWatt)).toBe("number");
+    expect(typeof parseFloat(row2.temperature)).toBe("number");
     expect(typeof parseFloat(row2.temperatureExt)).toBe("number");
     expect(typeof parseFloat(row2.temperatureInt)).toBe("number");
     expect(typeof parseFloat(row2.temperatureWeather)).toBe("number");
