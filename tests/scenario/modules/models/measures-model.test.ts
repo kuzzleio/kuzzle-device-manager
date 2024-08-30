@@ -87,10 +87,14 @@ describe("ModelsController:measures", () => {
           accuracy: { type: "float" },
           altitude: { type: "float" },
           battery: { type: "integer" },
+          co2: { type: "float" },
           humidity: { type: "float" },
+          illuminance: { type: "float" },
+          lumens: { type: "float" },
           movement: { type: "boolean" },
           position: { type: "geo_point" },
           temperature: { type: "float" },
+          watt: { type: "float" },
         },
       },
     });
@@ -161,13 +165,17 @@ describe("ModelsController:measures", () => {
       action: "listMeasures",
     });
 
-    expect(listMeasures.result.total).toBe(7);
+    expect(listMeasures.result.total).toBe(11);
     expect(listMeasures.result.models).toMatchObject([
       { _id: "model-measure-acceleration" },
       { _id: "model-measure-battery" },
+      { _id: "model-measure-brightness" },
+      { _id: "model-measure-co2" },
       { _id: "model-measure-humidity" },
+      { _id: "model-measure-illuminance" },
       { _id: "model-measure-movement" },
       { _id: "model-measure-position" },
+      { _id: "model-measure-powerConsumption" },
       { _id: "model-measure-presence" },
       { _id: "model-measure-temperature" },
     ]);

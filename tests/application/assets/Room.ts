@@ -10,6 +10,14 @@ export const roomAssetDefinition: AssetModelDefinition = {
       name: "humidity",
       type: "humidity",
     },
+    {
+      name: "co2",
+      type: "co2",
+    },
+    {
+      name: "illuminance",
+      type: "illuminance",
+    },
   ],
   metadataMappings: {
     floor: { type: "integer" },

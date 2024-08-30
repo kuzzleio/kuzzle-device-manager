@@ -12,6 +12,10 @@ import { DummyTempDecoder, DummyTempPositionDecoder } from "./decoders";
 import { TestsController } from "./tests/controller";
 import { registerTestPipes } from "./tests/pipes";
 import { accelerationMeasureDefinition } from "./measures/AccelerationMeasure";
+import { brightnessMeasureDefinition } from "./measures/BrightnessMeasure";
+import { co2MeasureDefinition } from "./measures/CO2Measure";
+import { illuminanceMeasureDefinition } from "./measures/IlluminanceMeasure";
+import { powerConsumptionMeasureDefinition } from "./measures/PowerConsumptionMeasure";
 
 const app = new Backend("kuzzle");
 
@@ -73,6 +77,10 @@ deviceManager.models.registerAsset(
 );
 
 deviceManager.models.registerMeasure("acceleration", accelerationMeasureDefinition);
+deviceManager.models.registerMeasure("brightness", brightnessMeasureDefinition);
+deviceManager.models.registerMeasure("co2", co2MeasureDefinition);
+deviceManager.models.registerMeasure("illuminance", illuminanceMeasureDefinition);
+deviceManager.models.registerMeasure("powerConsumption", powerConsumptionMeasureDefinition);
 
 registerTestPipes(app);
 
