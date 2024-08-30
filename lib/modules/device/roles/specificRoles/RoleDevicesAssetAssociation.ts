@@ -1,7 +1,7 @@
 import { KuzzleRole } from "../../../shared/types/KuzzleRole";
 
 /**
- * This role allows to associatie assets and devices.
+ * This role allows to associate assets and devices.
  *
  * It's a tenant role.
  *
