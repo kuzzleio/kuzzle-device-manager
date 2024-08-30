@@ -1,7 +1,7 @@
 import { KuzzleRole } from "../../../shared/types/KuzzleRole";
 
 /**
- * This role allows to configurate a device metadata.
+ * This role allows to configure a device metadata.
  *
  * It's a tenant role.
  *
