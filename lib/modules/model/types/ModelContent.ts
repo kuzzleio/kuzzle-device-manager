@@ -39,10 +39,10 @@ export interface MetadataDetails {
       [locale: string]: LocaleDetails;
     };
     definition?: {
-      isReadOnly?: boolean;
+      readOnly?: boolean;
       type?: string;
       values?: string[] | number[] | boolean[];
-      isAllowedToCustom?: boolean;
+      customValueAllowed?: boolean;
     };
   };
 }
@@ -164,10 +164,10 @@ export interface AssetModelContent extends KDocumentContent {
      *       },
      *     },
      *     "definition": {
-     *       "isReadOnly": true,
+     *       "readOnly": true,
      *       "type": "string",
      *       "values": ["red", "blue", "green"],
-     *       "isAllowedToCustom": true,
+     *       "customValueAllowed": true,
      *     }
      *   }
      * }
@@ -301,10 +301,10 @@ export interface DeviceModelContent extends KDocumentContent {
      *         "description": "Version du micrologiciel du capteur"
      *       },
      *     "definition": {
-     *       "isReadOnly": true,
+     *       "readOnly": true,
      *       "type": "string",
      *       "values": ["red", "blue", "green"],
-     *       "isAllowedToCustom": true,
+     *       "customValueAllowed": true,
      *     }
      *   }
      * }

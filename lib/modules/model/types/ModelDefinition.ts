@@ -38,10 +38,10 @@ import {
  *           }
  *         },
  *         "definition": {
- *           "isReadOnly": true,
+ *           "readOnly": true,
  *           "type": "string",
  *           "values": ["red", "blue", "green"],
- *           "isAllowedToCustom": true,
+ *           "customValueAllowed": true,
  *         }
  *       }
  *     },
@@ -161,10 +161,10 @@ export type AssetModelDefinition = {
  *           }
  *         },
  *         definition: {
- *           isReadOnly: true,
+ *           readOnly: true,
  *           type: "string",
  *           values: ["red", "blue", "green"],
- *           isAllowedToCustom: true,
+ *           customValueAllowed: true,
  *         }
  *       }
  *     },

@@ -50,10 +50,10 @@ Method: POST
               };
             };
             definition?: {
-              isReadOnly?: boolean;
+              readOnly?: boolean;
               type?: string;
               values?: string[] | number[] | boolean [];
-              isAllowedToCustom?: boolean;
+              customValueAllowed?: boolean;
             }
           };
       */
