@@ -8,6 +8,7 @@ import { RoleAssetsAdmin } from "./roles/RoleAssetsAdmin";
 import { RoleAssetsReader } from "./roles/RoleAssetsReader";
 import { RoleAssetsGroupsAdmin } from "./roles/RoleAssetsGroupsAdmin";
 import { RoleAssetsGroupsReader } from "./roles/RoleAssetsGroupsReader";
+import * as specificRoles from "./roles/specificRoles";
 
 export class AssetModule extends Module {
   private assetService: AssetService;
@@ -30,7 +31,12 @@ export class AssetModule extends Module {
       RoleAssetsAdmin.definition;
     this.plugin.imports.roles[RoleAssetsReader.name] =
       RoleAssetsReader.definition;
-
+    for (const role in specificRoles) {
+      if (specificRoles[role].name && specificRoles[role].definition) {
+        this.plugin.imports.roles[specificRoles[role].name] =
+          specificRoles[role].definition;
+      }
+    }
     this.plugin.imports.roles[RoleAssetsGroupsAdmin.name] =
       RoleAssetsGroupsAdmin.definition;
     this.plugin.imports.roles[RoleAssetsGroupsReader.name] =

@@ -27,6 +27,7 @@ import {
   ApiDeviceUpdateResult,
   ApiDeviceGetMeasuresResult,
   ApiDeviceUpsertResult,
+  ApiDeviceMetadataReplaceResult,
 } from "./types/DeviceApi";
 
 export class DevicesController {
@@ -61,6 +62,15 @@ export class DevicesController {
           handler: this.upsert.bind(this),
           http: [
             { path: "device-manager/:engineId/devices/:_id", verb: "post" },
+          ],
+        },
+        replaceMetadata: {
+          handler: this.replaceMetadata.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/metadata",
+              verb: "patch",
+            },
           ],
         },
         search: {
@@ -196,7 +206,22 @@ export class DevicesController {
 
     return DeviceSerializer.serialize(updatedDevice);
   }
+  async replaceMetadata(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceMetadataReplaceResult> {
+    const deviceId = request.getId();
+    const engineId = request.getString("engineId");
+    const metadata = request.getBodyObject("metadata");
 
+    const updatedDevice = await this.deviceService.replaceMetadata(
+      engineId,
+      deviceId,
+      metadata,
+      request,
+    );
+
+    return DeviceSerializer.serialize(updatedDevice);
+  }
   async delete(request: KuzzleRequest): Promise<ApiDeviceDeleteResult> {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
