@@ -36,17 +36,19 @@ function getExportedColums(row) {
   };
 }
 
-describe("AssetsController:exportMeasures", () => {
+describe("DevicesController:exportMeasures", () => {
   const sdk = setupHooks();
 
   it("should prepare export of different devices types and return a CSV as stream", async () => {
+    const measureDate = Date.now();
+
     await sendDummyTempPayloads(sdk, [
       {
         deviceEUI: "linked1",
         temperature: 23.3,
         battery: 0.8,
         // ? Use date now - 1s to ensure this asset are second in export
-        measuredAt: Date.now() - 1000,
+        measuredAt: measureDate - 1000,
       },
     ]);
     await sendDummyTempPositionPayloads(sdk, [
@@ -56,10 +58,11 @@ describe("AssetsController:exportMeasures", () => {
         location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
         battery: 0.8,
         // ? Use date now to ensure this asset is first in export
-        measuredAt: Date.now(),
+        measuredAt: measureDate,
       },
     ]);
     await sdk.collection.refresh("engine-ayse", "devices");
+    await sdk.collection.refresh("engine-ayse", "measures");
     const { result } = await sdk.query<
       ApiDeviceExportRequest,
       ApiDeviceExportResult
@@ -67,9 +70,6 @@ describe("AssetsController:exportMeasures", () => {
       controller: "device-manager/devices",
       action: "export",
       engineId: "engine-ayse",
-      body: {
-        sort: { lastMeasuredAt: "desc" },
-      },
     });
 
     expect(typeof result.link).toBe("string");
@@ -86,42 +86,56 @@ describe("AssetsController:exportMeasures", () => {
       response.data.on("end", resolve);
     });
 
-    expect(csv[0]).toBe(
+    expect(csv).toHaveLength(deviceCount + 1);
+
+    const header = csv.shift();
+
+    expect(header).toBe(
       "Model,Reference,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery,position,position.accuracy,position.altitude,temperature,lastMeasuredAt,lastMeasuredAtISO\n",
     );
 
-    expect(csv).toHaveLength(deviceCount + 1);
+    const rows = csv.map(getExportedColums);
+    const sortedRows = [
+      ...rows
+        .filter((v) => typeof v !== "undefined")
+        .sort((a, b) => b.lastMeasuredAt - a.lastMeasuredAt),
+      ...rows.filter((v) => typeof v === "undefined"),
+    ];
 
-    const row1 = getExportedColums(csv[1]);
+    const row1 = sortedRows[0];
 
     expect(row1.model).toBe("DummyTempPosition");
-    expect(typeof row1.reference).toBe("string");
+    expect(row1.reference).toBe("linked2");
+    expect(parseFloat(row1.battery)).toBe(80);
+    expect(row1.position).toBe('{"lat":42.2,"lon":2.42}');
+    expect(parseFloat(row1.positionAccuracy)).toBe(2100);
+    expect(parseFloat(row1.temperature)).toBe(23.3);
+    expect(parseFloat(row1.lastMeasuredAt)).toBe(measureDate);
+    expect(row1.lastMeasuredAtISO).toBe(new Date(measureDate).toISOString());
+
     expect(typeof parseFloat(row1.accelerationSensorX)).toBe("number");
     expect(typeof parseFloat(row1.accelerationSensorY)).toBe("number");
     expect(typeof parseFloat(row1.accelerationSensorZ)).toBe("number");
     expect(typeof parseFloat(row1.accelerationSensorAccuracy)).toBe("number");
-    expect(typeof parseFloat(row1.battery)).toBe("number");
-    expect(typeof row1.position).toBe("string");
-    expect(typeof parseFloat(row1.positionAccuracy)).toBe("number");
     expect(typeof parseFloat(row1.positionAltitude)).toBe("number");
-    expect(typeof parseFloat(row1.temperature)).toBe("number");
-    expect(typeof parseFloat(row1.lastMeasuredAt)).toBe("number");
-    expect(typeof row1.lastMeasuredAtISO).toBe("string");
 
-    const row2 = getExportedColums(csv[1]);
+    const row2 = sortedRows[1];
 
-    expect(row2.model).toBe("DummyTempPosition");
-    expect(typeof row2.reference).toBe("string");
+    expect(row2.model).toBe("DummyTemp");
+    expect(row2.reference).toBe("linked1");
+    expect(parseFloat(row2.battery)).toBe(0.8);
+    expect(parseFloat(row2.temperature)).toBe(23.3);
+    expect(parseFloat(row2.lastMeasuredAt)).toBe(measureDate - 1000);
+    expect(row2.lastMeasuredAtISO).toBe(
+      new Date(measureDate - 1000).toISOString(),
+    );
+
     expect(typeof parseFloat(row2.accelerationSensorX)).toBe("number");
     expect(typeof parseFloat(row2.accelerationSensorY)).toBe("number");
     expect(typeof parseFloat(row2.accelerationSensorZ)).toBe("number");
     expect(typeof parseFloat(row2.accelerationSensorAccuracy)).toBe("number");
-    expect(typeof parseFloat(row2.battery)).toBe("number");
     expect(typeof row2.position).toBe("string");
     expect(typeof parseFloat(row2.positionAccuracy)).toBe("number");
     expect(typeof parseFloat(row2.positionAltitude)).toBe("number");
-    expect(typeof parseFloat(row2.temperature)).toBe("number");
-    expect(typeof parseFloat(row2.lastMeasuredAt)).toBe("number");
-    expect(typeof row2.lastMeasuredAtISO).toBe("string");
   });
 });
