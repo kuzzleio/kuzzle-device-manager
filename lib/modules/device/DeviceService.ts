@@ -177,6 +177,45 @@ export class DeviceService extends DigitalTwinService {
       deviceId,
     );
   }
+  /**
+   * Replace a device metadata
+   */
+  public async replaceMetadata(
+    engineId: string,
+    deviceId: string,
+    metadata: Metadata,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    const device = await this.get(engineId, deviceId, request);
+
+    for (const key in metadata) {
+      if (key in device._source.metadata) {
+        device._source.metadata[key] = metadata[key];
+      }
+    }
+
+    const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
+      "device-manager:device:update:before",
+      { device: device, metadata },
+    );
+
+    const updatedDevice = await this.sdk.document.replace<DeviceContent>(
+      engineId,
+      InternalCollection.DEVICES,
+      deviceId,
+      updatedPayload.device._source,
+    );
+
+    await this.app.trigger<EventDeviceUpdateAfter>(
+      "device-manager:device:update:after",
+      {
+        device: updatedDevice,
+        metadata: updatedPayload.metadata,
+      },
+    );
+
+    return updatedDevice;
+  }
 
   /**
    * Update or Create an device metadata
