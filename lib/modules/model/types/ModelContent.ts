@@ -39,7 +39,12 @@ export interface MetadataDetails {
     locales: {
       [locale: string]: LocaleDetails;
     };
-    readOnly?: boolean;
+    definition?: {
+      readOnly?: boolean;
+      type?: string;
+      values?: string[] | number[] | boolean[];
+      customValueAllowed?: boolean;
+    };
   };
 }
 
@@ -158,8 +163,15 @@ export interface AssetModelContent extends KDocumentContent {
      *         "friendlyName": "Température extérieure",
      *         "description": "Température à l'exterieur du bâtiment"
      *       },
-     *     "readOnly": true,
+     *     },
+     *     "definition": {
+     *       "readOnly": true,
+     *       "type": "string",
+     *       "values": ["red", "blue", "green"],
+     *       "customValueAllowed": true,
+     *     }
      *   }
+     * }
      */
     metadataDetails?: MetadataDetails;
     /**
@@ -289,8 +301,14 @@ export interface DeviceModelContent extends KDocumentContent {
      *         "friendlyName": "Version du capteur",
      *         "description": "Version du micrologiciel du capteur"
      *       },
-     *     "readOnly": true,
+     *     "definition": {
+     *       "readOnly": true,
+     *       "type": "string",
+     *       "values": ["red", "blue", "green"],
+     *       "customValueAllowed": true,
+     *     }
      *   }
+     * }
      */
     metadataDetails?: MetadataDetails;
     /**
