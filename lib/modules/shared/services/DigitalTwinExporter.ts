@@ -1,22 +1,44 @@
-import { JSONObject } from "kuzzle";
+import { JSONObject, KHit, SearchResult } from "kuzzle";
 import { ask } from "kuzzle-plugin-commons";
 import { UUID } from "node:crypto";
 
-import { DigitalTwinContent, flattenObject } from "../";
+import {
+  AskDigitalTwinLastMeasuresGet,
+  DigitalTwinContent,
+  DigitalTwinMeasures,
+  EmbeddedMeasure,
+  flattenObject,
+} from "../";
 import { NamedMeasures } from "../../decoder";
+import { MeasureContent } from "../../measure";
 import {
   AskModelMeasureGet,
   AssetModelContent,
   DeviceModelContent,
 } from "../../model";
-import { InternalCollection } from "../../plugin";
-import { AbstractExporter, Column } from "./AbstractExporter";
+import { DeviceManagerPlugin, InternalCollection } from "../../plugin";
+import { AbstractExporter, Column, ExporterOption } from "./AbstractExporter";
 
 interface MeasureColumn extends Column {
   isMeasure: boolean;
 }
 
+interface DigitalTwinExtraData {
+  measures: DigitalTwinMeasures;
+  lastMeasuredAt: number;
+}
+
 export class DigitalTwinExporter extends AbstractExporter {
+  constructor(
+    protected plugin: DeviceManagerPlugin,
+    protected target: InternalCollection,
+    config: Partial<ExporterOption> = {},
+  ) {
+    super(plugin, target, config);
+
+    this.exportStreamAugmenters.push(this.addMeasuresToExportStream.bind(this));
+  }
+
   protected exportRedisKey(engineId: string, exportId: string) {
     return `exports:${engineId}:${this.target}:${exportId}`;
   }
@@ -54,7 +76,7 @@ export class DigitalTwinExporter extends AbstractExporter {
       },
     ];
 
-    const stream = this.getExportStream(digitalTwins, columns);
+    const stream = this.getExportStream(digitalTwins, columns, engineId);
 
     await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
 
@@ -143,5 +165,58 @@ export class DigitalTwinExporter extends AbstractExporter {
     }
 
     return columns;
+  }
+
+  private async addMeasuresToExportStream(
+    result: SearchResult<KHit<DigitalTwinContent & DigitalTwinExtraData>>,
+    _: Column[],
+    engineId: string,
+  ) {
+    const type = this.target === InternalCollection.ASSETS ? "asset" : "device";
+
+    for (const hit of result.hits) {
+      let lastMeasures: MeasureContent[];
+
+      try {
+        lastMeasures = await ask<AskDigitalTwinLastMeasuresGet>(
+          `ask:device-manager:${type}:get-last-measures`,
+          {
+            digitalTwinId: hit._id,
+            engineId,
+          },
+        );
+      } catch (e) {
+        continue;
+      }
+
+      hit._source.measures = lastMeasures.reduce((accumulator, measure) => {
+        const measureName =
+          type === "asset"
+            ? measure.asset.measureName
+            : measure.origin.measureName;
+
+        const embeddedMeasure: EmbeddedMeasure = {
+          measuredAt: measure.measuredAt,
+          name: measureName,
+          originId: measure.origin._id,
+          payloadUuids: measure.origin.payloadUuids,
+          type: measure.type,
+          values: measure.values,
+        };
+
+        return {
+          ...accumulator,
+          [measureName]: embeddedMeasure,
+        };
+      }, {});
+
+      const lastMeasuredAt = Math.max(
+        ...lastMeasures.map((measure) => measure.measuredAt),
+      );
+
+      if (Number.isFinite(lastMeasuredAt)) {
+        hit._source.lastMeasuredAt = lastMeasuredAt;
+      }
+    }
   }
 }
