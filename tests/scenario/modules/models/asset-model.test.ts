@@ -70,6 +70,8 @@ describe("ModelsController:assets", () => {
       },
     });
 
+    await sdk.collection.refresh("device-manager", "models");
+
     const listAssets = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",

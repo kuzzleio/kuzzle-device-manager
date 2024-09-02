@@ -10,7 +10,7 @@ import {
   DeviceModelContent,
 } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { BaseService, Metadata, SearchParams, lock } from "../shared";
+import { DigitalTwinService, Metadata, SearchParams, lock } from "../shared";
 import {
   AskAssetHistoryAdd,
   AssetContent,
@@ -33,14 +33,14 @@ import {
 
 type MeasureName = { asset: string; device: string; type: string };
 
-export class DeviceService extends BaseService {
+export class DeviceService extends DigitalTwinService {
   constructor(plugin: DeviceManagerPlugin) {
-    super(plugin);
-
-    this.registerAskEvents();
+    super(plugin, InternalCollection.DEVICES);
   }
 
-  registerAskEvents() {
+  override registerAskEvents() {
+    super.registerAskEvents();
+
     onAsk<AskDeviceLinkAsset>(
       "ask:device-manager:device:link-asset",
       async ({ deviceId, engineId, user, assetId, measureNames }) => {
