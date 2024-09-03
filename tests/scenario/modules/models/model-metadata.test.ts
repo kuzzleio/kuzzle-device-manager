@@ -33,7 +33,18 @@ describe("ModelsController:metadata", () => {
               description: "L'entreprise qui a fabriqué l'avion",
             },
           },
+<<<<<<< HEAD
           readOnly: true,
+=======
+          definition: {
+            readOnly: true,
+            type: "string",
+            values: ["red", "blue"],
+            customValueAllowed: true,
+            date: true,
+            time: true,
+          },
+>>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
         },
       },
       metadataGroups: {
@@ -93,7 +104,18 @@ describe("ModelsController:metadata", () => {
               description: "L'entreprise qui a fabriqué Zigbee",
             },
           },
+<<<<<<< HEAD
           readOnly: true,
+=======
+          definition: {
+            readOnly: true,
+            type: "string",
+            values: ["red", "blue"],
+            customValueAllowed: true,
+            date: true,
+            time: true,
+          },
+>>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
         },
       },
     };

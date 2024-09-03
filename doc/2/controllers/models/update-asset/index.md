@@ -48,7 +48,18 @@ Method: PUT
                 description: string;
               };
             };
+<<<<<<< HEAD
             readOnly?: boolean;
+=======
+            definition?: {
+              readOnly?: boolean;
+              type?: string;
+              values?: string[] | number[] | boolean [];
+              customValueAllowed?: boolean;
+              date?: boolean;
+              time?: boolean;
+            }
+>>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
           };
       */
     },
