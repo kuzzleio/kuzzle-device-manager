@@ -57,7 +57,6 @@ Method: POST
             datetime?: {
               date?: boolean;
               time?: boolean;
-              timezone?: boolean;
             }
           };
       */

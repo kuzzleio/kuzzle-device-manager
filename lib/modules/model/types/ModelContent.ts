@@ -41,9 +41,8 @@ interface DefinitionMetadataDetails {
 }
 
 interface DatetimeMetadataDetails {
-  date?: boolean;
+  date: boolean;
   time?: boolean;
-  timezone?: boolean;
 }
 
 export interface MetadataDetails {
@@ -185,7 +184,6 @@ export interface AssetModelContent extends KDocumentContent {
      *     "datetime": {
      *      "date": true;
      *      "time": true;
-     *      "timezone": true;
      *     }
      *   }
      */
@@ -327,7 +325,6 @@ export interface DeviceModelContent extends KDocumentContent {
      *     "datetime": {
      *      "date": true,
      *      "time": true,
-     *      "timezone": true,
      *     }
      *   }
      */

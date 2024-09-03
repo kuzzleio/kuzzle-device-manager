@@ -49,7 +49,6 @@ import {
  *         "datetime": {
  *           "date": true,
  *           "time": true,
- *           "timezone": true
  *         }
 >>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
  *       }
@@ -181,7 +180,6 @@ export type AssetModelDefinition = {
  *         datetime: {
  *           date: true,
  *           time: true,
- *           timezone: true
  *         }
 >>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
  *       }
