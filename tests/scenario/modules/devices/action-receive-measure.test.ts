@@ -95,14 +95,15 @@ describe("DeviceController: receiveMeasure", () => {
       ],
     });
 
-    const device = await sdk.document.get(
-      "engine-ayse",
-      "devices",
-      "DummyTemp-linked1",
-    );
-
-    expect(device._source).toMatchObject({
-      measures: {
+    await expect(
+      sdk.query({
+        _id: "DummyTemp-linked1",
+        action: "getLastMeasures",
+        controller: "device-manager/devices",
+        engineId: "engine-ayse",
+      }),
+    ).resolves.toMatchObject({
+      result: {
         temperature: {
           originId: "DummyTemp-linked1",
           values: {

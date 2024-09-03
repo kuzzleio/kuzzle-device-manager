@@ -3,7 +3,7 @@ import { CollectionMappings } from "kuzzle";
 /**
  * Base mappings for the "devices" collection.
  *
- * Those mappings does not contains the `measures` and `metadata` mappings.
+ * Those mappings does not contains the `metadata` mappings.
  */
 export const devicesMappings: CollectionMappings = {
   dynamic: "strict",
@@ -29,12 +29,6 @@ export const devicesMappings: CollectionMappings = {
         // populated with device models
       },
     },
-    measures: {
-      properties: {
-        // populated with measure models
-      },
-    },
-    lastMeasuredAt: { type: "date" },
     measureSlots: {
       properties: {
         name: { type: "keyword" },

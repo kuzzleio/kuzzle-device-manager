@@ -43,6 +43,7 @@ deviceManager.models.registerDevice("DummyTemp",
     decoder: new DummyTempDecoder(),
     metadataMappings: {
       color: { type: "keyword" },
+      rssi: { type: "integer" },
     },
   }
 );

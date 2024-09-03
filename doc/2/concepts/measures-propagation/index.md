@@ -14,11 +14,9 @@ During this propagation, they will be duplicated several times.
 By default, measurements are stored:
 
 - in the `platform/payloads` collection as raw data frames
-- in the `platform/devices` collection as embedded measures (`EmbeddedMeasure`)
 
 If **the device is assigned to a tenant**, then the measurements are propagated:
 
-- in the `<tenant>/devices` collection as embedded measures (`EmbeddedMeasure`)
 - in the `<tenant>/measures` collection as measures (`MeasureContent`)
 
 ## Mechanisms of propagation
@@ -33,7 +31,6 @@ The `engineId` text field of the device contains the index name of the tenant it
 
 The measures are then propagated:
 
-- in the `<tenant>/devices` collection as embedded measures (`EmbeddedMeasure`)
 - in the `<tenant>/measures` collection as measures (`MeasureContent`)
 
 If this field is `null`, then the device is not attached to a tenant and measurements are not propagated.

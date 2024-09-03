@@ -116,9 +116,7 @@ export class DeviceService extends DigitalTwinService {
       _source: {
         assetId: null,
         engineId: null,
-        lastMeasuredAt: 0,
         measureSlots: [],
-        measures: {},
         metadata,
         model,
         reference,

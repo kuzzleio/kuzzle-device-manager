@@ -17,7 +17,7 @@ import _ from "lodash";
 
 import { assetGroupsMappings, assetsHistoryMappings } from "../asset";
 import { NamedMeasures } from "../decoder";
-import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
+import { measuresMappings } from "../measure";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -480,30 +480,19 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       engineGroup,
     );
 
-    const measureModels = await this.getModels<MeasureModelContent>(
-      this.config.adminIndex,
-      "measure",
-    );
-
-    return this.getDigitalTwinMappings<TDigitalTwin>(
-      digitalTwinType,
-      models,
-      measureModels,
-    );
+    return this.getDigitalTwinMappings<TDigitalTwin>(digitalTwinType, models);
   }
 
   /**
-   * Generate ES mappings from twin models and theirs associated measures
+   * Generate ES mappings from twin models
    *
    * @param digitalTwinType The target twin type
    * @param models The twin models
-   * @param measureModels The associated measures
    * @returns The complete ES mappings produces by merging all the target type twins
    */
   private async getDigitalTwinMappings<TDigitalTwin extends TwinModelContent>(
     digitalTwinType: TwinType,
     models: TDigitalTwin[],
-    measureModels: MeasureModelContent[],
   ) {
     if (
       this.config.engineCollections[digitalTwinType] === undefined ||
@@ -521,31 +510,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         mappings.properties.metadata.properties,
         model[digitalTwinType].metadataMappings,
       );
-
-      // TODO: Remove this entirely when removing measures from devices
-      if (digitalTwinType !== "asset") {
-        for (const { name: measureName, type: measureType } of model[
-          digitalTwinType
-        ].measures as NamedMeasures) {
-          const measureModel = measureModels.find(
-            (m) => m.measure.type === measureType,
-          );
-
-          if (!measureModel) {
-            throw new InternalError(
-              `Cannot find measure "${measureType}" declared in ${[
-                digitalTwinType,
-              ]} "${model[digitalTwinType].model}"`,
-            );
-          }
-
-          mappings.properties.measures.properties[measureName] =
-            getEmbeddedMeasureMappings(measureModel.measure.valuesMappings);
-        }
-      } else {
-        delete mappings.properties.measures;
-        delete mappings.properties.lastMeasuredAt;
-      }
     }
 
     return mappings;

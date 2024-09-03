@@ -41,10 +41,11 @@ export class MeasureService extends BaseService {
   }
 
   /**
-   * Register new measures from a device, updates :
-   * - admin device
-   * - engine device
-   * - linked asset, if metadata has changed
+   * Register new measures from a device, updates:
+   * - if their respective metadata has changed:
+   *   - admin device
+   *   - engine device
+   *   - linked asset
    * - engine measures
    *
    * A mutex ensure that a device can ingest one measure at a time.
@@ -52,7 +53,7 @@ export class MeasureService extends BaseService {
    * This method represents the ingestion pipeline:
    *  - build measures documents and update digital twins (device and asset)
    *  - trigger events `before` (measure enrichment)
-   *  - save documents (measures; device and asset if their metadata changed)
+   *  - save documents (measures; device and asset if their respective metadata changed)
    *  - trigger events `after`
    */
   public async ingest(
@@ -78,6 +79,10 @@ export class MeasureService extends BaseService {
         asset === null
           ? {}
           : JSON.parse(JSON.stringify(asset._source.metadata));
+
+      const originalDeviceMetadata: Metadata = JSON.parse(
+        JSON.stringify(device._source.metadata),
+      );
 
       _.merge(device._source.metadata, metadata);
 
@@ -105,8 +110,6 @@ export class MeasureService extends BaseService {
         );
       }
 
-      this.updateDeviceMeasures(device, measures);
-
       await this.app.trigger<EventMeasurePersistBefore>(
         "device-manager:measures:persist:before",
         {
@@ -123,31 +126,18 @@ export class MeasureService extends BaseService {
         );
       }
 
-      const promises = [];
-
-      promises.push(
-        this.sdk.document
-          .update<DeviceContent>(
-            this.config.adminIndex,
-            InternalCollection.DEVICES,
-            device._id,
-            device._source,
-          )
-          .catch((error) => {
-            throw keepStack(
-              error,
-              new BadRequestError(
-                `Cannot update device "${device._id}": ${error.message}`,
-              ),
-            );
-          }),
+      const deviceMetadataChanges = objectDiff(
+        originalDeviceMetadata,
+        device._source.metadata,
       );
 
-      if (engineId) {
+      const promises = [];
+
+      if (deviceMetadataChanges.length > 0) {
         promises.push(
           this.sdk.document
             .update<DeviceContent>(
-              engineId,
+              this.config.adminIndex,
               InternalCollection.DEVICES,
               device._id,
               device._source,
@@ -156,11 +146,33 @@ export class MeasureService extends BaseService {
               throw keepStack(
                 error,
                 new BadRequestError(
-                  `Cannot update engine device "${device._id}": ${error.message}`,
+                  `Cannot update device "${device._id}": ${error.message}`,
                 ),
               );
             }),
         );
+      }
+
+      if (engineId) {
+        if (deviceMetadataChanges.length > 0) {
+          promises.push(
+            this.sdk.document
+              .update<DeviceContent>(
+                engineId,
+                InternalCollection.DEVICES,
+                device._id,
+                device._source,
+              )
+              .catch((error) => {
+                throw keepStack(
+                  error,
+                  new BadRequestError(
+                    `Cannot update engine device "${device._id}": ${error.message}`,
+                  ),
+                );
+              }),
+          );
+        }
 
         promises.push(
           this.sdk.document
@@ -259,48 +271,6 @@ export class MeasureService extends BaseService {
         );
       }
     });
-  }
-
-  private updateDeviceMeasures(
-    device: KDocument<DeviceContent>,
-    measurements: MeasureContent[],
-  ) {
-    if (!device._source.measures) {
-      device._source.measures = {};
-    }
-
-    let lastMeasuredAt = 0;
-
-    for (const measurement of measurements) {
-      if (measurement.origin.type === "computed") {
-        continue;
-      }
-
-      const measureName = measurement.origin.measureName;
-      const previousMeasure = device._source.measures[measureName];
-
-      if (
-        previousMeasure &&
-        previousMeasure.measuredAt >= measurement.measuredAt
-      ) {
-        continue;
-      }
-
-      if (measurement.measuredAt > lastMeasuredAt) {
-        lastMeasuredAt = measurement.measuredAt;
-      }
-
-      device._source.measures[measureName] = {
-        measuredAt: measurement.measuredAt,
-        name: measureName,
-        originId: measurement.origin._id,
-        payloadUuids: measurement.origin.payloadUuids,
-        type: measurement.type,
-        values: measurement.values,
-      };
-    }
-
-    device._source.lastMeasuredAt = lastMeasuredAt;
   }
 
   /**

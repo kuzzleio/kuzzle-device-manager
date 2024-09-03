@@ -272,7 +272,7 @@ The ingest pipeline offers a mechanism to modify them before they are propagated
 
 The `device-manager:measures:process:before` event is triggered with an object containing 3 properties:
 
-- `device`: the last state of the device associated with the measures
+- `device`: the last state of the device
 - `measures`: table of measures
 - `asset`: (optional) the last state of the asset linked to the device
 
@@ -280,7 +280,7 @@ The `device-manager:measures:process:before` event is triggered with an object c
 An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:before`
 :::
 
-Another event is triggered after updating the asset and the device with the latest measures but before being persisted: `device-manager:measures:persist:before`.
+Another event is triggered after processing the measures but before persisting them: `device-manager:measures:persist:before`.
 
 The object passed to the event is the same as for the previous event.
 
@@ -308,8 +308,6 @@ It is possible to modify the fields of existing measures directly by manipulatin
 ### Add new measures
 
 New measures can be created and added to the measure table.
-
-If these measures are present in the device, then they must also be added to it.
 
 - **_Example: retrieving the temperature from an API from the current position_**
 
@@ -384,7 +382,7 @@ These treatments are not intended to modify the existing data (measure, device a
 
 The `device-manager:measures:process:after` event is triggered with an object containing 3 properties:
 
-- `device`: the new state of the device associated with the measures
+- `device`: the new state of the device associated
 - `measures`: table of measures
 - `asset`: (optional) the new state of the asset linked to the device
 

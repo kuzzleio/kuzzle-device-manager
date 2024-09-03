@@ -65,19 +65,16 @@ describe("features/Measure/IngestionPipeline", () => {
     });
 
     await expect(
-      sdk.document.get(
-        "device-manager",
-        "devices",
-        "DummyTemp-enrich_me_master"
-      )
+      sdk.query({
+        _id: "DummyTemp-enrich_me_master",
+        action: "getLastMeasures",
+        controller: "device-manager/devices",
+        engineId: "engine-ayse",
+      })
     ).resolves.toMatchObject({
-      _source: { measures: { temperature: { values: { temperature: 42 } } } },
-    });
-
-    await expect(
-      sdk.document.get("engine-ayse", "devices", "DummyTemp-enrich_me_master")
-    ).resolves.toMatchObject({
-      _source: { measures: { temperature: { values: { temperature: 42 } } } },
+      result: {
+        temperature: { values: { temperature: 42 } },
+      },
     });
 
     await expect(
@@ -132,19 +129,16 @@ describe("features/Measure/IngestionPipeline", () => {
     });
 
     await expect(
-      sdk.document.get(
-        "device-manager",
-        "devices",
-        "DummyTemp-compute_me_master"
-      )
+      sdk.query({
+        _id: "DummyTemp-compute_me_master",
+        action: "getLastMeasures",
+        controller: "device-manager/devices",
+        engineId: "engine-ayse",
+      })
     ).resolves.toMatchObject({
-      _source: { measures: { temperature: { values: { temperature: 20 } } } },
-    });
-
-    await expect(
-      sdk.document.get("engine-ayse", "devices", "DummyTemp-compute_me_master")
-    ).resolves.toMatchObject({
-      _source: { measures: { temperature: { values: { temperature: 20 } } } },
+      result: {
+        temperature: { values: { temperature: 20 } },
+      },
     });
 
     await expect(

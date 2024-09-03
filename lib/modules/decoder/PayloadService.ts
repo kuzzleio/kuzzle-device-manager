@@ -220,9 +220,7 @@ export class PayloadService extends BaseService {
       const body: DeviceContent = {
         assetId: null,
         engineId: null,
-        lastMeasuredAt: 0,
         measureSlots: deviceModelContent.device.measures,
-        measures: {},
         metadata: {},
         model: deviceModel,
         reference,

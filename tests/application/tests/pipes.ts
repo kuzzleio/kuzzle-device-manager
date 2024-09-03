@@ -13,17 +13,6 @@ export function registerTestPipes(app: Backend) {
       if (device._id === "DummyTemp-enrich_me_master") {
         for (const measure of measures) {
           if (measure.values.temperature) {
-            if (device._source.measures.temperature) {
-              if (
-                measure.measuredAt <=
-                device._source.measures.temperature.measuredAt
-              ) {
-                throw new Error(
-                  `The measure has already been embedded into the device but it shouldn't at this stage of the ingestion pipeline`,
-                );
-              }
-            }
-
             measure.values.temperature *= 2;
           }
         }
@@ -100,6 +89,10 @@ export function registerTestPipes(app: Backend) {
 
       if (color === "test-update-asset-metadata-with-payload") {
         asset._source.metadata.weight = 1337;
+      }
+
+      if (color === "test-update-device-metadata-with-payload") {
+        device._source.metadata.rssi = 93;
       }
 
       return { asset, device, measures };

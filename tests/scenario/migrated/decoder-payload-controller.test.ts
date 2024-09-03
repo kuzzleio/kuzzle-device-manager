@@ -35,9 +35,6 @@ describe("features/Decoder/PayloadController", () => {
       _source: {
         reference: "12345",
         model: "DummyTemp",
-        measures: {
-          temperature: { type: "temperature", values: { temperature: 42 } },
-        },
         engineId: null,
         assetId: null,
       },
@@ -144,20 +141,30 @@ describe("features/Decoder/PayloadController", () => {
       _source: {
         reference: "linked2",
         model: "DummyTempPosition",
-        measures: {
-          temperature: { type: "temperature", values: { temperature: 21 } },
-          position: {
-            type: "position",
-            values: { position: { lat: 42.2, lon: 2.42 }, accuracy: 2100 },
-          },
-          battery: { type: "battery", values: { battery: 80 } },
-        },
         engineId: "engine-ayse",
         assetId: "Container-linked2",
       },
     });
 
     await sdk.collection.refresh("engine-ayse", "measures");
+    await expect(
+      sdk.query({
+        _id: "DummyTempPosition-linked2",
+        action: "getLastMeasures",
+        controller: "device-manager/devices",
+        engineId: "engine-ayse",
+      })
+    ).resolves.toMatchObject({
+      result: {
+        temperature: { type: "temperature", values: { temperature: 21 } },
+        position: {
+          type: "position",
+          values: { position: { lat: 42.2, lon: 2.42 }, accuracy: 2100 },
+        },
+        battery: { type: "battery", values: { battery: 80 } },
+      },
+    });
+
     await expect(
       sdk.query({
         _id: "Container-linked2",
@@ -256,12 +263,6 @@ describe("features/Decoder/PayloadController", () => {
 
     await expect(promise).rejects.toMatchObject({
       message: 'Decoder "DummyTemp" has no measure named "unknownMeasureName"',
-    });
-
-    await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-test")
-    ).resolves.toMatchObject({
-      _source: { measures: {} },
     });
   });
 
