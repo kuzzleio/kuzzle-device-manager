@@ -54,8 +54,11 @@ Method: POST
               type?: string;
               values?: string[] | number[] | boolean [];
               customValueAllowed?: boolean;
+            };
+            datetime?: {
               date?: boolean;
               time?: boolean;
+              timezone?: boolean;
             }
           };
       */

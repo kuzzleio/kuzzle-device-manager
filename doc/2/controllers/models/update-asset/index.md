@@ -56,8 +56,11 @@ Method: PUT
               type?: string;
               values?: string[] | number[] | boolean [];
               customValueAllowed?: boolean;
+            };
+            datetime?: {
               date?: boolean;
               time?: boolean;
+              timezone?: boolean;
             }
 >>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
           };

@@ -44,9 +44,12 @@ import {
  *           "readOnly": true,
  *           "type": "string",
  *           "values": ["red", "blue", "green"],
- *           "customValueAllowed": true,
+ *           "customValueAllowed": true
+ *         },
+ *         "datetime": {
  *           "date": true,
  *           "time": true,
+ *           "timezone": true
  *         }
 >>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
  *       }
@@ -173,9 +176,12 @@ export type AssetModelDefinition = {
  *           readOnly: true,
  *           type: "string",
  *           values: ["red", "blue", "green"],
- *           customValueAllowed: true,
+ *           customValueAllowed: true
+ *         },
+ *         datetime: {
  *           date: true,
  *           time: true,
+ *           timezone: true
  *         }
 >>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
  *       }

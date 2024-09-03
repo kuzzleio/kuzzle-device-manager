@@ -33,20 +33,30 @@ export interface LocaleDetails {
   description: string;
 }
 
+interface DefinitionMetadataDetails {
+  readOnly?: boolean;
+  type?: string;
+  values?: string[] | number[] | boolean[];
+  customValueAllowed?: boolean;
+}
+
+interface DatetimeMetadataDetails {
+  date?: boolean;
+  time?: boolean;
+  timezone?: boolean;
+}
+
 export interface MetadataDetails {
   [key: string]: {
     group?: string;
     locales: {
       [locale: string]: LocaleDetails;
     };
-    definition?: {
-      readOnly?: boolean;
-      type?: string;
-      values?: string[] | number[] | boolean[];
-      customValueAllowed?: boolean;
-      date?: boolean;
-      time?: boolean;
-    };
+    definition?: DefinitionMetadataDetails;
+    /**
+     * To use the datetime property, the type defined in definition property must be set to 'date'
+     */
+    datetime?: DatetimeMetadataDetails;
   };
 }
 
@@ -165,19 +175,18 @@ export interface AssetModelContent extends KDocumentContent {
      *         "friendlyName": "Température extérieure",
      *         "description": "Température à l'exterieur du bâtiment"
      *       },
-<<<<<<< HEAD
-     *     "readOnly": true,
-=======
      *     },
      *     "definition": {
      *       "readOnly": true,
      *       "type": "string",
      *       "values": ["red", "blue", "green"],
-     *       "customValueAllowed": true,
-     *       "date": true,
-     *       "time": true,
+     *       "customValueAllowed": true
+     *     },
+     *     "datetime": {
+     *      "date": true;
+     *      "time": true;
+     *      "timezone": true;
      *     }
->>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
      *   }
      */
     metadataDetails?: MetadataDetails;
@@ -308,7 +317,18 @@ export interface DeviceModelContent extends KDocumentContent {
      *         "friendlyName": "Version du capteur",
      *         "description": "Version du micrologiciel du capteur"
      *       },
-     *     "readOnly": true,
+     *     },
+     *     "definition": {
+     *       "readOnly": true,
+     *       "type": "string",
+     *       "values": ["red", "blue", "green"],
+     *       "customValueAllowed": true
+     *     },
+     *     "datetime": {
+     *      "date": true,
+     *      "time": true,
+     *      "timezone": true,
+     *     }
      *   }
      */
     metadataDetails?: MetadataDetails;
