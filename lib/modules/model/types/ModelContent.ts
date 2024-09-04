@@ -33,16 +33,27 @@ export interface LocaleDetails {
   description: string;
 }
 
-interface DefinitionMetadataDetails {
+interface BaseDefinition {
   readOnly?: boolean;
-  type?: string;
-  values?: string[] | number[] | boolean[];
+  type: string;
+}
+
+export enum MetadataDetailsEnum {
+  OPTION_SELECTOR = "optionSelector",
+  DATETIME = "datetime",
+}
+
+export interface OptionsSelectorDefinition extends BaseDefinition {
+  type: typeof MetadataDetailsEnum.OPTION_SELECTOR;
+  values: string[] | number[] | boolean[];
   customValueAllowed?: boolean;
 }
 
-interface DatetimeMetadataDetails {
+export interface DatetimeDefinition extends BaseDefinition {
+  type: typeof MetadataDetailsEnum.DATETIME;
   date: boolean;
   time?: boolean;
+  customTimeZoneAllowed?: boolean;
 }
 
 export interface MetadataDetails {
@@ -51,11 +62,7 @@ export interface MetadataDetails {
     locales: {
       [locale: string]: LocaleDetails;
     };
-    definition?: DefinitionMetadataDetails;
-    /**
-     * To use the datetime property, the type defined in definition property must be set to 'date'
-     */
-    datetime?: DatetimeMetadataDetails;
+    definition?: OptionsSelectorDefinition | DatetimeDefinition;
   };
 }
 

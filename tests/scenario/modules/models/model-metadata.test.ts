@@ -3,6 +3,7 @@ import {
   ApiModelWriteAssetRequest,
   AssetModelContent,
   MeasureModelContent,
+  MetadataDetailsEnum,
 } from "../../../../lib/modules/model";
 import { setupSdK } from "../../../helpers";
 
@@ -33,20 +34,11 @@ describe("ModelsController:metadata", () => {
               description: "L'entreprise qui a fabriqué l'avion",
             },
           },
-<<<<<<< HEAD
-          readOnly: true,
-=======
           definition: {
-            readOnly: true,
-            type: "string",
+            type: MetadataDetailsEnum.OPTION_SELECTOR,
             values: ["red", "blue"],
             customValueAllowed: true,
           },
-          datetime: {
-            date: true,
-            time: true,
-          },
->>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
         },
       },
       metadataGroups: {
@@ -99,27 +91,19 @@ describe("ModelsController:metadata", () => {
           locales: {
             en: {
               friendlyName: "Manufacturer",
-              description: "The company that manufactured Zigbee",
+              description: "The company that manufactured the plane",
             },
             fr: {
               friendlyName: "Fabricant",
-              description: "L'entreprise qui a fabriqué Zigbee",
+              description: "L'entreprise qui a fabriqué l'avion",
             },
           },
-<<<<<<< HEAD
-          readOnly: true,
-=======
           definition: {
-            readOnly: true,
-            type: "string",
-            values: ["red", "blue"],
-            customValueAllowed: true,
-          },
-          datetime: {
+            type: MetadataDetailsEnum.DATETIME,
             date: true,
             time: true,
+            customTimeZoneAllowed: true,
           },
->>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
         },
       },
     };
