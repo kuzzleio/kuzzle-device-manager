@@ -10,12 +10,14 @@ import {
 } from "../../../index";
 import { isMeasureDated } from "../../helpers/payloads";
 
+export const dummyTempPositionDeviceMeasures = [
+  { name: "temperature", type: "temperature" },
+  { name: "battery", type: "battery" },
+  { name: "position", type: "position" },
+] as const;
+
 export class DummyTempPositionDecoder extends Decoder {
-  public measures = [
-    { name: "temperature", type: "temperature" },
-    { name: "battery", type: "battery" },
-    { name: "position", type: "position" },
-  ] as const;
+  public measures = dummyTempPositionDeviceMeasures;
 
   constructor() {
     super();

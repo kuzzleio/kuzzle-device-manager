@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { DeviceContent, DeviceSerializer } from "../device";
 import { AskMeasureIngest, DecodedMeasurement } from "../measure";
+import { AskModelDeviceGet } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { BaseService } from "../shared";
 
@@ -204,6 +205,13 @@ export class PayloadService extends BaseService {
     deviceIds: string[],
     { refresh }: { refresh: any },
   ): Promise<KDocument<DeviceContent>[]> {
+    const deviceModelContent = await ask<AskModelDeviceGet>(
+      "ask:device-manager:model:device:get",
+      {
+        model: deviceModel,
+      },
+    );
+
     const newDevices = deviceIds.map((deviceId) => {
       // Reference may contains a "-"
       const [, ...rest] = deviceId.split("-");
@@ -213,6 +221,7 @@ export class PayloadService extends BaseService {
         assetId: null,
         engineId: null,
         lastMeasuredAt: 0,
+        measureSlots: deviceModelContent.device.measures,
         measures: {},
         metadata: {},
         model: deviceModel,
