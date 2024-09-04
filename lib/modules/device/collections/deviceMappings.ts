@@ -35,5 +35,11 @@ export const devicesMappings: CollectionMappings = {
       },
     },
     lastMeasuredAt: { type: "date" },
+    measureSlots: {
+      properties: {
+        name: { type: "keyword" },
+        type: { type: "keyword" },
+      },
+    },
   },
 };

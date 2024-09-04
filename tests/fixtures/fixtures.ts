@@ -1,8 +1,18 @@
+import {
+  containerAssetDefinition,
+  warehouseAssetDefinition,
+} from "../application/assets";
+import {
+  dummyTempDeviceMeasures,
+  dummyTempPositionDeviceMeasures,
+} from "../application/decoders";
+
 import { assetGroupFixtures } from "./assetsGroups";
 
 const deviceDetached1 = {
   model: "DummyTemp",
   reference: "detached1",
+  measureSlots: dummyTempDeviceMeasures,
   metadata: {},
   measures: {},
 };
@@ -11,6 +21,7 @@ const deviceDetached1Id = `${deviceDetached1.model}-${deviceDetached1.reference}
 const deviceAyseLinked1 = {
   model: "DummyTemp",
   reference: "linked1",
+  measureSlots: dummyTempDeviceMeasures,
   metadata: {},
   measures: {},
   engineId: "engine-ayse",
@@ -21,6 +32,7 @@ const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinked1.refe
 const deviceAyseLinked2 = {
   model: "DummyTempPosition",
   reference: "linked2",
+  measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
   measures: {},
   engineId: "engine-ayse",
@@ -31,6 +43,7 @@ const deviceAyseLinked2Id = `${deviceAyseLinked2.model}-${deviceAyseLinked2.refe
 const deviceAyseUnlinked1 = {
   model: "DummyTemp",
   reference: "unlinked1",
+  measureSlots: dummyTempDeviceMeasures,
   metadata: {},
   measures: {},
   engineId: "engine-ayse",
@@ -41,6 +54,7 @@ const deviceAyseUnlinked1Id = `${deviceAyseUnlinked1.model}-${deviceAyseUnlinked
 const deviceAyseUnlinked2 = {
   model: "DummyTemp",
   reference: "unlinked2",
+  measureSlots: dummyTempDeviceMeasures,
   metadata: {},
   measures: {},
   engineId: "engine-ayse",
@@ -51,6 +65,7 @@ const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked
 const deviceAyseUnlinked3 = {
   model: "DummyTempPosition",
   reference: "unlinked3",
+  measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
   measures: {},
   engineId: "engine-ayse",
@@ -61,6 +76,7 @@ const deviceAyseUnlinked3Id = `${deviceAyseUnlinked3.model}-${deviceAyseUnlinked
 const deviceAyseWarehouse = {
   model: "DummyTempPosition",
   reference: "warehouse",
+  measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
   measures: {},
   engineId: "engine-ayse",
@@ -71,6 +87,7 @@ const deviceAyseWarehouseId = `${deviceAyseWarehouse.model}-${deviceAyseWarehous
 const assetAyseWarehouseLinked = {
   model: "Warehouse",
   reference: "linked",
+  measureSlots: warehouseAssetDefinition.measures,
   metadata: {
     surface: 512,
   },
@@ -86,6 +103,7 @@ const assetAyseWarehouseLinkedId = `${assetAyseWarehouseLinked.model}-${assetAys
 const assetAyseLinked1 = {
   model: "Container",
   reference: "linked1",
+  measureSlots: containerAssetDefinition.measures,
   metadata: {
     weight: 10,
     height: 11,
@@ -106,6 +124,7 @@ const assetAyseLinked1Id = `${assetAyseLinked1.model}-${assetAyseLinked1.referen
 const assetAyseLinked2 = {
   model: "Container",
   reference: "linked2",
+  measureSlots: containerAssetDefinition.measures,
   metadata: {
     weight: 42,
     height: 21,
@@ -125,6 +144,7 @@ const assetAyseLinked2Id = `${assetAyseLinked2.model}-${assetAyseLinked2.referen
 const assetAyseUnlinked = {
   model: "Container",
   reference: "unlinked1",
+  measureSlots: containerAssetDefinition.measures,
   metadata: {
     weight: 20,
     height: 22,
@@ -136,6 +156,7 @@ const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.refe
 const assetAyseGrouped = {
   model: "Container",
   reference: "grouped",
+  measureSlots: containerAssetDefinition.measures,
   metadata: {
     weight: 20,
     height: 22,
@@ -157,6 +178,7 @@ const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.referen
 const assetAyseGrouped2 = {
   model: "Container",
   reference: "grouped2",
+  measureSlots: containerAssetDefinition.measures,
   metadata: {
     weight: 20,
     height: 22,

@@ -52,5 +52,12 @@ export const assetsMappings: CollectionMappings = {
         },
       },
     },
+
+    measureSlots: {
+      properties: {
+        name: { type: "keyword" },
+        type: { type: "keyword" },
+      },
+    },
   },
 };

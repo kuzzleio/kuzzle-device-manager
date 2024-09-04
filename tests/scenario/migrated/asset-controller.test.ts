@@ -39,6 +39,24 @@ describe("features/Asset/Controller", () => {
     ).resolves.toMatchObject({
       _source: {
         metadata: { height: 5, weight: null },
+        measureSlots: [
+          {
+            name: "temperatureExt",
+            type: "temperature",
+          },
+          {
+            name: "temperatureInt",
+            type: "temperature",
+          },
+          {
+            name: "position",
+            type: "position",
+          },
+          {
+            name: "temperatureWeather",
+            type: "temperature",
+          },
+        ],
         measures: {
           temperatureExt: null,
           temperatureInt: null,
