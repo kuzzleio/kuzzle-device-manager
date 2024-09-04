@@ -48,12 +48,7 @@ Method: POST
                 description: string;
               };
             };
-            definition?: {
-              readOnly?: boolean;
-              type?: string;
-              values?: string[] | number[] | boolean [];
-              customValueAllowed?: boolean;
-            }
+            readOnly?: boolean;
           };
       */
     },
