@@ -280,7 +280,7 @@ The `device-manager:measures:process:before` event is triggered with an object c
 An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:before`
 :::
 
-Another event is triggered after updating the asset and the device with the latest measures but before being persisted: `device-manager:measures:persist:after`.
+Another event is triggered after updating the asset and the device with the latest measures but before being persisted: `device-manager:measures:persist:before`.
 
 The object passed to the event is the same as for the previous event.
 
