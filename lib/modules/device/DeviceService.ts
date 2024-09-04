@@ -101,6 +101,7 @@ export class DeviceService extends DigitalTwinService {
         assetId: null,
         engineId: null,
         lastMeasuredAt: 0,
+        measureSlots: [],
         measures: {},
         metadata,
         model,
@@ -111,6 +112,8 @@ export class DeviceService extends DigitalTwinService {
     return lock(`device:create:${device._id}`, async () => {
       const deviceModel = await this.getDeviceModel(model);
       const engineId = request.getString("engineId");
+
+      device._source.measureSlots = deviceModel.device.measures;
 
       for (const metadataName of Object.keys(
         deviceModel.device.metadataMappings,
