@@ -35,6 +35,7 @@ describe("ModelsController:metadata", () => {
             },
           },
           definition: {
+            readOnly: true,
             type: MetadataDetailsEnum.OPTION_SELECTOR,
             values: ["red", "blue"],
             customValueAllowed: true,
@@ -99,6 +100,7 @@ describe("ModelsController:metadata", () => {
             },
           },
           definition: {
+            readOnly: false,
             type: MetadataDetailsEnum.DATETIME,
             date: true,
             time: true,
