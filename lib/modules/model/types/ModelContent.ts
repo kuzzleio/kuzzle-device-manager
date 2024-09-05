@@ -35,7 +35,7 @@ export interface LocaleDetails {
 
 interface BaseDefinition {
   readOnly?: boolean;
-  type: string;
+  type: MetadataDetailsEnum;
 }
 
 export enum MetadataDetailsEnum {
@@ -44,13 +44,13 @@ export enum MetadataDetailsEnum {
 }
 
 export interface OptionsSelectorDefinition extends BaseDefinition {
-  type: typeof MetadataDetailsEnum.OPTION_SELECTOR;
+  type: MetadataDetailsEnum.OPTION_SELECTOR;
   values: string[] | number[] | boolean[];
   customValueAllowed?: boolean;
 }
 
 export interface DatetimeDefinition extends BaseDefinition {
-  type: typeof MetadataDetailsEnum.DATETIME;
+  type: MetadataDetailsEnum.DATETIME;
   date: boolean;
   time?: boolean;
   customTimeZoneAllowed?: boolean;
