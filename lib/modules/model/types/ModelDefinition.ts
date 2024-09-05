@@ -38,6 +38,7 @@ import {
  *           }
  *         },
  *         "definition": {
+ *           "readOnly": false,
  *           "type": MetadataDetailsEnum.DATETIME,
  *           "date": true,
  *           "time": true,
@@ -161,6 +162,7 @@ export type AssetModelDefinition = {
  *           }
  *         },
  *         definition: {
+ *           readOnly: false,
  *           type: MetadataDetailsEnum.DATETIME,
  *           date: true,
  *           time: true,
