@@ -22,7 +22,7 @@ Method: PUT
 
 ```js
 {
-  "controller": "device-manager/assets",
+  "controller": "device-manager/models",
   "action": "updateAsset",
   "engineGroup": "<engine group>",
   "model": "<asset model>",
