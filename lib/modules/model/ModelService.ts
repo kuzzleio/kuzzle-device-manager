@@ -38,6 +38,7 @@ import {
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
 import { MeasureValuesDetails } from "../measure";
+import { AskDeviceRefreshModel } from "../device";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -313,6 +314,13 @@ export class ModelService extends BaseService {
       InternalCollection.MODELS,
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+
+    await ask<AskDeviceRefreshModel>(
+      "ask:device-manager:device:refresh-model",
+      {
+        deviceModel: modelContent,
+      },
+    );
 
     return deviceModel;
   }
@@ -685,6 +693,22 @@ export class ModelService extends BaseService {
       },
       { source: true },
     );
+
+    // Only update engines and refresh asset models when necessary
+    if (Object.keys(metadataMappings).length > 0 || measures.length > 0) {
+      await this.sdk.collection.refresh(
+        this.config.adminIndex,
+        InternalCollection.MODELS,
+      );
+
+      await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+      await ask<AskAssetRefreshModel>(
+        "ask:device-manager:asset:refresh-model",
+        {
+          assetModel: endDocument._source,
+        },
+      );
+    }
 
     return endDocument;
   }
