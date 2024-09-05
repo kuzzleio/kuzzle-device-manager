@@ -24,7 +24,7 @@ Method: POST
 
 ```js
 {
-  "controller": "device-manager/assets",
+  "controller": "device-manager/models",
   "action": "writeAsset",
   "body": {
     "engineGroup": "<engine group>",
