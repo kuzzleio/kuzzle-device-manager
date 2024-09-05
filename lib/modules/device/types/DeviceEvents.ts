@@ -1,6 +1,7 @@
 import { User } from "kuzzle";
 import { KDocument } from "kuzzle-sdk";
 
+import { DeviceModelContent } from "../../../modules/model";
 import { Metadata } from "../../../modules/shared";
 
 import { DeviceContent } from "./DeviceContent";
@@ -64,6 +65,16 @@ export type AskDeviceAttachEngine = {
     engineId: string;
     deviceId: string;
     user: User;
+  };
+
+  result: void;
+};
+
+export type AskDeviceRefreshModel = {
+  name: "ask:device-manager:device:refresh-model";
+
+  payload: {
+    deviceModel: DeviceModelContent;
   };
 
   result: void;

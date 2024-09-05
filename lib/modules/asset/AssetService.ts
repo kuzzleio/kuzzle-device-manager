@@ -646,6 +646,8 @@ export class AssetService extends DigitalTwinService {
             ...assetMetadata,
           };
 
+          asset._source.measureSlots = assetModel.asset.measures;
+
           acc[asset.index].push(asset as KDocument<AssetContent>);
 
           return acc;
