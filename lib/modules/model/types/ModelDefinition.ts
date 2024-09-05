@@ -37,21 +37,13 @@ import {
  *             "description": "Température externe du conteneur"
  *           }
  *         },
-<<<<<<< HEAD
- *         "readOnly": true,
-=======
  *         "definition": {
- *           "readOnly": true,
- *           "type": "string",
- *           "values": ["red", "blue", "green"],
- *           "customValueAllowed": true
- *         },
- *         "datetime": {
+ *           "type": MetadataDetailsEnum.DATETIME,
  *           "date": true,
  *           "time": true,
- *         }
->>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
- *       }
+ *           "customTimeZoneAllowed": true,
+ *        },
+ *       },
  *     },
  *     metadataGroups: {
  *       buildingEnv: {
@@ -168,21 +160,13 @@ export type AssetModelDefinition = {
  *             description: "Type du traceur"
  *           }
  *         },
-<<<<<<< HEAD
- *         readOnly: true,
-=======
  *         definition: {
- *           readOnly: true,
- *           type: "string",
- *           values: ["red", "blue", "green"],
- *           customValueAllowed: true
- *         },
- *         datetime: {
+ *           type: MetadataDetailsEnum.DATETIME,
  *           date: true,
  *           time: true,
- *         }
->>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
- *       }
+ *           customTimeZoneAllowed: true,
+ *        },
+ *       },
  *     },
  *     metadataGroups: {
  *      sensorSpecs: {

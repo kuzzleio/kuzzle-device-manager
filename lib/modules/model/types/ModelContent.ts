@@ -62,6 +62,9 @@ export interface MetadataDetails {
     locales: {
       [locale: string]: LocaleDetails;
     };
+    /**
+     * To add new definition, create an interface with the properties and extend it with BaseDefinition. Add a new field in MetadataDetailsEnum to define the type of your definition. Finally add the new definition interface with a pipe to take in account the new type.
+     */
     definition?: OptionsSelectorDefinition | DatetimeDefinition;
   };
 }
@@ -184,15 +187,12 @@ export interface AssetModelContent extends KDocumentContent {
      *     },
      *     "definition": {
      *       "readOnly": true,
-     *       "type": "string",
-     *       "values": ["red", "blue", "green"],
-     *       "customValueAllowed": true
+     *       "type": MetadataDetailsEnum.OPTION_SELECTOR,
+     *       "values": ["red", "blue"],
+     *       "customValueAllowed": true,
      *     },
-     *     "datetime": {
-     *      "date": true;
-     *      "time": true;
-     *     }
-     *   }
+     *   },
+     * }
      */
     metadataDetails?: MetadataDetails;
     /**
@@ -324,16 +324,14 @@ export interface DeviceModelContent extends KDocumentContent {
      *       },
      *     },
      *     "definition": {
-     *       "readOnly": true,
-     *       "type": "string",
-     *       "values": ["red", "blue", "green"],
-     *       "customValueAllowed": true
+     *       "readOnly": false,
+     *       "type": MetadataDetailsEnum.DATETIME,
+     *       "date": true,
+     *       "time": true,
+     *       "customTimeZoneAllowed": true,
      *     },
-     *     "datetime": {
-     *      "date": true,
-     *      "time": true,
-     *     }
-     *   }
+     *   },
+     * }
      */
     metadataDetails?: MetadataDetails;
     /**

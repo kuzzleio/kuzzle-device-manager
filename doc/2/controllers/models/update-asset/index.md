@@ -49,6 +49,7 @@ Method: PUT
               };
             };
 <<<<<<< HEAD
+<<<<<<< HEAD
             readOnly?: boolean;
 =======
             definition?: {
@@ -62,6 +63,9 @@ Method: PUT
               time?: boolean;
             }
 >>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
+=======
+            definition?: OptionsSelectorDefinition | DatetimeDefinition;
+>>>>>>> 69f64de (docs(metadata): update documentation)
           };
       */
     },
