@@ -1,8 +1,9 @@
+import { AssetHistoryContent } from "../../../index";
+
+import { useSdk, sendPayloads } from "../../helpers";
 import { beforeEachTruncateCollections } from "../../hooks/collections";
 import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
-
-import { useSdk, sendPayloads } from "../../helpers";
 
 jest.setTimeout(10000);
 
@@ -24,17 +25,14 @@ describe("features/Asset/History", () => {
   });
 
   it("Historize asset after creation and metadata update", async () => {
-    let response;
-    let promise;
-
-    response = await sdk.query({
+    await sdk.query({
       controller: "device-manager/assets",
       action: "create",
       engineId: "engine-kuzzle",
       body: { model: "Container", reference: "A1", metadata: { height: 5 } },
     });
 
-    response = await sdk.query({
+    await sdk.query({
       controller: "device-manager/assets",
       action: "update",
       engineId: "engine-kuzzle",
@@ -44,7 +42,7 @@ describe("features/Asset/History", () => {
 
     await sdk.collection.refresh("engine-kuzzle", "assets-history");
 
-    response = await sdk.query({
+    const assetHistory = await sdk.query({
       controller: "document",
       action: "search",
       index: "engine-kuzzle",
@@ -52,27 +50,19 @@ describe("features/Asset/History", () => {
       body: { sort: { "_kuzzle_info.createdAt": "desc" } },
     });
 
-    expect(response.result).toMatchObject({
-      hits: {
-        "0": {
-          _source: {
-            id: "Container-A1",
-            event: { name: "metadata", metadata: { names: ["weight"] } },
-            asset: { metadata: { height: 5, weight: 1250 } },
-          },
-        },
-        "1": {
-          _source: {
-            id: "Container-A1",
-            event: {
-              name: "metadata",
-              metadata: { names: ["weight", "height", "trailer"] },
-            },
-            asset: { metadata: { height: 5, weight: null } },
-          },
-        },
-        length: 2,
+    expect(assetHistory.result.hits.length).toBe(2);
+    expect(assetHistory.result.hits[0]._source).toMatchObject({
+      id: "Container-A1",
+      event: { name: "metadata", metadata: { names: ["weight"] } },
+      asset: { metadata: { height: 5, weight: 1250 } },
+    });
+    expect(assetHistory.result.hits[1]._source).toMatchObject({
+      id: "Container-A1",
+      event: {
+        name: "metadata",
+        metadata: { names: ["weight", "height", "trailer", "person"] },
       },
+      asset: { metadata: { height: 5, weight: null } },
     });
   });
 
@@ -177,10 +167,7 @@ describe("features/Asset/History", () => {
   });
 
   it("Historize asset when metadata have been updated when receiving a measure", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
+    await sendPayloads(sdk, "dummy-temp", [
       {
         deviceEUI: "linked1",
         temperature: 42.2,
@@ -190,32 +177,24 @@ describe("features/Asset/History", () => {
 
     await sdk.collection.refresh("engine-ayse", "assets-history");
 
-    response = await sdk.query({
-      controller: "document",
-      action: "search",
-      index: "engine-ayse",
-      collection: "assets-history",
-      body: { sort: { "_kuzzle_info.createdAt": "desc" } },
-    });
+    const result = await sdk.document.search<AssetHistoryContent>(
+      "engine-ayse",
+      "assets-history",
+      { sort: { "_kuzzle_info.createdAt": "desc" } },
+    );
 
-    expect(response.result).toMatchObject({
-      hits: {
-        "0": {
-          _source: {
-            id: "Container-linked1",
-            event: {
-              name: "measure",
-              measure: { names: ["temperatureExt"] },
-              metadata: { names: ["weight", "trailer.capacity"] },
-            },
-            asset: {
-              measures: { temperatureExt: { values: { temperature: 42.2 } } },
-              metadata: { weight: 42042 },
-            },
-          },
-        },
-        length: 1,
+    expect(result.hits).toHaveLength(1);
+    expect(result.hits[0]._source).toMatchObject({
+      id: "Container-linked1",
+      event: {
+        name: "measure",
+        measure: { names: ["temperatureExt"] },
+        metadata: { names: ["weight", "trailer.capacity"] },
       },
-    });
+      asset: {
+        measures: { temperatureExt: { values: { temperature: 42.2 } } },
+        metadata: { weight: 42042 },
+       },
+     });
   });
 });

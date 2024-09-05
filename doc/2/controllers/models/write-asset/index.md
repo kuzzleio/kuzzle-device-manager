@@ -49,23 +49,74 @@ Method: POST
                 description: string;
               };
             };
+            readOnly?: boolean;
           };
       */
     },
-    "metadataGroups"; {
-    /*
-      Metadata groups list and details.
-        {
-          [groupName: string]: {
-            locales: {
-              [locale: string]: {
-                groupFriendlyName: string;
-                description: string;
+    "metadataGroups": {
+      /*
+        Metadata groups list and details.
+          {
+            [groupName: string]: {
+              locales: {
+                [locale: string]: {
+                  groupFriendlyName: string;
+                  description: string;
+                };
               };
             };
           };
-        };
-    */
+      */
+    },
+    "tooltipModels": {
+      /*
+        Tooltip models for an asset model.
+          [key: string]: {
+            tooltipLabel: string;
+            content: [
+              {
+                category: "metadata";
+                label?: {
+                  locales: {
+                    [locale: string]: {
+                      friendlyName: string;
+                      description: string;
+                    };
+                  };
+                };
+                metadataPath: string;
+                suffix?: string;
+              },
+              {
+                category: "measure";
+                label?: {
+                  locales: {
+                    [locale: string]: {
+                      friendlyName: string;
+                      description: string;
+                    };
+                  };
+                };
+                measureSlot: string;
+                measureValuePath: string;
+                suffix?: string;
+              },
+              {
+                category: "static";
+                label?: {
+                  locales: {
+                    [locale: string]: {
+                      friendlyName: string;
+                      description: string;
+                    };
+                  };
+                };
+                type: "link" | "image" | "text" | "title" | "separator";
+                value: string;
+              }
+            ];
+          };
+      */
     },
     "measures": [
       // Array of measure definition with type and name
@@ -84,6 +135,7 @@ Method: POST
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Metadata group and translations
 - `metadataGroups`: Groups list with translations for group name 
+- `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 
 ---

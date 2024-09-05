@@ -9,7 +9,7 @@ import {
   NotFoundError,
 } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
-import { JSONObject, KDocument } from "kuzzle-sdk";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
   AskEngineUpdateAll,
@@ -19,7 +19,7 @@ import {
 } from "../plugin";
 
 import { AskAssetRefreshModel } from "../asset";
-import { BaseService, flattenObject } from "../shared";
+import { BaseService, SearchParams, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
@@ -29,6 +29,7 @@ import {
   MetadataGroups,
   MetadataMappings,
   ModelContent,
+  TooltipModels,
 } from "./types/ModelContent";
 import {
   AskModelAssetGet,
@@ -191,6 +192,7 @@ export class ModelService extends BaseService {
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
     measures: NamedMeasures,
+    tooltipModels: TooltipModels,
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
@@ -212,6 +214,7 @@ export class ModelService extends BaseService {
         metadataGroups,
         metadataMappings,
         model,
+        tooltipModels,
       },
       engineGroup,
       type: "asset",
@@ -420,60 +423,123 @@ export class ModelService extends BaseService {
   async listAsset(
     engineGroup: string,
   ): Promise<KDocument<AssetModelContent>[]> {
-    const query = {
-      and: [
-        { equals: { type: "asset" } },
-        {
-          or: [
-            { equals: { engineGroup } },
-            { equals: { engineGroup: "commons" } },
-          ],
-        },
-      ],
-    };
-
-    const sort = { "asset.model": "asc" };
-
-    const result = await this.sdk.document.search<AssetModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      { query, sort },
-      { lang: "koncorde", size: 5000 },
-    );
+    const result = await this.searchAssets(engineGroup, {
+      searchBody: {
+        sort: { "asset.model": "asc" },
+      },
+      size: 5000,
+    });
 
     return result.hits;
   }
 
   async listDevices(): Promise<KDocument<DeviceModelContent>[]> {
-    const query = {
-      and: [{ equals: { type: "device" } }],
-    };
-    const sort = { "device.model": "asc" };
-
-    const result = await this.sdk.document.search<DeviceModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      { query, sort },
-      { lang: "koncorde", size: 5000 },
-    );
+    const result = await this.searchDevices({
+      searchBody: {
+        sort: { "device.model": "asc" },
+      },
+      size: 5000,
+    });
 
     return result.hits;
   }
 
   async listMeasures(): Promise<KDocument<MeasureModelContent>[]> {
-    const query = {
-      and: [{ equals: { type: "measure" } }],
-    };
-    const sort = { "measure.type": "asc" };
-
-    const result = await this.sdk.document.search<MeasureModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      { query, sort },
-      { lang: "koncorde", size: 5000 },
-    );
+    const result = await this.searchMeasures({
+      searchBody: {
+        sort: { "measure.type": "asc" },
+      },
+      size: 5000,
+    });
 
     return result.hits;
+  }
+
+  async searchAssets(
+    engineGroup: string,
+    searchParams: Partial<SearchParams>,
+  ): Promise<SearchResult<KHit<AssetModelContent>>> {
+    const query = {
+      bool: {
+        must: [
+          searchParams.searchBody.query,
+          { match: { type: "asset" } },
+          {
+            bool: {
+              should: [
+                { match: { engineGroup } },
+                { match: { engineGroup: "commons" } },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    return this.sdk.document.search<AssetModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        ...searchParams.searchBody,
+        query,
+      },
+      {
+        from: searchParams.from,
+        lang: "elasticsearch",
+        scroll: searchParams.scrollTTL,
+        size: searchParams.size,
+      },
+    );
+  }
+
+  async searchDevices(
+    searchParams: Partial<SearchParams>,
+  ): Promise<SearchResult<KHit<DeviceModelContent>>> {
+    const query = {
+      bool: {
+        must: [searchParams.searchBody.query, { match: { type: "device" } }],
+      },
+    };
+
+    return this.sdk.document.search<DeviceModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        ...searchParams.searchBody,
+        query,
+      },
+      {
+        from: searchParams.from,
+        lang: "elasticsearch",
+        scroll: searchParams.scrollTTL,
+        size: searchParams.size,
+      },
+    );
+  }
+
+  async searchMeasures(
+    searchParams: Partial<SearchParams>,
+  ): Promise<SearchResult<KHit<MeasureModelContent>>> {
+    const query = {
+      bool: {
+        must: [searchParams.searchBody.query, { match: { type: "measure" } }],
+      },
+    };
+
+    return this.sdk.document.search<MeasureModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        ...searchParams.searchBody,
+        query,
+      },
+      {
+        from: searchParams.from,
+        lang: "elasticsearch",
+        scroll: searchParams.scrollTTL,
+        size: searchParams.size,
+      },
+    );
   }
 
   async assetExists(model: string): Promise<boolean> {
@@ -580,5 +646,82 @@ export class ModelService extends BaseService {
     }
 
     return result.hits[0];
+  }
+
+  /**
+   * Update an asset model
+   */
+  async updateAsset(
+    engineGroup: string,
+    model: string,
+    metadataMappings: MetadataMappings,
+    defaultMetadata: JSONObject,
+    metadataDetails: MetadataDetails,
+    metadataGroups: MetadataGroups,
+    measures: AssetModelContent["asset"]["measures"],
+    tooltipModels: TooltipModels,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetModelContent>> {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
+    }
+
+    this.checkDefaultValues(metadataMappings, defaultMetadata);
+
+    const existingAsset = await this.getAsset(engineGroup, model);
+
+    // The field must be deleted if an element of the table is to be deleted
+    await this.sdk.document.deleteFields(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      existingAsset._id,
+      ["asset.tooltipModels"],
+      { source: true },
+    );
+
+    const measuresUpdated =
+      measures.length === 0 ? existingAsset._source.asset.measures : measures;
+
+    const assetModelContent: AssetModelContent = {
+      asset: {
+        defaultMetadata,
+        measures: measuresUpdated,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+        tooltipModels,
+      },
+      engineGroup,
+      type: "asset",
+    };
+    const assetModel = {
+      _id: existingAsset._id,
+      _source: assetModelContent,
+    };
+
+    const conflicts = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { twin: { models: [assetModelContent], type: "asset" } },
+    );
+
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `Assets mappings are causing conflicts`,
+        conflicts,
+      );
+    }
+
+    const endDocument = await this.updateDocument<AssetModelContent>(
+      request,
+      assetModel,
+      {
+        collection: InternalCollection.MODELS,
+        engineId: this.config.adminIndex,
+      },
+      { source: true },
+    );
+
+    return endDocument;
   }
 }

@@ -10,7 +10,7 @@ import _ from "lodash";
 import { AssetSerializer } from "../asset/model/AssetSerializer";
 import { MeasureExporter, DecodedMeasurement } from "../measure";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { DigitalTwinExporter } from "../shared";
+import { DigitalTwinExporter, EmbeddedMeasure } from "../shared";
 
 import { DeviceService } from "./DeviceService";
 import { DeviceSerializer } from "./model/DeviceSerializer";
@@ -26,6 +26,12 @@ import {
   ApiDeviceUnlinkAssetResult,
   ApiDeviceUpdateResult,
   ApiDeviceGetMeasuresResult,
+  ApiDeviceUpsertResult,
+  ApiDeviceGetLastMeasuresResult,
+  ApiDeviceMGetLastMeasuresResult,
+  ApiDeviceGetLastMeasuredAtResult,
+  ApiDeviceMGetLastMeasuredAtResult,
+  ApiDeviceMetadataReplaceResult,
 } from "./types/DeviceApi";
 
 export class DevicesController {
@@ -54,6 +60,21 @@ export class DevicesController {
           handler: this.update.bind(this),
           http: [
             { path: "device-manager/:engineId/devices/:_id", verb: "put" },
+          ],
+        },
+        upsert: {
+          handler: this.upsert.bind(this),
+          http: [
+            { path: "device-manager/:engineId/devices/:_id", verb: "post" },
+          ],
+        },
+        replaceMetadata: {
+          handler: this.replaceMetadata.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/metadata",
+              verb: "patch",
+            },
           ],
         },
         search: {
@@ -117,6 +138,28 @@ export class DevicesController {
             },
           ],
         },
+        getLastMeasures: {
+          handler: this.getLastMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/lastMeasures",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/devices/:_id/lastMeasures",
+              verb: "post",
+            },
+          ],
+        },
+        mGetLastMeasures: {
+          handler: this.mGetLastMeasures.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/_mGetLastMeasures",
+              verb: "post",
+            },
+          ],
+        },
         exportMeasures: {
           handler: this.exportMeasures.bind(this),
           http: [
@@ -148,6 +191,28 @@ export class DevicesController {
             },
             {
               path: "device-manager/:engineId/devices/_export",
+              verb: "post",
+            },
+          ],
+        },
+        getLastMeasuredAt: {
+          handler: this.getLastMeasuredAt.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/lastMeasuredAt",
+              verb: "get",
+            },
+            {
+              path: "device-manager/:engineId/devices/:_id/lastMeasuredAt",
+              verb: "post",
+            },
+          ],
+        },
+        mGetLastMeasuredAt: {
+          handler: this.mGetLastMeasuredAt.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/_mGetLastMeasuredAt",
               verb: "post",
             },
           ],
@@ -189,7 +254,22 @@ export class DevicesController {
 
     return DeviceSerializer.serialize(updatedDevice);
   }
+  async replaceMetadata(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceMetadataReplaceResult> {
+    const deviceId = request.getId();
+    const engineId = request.getString("engineId");
+    const metadata = request.getBodyObject("metadata");
 
+    const updatedDevice = await this.deviceService.replaceMetadata(
+      engineId,
+      deviceId,
+      metadata,
+      request,
+    );
+
+    return DeviceSerializer.serialize(updatedDevice);
+  }
   async delete(request: KuzzleRequest): Promise<ApiDeviceDeleteResult> {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
@@ -203,6 +283,23 @@ export class DevicesController {
       request.getSearchParams(),
       request,
     );
+  }
+
+  async upsert(request: KuzzleRequest): Promise<ApiDeviceUpsertResult> {
+    const engineId = request.getString("engineId");
+    const model = request.getBodyString("model");
+    const reference = request.getBodyString("reference");
+    const metadata = request.getBodyObject("metadata");
+
+    const upsertDevice = await this.deviceService.upsert(
+      engineId,
+      model,
+      reference,
+      metadata,
+      request,
+    );
+
+    return DeviceSerializer.serialize(upsertDevice);
   }
 
   /**
@@ -332,6 +429,78 @@ export class DevicesController {
     );
 
     return { measures, total };
+  }
+
+  async getLastMeasures(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceGetLastMeasuresResult> {
+    const deviceId = request.getId();
+    const engineId = request.getString("engineId");
+    const measureCount = request.getNumber("measureCount", 100);
+
+    const results = await this.deviceService.getLastMeasures(
+      engineId,
+      deviceId,
+      measureCount,
+    );
+
+    return results.reduce<ApiDeviceGetLastMeasuresResult>(
+      (accumulator, result) => {
+        const measure: EmbeddedMeasure = {
+          measuredAt: result.measuredAt,
+          name: result.origin.measureName,
+          originId: result.origin._id,
+          payloadUuids: result.origin.payloadUuids,
+          type: result.type,
+          values: result.values,
+        };
+
+        return {
+          ...accumulator,
+          [result.origin.measureName]: measure,
+        };
+      },
+      {},
+    );
+  }
+
+  async mGetLastMeasures(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceMGetLastMeasuresResult> {
+    const engineId = request.getString("engineId");
+    const measureCount = request.getNumber("measureCount", 100);
+    const deviceIds = request.getBodyArray("ids");
+
+    const results = await this.deviceService.mGetLastMeasures(
+      engineId,
+      deviceIds,
+      measureCount,
+    );
+
+    const response: ApiDeviceMGetLastMeasuresResult = {};
+
+    for (const [deviceId, measures] of Object.entries(results)) {
+      response[deviceId] = measures.reduce<ApiDeviceGetLastMeasuresResult>(
+        (accumulator, result) => {
+          const measure: EmbeddedMeasure = {
+            measuredAt: result.measuredAt,
+            name: result.origin.measureName,
+            originId: result.origin._id,
+            payloadUuids: result.origin.payloadUuids,
+            type: result.type,
+            values: result.values,
+          };
+
+          return {
+            ...accumulator,
+            [result.origin.measureName]: measure,
+          };
+        },
+        {},
+      );
+    }
+
+    return response;
   }
 
   async exportMeasures(request: KuzzleRequest) {
@@ -492,5 +661,30 @@ export class DevicesController {
     );
 
     return { link };
+  }
+
+  async getLastMeasuredAt(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceGetLastMeasuredAtResult> {
+    const deviceId = request.getId();
+    const engineId = request.getString("engineId");
+
+    const lastMeasuredAt = await this.deviceService.getLastMeasuredAt(
+      engineId,
+      deviceId,
+    );
+
+    return {
+      lastMeasuredAt,
+    };
+  }
+
+  async mGetLastMeasuredAt(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceMGetLastMeasuredAtResult> {
+    const engineId = request.getString("engineId");
+    const deviceIds = request.getBodyArray("ids");
+
+    return this.deviceService.mGetLastMeasuredAt(engineId, deviceIds);
   }
 }

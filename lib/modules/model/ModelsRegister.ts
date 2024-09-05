@@ -16,6 +16,7 @@ import {
   MetadataGroups,
   MetadataMappings,
   ModelContent,
+  TooltipModels,
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
 import { JSONObject } from "kuzzle-sdk";
@@ -63,6 +64,7 @@ export class ModelsRegister {
    * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
    * @param metadataDetails - Optional detailed metadata descriptions and localizations.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
+   * @param tooltipModels - Optional model list for tooltip, containing labels and tooltip content.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerAsset(
@@ -73,6 +75,7 @@ export class ModelsRegister {
     defaultMetadata: JSONObject = {},
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
+    tooltipModels: TooltipModels = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -98,6 +101,7 @@ export class ModelsRegister {
         metadataGroups,
         metadataMappings,
         model,
+        tooltipModels,
       },
       engineGroup,
       type: "asset",

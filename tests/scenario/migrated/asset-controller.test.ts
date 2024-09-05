@@ -193,6 +193,7 @@ describe("features/Asset/Controller", () => {
     expect(response.result._source.reference).toEqual("linked2");
     expect(response.result._source.metadata).toEqual({
       height: 21,
+      person: null,
       trailer: null,
       weight: 42,
     });
@@ -232,6 +233,7 @@ describe("features/Asset/Controller", () => {
     expect(response.result._source.reference).toEqual("linked2");
     expect(response.result._source.metadata).toEqual({
       height: 22,
+      person: null,
       trailer: null,
       weight: 43,
     });

@@ -51,6 +51,12 @@ export const measuresMappings = {
 
         measureName: { type: "keyword" },
 
+        deviceMetadata: {
+          properties: {
+            // populated with device models metadata mappings
+          },
+        },
+
         payloadUuids: { type: "keyword" },
 
         deviceModel: { type: "keyword" },

@@ -60,6 +60,10 @@ export const modelsMappings: CollectionMappings = {
             name: { type: "keyword" },
           },
         },
+        tooltipModels: {
+          dynamic: "false",
+          properties: {},
+        },
       },
     },
 

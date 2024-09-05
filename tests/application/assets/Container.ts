@@ -13,6 +13,9 @@ export interface ContainerMetadata extends Metadata {
     weight: number;
     capacity: number;
   };
+  person: {
+    company: string;
+  };
 }
 
 export type ContainerMeasurements = {
@@ -42,6 +45,11 @@ export const containerAssetDefinition: AssetModelDefinition = {
         capacity: { type: "integer" },
       },
     },
+    person: {
+      properties: {
+        company: { type: "keyword" },
+      },
+    },
   },
   defaultMetadata: {
     height: 20,
@@ -52,44 +60,84 @@ export const containerAssetDefinition: AssetModelDefinition = {
       locales: {
         en: {
           friendlyName: "External Temperature",
-          description: "The temperature outside the container"
+          description: "The temperature outside the container",
         },
         fr: {
           friendlyName: "Température Externe",
-          description: "La température à l'extérieur du conteneur"
-        }
-      }
+          description: "La température à l'extérieur du conteneur",
+        },
+      },
     },
     intTemp: {
       group: "environment",
       locales: {
         en: {
           friendlyName: "Internal Temperature",
-          description: "The temperature inside the container"
+          description: "The temperature inside the container",
         },
         fr: {
           friendlyName: "Température Interne",
-          description: "La température à l'intérieur du conteneur"
-        }
-      }
-    }
+          description: "La température à l'intérieur du conteneur",
+        },
+      },
+    },
   },
   metadataGroups: {
     environment: {
       locales: {
         en: {
           groupFriendlyName: "Environmental Measurements",
-          description: "All environmental relative measurments"
+          description: "All environmental relative measurments",
         },
         fr: {
           groupFriendlyName: "Mesures environnementales",
-          description: "Toutes les mesures liées a l'environement"
-        }
-      }
+          description: "Toutes les mesures liées a l'environement",
+        },
+      },
+    },
+  },
+  tooltipModels: {
+    defaultTooltipKey: {
+      tooltipLabel: "Default Tooltip Model",
+      content: [
+        {
+          category: "measure",
+          label: {
+            locales: {
+              en: {
+                friendlyName: "External Temperature",
+                description: "",
+              },
+              fr: {
+                friendlyName: "Température Externe",
+                description: "",
+              },
+            },
+          },
+          measureSlot: "temperatureExt",
+          measureValuePath: "temperatureExt",
+        },
+        {
+          category: "measure",
+          label: {
+            locales: {
+              en: {
+                friendlyName: "Internal Temperature",
+                description: "",
+              },
+              fr: {
+                friendlyName: "Température Interne",
+                description: "",
+              },
+            },
+          },
+          measureSlot: "temperatureInt",
+          measureValuePath: "temperatureInt",
+        },
+      ],
     },
   },
 };
-
 
 // Mocked data example to match the expected type structure
 const temperatureMeasureExample = {

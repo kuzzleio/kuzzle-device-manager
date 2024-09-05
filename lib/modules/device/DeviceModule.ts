@@ -5,7 +5,7 @@ import { DeviceService } from "./DeviceService";
 import { RoleDevicesAdmin } from "./roles/RoleDevicesAdmin";
 import { RoleDevicesPlatformAdmin } from "./roles/RoleDevicesPlatformAdmin";
 import { RoleDevicesReader } from "./roles/RoleDevicesReader";
-
+import * as specificRoles from "./roles/specificRoles";
 export class DeviceModule extends Module {
   private deviceService: DeviceService;
   private deviceController: DevicesController;
@@ -26,5 +26,11 @@ export class DeviceModule extends Module {
       RoleDevicesPlatformAdmin.definition;
     this.plugin.imports.roles[RoleDevicesReader.name] =
       RoleDevicesReader.definition;
+    for (const role in specificRoles) {
+      if (specificRoles[role].name && specificRoles[role].definition) {
+        this.plugin.imports.roles[specificRoles[role].name] =
+          specificRoles[role].definition;
+      }
+    }
   }
 }

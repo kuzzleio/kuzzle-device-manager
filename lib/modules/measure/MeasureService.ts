@@ -700,6 +700,7 @@ export class MeasureService extends BaseService {
         measuredAt: measurement.measuredAt,
         origin: {
           _id: device._id,
+          deviceMetadata: device._source.metadata,
           deviceModel: device._source.model,
           measureName: measurement.measureName,
           payloadUuids,

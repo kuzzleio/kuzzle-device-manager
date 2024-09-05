@@ -1,3 +1,21 @@
+# [2.4.0-beta.20](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.19...v2.4.0-beta.20) (2024-08-12)
+
+
+### Features
+
+* **assetrole:** add link / unlink device action to asset admin role ([#357](https://github.com/kuzzleio/kuzzle-device-manager/issues/357)) ([febf3a6](https://github.com/kuzzleio/kuzzle-device-manager/commit/febf3a6762e5525563c61776d27aaf31659a4748))
+* **metadata:** add option field readOnly to prevent editing ([#358](https://github.com/kuzzleio/kuzzle-device-manager/issues/358)) ([e0641b4](https://github.com/kuzzleio/kuzzle-device-manager/commit/e0641b41c82bdbbc6f37a0f275bfd3199fce8156))
+
+# [2.4.0-beta.19](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.18...v2.4.0-beta.19) (2024-07-19)
+
+
+### Features
+
+* add tooltip model by asset model ([#341](https://github.com/kuzzleio/kuzzle-device-manager/issues/341)) ([865ae6d](https://github.com/kuzzleio/kuzzle-device-manager/commit/865ae6d5e898f9519b0fccbf3a0a6be5ce55aa57))
+* **configuration:** allow to specify Elasticsearch index settings ([#337](https://github.com/kuzzleio/kuzzle-device-manager/issues/337)) ([6d22fa9](https://github.com/kuzzleio/kuzzle-device-manager/commit/6d22fa9dbee7a662e84af660b061171b61b8d9d6))
+* **measure:** add device metadata to origin ([#356](https://github.com/kuzzleio/kuzzle-device-manager/issues/356)) ([1ed9d8b](https://github.com/kuzzleio/kuzzle-device-manager/commit/1ed9d8bf1885569350d12287ade2da640f825ab7))
+* upsert devices ([#355](https://github.com/kuzzleio/kuzzle-device-manager/issues/355)) ([c75abef](https://github.com/kuzzleio/kuzzle-device-manager/commit/c75abef4c313bbe33ad833189dfcc6fdc50fc15d))
+
 # [2.4.0-beta.18](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.17...v2.4.0-beta.18) (2024-07-12)
 
 

@@ -11,13 +11,14 @@ export interface MeasureModelContent extends KDocumentContent {
     type: string;
   };
 }
-interface MetadataProperty {
+
+export interface MetadataProperty {
   type: string;
   strategy?: string;
   format?: string;
 }
 
-interface MetadataObject {
+export interface MetadataObject {
   properties: {
     [key: string]: MetadataProperty | MetadataObject;
   };
@@ -27,7 +28,7 @@ export interface MetadataMappings {
   [key: string]: MetadataProperty | MetadataObject;
 }
 
-interface LocaleDetails {
+export interface LocaleDetails {
   friendlyName: string;
   description: string;
 }
@@ -38,10 +39,11 @@ export interface MetadataDetails {
     locales: {
       [locale: string]: LocaleDetails;
     };
+    readOnly?: boolean;
   };
 }
 
-interface MetadataGroupLocale {
+export interface MetadataGroupLocale {
   groupFriendlyName: string;
   description: string;
 }
@@ -51,6 +53,59 @@ export interface MetadataGroups {
     locales: {
       [locale: string]: MetadataGroupLocale;
     };
+  };
+}
+
+export interface MetadataTooltipContent {
+  category: "metadata";
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
+  metadataPath: string;
+  suffix?: string;
+}
+
+export interface MeasureTooltipContent {
+  category: "measure";
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
+  measureSlot: string;
+  measureValuePath: string;
+  suffix?: string;
+}
+
+export interface StaticTooltipContent {
+  category: "static";
+  label?: {
+    locales: {
+      [locale: string]: LocaleDetails;
+    };
+  };
+  type: StaticTooltipContentType;
+  value: string;
+}
+
+export enum StaticTooltipContentType {
+  link = "link",
+  image = "image",
+  text = "text",
+  title = "title",
+  separator = "separator",
+}
+
+export interface TooltipModels {
+  [key: string]: {
+    tooltipLabel: string;
+    content: (
+      | MetadataTooltipContent
+      | MeasureTooltipContent
+      | StaticTooltipContent
+    )[];
   };
 }
 
@@ -95,14 +150,15 @@ export interface AssetModelContent extends KDocumentContent {
      *   "extTemp": {
      *     "group": "buildingEnv",
      *     "locales": {
-     *     "en": {
-     *        "friendlyName": "External temperature",
-     *        "description": "Building external temperature"
-     *     },
-     *     "fr": {
-     *       "friendlyName": "Température extérieure",
-     *       "description": "Température à l'exterieur du bâtiment"
-     *     },
+     *       "en": {
+     *          "friendlyName": "External temperature",
+     *          "description": "Building external temperature"
+     *       },
+     *       "fr": {
+     *         "friendlyName": "Température extérieure",
+     *         "description": "Température à l'exterieur du bâtiment"
+     *       },
+     *     "readOnly": true,
      *   }
      */
     metadataDetails?: MetadataDetails;
@@ -137,6 +193,53 @@ export interface AssetModelContent extends KDocumentContent {
      * ]
      */
     measures: NamedMeasures;
+    /**
+     * List of tooltip models for this asset model
+     *
+     * @example
+     * [
+     *   "defaultTooltipKey": {
+     *     "tooltipLabel": "Default tooltip model",
+     *     "content": [
+     *       {
+     *         "metadataPath": "geolocation",
+     *         "label": {
+     *           "locales": {
+     *             "en": {
+     *               "description": "",
+     *               "friendlyName": "Container position"
+     *             },
+     *             "fr": {
+     *               "description": "",
+     *               "friendlyName": "Position du conteneur"
+     *             }
+     *           }
+     *         },
+     *         "category": "metadata"
+     *       },
+     *       {
+     *         "measureValuePath": "externalTemperature",
+     *         "measureSlot": "externalTemperature",
+     *         "label": {
+     *           "locales": {
+     *             "en": {
+     *               "description": "",
+     *               "friendlyName": "External temperature"
+     *             },
+     *             "fr": {
+     *               "description": "",
+     *               "friendlyName": "Température extérieure"
+     *             }
+     *           }
+     *         },
+     *         "category": "measure",
+     *         "suffix": "°C"
+     *       }
+     *     ]
+     *   }
+     * ]
+     */
+    tooltipModels?: TooltipModels;
   };
 }
 
@@ -178,14 +281,15 @@ export interface DeviceModelContent extends KDocumentContent {
      *   "sensorVersion": {
      *     "group": "sensorSpecs",
      *     "locales": {
-     *     "en": {
-     *        "friendlyName": "Sensor version",
-     *        "description": "Firmware version of the sensor"
-     *     },
-     *     "fr": {
-     *       "friendlyName": "Version du capteur",
-     *       "description": "Version du micrologiciel du capteur"
-     *     },
+     *       "en": {
+     *          "friendlyName": "Sensor version",
+     *          "description": "Firmware version of the sensor"
+     *       },
+     *       "fr": {
+     *         "friendlyName": "Version du capteur",
+     *         "description": "Version du micrologiciel du capteur"
+     *       },
+     *     "readOnly": true,
      *   }
      */
     metadataDetails?: MetadataDetails;
@@ -202,7 +306,7 @@ export interface DeviceModelContent extends KDocumentContent {
      *       "fr": {
      *         "groupFriendlyName": "Spécifications techniques",
      *         "description": "Toutes les spécifications techniques"
-     *       }
+     *       },
      *     }
      *   }
      * }

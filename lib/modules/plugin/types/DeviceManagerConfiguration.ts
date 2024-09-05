@@ -30,19 +30,19 @@ export type DeviceManagerConfiguration = {
     config: {
       name: string;
       mappings: JSONObject;
-      settings: JSONObject;
+      settings?: JSONObject;
     };
 
     devices: {
       name: string;
       mappings: JSONObject;
-      settings: JSONObject;
+      settings?: JSONObject;
     };
 
     payloads: {
       name: string;
       mappings: JSONObject;
-      settings: JSONObject;
+      settings?: JSONObject;
     };
   };
 
@@ -50,15 +50,31 @@ export type DeviceManagerConfiguration = {
     config: {
       name: string;
       mappings: JSONObject;
-      settings: JSONObject;
+      settings?: JSONObject;
     };
+    // ! TODO next major release: pluralize the collection name
     asset: {
       name: string;
       mappings: CollectionMappings;
+      settings?: JSONObject;
     };
+    assetGroups: {
+      name: string;
+      settings?: JSONObject;
+    };
+    assetHistory: {
+      name: string;
+      settings?: JSONObject;
+    };
+    // ! TODO next major release: pluralize the collection name
     device: {
       name: string;
       mappings: CollectionMappings;
+      settings?: JSONObject;
+    };
+    measures: {
+      name: string;
+      settings?: JSONObject;
     };
   };
 };

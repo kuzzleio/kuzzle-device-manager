@@ -1,13 +1,25 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import { DecodedMeasurement, MeasureContent } from "../../../modules/measure";
-import { Metadata } from "../../shared";
+import {
+  ApiDigitalTwinGetLastMeasuredAtRequest,
+  ApiDigitalTwinGetLastMeasuredAtResult,
+  ApiDigitalTwinGetLastMeasuresRequest,
+  ApiDigitalTwinGetLastMeasuresResult,
+  ApiDigitalTwinMGetLastMeasuredAtRequest,
+  ApiDigitalTwinMGetLastMeasuredAtResult,
+  ApiDigitalTwinMGetLastMeasuresRequest,
+  ApiDigitalTwinMGetLastMeasuresResult,
+  Metadata,
+} from "../../shared";
 
 import { AssetContent } from "./AssetContent";
+
+type AssetsControllerName = "device-manager/assets";
 import { ApiMeasureSource } from "../../measure/types/MeasureSources";
 
 interface AssetsControllerRequest {
-  controller: "device-manager/assets";
+  controller: AssetsControllerName;
 
   engineId: string;
 }
@@ -147,6 +159,29 @@ export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
 
 export type ApiAssetIngestMeasuresResult = void;
 
+export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
+  action: "ingestMeasures";
+
+  _id: string;
+
+  engineId: string;
+  engineGroup?: string;
+
+  body: {
+    dataSource: ApiMeasureSource;
+    measurements: DecodedMeasurement<JSONObject>[];
+  };
+}
+
+export type ApiAssetGetLastMeasuresRequest =
+  ApiDigitalTwinGetLastMeasuresRequest<AssetsControllerName>;
+export type ApiAssetGetLastMeasuresResult = ApiDigitalTwinGetLastMeasuresResult;
+
+export type ApiAssetMGetLastMeasuresRequest =
+  ApiDigitalTwinMGetLastMeasuresRequest<AssetsControllerName>;
+export type ApiAssetMGetLastMeasuresResult =
+  ApiDigitalTwinMGetLastMeasuresResult;
+
 /**
  * This action can be used only with WebSocket or POST
  *
@@ -201,3 +236,13 @@ export type ApiAssetMigrateTenantResult = {
   errors: string[];
   successes: string[];
 };
+
+export type ApiAssetGetLastMeasuredAtRequest =
+  ApiDigitalTwinGetLastMeasuredAtRequest<AssetsControllerName>;
+export type ApiAssetGetLastMeasuredAtResult =
+  ApiDigitalTwinGetLastMeasuredAtResult;
+
+export type ApiAssetMGetLastMeasuredAtRequest =
+  ApiDigitalTwinMGetLastMeasuredAtRequest<AssetsControllerName>;
+export type ApiAssetMGetLastMeasuredAtResult =
+  ApiDigitalTwinMGetLastMeasuredAtResult;

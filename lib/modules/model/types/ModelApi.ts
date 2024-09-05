@@ -1,4 +1,4 @@
-import { JSONObject, KDocument } from "kuzzle-sdk";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
   AssetModelContent,
@@ -7,6 +7,7 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  TooltipModels,
 } from "./ModelContent";
 import { SchemaObject } from "ajv";
 import { MeasureValuesDetails } from "../../measure/types/MeasureDefinition";
@@ -45,6 +46,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
     metadataMappings?: MetadataMappings;
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
+    tooltipModels?: TooltipModels;
   };
 }
 export type ApiModelWriteAssetResult = KDocument<AssetModelContent>;
@@ -74,6 +76,23 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
   };
 }
 export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;
+
+export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
+  action: "updateAsset";
+
+  engineGroup: string;
+  model: string;
+
+  body: {
+    metadataDetails?: MetadataDetails;
+    metadataGroups?: MetadataGroups;
+    metadataMappings?: MetadataMappings;
+    defaultValues?: JSONObject;
+    measures?: AssetModelContent["asset"]["measures"];
+    tooltipModels?: TooltipModels;
+  };
+}
+export type ApiModelUpdateAssetResult = KDocument<AssetModelContent>;
 
 export interface ApiModelDeleteAssetRequest extends ModelsControllerRequest {
   action: "deleteAsset";
@@ -121,3 +140,38 @@ export type ApiModelListMeasuresResult = {
   models: KDocument<MeasureModelContent>[];
   total: number;
 };
+
+export interface ApiModelSearchAssetsRequest extends ModelsControllerRequest {
+  action: "searchAssets";
+
+  engineGroup: string;
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchAssetsResult = SearchResult<KHit<AssetModelContent>>;
+
+export interface ApiModelSearchDevicesRequest extends ModelsControllerRequest {
+  action: "searchDevices";
+
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchDevicesResult = SearchResult<
+  KHit<DeviceModelContent>
+>;
+
+export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
+  action: "searchMeasures";
+
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchMeasuresResult = SearchResult<
+  KHit<MeasureModelContent>
+>;

@@ -5,6 +5,7 @@ import {
   ApiModelWriteAssetResult,
   ApiModelWriteDeviceResult,
   ApiModelWriteMeasureResult,
+  ApiModelUpdateAssetResult,
   ApiModelDeleteAssetResult,
   ApiModelDeleteDeviceResult,
   ApiModelDeleteMeasureResult,
@@ -14,6 +15,9 @@ import {
   ApiModelGetAssetResult,
   ApiModelGetDeviceResult,
   ApiModelGetMeasureResult,
+  ApiModelSearchAssetsResult,
+  ApiModelSearchDevicesResult,
+  ApiModelSearchMeasuresResult,
 } from "./types/ModelApi";
 
 export class ModelsController {
@@ -64,6 +68,30 @@ export class ModelsController {
           handler: this.listMeasures.bind(this),
           http: [{ path: "device-manager/models/measures", verb: "get" }],
         },
+        searchAssets: {
+          handler: this.searchAssets.bind(this),
+          http: [
+            { path: "device-manager/models/assets/_search", verb: "post" },
+          ],
+        },
+        searchDevices: {
+          handler: this.searchDevices.bind(this),
+          http: [
+            { path: "device-manager/models/devices/_search", verb: "post" },
+          ],
+        },
+        searchMeasures: {
+          handler: this.searchMeasures.bind(this),
+          http: [
+            { path: "device-manager/models/measures/_search", verb: "post" },
+          ],
+        },
+        updateAsset: {
+          handler: this.updateAsset.bind(this),
+          http: [
+            { path: "device-manager/models/assets/:model", verb: "patch" },
+          ],
+        },
         writeAsset: {
           handler: this.writeAsset.bind(this),
           http: [{ path: "device-manager/models/assets", verb: "post" }],
@@ -113,6 +141,7 @@ export class ModelsController {
     const measures = request.getBodyArray("measures", []);
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
+    const tooltipModels = request.getBodyObject("tooltipModels", {});
 
     const assetModel = await this.modelService.writeAsset(
       engineGroup,
@@ -122,6 +151,7 @@ export class ModelsController {
       metadataDetails,
       metadataGroups,
       measures,
+      tooltipModels,
     );
 
     return assetModel;
@@ -218,5 +248,53 @@ export class ModelsController {
       models,
       total: models.length,
     };
+  }
+
+  async searchAssets(
+    request: KuzzleRequest,
+  ): Promise<ApiModelSearchAssetsResult> {
+    return this.modelService.searchAssets(
+      request.getString("engineGroup"),
+      request.getSearchParams(),
+    );
+  }
+
+  async searchDevices(
+    request: KuzzleRequest,
+  ): Promise<ApiModelSearchDevicesResult> {
+    return this.modelService.searchDevices(request.getSearchParams());
+  }
+
+  async searchMeasures(
+    request: KuzzleRequest,
+  ): Promise<ApiModelSearchMeasuresResult> {
+    return this.modelService.searchMeasures(request.getSearchParams());
+  }
+
+  async updateAsset(
+    request: KuzzleRequest,
+  ): Promise<ApiModelUpdateAssetResult> {
+    const engineGroup = request.getString("engineGroup");
+    const model = request.getString("model");
+    const metadataMappings = request.getBodyObject("metadataMappings", {});
+    const defaultValues = request.getBodyObject("defaultValues", {});
+    const measures = request.getBodyArray("measures", []);
+    const metadataDetails = request.getBodyObject("metadataDetails", {});
+    const metadataGroups = request.getBodyObject("metadataGroups", {});
+    const tooltipModels = request.getBodyObject("tooltipModels", {});
+
+    const updatedAssetModel = await this.modelService.updateAsset(
+      engineGroup,
+      model,
+      metadataMappings,
+      defaultValues,
+      metadataDetails,
+      metadataGroups,
+      measures,
+      tooltipModels,
+      request,
+    );
+
+    return updatedAssetModel;
   }
 }

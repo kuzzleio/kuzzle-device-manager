@@ -10,8 +10,12 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
       actions: {
         get: true,
         getMeasures: true,
+        getLastMeasures: true,
+        mGetLastMeasures: true,
         exportMeasures: true,
         search: true,
+        getLastMeasuredAt: true,
+        mGetLastMeasuredAt: true,
       },
     },
     "device-manager/models": {
@@ -30,8 +34,12 @@ export const RoleAssetsReader: KuzzleRole = {
         actions: {
           get: true,
           getMeasures: true,
+          getLastMeasures: true,
+          mGetLastMeasures: true,
           exportMeasures: true,
           search: true,
+          getLastMeasuredAt: true,
+          mGetLastMeasuredAt: true,
         },
       },
       "device-manager/models": {
