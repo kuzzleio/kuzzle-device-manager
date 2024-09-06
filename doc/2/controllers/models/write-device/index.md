@@ -81,7 +81,7 @@ Method: POST
 - `model`: Device model name
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata- 
-- `metadataDetails`: Metadata group and translations 
+- `metadataDetails`: Metadata group, translations and definition 
 - `metadataGroups`: Groups list with translations for group name
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 

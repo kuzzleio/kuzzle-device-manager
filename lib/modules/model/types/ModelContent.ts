@@ -42,17 +42,36 @@ export enum MetadataDetailsEnum {
   OPTION_SELECTOR = "optionSelector",
   DATETIME = "datetime",
 }
-
+/**
+ * In the Iot platform it allows to display a list of values to choose in a dropdown, it has to be defined in the the definition property of the asset/device metadatadetails.
+ */
 export interface OptionsSelectorDefinition extends BaseDefinition {
   type: MetadataDetailsEnum.OPTION_SELECTOR;
+  /**
+   * It is a list that represents all the values displayed in a dropdown.
+   */
   values: string[] | number[] | boolean[];
+  /**
+   * It defines if an input is displayed alongside the dropdown to allow the user to choose a value in the dropdown or to inform his custom value.
+   */
   customValueAllowed?: boolean;
 }
-
+/**
+ * In the Iot platform, it allows to display either a calendar picker with or not a time picker or either a clock picker, it has to be defined in the definition property of the asset/device.
+ */
 export interface DatetimeDefinition extends BaseDefinition {
   type: MetadataDetailsEnum.DATETIME;
+  /**
+   * It defines either a calendar picker is displayed if set at true or either a clock picker otherwise.
+   */
   date: boolean;
+  /**
+   * It defines if the time picker is displayed alongside the calendar picker.
+   */
   time?: boolean;
+  /**
+   * It defines if the user is allowed to change the timezone if set at true, otherwise it should take the timezone of the tenant.
+   */
   customTimeZoneAllowed?: boolean;
 }
 

@@ -154,7 +154,7 @@ Method: PUT
 
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
-- `metadataDetails`: Metadata group and translations
+- `metadataDetails`: Metadata group, translations and definition
 - `metadataGroups`: Groups list with translations for group name 
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item defines `type` and `name` properties for the measure.

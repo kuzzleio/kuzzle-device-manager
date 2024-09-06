@@ -72,7 +72,7 @@ export class DeviceManagerPlugin extends Plugin {
        *        - measures: Array describing measure names and their types.
        *        - metadataMappings: Definition of metadata mappings, specifying types for each metadata field.
        *        - defaultMetadata: Default values for metadata fields, applied when actual data is not provided.
-       *        - metadataDetails: Optional detailed descriptions for each metadata, including group association and localizations.
+       *        - metadataDetails: Optional detailed descriptions for each metadata, including group association, localizations and definition.
        *        - metadataGroups: Optional description of metadata groups, organizing metadata logically, with localizations for group names.
        *        - tooltipModels: Optional tooltip model list, containing each labels and tooltip content to display.
        *
@@ -191,7 +191,7 @@ export class DeviceManagerPlugin extends Plugin {
        *                   - decoder: Decoder used to decode payloads
        *                   - metadataMappings: Metadata mappings definition
        *                   - defaultMetadata: Default metadata values
-       *                   - metadataDetails: Detailed metadata descriptions and localizations
+       *                   - metadataDetails: Detailed metadata descriptions, localizations and definition
        *                   - metadataGroups: Groups for organizing metadata, with localizations
        *
        * @example

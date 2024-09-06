@@ -22,7 +22,10 @@ A sensor model contains the following information:
 - `decoder`: (optional) instance of a [Decoder] to normalize the data
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
 - `defaultMetadata`: (optional) default metadata values
-- `metadataDetails`: (optional) Metadata group and translations. You can use it to keep consistency on translations between your apps
+- `metadataDetails`: (optional) Group, translations and definition.
+  - Group: metadata can be grouped in the display under a same title, you need to defined `metadataGroups` to use it.
+  - Translations: you can use to keep consistency on translations between your apps.
+  - Definition: it unlock fonctionnalities depending on the metadata type you define.
 - `metadataGroups`: (optional) Groups list with translations for group name. You can use it to group metadatas by their concerns
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
@@ -116,7 +119,10 @@ An asset model contains the following information:
 - `measures`: received measurements
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
 - `defaultMetadata`: (optional) default metadata values- 
-- `metadataDetails`: (optional) Metadata group and translations. You can use it to keep consistency on translations between your apps
+- `metadataDetails`: (optional) Group, translations and definition.
+  - Group: metadata can be grouped in the display under a same title, you need to defined `metadataGroups` to use it.
+  - Translations: you can use to keep consistency on translations between your apps.
+  - Definition: it unlock fonctionnalities depending on the metadata type you define.
 - `metadataGroups`: (optional) Groups list with translations for group name. You can use it to group metadatas by their concerns
 - `tooltipModels`: (optional) Tooltip model list, each containing labels and tooltip content to be shown. You can use it to create templates that displays relevant information in dashboards
 
