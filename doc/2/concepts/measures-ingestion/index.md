@@ -392,12 +392,7 @@ An isolated version of the event is also available: `engine:<engine-id>:device-m
 
 ## Ingestion Pipeline Concurrency
 
-In order to avoid race conditions in the pipeline, a Mutex ensures that the measures of a device are processed one after the other.
+In order to avoid conflicts in the pipeline, multiple mutexes are employed whenever the document of an asset or a device is updated.
 
-This Mutex is related to the device ID of the processed measures.
-
-Examples:
-
-- reception of 1 data frame containing 4 measures for 4 devices ⇒ execution of 4 pipelines in parallel,
-- reception of 1 data frame containing 2 measures for 1 device ⇒ execution of a pipeline processing the two measures for the device
-- reception of 2 data frames containing 1 measure for 1 device ⇒ execution of 2 pipelines sequentially for the device
+Those documents are only updated whenever the pipeline updates the asset/device metadata, so it is recommended that you only update
+those when necessary to avoid the associated decrease in ingestion performance.

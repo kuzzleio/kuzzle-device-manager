@@ -62,80 +62,78 @@ export class MeasureService extends BaseService {
     metadata: Metadata,
     payloadUuids: string[],
   ) {
-    await lock(`measure:ingest:${device._id}`, async () => {
-      if (!measurements) {
-        this.app.log.warn(
-          `Cannot find measurements for device "${device._source.reference}"`,
-        );
-        return;
-      }
-
-      const engineId = device._source.engineId;
-      const asset = await this.tryGetLinkedAsset(
-        engineId,
-        device._source.assetId,
+    if (!measurements) {
+      this.app.log.warn(
+        `Cannot find measurements for device "${device._source.reference}"`,
       );
-      const originalAssetMetadata: Metadata =
-        asset === null
-          ? {}
-          : JSON.parse(JSON.stringify(asset._source.metadata));
+      return;
+    }
 
-      const originalDeviceMetadata: Metadata = JSON.parse(
-        JSON.stringify(device._source.metadata),
-      );
+    const engineId = device._source.engineId;
+    const asset = await this.tryGetLinkedAsset(
+      engineId,
+      device._source.assetId,
+    );
+    const originalAssetMetadata: Metadata =
+      asset === null ? {} : JSON.parse(JSON.stringify(asset._source.metadata));
 
-      _.merge(device._source.metadata, metadata);
+    const originalDeviceMetadata: Metadata = JSON.parse(
+      JSON.stringify(device._source.metadata),
+    );
 
-      const measures = this.buildMeasures(
-        device,
-        asset,
-        measurements,
-        payloadUuids,
-      );
+    _.merge(device._source.metadata, metadata);
 
-      /**
-       * Event before starting to process new measures.
-       *
-       * Useful to enrich measures before they are saved.
-       */
-      await this.app.trigger<EventMeasureProcessBefore>(
-        "device-manager:measures:process:before",
+    const measures = this.buildMeasures(
+      device,
+      asset,
+      measurements,
+      payloadUuids,
+    );
+
+    /**
+     * Event before starting to process new measures.
+     *
+     * Useful to enrich measures before they are saved.
+     */
+    await this.app.trigger<EventMeasureProcessBefore>(
+      "device-manager:measures:process:before",
+      { asset, device, measures },
+    );
+
+    if (engineId) {
+      await this.app.trigger<TenantEventMeasureProcessBefore>(
+        `engine:${engineId}:device-manager:measures:process:before`,
         { asset, device, measures },
       );
+    }
 
-      if (engineId) {
-        await this.app.trigger<TenantEventMeasureProcessBefore>(
-          `engine:${engineId}:device-manager:measures:process:before`,
-          { asset, device, measures },
-        );
-      }
+    await this.app.trigger<EventMeasurePersistBefore>(
+      "device-manager:measures:persist:before",
+      {
+        asset,
+        device,
+        measures,
+      },
+    );
 
-      await this.app.trigger<EventMeasurePersistBefore>(
-        "device-manager:measures:persist:before",
-        {
-          asset,
-          device,
-          measures,
-        },
+    if (engineId) {
+      await this.app.trigger<TenantEventMeasurePersistBefore>(
+        `engine:${engineId}:device-manager:measures:persist:before`,
+        { asset, device, measures },
       );
+    }
 
-      if (engineId) {
-        await this.app.trigger<TenantEventMeasurePersistBefore>(
-          `engine:${engineId}:device-manager:measures:persist:before`,
-          { asset, device, measures },
-        );
-      }
+    const deviceMetadataChanges = objectDiff(
+      originalDeviceMetadata,
+      device._source.metadata,
+    );
 
-      const deviceMetadataChanges = objectDiff(
-        originalDeviceMetadata,
-        device._source.metadata,
-      );
+    const promises = [];
 
-      const promises = [];
-
-      if (deviceMetadataChanges.length > 0) {
-        promises.push(
-          this.sdk.document
+    if (deviceMetadataChanges.length > 0) {
+      promises.push(
+        lock(`measure:ingest:device:${device._id}:admin`, async () => {
+          await this.sdk.document
             .update<DeviceContent>(
               this.config.adminIndex,
               InternalCollection.DEVICES,
@@ -149,14 +147,16 @@ export class MeasureService extends BaseService {
                   `Cannot update device "${device._id}": ${error.message}`,
                 ),
               );
-            }),
-        );
-      }
+            });
+        }),
+      );
+    }
 
-      if (engineId) {
-        if (deviceMetadataChanges.length > 0) {
-          promises.push(
-            this.sdk.document
+    if (engineId) {
+      if (deviceMetadataChanges.length > 0) {
+        promises.push(
+          lock(`measure:ingest:device:${device._id}:engine`, async () => {
+            await this.sdk.document
               .update<DeviceContent>(
                 engineId,
                 InternalCollection.DEVICES,
@@ -170,39 +170,38 @@ export class MeasureService extends BaseService {
                     `Cannot update engine device "${device._id}": ${error.message}`,
                   ),
                 );
-              }),
-          );
-        }
+              });
+          }),
+        );
+      }
 
-        promises.push(
-          this.sdk.document
-            .mCreate<MeasureContent>(
-              engineId,
-              InternalCollection.MEASURES,
-              measures.map((measure) => ({ body: measure })),
-            )
-            .then(({ errors }) => {
-              if (errors.length !== 0) {
-                throw new BadRequestError(
-                  `Cannot save measures: ${errors[0].reason}`,
-                );
-              }
-            }),
+      promises.push(
+        this.sdk.document
+          .mCreate<MeasureContent>(
+            engineId,
+            InternalCollection.MEASURES,
+            measures.map((measure) => ({ body: measure })),
+          )
+          .then(({ errors }) => {
+            if (errors.length !== 0) {
+              throw new BadRequestError(
+                `Cannot save measures: ${errors[0].reason}`,
+              );
+            }
+          }),
+      );
+
+      if (asset) {
+        // Historize any change in metadata
+        const assetMetadataChanges = objectDiff(
+          originalAssetMetadata,
+          asset._source.metadata,
         );
 
-        if (asset) {
-          // Historize any change in metadata
-          const assetMetadataChanges = objectDiff(
-            originalAssetMetadata,
-            asset._source.metadata,
-          );
-
-          if (assetMetadataChanges.length > 0) {
-            // @todo potential race condition if 2 differents device are linked
-            // to the same asset and get processed at the same time
-            // asset measures update could be protected by mutex
-            promises.push(
-              this.sdk.document
+        if (assetMetadataChanges.length > 0) {
+          promises.push(
+            lock(`measure:ingest:asset:${asset._id}:engine`, async () => {
+              await this.sdk.document
                 .update<AssetContent>(
                   engineId,
                   InternalCollection.ASSETS,
@@ -218,59 +217,59 @@ export class MeasureService extends BaseService {
                       `Cannot update asset "${asset._id}": ${error.message}`,
                     ),
                   );
-                }),
-            );
+                });
+            }),
+          );
 
-            promises.push(
-              ask<AskAssetHistoryAdd<AssetHistoryEventMetadata>>(
-                "ask:device-manager:asset:history:add",
-                {
-                  engineId,
-                  histories: [
-                    {
-                      asset: asset._source,
-                      event: {
-                        metadata: {
-                          names: assetMetadataChanges,
-                        },
-                        name: "metadata",
+          promises.push(
+            ask<AskAssetHistoryAdd<AssetHistoryEventMetadata>>(
+              "ask:device-manager:asset:history:add",
+              {
+                engineId,
+                histories: [
+                  {
+                    asset: asset._source,
+                    event: {
+                      metadata: {
+                        names: assetMetadataChanges,
                       },
-                      id: asset._id,
-                      timestamp: Date.now(),
+                      name: "metadata",
                     },
-                  ],
-                },
-              ),
-            );
-          }
+                    id: asset._id,
+                    timestamp: Date.now(),
+                  },
+                ],
+              },
+            ),
+          );
         }
       }
+    }
 
-      await Promise.all(promises);
+    await Promise.all(promises);
 
-      /**
-       * Event at the end of the measure process pipeline.
-       *
-       * Useful to trigger business rules like alerts
-       *
-       * @todo test this
-       */
-      await this.app.trigger<EventMeasureProcessAfter>(
-        "device-manager:measures:process:after",
-        {
-          asset,
-          device,
-          measures,
-        },
+    /**
+     * Event at the end of the measure process pipeline.
+     *
+     * Useful to trigger business rules like alerts
+     *
+     * @todo test this
+     */
+    await this.app.trigger<EventMeasureProcessAfter>(
+      "device-manager:measures:process:after",
+      {
+        asset,
+        device,
+        measures,
+      },
+    );
+
+    if (engineId) {
+      await this.app.trigger<TenantEventMeasureProcessAfter>(
+        `engine:${engineId}:device-manager:measures:process:after`,
+        { asset, device, measures },
       );
-
-      if (engineId) {
-        await this.app.trigger<TenantEventMeasureProcessAfter>(
-          `engine:${engineId}:device-manager:measures:process:after`,
-          { asset, device, measures },
-        );
-      }
-    });
+    }
   }
 
   /**
