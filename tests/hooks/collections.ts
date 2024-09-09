@@ -27,7 +27,7 @@ async function deleteModels(sdk: Kuzzle) {
             "model-asset-TestHouse",
             "model-asset-AdvancedWarehouse",
             "model-measure-falseMagic",
-        ],
+          ],
         },
       },
     },
