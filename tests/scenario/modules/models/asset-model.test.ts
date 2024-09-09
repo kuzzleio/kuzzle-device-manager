@@ -78,6 +78,7 @@ describe("ModelsController:assets", () => {
       engineGroup: "commons",
     });
 
+    // eslint-disable-next-line no-console
     console.log(listAssets.result);
 
     expect(listAssets.result.total).toBe(5);
