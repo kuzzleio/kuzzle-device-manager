@@ -143,8 +143,25 @@ export type ApiAssetGetMeasuresResult = {
   total: number;
 };
 
-export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
-  action: "ingestMeasures";
+export interface ApiAssetMeasureIngestRequest extends AssetsControllerRequest {
+  action: "measureIngest";
+
+  _id: string;
+
+  engineId: string;
+  engineGroup?: string;
+  slotName: string;
+
+  body: {
+    dataSourceId: string;
+    measuredAt: number;
+    values: JSONObject;
+  };
+}
+export type ApiAssetMeasureIngestResult = void;
+
+export interface ApiAssetmMeasureIngestRequest extends AssetsControllerRequest {
+  action: "mMeasureIngest";
 
   _id: string;
 
@@ -153,25 +170,11 @@ export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
 
   body: {
     dataSource: ApiMeasureSource;
-    measurements: DecodedMeasurement<JSONObject>[];
+    measurements: Omit<DecodedMeasurement<JSONObject>, "type">[];
   };
 }
 
-export type ApiAssetIngestMeasuresResult = void;
-
-export interface ApiAssetIngestMeasuresRequest extends AssetsControllerRequest {
-  action: "ingestMeasures";
-
-  _id: string;
-
-  engineId: string;
-  engineGroup?: string;
-
-  body: {
-    dataSource: ApiMeasureSource;
-    measurements: DecodedMeasurement<JSONObject>[];
-  };
-}
+export type ApiAssetmMeasureIngestResult = void;
 
 export type ApiAssetGetLastMeasuresRequest =
   ApiDigitalTwinGetLastMeasuresRequest<AssetsControllerName>;

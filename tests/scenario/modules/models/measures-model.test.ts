@@ -165,7 +165,7 @@ describe("ModelsController:measures", () => {
       action: "listMeasures",
     });
 
-    expect(listMeasures.result.total).toBe(11);
+    expect(listMeasures.result.total).toBe(12);
     expect(listMeasures.result.models).toMatchObject([
       { _id: "model-measure-acceleration" },
       { _id: "model-measure-battery" },
@@ -173,6 +173,7 @@ describe("ModelsController:measures", () => {
       { _id: "model-measure-co2" },
       { _id: "model-measure-humidity" },
       { _id: "model-measure-illuminance" },
+      { _id: "model-measure-magicule" },
       { _id: "model-measure-movement" },
       { _id: "model-measure-position" },
       { _id: "model-measure-powerConsumption" },

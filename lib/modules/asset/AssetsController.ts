@@ -131,20 +131,20 @@ export class AssetsController {
             },
           ],
         },
-        ingestMeasures: {
-          handler: this.ingestMeasures.bind(this),
+        mMeasureIngest: {
+          handler: this.mMeasureIngest.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/ingestMeasures",
+              path: "device-manager/:engineId/assets/:_id/_mMeasureIngest",
               verb: "post",
             },
           ],
         },
-        ingestMeasure: {
-          handler: this.ingestMeasure.bind(this),
+        measureIngest: {
+          handler: this.measureIngest.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/ingestMeasures/:slotName",
+              path: "device-manager/:engineId/assets/:_id/measures/:slotName",
               verb: "post",
             },
           ],
@@ -462,7 +462,7 @@ export class AssetsController {
     );
   }
 
-  async ingestMeasures(request: KuzzleRequest) {
+  async mMeasureIngest(request: KuzzleRequest) {
     const assetId = request.getId();
     const indexId = request.getString("engineId");
     const engineGroup = request.getString("engineGroup", "commons");
@@ -478,7 +478,14 @@ export class AssetsController {
     if (isSourceApi(source)) {
       const errors: MeasureValidationChunks[] = [];
       for (const measure of measurements) {
-        const validator = getValidator(measure.type);
+        const type = await this.getTypeFromAsset(
+          indexId,
+          assetId,
+          measure.measureName,
+          engineGroup,
+        );
+
+        const validator = getValidator(type);
 
         if (validator) {
           const valid = validator(measure.values);
@@ -515,7 +522,7 @@ export class AssetsController {
     }
   }
 
-  async ingestMeasure(request: KuzzleRequest) {
+  async measureIngest(request: KuzzleRequest) {
     const assetId = request.getId();
     const indexId = request.getString("engineId");
     const measureName = request.getString("slotName");

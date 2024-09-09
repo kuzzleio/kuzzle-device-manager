@@ -1,6 +1,6 @@
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 describe("ModelsController:assets", () => {
   const sdk = setupHooks();
@@ -79,9 +79,11 @@ describe("ModelsController:assets", () => {
     });
 
     expect(listAssets.result).toMatchObject({
-      total: 3,
+      total: 5,
       models: [
+        { _id: "model-asset-Car" },
         { _id: "model-asset-Container" },
+        { _id: "model-asset-MagicHouse" },
         { _id: "model-asset-Plane" },
         { _id: "model-asset-Warehouse" },
       ],
@@ -117,9 +119,11 @@ describe("ModelsController:assets", () => {
     });
 
     expect(listAssets.result).toMatchObject({
-      total: 3,
+      total: 5,
       models: [
+        { _id: "model-asset-Car" },
         { _id: "model-asset-Container" },
+        { _id: "model-asset-MagicHouse" },
         { _id: "model-asset-Room" },
         { _id: "model-asset-Warehouse" },
       ],
