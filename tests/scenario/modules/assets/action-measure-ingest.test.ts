@@ -4,6 +4,7 @@ import {
   ApiAssetMeasureIngestResult,
 } from "../../../../index";
 import { setupHooks } from "../../../helpers";
+import axios from "axios";
 
 jest.setTimeout(10000);
 
@@ -160,22 +161,16 @@ describe("AssetsController:measureIngest", () => {
       const assetId = "MagicHouse-debug1";
       const indexId = "engine-ayse";
 
-      const query = await fetch(
+      const query = await axios.post(
         `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+          dataSourceId: "testApi1",
+          measuredAt: 170000000,
+          values: {
+            magicule: 18,
           },
-          body: JSON.stringify({
-            dataSourceId: "testApi1",
-            measuredAt: 170000000,
-            values: {
-              magicule: 18,
-            },
-          }),
         },
-      ).then((res) => res.json());
+      );
 
       expect(query.status).toBe(200);
 
@@ -218,25 +213,21 @@ describe("AssetsController:measureIngest", () => {
       const assetId = "MagicHouse-debug1";
       const indexId = "engine-ayse";
 
-      const query = await fetch(
-        `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+      const query = await axios
+        .post(
+          `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
+          {
             dataSourceId: "testApi2",
             measuredAt: 170000000,
             values: {
               magicule: "99",
             },
-          }),
-        },
-      ).then((res) => res.json());
+          },
+        )
+        .catch((e) => e.response);
 
-      expect(query.error.status).toBe(400);
-      expect(query.error.message).toBe(
+      expect(query.status).toBe(400);
+      expect(query.data.error.message).toBe(
         "The provided measure does not respect its schema",
       );
 
@@ -260,25 +251,21 @@ describe("AssetsController:measureIngest", () => {
       const assetId = "MagicHouse-debug";
       const indexId = "engine-ayse";
 
-      const query = await fetch(
-        `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+      const query = await axios
+        .post(
+          `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
+          {
             dataSourceId: "testApi3",
             measuredAt: 170000000,
             values: {
               magicule: 99,
             },
-          }),
-        },
-      ).then((res) => res.json());
+          },
+        )
+        .catch((e) => e.response);
 
-      expect(query.error.status).toBe(400);
-      expect(query.error.message).toMatch(
+      expect(query.status).toBe(400);
+      expect(query.data.error.message).toMatch(
         'Asset "MagicHouse-debug" does not exists on index "engine-ayse"',
       );
 
