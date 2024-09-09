@@ -78,16 +78,16 @@ describe("ModelsController:assets", () => {
       engineGroup: "commons",
     });
 
-    expect(listAssets.result).toMatchObject({
-      total: 5,
-      models: [
-        { _id: "model-asset-Car" },
-        { _id: "model-asset-Container" },
-        { _id: "model-asset-MagicHouse" },
-        { _id: "model-asset-Plane" },
-        { _id: "model-asset-Warehouse" },
-      ],
-    });
+    console.log(listAssets.result);
+
+    expect(listAssets.result.total).toBe(5);
+    expect(listAssets.result.models).toMatchObject([
+      { _id: "model-asset-Car" },
+      { _id: "model-asset-Container" },
+      { _id: "model-asset-MagicHouse" },
+      { _id: "model-asset-Plane" },
+      { _id: "model-asset-Warehouse" },
+    ]);
 
     const getAsset = await sdk.query({
       controller: "device-manager/models",
