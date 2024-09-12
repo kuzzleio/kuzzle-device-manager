@@ -36,7 +36,10 @@ import { isSourceApi } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
 import { ask } from "kuzzle-plugin-commons";
 import { toApiTarget } from "../measure/MeasureTargetBuilder";
-import { toApiSource } from "../measure/MeasureSourcesBuilder";
+import {
+  DATA_SOURCE_METADATA_TYPE,
+  toApiSource,
+} from "../measure/MeasureSourcesBuilder";
 import {
   MeasureValidationError,
   MeasureValidationChunks,
@@ -468,7 +471,7 @@ export class AssetsController {
     const indexId = request.getString("engineId");
     const engineGroup = request.getString("engineGroup", "commons");
     const source = request.getBodyObject("dataSource");
-    source.type = "api";
+    source.type = DATA_SOURCE_METADATA_TYPE.API;
 
     const measurements = request.getBodyArray(
       "measurements",

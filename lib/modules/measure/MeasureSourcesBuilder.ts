@@ -2,7 +2,7 @@ import { Metadata } from "../shared";
 import { MeasureOriginApi, MeasureOriginDevice } from "./types/MeasureContent";
 import { ApiMeasureSource, DeviceMeasureSource } from "./types/MeasureSources";
 
-const enum DATA_SOURCE_METADATA_TYPE {
+export const enum DATA_SOURCE_METADATA_TYPE {
   API = "api",
   DEVICE = "device",
 }
