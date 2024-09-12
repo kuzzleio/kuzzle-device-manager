@@ -22,7 +22,7 @@ describe("AssetsController:measureIngest", () => {
       >({
         controller: "device-manager/assets",
         action: "measureIngest",
-        _id: assetId,
+        assetId,
         engineId: indexId,
         slotName: "magiculeExt",
         body: {
@@ -72,6 +72,7 @@ describe("AssetsController:measureIngest", () => {
     });
 
     it("should not ingest measure with incorrect values", async () => {
+      const assetId = "MagicHouse-debug1";
       const indexId = "engine-ayse";
 
       const query = sdk.query<
@@ -80,7 +81,7 @@ describe("AssetsController:measureIngest", () => {
       >({
         controller: "device-manager/assets",
         action: "measureIngest",
-        _id: "MagicHouse-debug1",
+        assetId,
         engineId: "engine-ayse",
         slotName: "magiculeExt",
         body: {
@@ -113,6 +114,7 @@ describe("AssetsController:measureIngest", () => {
     });
 
     it("should not ingest measure with unknow asset id", async () => {
+      const assetId = "MagicHouse-debug";
       const indexId = "engine-ayse";
 
       const query = sdk.query<
@@ -121,7 +123,7 @@ describe("AssetsController:measureIngest", () => {
       >({
         controller: "device-manager/assets",
         action: "measureIngest",
-        _id: "MagicHouse-debug",
+        assetId,
         engineId: "engine-ayse",
         slotName: "magiculeExt",
         body: {

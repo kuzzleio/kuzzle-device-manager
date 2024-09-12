@@ -146,7 +146,7 @@ export type ApiAssetGetMeasuresResult = {
 export interface ApiAssetMeasureIngestRequest extends AssetsControllerRequest {
   action: "measureIngest";
 
-  _id: string;
+  assetId: string;
 
   engineId: string;
   engineGroup?: string;
@@ -163,7 +163,7 @@ export type ApiAssetMeasureIngestResult = void;
 export interface ApiAssetmMeasureIngestRequest extends AssetsControllerRequest {
   action: "mMeasureIngest";
 
-  _id: string;
+  assetId: string;
 
   engineId: string;
   engineGroup?: string;

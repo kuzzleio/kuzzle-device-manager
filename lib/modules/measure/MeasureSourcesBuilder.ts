@@ -2,6 +2,11 @@ import { Metadata } from "../shared";
 import { MeasureOriginApi, MeasureOriginDevice } from "./types/MeasureContent";
 import { ApiMeasureSource, DeviceMeasureSource } from "./types/MeasureSources";
 
+const enum DATA_SOURCE_METADATA_TYPE {
+  API = "api",
+  DEVICE = "device",
+}
+
 export function toApiSource(
   dataSourceId: string,
   metadata?: Metadata,
@@ -11,21 +16,19 @@ export function toApiSource(
     dataSourceId,
     lastMeasuredAt,
     metadata,
-    type: "api",
+    type: DATA_SOURCE_METADATA_TYPE.API,
   };
 }
 
 export function apiSourceToOriginApi(
   source: ApiMeasureSource,
-  measureName: string,
   payloadUuids: string[],
 ): MeasureOriginApi {
   return {
     _id: source.dataSourceId,
-    measureName,
-    metadata: source.metadata,
+    apiMetadata: source.metadata,
     payloadUuids: payloadUuids,
-    type: "api",
+    type: DATA_SOURCE_METADATA_TYPE.API,
   };
 }
 
@@ -42,7 +45,7 @@ export function toDeviceSource(
     metadata,
     model,
     reference,
-    type: "device",
+    type: DATA_SOURCE_METADATA_TYPE.DEVICE,
   };
 }
 
@@ -59,6 +62,6 @@ export function deviceSourceToOriginDevice(
     metadata: source.metadata,
     payloadUuids,
     reference: reference,
-    type: "device",
+    type: DATA_SOURCE_METADATA_TYPE.DEVICE,
   };
 }

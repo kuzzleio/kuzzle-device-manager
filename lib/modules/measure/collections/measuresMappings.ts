@@ -57,16 +57,16 @@ export const measuresMappings = {
           },
         },
 
+        apiMetadata: {
+          dynamic: "false",
+          properties: {},
+        },
+
         payloadUuids: { type: "keyword" },
 
         deviceModel: { type: "keyword" },
 
         reference: { type: "keyword" },
-
-        metadata: {
-          dynamic: "false",
-          properties: {},
-        },
 
         _id: { type: "keyword" },
       },

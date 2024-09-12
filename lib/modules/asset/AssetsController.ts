@@ -135,7 +135,7 @@ export class AssetsController {
           handler: this.mMeasureIngest.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/_mMeasureIngest",
+              path: "device-manager/:engineId/assets/:assetId/_mMeasureIngest",
               verb: "post",
             },
           ],
@@ -144,7 +144,7 @@ export class AssetsController {
           handler: this.measureIngest.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/measures/:slotName",
+              path: "device-manager/:engineId/assets/:assetId/measures/:slotName",
               verb: "post",
             },
           ],
@@ -423,10 +423,11 @@ export class AssetsController {
    * @param indexId The asset index
    * @param assetId The target asset ID
    * @param measureName The measureName to get the type from
+   * @param engineGroup The target engine group
    * @returns The measure type if used in the asset, null otherwise
    * @throws If the asset does not exists
    */
-  private async getTypeFromAsset(
+  private async getTypeFromMeasureSlot(
     indexId: string,
     assetId: string,
     measureName: string,
@@ -463,7 +464,7 @@ export class AssetsController {
   }
 
   async mMeasureIngest(request: KuzzleRequest) {
-    const assetId = request.getId();
+    const assetId = request.getString("assetId");
     const indexId = request.getString("engineId");
     const engineGroup = request.getString("engineGroup", "commons");
     const source = request.getBodyObject("dataSource");
@@ -478,7 +479,7 @@ export class AssetsController {
     if (isSourceApi(source)) {
       const errors: MeasureValidationChunks[] = [];
       for (const measure of measurements) {
-        const type = await this.getTypeFromAsset(
+        const type = await this.getTypeFromMeasureSlot(
           indexId,
           assetId,
           measure.measureName,
@@ -523,19 +524,19 @@ export class AssetsController {
   }
 
   async measureIngest(request: KuzzleRequest) {
-    const assetId = request.getId();
+    const assetId = request.getString("assetId");
     const indexId = request.getString("engineId");
     const measureName = request.getString("slotName");
     const engineGroup = request.getString("engineGroup", "commons");
     const sourceId = request.getBodyString("dataSourceId");
-    const sourceMetadata = request.getBodyObject("dataSourceMetadata", {});
+    const metadata = request.getBodyObject("metadata", {});
 
-    const source = toApiSource(sourceId, sourceMetadata);
+    const source = toApiSource(sourceId, metadata);
 
     const measuredAt = request.getBodyNumber("measuredAt");
     const values = request.getBodyObject("values");
 
-    const type = await this.getTypeFromAsset(
+    const type = await this.getTypeFromMeasureSlot(
       indexId,
       assetId,
       measureName,

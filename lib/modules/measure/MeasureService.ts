@@ -516,7 +516,7 @@ export class MeasureService extends BaseService {
     let lastMeasuredAt = 0;
 
     for (const measurement of measurements) {
-      if (measurement.origin.type === "computed") {
+      if (measurement.origin.type !== "device") {
         continue;
       }
 
@@ -648,11 +648,7 @@ export class MeasureService extends BaseService {
         );
       }
 
-      const measureSource = apiSourceToOriginApi(
-        source,
-        measure.measureName,
-        payloadUuids,
-      );
+      const measureSource = apiSourceToOriginApi(source, payloadUuids);
 
       apiMeasures.push({
         asset: assetContext,

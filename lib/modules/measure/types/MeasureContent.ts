@@ -15,11 +15,6 @@ interface AbstractMeasureOrigin {
   measureName: string;
 
   /**
-   * Origin device metadata
-   */
-  deviceMetadata?: Metadata;
-
-  /**
    * Payload uuids that were used to create this measure.
    */
   payloadUuids: Array<string>;
@@ -46,6 +41,11 @@ export interface MeasureOriginDevice extends AbstractMeasureOrigin {
   reference: string;
 
   /**
+   * Origin device metadata
+   */
+  deviceMetadata?: Metadata;
+
+  /**
    * Device ID
    */
   _id: string;
@@ -64,8 +64,11 @@ export interface MeasureOriginComputed extends AbstractMeasureOrigin {
   _id: string;
 }
 
-export interface MeasureOriginApi extends AbstractMeasureOrigin {
+export interface MeasureOriginApi
+  extends Omit<AbstractMeasureOrigin, "measureName"> {
   type: "api";
+
+  apiMetadata?: Metadata;
 
   /**
    * API ID

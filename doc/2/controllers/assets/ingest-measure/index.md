@@ -16,25 +16,50 @@ Ingest a single measure into an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/ingestMeasures/:slotName
+URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:assetId/measures/:slotName
 Method: POST
 ```
 
-This endpoint is exclusive to HTTP as it's only a simplified version of [ingestMeasures](./index.md), allowing ingestion of a single measure.
+### Other protocols
+
+```js
+{
+  "controller": "device-manager/assets",
+  "action": "measureIngest",
+  "assetId": "<assetId>",
+  "engineId": "<engineId>",
+  "slotName": "<slotName>"
+  "body": {
+    "dataSourceId": "<dataSourceId>",
+    "measuredAt": "<mesuredAt>",
+    "values": {
+      "<valueName>": "<value>",
+      // ...
+    }
+    // optional:
+    "metadata": {
+      // ...
+    }
+  },
+
+  // optional:
+  "engineGroup": "<engine group>"
+}
+```
 
 ---
 
 ## Arguments
 
 - `engineId`: target engine id
-- `_id`: target asset id
+- `assetId`: target asset id
 - `slotName`: target measure slot name
 - `engineGroup` (optional): target engine group
 
 ## Body properties
 
 - `dataSourceId`: measure source identifier
-- `dataSourceMetadata`: (optional) additional metadata for the source
+- `metadata`: (optional) additional metadata for the source
 - `measuredAt`: the timestamp of when the measure was collected
 - `values`: measure values
 
@@ -47,7 +72,7 @@ This endpoint is exclusive to HTTP as it's only a simplified version of [ingestM
   "status": 200,
   "error": null,
   "controller": "device-manager/assets",
-  "action": "ingestMeasure",
+  "action": "measureIngest",
   "requestId": "<unique request identifier>",
   "result": null,
 }
