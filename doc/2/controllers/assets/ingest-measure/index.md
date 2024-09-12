@@ -31,7 +31,7 @@ Method: POST
   "slotName": "<slotName>"
   "body": {
     "dataSourceId": "<dataSourceId>",
-    "measuredAt": "<mesuredAt>",
+    "measuredAt": "<measuredAt>",
     "values": {
       "<valueName>": "<value>",
       // ...
