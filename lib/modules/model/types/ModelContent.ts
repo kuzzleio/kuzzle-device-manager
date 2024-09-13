@@ -33,20 +33,22 @@ export interface LocaleDetails {
   description: string;
 }
 
-interface BaseDefinition {
+export interface BaseEditorHint {
   readOnly?: boolean;
-  type: MetadataDetailsEnum;
+  type: EditorHintEnum;
 }
 
-export enum MetadataDetailsEnum {
+export enum EditorHintEnum {
+  BASE = "base",
   OPTION_SELECTOR = "optionSelector",
   DATETIME = "datetime",
 }
+
 /**
- * In the Iot platform it allows to display a list of values to choose in a dropdown, it has to be defined in the the definition property of the asset/device metadatadetails.
+ * In the Iot platform it allows to display a list of values to choose in a dropdown, it has to be defined in the the editorHint property of the asset/device metadatadetails.
  */
-export interface OptionsSelectorDefinition extends BaseDefinition {
-  type: MetadataDetailsEnum.OPTION_SELECTOR;
+export interface OptionsSelectorEditorHint extends BaseEditorHint {
+  type: EditorHintEnum.OPTION_SELECTOR;
   /**
    * It is a list that represents all the values displayed in a dropdown.
    */
@@ -57,10 +59,10 @@ export interface OptionsSelectorDefinition extends BaseDefinition {
   customValueAllowed?: boolean;
 }
 /**
- * In the Iot platform, it allows to display either a calendar picker with or not a time picker or either a clock picker, it has to be defined in the definition property of the asset/device.
+ * In the Iot platform, it allows to display either a calendar picker with or not a time picker or either a clock picker, it has to be defined in the editorHint property of the asset/device.
  */
-export interface DatetimeDefinition extends BaseDefinition {
-  type: MetadataDetailsEnum.DATETIME;
+export interface DatetimeEditorHint extends BaseEditorHint {
+  type: EditorHintEnum.DATETIME;
   /**
    * It defines either a calendar picker is displayed if set at true or either a clock picker otherwise.
    */
@@ -69,10 +71,6 @@ export interface DatetimeDefinition extends BaseDefinition {
    * It defines if the time picker is displayed alongside the calendar picker.
    */
   time?: boolean;
-  /**
-   * It defines if the user is allowed to change the timezone if set at true, otherwise it should take the timezone of the tenant.
-   */
-  customTimeZoneAllowed?: boolean;
 }
 
 export interface MetadataDetails {
@@ -82,9 +80,12 @@ export interface MetadataDetails {
       [locale: string]: LocaleDetails;
     };
     /**
-     * To add new definition, create an interface with the properties and extend it with BaseDefinition. Add a new field in MetadataDetailsEnum to define the type of your definition. Finally add the new definition interface with a pipe to take in account the new type.
+     * To add new editor hint, create an interface with the properties and extend it with BaseEditorHint. Add a new field in EditorHintEnum to define the type of your hint. Finally add the new editor hint interface with a pipe to take in account the new type.
      */
-    definition?: OptionsSelectorDefinition | DatetimeDefinition;
+    editorHint?:
+      | BaseEditorHint
+      | OptionsSelectorEditorHint
+      | DatetimeEditorHint;
   };
 }
 
@@ -204,9 +205,9 @@ export interface AssetModelContent extends KDocumentContent {
      *         "description": "Température à l'exterieur du bâtiment"
      *       },
      *     },
-     *     "definition": {
+     *     "editorHint": {
      *       "readOnly": true,
-     *       "type": MetadataDetailsEnum.OPTION_SELECTOR,
+     *       "type": EditorHintEnum.OPTION_SELECTOR,
      *       "values": ["red", "blue"],
      *       "customValueAllowed": true,
      *     },
@@ -342,9 +343,9 @@ export interface DeviceModelContent extends KDocumentContent {
      *         "description": "Version du micrologiciel du capteur"
      *       },
      *     },
-     *     "definition": {
+     *     "editorHint": {
      *       "readOnly": false,
-     *       "type": MetadataDetailsEnum.DATETIME,
+     *       "type": EditorHintEnum.DATETIME,
      *       "date": true,
      *       "time": true,
      *       "customTimeZoneAllowed": true,

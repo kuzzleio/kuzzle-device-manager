@@ -48,7 +48,7 @@ Method: POST
                 description: string;
               };
             };
-            definition?: OptionsSelectorDefinition | DatetimeDefinition;
+            editorHint?: BaseEditorHint | OptionsSelectorDefinition | DatetimeEditorHint;
           };
       */
     },
@@ -81,7 +81,7 @@ Method: POST
 - `model`: Device model name
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata- 
-- `metadataDetails`: Metadata group, translations and definition 
+- `metadataDetails`: Metadata group, translations and editor hint 
 - `metadataGroups`: Groups list with translations for group name
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 

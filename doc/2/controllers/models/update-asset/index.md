@@ -48,24 +48,7 @@ Method: PUT
                 description: string;
               };
             };
-<<<<<<< HEAD
-<<<<<<< HEAD
-            readOnly?: boolean;
-=======
-            definition?: {
-              readOnly?: boolean;
-              type?: string;
-              values?: string[] | number[] | boolean [];
-              customValueAllowed?: boolean;
-            };
-            datetime?: {
-              date?: boolean;
-              time?: boolean;
-            }
->>>>>>> e11d684 (feat(metadata): add optional date and time propertiesin metadata details)
-=======
-            definition?: OptionsSelectorDefinition | DatetimeDefinition;
->>>>>>> 69f64de (docs(metadata): update documentation)
+            editorHint?: BaseEditorHint | OptionsSelectorDefinition | DatetimeEditorHint;
           };
       */
     },
@@ -154,7 +137,7 @@ Method: PUT
 
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
-- `metadataDetails`: Metadata group, translations and definition
+- `metadataDetails`: Metadata group, translations and editor hint
 - `metadataGroups`: Groups list with translations for group name 
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item defines `type` and `name` properties for the measure.

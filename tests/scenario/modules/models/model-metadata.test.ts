@@ -3,7 +3,7 @@ import {
   ApiModelWriteAssetRequest,
   AssetModelContent,
   MeasureModelContent,
-  MetadataDetailsEnum,
+  EditorHintEnum,
 } from "../../../../lib/modules/model";
 import { setupSdK } from "../../../helpers";
 
@@ -34,9 +34,9 @@ describe("ModelsController:metadata", () => {
               description: "L'entreprise qui a fabriqué l'avion",
             },
           },
-          definition: {
+          editorHint: {
             readOnly: true,
-            type: MetadataDetailsEnum.OPTION_SELECTOR,
+            type: EditorHintEnum.OPTION_SELECTOR,
             values: ["red", "blue"],
             customValueAllowed: true,
           },
@@ -85,26 +85,35 @@ describe("ModelsController:metadata", () => {
     const deviceModelWithDetails = {
       model: "Zigbee",
       measures: [{ type: "battery", name: "battery" }],
-      metadataMappings: { network: { type: "keyword" } },
+      metadataMappings: {
+        date: { type: "date" },
+        network: { type: "keyword" },
+      },
       metadataDetails: {
-        company: {
-          group: "companyInfo",
+        date: {
+          group: "dateInfo",
           locales: {
             en: {
-              friendlyName: "Manufacturer",
-              description: "The company that manufactured the plane",
+              friendlyName: "Date",
+              description: "The date when zigbee is manufactured ",
             },
             fr: {
-              friendlyName: "Fabricant",
-              description: "L'entreprise qui a fabriqué l'avion",
+              friendlyName: "Date",
+              description: "La date the fabrication de zigbee",
             },
           },
-          definition: {
+          editorHint: {
             readOnly: false,
-            type: MetadataDetailsEnum.DATETIME,
+            type: EditorHintEnum.DATETIME,
             date: true,
             time: true,
             customTimeZoneAllowed: true,
+          },
+        },
+        network: {
+          editorHint: {
+            readOnly: true,
+            type: EditorHintEnum.BASE,
           },
         },
       },
