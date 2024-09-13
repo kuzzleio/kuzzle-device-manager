@@ -52,7 +52,7 @@ Method: POST
           };
       */
     },
-    "metadataGroups"; {
+    "metadataGroups": {
     /*
       Metadata groups list and details.
         {
@@ -81,7 +81,7 @@ Method: POST
 - `model`: Device model name
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata- 
-- `metadataDetails`: Metadata group, translations and editor hint 
+- `metadataDetails`: Metadata group, translations and editor hint (cf. [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
 - `metadataGroups`: Groups list with translations for group name
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 

@@ -40,7 +40,7 @@ Method: POST
     },
     "metadataDetails": {
       /*
-        Metadata details including tanslations and group.
+        Metadata details including tanslations, group and editor hint.
           [name: string]: {
             group?: string;
             locales: {
@@ -133,7 +133,7 @@ Method: POST
 - `model`: Asset model name
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
-- `metadataDetails`: Metadata group, translations and editor hint
+- `metadataDetails`: Metadata group, translations and editor hint (cf. [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
 - `metadataGroups`: Groups list with translations for group name 
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
