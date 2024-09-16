@@ -1,4 +1,4 @@
-import { EditorHintEnum } from "lib/modules/model";
+import { EditorHintEnum } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
@@ -14,6 +14,12 @@ describe("ModelsController:devices", () => {
         model: "Zigbee",
         measures: [{ type: "battery", name: "battery" }],
         metadataMappings: { network: { type: "keyword" } },
+        metadataDetails: {
+          network: {
+            readOnly: true,
+            type: EditorHintEnum.BASE,
+          },
+        },
       },
     });
 
@@ -27,6 +33,12 @@ describe("ModelsController:devices", () => {
       device: {
         model: "Zigbee",
         metadataMappings: { network: { type: "keyword" } },
+        metadataDetails: {
+          network: {
+            readOnly: true,
+            type: EditorHintEnum.BASE,
+          },
+        },
       },
     });
 
@@ -177,7 +189,6 @@ describe("ModelsController:devices", () => {
         engineGroup: "commons",
         model: "plane",
         metadataMappings: { size: { type: "integer" } },
-        metadataDetails: { readOnly: true, type: EditorHintEnum.BASE },
         defaultValues: { name: "Firebird" },
         measures: [{ type: "temperature", name: "temperature" }],
       },
