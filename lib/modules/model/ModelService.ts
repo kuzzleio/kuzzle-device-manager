@@ -710,6 +710,16 @@ export class ModelService extends BaseService {
       { source: true },
     );
 
+    await this.sdk.collection.refresh(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+    );
+    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+
+    await ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
+      assetModel: assetModelContent,
+    });
+
     return endDocument;
   }
 }
