@@ -245,9 +245,11 @@ export class ModelService extends BaseService {
     metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
   ) {
+    const flattenedMetadataMappings = flattenObject(metadataMappings);
+
     const metadata = Object.keys(
       JSON.parse(
-        JSON.stringify(flattenObject(metadataMappings))
+        JSON.stringify(flattenedMetadataMappings)
           .replace(/properties\./g, "")
           .replace(/\.type/g, ""),
       ),
@@ -258,12 +260,29 @@ export class ModelService extends BaseService {
     for (let i = 0; i < values.length; i++) {
       const key = values[i];
 
-      // ? Extract base key for complex types like geo_point
-      const baseKey = key.includes(".") ? key.split(".")[0] : key;
+      // ? Check if the exact key exists in the metadata
+      if (!metadata.includes(key)) {
+        // ? Extract base key for complex types like geo_point or geo_shape
+        const baseKey = key.includes(".") ? key.split(".")[0] : key;
 
-      if (!metadata.includes(baseKey)) {
+        // ? Check if the base key is in the metadata
+        if (!metadata.includes(baseKey)) {
+          throw new BadRequestError(
+            `The default value "${key}" is not in the metadata mappings.`,
+          );
+        }
+
+        // ? Accept nested properties for geo_point or geo_shape
+        const baseKeyMetadata = flattenedMetadataMappings[`${baseKey}.type`];
+        if (
+          baseKeyMetadata === "geo_point" ||
+          baseKeyMetadata === "geo_shape"
+        ) {
+          continue;
+        }
+
         throw new BadRequestError(
-          `The default value "${key}" is not in the metadata mappings.`,
+          `The default value "${values[i]}" is not in the metadata mappings.`,
         );
       }
     }
