@@ -177,7 +177,7 @@ describe("ModelsController:devices", () => {
         engineGroup: "commons",
         model: "plane",
         metadataMappings: { size: { type: "integer" } },
-        metadataDetails: { readOnly: true, type: EditorHintEnum.GENERIC },
+        metadataDetails: { readOnly: true, type: EditorHintEnum.BASE },
         defaultValues: { name: "Firebird" },
         measures: [{ type: "temperature", name: "temperature" }],
       },
