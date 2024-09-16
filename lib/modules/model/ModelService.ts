@@ -9,7 +9,7 @@ import {
   NotFoundError,
 } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
-import { JSONObject, KDocument } from "kuzzle-sdk";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
   AskEngineUpdateAll,
@@ -19,7 +19,7 @@ import {
 } from "../plugin";
 
 import { AskAssetRefreshModel } from "../asset";
-import { BaseService, flattenObject } from "../shared";
+import { BaseService, SearchParams, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
@@ -387,60 +387,123 @@ export class ModelService extends BaseService {
   async listAsset(
     engineGroup: string,
   ): Promise<KDocument<AssetModelContent>[]> {
-    const query = {
-      and: [
-        { equals: { type: "asset" } },
-        {
-          or: [
-            { equals: { engineGroup } },
-            { equals: { engineGroup: "commons" } },
-          ],
-        },
-      ],
-    };
-
-    const sort = { "asset.model": "asc" };
-
-    const result = await this.sdk.document.search<AssetModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      { query, sort },
-      { lang: "koncorde", size: 5000 },
-    );
+    const result = await this.searchAssets(engineGroup, {
+      searchBody: {
+        sort: { "asset.model": "asc" },
+      },
+      size: 5000,
+    });
 
     return result.hits;
   }
 
   async listDevices(): Promise<KDocument<DeviceModelContent>[]> {
-    const query = {
-      and: [{ equals: { type: "device" } }],
-    };
-    const sort = { "device.model": "asc" };
-
-    const result = await this.sdk.document.search<DeviceModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      { query, sort },
-      { lang: "koncorde", size: 5000 },
-    );
+    const result = await this.searchDevices({
+      searchBody: {
+        sort: { "device.model": "asc" },
+      },
+      size: 5000,
+    });
 
     return result.hits;
   }
 
   async listMeasures(): Promise<KDocument<MeasureModelContent>[]> {
-    const query = {
-      and: [{ equals: { type: "measure" } }],
-    };
-    const sort = { "measure.type": "asc" };
-
-    const result = await this.sdk.document.search<MeasureModelContent>(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-      { query, sort },
-      { lang: "koncorde", size: 5000 },
-    );
+    const result = await this.searchMeasures({
+      searchBody: {
+        sort: { "measure.type": "asc" },
+      },
+      size: 5000,
+    });
 
     return result.hits;
+  }
+
+  async searchAssets(
+    engineGroup: string,
+    searchParams: Partial<SearchParams>,
+  ): Promise<SearchResult<KHit<AssetModelContent>>> {
+    const query = {
+      bool: {
+        must: [
+          searchParams.searchBody.query,
+          { match: { type: "asset" } },
+          {
+            bool: {
+              should: [
+                { match: { engineGroup } },
+                { match: { engineGroup: "commons" } },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    return this.sdk.document.search<AssetModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        ...searchParams.searchBody,
+        query,
+      },
+      {
+        from: searchParams.from,
+        lang: "elasticsearch",
+        scroll: searchParams.scrollTTL,
+        size: searchParams.size,
+      },
+    );
+  }
+
+  async searchDevices(
+    searchParams: Partial<SearchParams>,
+  ): Promise<SearchResult<KHit<DeviceModelContent>>> {
+    const query = {
+      bool: {
+        must: [searchParams.searchBody.query, { match: { type: "device" } }],
+      },
+    };
+
+    return this.sdk.document.search<DeviceModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        ...searchParams.searchBody,
+        query,
+      },
+      {
+        from: searchParams.from,
+        lang: "elasticsearch",
+        scroll: searchParams.scrollTTL,
+        size: searchParams.size,
+      },
+    );
+  }
+
+  async searchMeasures(
+    searchParams: Partial<SearchParams>,
+  ): Promise<SearchResult<KHit<MeasureModelContent>>> {
+    const query = {
+      bool: {
+        must: [searchParams.searchBody.query, { match: { type: "measure" } }],
+      },
+    };
+
+    return this.sdk.document.search<MeasureModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        ...searchParams.searchBody,
+        query,
+      },
+      {
+        from: searchParams.from,
+        lang: "elasticsearch",
+        scroll: searchParams.scrollTTL,
+        size: searchParams.size,
+      },
+    );
   }
 
   async assetExists(model: string): Promise<boolean> {

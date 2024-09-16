@@ -48,9 +48,9 @@ It is possible to check the assignment in the Admin Console:
 
 _The `Abeeway-ABE3` device is assigned to the `tenant-asset_tracking-kuzzle` tenant._
 
-### Propagation to active
+### Propagation to asset
 
-The propagation to the asset is done when the device has been linked to an asset with the action [device-manager/devices:linkAsset].
+The propagation to the asset is done when the device has been linked to an asset with the action `device-manager/devices:linkAsset`.
 
 This leads to several changes:
 
@@ -59,9 +59,9 @@ This leads to several changes:
   - the device identifier (`linkedDevices[]._id`)
   - the names of the measures present in the link (`linkedDevices[].measureNames`)
 
-Only measurements declared in the binding (`linkedDevices[].measureNames`) will be propagated from the device to the asset.
+Only measurements declared in the binding (`linkedDevices[].measureNames`) will be available from the asset.
 
-The measures are then propagated into the `<tenant>/assets` collection as embedded measures (`EmbeddedMeasure`).
+The measures of an asset can be retrieved with the `device-manager/assets:getLastMeasures` action.
 
 It is possible to check the binding in the Admin Console:
 

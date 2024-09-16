@@ -24,7 +24,7 @@ import {
   InternalCollection,
 } from "../plugin";
 import {
-  BaseService,
+  DigitalTwinService,
   EmbeddedMeasure,
   Metadata,
   SearchParams,
@@ -46,21 +46,21 @@ import {
   AssetHistoryEventMetadata,
 } from "./types/AssetHistoryContent";
 
-export class AssetService extends BaseService {
+export class AssetService extends DigitalTwinService {
   private assetHistoryService: AssetHistoryService;
 
   constructor(
     plugin: DeviceManagerPlugin,
     assetHistoryService: AssetHistoryService,
   ) {
-    super(plugin);
+    super(plugin, InternalCollection.ASSETS);
 
     this.assetHistoryService = assetHistoryService;
-
-    this.registerAskEvents();
   }
 
-  registerAskEvents() {
+  override registerAskEvents() {
+    super.registerAskEvents();
+
     onAsk<AskAssetRefreshModel>(
       "ask:device-manager:asset:refresh-model",
       this.refreshModel.bind(this),

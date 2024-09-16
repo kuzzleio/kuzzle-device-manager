@@ -1,4 +1,4 @@
-import { JSONObject, KDocument } from "kuzzle-sdk";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
   AssetModelContent,
@@ -138,3 +138,38 @@ export type ApiModelListMeasuresResult = {
   models: KDocument<MeasureModelContent>[];
   total: number;
 };
+
+export interface ApiModelSearchAssetsRequest extends ModelsControllerRequest {
+  action: "searchAssets";
+
+  engineGroup: string;
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchAssetsResult = SearchResult<KHit<AssetModelContent>>;
+
+export interface ApiModelSearchDevicesRequest extends ModelsControllerRequest {
+  action: "searchDevices";
+
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchDevicesResult = SearchResult<
+  KHit<DeviceModelContent>
+>;
+
+export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
+  action: "searchMeasures";
+
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchMeasuresResult = SearchResult<
+  KHit<MeasureModelContent>
+>;

@@ -11,13 +11,14 @@ export interface MeasureModelContent extends KDocumentContent {
     type: string;
   };
 }
-interface MetadataProperty {
+
+export interface MetadataProperty {
   type: string;
   strategy?: string;
   format?: string;
 }
 
-interface MetadataObject {
+export interface MetadataObject {
   properties: {
     [key: string]: MetadataProperty | MetadataObject;
   };
@@ -27,7 +28,7 @@ export interface MetadataMappings {
   [key: string]: MetadataProperty | MetadataObject;
 }
 
-interface LocaleDetails {
+export interface LocaleDetails {
   friendlyName: string;
   description: string;
 }
@@ -42,7 +43,7 @@ export interface MetadataDetails {
   };
 }
 
-interface MetadataGroupLocale {
+export interface MetadataGroupLocale {
   groupFriendlyName: string;
   description: string;
 }

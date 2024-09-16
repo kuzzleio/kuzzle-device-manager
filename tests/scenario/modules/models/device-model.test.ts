@@ -1,9 +1,9 @@
-import { setupSdK } from "../../../helpers";
+import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
 
 describe("ModelsController:devices", () => {
-  const sdk = setupSdK();
+  const sdk = setupHooks();
 
   it("Write and List a Device model", async () => {
     await sdk.query({
@@ -118,6 +118,53 @@ describe("ModelsController:devices", () => {
     expect(getDevice.result).toMatchObject({
       _id: "model-device-Zigbee",
       _source: { device: { model: "Zigbee" } },
+    });
+  });
+
+  it("Write and Search a Device model", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeDevice",
+      body: {
+        model: "Zigbee",
+        measures: [{ type: "battery", name: "battery" }],
+        metadataMappings: { network: { type: "keyword" } },
+      },
+    });
+
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeDevice",
+      body: {
+        model: "Bluetooth",
+        measures: [
+          { type: "battery", name: "battery" },
+          { type: "temperature", name: "temperature" },
+        ],
+        metadataMappings: {
+          network: { type: "keyword" },
+          network2: { type: "keyword" },
+        },
+      },
+    });
+
+    await sdk.collection.refresh("device-manager", "models");
+
+    const searchDevices = await sdk.query({
+      controller: "device-manager/models",
+      action: "searchDevices",
+      body: {
+        query: {
+          match: {
+            "device.model": "Zigbee",
+          },
+        },
+      },
+    });
+
+    expect(searchDevices.result).toMatchObject({
+      total: 1,
+      hits: [{ _id: "model-device-Zigbee" }],
     });
   });
 

@@ -9,12 +9,12 @@ import {
   DeviceModelContent,
   MeasureModelContent,
 } from "../../../../lib/modules/model";
-import { setupSdK } from "../../../helpers";
+import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 describe("ModelsController:measures", () => {
-  const sdk = setupSdK();
+  const sdk = setupHooks();
 
   beforeAll(async () => {
     await Promise.allSettled([
@@ -87,10 +87,14 @@ describe("ModelsController:measures", () => {
           accuracy: { type: "float" },
           altitude: { type: "float" },
           battery: { type: "integer" },
+          co2: { type: "float" },
           humidity: { type: "float" },
+          illuminance: { type: "float" },
+          lumens: { type: "float" },
           movement: { type: "boolean" },
           position: { type: "geo_point" },
           temperature: { type: "float" },
+          watt: { type: "float" },
         },
       },
     });
@@ -161,13 +165,17 @@ describe("ModelsController:measures", () => {
       action: "listMeasures",
     });
 
-    expect(listMeasures.result.total).toBe(7);
+    expect(listMeasures.result.total).toBe(11);
     expect(listMeasures.result.models).toMatchObject([
       { _id: "model-measure-acceleration" },
       { _id: "model-measure-battery" },
+      { _id: "model-measure-brightness" },
+      { _id: "model-measure-co2" },
       { _id: "model-measure-humidity" },
+      { _id: "model-measure-illuminance" },
       { _id: "model-measure-movement" },
       { _id: "model-measure-position" },
+      { _id: "model-measure-powerConsumption" },
       { _id: "model-measure-presence" },
       { _id: "model-measure-temperature" },
     ]);
@@ -181,6 +189,47 @@ describe("ModelsController:measures", () => {
     expect(getMeasure.result).toMatchObject({
       _id: "model-measure-battery",
       _source: { measure: { type: "battery" } },
+    });
+  });
+
+  it("Write and Search a Measure model", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeMeasure",
+      body: {
+        type: "presence",
+        valuesMappings: { presence: { type: "boolean" } },
+      },
+    });
+
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeMeasure",
+      body: {
+        type: "movement",
+        valuesMappings: {
+          movement: { type: "boolean" },
+        },
+      },
+    });
+
+    await sdk.collection.refresh("device-manager", "models");
+
+    const searchMeasures = await sdk.query({
+      controller: "device-manager/models",
+      action: "searchMeasures",
+      body: {
+        query: {
+          match: {
+            "measure.type": "presence",
+          },
+        },
+      },
+    });
+
+    expect(searchMeasures.result).toMatchObject({
+      total: 1,
+      hits: [{ _id: "model-measure-presence" }],
     });
   });
 

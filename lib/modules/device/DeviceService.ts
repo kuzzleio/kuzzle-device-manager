@@ -10,7 +10,7 @@ import {
   DeviceModelContent,
 } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { BaseService, Metadata, SearchParams, lock } from "../shared";
+import { DigitalTwinService, Metadata, SearchParams, lock } from "../shared";
 import {
   AskAssetHistoryAdd,
   AssetContent,
@@ -33,14 +33,14 @@ import {
 
 type MeasureName = { asset: string; device: string; type: string };
 
-export class DeviceService extends BaseService {
+export class DeviceService extends DigitalTwinService {
   constructor(plugin: DeviceManagerPlugin) {
-    super(plugin);
-
-    this.registerAskEvents();
+    super(plugin, InternalCollection.DEVICES);
   }
 
-  registerAskEvents() {
+  override registerAskEvents() {
+    super.registerAskEvents();
+
     onAsk<AskDeviceLinkAsset>(
       "ask:device-manager:device:link-asset",
       async ({ deviceId, engineId, user, assetId, measureNames }) => {
@@ -176,6 +176,45 @@ export class DeviceService extends BaseService {
       InternalCollection.DEVICES,
       deviceId,
     );
+  }
+  /**
+   * Replace a device metadata
+   */
+  public async replaceMetadata(
+    engineId: string,
+    deviceId: string,
+    metadata: Metadata,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    const device = await this.get(engineId, deviceId, request);
+
+    for (const key in metadata) {
+      if (key in device._source.metadata) {
+        device._source.metadata[key] = metadata[key];
+      }
+    }
+
+    const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
+      "device-manager:device:update:before",
+      { device: device, metadata },
+    );
+
+    const updatedDevice = await this.sdk.document.replace<DeviceContent>(
+      engineId,
+      InternalCollection.DEVICES,
+      deviceId,
+      updatedPayload.device._source,
+    );
+
+    await this.app.trigger<EventDeviceUpdateAfter>(
+      "device-manager:device:update:after",
+      {
+        device: updatedDevice,
+        metadata: updatedPayload.metadata,
+      },
+    );
+
+    return updatedDevice;
   }
 
   /**
