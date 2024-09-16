@@ -256,9 +256,14 @@ export class ModelService extends BaseService {
     const values = Object.keys(flattenObject(defaultMetadata));
 
     for (let i = 0; i < values.length; i++) {
-      if (!metadata.includes(values[i])) {
+      const key = values[i];
+
+      // ? Extract base key for complex types like geo_point
+      const baseKey = key.includes(".") ? key.split(".")[0] : key;
+
+      if (!metadata.includes(baseKey)) {
         throw new BadRequestError(
-          `The default value "${values[i]}" is not in the metadata mappings.`,
+          `The default value "${key}" is not in the metadata mappings.`,
         );
       }
     }
