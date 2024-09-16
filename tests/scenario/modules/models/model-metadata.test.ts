@@ -118,7 +118,49 @@ describe("ModelsController:metadata", () => {
     });
   });
 
-  it("Create an asset with default metadata values", async () => {
+  it("Create an asset with default metadata values for geo_point and boolean types", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroup: "commons",
+        model: "Vehicle",
+        metadataMappings: {
+          location: { type: "geo_point" },
+          boo: { type: "boolean" },
+        },
+        defaultValues: {
+          location: {
+            lat: 46.979679106275164,
+            lon: 2.1093750000000004,
+          },
+          boo: true,
+        },
+      },
+    });
+
+    await sdk.query({
+      controller: "device-manager/assets",
+      action: "create",
+      engineId: "engine-kuzzle",
+      body: { model: "Vehicle", reference: "Car123", metadata: { boo: true } },
+    });
+
+    const assetContent = await sdk.document.get<AssetContent>(
+      "engine-kuzzle",
+      "assets",
+      "Vehicle-Car123",
+    );
+    expect(assetContent._source.metadata).toMatchObject({
+      boo: true,
+      location: {
+        lat: 46.979679106275164,
+        lon: 2.1093750000000004,
+      },
+    });
+  });
+
+  it("Create an asset with nested default metadata values for non-nested type", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -129,7 +171,9 @@ describe("ModelsController:metadata", () => {
           size: { type: "integer" },
           person: { properties: { company: { type: "keyword" } } },
         },
-        defaultValues: { "person.company": "Firebird" },
+        defaultValues: {
+          person: { company: "Firebird" },
+        },
       },
     });
 
@@ -149,6 +193,27 @@ describe("ModelsController:metadata", () => {
       size: 179,
       person: { company: "Firebird" },
     });
+  });
+
+  it("Should not allow to create model with incorrect nested defaultValues for non-nested type", async () => {
+    const writeAsset = sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroup: "commons",
+        model: "CompanyAssetInvalid",
+        metadataMappings: {
+          person: { properties: { company: { type: "keyword" } } },
+        },
+        defaultValues: {
+          person: { company: { nested: "Firebird" } },
+        },
+      },
+    });
+
+    await expect(writeAsset).rejects.toThrow(
+      'The default value "person.company.nested" is not in the metadata mappings.',
+    );
   });
 
   it("Should not allow to create model with defaultValues that not exist in metadata", async () => {
