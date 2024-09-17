@@ -245,9 +245,11 @@ export class ModelService extends BaseService {
     metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
   ) {
+    const flattenedMetadataMappings = flattenObject(metadataMappings);
+
     const metadata = Object.keys(
       JSON.parse(
-        JSON.stringify(flattenObject(metadataMappings))
+        JSON.stringify(flattenedMetadataMappings)
           .replace(/properties\./g, "")
           .replace(/\.type/g, ""),
       ),
@@ -256,7 +258,29 @@ export class ModelService extends BaseService {
     const values = Object.keys(flattenObject(defaultMetadata));
 
     for (let i = 0; i < values.length; i++) {
-      if (!metadata.includes(values[i])) {
+      const key = values[i];
+
+      // ? Check if the exact key exists in the metadata
+      if (!metadata.includes(key)) {
+        // ? Extract base key for complex types like geo_point or geo_shape
+        const baseKey = key.includes(".") ? key.split(".")[0] : key;
+
+        // ? Check if the base key is in the metadata
+        if (!metadata.includes(baseKey)) {
+          throw new BadRequestError(
+            `The default value "${key}" is not in the metadata mappings.`,
+          );
+        }
+
+        // ? Accept nested properties for geo_point or geo_shape
+        const baseKeyMetadata = flattenedMetadataMappings[`${baseKey}.type`];
+        if (
+          baseKeyMetadata === "geo_point" ||
+          baseKeyMetadata === "geo_shape"
+        ) {
+          continue;
+        }
+
         throw new BadRequestError(
           `The default value "${values[i]}" is not in the metadata mappings.`,
         );
@@ -685,6 +709,16 @@ export class ModelService extends BaseService {
       },
       { source: true },
     );
+
+    await this.sdk.collection.refresh(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+    );
+    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+
+    await ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
+      assetModel: assetModelContent,
+    });
 
     return endDocument;
   }
