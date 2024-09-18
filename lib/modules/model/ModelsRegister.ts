@@ -58,7 +58,7 @@ export class ModelsRegister {
    * @param measures - The measures associated with this asset model.
    * @param metadataMappings - The metadata mappings for the model, defaults to an empty object.
    * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
-   * @param metadataDetails - Optional detailed metadata descriptions and localizations.
+   * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
    * @param tooltipModels - Optional model list for tooltip, containing labels and tooltip content.
    * @throws PluginImplementationError if the model name is not in PascalCase.
@@ -102,7 +102,7 @@ export class ModelsRegister {
    * @param measures - The measures associated with this device model.
    * @param metadataMappings - The metadata mappings for the model, defaults to an empty object.
    * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
-   * @param metadataDetails - Optional detailed metadata descriptions and localizations.
+   * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */

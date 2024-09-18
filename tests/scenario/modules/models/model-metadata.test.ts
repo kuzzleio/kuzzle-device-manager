@@ -3,6 +3,7 @@ import {
   ApiModelWriteAssetRequest,
   AssetModelContent,
   MeasureModelContent,
+  EditorHintEnum,
 } from "../../../../lib/modules/model";
 import { setupSdK } from "../../../helpers";
 
@@ -33,7 +34,12 @@ describe("ModelsController:metadata", () => {
               description: "L'entreprise qui a fabriqué l'avion",
             },
           },
-          readOnly: true,
+          editorHint: {
+            readOnly: true,
+            type: EditorHintEnum.OPTION_SELECTOR,
+            values: ["red", "blue"],
+            customValueAllowed: true,
+          },
         },
       },
       metadataGroups: {
@@ -79,21 +85,36 @@ describe("ModelsController:metadata", () => {
     const deviceModelWithDetails = {
       model: "Zigbee",
       measures: [{ type: "battery", name: "battery" }],
-      metadataMappings: { network: { type: "keyword" } },
+      metadataMappings: {
+        date: { type: "date" },
+        network: { type: "keyword" },
+      },
       metadataDetails: {
-        company: {
-          group: "companyInfo",
+        date: {
+          group: "dateInfo",
           locales: {
             en: {
-              friendlyName: "Manufacturer",
-              description: "The company that manufactured Zigbee",
+              friendlyName: "Date",
+              description: "The date when zigbee is manufactured ",
             },
             fr: {
-              friendlyName: "Fabricant",
-              description: "L'entreprise qui a fabriqué Zigbee",
+              friendlyName: "Date",
+              description: "La date the fabrication de zigbee",
             },
           },
-          readOnly: true,
+          editorHint: {
+            readOnly: false,
+            type: EditorHintEnum.DATETIME,
+            date: true,
+            time: true,
+            customTimeZoneAllowed: true,
+          },
+        },
+        network: {
+          editorHint: {
+            readOnly: true,
+            type: EditorHintEnum.BASE,
+          },
         },
       },
     };
