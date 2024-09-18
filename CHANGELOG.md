@@ -1,3 +1,19 @@
+# [2.4.0-beta.21](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.20...v2.4.0-beta.21) (2024-09-18)
+
+
+### Bug Fixes
+
+* only list asset models for the requested engine group ([#367](https://github.com/kuzzleio/kuzzle-device-manager/issues/367)) ([8a14207](https://github.com/kuzzleio/kuzzle-device-manager/commit/8a14207b14d7f7fd80d9af711f9ba9eed5c58735))
+
+
+### Features
+
+* add actions to get last measures on digital twins ([#363](https://github.com/kuzzleio/kuzzle-device-manager/issues/363)) ([b8005a2](https://github.com/kuzzleio/kuzzle-device-manager/commit/b8005a2b2fb0071f2efa2ec3adeff9d965840a0c))
+* add search actions for the models ([#362](https://github.com/kuzzleio/kuzzle-device-manager/issues/362)) ([9990e57](https://github.com/kuzzleio/kuzzle-device-manager/commit/9990e57db9bc845d6d6df1e64bed05e88e00f377))
+* improve search model request types ([#364](https://github.com/kuzzleio/kuzzle-device-manager/issues/364)) ([5310ad1](https://github.com/kuzzleio/kuzzle-device-manager/commit/5310ad1cf8a46b7bce31e6c26d6454f956574a44))
+* **metadata:** add optional editor hints for metadata ([#370](https://github.com/kuzzleio/kuzzle-device-manager/issues/370)) ([afc5129](https://github.com/kuzzleio/kuzzle-device-manager/commit/afc51298eb33515ef5325d806150ac0ebf22b69c))
+* **roles:** add specific roles for assets and devices ([#365](https://github.com/kuzzleio/kuzzle-device-manager/issues/365)) ([a01982c](https://github.com/kuzzleio/kuzzle-device-manager/commit/a01982cd025d4436617e710aa407e209f0d4f375))
+
 # [2.4.0-beta.20](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.19...v2.4.0-beta.20) (2024-08-12)
 
 
