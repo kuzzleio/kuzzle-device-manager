@@ -45,30 +45,30 @@ export enum EditorHintEnum {
 }
 
 /**
- * In the Iot platform it allows to display a list of values to choose in a dropdown, it has to be defined in the the editorHint property of the asset/device metadatadetails.
+ * Allows to display a list of values to choose in a dropdown, it has to be defined in the the editorHint property of the asset/device's metadataDetails.
  */
 export interface OptionsSelectorEditorHint extends BaseEditorHint {
   type: EditorHintEnum.OPTION_SELECTOR;
   /**
-   * It is a list that represents all the values displayed in a dropdown.
+   * A list that contains all the values displayed in the dropdown.
    */
   values: string[] | number[] | boolean[];
   /**
-   * It defines if an input is displayed alongside the dropdown to allow the user to choose a value in the dropdown or to inform his custom value.
+   * Allow the user to add custom values.
    */
   customValueAllowed?: boolean;
 }
 /**
- * In the Iot platform, it allows to display either a calendar picker with or not a time picker or either a clock picker, it has to be defined in the editorHint property of the asset/device.
+ * Allows to display either a date picker with or without a time picker, or a clock picker, it has to be defined in the editorHint property of the asset/device's metadataDetails.
  */
 export interface DatetimeEditorHint extends BaseEditorHint {
   type: EditorHintEnum.DATETIME;
   /**
-   * It defines either a calendar picker is displayed if set at true or either a clock picker otherwise.
+   * If true, displays a date picker, otherwise displays a clock picker.
    */
   date: boolean;
   /**
-   * It defines if the time picker is displayed alongside the calendar picker.
+   * If `date` is true, setting this to true will add time picking to the date picker.
    */
   time?: boolean;
 }
@@ -80,7 +80,9 @@ export interface MetadataDetails {
       [locale: string]: LocaleDetails;
     };
     /**
-     * To add new editor hint, create an interface with the properties and extend it with BaseEditorHint. Add a new field in EditorHintEnum to define the type of your hint. Finally add the new editor hint interface with a pipe to take in account the new type.
+     * To add new editor hint, create an interface with the properties that extends BaseEditorHint.
+     * Then add a new field in EditorHintEnum to define the type of your hint.
+     * Finally add the new editor hint interface with a pipe to take in account the new type.
      */
     editorHint?:
       | BaseEditorHint

@@ -7,16 +7,46 @@ description: structure of metadataDetails
 
 # Metadata details
 
-Define metadata details is a way to enhance the user experience by improving the user interface on the management of metadata of an asset or a device. Even though it is optional to define them, there are multiple features you can use :
-- [Group](#group-optional) (**_optional_**)
+Defining metadata details is a way to enhance the user experience by improving the metadata management workflow on an asset or a device. There are multiple features you can use :
+
 - [Translation](#translations-mandatory) (**_mandatory_**)
+- [Group](#group-optional) (**_optional_**)
 - [Editor hint](#editor-hint-optional) (change UI elements) (**_optional_**)
+
+## Translations (_mandatory_)
+
+This property allows to add a localized user-friendly name and description to the metadata. Those will be automatically substitued according to the user's language.
+
+**Example**
+
+```js
+{
+  metadataMappings: {
+    company: { type: "keyword" },
+  },
+  metadataDetails: {
+    locales: {
+      en: {
+        friendlyName: "Manufacturer",
+        description: "The company that manufactured the plane",
+      },
+      fr: {
+        friendlyName: "Fabricant",
+        description: "L'entreprise qui a fabriqué l'avion",
+      },
+    },
+  },
+}
+```
 
 ## Group (_optional_)
 
-This property allows to group a metadata under an accordion dropdown. First create a metadataGroups object at the same level as metadataDetails. Define a property with the name of the group and define localization details. Then in metadataDetails object, associate the group with your metadata under the group property.
+This property allows to group metadata together.
+
+First, create a `metadataGroups` object at the same level as `metadataDetails`, using the group's name as a key and mapping them to their localization details. Then in the `metadataDetails` object, specify the group of the metadata by using the `group` property.
 
 **Example**
+
 ```js
 {
   metadataMappings: {
@@ -44,42 +74,21 @@ This property allows to group a metadata under an accordion dropdown. First crea
 }
 ```
 
-## Translations (_mandatory_)
-
-This property allows to add a description to the metadata and change the display name for a more user friendly name. There are translated according to the localization.
-
-```js
-{
-  metadataMappings: {
-    company: { type: "keyword" },
-  },
-  metadataDetails: {
-    locales: {
-      en: {
-        friendlyName: "Manufacturer",
-        description: "The company that manufactured the plane",
-      },
-      fr: {
-        friendlyName: "Fabricant",
-        description: "L'entreprise qui a fabriqué l'avion",
-      },
-    },
-  },
-}
-```
-
 ## Editor hint (_optional_)
 
-This property allows to improve the user experience to manage metadata. In the frontend, it can unlock the possibility to display dropdown of values, to chose between a clock picker or date picker with time or not, a read only metadata and so on. You have to set the enum type associated to the hint you want and fill the properties with your values.
+This property allows to specify the frontend whether it should display a custom widget to edit the metadata, like a dropdown of values, a clock picker or date picker with or without time, make a metadata read-only, and so on.
 
-This is the list of hints you can use :
+You have to set the enum type associated to the hint you want and fill the properties with your values.
+
+This is the list of the available hints:
+
 - [Read only](#read-only)
 - [Dropdown of values](#dropdown-of-values)
 - [Date/Datetime/Clock picker](#datedatetimeclock-picker)
 
 <h3 id="read-only" style="color: #e94e77">Read only <a href="#read-only" class="heading-anchor-link">#</a></h3>
 
-In the Iot platform the read only feature allows the user to edit or to only read the metadata.
+The read-only feature allows to prevent users to edit a metadata.
 
 **NOTE:** The readOnly property can be set with **any** Enum type.
 
@@ -110,6 +119,7 @@ Enum type: `BASE`
 </table>
 
 **Example**
+
 ```js
 {
   metadataMappings: {
@@ -128,8 +138,8 @@ Enum type: `BASE`
 
 <h3 id="dropdown-of-values" style="color: #e94e77">Dropdown of values <a href="#dropdown-of-values" class="heading-anchor-link">#</a></h3>
 
-In the Iot platform the dropdown feature allows to display a list of values to choose in a dropdown, it has to be defined in the the editorHint property of the asset/device metadata details.
- 
+The dropdown feature allows to display a list of values to choose in a dropdown.
+
 Enum type: `OPTION_SELECTOR`
 
 <table>
@@ -147,20 +157,21 @@ Enum type: `OPTION_SELECTOR`
   <tbody>
     <tr>
       <td>values</td>
-      <td><code>string[] number[] boolean[]</code></td>
+      <td><code>string[] | number[] | boolean[]</code></td>
       <td>A list that represents all the values displayed in a dropdown.</td>
       <td>No</td>
     </tr>
     <tr>
       <td>customValueAllowed</td>
       <td><code>boolean</code></td>
-      <td>It defines if an input is displayed alongside the dropdown to allow the user to choose a value in the dropdown or to inform his custom value.</td>
+      <td>Allows users to add custom values.</td>
       <td>Yes</td>
     </tr>
   </tbody>
 </table>
 
 **Example**
+
 ```js
 {
   metadataMappings: {
@@ -184,8 +195,7 @@ Enum type: `OPTION_SELECTOR`
 
 <h3 id="datedatetimeclock-picker" style="color: #e94e77">Date/Datetime/Clock picker <a href="#datedatetimeclock-picker" class="heading-anchor-link">#</a></h3>
 
-
-In the Iot platform, this feature allows to display either a calendar picker with or not a time picker or either a clock picker, it has date-datetime-clock-picker editorHint property of the asset/device.
+This feature allows to display either a date picker with or without a time picker, or a clock picker.
 
 Enum type: `DATETIME`
 
@@ -205,19 +215,20 @@ Enum type: `DATETIME`
     <tr>
       <td>date</td>
       <td><code>boolean</code></td>
-      <td>Allows either a calendar picker is displayed if set at true or either a clock picker otherwise.</td>
+      <td>If true, displays a date picker, otherwise displays a clock picker.</td>
       <td>No</td>
     </tr>
     <tr>
       <td>time</td>
       <td><code>boolean</code></td>
-      <td>Allows if the time picker is displayed alongside the calendar picker.</td>
+      <td>If `date` is true, setting this to true will add time picking to the date picker.</td>
       <td>Yes</td>
     </tr>
   </tbody>
 </table>
 
 **Example**
+
 ```js
 {
   metadataMappings: {

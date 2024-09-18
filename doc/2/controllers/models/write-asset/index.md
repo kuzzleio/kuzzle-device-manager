@@ -133,8 +133,8 @@ Method: POST
 - `model`: Asset model name
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
-- `metadataDetails`: Metadata group, translations and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
-- `metadataGroups`: Groups list with translations for group name 
+- `metadataDetails`: Translations, metadata group, and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
+- `metadataGroups`: Groups list with translations for group name
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 

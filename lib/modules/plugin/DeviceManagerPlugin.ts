@@ -1,13 +1,13 @@
-import _ from "lodash";
 import {
+  BadRequestError,
+  KuzzleRequest,
   Plugin,
   PluginContext,
   PluginImplementationError,
-  KuzzleRequest,
-  BadRequestError,
 } from "kuzzle";
-import { JSONObject } from "kuzzle-sdk";
 import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
+import { JSONObject } from "kuzzle-sdk";
+import _ from "lodash";
 
 import {
   batteryMeasureDefinition,
@@ -18,15 +18,15 @@ import {
   temperatureMeasureDefinition,
 } from "../measure";
 
-import { DeviceModule, devicesMappings } from "../device";
-import { MeasureModule } from "../measure";
 import { AssetModule, assetsMappings } from "../asset";
 import {
   DecoderModule,
+  DecodersRegister,
   NamedMeasures,
   payloadsMappings,
-  DecodersRegister,
 } from "../decoder";
+import { DeviceModule, devicesMappings } from "../device";
+import { MeasureModule } from "../measure";
 import {
   AssetModelDefinition,
   DeviceModelDefinition,
@@ -36,8 +36,8 @@ import {
 } from "../model";
 import { keepStack, lock } from "../shared";
 
-import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
+import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
 
 export class DeviceManagerPlugin extends Plugin {
@@ -72,7 +72,7 @@ export class DeviceManagerPlugin extends Plugin {
        *        - measures: Array describing measure names and their types.
        *        - metadataMappings: Definition of metadata mappings, specifying types for each metadata field.
        *        - defaultMetadata: Default values for metadata fields, applied when actual data is not provided.
-       *        - metadataDetails: Optional detailed descriptions for each metadata, including group association, localizations and definition.
+       *        - metadataDetails: Optional detailed descriptions for each metadata, including localizations, group association and definition.
        *        - metadataGroups: Optional description of metadata groups, organizing metadata logically, with localizations for group names.
        *        - tooltipModels: Optional tooltip model list, containing each labels and tooltip content to display.
        *
@@ -191,7 +191,7 @@ export class DeviceManagerPlugin extends Plugin {
        *                   - decoder: Decoder used to decode payloads
        *                   - metadataMappings: Metadata mappings definition
        *                   - defaultMetadata: Default metadata values
-       *                   - metadataDetails: Detailed metadata descriptions, localizations and definition
+       *                   - metadataDetails: Localizations, detailed metadata descriptions and definition
        *                   - metadataGroups: Groups for organizing metadata, with localizations
        *
        * @example
