@@ -40,7 +40,7 @@ Method: POST
     },
     "metadataDetails": {
       /*
-        Metadata details including tanslations and group.
+        Metadata details including tanslations, group and editor hint.
           [name: string]: {
             group?: string;
             locales: {
@@ -49,7 +49,7 @@ Method: POST
                 description: string;
               };
             };
-            readOnly?: boolean;
+            editorHint?: BaseEditorHint | OptionsSelectorDefinition | DatetimeEditorHint;
           };
       */
     },
@@ -133,8 +133,8 @@ Method: POST
 - `model`: Asset model name
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
-- `metadataDetails`: Metadata group and translations
-- `metadataGroups`: Groups list with translations for group name 
+- `metadataDetails`: Translations, metadata group, and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
+- `metadataGroups`: Groups list with translations for group name
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 
@@ -164,3 +164,4 @@ Method: POST
 | ------------------------------------------------------------------------------ | ------- | --------------------------------------------------- |
 | [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md)        | **409** | Writing an asset with conflicting metadata mappings |
 | [ MeasuresNamesDuplicatesError ](../../../errors/measures-duplicates/index.md) | **400** | Defining a measure name more than once              |
+Writing an asset with metadata mappings can cause conflicts, in this case a [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) will be thrown with the HTTP code **409**.
