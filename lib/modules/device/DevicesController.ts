@@ -446,6 +446,10 @@ export class DevicesController {
 
     return results.reduce<ApiDeviceGetLastMeasuresResult>(
       (accumulator, result) => {
+        if (result.origin.type !== "device") {
+          return accumulator;
+        }
+
         const measure: EmbeddedMeasure = {
           measuredAt: result.measuredAt,
           name: result.origin.measureName,
@@ -482,6 +486,10 @@ export class DevicesController {
     for (const [deviceId, measures] of Object.entries(results)) {
       response[deviceId] = measures.reduce<ApiDeviceGetLastMeasuresResult>(
         (accumulator, result) => {
+          if (result.origin.type !== "device") {
+            return accumulator;
+          }
+
           const measure: EmbeddedMeasure = {
             measuredAt: result.measuredAt,
             name: result.origin.measureName,

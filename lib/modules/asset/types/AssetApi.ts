@@ -1,6 +1,6 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
-import { MeasureContent } from "../../../modules/measure";
+import { DecodedMeasurement, MeasureContent } from "../../../modules/measure";
 import {
   ApiDigitalTwinGetLastMeasuredAtRequest,
   ApiDigitalTwinGetLastMeasuredAtResult,
@@ -16,6 +16,7 @@ import {
 import { AssetContent } from "./AssetContent";
 
 type AssetsControllerName = "device-manager/assets";
+import { ApiMeasureSource } from "../../measure/types/MeasureSources";
 
 interface AssetsControllerRequest {
   controller: AssetsControllerName;
@@ -141,6 +142,39 @@ export type ApiAssetGetMeasuresResult = {
   measures: Array<KDocument<MeasureContent<JSONObject>>>;
   total: number;
 };
+
+export interface ApiAssetMeasureIngestRequest extends AssetsControllerRequest {
+  action: "measureIngest";
+
+  assetId: string;
+
+  engineId: string;
+  engineGroup?: string;
+  slotName: string;
+
+  body: {
+    dataSourceId: string;
+    measuredAt: number;
+    values: JSONObject;
+  };
+}
+export type ApiAssetMeasureIngestResult = void;
+
+export interface ApiAssetmMeasureIngestRequest extends AssetsControllerRequest {
+  action: "mMeasureIngest";
+
+  assetId: string;
+
+  engineId: string;
+  engineGroup?: string;
+
+  body: {
+    dataSource: ApiMeasureSource;
+    measurements: Omit<DecodedMeasurement<JSONObject>, "type">[];
+  };
+}
+
+export type ApiAssetmMeasureIngestResult = void;
 
 export type ApiAssetGetLastMeasuresRequest =
   ApiDigitalTwinGetLastMeasuresRequest<AssetsControllerName>;

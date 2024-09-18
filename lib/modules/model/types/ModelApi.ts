@@ -9,6 +9,7 @@ import {
   MetadataMappings,
   TooltipModels,
 } from "./ModelContent";
+import { SchemaObject } from "ajv";
 import { MeasureValuesDetails } from "../../measure/types/MeasureDefinition";
 
 interface ModelsControllerRequest {
@@ -70,6 +71,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
   body: {
     type: string;
     valuesMappings: JSONObject;
+    validationSchema?: SchemaObject;
     valuesDetails?: MeasureValuesDetails;
   };
 }

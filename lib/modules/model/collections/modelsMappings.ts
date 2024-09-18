@@ -21,6 +21,10 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        validationSchema: {
+          dynamic: "false",
+          properties: {},
+        },
         valuesDetails: {
           dynamic: "false",
           properties: {},

@@ -16,7 +16,7 @@ Gets a measure model.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/models/measure/:_id
+URL: http://kuzzle:7512/_/device-manager/models/measure/:type
 Method: GET
 ```
 

@@ -1,11 +1,17 @@
 import {
+  BadRequestError,
   ControllerDefinition,
   HttpStream,
+  JSONObject,
   KuzzleError,
   KuzzleRequest,
 } from "kuzzle";
 
-import { MeasureExporter } from "../measure/";
+import {
+  AskMeasureSourceIngest,
+  DecodedMeasurement,
+  MeasureExporter,
+} from "../measure/";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { DigitalTwinExporter, EmbeddedMeasure } from "../shared";
 
@@ -26,6 +32,20 @@ import {
   ApiAssetMGetLastMeasuresResult,
   ApiAssetGetLastMeasuredAtResult,
 } from "./types/AssetApi";
+import { isSourceApi } from "../measure/types/MeasureSources";
+import { getValidator } from "../shared/utils/AJValidator";
+import { ask } from "kuzzle-plugin-commons";
+import { toApiTarget } from "../measure/MeasureTargetBuilder";
+import {
+  DATA_SOURCE_METADATA_TYPE,
+  toApiSource,
+} from "../measure/MeasureSourcesBuilder";
+import {
+  MeasureValidationError,
+  MeasureValidationChunks,
+} from "../measure/MeasureValidationError";
+import { AskModelAssetGet } from "../model";
+import { AssetContent } from "./exports";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -110,6 +130,24 @@ export class AssetsController {
           http: [
             {
               path: "device-manager/:engineId/assets/_mGetLastMeasures",
+              verb: "post",
+            },
+          ],
+        },
+        mMeasureIngest: {
+          handler: this.mMeasureIngest.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:assetId/_mMeasureIngest",
+              verb: "post",
+            },
+          ],
+        },
+        measureIngest: {
+          handler: this.measureIngest.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:assetId/measures/:slotName",
               verb: "post",
             },
           ],
@@ -381,6 +419,172 @@ export class AssetsController {
     }
 
     return response;
+  }
+
+  /**
+   *
+   * @param indexId The asset index
+   * @param assetId The target asset ID
+   * @param measureName The measureName to get the type from
+   * @param engineGroup The target engine group
+   * @returns The measure type if used in the asset, null otherwise
+   * @throws If the asset does not exists
+   */
+  private async getTypeFromMeasureSlot(
+    indexId: string,
+    assetId: string,
+    measureName: string,
+    engineGroup: string,
+  ) {
+    let asset: AssetContent;
+    try {
+      const assetDocument =
+        await this.plugin.context.accessors.sdk.document.get<AssetContent>(
+          indexId,
+          InternalCollection.ASSETS,
+          assetId,
+        );
+
+      asset = assetDocument._source;
+    } catch (error) {
+      throw new BadRequestError(
+        `Asset "${assetId}" does not exists on index "${indexId}"`,
+      );
+    }
+
+    const assetModel = await ask<AskModelAssetGet>(
+      "ask:device-manager:model:asset:get",
+      {
+        engineGroup,
+        model: asset.model,
+      },
+    );
+
+    return (
+      assetModel.asset.measures.find((elt) => elt.name === measureName)?.type ??
+      null
+    );
+  }
+
+  async mMeasureIngest(request: KuzzleRequest) {
+    const assetId = request.getString("assetId");
+    const indexId = request.getString("engineId");
+    const engineGroup = request.getString("engineGroup", "commons");
+    const source = request.getBodyObject("dataSource");
+    source.type = DATA_SOURCE_METADATA_TYPE.API;
+
+    const measurements = request.getBodyArray(
+      "measurements",
+    ) as DecodedMeasurement<JSONObject>[];
+
+    const target = toApiTarget(indexId, assetId, engineGroup);
+
+    if (isSourceApi(source)) {
+      const errors: MeasureValidationChunks[] = [];
+      for (const measure of measurements) {
+        const type = await this.getTypeFromMeasureSlot(
+          indexId,
+          assetId,
+          measure.measureName,
+          engineGroup,
+        );
+
+        const validator = getValidator(type);
+
+        if (validator) {
+          const valid = validator(measure.values);
+
+          if (!valid) {
+            errors.push({
+              measureName: measure.measureName,
+              validationErrors: validator.errors ?? [],
+            });
+          }
+        }
+      }
+
+      if (errors.length > 0) {
+        throw new MeasureValidationError(
+          "The provided measures do not comply with their respective schemas",
+          errors,
+        );
+      }
+
+      await ask<AskMeasureSourceIngest>(
+        "device-manager:measures:sourceIngest",
+        {
+          measurements,
+          payloadUuids: [],
+          source,
+          target,
+        },
+      );
+    } else {
+      throw new BadRequestError(
+        "The provided data source does not match the API source format",
+      );
+    }
+  }
+
+  async measureIngest(request: KuzzleRequest) {
+    const assetId = request.getString("assetId");
+    const indexId = request.getString("engineId");
+    const measureName = request.getString("slotName");
+    const engineGroup = request.getString("engineGroup", "commons");
+    const sourceId = request.getBodyString("dataSourceId");
+    const metadata = request.getBodyObject("metadata", {});
+
+    const source = toApiSource(sourceId, metadata);
+
+    const measuredAt = request.getBodyNumber("measuredAt");
+    const values = request.getBodyObject("values");
+
+    const type = await this.getTypeFromMeasureSlot(
+      indexId,
+      assetId,
+      measureName,
+      engineGroup,
+    );
+
+    if (!type) {
+      throw new BadRequestError(
+        `Slot name ${measureName} does not exist on Asset ${assetId}`,
+      );
+    }
+
+    const measurement = {
+      measureName,
+      measuredAt,
+      type,
+      values,
+    } satisfies DecodedMeasurement<JSONObject>;
+
+    const target = toApiTarget(indexId, assetId, engineGroup);
+
+    const validator = getValidator(type);
+
+    if (validator) {
+      const valid = validator(values);
+
+      if (!valid) {
+        throw new MeasureValidationError(
+          "The provided measure does not respect its schema",
+          [
+            {
+              measureName: measureName,
+              validationErrors: validator.errors ?? [],
+            },
+          ],
+        );
+      }
+    }
+
+    await ask<AskMeasureSourceIngest>("device-manager:measures:sourceIngest", {
+      measurements: [measurement],
+      payloadUuids: [],
+      source,
+      target,
+    });
   }
 
   async exportMeasures(request: KuzzleRequest) {
