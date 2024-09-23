@@ -33,13 +33,61 @@ export interface LocaleDetails {
   description: string;
 }
 
+export interface BaseEditorHint {
+  readOnly?: boolean;
+  type: EditorHintEnum;
+}
+
+export enum EditorHintEnum {
+  BASE = "base",
+  OPTION_SELECTOR = "optionSelector",
+  DATETIME = "datetime",
+}
+
+/**
+ * Allows to display a list of values to choose in a dropdown, it has to be defined in the the editorHint property of the asset/device's metadataDetails.
+ */
+export interface OptionsSelectorEditorHint extends BaseEditorHint {
+  type: EditorHintEnum.OPTION_SELECTOR;
+  /**
+   * A list that contains all the values displayed in the dropdown.
+   */
+  values: string[] | number[] | boolean[];
+  /**
+   * Allow the user to add custom values.
+   */
+  customValueAllowed?: boolean;
+}
+/**
+ * Allows to display either a date picker with or without a time picker, or a clock picker, it has to be defined in the editorHint property of the asset/device's metadataDetails.
+ */
+export interface DatetimeEditorHint extends BaseEditorHint {
+  type: EditorHintEnum.DATETIME;
+  /**
+   * If true, displays a date picker, otherwise displays a clock picker.
+   */
+  date: boolean;
+  /**
+   * If `date` is true, setting this to true will add time picking to the date picker.
+   */
+  time?: boolean;
+}
+
 export interface MetadataDetails {
   [key: string]: {
     group?: string;
     locales: {
       [locale: string]: LocaleDetails;
     };
-    readOnly?: boolean;
+    /**
+     * To add new editor hint, create an interface with the properties that extends BaseEditorHint.
+     * Then add a new field in EditorHintEnum to define the type of your hint.
+     * Finally add the new editor hint interface with a pipe to take in account the new type.
+     */
+    editorHint?:
+      | BaseEditorHint
+      | OptionsSelectorEditorHint
+      | DatetimeEditorHint;
   };
 }
 
@@ -158,8 +206,15 @@ export interface AssetModelContent extends KDocumentContent {
      *         "friendlyName": "Température extérieure",
      *         "description": "Température à l'exterieur du bâtiment"
      *       },
-     *     "readOnly": true,
-     *   }
+     *     },
+     *     "editorHint": {
+     *       "readOnly": true,
+     *       "type": EditorHintEnum.OPTION_SELECTOR,
+     *       "values": ["red", "blue"],
+     *       "customValueAllowed": true,
+     *     },
+     *   },
+     * }
      */
     metadataDetails?: MetadataDetails;
     /**
@@ -289,8 +344,16 @@ export interface DeviceModelContent extends KDocumentContent {
      *         "friendlyName": "Version du capteur",
      *         "description": "Version du micrologiciel du capteur"
      *       },
-     *     "readOnly": true,
-     *   }
+     *     },
+     *     "editorHint": {
+     *       "readOnly": false,
+     *       "type": EditorHintEnum.DATETIME,
+     *       "date": true,
+     *       "time": true,
+     *       "customTimeZoneAllowed": true,
+     *     },
+     *   },
+     * }
      */
     metadataDetails?: MetadataDetails;
     /**

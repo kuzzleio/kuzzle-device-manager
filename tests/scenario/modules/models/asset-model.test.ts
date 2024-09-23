@@ -1,3 +1,4 @@
+import { EditorHintEnum } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
@@ -13,6 +14,12 @@ describe("ModelsController:assets", () => {
         engineGroup: "commons",
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
+        metadataDetails: {
+          company: {
+            readOnly: true,
+            type: EditorHintEnum.BASE,
+          },
+        },
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
     });
@@ -28,6 +35,12 @@ describe("ModelsController:assets", () => {
       asset: {
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
+        metadataDetails: {
+          company: {
+            readOnly: true,
+            type: EditorHintEnum.BASE,
+          },
+        },
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
     });

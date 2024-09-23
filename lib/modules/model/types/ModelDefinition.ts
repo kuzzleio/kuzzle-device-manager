@@ -37,8 +37,14 @@ import {
  *             "description": "Température externe du conteneur"
  *           }
  *         },
- *         "readOnly": true,
- *       }
+ *         "definition": {
+ *           "readOnly": false,
+ *           "type": MetadataDetailsEnum.DATETIME,
+ *           "date": true,
+ *           "time": true,
+ *           "customTimeZoneAllowed": true,
+ *        },
+ *       },
  *     },
  *     metadataGroups: {
  *       buildingEnv: {
@@ -155,8 +161,14 @@ export type AssetModelDefinition = {
  *             description: "Type du traceur"
  *           }
  *         },
- *         readOnly: true,
- *       }
+ *         definition: {
+ *           readOnly: false,
+ *           type: MetadataDetailsEnum.DATETIME,
+ *           date: true,
+ *           time: true,
+ *           customTimeZoneAllowed: true,
+ *        },
+ *       },
  *     },
  *     metadataGroups: {
  *      sensorSpecs: {

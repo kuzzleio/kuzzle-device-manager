@@ -22,8 +22,11 @@ A sensor model contains the following information:
 - `decoder`: (optional) instance of a [Decoder] to normalize the data
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
 - `defaultMetadata`: (optional) default metadata values
-- `metadataDetails`: (optional) Metadata group and translations. You can use it to keep consistency on translations between your apps
-- `metadataGroups`: (optional) Groups list with translations for group name. You can use it to group metadatas by their concerns
+- `metadataDetails`: (optional) Translations, metadata group and editor hint.
+  - Translations: you can use it to keep consistency on translations between your apps.
+  - Group: metadata can be displayed grouped, you need to define `metadataGroups` to use it.
+  - Editor hint: it unlock functionalities depending on the metadata type you define.
+- `metadataGroups`: (optional) Map of group names to their translations. You can use it to group metadata.
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 
@@ -58,7 +61,6 @@ The API also allows to:
 - list available models `device-manager/models:listDevices`
 - get a model `device-manager/models:getDevices`
 
-
 ## Measure Model
 
 A measure model contains the following information:
@@ -77,27 +79,27 @@ It is possible to create new models on the Kuzzle IoT Platform using either:
 
 ```typescript
 await sdk.query({
-      controller: 'device-manager/models',
-      action: 'writeMeasure',
-      body: {
-        type: 'light',
-        valuesMappings: {
-          light: { type: 'integer' },
+  controller: "device-manager/models",
+  action: "writeMeasure",
+  body: {
+    type: "light",
+    valuesMappings: {
+      light: { type: "integer" },
+    },
+    valuesDetails: {
+      light: {
+        en: {
+          friendlyName: "Light intensity",
+          unit: "lux",
         },
-        valuesDetails: {
-          light: {
-            en: {
-              friendlyName: 'Light intensity',
-              unit: 'lux',
-            },
-            fr: {
-              friendlyName: 'Intensité lumineuse',
-              unit: 'lux',
-            },
-          },
+        fr: {
+          friendlyName: "Intensité lumineuse",
+          unit: "lux",
         },
       },
-    });
+    },
+  },
+});
 ```
 
 The API also allows to:
@@ -115,9 +117,12 @@ An asset model contains the following information:
 - `engineGroup`: engine group to which the model belongs.
 - `measures`: received measurements
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
-- `defaultMetadata`: (optional) default metadata values- 
-- `metadataDetails`: (optional) Metadata group and translations. You can use it to keep consistency on translations between your apps
-- `metadataGroups`: (optional) Groups list with translations for group name. You can use it to group metadatas by their concerns
+- `defaultMetadata`: (optional) default metadata values-
+- `metadataDetails`: (optional) Translations, metadata group and editor hint.
+  - Translations: you can use it to keep consistency on translations between your apps.
+  - Group: metadata can be displayed grouped, you need to define `metadataGroups` to use it.
+  - Editor hint: it unlock functionalities depending on the metadata type you define.
+- `metadataGroups`: (optional) Map of group names to their translations. You can use it to group metadata.
 - `tooltipModels`: (optional) Tooltip model list, each containing labels and tooltip content to be shown. You can use it to create templates that displays relevant information in dashboards
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
