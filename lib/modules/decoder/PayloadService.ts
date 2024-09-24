@@ -174,6 +174,20 @@ export class PayloadService extends BaseService {
         ),
       );
 
+    // Due to the existence of a "devices" collection in the tenant index and a platform index,
+    // it is need to fetch the device content associated to the tenant if it exists.
+    const updatedDevices = await Promise.all(
+      devices.map((device) =>
+        device._source.engineId && device._source.engineId.trim() !== ""
+          ? this.sdk.document.get<DeviceContent>(
+              device._source.engineId,
+              InternalCollection.DEVICES,
+              device._id,
+            )
+          : device,
+      ),
+    );
+
     // If we have unknown devices, let's check if we should register them
     if (errors.length > 0) {
       const { _source } = await this.sdk.document.get(
@@ -186,7 +200,7 @@ export class PayloadService extends BaseService {
         const newDevices = await this.provisionDevices(deviceModel, errors, {
           refresh,
         });
-        devices.push(...newDevices);
+        updatedDevices.push(...newDevices);
       } else {
         this.app.log.info(
           `Skipping new devices "${errors.join(
@@ -196,7 +210,7 @@ export class PayloadService extends BaseService {
       }
     }
 
-    return devices;
+    return updatedDevices;
   }
 
   private async provisionDevices(
