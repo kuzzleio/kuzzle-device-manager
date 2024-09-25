@@ -21,5 +21,9 @@ module.exports = {
       name: "beta",
       prerelease: true,
     },
+    {
+      name: "+([0-9])-dev",
+      prerelease: "dev"
+    }
   ],
 };
