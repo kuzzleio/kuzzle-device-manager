@@ -39,7 +39,7 @@ export class DummyTempPositionDecoder extends Decoder {
       {
         measuredAt: isMeasureDated(payload.temperature)
           ? payload.temperature.measuredAt
-          : payload.measuredAt ?? Date.now(),
+          : (payload.measuredAt ?? Date.now()),
         type: "temperature",
         values: {
           temperature: isMeasureDated(payload.temperature)
@@ -58,7 +58,7 @@ export class DummyTempPositionDecoder extends Decoder {
       {
         measuredAt: isMeasureDated(payload.location)
           ? payload.location.measuredAt
-          : payload.measuredAt ?? Date.now(),
+          : (payload.measuredAt ?? Date.now()),
         type: "position",
         values: {
           position: {
@@ -79,7 +79,7 @@ export class DummyTempPositionDecoder extends Decoder {
       {
         measuredAt: isMeasureDated(payload.battery)
           ? payload.battery.measuredAt
-          : payload.measuredAt ?? Date.now(),
+          : (payload.measuredAt ?? Date.now()),
         type: "battery",
         values: {
           battery: battery * 100,
