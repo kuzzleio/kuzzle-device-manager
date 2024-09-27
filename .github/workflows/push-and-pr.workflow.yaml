@@ -1,0 +1,152 @@
+name: Push and PR
+
+on:
+  push:
+    branches:
+      - master
+      - beta
+      - "[0-9]+-dev"
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Run lint
+        run: npm run lint
+
+  check-types:
+    name: Check types
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Run types tests
+        run: npm run test:types
+
+  functional-tests:
+    name: Functional Tests
+    runs-on: ubuntu-22.04
+    needs: [lint, check-types]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: docker pull
+        run: docker compose --profile backend pull
+      - name: docker install dependencies
+        run: docker compose run --no-deps kuzzle /bin/bash -c "npm ci"
+      - name: docker backend
+        run: |
+          # Continue when error
+          set +e
+          export BACKEND_COMMAND="npm run build && npm run prod";
+          docker compose --profile backend up -d --wait
+          exitcode="$?"
+          [[ "$exitcode" == "0" ]] || docker compose logs kuzzle
+          exit "$exitcode"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm run test:functional
+
+  release-device-manager:
+    name: Release package
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/2-dev') }}
+    needs: [functional-tests]
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          SEMANTIC_RELEASE_NPM_PUBLISH: "true"
+          SEMANTIC_RELEASE_SLACK_WEBHOOK: ${{ secrets.SEMANTIC_RELEASE_SLACK_WEBHOOK }}
+        run: npx semantic-release
+
+  release-types:
+    name: Release type package
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/2-dev') }}
+    needs: [release-device-manager]
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build type package
+        run: npm -prefix ./types run build
+
+      - name: Publish package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: cd types && npm publish
+
+  documentation_deploy:
+    needs: [release-device-manager]
+    name: Documentation - Deploy
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACCESS_TOKEN_CI }}
+
+      - name: Extract references from context
+        shell: bash
+        id: extract-refs
+        run: |
+          version=$(jq -r .version package.json | cut -d. -f 1)
+          echo "major-version=$(($version == 0 ? 1 : $version))" >> $GITHUB_OUTPUT
+          echo "repo=$(echo $GITHUB_REPOSITORY | cut -d/ -f 2)" >> $GITHUB_OUTPUT
+
+      - uses: convictional/trigger-workflow-and-wait@v1.6.3
+        with:
+          owner: kuzzleio
+          repo: documentation
+          github_token: ${{ secrets.ACCESS_TOKEN_CI }}
+          workflow_file_name: child_repo.workflow.yml
+          ref: ${{ github.ref_name == 'master' && 'master' || 'develop' }}
+          client_payload: '{"repo_name":"${{ steps.extract-refs.outputs.repo }}","branch":"${{ github.ref_name }}","version":"${{ steps.extract-refs.outputs.major-version }}"}'
