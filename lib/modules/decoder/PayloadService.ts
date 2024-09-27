@@ -175,7 +175,7 @@ export class PayloadService extends BaseService {
       );
 
     // Due to the existence of a "devices" collection in the tenant index and a platform index,
-    // it is need to fetch the device content associated to the tenant if it exists.
+    // we need to fetch the device content from the associated tenant if it exists.
     const updatedDevices = await Promise.all(
       devices.map((device) =>
         device._source.engineId && device._source.engineId.trim() !== ""
