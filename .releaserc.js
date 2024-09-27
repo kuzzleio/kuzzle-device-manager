@@ -22,7 +22,7 @@ module.exports = {
       prerelease: true,
     },
     {
-      name: "+([0-9])-dev",
+      name: "2-dev",
       prerelease: "dev"
     }
   ],
