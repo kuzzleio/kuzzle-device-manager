@@ -14,5 +14,5 @@ jobs:
       - name: Rebase beta branch to dev
         run: |
           git fetch --no-tags origin beta:beta
-          git rebase beta ${GITHUB_REF_NAME}
+          git rebase ${GITHUB_REF_NAME} beta
           git push

@@ -1,4 +1,4 @@
-name: Release to master
+name: Release stable
 
 on: workflow_dispatch
 
