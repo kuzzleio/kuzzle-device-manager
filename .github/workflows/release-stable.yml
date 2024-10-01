@@ -1,0 +1,17 @@
+name: Release to master
+
+on: workflow_dispatch
+
+jobs:
+  release-branch:
+    if: ${{ github.ref_name == 'beta' || github.ref_name == '2-dev' }}
+    name: Release to master
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebase master branch
+        run: |
+          git rebase ${GITHUB_REF_NAME} master
+          git push
