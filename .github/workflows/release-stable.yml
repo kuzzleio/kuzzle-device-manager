@@ -13,5 +13,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Rebase master branch
         run: |
+          git fetch --no-tags origin master:master
           git rebase ${GITHUB_REF_NAME} master
           git push
