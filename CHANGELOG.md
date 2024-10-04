@@ -1,3 +1,10 @@
+## [2.4.1-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0...v2.4.1-dev.1) (2024-10-04)
+
+
+### Bug Fixes
+
+*  queryTranslator import ([#376](https://github.com/kuzzleio/kuzzle-device-manager/issues/376)) ([f786244](https://github.com/kuzzleio/kuzzle-device-manager/commit/f78624488e44e26e256f4e3dfab5fa9fdd612183))
+
 # [2.4.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.3.2...v2.4.0) (2024-10-01)
 
 
