@@ -161,6 +161,7 @@ export class AssetService extends DigitalTwinService {
       InternalCollection.ASSETS,
       assetId,
       updatedPayload.asset._source,
+      { triggerEvents: true },
     );
 
     await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
