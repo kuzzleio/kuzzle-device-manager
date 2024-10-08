@@ -1,3 +1,10 @@
+## [2.4.2-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.1...v2.4.2-dev.1) (2024-10-08)
+
+
+### Bug Fixes
+
+* trigger events on metadataReplace call ([#377](https://github.com/kuzzleio/kuzzle-device-manager/issues/377)) ([df4b417](https://github.com/kuzzleio/kuzzle-device-manager/commit/df4b417d81aae9ab3aa1614bd77abd8286e21984))
+
 ## [2.4.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0...v2.4.1) (2024-10-04)
 
 
