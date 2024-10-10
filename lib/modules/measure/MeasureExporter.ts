@@ -212,7 +212,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       ...measureColumns,
     ];
 
-    const stream = this.getExportStream(result, columns);
+    const stream = this.getExportStream(result, columns, engineId);
     await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
 
     return stream;

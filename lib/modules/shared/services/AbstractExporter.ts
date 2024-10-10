@@ -34,10 +34,18 @@ export interface Column {
   isIsoDate?: boolean;
 }
 
+export type ExportStreamAugmenter = (
+  result: SearchResult<KHit<KDocumentContentGeneric>>,
+  columns: Column[],
+  engineId: string,
+) => Promise<void>;
+
 export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   protected config: ExporterOption = {
     expireTime: 2 * 60,
   };
+
+  protected exportStreamAugmenters: ExportStreamAugmenter[] = [];
 
   constructor(
     protected plugin: DeviceManagerPlugin,
@@ -142,6 +150,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   async getExportStream(
     request: SearchResult<KHit<KDocumentContentGeneric>>,
     columns: Column[],
+    engineId: string,
   ) {
     const stream = new PassThrough();
 
@@ -149,6 +158,10 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     try {
       stream.write(stringify([columns.map((column) => column.header)]));
       while (result) {
+        for (const augmenter of this.exportStreamAugmenters) {
+          await augmenter(result, columns, engineId);
+        }
+
         for (const hit of result.hits) {
           stream.write(stringify([this.formatHit(columns, hit)]));
         }
