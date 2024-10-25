@@ -1,3 +1,10 @@
+## [2.4.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.2...v2.4.3) (2024-10-25)
+
+
+### Bug Fixes
+
+* **device:** create apply default metadata ([#378](https://github.com/kuzzleio/kuzzle-device-manager/issues/378)) ([7af109c](https://github.com/kuzzleio/kuzzle-device-manager/commit/7af109c6e184a3ad04479f4d6626ddeb84d18cfe))
+
 ## [2.4.3-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.2...v2.4.3-dev.1) (2024-10-25)
 
 
