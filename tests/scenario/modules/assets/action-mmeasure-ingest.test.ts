@@ -37,6 +37,13 @@ describe("AssetsController:mMeasureIngest", () => {
                 magicule: 18,
               },
             },
+            {
+              measureName: "magiculeInt",
+              measuredAt: 170000001, // ? Set this to ensure sorting order
+              values: {
+                magicule: 25,
+              },
+            },
           ],
         },
       });
@@ -50,7 +57,7 @@ describe("AssetsController:mMeasureIngest", () => {
         InternalCollection.MEASURES,
       );
 
-      expect(total).toBe(1);
+      expect(total).toBe(2);
 
       const document = await sdk.document.search(
         indexId,
@@ -65,7 +72,7 @@ describe("AssetsController:mMeasureIngest", () => {
         { lang: "koncorde" },
       );
 
-      expect(document.fetched).toBe(1);
+      expect(document.fetched).toBe(2);
 
       expect(document.hits[0]._source).toMatchObject({
         asset: {
@@ -74,6 +81,16 @@ describe("AssetsController:mMeasureIngest", () => {
         },
         values: {
           magicule: 18,
+        },
+      });
+
+      expect(document.hits[1]._source).toMatchObject({
+        asset: {
+          _id: "MagicHouse-debug1",
+          measureName: "magiculeInt",
+        },
+        values: {
+          magicule: 25,
         },
       });
     });
@@ -199,6 +216,13 @@ describe("AssetsController:mMeasureIngest", () => {
                 magicule: 18,
               },
             },
+            {
+              measureName: "magiculeInt",
+              measuredAt: 170000001, // ? Set this to ensure sorting order
+              values: {
+                magicule: 25,
+              },
+            },
           ],
         },
       );
@@ -212,7 +236,7 @@ describe("AssetsController:mMeasureIngest", () => {
         InternalCollection.MEASURES,
       );
 
-      expect(total).toBe(1);
+      expect(total).toBe(2);
 
       const document = await sdk.document.search(
         indexId,
@@ -227,7 +251,7 @@ describe("AssetsController:mMeasureIngest", () => {
         { lang: "koncorde" },
       );
 
-      expect(document.fetched).toBe(1);
+      expect(document.fetched).toBe(2);
 
       expect(document.hits[0]._source).toMatchObject({
         asset: {
@@ -236,6 +260,16 @@ describe("AssetsController:mMeasureIngest", () => {
         },
         values: {
           magicule: 18,
+        },
+      });
+
+      expect(document.hits[1]._source).toMatchObject({
+        asset: {
+          _id: "MagicHouse-debug1",
+          measureName: "magiculeInt",
+        },
+        values: {
+          magicule: 25,
         },
       });
     });
