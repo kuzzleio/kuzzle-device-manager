@@ -31,6 +31,8 @@ const ajv = addFormats(new Ajv({}), [
  * @throws If the provided schema is not valid
  */
 export function addSchemaToCache(schemaID: string, schema: SchemaObject) {
+  ajv.validateSchema(schema, true);
+
   ajv.removeSchema(schemaID);
   return ajv.addSchema(schema, schemaID);
 }
