@@ -164,4 +164,4 @@ Method: POST
 | ------------------------------------------------------------------------------ | ------- | --------------------------------------------------- |
 | [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md)        | **409** | Writing an asset with conflicting metadata mappings |
 | [ MeasuresNamesDuplicatesError ](../../../errors/measures-duplicates/index.md) | **400** | Defining a measure name more than once              |
-Writing an asset with metadata mappings can cause conflicts, in this case a [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) will be thrown with the HTTP code **409**.
+
