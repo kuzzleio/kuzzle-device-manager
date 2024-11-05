@@ -21,5 +21,9 @@ module.exports = {
       name: "beta",
       prerelease: true,
     },
+    {
+      name: "2-dev",
+      prerelease: "dev"
+    }
   ],
 };
