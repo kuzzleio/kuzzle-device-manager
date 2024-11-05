@@ -20,7 +20,7 @@ import {
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
 import { JSONObject } from "kuzzle-sdk";
-import { addSchemaToCache, ajv } from "../shared/utils/AJValidator";
+import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
 import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
@@ -165,7 +165,7 @@ export class ModelsRegister {
       } catch (error) {
         throw new SchemaValidationError(
           "Provided schema is not valid",
-          ajv.errors,
+          getAJVErrors(),
         );
       }
     }

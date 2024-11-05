@@ -4,7 +4,7 @@ import Ajv, { SchemaObject } from "ajv";
 /**
  * TODO: add stricter TypeScript rules to allow the use of JSONSchemaType
  */
-export const ajv = addFormats(new Ajv({}), [
+const ajv = addFormats(new Ajv({}), [
   "date-time",
   "time",
   "date",
@@ -45,4 +45,13 @@ export function addSchemaToCache(schemaID: string, schema: SchemaObject) {
  */
 export function getValidator(schemaID: string) {
   return ajv.getSchema(schemaID);
+}
+
+/**
+ * Get and return the previous AJV errors
+ *
+ * @returns an array of ErrorObject
+ */
+export function getAJVErrors() {
+  return ajv.errors ?? [];
 }

@@ -38,7 +38,7 @@ import {
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
 import { SchemaObject } from "ajv";
-import { addSchemaToCache, ajv } from "../shared/utils/AJValidator";
+import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { MeasureValuesDetails } from "../measure";
 import { NamedMeasures } from "../decoder";
@@ -386,7 +386,7 @@ export class ModelService extends BaseService {
       } catch (error) {
         throw new SchemaValidationError(
           "Provided schema is not valid",
-          ajv.errors,
+          getAJVErrors(),
         );
       }
     }
