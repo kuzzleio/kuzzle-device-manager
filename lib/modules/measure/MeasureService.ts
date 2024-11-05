@@ -93,7 +93,7 @@ export class MeasureService extends BaseService {
     measurements: DecodedMeasurement<JSONObject>[],
     payloadUuids: string[],
   ) {
-    const { dataSourceId } = source;
+    const { id: dataSourceId } = source;
     const { indexId, assetId } = target;
 
     if (!measurements) {

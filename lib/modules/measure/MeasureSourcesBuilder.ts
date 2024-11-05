@@ -10,11 +10,9 @@ export const enum DATA_SOURCE_METADATA_TYPE {
 export function toApiSource(
   dataSourceId: string,
   metadata?: Metadata,
-  lastMeasuredAt?: number,
 ): ApiMeasureSource {
   return {
-    dataSourceId,
-    lastMeasuredAt,
+    id: dataSourceId,
     metadata,
     type: DATA_SOURCE_METADATA_TYPE.API,
   };
@@ -25,7 +23,7 @@ export function apiSourceToOriginApi(
   payloadUuids: string[],
 ): MeasureOriginApi {
   return {
-    _id: source.dataSourceId,
+    _id: source.id,
     apiMetadata: source.metadata,
     payloadUuids: payloadUuids,
     type: DATA_SOURCE_METADATA_TYPE.API,
@@ -40,7 +38,7 @@ export function toDeviceSource(
   lastMeasuredAt?: number,
 ): DeviceMeasureSource {
   return {
-    dataSourceId,
+    id: dataSourceId,
     lastMeasuredAt,
     metadata,
     model,
@@ -54,7 +52,7 @@ export function deviceSourceToOriginDevice(
   measureName: string,
   payloadUuids: string[],
 ): MeasureOriginDevice {
-  const { dataSourceId, model, reference } = source;
+  const { id: dataSourceId, model, reference } = source;
   return {
     _id: dataSourceId,
     deviceModel: model,

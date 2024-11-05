@@ -2,15 +2,15 @@ import { Metadata } from "../../shared";
 
 interface AbstractMeasureSource {
   type: string;
-  dataSourceId: string;
+  id: string;
   metadata?: Metadata;
-  lastMeasuredAt?: number;
 }
 
 export interface DeviceMeasureSource extends AbstractMeasureSource {
   type: "device";
   reference: string;
   model: string;
+  lastMeasuredAt?: number;
 }
 
 export interface ApiMeasureSource extends AbstractMeasureSource {
@@ -22,21 +22,22 @@ export function isSource(source: any): source is AbstractMeasureSource {
     return false;
   }
 
-  if (source.metadata && typeof source.metadata !== "object") {
+  if (source.metadata !== undefined && typeof source.metadata !== "object") {
     return false;
   }
 
-  if (source.lastMeasuredAt && typeof source.lastMeasuredAt !== "number") {
-    return false;
-  }
-
-  return (
-    typeof source.type === "string" && typeof source.dataSourceId === "string"
-  );
+  return typeof source.type === "string" && typeof source.id === "string";
 }
 
 export function isSourceDevice(source: any): source is DeviceMeasureSource {
   if (!isSource(source) && source.type !== "device") {
+    return false;
+  }
+
+  if (
+    source.lastMeasuredAt !== undefined &&
+    typeof source.lastMeasuredAt !== "number"
+  ) {
     return false;
   }
 
