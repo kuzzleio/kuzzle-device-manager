@@ -1,6 +1,6 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
-import { DecodedMeasurement, MeasureContent } from "../../../modules/measure";
+import { MeasureContent, Measurement } from "../../../modules/measure";
 import {
   ApiDigitalTwinGetLastMeasuredAtRequest,
   ApiDigitalTwinGetLastMeasuredAtResult,
@@ -143,6 +143,8 @@ export type ApiAssetGetMeasuresResult = {
   total: number;
 };
 
+type TypelessApiMeasureSource = Omit<ApiMeasureSource, "type">;
+
 export interface ApiAssetMeasureIngestRequest extends AssetsControllerRequest {
   action: "measureIngest";
 
@@ -153,12 +155,14 @@ export interface ApiAssetMeasureIngestRequest extends AssetsControllerRequest {
   slotName: string;
 
   body: {
-    dataSourceId: string;
+    dataSource: TypelessApiMeasureSource;
     measuredAt: number;
     values: JSONObject;
   };
 }
 export type ApiAssetMeasureIngestResult = void;
+
+type APIDecodedMeasurement = Omit<Measurement, "type"> & { slotName: string };
 
 export interface ApiAssetmMeasureIngestRequest extends AssetsControllerRequest {
   action: "mMeasureIngest";
@@ -169,8 +173,8 @@ export interface ApiAssetmMeasureIngestRequest extends AssetsControllerRequest {
   engineGroup?: string;
 
   body: {
-    dataSource: ApiMeasureSource;
-    measurements: Omit<DecodedMeasurement<JSONObject>, "type">[];
+    dataSource: TypelessApiMeasureSource;
+    measurements: APIDecodedMeasurement[];
   };
 }
 

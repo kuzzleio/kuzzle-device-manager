@@ -470,60 +470,63 @@ export class AssetsController {
     const assetId = request.getString("assetId");
     const indexId = request.getString("engineId");
     const engineGroup = request.getString("engineGroup", "commons");
+    const rawMeasurements = request.getBodyArray("measurements");
     const source = request.getBodyObject("dataSource");
     source.type = DATA_SOURCE_METADATA_TYPE.API;
 
-    const measurements = request.getBodyArray(
-      "measurements",
-    ) as DecodedMeasurement<JSONObject>[];
-
-    const target = toApiTarget(indexId, assetId, engineGroup);
-
-    if (isSourceApi(source)) {
-      const errors: MeasureValidationChunks[] = [];
-      for (const measure of measurements) {
-        const type = await this.getTypeFromMeasureSlot(
-          indexId,
-          assetId,
-          measure.measureName,
-          engineGroup,
-        );
-
-        const validator = getValidator(type);
-
-        if (validator) {
-          const valid = validator(measure.values);
-
-          if (!valid) {
-            errors.push({
-              measureName: measure.measureName,
-              validationErrors: validator.errors ?? [],
-            });
-          }
-        }
-      }
-
-      if (errors.length > 0) {
-        throw new MeasureValidationError(
-          "The provided measures do not comply with their respective schemas",
-          errors,
-        );
-      }
-
-      await ask<AskMeasureSourceIngest>(
-        "device-manager:measures:sourceIngest",
-        {
-          measurements,
-          payloadUuids: [],
-          source,
-          target,
-        },
-      );
-    } else {
+    if (!isSourceApi(source)) {
       throw new BadRequestError(
         "The provided data source does not match the API source format",
       );
     }
+
+    const measurements = rawMeasurements.map((elt) => {
+      return {
+        measureName: elt.slotName,
+        measuredAt: elt.measuredAt,
+        type: elt.type,
+        values: elt.values,
+      };
+    }) as DecodedMeasurement<JSONObject>[];
+
+    const target = toApiTarget(indexId, assetId, engineGroup);
+
+    const errors: MeasureValidationChunks[] = [];
+    for (const measure of measurements) {
+      const type = await this.getTypeFromMeasureSlot(
+        indexId,
+        assetId,
+        measure.measureName,
+        engineGroup,
+      );
+
+      const validator = getValidator(type);
+
+      if (validator) {
+        const valid = validator(measure.values);
+
+        if (!valid) {
+          errors.push({
+            measureName: measure.measureName,
+            validationErrors: validator.errors ?? [],
+          });
+        }
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new MeasureValidationError(
+        "The provided measures do not comply with their respective schemas",
+        errors,
+      );
+    }
+
+    await ask<AskMeasureSourceIngest>("device-manager:measures:sourceIngest", {
+      measurements,
+      payloadUuids: [],
+      source,
+      target,
+    });
   }
 
   async measureIngest(request: KuzzleRequest) {
@@ -531,10 +534,14 @@ export class AssetsController {
     const indexId = request.getString("engineId");
     const measureName = request.getString("slotName");
     const engineGroup = request.getString("engineGroup", "commons");
-    const sourceId = request.getBodyString("dataSourceId");
-    const metadata = request.getBodyObject("metadata", {});
+    const source = request.getBodyObject("dataSource");
+    source.type = DATA_SOURCE_METADATA_TYPE.API;
 
-    const source = toApiSource(sourceId, metadata);
+    if (!isSourceApi(source)) {
+      throw new BadRequestError(
+        "The provided data source does not match the API source format",
+      );
+    }
 
     const measuredAt = request.getBodyNumber("measuredAt");
     const values = request.getBodyObject("values");
@@ -557,7 +564,7 @@ export class AssetsController {
       measuredAt,
       type,
       values,
-    } satisfies DecodedMeasurement<JSONObject>;
+    } as DecodedMeasurement<JSONObject>;
 
     const target = toApiTarget(indexId, assetId, engineGroup);
 
