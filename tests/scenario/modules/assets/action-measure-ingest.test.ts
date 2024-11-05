@@ -26,7 +26,9 @@ describe("AssetsController:measureIngest", () => {
         engineId: indexId,
         slotName: "magiculeExt",
         body: {
-          dataSourceId: "testApi1",
+          dataSource: {
+            id: "testApi1",
+          },
           measuredAt: 170000000,
           values: {
             magicule: 18,
@@ -85,7 +87,9 @@ describe("AssetsController:measureIngest", () => {
         engineId: "engine-ayse",
         slotName: "magiculeExt",
         body: {
-          dataSourceId: "testApi2",
+          dataSource: {
+            id: "testApi2",
+          },
           measuredAt: 170000000,
           values: {
             magicule: "99",
@@ -127,7 +131,9 @@ describe("AssetsController:measureIngest", () => {
         engineId: "engine-ayse",
         slotName: "magiculeExt",
         body: {
-          dataSourceId: "testApi3",
+          dataSource: {
+            id: "testApi3",
+          },
           measuredAt: 170000000,
           values: {
             magicule: 99,
@@ -166,7 +172,9 @@ describe("AssetsController:measureIngest", () => {
       const query = await axios.post(
         `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
         {
-          dataSourceId: "testApi1",
+          dataSource: {
+            id: "testApi1",
+          },
           measuredAt: 170000000,
           values: {
             magicule: 18,
@@ -219,7 +227,9 @@ describe("AssetsController:measureIngest", () => {
         .post(
           `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
           {
-            dataSourceId: "testApi2",
+            dataSource: {
+              id: "testApi2",
+            },
             measuredAt: 170000000,
             values: {
               magicule: "99",
@@ -257,7 +267,9 @@ describe("AssetsController:measureIngest", () => {
         .post(
           `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
           {
-            dataSourceId: "testApi3",
+            dataSource: {
+              id: "testApi3",
+            },
             measuredAt: 170000000,
             values: {
               magicule: 99,

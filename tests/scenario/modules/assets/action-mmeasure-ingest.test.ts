@@ -26,19 +26,18 @@ describe("AssetsController:mMeasureIngest", () => {
         engineId: indexId,
         body: {
           dataSource: {
-            type: "api",
-            dataSourceId: "testApi1",
+            id: "testApi1",
           },
           measurements: [
             {
-              measureName: "magiculeExt",
+              slotName: "magiculeExt",
               measuredAt: 170000000,
               values: {
                 magicule: 18,
               },
             },
             {
-              measureName: "magiculeInt",
+              slotName: "magiculeInt",
               measuredAt: 170000001, // ? Set this to ensure sorting order
               values: {
                 magicule: 25,
@@ -109,12 +108,11 @@ describe("AssetsController:mMeasureIngest", () => {
         engineId: "engine-ayse",
         body: {
           dataSource: {
-            type: "api",
-            dataSourceId: "testApi2",
+            id: "testApi2",
           },
           measurements: [
             {
-              measureName: "magiculeExt",
+              slotName: "magiculeExt",
               measuredAt: 170000000,
               values: {
                 magicule: "99",
@@ -158,12 +156,11 @@ describe("AssetsController:mMeasureIngest", () => {
         engineId: "engine-ayse",
         body: {
           dataSource: {
-            type: "api",
-            dataSourceId: "testApi3",
+            id: "testApi3",
           },
           measurements: [
             {
-              measureName: "magiculeExt",
+              slotName: "magiculeExt",
               measuredAt: 170000000,
               values: {
                 magicule: 59,
@@ -206,18 +203,18 @@ describe("AssetsController:mMeasureIngest", () => {
         {
           dataSource: {
             type: "api",
-            dataSourceId: "testApi1",
+            id: "testApi1",
           },
           measurements: [
             {
-              measureName: "magiculeExt",
+              slotName: "magiculeExt",
               measuredAt: 170000000,
               values: {
                 magicule: 18,
               },
             },
             {
-              measureName: "magiculeInt",
+              slotName: "magiculeInt",
               measuredAt: 170000001, // ? Set this to ensure sorting order
               values: {
                 magicule: 25,
@@ -284,11 +281,11 @@ describe("AssetsController:mMeasureIngest", () => {
           {
             dataSource: {
               type: "api",
-              dataSourceId: "testApi2",
+              id: "testApi2",
             },
             measurements: [
               {
-                measureName: "magiculeExt",
+                slotName: "magiculeExt",
                 measuredAt: 170000000,
                 values: {
                   magicule: "99",
@@ -330,11 +327,11 @@ describe("AssetsController:mMeasureIngest", () => {
           {
             dataSource: {
               type: "api",
-              dataSourceId: "testApi3",
+              id: "testApi3",
             },
             measurements: [
               {
-                measureName: "magiculeExt",
+                slotName: "magiculeExt",
                 measuredAt: 170000000,
                 values: {
                   magicule: 59,
