@@ -30,11 +30,15 @@ Method: POST
   "engineId": "<engineId>",
   "body": {
     "dataSource": {
-      // ...
+      "id": "<id>",
+      // optional:
+      "metadata": {
+        // ...
+      }
     },
     "measurements": [
       {
-        "measureName": "<measureName>",
+        "slotName": "<measureName>",
         "measuredAt": "<measuredAt>",
         "values": {
           "<valueName>": "<value>",
@@ -60,8 +64,20 @@ Method: POST
 
 ## Body properties
 
-- `dataSource`: the measures data source
-- `measurements`: list of measurements to ingest
+- `dataSource`: the measures source
+- `measurements`: the list of measurements to ingest
+
+# Datasource properties
+
+- `id`: the measure source unique identifier
+- `metadata`: (optional) additional metadata for the source
+
+# Measurement properties
+
+- `slotName`: target measure slot name
+- `measuredAt`: the timestamp of when the measure was collected
+- `values`: the measure values
+
 ---
 
 ## Response

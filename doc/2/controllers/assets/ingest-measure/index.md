@@ -30,14 +30,16 @@ Method: POST
   "engineId": "<engineId>",
   "slotName": "<slotName>"
   "body": {
-    "dataSourceId": "<dataSourceId>",
-    "measuredAt": "<measuredAt>",
+    "dataSource": {
+      "id": "<id>",
+      // optional:
+      "metadata": {
+        // ...
+      }
+    },
+    "measuredAt": "<measuredAt>"
     "values": {
       "<valueName>": "<value>",
-      // ...
-    }
-    // optional:
-    "metadata": {
       // ...
     }
   },
@@ -57,11 +59,14 @@ Method: POST
 - `engineGroup` (optional): target engine group
 
 ## Body properties
-
-- `dataSourceId`: measure source identifier
-- `metadata`: (optional) additional metadata for the source
+- `dataSource`: the measure source
 - `measuredAt`: the timestamp of when the measure was collected
-- `values`: measure values
+- `values`: the measure values
+
+# Datasource properties
+
+- `id`: the measure source unique identifier
+- `metadata`: (optional) additional metadata for the source
 
 ---
 
