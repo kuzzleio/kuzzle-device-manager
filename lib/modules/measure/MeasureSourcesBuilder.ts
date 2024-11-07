@@ -7,17 +7,6 @@ export const enum DATA_SOURCE_METADATA_TYPE {
   DEVICE = "device",
 }
 
-export function toApiSource(
-  dataSourceId: string,
-  metadata?: Metadata,
-): ApiMeasureSource {
-  return {
-    id: dataSourceId,
-    metadata,
-    type: DATA_SOURCE_METADATA_TYPE.API,
-  };
-}
-
 export function apiSourceToOriginApi(
   source: ApiMeasureSource,
   payloadUuids: string[],

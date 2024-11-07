@@ -36,10 +36,7 @@ import { isSourceApi } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
 import { ask } from "kuzzle-plugin-commons";
 import { toApiTarget } from "../measure/MeasureTargetBuilder";
-import {
-  DATA_SOURCE_METADATA_TYPE,
-  toApiSource,
-} from "../measure/MeasureSourcesBuilder";
+import { DATA_SOURCE_METADATA_TYPE } from "../measure/MeasureSourcesBuilder";
 import {
   MeasureValidationError,
   MeasureValidationChunks,
