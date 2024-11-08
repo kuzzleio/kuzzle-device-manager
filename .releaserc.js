@@ -23,7 +23,12 @@ module.exports = {
     },
     {
       name: "2-dev",
-      prerelease: "dev"
-    }
+      prerelease: "dev",
+      range: "2.x",
+    },
+    {
+      name: "next",
+      prerelease: true,
+    },
   ],
 };
