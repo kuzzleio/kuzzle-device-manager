@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - beta
+      - next
       - "[0-9]+-dev"
   pull_request:
 
