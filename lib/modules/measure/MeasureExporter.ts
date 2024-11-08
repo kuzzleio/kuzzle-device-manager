@@ -2,8 +2,7 @@ import { InternalError, JSONObject, KHit, User } from "kuzzle";
 import { ask } from "kuzzle-plugin-commons";
 import _ from "lodash";
 import { UUID } from "node:crypto";
-// ? queryTranslator is not exposed by package kuzzle so we need to import directly th file
-import QueryTranslator from "kuzzle/lib/service/storage/queryTranslator.js";
+import { QueryTranslator } from "kuzzle";
 
 import {
   AskModelAssetGet,

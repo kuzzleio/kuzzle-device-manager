@@ -71,7 +71,7 @@ export class DummyTempDecoder extends Decoder {
       {
         measuredAt: isMeasureDated(payload.temperature)
           ? payload.temperature.measuredAt
-          : payload.measuredAt ?? Date.now(),
+          : (payload.measuredAt ?? Date.now()),
         type: "temperature",
         values: {
           temperature: isMeasureDated(payload.temperature)
@@ -92,7 +92,7 @@ export class DummyTempDecoder extends Decoder {
         {
           measuredAt: isMeasureDated(payload.acceleration)
             ? payload.acceleration.measuredAt
-            : payload.measuredAt ?? Date.now(),
+            : (payload.measuredAt ?? Date.now()),
           type: "acceleration",
           values: {
             acceleration: {
@@ -112,7 +112,7 @@ export class DummyTempDecoder extends Decoder {
       {
         measuredAt: isMeasureDated(payload.battery)
           ? payload.battery.measuredAt
-          : payload.measuredAt ?? Date.now(),
+          : (payload.measuredAt ?? Date.now()),
         type: "battery",
         values: {
           battery: isMeasureDated(payload.battery)
