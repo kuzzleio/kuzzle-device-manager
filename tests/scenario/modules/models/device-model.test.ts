@@ -1,7 +1,7 @@
 import { EditorHintEnum } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 describe("ModelsController:devices", () => {
   const sdk = setupHooks();

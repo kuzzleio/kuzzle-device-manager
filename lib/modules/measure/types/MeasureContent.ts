@@ -3,26 +3,25 @@ import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 import { Metadata } from "../../../modules/shared";
 import { AssetMeasureContext } from "../../../modules/asset";
 
-export type MeasureOriginDevice = {
+interface AbstractMeasureOrigin {
   /**
    * Origin of the measure
    */
-  type: "device";
-
-  /**
-   * Name of the measure in the device
-   */
-  measureName: string;
-
-  /**
-   * Origin device metadata
-   */
-  deviceMetadata?: Metadata;
+  type: string;
 
   /**
    * Payload uuids that were used to create this measure.
    */
   payloadUuids: Array<string>;
+
+  /**
+   * Custom metadata provided by the user
+   */
+  metadata?: Metadata;
+}
+
+export interface MeasureOriginDevice extends AbstractMeasureOrigin {
+  type: "device";
 
   /**
    * Model of the device
@@ -32,17 +31,27 @@ export type MeasureOriginDevice = {
   deviceModel: string;
 
   /**
+   * Name of the measure
+   */
+  measureName: string;
+
+  /**
    * Reference of the device
    */
   reference: string;
 
   /**
+   * Origin device metadata
+   */
+  deviceMetadata?: Metadata;
+
+  /**
    * Device ID
    */
   _id: string;
-};
+}
 
-export type MeasureOriginComputed = {
+export interface MeasureOriginComputed extends AbstractMeasureOrigin {
   /**
    * Computed measures are not automatically added into the asset and device
    * documents at the end of the ingestion pipeline.
@@ -50,22 +59,31 @@ export type MeasureOriginComputed = {
   type: "computed";
 
   /**
-   * String that identify the rule used to compute the measure
-   */
-  _id: string;
-
-  /**
    * Name of the measure
    */
   measureName: string;
 
   /**
-   * Payload uuids that were used to create this measure for traceability.
+   * String that identify the rule used to compute the measure
    */
-  payloadUuids: Array<string>;
-};
+  _id: string;
+}
 
-export type MeasureOrigin = MeasureOriginDevice | MeasureOriginComputed;
+export interface MeasureOriginApi extends AbstractMeasureOrigin {
+  type: "api";
+
+  apiMetadata?: Metadata;
+
+  /**
+   * API ID
+   */
+  _id: string;
+}
+
+export type MeasureOrigin =
+  | MeasureOriginDevice
+  | MeasureOriginComputed
+  | MeasureOriginApi;
 
 /**
  * Represents the content of a measure document.

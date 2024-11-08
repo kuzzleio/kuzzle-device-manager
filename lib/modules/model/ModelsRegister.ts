@@ -20,6 +20,10 @@ import {
 } from "./types/ModelContent";
 import { ModelSerializer } from "./ModelSerializer";
 import { JSONObject } from "kuzzle-sdk";
+import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
+import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
+import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
+import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -79,6 +83,15 @@ export class ModelsRegister {
       );
     }
 
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresNamesDuplicatesError(
+        "Asset model measures contain one or multiple duplicate measure name",
+        duplicates,
+      );
+    }
+
     // Construct and push the new asset model to the assetModels array
     this.assetModels.push({
       asset: {
@@ -120,6 +133,15 @@ export class ModelsRegister {
       );
     }
 
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresNamesDuplicatesError(
+        "Device model measures contain one or multiple duplicate measure name",
+        duplicates,
+      );
+    }
+
     // Construct and push the new device model to the deviceModels array
     this.deviceModels.push({
       device: {
@@ -135,11 +157,25 @@ export class ModelsRegister {
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
+    const { validationSchema, valuesMappings, valuesDetails } =
+      measureDefinition;
+    if (validationSchema) {
+      try {
+        addSchemaToCache(type, validationSchema);
+      } catch (error) {
+        throw new SchemaValidationError(
+          "Provided schema is not valid",
+          getAJVErrors(),
+        );
+      }
+    }
+
     this.measureModels.push({
       measure: {
         type,
-        valuesDetails: measureDefinition.valuesDetails,
-        valuesMappings: measureDefinition.valuesMappings,
+        validationSchema,
+        valuesDetails,
+        valuesMappings,
       },
       type: "measure",
     });
