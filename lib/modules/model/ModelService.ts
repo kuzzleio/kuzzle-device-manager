@@ -572,8 +572,14 @@ export class ModelService extends BaseService {
   ): Promise<KDocument<AssetModelContent>> {
     const query = {
       and: [
-        { equals: { engineGroup } },
+        {
+          or: [
+            { equals: { engineGroup } },
+            { equals: { engineGroup: "commons" } },
+          ],
+        },
         { equals: { type: "asset" } },
+
         { equals: { "asset.model": model } },
       ],
     };
