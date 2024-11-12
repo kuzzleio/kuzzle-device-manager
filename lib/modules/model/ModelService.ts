@@ -579,7 +579,6 @@ export class ModelService extends BaseService {
           ],
         },
         { equals: { type: "asset" } },
-
         { equals: { "asset.model": model } },
       ],
     };
