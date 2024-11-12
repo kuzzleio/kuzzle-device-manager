@@ -16,6 +16,8 @@ import { brightnessMeasureDefinition } from "./measures/BrightnessMeasure";
 import { co2MeasureDefinition } from "./measures/CO2Measure";
 import { illuminanceMeasureDefinition } from "./measures/IlluminanceMeasure";
 import { powerConsumptionMeasureDefinition } from "./measures/PowerConsumptionMeasure";
+import { magicHouseAssetDefinition } from "./assets/MagicHouse";
+import { magiculeMeasureDefinition } from "./measures/Magicule";
 
 const app = new Backend("kuzzle");
 
@@ -76,7 +78,14 @@ deviceManager.models.registerAsset(
   streetLampAssetDefinition
 );
 
+deviceManager.models.registerAsset(
+  "commons",
+  "MagicHouse",
+  magicHouseAssetDefinition
+)
+
 deviceManager.models.registerMeasure("acceleration", accelerationMeasureDefinition);
+deviceManager.models.registerMeasure("magicule", magiculeMeasureDefinition)
 deviceManager.models.registerMeasure("brightness", brightnessMeasureDefinition);
 deviceManager.models.registerMeasure("co2", co2MeasureDefinition);
 deviceManager.models.registerMeasure("illuminance", illuminanceMeasureDefinition);

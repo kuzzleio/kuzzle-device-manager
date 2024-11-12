@@ -37,7 +37,13 @@ import {
   AskModelMeasureGet,
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
+import { SchemaObject } from "ajv";
+import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
+import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { MeasureValuesDetails } from "../measure";
+import { NamedMeasures } from "../decoder";
+import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
+import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 
 export class ModelService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -185,11 +191,19 @@ export class ModelService extends BaseService {
     defaultMetadata: JSONObject,
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
-    measures: AssetModelContent["asset"]["measures"],
+    measures: NamedMeasures,
     tooltipModels: TooltipModels,
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
+    }
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresNamesDuplicatesError(
+        "Asset model measures contain one or multiple duplicate measure name",
+        duplicates,
+      );
     }
 
     const modelContent: AssetModelContent = {
@@ -294,10 +308,19 @@ export class ModelService extends BaseService {
     defaultMetadata: JSONObject,
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
-    measures: DeviceModelContent["device"]["measures"],
+    measures: NamedMeasures,
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Device model "${model}" must be PascalCase.`);
+    }
+
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresNamesDuplicatesError(
+        "Device model measures contain one or multiple duplicate measure name",
+        duplicates,
+      );
     }
 
     const modelContent: DeviceModelContent = {
@@ -344,6 +367,7 @@ export class ModelService extends BaseService {
   async writeMeasure(
     type: string,
     valuesMappings: JSONObject,
+    validationSchema?: SchemaObject,
     valuesDetails?: MeasureValuesDetails,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
@@ -354,6 +378,18 @@ export class ModelService extends BaseService {
       },
       type: "measure",
     };
+
+    if (validationSchema) {
+      try {
+        addSchemaToCache(type, validationSchema);
+        modelContent.measure.validationSchema = validationSchema;
+      } catch (error) {
+        throw new SchemaValidationError(
+          "Provided schema is not valid",
+          getAJVErrors(),
+        );
+      }
+    }
 
     const conflicts = await ask<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",

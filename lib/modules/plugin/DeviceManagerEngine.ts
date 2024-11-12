@@ -32,6 +32,7 @@ import {
   getMeasureConflicts,
   getTwinConflicts,
 } from "../model/ModelsConflicts";
+import { addSchemaToCache } from "../shared/utils/AJValidator";
 
 export type TwinType = "asset" | "device";
 
@@ -108,6 +109,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       "ask:device-manager:engine:updateAll",
       async () => {
         await this.updateEngines();
+        await this.updateMeasuresSchema();
         await this.createDevicesCollection(this.config.adminIndex);
       },
     );
@@ -257,6 +259,26 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     return result.hits.map((elt) => elt._source);
+  }
+
+  async updateMeasuresSchema() {
+    const models = await this.getModels<MeasureModelContent>(
+      this.adminIndex,
+      "measure",
+    );
+
+    for (const measure of models) {
+      const { validationSchema } = measure.measure;
+      if (validationSchema) {
+        try {
+          addSchemaToCache(measure.measure.type, validationSchema);
+        } catch (error) {
+          this.app.log.error(
+            `The validation schema for the "${measure.type}" measure model does not comply with the JSON Schema standard, so its update has been skipped`,
+          );
+        }
+      }
+    }
   }
 
   async onCreate(index: string, group = "commons") {

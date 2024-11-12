@@ -2,7 +2,7 @@
 code: false
 type: page
 title: Mappings Conflicts
-description: Mappings Conflicts
+description: Mappings Conflicts | Kuzzle Documentation
 ---
 
 # Mappings Conflicts
