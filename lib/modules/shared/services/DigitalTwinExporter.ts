@@ -10,7 +10,7 @@ import {
   flattenObject,
 } from "../";
 import { NamedMeasures } from "../../decoder";
-import { MeasureContent } from "../../measure";
+import { MeasureContent, MeasureOriginDevice } from "../../measure";
 import {
   AskModelMeasureGet,
   AssetModelContent,
@@ -193,7 +193,7 @@ export class DigitalTwinExporter extends AbstractExporter {
         const measureName =
           type === "asset"
             ? measure.asset.measureName
-            : measure.origin.measureName;
+            : (measure.origin as MeasureOriginDevice).measureName;
 
         const embeddedMeasure: EmbeddedMeasure = {
           measuredAt: measure.measuredAt,
