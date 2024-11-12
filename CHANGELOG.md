@@ -1,3 +1,10 @@
+# [2.5.0-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.5.0-beta.1) (2024-11-12)
+
+
+### Features
+
+* **measure:** allow measures to be pushed on Assets via API (no devices) ([#344](https://github.com/kuzzleio/kuzzle-device-manager/issues/344)) ([c1073c1](https://github.com/kuzzleio/kuzzle-device-manager/commit/c1073c1f0ccb4cfc7cee64d86c51a4999617fd41))
+
 # [2.5.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.5.0-dev.1) (2024-11-08)
 
 
