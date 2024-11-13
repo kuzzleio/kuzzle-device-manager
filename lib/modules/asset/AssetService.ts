@@ -298,6 +298,7 @@ export class AssetService extends DigitalTwinService {
             groups: [],
             lastMeasuredAt: null,
             linkedDevices: [],
+            measureSlots: assetModel.asset.measures,
             measures,
             metadata: { ...assetMetadata, ...metadata },
             model,
@@ -644,6 +645,8 @@ export class AssetService extends DigitalTwinService {
             ...modelMetadata,
             ...assetMetadata,
           };
+
+          asset._source.measureSlots = assetModel.asset.measures;
 
           acc[asset.index].push(asset as KDocument<AssetContent>);
 
