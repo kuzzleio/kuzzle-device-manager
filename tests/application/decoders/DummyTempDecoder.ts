@@ -10,12 +10,14 @@ import {
 import { AccelerationMeasurement } from "../measures/Acceleration";
 import { isMeasureDated } from "../../helpers/payloads";
 
+export const dummyTempDeviceMeasures = [
+  { name: "temperature", type: "temperature" },
+  { name: "accelerationSensor", type: "acceleration" },
+  { name: "battery", type: "battery" },
+] as const;
+
 export class DummyTempDecoder extends Decoder {
-  public measures = [
-    { name: "temperature", type: "temperature" },
-    { name: "accelerationSensor", type: "acceleration" },
-    { name: "battery", type: "battery" },
-  ] as const;
+  public measures = dummyTempDeviceMeasures;
 
   constructor() {
     super();

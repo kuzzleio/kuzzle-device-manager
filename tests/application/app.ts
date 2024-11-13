@@ -3,6 +3,7 @@ import util from "node:util";
 import { Backend, KuzzleRequest } from "kuzzle";
 
 import { DeviceManagerPlugin } from "../../index";
+
 import { TestsController } from "./tests/controller";
 import { registerTestPipes } from "./tests/pipes";
 import { registerModels } from "./models";
