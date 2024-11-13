@@ -1,6 +1,13 @@
 import { BadRequestError, KuzzleRequest } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
-import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
+import {
+  BaseRequest,
+  DocumentSearchResult,
+  JSONObject,
+  KDocument,
+  KHit,
+  SearchResult,
+} from "kuzzle-sdk";
 
 import { DecodedMeasurement } from "../measure";
 import {
@@ -9,7 +16,11 @@ import {
   AssetModelContent,
   DeviceModelContent,
 } from "../model";
-import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import {
+  AskEngineList,
+  DeviceManagerPlugin,
+  InternalCollection,
+} from "../plugin";
 import { DigitalTwinService, Metadata, SearchParams, lock } from "../shared";
 import {
   AskAssetHistoryAdd,
@@ -26,6 +37,7 @@ import {
   AskDeviceAttachEngine,
   AskDeviceDetachEngine,
   AskDeviceLinkAsset,
+  AskDeviceRefreshModel,
   AskDeviceUnlinkAsset,
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
@@ -80,6 +92,11 @@ export class DeviceService extends DigitalTwinService {
         await this.attachEngine(engineId, deviceId, request);
       },
     );
+
+    onAsk<AskDeviceRefreshModel>(
+      "ask:device-manager:device:refresh-model",
+      this.refreshModel.bind(this),
+    );
   }
 
   /**
@@ -101,6 +118,7 @@ export class DeviceService extends DigitalTwinService {
         assetId: null,
         engineId: null,
         lastMeasuredAt: 0,
+        measureSlots: [],
         measures: {},
         metadata,
         model,
@@ -111,6 +129,8 @@ export class DeviceService extends DigitalTwinService {
     return lock(`device:create:${device._id}`, async () => {
       const deviceModel = await this.getDeviceModel(model);
       const engineId = request.getString("engineId");
+
+      device._source.measureSlots = deviceModel.device.measures;
 
       for (const metadataName of Object.keys(
         deviceModel.device.metadataMappings,
@@ -932,5 +952,65 @@ export class DeviceService extends DigitalTwinService {
       engineGroup,
       model,
     });
+  }
+
+  private async refreshModel({
+    deviceModel,
+  }: {
+    deviceModel: DeviceModelContent;
+  }): Promise<void> {
+    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+      group: null,
+    });
+
+    const targets = engines.map((engine) => ({
+      collections: [InternalCollection.DEVICES],
+      index: engine.index,
+    }));
+
+    const devices = await this.sdk.query<
+      BaseRequest,
+      DocumentSearchResult<DeviceContent>
+    >({
+      action: "search",
+      body: { query: { equals: { model: deviceModel.device.model } } },
+      controller: "document",
+      lang: "koncorde",
+      targets,
+    });
+
+    const updatedDevicesPerIndex: Record<string, KDocument<DeviceContent>[]> =
+      devices.result.hits.reduce(
+        (
+          acc: Record<string, KDocument<DeviceContent>[]>,
+          device: JSONObject,
+        ) => {
+          device._source.measureSlots = deviceModel.device.measures;
+
+          acc[device.index].push(device as KDocument<DeviceContent>);
+
+          return acc;
+        },
+        Object.fromEntries(
+          engines.map((engine) => [
+            engine.index,
+            [] as KDocument<DeviceContent>[],
+          ]),
+        ),
+      );
+
+    await Promise.all(
+      Object.entries(updatedDevicesPerIndex).map(([index, updatedDevices]) =>
+        this.sdk.document.mReplace<DeviceContent>(
+          index,
+          InternalCollection.DEVICES,
+          updatedDevices.map((device) => ({
+            _id: device._id,
+            body: device._source,
+          })),
+          { refresh: "wait_for" },
+        ),
+      ),
+    );
   }
 }
