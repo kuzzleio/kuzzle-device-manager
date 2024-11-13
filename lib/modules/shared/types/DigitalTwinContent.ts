@@ -1,5 +1,6 @@
 import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 
+import { NamedMeasures } from "../../decoder";
 import { Metadata } from "./Metadata";
 import { DigitalTwinMeasures } from "./DigitalTwinMeasures";
 import { LocaleDetails } from "lib/modules/model";
@@ -19,4 +20,6 @@ export interface DigitalTwinContent<
   measures: DigitalTwinMeasures<TMeasures>;
 
   lastMeasuredAt: number;
+
+  measureSlots: NamedMeasures;
 }

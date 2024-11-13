@@ -376,11 +376,6 @@ describe("ModelsController:assets", () => {
       engineGroup: "commons",
       model: "AdvancedWarehouse",
       body: {
-        metadataMappings: {
-          location: { type: "geo_point" },
-          floor: { type: "integer" },
-        },
-        measures: [{ name: "temperatureInt", type: "temperature" }],
         tooltipModels: updatedTooltipModels,
       },
     });
