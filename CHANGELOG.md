@@ -1,3 +1,17 @@
+# [3.0.0-next.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v3.0.0-next.1) (2024-11-14)
+
+
+### Features
+
+* embed measure slots in asset and device documents ([#372](https://github.com/kuzzleio/kuzzle-device-manager/issues/372)) ([ffa73b9](https://github.com/kuzzleio/kuzzle-device-manager/commit/ffa73b9107d5ff2fc5c7686f147f3cef2b4973fb))
+* **measure:** allow measures to be pushed on Assets via API (no devices) ([#344](https://github.com/kuzzleio/kuzzle-device-manager/issues/344)) ([c1073c1](https://github.com/kuzzleio/kuzzle-device-manager/commit/c1073c1f0ccb4cfc7cee64d86c51a4999617fd41))
+* stop using measures from assets and devices in exporter ([#369](https://github.com/kuzzleio/kuzzle-device-manager/issues/369)) ([6ee21a0](https://github.com/kuzzleio/kuzzle-device-manager/commit/6ee21a090b8387c103f661e5ba51f1e74eacb72f))
+
+
+### BREAKING CHANGES
+
+* change in the management of measurement models
+
 # [2.5.0-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.5.0-beta.1) (2024-11-12)
 
 
