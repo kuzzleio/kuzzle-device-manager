@@ -1,6 +1,6 @@
 {
   "name": "kuzzle-device-manager-types",
-  "version": "2.7.2",
+  "version": "3.0.0-next.1",
   "description": "Shared types for Kuzzle Device Manager",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "main": "index.js",
