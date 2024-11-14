@@ -4,10 +4,7 @@ import { Backend, KuzzleRequest } from "kuzzle";
 
 import { DeviceManagerPlugin } from "../../index";
 
-import { containerAssetDefinition } from "./assets/Container";
-import { roomAssetDefinition } from "./assets/Room";
-import { streetLampAssetDefinition } from "./assets/StreetLamp";
-import { warehouseAssetDefinition } from "./assets/Warehouse";
+import { containerAssetDefinition, roomAssetDefinition, streetLampAssetDefinition, warehouseAssetDefinition } from "./assets";
 import { DummyTempDecoder, DummyTempPositionDecoder } from "./decoders";
 import { TestsController } from "./tests/controller";
 import { registerTestPipes } from "./tests/pipes";
