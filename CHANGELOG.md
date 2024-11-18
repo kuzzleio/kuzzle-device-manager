@@ -1,3 +1,11 @@
+# [3.0.0-next.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.1...v3.0.0-next.2) (2024-11-18)
+
+
+### Bug Fixes
+
+* backport fix ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([5392b56](https://github.com/kuzzleio/kuzzle-device-manager/commit/5392b56a9478b1c1932845ee44965d5978197350))
+* getAsset should search in commons assets too ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([d588a93](https://github.com/kuzzleio/kuzzle-device-manager/commit/d588a93b0dd5b270199083cfb0856e34b57afa66))
+
 # [3.0.0-next.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v3.0.0-next.1) (2024-11-14)
 
 
