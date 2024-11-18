@@ -209,4 +209,51 @@ describe("DevicesController:exportMeasures", () => {
       "Measure Id,Measured At,Measured At ISO,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature.temperature,accelerationSensor.acceleration.x,accelerationSensor.acceleration.y,accelerationSensor.acceleration.z,accelerationSensor.accuracy,battery.battery\n",
     );
   });
+
+  it("should export a file with a customized filename", async () => {
+    const filename = "my-customized-filename.csv";
+    await sendPayloads(sdk, "dummy-temp", [
+      { deviceEUI: "linked1", temperature: 37 },
+    ]);
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const { result } = await sdk.query<ApiDeviceExportMeasuresRequest>({
+      controller: "device-manager/devices",
+      action: "exportMeasures",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-linked1",
+      lang: "koncorde",
+      filename,
+    });
+
+    const response = await axios.get("http://localhost:7512" + result.link, {
+      responseType: "stream",
+    });
+
+    expect(response.headers).toHaveProperty(
+      "Content-Disposition",
+      `attachment; filename="${filename}"`,
+    );
+  });
+
+  it("should export a file with a default filename", async () => {
+    await sendPayloads(sdk, "dummy-temp", [
+      { deviceEUI: "linked1", temperature: 37 },
+    ]);
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const { result } = await sdk.query<ApiDeviceExportMeasuresRequest>({
+      controller: "device-manager/devices",
+      action: "exportMeasures",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-linked1",
+      lang: "koncorde",
+    });
+
+    const response = await axios.get("http://localhost:7512" + result.link, {
+      responseType: "stream",
+    });
+
+    expect(response.headers).toHaveProperty("Content-Disposition");
+  });
 });
