@@ -1,3 +1,11 @@
+# [2.5.0-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.1...v2.5.0-dev.2) (2024-11-18)
+
+
+### Bug Fixes
+
+* backport fix ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([5392b56](https://github.com/kuzzleio/kuzzle-device-manager/commit/5392b56a9478b1c1932845ee44965d5978197350))
+* getAsset should search in commons assets too ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([d588a93](https://github.com/kuzzleio/kuzzle-device-manager/commit/d588a93b0dd5b270199083cfb0856e34b57afa66))
+
 # [2.5.0-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.5.0-beta.1) (2024-11-12)
 
 
@@ -11,6 +19,13 @@
 ### Features
 
 * **measure:** allow measures to be pushed on Assets via API (no devices) ([#344](https://github.com/kuzzleio/kuzzle-device-manager/issues/344)) ([c1073c1](https://github.com/kuzzleio/kuzzle-device-manager/commit/c1073c1f0ccb4cfc7cee64d86c51a4999617fd41))
+
+## [2.4.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.4.4) (2024-11-18)
+
+
+### Bug Fixes
+
+* getAsset should search in commons assets too ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([d588a93](https://github.com/kuzzleio/kuzzle-device-manager/commit/d588a93b0dd5b270199083cfb0856e34b57afa66))
 
 ## [2.4.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.2...v2.4.3) (2024-10-25)
 
