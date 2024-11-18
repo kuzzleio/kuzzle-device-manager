@@ -1,3 +1,10 @@
+## [2.4.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.4.4) (2024-11-18)
+
+
+### Bug Fixes
+
+* getAsset should search in commons assets too ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([d588a93](https://github.com/kuzzleio/kuzzle-device-manager/commit/d588a93b0dd5b270199083cfb0856e34b57afa66))
+
 ## [2.4.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.2...v2.4.3) (2024-10-25)
 
 
