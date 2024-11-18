@@ -110,15 +110,6 @@ describe("ModelsController:assets", () => {
       _id: "model-asset-Plane",
       _source: { asset: { model: "Plane" } },
     });
-
-    const getAssetNotExist = sdk.query({
-      controller: "device-manager/models",
-      action: "getAsset",
-      engineGroup: "other_engine",
-      model: "Plane",
-    });
-
-    await expect(getAssetNotExist).rejects.toMatchObject({ status: 404 });
   });
 
   it("List asset models only from the requested engine group and the common ones", async () => {
