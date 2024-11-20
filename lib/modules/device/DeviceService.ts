@@ -30,6 +30,7 @@ import {
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
+import _ from "lodash";
 
 type MeasureName = { asset: string; device: string; type: string };
 
@@ -115,6 +116,11 @@ export class DeviceService extends DigitalTwinService {
         deviceModel.device.metadataMappings,
       )) {
         device._source.metadata[metadataName] ||= null;
+      }
+      for (const [metadataName, metadataValue] of Object.entries(
+        deviceModel.device.defaultMetadata,
+      )) {
+        _.set(device._source.metadata, metadataName, metadataValue);
       }
 
       const refreshableCollections: Array<{

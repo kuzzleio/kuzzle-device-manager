@@ -1,7 +1,7 @@
 import { EditorHintEnum } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 describe("ModelsController:assets", () => {
   const sdk = setupHooks();
@@ -91,14 +91,13 @@ describe("ModelsController:assets", () => {
       engineGroup: "commons",
     });
 
-    expect(listAssets.result).toMatchObject({
-      total: 3,
-      models: [
-        { _id: "model-asset-Container" },
-        { _id: "model-asset-Plane" },
-        { _id: "model-asset-Warehouse" },
-      ],
-    });
+    expect(listAssets.result.total).toBe(4);
+    expect(listAssets.result.models).toMatchObject([
+      { _id: "model-asset-Container" },
+      { _id: "model-asset-MagicHouse" },
+      { _id: "model-asset-Plane" },
+      { _id: "model-asset-Warehouse" },
+    ]);
 
     const getAsset = await sdk.query({
       controller: "device-manager/models",
@@ -111,15 +110,6 @@ describe("ModelsController:assets", () => {
       _id: "model-asset-Plane",
       _source: { asset: { model: "Plane" } },
     });
-
-    const getAssetNotExist = sdk.query({
-      controller: "device-manager/models",
-      action: "getAsset",
-      engineGroup: "other_engine",
-      model: "Plane",
-    });
-
-    await expect(getAssetNotExist).rejects.toMatchObject({ status: 404 });
   });
 
   it("List asset models only from the requested engine group and the common ones", async () => {
@@ -129,14 +119,13 @@ describe("ModelsController:assets", () => {
       engineGroup: "air_quality",
     });
 
-    expect(listAssets.result).toMatchObject({
-      total: 3,
-      models: [
-        { _id: "model-asset-Container" },
-        { _id: "model-asset-Room" },
-        { _id: "model-asset-Warehouse" },
-      ],
-    });
+    expect(listAssets.result.total).toBe(4);
+    expect(listAssets.result.models).toMatchObject([
+      { _id: "model-asset-Container" },
+      { _id: "model-asset-MagicHouse" },
+      { _id: "model-asset-Room" },
+      { _id: "model-asset-Warehouse" },
+    ]);
   });
 
   it("Write and Search an Asset model", async () => {

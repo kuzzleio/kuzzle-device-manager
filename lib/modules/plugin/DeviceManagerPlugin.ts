@@ -255,7 +255,7 @@ export class DeviceManagerPlugin extends Plugin {
        * Register a new measure
        *
        * @param name Name of the measure
-       * @param valuesMappings Mappings for the measure values
+       * @param measureDefinition Values of the measure
        *
        * @example
        * ```
@@ -513,6 +513,7 @@ export class DeviceManagerPlugin extends Plugin {
       if (this.config.engine.autoUpdate) {
         try {
           await this.deviceManagerEngine.updateEngines();
+          await this.deviceManagerEngine.updateMeasuresSchema();
         } catch (error) {
           this.context.log.error(
             `An error occured while updating the engines during startup: ${error}`,
