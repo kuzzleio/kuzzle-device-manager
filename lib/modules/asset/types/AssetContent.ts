@@ -38,6 +38,10 @@ export interface AssetContent<
     id: string;
     date: number;
   }>;
+  /**
+   * Id's of soft tenants
+   */
+  softTenant: Array<string>;
 }
 
 /**
@@ -55,5 +59,5 @@ export type AssetMeasureContext<TMetadata extends Metadata = Metadata> = {
   measureName: string;
 } & Pick<
   AssetContent<JSONObject, TMetadata>,
-  "model" | "reference" | "metadata" | "groups"
+  "model" | "reference" | "metadata" | "groups" | "softTenant"
 >;

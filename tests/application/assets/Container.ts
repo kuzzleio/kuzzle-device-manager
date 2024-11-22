@@ -182,7 +182,8 @@ function neverCalled() {
     reference: "",
     metadata: undefined,
     measures,
-    lastMeasuredAt: 0
+    lastMeasuredAt: 0,
+    softTenant: [],
   };
 
   container.metadata.height = 40;
