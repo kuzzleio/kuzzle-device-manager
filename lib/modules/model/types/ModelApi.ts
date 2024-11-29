@@ -4,6 +4,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
   GroupModelContent,
+  LocaleDetails,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -91,6 +92,9 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
 
   body: {
     type: string;
+    locales?: {
+      [valueName: string]: LocaleDetails;
+    };
     valuesMappings: JSONObject;
     validationSchema?: SchemaObject;
     valuesDetails?: MeasureValuesDetails;
