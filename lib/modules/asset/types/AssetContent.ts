@@ -40,8 +40,9 @@ export interface AssetContent<
   }>;
   /**
    * Id's of soft tenants
+   * ! Not used directly in this plugin
    */
-  softTenant: Array<string>;
+  softTenant?: Array<string>;
 }
 
 /**
