@@ -67,9 +67,6 @@ export type ApiAssetMetadataReplaceResult = KDocument<AssetContent>;
 export interface ApiAssetUpsertRequest extends AssetsControllerRequest {
   action: "upsert";
 
-  // TODO it's unused in action, maybe should remove it
-  _id?: string;
-
   refresh?: string;
 
   body: {
