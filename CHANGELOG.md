@@ -1,3 +1,10 @@
+# [2.5.0-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.2...v2.5.0-dev.3) (2024-12-05)
+
+
+### Features
+
+* **softTenants:** add softTenant ids to assets measures documents ([#383](https://github.com/kuzzleio/kuzzle-device-manager/issues/383)) ([1b36fe0](https://github.com/kuzzleio/kuzzle-device-manager/commit/1b36fe019ce11a0fb7faf4ce5f3c6c2cff4223e9))
+
 # [2.5.0-beta.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-beta.1...v2.5.0-beta.2) (2024-11-18)
 
 

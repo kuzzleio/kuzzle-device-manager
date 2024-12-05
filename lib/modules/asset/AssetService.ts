@@ -315,6 +315,7 @@ export class AssetService extends DigitalTwinService {
             metadata: { ...assetMetadata, ...metadata },
             model,
             reference,
+            softTenant: [],
           },
         },
         {
