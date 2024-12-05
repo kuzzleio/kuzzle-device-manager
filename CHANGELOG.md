@@ -1,3 +1,10 @@
+# [2.5.0-dev.5](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.4...v2.5.0-dev.5) (2024-12-05)
+
+
+### Bug Fixes
+
+* **assetservice:** can't replace metadata if not present in asset ([#384](https://github.com/kuzzleio/kuzzle-device-manager/issues/384)) ([eb65c0a](https://github.com/kuzzleio/kuzzle-device-manager/commit/eb65c0a1ae65488033a5422ce0879e8820fe05fa))
+
 # [2.5.0-dev.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.3...v2.5.0-dev.4) (2024-12-05)
 
 
