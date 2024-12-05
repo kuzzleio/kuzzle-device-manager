@@ -64,9 +64,7 @@ export class DevicesController {
         },
         upsert: {
           handler: this.upsert.bind(this),
-          http: [
-            { path: "device-manager/:engineId/devices/:_id", verb: "post" },
-          ],
+          http: [{ path: "device-manager/:engineId/devices", verb: "put" }],
         },
         replaceMetadata: {
           handler: this.replaceMetadata.bind(this),
@@ -446,6 +444,10 @@ export class DevicesController {
 
     return results.reduce<ApiDeviceGetLastMeasuresResult>(
       (accumulator, result) => {
+        if (result.origin.type !== "device") {
+          return accumulator;
+        }
+
         const measure: EmbeddedMeasure = {
           measuredAt: result.measuredAt,
           name: result.origin.measureName,
@@ -482,6 +484,10 @@ export class DevicesController {
     for (const [deviceId, measures] of Object.entries(results)) {
       response[deviceId] = measures.reduce<ApiDeviceGetLastMeasuresResult>(
         (accumulator, result) => {
+          if (result.origin.type !== "device") {
+            return accumulator;
+          }
+
           const measure: EmbeddedMeasure = {
             measuredAt: result.measuredAt,
             name: result.origin.measureName,

@@ -1,3 +1,54 @@
+# [2.5.0-dev.5](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.4...v2.5.0-dev.5) (2024-12-05)
+
+
+### Bug Fixes
+
+* **assetservice:** can't replace metadata if not present in asset ([#384](https://github.com/kuzzleio/kuzzle-device-manager/issues/384)) ([eb65c0a](https://github.com/kuzzleio/kuzzle-device-manager/commit/eb65c0a1ae65488033a5422ce0879e8820fe05fa))
+
+# [2.5.0-dev.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.3...v2.5.0-dev.4) (2024-12-05)
+
+
+### Features
+
+* add editor hint support ([#386](https://github.com/kuzzleio/kuzzle-device-manager/issues/386)) ([a9b62df](https://github.com/kuzzleio/kuzzle-device-manager/commit/a9b62df423f1218c7bd7866e33b33626f4f17e06))
+
+# [2.5.0-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.2...v2.5.0-dev.3) (2024-12-05)
+
+
+### Features
+
+* **softTenants:** add softTenant ids to assets measures documents ([#383](https://github.com/kuzzleio/kuzzle-device-manager/issues/383)) ([1b36fe0](https://github.com/kuzzleio/kuzzle-device-manager/commit/1b36fe019ce11a0fb7faf4ce5f3c6c2cff4223e9))
+
+# [2.5.0-beta.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-beta.1...v2.5.0-beta.2) (2024-11-18)
+
+
+### Bug Fixes
+
+* backport fix ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([5392b56](https://github.com/kuzzleio/kuzzle-device-manager/commit/5392b56a9478b1c1932845ee44965d5978197350))
+* getAsset should search in commons assets too ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([d588a93](https://github.com/kuzzleio/kuzzle-device-manager/commit/d588a93b0dd5b270199083cfb0856e34b57afa66))
+
+# [2.5.0-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.1...v2.5.0-dev.2) (2024-11-18)
+
+
+### Bug Fixes
+
+* backport fix ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([5392b56](https://github.com/kuzzleio/kuzzle-device-manager/commit/5392b56a9478b1c1932845ee44965d5978197350))
+* getAsset should search in commons assets too ([#380](https://github.com/kuzzleio/kuzzle-device-manager/issues/380)) ([d588a93](https://github.com/kuzzleio/kuzzle-device-manager/commit/d588a93b0dd5b270199083cfb0856e34b57afa66))
+
+# [2.5.0-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.5.0-beta.1) (2024-11-12)
+
+
+### Features
+
+* **measure:** allow measures to be pushed on Assets via API (no devices) ([#344](https://github.com/kuzzleio/kuzzle-device-manager/issues/344)) ([c1073c1](https://github.com/kuzzleio/kuzzle-device-manager/commit/c1073c1f0ccb4cfc7cee64d86c51a4999617fd41))
+
+# [2.5.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.5.0-dev.1) (2024-11-08)
+
+
+### Features
+
+* **measure:** allow measures to be pushed on Assets via API (no devices) ([#344](https://github.com/kuzzleio/kuzzle-device-manager/issues/344)) ([c1073c1](https://github.com/kuzzleio/kuzzle-device-manager/commit/c1073c1f0ccb4cfc7cee64d86c51a4999617fd41))
+
 ## [2.4.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.3...v2.4.4) (2024-11-18)
 
 
@@ -170,6 +221,22 @@
 * **metadata:** improve asset metadata ([#346](https://github.com/kuzzleio/kuzzle-device-manager/issues/346)) ([2eb5887](https://github.com/kuzzleio/kuzzle-device-manager/commit/2eb5887497d1e7449ca7c401274f6ff94453fe26))
 * **roles:** add specific roles for assets and devices ([#365](https://github.com/kuzzleio/kuzzle-device-manager/issues/365)) ([a01982c](https://github.com/kuzzleio/kuzzle-device-manager/commit/a01982cd025d4436617e710aa407e209f0d4f375))
 * upsert devices ([#355](https://github.com/kuzzleio/kuzzle-device-manager/issues/355)) ([c75abef](https://github.com/kuzzleio/kuzzle-device-manager/commit/c75abef4c313bbe33ad833189dfcc6fdc50fc15d))
+
+# [2.4.0-beta.21](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.20...v2.4.0-beta.21) (2024-09-18)
+
+
+### Bug Fixes
+
+* only list asset models for the requested engine group ([#367](https://github.com/kuzzleio/kuzzle-device-manager/issues/367)) ([8a14207](https://github.com/kuzzleio/kuzzle-device-manager/commit/8a14207b14d7f7fd80d9af711f9ba9eed5c58735))
+
+
+### Features
+
+* add actions to get last measures on digital twins ([#363](https://github.com/kuzzleio/kuzzle-device-manager/issues/363)) ([b8005a2](https://github.com/kuzzleio/kuzzle-device-manager/commit/b8005a2b2fb0071f2efa2ec3adeff9d965840a0c))
+* add search actions for the models ([#362](https://github.com/kuzzleio/kuzzle-device-manager/issues/362)) ([9990e57](https://github.com/kuzzleio/kuzzle-device-manager/commit/9990e57db9bc845d6d6df1e64bed05e88e00f377))
+* improve search model request types ([#364](https://github.com/kuzzleio/kuzzle-device-manager/issues/364)) ([5310ad1](https://github.com/kuzzleio/kuzzle-device-manager/commit/5310ad1cf8a46b7bce31e6c26d6454f956574a44))
+* **metadata:** add optional editor hints for metadata ([#370](https://github.com/kuzzleio/kuzzle-device-manager/issues/370)) ([afc5129](https://github.com/kuzzleio/kuzzle-device-manager/commit/afc51298eb33515ef5325d806150ac0ebf22b69c))
+* **roles:** add specific roles for assets and devices ([#365](https://github.com/kuzzleio/kuzzle-device-manager/issues/365)) ([a01982c](https://github.com/kuzzleio/kuzzle-device-manager/commit/a01982cd025d4436617e710aa407e209f0d4f375))
 
 # [2.4.0-beta.20](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.0-beta.19...v2.4.0-beta.20) (2024-08-12)
 

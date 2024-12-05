@@ -1,10 +1,11 @@
-import { JSONObject, KuzzleError } from "kuzzle";
+import { KuzzleError } from "kuzzle";
+import { ConflictChunk } from "./ModelsConflicts";
 
 export class MappingsConflictsError extends KuzzleError {
-  private conflicts: JSONObject;
+  private conflicts: ConflictChunk[];
   constructor(
     message: string,
-    conflicts: JSONObject,
+    conflicts: ConflictChunk[],
     id?: string,
     code?: number,
   ) {

@@ -34,6 +34,10 @@ Method: POST
       // Optional
     "valuesDetails":{
       // Values details and translation
+    },
+      // Optional
+    "validationSchema": {
+      // Valid JSON Schema
     }
   }
 }
@@ -46,6 +50,7 @@ Method: POST
 - `model`: Measure model name
 - `valuesMappings`: Mappings of the measure values in Elasticsearch format
 - `valuesDetails`: (optional) Measurement translations and units
+- `validationSchema`: (optional) Measurement validation JSON schema
 
 ---
 

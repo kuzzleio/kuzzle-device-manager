@@ -39,6 +39,10 @@ export const measuresMappings = {
             date: { type: "date" },
           },
         },
+        softTenant: {
+          type: "keyword",
+          fields: { text: { type: "text" } },
+        },
       },
     },
 
@@ -55,6 +59,11 @@ export const measuresMappings = {
           properties: {
             // populated with device models metadata mappings
           },
+        },
+
+        apiMetadata: {
+          dynamic: "false",
+          properties: {},
         },
 
         payloadUuids: { type: "keyword" },
