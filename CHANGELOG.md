@@ -1,3 +1,10 @@
+# [2.5.0-dev.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.3...v2.5.0-dev.4) (2024-12-05)
+
+
+### Features
+
+* add editor hint support ([#386](https://github.com/kuzzleio/kuzzle-device-manager/issues/386)) ([a9b62df](https://github.com/kuzzleio/kuzzle-device-manager/commit/a9b62df423f1218c7bd7866e33b33626f4f17e06))
+
 # [2.5.0-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0-dev.2...v2.5.0-dev.3) (2024-12-05)
 
 
