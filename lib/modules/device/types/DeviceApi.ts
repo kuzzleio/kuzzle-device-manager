@@ -243,6 +243,8 @@ export interface ApiDeviceExportMeasuresRequest
     query?: JSONObject;
     sort?: JSONObject;
   };
+
+  filename?: string;
 }
 export type ApiDeviceExportMeasuresResult = {
   link: string;

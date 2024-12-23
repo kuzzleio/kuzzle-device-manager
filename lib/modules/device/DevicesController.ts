@@ -520,6 +520,7 @@ export class DevicesController {
         const exportId = request.getString("exportId");
 
         const { id } = await this.measureExporter.getExport(engineId, exportId);
+        const filename = request.getString("filename") || `device-${id}.csv`;
         const stream = await this.measureExporter.sendExport(
           engineId,
           exportId,
@@ -527,7 +528,7 @@ export class DevicesController {
 
         request.response.configure({
           headers: {
-            "Content-Disposition": `attachment; filename="device-${id}.csv"`,
+            "Content-Disposition": `attachment; filename="${filename}"`,
             "Content-Type": "text/csv",
           },
         });
