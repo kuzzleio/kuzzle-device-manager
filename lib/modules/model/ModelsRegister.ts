@@ -12,6 +12,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
   GroupModelContent,
+  LocaleDetails,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -79,6 +80,7 @@ export class ModelsRegister {
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
     tooltipModels: TooltipModels = {},
+    locales: { [valueName: string]: LocaleDetails } = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -99,6 +101,7 @@ export class ModelsRegister {
     this.assetModels.push({
       asset: {
         defaultMetadata,
+        locales,
         measures,
         metadataDetails,
         metadataGroups,

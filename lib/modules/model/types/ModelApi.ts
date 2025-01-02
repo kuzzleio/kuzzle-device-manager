@@ -55,6 +55,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 export type ApiModelWriteAssetResult = KDocument<AssetModelContent>;
@@ -115,6 +116,7 @@ export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 export type ApiModelUpdateAssetResult = KDocument<AssetModelContent>;
