@@ -2,7 +2,7 @@ import { KDocumentContent } from "kuzzle-sdk";
 
 export interface AssetsGroupsBody {
   name: string;
-  type: string;
+  type: string | null;
   children: string[];
   parent: string | null;
   lastUpdate: number;

@@ -257,7 +257,7 @@ export class AssetsGroupsController {
         lastUpdate: Date.now(),
         name: body.name,
         parent: body.parent ?? null,
-        type: body.type ?? "",
+        type: body.type ?? null,
       },
       _id,
     );
