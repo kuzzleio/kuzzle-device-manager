@@ -1,3 +1,10 @@
+## [2.5.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0...v2.5.1) (2025-01-09)
+
+
+### Bug Fixes
+
+* **measure:** add mutex to asset update to prevent race condition ([#389](https://github.com/kuzzleio/kuzzle-device-manager/issues/389)) ([53371f4](https://github.com/kuzzleio/kuzzle-device-manager/commit/53371f440550832b1f96ee1dfb87a65219dfff19))
+
 # [2.5.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.4.4...v2.5.0) (2024-12-05)
 
 
