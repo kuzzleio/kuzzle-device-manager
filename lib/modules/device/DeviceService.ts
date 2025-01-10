@@ -463,7 +463,6 @@ export class DeviceService extends DigitalTwinService {
 
       device._source.engineId = engineId;
 
-
       await this.updateDocument<DeviceContent>(request, device, {
         collection: InternalCollection.DEVICES,
         engineId: this.config.adminIndex,
@@ -473,10 +472,14 @@ export class DeviceService extends DigitalTwinService {
       device._source.lastMeasuredAt = null;
       device._source.measures = {};
 
-      const updatedDevice =  await this.createDocument<DeviceContent>(request, device, {
-        collection: InternalCollection.DEVICES,
-        engineId,
-      });
+      const updatedDevice = await this.createDocument<DeviceContent>(
+        request,
+        device,
+        {
+          collection: InternalCollection.DEVICES,
+          engineId,
+        },
+      );
 
       if (request.getRefresh() === "wait_for") {
         await Promise.all([
@@ -531,7 +534,7 @@ export class DeviceService extends DigitalTwinService {
           device._source.engineId,
           InternalCollection.DEVICES,
           device._id,
-        )
+        ),
       ]);
 
       if (request.getRefresh() === "wait_for") {
