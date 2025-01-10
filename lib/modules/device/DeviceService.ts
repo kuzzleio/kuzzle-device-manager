@@ -516,7 +516,7 @@ export class DeviceService extends DigitalTwinService {
           request,
           {
             _id: device._id,
-            _source: { engineId: null },
+            _source: { engineId: null, lastMeasuredAt: null, measures: {} },
           },
           {
             collection: InternalCollection.DEVICES,
@@ -529,6 +529,13 @@ export class DeviceService extends DigitalTwinService {
           InternalCollection.DEVICES,
           device._id,
         ),
+        this.sdk.document.deleteByQuery(device._source.engineId, InternalCollection.MEASURES, {
+          query: {
+              match: {
+                  "origin._id": device._id,
+              },
+          },
+      }),
       ]);
 
       if (request.getRefresh() === "wait_for") {
