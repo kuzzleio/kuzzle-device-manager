@@ -499,7 +499,7 @@ export class DeviceService extends DigitalTwinService {
           request,
           {
             _id: device._id,
-            _source: { engineId: null},
+            _source: { engineId: null },
           },
           {
             collection: InternalCollection.DEVICES,
