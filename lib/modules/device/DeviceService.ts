@@ -463,17 +463,20 @@ export class DeviceService extends DigitalTwinService {
 
       device._source.engineId = engineId;
 
-      const [updatedDevice] = await Promise.all([
-        this.updateDocument<DeviceContent>(request, device, {
-          collection: InternalCollection.DEVICES,
-          engineId: this.config.adminIndex,
-        }),
 
-        this.createDocument<DeviceContent>(request, device, {
-          collection: InternalCollection.DEVICES,
-          engineId,
-        }),
-      ]);
+      await this.updateDocument<DeviceContent>(request, device, {
+        collection: InternalCollection.DEVICES,
+        engineId: this.config.adminIndex,
+      });
+
+      // Make sure the device is cleaned when attached to tenant
+      device._source.lastMeasuredAt = null;
+      device._source.measures = {};
+
+      const updatedDevice =  await this.createDocument<DeviceContent>(request, device, {
+        collection: InternalCollection.DEVICES,
+        engineId,
+      });
 
       if (request.getRefresh() === "wait_for") {
         await Promise.all([
@@ -516,7 +519,7 @@ export class DeviceService extends DigitalTwinService {
           request,
           {
             _id: device._id,
-            _source: { engineId: null, lastMeasuredAt: null, measures: {} },
+            _source: { engineId: null},
           },
           {
             collection: InternalCollection.DEVICES,
@@ -528,14 +531,7 @@ export class DeviceService extends DigitalTwinService {
           device._source.engineId,
           InternalCollection.DEVICES,
           device._id,
-        ),
-        this.sdk.document.deleteByQuery(device._source.engineId, InternalCollection.MEASURES, {
-          query: {
-              match: {
-                  "origin._id": device._id,
-              },
-          },
-      }),
+        )
       ]);
 
       if (request.getRefresh() === "wait_for") {
