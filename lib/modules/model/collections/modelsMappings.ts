@@ -97,5 +97,34 @@ export const modelsMappings: CollectionMappings = {
         },
       },
     },
+
+    /**
+     * Group model
+     */
+    group: {
+      properties: {
+        model: { type: "keyword" },
+        metadataMappings: {
+          dynamic: "false",
+          properties: {},
+        },
+        defaultMetadata: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataDetails: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataGroups: {
+          dynamic: "false",
+          properties: {},
+        },
+        tooltipModels: {
+          dynamic: "false",
+          properties: {},
+        },
+      },
+    },
   },
 };

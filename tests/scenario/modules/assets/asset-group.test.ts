@@ -68,6 +68,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "Parent not exist",
         parent: "not-exist",
+        model: null,
       },
     };
     await expect(sdk.query(badParentIdQuery)).rejects.toThrow(
@@ -80,6 +81,7 @@ describe("AssetsGroupsController", () => {
       action: "create",
       body: {
         name: "test group",
+        model: null,
       },
     };
     await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
@@ -93,6 +95,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "nested group",
         parent: assetGroupTestChildrenId1,
+        model: null,
       },
     };
     await expect(sdk.query(tooMuchNested)).rejects.toThrow(
@@ -109,6 +112,7 @@ describe("AssetsGroupsController", () => {
       _id: "root-group",
       body: {
         name: "root group",
+        model: null,
       },
     });
 
@@ -131,6 +135,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "children group",
         parent: "root-group",
+        model: null,
       },
     });
 
@@ -162,6 +167,7 @@ describe("AssetsGroupsController", () => {
       engineId: "engine-ayse",
       body: {
         name: "group",
+        model: null,
       },
     });
 
@@ -219,6 +225,7 @@ describe("AssetsGroupsController", () => {
         name: "root group",
         children: ["children-group"],
         parent: "not-exist",
+        model: null,
       },
     };
     await expect(sdk.query(badParentIdQuery)).rejects.toThrow(
@@ -233,6 +240,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "root group",
         children: [assetGroupTestChildrenId1, "not-exist"],
+        model: null,
       },
     };
     await expect(sdk.query(badChildrenIdQuery)).rejects.toThrow(
@@ -247,6 +255,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "test group",
         children: [],
+        model: null,
       },
     };
     await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
@@ -262,6 +271,7 @@ describe("AssetsGroupsController", () => {
         name: "Test group",
         parent: assetGroupTestChildrenId1,
         children: [],
+        model: null,
       },
     };
     await expect(sdk.query(tooMuchNested)).rejects.toThrow(
@@ -276,6 +286,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "root group",
         children: [],
+        model: null,
       },
     });
 
@@ -295,6 +306,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "root group",
         children: [assetGroupTestChildrenId1],
+        model: null,
       },
     });
 

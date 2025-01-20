@@ -11,6 +11,11 @@ export const assetGroupsMappings: CollectionMappings = {
       },
       type: "keyword",
     },
+    metadata: {
+      properties: {
+        // populated with group models
+      },
+    },
     name: {
       fields: {
         text: {
@@ -27,7 +32,7 @@ export const assetGroupsMappings: CollectionMappings = {
       },
       type: "keyword",
     },
-    type: {
+    model: {
       fields: {
         text: {
           type: "text",

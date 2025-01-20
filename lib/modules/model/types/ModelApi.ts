@@ -3,6 +3,7 @@ import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupModelContent,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -28,6 +29,12 @@ export interface ApiModelGetDeviceRequest extends ModelsControllerRequest {
   model: string;
 }
 export type ApiModelGetDeviceResult = KDocument<DeviceModelContent>;
+
+export interface ApiModelGetGroupRequest extends ModelsControllerRequest {
+  action: "getGroup";
+  model: string;
+}
+export type ApiModelGetGroupResult = KDocument<GroupModelContent>;
 
 export interface ApiModelGetMeasureRequest extends ModelsControllerRequest {
   action: "getMeasure";
@@ -64,6 +71,20 @@ export interface ApiModelWriteDeviceRequest extends ModelsControllerRequest {
   };
 }
 export type ApiModelWriteDeviceResult = KDocument<DeviceModelContent>;
+
+export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
+  action: "writeGroup";
+
+  body: {
+    engineGroup: string;
+    model: string;
+    metadataDetails?: MetadataDetails;
+    metadataGroups?: MetadataGroups;
+    metadataMappings?: MetadataMappings;
+    defaultValues?: JSONObject;
+  };
+}
+export type ApiModelWriteGroupResult = KDocument<GroupModelContent>;
 
 export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
   action: "writeMeasure";
@@ -108,6 +129,13 @@ export interface ApiModelDeleteDeviceRequest extends ModelsControllerRequest {
 }
 export type ApiModelDeleteDeviceResult = void;
 
+export interface ApiModelDeleteGroupRequest extends ModelsControllerRequest {
+  action: "deleteGroup";
+
+  _id: string;
+}
+export type ApiModelDeleteGroupResult = void;
+
 export interface ApiModelDeleteMeasureRequest extends ModelsControllerRequest {
   action: "deleteMeasure";
 
@@ -130,6 +158,14 @@ export interface ApiModelListDevicesRequest extends ModelsControllerRequest {
 }
 export type ApiModelListDevicesResult = {
   models: KDocument<DeviceModelContent>[];
+  total: number;
+};
+
+export interface ApiModelListGroupsRequest extends ModelsControllerRequest {
+  action: "listGroups";
+}
+export type ApiModelListGroupsResult = {
+  models: KDocument<GroupModelContent>[];
   total: number;
 };
 
@@ -163,6 +199,16 @@ export interface ApiModelSearchDevicesRequest extends ModelsControllerRequest {
 export type ApiModelSearchDevicesResult = SearchResult<
   KHit<DeviceModelContent>
 >;
+
+export interface ApiModelSearchGroupsRequest extends ModelsControllerRequest {
+  action: "searchGroups";
+
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchGroupsResult = SearchResult<KHit<GroupModelContent>>;
 
 export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
   action: "searchMeasures";
