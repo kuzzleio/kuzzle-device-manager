@@ -314,6 +314,7 @@ export class AssetService extends DigitalTwinService {
             measures,
             metadata: { ...assetMetadata, ...metadata },
             model,
+            modelLocales: assetModel.asset.locales,
             reference,
             softTenant: [],
           },
