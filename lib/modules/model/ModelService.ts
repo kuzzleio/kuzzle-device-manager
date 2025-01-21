@@ -559,8 +559,10 @@ export class ModelService extends BaseService {
     return result.hits;
   }
 
-  async listGroups(): Promise<KDocument<GroupModelContent>[]> {
-    const result = await this.searchGroups({
+  async listGroups(
+    engineGroup: string,
+  ): Promise<KDocument<GroupModelContent>[]> {
+    const result = await this.searchGroups(engineGroup, {
       searchBody: {
         sort: { "group.model": "asc" },
       },
@@ -644,11 +646,23 @@ export class ModelService extends BaseService {
   }
 
   async searchGroups(
+    engineGroup: string,
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<GroupModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { match: { type: "group" } }],
+        must: [
+          searchParams.searchBody.query,
+          { match: { type: "group" } },
+          {
+            bool: {
+              should: [
+                { match: { engineGroup } },
+                { match: { engineGroup: "commons" } },
+              ],
+            },
+          },
+        ],
       },
     };
 

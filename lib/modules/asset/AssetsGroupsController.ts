@@ -220,10 +220,10 @@ export class AssetsGroupsController {
     const engineId = request.getString("engineId");
     const name = request.getBodyString("name");
     const metadata = request.getBodyObject("metadata", {});
-    const bodyModel = request.getBodyString("model", "");
-    const bodyParent = request.getBodyString("parent", "");
-    const model = bodyModel.trim() !== "" ? bodyModel : null;
-    const parent = bodyParent.trim() !== "" ? bodyParent : null;
+    const body = request.getBody();
+    const model = body.model ?? null;
+    const parent = body.parent ?? null;
+
     const _id = request.getId({
       generator: () => NameGenerator.generateRandomName({ prefix: "group" }),
       ifMissing: "generate",
@@ -261,15 +261,15 @@ export class AssetsGroupsController {
         { model },
       );
 
-      for (const metadataName of Object.keys(
-        groupModel.group.metadataMappings,
-      )) {
-        groupMetadata[metadataName] = null;
-      }
       for (const [metadataName, metadataValue] of Object.entries(
         groupModel.group.defaultMetadata,
       )) {
         _.set(groupMetadata, metadataName, metadataValue);
+      }
+      for (const metadataName of Object.keys(
+        groupModel.group.metadataMappings,
+      )) {
+        groupMetadata[metadataName] = metadata[metadataName] ?? null;
       }
     }
     return this.as(request.getUser()).document.create<AssetsGroupsBody>(
@@ -278,7 +278,7 @@ export class AssetsGroupsController {
       {
         children: [],
         lastUpdate: Date.now(),
-        metadata: { ...groupMetadata, ...metadata },
+        metadata: { ...groupMetadata },
         model,
         name,
         parent,
@@ -304,30 +304,36 @@ export class AssetsGroupsController {
     const name = request.getBodyString("name");
     const metadata = request.getBodyObject("metadata", {});
     const children = request.getBodyArray("children", []);
-    const bodyModel = request.getBodyString("model", "");
-    const bodyParent = request.getBodyString("parent", "");
-    const model = bodyModel.trim() !== "" ? bodyModel : null;
-    const parent = bodyParent.trim() !== "" ? bodyParent : null;
+    const body = request.getBody();
+    const model = body.model ?? null;
+    const parent = body.parent ?? null;
 
     await this.checkParent(engineId, parent);
     await this.checkChildren(engineId, children);
     await this.checkGroupName(engineId, name, _id);
-    const modelMetadata = {};
+    const groupMetadata = {};
     if (model !== null) {
       const groupModel = await ask<AskModelGroupGet>(
         "ask:device-manager:model:group:get",
         { model },
       );
 
-      for (const metadataName of Object.keys(
-        groupModel.group.metadataMappings,
-      )) {
-        modelMetadata[metadataName] = null;
-      }
       for (const [metadataName, metadataValue] of Object.entries(
         groupModel.group.defaultMetadata,
       )) {
-        _.set(modelMetadata, metadataName, metadataValue);
+        if (!metadata[metadataName]) {
+          _.set(groupMetadata, metadataName, metadataValue);
+        }
+      }
+      for (const metadataName of Object.keys(
+        groupModel.group.metadataMappings,
+      )) {
+        if (metadata[metadataName]) {
+          groupMetadata[metadataName] = metadata[metadataName];
+        }
+        if (groupMetadata[metadataName] === undefined) {
+          groupMetadata[metadataName] = null;
+        }
       }
     }
     return this.as(request.getUser()).document.update<AssetsGroupsBody>(
@@ -337,7 +343,7 @@ export class AssetsGroupsController {
       {
         children,
         lastUpdate: Date.now(),
-        metadata: { ...modelMetadata, ...metadata },
+        metadata: { ...groupMetadata },
         model,
         name,
         parent: null,
@@ -430,7 +436,12 @@ export class AssetsGroupsController {
       engineId,
       InternalCollection.ASSETS_GROUPS,
       searchBody,
-      { from, lang, scroll, size },
+      {
+        from,
+        lang,
+        scroll,
+        size,
+      },
     );
   }
 

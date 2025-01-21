@@ -303,8 +303,9 @@ export class ModelsController {
     };
   }
 
-  async listGroups(): Promise<ApiModelListGroupsResult> {
-    const models = await this.modelService.listGroups();
+  async listGroups(request: KuzzleRequest): Promise<ApiModelListGroupsResult> {
+    const engineGroup = request.getString("engineGroup");
+    const models = await this.modelService.listGroups(engineGroup);
 
     return {
       models,
@@ -339,7 +340,10 @@ export class ModelsController {
   async searchGroups(
     request: KuzzleRequest,
   ): Promise<ApiModelSearchGroupsResult> {
-    return this.modelService.searchGroups(request.getSearchParams());
+    return this.modelService.searchGroups(
+      request.getString("engineGroup"),
+      request.getSearchParams(),
+    );
   }
 
   async searchMeasures(

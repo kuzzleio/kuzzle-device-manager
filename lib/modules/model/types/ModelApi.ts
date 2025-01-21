@@ -163,6 +163,7 @@ export type ApiModelListDevicesResult = {
 
 export interface ApiModelListGroupsRequest extends ModelsControllerRequest {
   action: "listGroups";
+  engineGroup: string;
 }
 export type ApiModelListGroupsResult = {
   models: KDocument<GroupModelContent>[];
