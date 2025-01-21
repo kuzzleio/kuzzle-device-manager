@@ -230,6 +230,7 @@ describe("ModelsController:groups", () => {
     const listGroups = await sdk.query<ApiModelListGroupsRequest>({
       controller: "device-manager/models",
       action: "listGroups",
+      engineGroup: "air_quality",
     });
     expect(listGroups.result).toMatchObject({
       total: 2,
@@ -340,6 +341,7 @@ describe("ModelsController:groups", () => {
     const searchDevices = await sdk.query<ApiModelSearchGroupsRequest>({
       controller: "device-manager/models",
       action: "searchGroups",
+      engineGroup: "air_quality",
       body: {
         query: {
           match: {

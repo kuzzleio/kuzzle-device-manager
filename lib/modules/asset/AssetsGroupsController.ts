@@ -264,12 +264,16 @@ export class AssetsGroupsController {
       for (const [metadataName, metadataValue] of Object.entries(
         groupModel.group.defaultMetadata,
       )) {
-        _.set(groupMetadata, metadataName, metadataValue);
+        if (!metadata[metadataName]) {
+          _.set(groupMetadata, metadataName, metadataValue);
+        }
       }
       for (const metadataName of Object.keys(
         groupModel.group.metadataMappings,
       )) {
-        groupMetadata[metadataName] = metadata[metadataName] ?? null;
+        if (metadata[metadataName]) {
+          groupMetadata[metadataName] = metadata[metadataName];
+        }
       }
     }
     return this.as(request.getUser()).document.create<AssetsGroupsBody>(

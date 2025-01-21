@@ -16,7 +16,14 @@ export const assetGroupTestBody: AssetsGroupsBody = {
   model: null,
   metadata: {},
 };
-
+export const assetGroupParking: AssetsGroupsBody = {
+  name: "Test group with parking model",
+  children: [],
+  lastUpdate: Date.now(),
+  parent: null,
+  model: "Parking",
+  metadata: {},
+};
 export const assetGroupTestParentBody1: AssetsGroupsBody = {
   name: "Test parent 1",
   children: [assetGroupTestChildrenId1],

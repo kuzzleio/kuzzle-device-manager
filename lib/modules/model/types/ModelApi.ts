@@ -204,6 +204,7 @@ export type ApiModelSearchDevicesResult = SearchResult<
 export interface ApiModelSearchGroupsRequest extends ModelsControllerRequest {
   action: "searchGroups";
 
+  engineGroup: string;
   from?: number;
   size?: number;
   scrollTTL?: string;
