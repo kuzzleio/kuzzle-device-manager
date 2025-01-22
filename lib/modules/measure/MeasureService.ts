@@ -173,26 +173,7 @@ export class MeasureService extends BaseService {
           }),
       );
 
-      // @todo potential race condition if 2 differents device are linked
-      // to the same asset and get processed at the same time
-      // asset measures update could be protected by mutex
-      promises.push(
-        this.sdk.document
-          .update<AssetContent>(
-            indexId,
-            InternalCollection.ASSETS,
-            assetId,
-            asset,
-          )
-          .catch((error) => {
-            throw keepStack(
-              error,
-              new BadRequestError(
-                `Cannot update asset "${assetId}": ${error.message}`,
-              ),
-            );
-          }),
-      );
+      promises.push(this.mutexUpdateAsset(indexId, assetId, asset));
 
       promises.push(
         historizeAssetStates(
@@ -425,25 +406,8 @@ export class MeasureService extends BaseService {
         );
 
         if (asset) {
-          // @todo potential race condition if 2 differents device are linked
-          // to the same asset and get processed at the same time
-          // asset measures update could be protected by mutex
           promises.push(
-            this.sdk.document
-              .update<AssetContent>(
-                engineId,
-                InternalCollection.ASSETS,
-                asset._id,
-                asset._source,
-              )
-              .catch((error) => {
-                throw keepStack(
-                  error,
-                  new BadRequestError(
-                    `Cannot update asset "${asset._id}": ${error.message}`,
-                  ),
-                );
-              }),
+            this.mutexUpdateAsset(engineId, asset._id, asset._source),
           );
 
           promises.push(
@@ -804,6 +768,34 @@ export class MeasureService extends BaseService {
     );
 
     return assetMeasureName?.asset ?? null;
+  }
+
+  private mutexUpdateAsset(
+    engineId: string,
+    assetId: string,
+    asset: AssetContent,
+  ): Promise<KDocument<AssetContent>> {
+    // ? Potential race condition if 2 differents device are linked
+    // ? to the same asset and get processed at the same time.
+    //
+    // ? Use mutex to try to fix update conflict
+    return lock(`asset:${engineId}:${assetId}`, async () =>
+      this.sdk.document
+        .update<AssetContent>(
+          engineId,
+          InternalCollection.ASSETS,
+          assetId,
+          asset,
+        )
+        .catch((error) => {
+          throw keepStack(
+            error,
+            new BadRequestError(
+              `Cannot update asset "${assetId}": ${error.message}`,
+            ),
+          );
+        }),
+    );
   }
 }
 
