@@ -11,7 +11,7 @@ import { AssetsGroupsBody, AssetsGroupContent } from "./AssetGroupContent";
 type AssetsGroupsRequest = Omit<AssetsGroupsBody, "lastUpdate">;
 // Make "parent" property to optional for request
 export type AssetsGroupsBodyRequest = Partial<AssetsGroupsRequest> &
-  Omit<AssetsGroupsRequest, "parent">;
+  Omit<AssetsGroupsRequest, "parent" | "type">;
 
 export type UpdateAssetLinkResponse = mUpdateResponse & {
   assetsGroups: KDocument<AssetsGroupContent>;

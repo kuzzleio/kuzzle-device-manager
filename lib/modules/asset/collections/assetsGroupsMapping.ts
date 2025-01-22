@@ -27,6 +27,14 @@ export const assetGroupsMappings: CollectionMappings = {
       },
       type: "keyword",
     },
+    type: {
+      fields: {
+        text: {
+          type: "text",
+        },
+      },
+      type: "keyword",
+    },
     lastUpdate: {
       type: "date",
     },
