@@ -1,3 +1,29 @@
+## [2.7.0-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.6.0...v2.7.0-beta.1) (2025-01-22)
+
+
+### Features
+
+* update deps ([#393](https://github.com/kuzzleio/kuzzle-device-manager/issues/393)) ([1b9b936](https://github.com/kuzzleio/kuzzle-device-manager/commit/1b9b9362884eaab3d5ce72acc6d3041802f39ee2))
+
+
+### Bug Fixes
+
+* conflict between ([adf8d0f](https://github.com/kuzzleio/kuzzle-device-manager/commit/adf8d0f1a356d2769432be3e4b8acd49e94b16ba))
+* typo in packages/package.json ([9b6c495](https://github.com/kuzzleio/kuzzle-device-manager/commit/9b6c4958e7c2fb02974ddb7485944a69f388d650))
+
+## [2.7.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.6.0...v2.7.0-dev.1) (2025-01-22)
+
+
+### Features
+
+* update deps ([#393](https://github.com/kuzzleio/kuzzle-device-manager/issues/393)) ([1b9b936](https://github.com/kuzzleio/kuzzle-device-manager/commit/1b9b9362884eaab3d5ce72acc6d3041802f39ee2))
+
+
+### Bug Fixes
+
+* conflict between ([adf8d0f](https://github.com/kuzzleio/kuzzle-device-manager/commit/adf8d0f1a356d2769432be3e4b8acd49e94b16ba))
+* typo in packages/package.json ([9b6c495](https://github.com/kuzzleio/kuzzle-device-manager/commit/9b6c4958e7c2fb02974ddb7485944a69f388d650))
+
 ## [2.6.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.1...v2.6.0) (2025-01-22)
 
 
