@@ -1,3 +1,16 @@
+## [2.6.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.1...v2.6.0) (2025-01-22)
+
+
+### Features
+
+* trigger release ([9c82581](https://github.com/kuzzleio/kuzzle-device-manager/commit/9c8258156818db8cbc7c7b43edd5fd4b703738ef))
+* Trigger release ([a800c54](https://github.com/kuzzleio/kuzzle-device-manager/commit/a800c548ac538eca9e9f4a1bebbba5478ca92c82))
+
+
+### Bug Fixes
+
+* Trigger release ([5025a0f](https://github.com/kuzzleio/kuzzle-device-manager/commit/5025a0f4f283bbae4a92455273819599a928b4f7))
+
 ## [2.6.0-beta.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.6.0-beta.1...v2.6.0-beta.2) (2025-01-22)
 
 
