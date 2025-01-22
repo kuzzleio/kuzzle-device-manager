@@ -1,3 +1,10 @@
+## [2.6.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.1...v2.6.0-dev.1) (2025-01-22)
+
+
+### Features
+
+* update deps ([#393](https://github.com/kuzzleio/kuzzle-device-manager/issues/393)) ([1b9b936](https://github.com/kuzzleio/kuzzle-device-manager/commit/1b9b9362884eaab3d5ce72acc6d3041802f39ee2))
+
 ## [2.5.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.5.0...v2.5.1) (2025-01-09)
 
 
