@@ -44,7 +44,7 @@ import {
 import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
-  AssetHistoryEventModelFriendlyName,
+  AssetHistoryEventModelLocales,
 } from "./types/AssetHistoryContent";
 
 export class AssetService extends DigitalTwinService {
@@ -600,7 +600,7 @@ export class AssetService extends DigitalTwinService {
     return replacedAssets;
   }
 
-  public async updateModelFriendlyName(
+  public async updateModelLocales(
     request: KuzzleRequest,
     engineGroup: string,
     model: string,
@@ -653,13 +653,13 @@ export class AssetService extends DigitalTwinService {
         { source: true },
       );
 
-      await this.assetHistoryService.add<AssetHistoryEventModelFriendlyName>(
+      await this.assetHistoryService.add<AssetHistoryEventModelLocales>(
         asset.index,
         [
           {
             asset: updatedAsset._source,
             event: {
-              name: "modelFriendlyName",
+              name: "modelLocales",
             },
             id: updatedAsset._id,
             timestamp: Date.now(),
