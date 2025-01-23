@@ -21,6 +21,10 @@ export type AssetHistoryEventMetadata = {
   metadata: AssetHistoryMetadata;
 };
 
+export type AssetHistoryEventModelFriendlyName = {
+  name: "modelFriendlyName";
+};
+
 export type AssetHistoryEventLink = {
   name: "link";
   link: {
@@ -39,7 +43,8 @@ export type AssetHistoryEvent =
   | AssetHistoryEventMeasure
   | AssetHistoryEventMetadata
   | AssetHistoryEventLink
-  | AssetHistoryEventUnlink;
+  | AssetHistoryEventUnlink
+  | AssetHistoryEventModelFriendlyName;
 
 /**
  * Asset History document content

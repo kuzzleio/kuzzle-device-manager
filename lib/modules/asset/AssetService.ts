@@ -44,6 +44,7 @@ import {
 import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
+  AssetHistoryEventModelFriendlyName,
 } from "./types/AssetHistoryContent";
 
 export class AssetService extends DigitalTwinService {
@@ -639,7 +640,7 @@ export class AssetService extends DigitalTwinService {
     });
 
     for (const asset of assets.result.hits) {
-      await this.updateDocument<AssetContent>(
+      const updatedAsset = await this.updateDocument<AssetContent>(
         request,
         {
           _id: asset._id,
@@ -650,6 +651,20 @@ export class AssetService extends DigitalTwinService {
           engineId: asset.index,
         },
         { source: true },
+      );
+
+      await this.assetHistoryService.add<AssetHistoryEventModelFriendlyName>(
+        asset.index,
+        [
+          {
+            asset: updatedAsset._source,
+            event: {
+              name: "modelFriendlyName",
+            },
+            id: updatedAsset._id,
+            timestamp: Date.now(),
+          },
+        ],
       );
     }
   }
