@@ -204,11 +204,11 @@ export class AssetsController {
             },
           ],
         },
-        updateModelFriendlyName: {
-          handler: this.updateModelFriendlyName.bind(this),
+        updateModelLocales: {
+          handler: this.updateModelLocales.bind(this),
           http: [
             {
-              path: "device-manager/assets/modelFriendlyName",
+              path: "device-manager/assets/modelLocales",
               verb: "patch",
             },
           ],
@@ -755,14 +755,10 @@ export class AssetsController {
     return this.assetService.mGetLastMeasuredAt(engineId, assetIds);
   }
 
-  async updateModelFriendlyName(request: KuzzleRequest): Promise<void> {
+  async updateModelLocales(request: KuzzleRequest): Promise<void> {
     const model = request.getString("model");
     const engineGroup = request.getString("engineGroup", "commons");
 
-    await this.assetService.updateModelFriendlyName(
-      request,
-      engineGroup,
-      model,
-    );
+    await this.assetService.updateModelLocales(request, engineGroup, model);
   }
 }

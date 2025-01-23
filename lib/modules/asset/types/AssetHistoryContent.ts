@@ -21,8 +21,8 @@ export type AssetHistoryEventMetadata = {
   metadata: AssetHistoryMetadata;
 };
 
-export type AssetHistoryEventModelFriendlyName = {
-  name: "modelFriendlyName";
+export type AssetHistoryEventModelLocales = {
+  name: "modelLocales";
 };
 
 export type AssetHistoryEventLink = {
@@ -44,7 +44,7 @@ export type AssetHistoryEvent =
   | AssetHistoryEventMetadata
   | AssetHistoryEventLink
   | AssetHistoryEventUnlink
-  | AssetHistoryEventModelFriendlyName;
+  | AssetHistoryEventModelLocales;
 
 /**
  * Asset History document content
