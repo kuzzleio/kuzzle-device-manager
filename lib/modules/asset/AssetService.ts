@@ -599,6 +599,61 @@ export class AssetService extends DigitalTwinService {
     return replacedAssets;
   }
 
+  public async updateModelFriendlyName(
+    request: KuzzleRequest,
+    engineGroup: string,
+    model: string,
+  ): Promise<void> {
+    const { result } = await this.sdk.query({
+      action: "getAsset",
+      body: {},
+      controller: "device-manager/models",
+      engineGroup,
+      model,
+    });
+
+    const locales = result._source.asset.locales;
+
+    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+      group: engineGroup,
+    });
+
+    const targets = engines.map((engine) => ({
+      collections: [InternalCollection.ASSETS],
+      index: engine.index,
+    }));
+
+    const assets = await this.sdk.query<
+      BaseRequest,
+      DocumentSearchResult<AssetContent>
+    >({
+      action: "search",
+      body: { query: { equals: { model } } },
+      controller: "document",
+      lang: "koncorde",
+      targets,
+    });
+
+    assets.result.hits.map((asset) => {
+      asset._source.modelLocales = locales;
+    });
+
+    for (const asset of assets.result.hits) {
+      await this.updateDocument<AssetContent>(
+        request,
+        {
+          _id: asset._id,
+          _source: { modelLocales: locales },
+        },
+        {
+          collection: InternalCollection.ASSETS,
+          engineId: asset.index,
+        },
+        { source: true },
+      );
+    }
+  }
+
   private async getEngine(engineId: string): Promise<JSONObject> {
     const engine = await this.sdk.document.get(
       this.config.adminIndex,

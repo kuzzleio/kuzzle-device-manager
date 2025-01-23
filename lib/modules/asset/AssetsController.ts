@@ -204,6 +204,15 @@ export class AssetsController {
             },
           ],
         },
+        updateModelFriendlyName: {
+          handler: this.updateModelFriendlyName.bind(this),
+          http: [
+            {
+              path: "device-manager/assets/modelFriendlyName",
+              verb: "patch",
+            },
+          ],
+        },
       },
     };
     /* eslint-enable sort-keys */
@@ -744,5 +753,16 @@ export class AssetsController {
     const assetIds = request.getBodyArray("ids");
 
     return this.assetService.mGetLastMeasuredAt(engineId, assetIds);
+  }
+
+  async updateModelFriendlyName(request: KuzzleRequest): Promise<void> {
+    const model = request.getString("model");
+    const engineGroup = request.getString("engineGroup", "commons");
+
+    await this.assetService.updateModelFriendlyName(
+      request,
+      engineGroup,
+      model,
+    );
   }
 }
