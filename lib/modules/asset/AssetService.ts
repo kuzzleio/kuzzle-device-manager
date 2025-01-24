@@ -600,6 +600,13 @@ export class AssetService extends DigitalTwinService {
     return replacedAssets;
   }
 
+  /**
+   * Retrieve locales with the specified model and search all assets related to the model to update the locales.
+   * The operation is historized.
+   * @param request
+   * @param engineGroup
+   * @param model
+   */
   public async updateModelLocales(
     request: KuzzleRequest,
     engineGroup: string,

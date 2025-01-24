@@ -69,6 +69,7 @@ A measure model contains the following information:
 - `measure`: type of the measure
 - `valuesMappings`: measurements mappings (See [Collection Mappings](https://docs.kuzzle.io/core/2/guides/main-concepts/data-storage/#collection-mappings))
 - `valuesDetails`: (optional) Metadata and translations of measurements. You can use it to keep consistency on translations between your apps
+- `locales`: (optional) Translation for the measure model
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 
@@ -98,6 +99,16 @@ await sdk.query({
         },
       },
     },
+    locales: {
+      en: {
+        friendlyName: "Light measurement",
+        description: "Light measurement",
+      },
+      fr: {
+        friendlyName: "Mesure de lumière",
+        description: "Mesure de lumière",
+      },
+    }
   },
 });
 ```
@@ -124,6 +135,7 @@ An asset model contains the following information:
   - Editor hint: it unlock functionalities depending on the metadata type you define.
 - `metadataGroups`: (optional) Map of group names to their translations. You can use it to group metadata.
 - `tooltipModels`: (optional) Tooltip model list, each containing labels and tooltip content to be shown. You can use it to create templates that displays relevant information in dashboards
+- `locales`: (optional) Translation for asset model
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 
@@ -150,9 +162,21 @@ import {
           { name: "temperatureInternal", type: "temperature" },
           { name: "temperatureExternal", type: "temperature" },
         ],
+        locales: {
+          en: {
+            friendlyName: "Container translated by model",
+            description: "Containerized container",
+          },
+          fr: {
+            friendlyName: "Conteneur traduit par modèle",
+            description: "Conteneur conteneurisé",
+          },
+        }
       },
     };
 ```
+
+**INFO: If the locales has changed, use [updateModelLocales](../../controllers/assets/updateModelLocales/index.md) to update all assets manually and make the search on assets up to date**
 
 The API also allows to:
 
