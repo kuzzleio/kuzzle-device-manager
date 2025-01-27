@@ -10,6 +10,7 @@ import {
   assetGroupTestParentId2,
   assetGroupChildrenWithAssetId,
   assetGroupParentWithAssetId,
+  assetGroupParking,
 } from "../../../fixtures/assetsGroups";
 
 // Lib
@@ -25,6 +26,7 @@ import {
   ApiGroupAddAssetsResult,
   ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
+  ApiGroupUpdateResult,
 } from "../../../../lib/modules/asset/types/AssetGroupsApi";
 import {
   AssetContent,
@@ -57,7 +59,7 @@ describe("AssetsGroupsController", () => {
       body: {},
     };
     await expect(sdk.query(missingNameQuery)).rejects.toThrow(
-      /^A group must have a name$/,
+      'Missing argument "body.name".',
     );
 
     const badParentIdQuery: ApiGroupCreateRequest = {
@@ -68,6 +70,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "Parent not exist",
         parent: "not-exist",
+        model: null,
       },
     };
     await expect(sdk.query(badParentIdQuery)).rejects.toThrow(
@@ -80,6 +83,7 @@ describe("AssetsGroupsController", () => {
       action: "create",
       body: {
         name: "test group",
+        model: null,
       },
     };
     await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
@@ -93,6 +97,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "nested group",
         parent: assetGroupTestChildrenId1,
+        model: null,
       },
     };
     await expect(sdk.query(tooMuchNested)).rejects.toThrow(
@@ -109,6 +114,7 @@ describe("AssetsGroupsController", () => {
       _id: "root-group",
       body: {
         name: "root group",
+        model: null,
       },
     });
 
@@ -131,6 +137,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "children group",
         parent: "root-group",
+        model: null,
       },
     });
 
@@ -162,6 +169,7 @@ describe("AssetsGroupsController", () => {
       engineId: "engine-ayse",
       body: {
         name: "group",
+        model: null,
       },
     });
 
@@ -219,6 +227,7 @@ describe("AssetsGroupsController", () => {
         name: "root group",
         children: ["children-group"],
         parent: "not-exist",
+        model: null,
       },
     };
     await expect(sdk.query(badParentIdQuery)).rejects.toThrow(
@@ -233,6 +242,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "root group",
         children: [assetGroupTestChildrenId1, "not-exist"],
+        model: null,
       },
     };
     await expect(sdk.query(badChildrenIdQuery)).rejects.toThrow(
@@ -247,6 +257,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "test group",
         children: [],
+        model: null,
       },
     };
     await expect(sdk.query(duplicateGroupName)).rejects.toThrow(
@@ -262,6 +273,7 @@ describe("AssetsGroupsController", () => {
         name: "Test group",
         parent: assetGroupTestChildrenId1,
         children: [],
+        model: null,
       },
     };
     await expect(sdk.query(tooMuchNested)).rejects.toThrow(
@@ -276,6 +288,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "root group",
         children: [],
+        model: null,
       },
     });
 
@@ -295,6 +308,7 @@ describe("AssetsGroupsController", () => {
       body: {
         name: "root group",
         children: [assetGroupTestChildrenId1],
+        model: null,
       },
     });
 
@@ -306,7 +320,111 @@ describe("AssetsGroupsController", () => {
     });
     expect(resultChildren._source.lastUpdate).toBeGreaterThanOrEqual(now);
   });
+  it("can create a group with default metadata", async () => {
+    const { result: parkingGroup } = await sdk.query<
+      ApiGroupCreateRequest,
+      ApiGroupCreateResult
+    >({
+      controller: "device-manager/assetsGroup",
+      action: "create",
+      engineId: "engine-ayse",
+      body: assetGroupParking,
+    });
 
+    expect(parkingGroup._source.metadata).toMatchObject({
+      geolocation: {
+        lon: 3.8761,
+        lat: 43.6109,
+      },
+    });
+  });
+  it("can create a group with custom metadata", async () => {
+    const { result: parkingGroup } = await sdk.query<
+      ApiGroupCreateRequest,
+      ApiGroupCreateResult
+    >({
+      controller: "device-manager/assetsGroup",
+      action: "create",
+      engineId: "engine-ayse",
+      body: {
+        ...assetGroupParking,
+        metadata: { geolocation: { lon: 10, lat: 10 } },
+      },
+    });
+
+    expect(parkingGroup._source.metadata).toMatchObject({
+      geolocation: {
+        lon: 10,
+        lat: 10,
+      },
+    });
+  });
+
+  it("can create a group with defined metadata only", async () => {
+    const { result: parkingGroup } = await sdk.query<
+      ApiGroupCreateRequest,
+      ApiGroupCreateResult
+    >({
+      controller: "device-manager/assetsGroup",
+      action: "create",
+      engineId: "engine-ayse",
+      body: {
+        ...assetGroupParking,
+        metadata: {
+          geolocation: { lon: 10, lat: 10 },
+          randomMetadata: "wrongvalue",
+        },
+      },
+    });
+
+    expect(parkingGroup._source.metadata).not.toMatchObject({
+      geolocation: { lon: 10, lat: 10 },
+      randomMetadata: "wrongvalue",
+    });
+    expect(parkingGroup._source.metadata).toMatchObject({
+      geolocation: { lon: 10, lat: 10 },
+    });
+  });
+  it("can update a group with defined metadata only", async () => {
+    await sdk.query<ApiGroupCreateRequest, ApiGroupCreateResult>({
+      controller: "device-manager/assetsGroup",
+      action: "create",
+      engineId: "engine-ayse",
+      _id: "group-test-parking",
+      body: {
+        ...assetGroupParking,
+
+        metadata: {
+          geolocation: { lon: 10, lat: 10 },
+          randomMetadata: "wrongvalue",
+        },
+      },
+    });
+    const { result: parkingGroup } = await sdk.query<
+      ApiGroupUpdateRequest,
+      ApiGroupUpdateResult
+    >({
+      controller: "device-manager/assetsGroup",
+      action: "update",
+      engineId: "engine-ayse",
+      _id: "group-test-parking",
+
+      body: {
+        ...assetGroupParking,
+        metadata: {
+          geolocation: { lon: 9.47, lat: 43.05 },
+          randomMetadata: "wrongvalue",
+        },
+      },
+    });
+    expect(parkingGroup._source.metadata).not.toMatchObject({
+      geolocation: { lon: 9.47, lat: 43.05 },
+      randomMetadata: "wrongvalue",
+    });
+    expect(parkingGroup._source.metadata).toMatchObject({
+      geolocation: { lon: 9.47, lat: 43.05 },
+    });
+  });
   it("can delete a group", async () => {
     const missingIdQuery: Omit<ApiGroupDeleteRequest, "_id"> = {
       controller: "device-manager/assetsGroup",

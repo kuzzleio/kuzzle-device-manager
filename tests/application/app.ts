@@ -20,6 +20,12 @@ deviceManager.config.engineCollections.device.mappings.properties["custom"] = {
   type: "keyword",
   fields: { text: { type: "text" } },
 };
+deviceManager.config.engineCollections.assetGroups.mappings.properties[
+  "custom"
+] = {
+  type: "keyword",
+  fields: { text: { type: "text" } },
+};
 
 registerModels(deviceManager);
 registerTestPipes(app);

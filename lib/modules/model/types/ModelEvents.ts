@@ -1,6 +1,7 @@
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupModelContent,
   MeasureModelContent,
 } from "./ModelContent";
 
@@ -26,4 +27,12 @@ export type AskModelMeasureGet = {
   payload: { type: string };
 
   result: MeasureModelContent;
+};
+
+export type AskModelGroupGet = {
+  name: "ask:device-manager:model:group:get";
+
+  payload: { model: string };
+
+  result: GroupModelContent;
 };
