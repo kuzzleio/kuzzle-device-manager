@@ -260,19 +260,16 @@ export class AssetsGroupsController {
         "ask:device-manager:model:group:get",
         { model },
       );
-
-      for (const [metadataName, metadataValue] of Object.entries(
-        groupModel.group.defaultMetadata,
-      )) {
-        if (!metadata[metadataName]) {
-          _.set(groupMetadata, metadataName, metadataValue);
-        }
-      }
       for (const metadataName of Object.keys(
         groupModel.group.metadataMappings,
       )) {
         if (metadata[metadataName]) {
           groupMetadata[metadataName] = metadata[metadataName];
+        } else if (groupModel.group.defaultMetadata[metadataName]) {
+          groupMetadata[metadataName] =
+            groupModel.group.defaultMetadata[metadataName];
+        } else {
+          groupMetadata[metadataName] = null;
         }
       }
     }
@@ -305,53 +302,50 @@ export class AssetsGroupsController {
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    const name = request.getBodyString("name");
-    const metadata = request.getBodyObject("metadata", {});
-    const children = request.getBodyArray("children", []);
     const body = request.getBody();
-    const model = body.model ?? null;
-    const parent = body.parent ?? null;
+    const name = body.name;
+    const metadata = body.metadata;
+    const children = body.children;
+    const parent = body.parent;
 
-    await this.checkParent(engineId, parent);
-    await this.checkChildren(engineId, children);
-    await this.checkGroupName(engineId, name, _id);
-    const groupMetadata = {};
-    if (model !== null) {
-      const groupModel = await ask<AskModelGroupGet>(
-        "ask:device-manager:model:group:get",
-        { model },
-      );
+    let updateRequestBody = {};
+    if (parent !== undefined) {
+      await this.checkParent(engineId, parent);
+      updateRequestBody = { ...updateRequestBody, parent };
+    }
+    if (children !== undefined) {
+      await this.checkChildren(engineId, children);
+      updateRequestBody = { ...updateRequestBody, children };
+    }
+    if (name !== undefined) {
+      await this.checkGroupName(engineId, name, _id);
+      updateRequestBody = { ...updateRequestBody, name };
+    }
 
-      for (const [metadataName, metadataValue] of Object.entries(
-        groupModel.group.defaultMetadata,
-      )) {
-        if (!metadata[metadataName]) {
-          _.set(groupMetadata, metadataName, metadataValue);
+    if (metadata !== undefined) {
+      const group = await this.get(request);
+      const { model, metadata: groupMetadata } = group._source;
+      if (model !== null) {
+        const groupModel = await ask<AskModelGroupGet>(
+          "ask:device-manager:model:group:get",
+          { model },
+        );
+        for (const metadataName of Object.keys(
+          groupModel.group.metadataMappings,
+        )) {
+          if (metadata[metadataName] !== undefined) {
+            groupMetadata[metadataName] = metadata[metadataName];
+          }
         }
-      }
-      for (const metadataName of Object.keys(
-        groupModel.group.metadataMappings,
-      )) {
-        if (metadata[metadataName]) {
-          groupMetadata[metadataName] = metadata[metadataName];
-        }
-        if (groupMetadata[metadataName] === undefined) {
-          groupMetadata[metadataName] = null;
-        }
+        updateRequestBody = { ...updateRequestBody, metadata: groupMetadata };
       }
     }
+    updateRequestBody = { ...updateRequestBody, lastUpdate: Date.now() };
     return this.as(request.getUser()).document.update<AssetsGroupsBody>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
       _id,
-      {
-        children,
-        lastUpdate: Date.now(),
-        metadata: { ...groupMetadata },
-        model,
-        name,
-        parent: null,
-      },
+      updateRequestBody,
       { source: true },
     );
   }

@@ -814,6 +814,11 @@ export class ModelService extends BaseService {
     if (result.total === 0) {
       throw new NotFoundError(`Unknown Group model "${model}".`);
     }
+    if (result.total > 1) {
+      app.log.warn(
+        "More than 1 group definition have been found for this model",
+      );
+    }
 
     return result.hits[0];
   }

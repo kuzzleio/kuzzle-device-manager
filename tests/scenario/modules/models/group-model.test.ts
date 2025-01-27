@@ -338,7 +338,7 @@ describe("ModelsController:groups", () => {
 
     await sdk.collection.refresh("device-manager", "models");
 
-    const searchDevices = await sdk.query<ApiModelSearchGroupsRequest>({
+    const searchGroups = await sdk.query<ApiModelSearchGroupsRequest>({
       controller: "device-manager/models",
       action: "searchGroups",
       engineGroup: "air_quality",
@@ -351,7 +351,7 @@ describe("ModelsController:groups", () => {
       },
     });
 
-    expect(searchDevices.result).toMatchObject({
+    expect(searchGroups.result).toMatchObject({
       total: 1,
       hits: [{ _id: "model-group-TruckFleet" }],
     });
@@ -372,5 +372,62 @@ describe("ModelsController:groups", () => {
     await expect(badModelName).rejects.toMatchObject({
       message: 'Group model "flatgroupnape" must be PascalCase.',
     });
+  });
+
+  it("Should throw on mappings conflict", async () => {
+    await sdk.query<ApiModelWriteGroupRequest>({
+      controller: "device-manager/models",
+      action: "writeGroup",
+      body: {
+        engineGroup: "air_quality",
+        model: "TruckFleet",
+        metadataMappings: {
+          size: { type: "integer" },
+        },
+        metadataDetails: {
+          size: {
+            locales: {
+              en: {
+                friendlyName: "Truck fleet size",
+                description: "The number of trucks in the fleet",
+              },
+              fr: {
+                friendlyName: "Taille de la flotte",
+                description: "Le nombre de camions dans la flotte",
+              },
+            },
+          },
+        },
+      },
+    });
+    const badMappingRequest = sdk.query<ApiModelWriteGroupRequest>({
+      controller: "device-manager/models",
+      action: "writeGroup",
+      body: {
+        engineGroup: "air_quality",
+        model: "BadModel",
+        metadataMappings: {
+          size: { type: "keyword" },
+        },
+        metadataDetails: {
+          size: {
+            locales: {
+              en: {
+                friendlyName: "Truck fleet size",
+                description:
+                  "The word representing the size of trucks in the fleet",
+              },
+              fr: {
+                friendlyName: "Taille de la flotte",
+                description: "Le nombre en lettre de camions dans la flotte",
+              },
+            },
+          },
+        },
+      },
+    });
+    await expect(badMappingRequest).rejects.toThrow(
+      "New group mappings are causing conflicts",
+    );
   });
 });
