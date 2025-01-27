@@ -1,6 +1,7 @@
 import { JSONObject } from "kuzzle-sdk";
 import { Decoder, NamedMeasures } from "../../../modules/decoder";
 import {
+  LocaleDetails,
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
@@ -100,7 +101,17 @@ import {
  *           }
  *         ]
  *       }
- *     }
+ *     },
+ *     locales: {
+ *       en: {
+ *         friendlyName: 'Container (translation by model)',
+ *         description: 'Containerized container',
+ *       },
+ *       fr: {
+ *         friendlyName: 'Conteneur (traduit par model)',
+ *         description: 'Conteneur conteneurisé',
+ *       },
+ *     },
  *   }
  *
  */
@@ -134,6 +145,8 @@ export type AssetModelDefinition = {
    * Tooltip models
    */
   tooltipModels?: TooltipModels;
+
+  locales?: { [valueName: string]: LocaleDetails };
 };
 
 /**

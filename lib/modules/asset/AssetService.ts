@@ -44,6 +44,7 @@ import {
 import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
+  AssetHistoryEventModelLocales,
 } from "./types/AssetHistoryContent";
 
 export class AssetService extends DigitalTwinService {
@@ -314,6 +315,7 @@ export class AssetService extends DigitalTwinService {
             measures,
             metadata: { ...assetMetadata, ...metadata },
             model,
+            modelLocales: assetModel.asset.locales,
             reference,
             softTenant: [],
           },
@@ -596,6 +598,82 @@ export class AssetService extends DigitalTwinService {
     );
 
     return replacedAssets;
+  }
+
+  /**
+   * Retrieve locales with the specified model and search all assets related to the model to update the locales.
+   * The operation is historized.
+   * @param request
+   * @param engineGroup
+   * @param model
+   */
+  public async updateModelLocales(
+    request: KuzzleRequest,
+    engineGroup: string,
+    model: string,
+  ): Promise<void> {
+    const { result } = await this.sdk.query({
+      action: "getAsset",
+      body: {},
+      controller: "device-manager/models",
+      engineGroup,
+      model,
+    });
+
+    const locales = result._source.asset.locales;
+
+    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+      group: engineGroup,
+    });
+
+    const targets = engines.map((engine) => ({
+      collections: [InternalCollection.ASSETS],
+      index: engine.index,
+    }));
+
+    const assets = await this.sdk.query<
+      BaseRequest,
+      DocumentSearchResult<AssetContent>
+    >({
+      action: "search",
+      body: { query: { equals: { model } } },
+      controller: "document",
+      lang: "koncorde",
+      targets,
+    });
+
+    assets.result.hits.map((asset) => {
+      asset._source.modelLocales = locales;
+    });
+
+    for (const asset of assets.result.hits) {
+      const updatedAsset = await this.updateDocument<AssetContent>(
+        request,
+        {
+          _id: asset._id,
+          _source: { modelLocales: locales },
+        },
+        {
+          collection: InternalCollection.ASSETS,
+          engineId: asset.index,
+        },
+        { source: true },
+      );
+
+      await this.assetHistoryService.add<AssetHistoryEventModelLocales>(
+        asset.index,
+        [
+          {
+            asset: updatedAsset._source,
+            event: {
+              name: "modelLocales",
+            },
+            id: updatedAsset._id,
+            timestamp: Date.now(),
+          },
+        ],
+      );
+    }
   }
 
   private async getEngine(engineId: string): Promise<JSONObject> {
