@@ -9,7 +9,7 @@ export interface MeasureModelContent extends KDocumentContent {
 
   measure: MeasureDefinition & {
     type: string;
-    locales: { [valueName: string]: LocaleDetails };
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 
