@@ -17,7 +17,7 @@ Deletes a group model.
 
 ```http
 URL: http://kuzzle:7512/_/device-manager/models/group/:id
-Method: GET
+Method: DELETE
 ```
 
 ### Other protocols
