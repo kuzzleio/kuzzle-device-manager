@@ -27,7 +27,6 @@ import {
   AssetsGroupsBodyRequest,
 } from "./types/AssetGroupsApi";
 import { AskModelGroupGet } from "../model";
-import _ from "lodash";
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
