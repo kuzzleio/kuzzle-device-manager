@@ -60,6 +60,7 @@ describe("AssetsGroupsController", () => {
       _id: "root-group",
       body: {
         name: "root group",
+        model: null,
       },
     });
 

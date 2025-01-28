@@ -6,6 +6,7 @@ import {
   NameGenerator,
   User,
 } from "kuzzle";
+import { ask } from "kuzzle-plugin-commons";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { AssetContent } from "./exports";
@@ -25,6 +26,7 @@ import {
   ApiGroupUpdateResult,
   AssetsGroupsBodyRequest,
 } from "./types/AssetGroupsApi";
+import { AskModelGroupGet } from "../model";
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
@@ -215,24 +217,25 @@ export class AssetsGroupsController {
 
   async create(request: KuzzleRequest): Promise<ApiGroupCreateResult> {
     const engineId = request.getString("engineId");
+    const name = request.getBodyString("name");
+    const metadata = request.getBodyObject("metadata", {});
+    const body = request.getBody();
+    const model = body.model ?? null;
+    const parent = body.parent ?? null;
+
     const _id = request.getId({
       generator: () => NameGenerator.generateRandomName({ prefix: "group" }),
       ifMissing: "generate",
     });
-    const body = request.getBody() as AssetsGroupsBodyRequest;
 
-    await this.checkParent(engineId, body.parent);
-    await this.checkGroupName(engineId, body.name);
+    await this.checkGroupName(engineId, name);
 
-    if (typeof body.name !== "string") {
-      throw new BadRequestError(`A group must have a name`);
-    }
-
-    if (typeof body.parent === "string") {
+    if (parent !== null) {
+      await this.checkParent(engineId, parent);
       const parentGroup = await this.sdk.document.get<AssetsGroupsBody>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
-        body.parent,
+        parent,
       );
 
       const children = parentGroup._source.children ?? [];
@@ -241,7 +244,7 @@ export class AssetsGroupsController {
       await this.sdk.document.update<AssetsGroupsBody>(
         engineId,
         InternalCollection.ASSETS_GROUPS,
-        body.parent,
+        parent,
         {
           children,
           lastUpdate: Date.now(),
@@ -249,15 +252,36 @@ export class AssetsGroupsController {
       );
     }
 
+    const groupMetadata = {};
+
+    if (model !== null) {
+      const groupModel = await ask<AskModelGroupGet>(
+        "ask:device-manager:model:group:get",
+        { model },
+      );
+      for (const metadataName of Object.keys(
+        groupModel.group.metadataMappings,
+      )) {
+        if (metadata[metadataName]) {
+          groupMetadata[metadataName] = metadata[metadataName];
+        } else if (groupModel.group.defaultMetadata[metadataName]) {
+          groupMetadata[metadataName] =
+            groupModel.group.defaultMetadata[metadataName];
+        } else {
+          groupMetadata[metadataName] = null;
+        }
+      }
+    }
     return this.as(request.getUser()).document.create<AssetsGroupsBody>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
       {
         children: [],
         lastUpdate: Date.now(),
-        name: body.name,
-        parent: body.parent ?? null,
-        type: body.type ?? null,
+        metadata: { ...groupMetadata },
+        model,
+        name,
+        parent,
       },
       _id,
     );
@@ -277,21 +301,50 @@ export class AssetsGroupsController {
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    const body = request.getBody() as AssetsGroupsBodyRequest;
+    const body = request.getBody();
+    const name = body.name;
+    const metadata = body.metadata;
+    const children = body.children;
+    const parent = body.parent;
 
-    await this.checkParent(engineId, body.parent);
-    await this.checkChildren(engineId, body.children);
-    await this.checkGroupName(engineId, body.name, _id);
+    let updateRequestBody = {};
+    if (parent !== undefined) {
+      await this.checkParent(engineId, parent);
+      updateRequestBody = { ...updateRequestBody, parent };
+    }
+    if (children !== undefined) {
+      await this.checkChildren(engineId, children);
+      updateRequestBody = { ...updateRequestBody, children };
+    }
+    if (name !== undefined) {
+      await this.checkGroupName(engineId, name, _id);
+      updateRequestBody = { ...updateRequestBody, name };
+    }
 
+    if (metadata !== undefined) {
+      const group = await this.get(request);
+      const { model, metadata: groupMetadata } = group._source;
+      if (model !== null) {
+        const groupModel = await ask<AskModelGroupGet>(
+          "ask:device-manager:model:group:get",
+          { model },
+        );
+        for (const metadataName of Object.keys(
+          groupModel.group.metadataMappings,
+        )) {
+          if (metadata[metadataName] !== undefined) {
+            groupMetadata[metadataName] = metadata[metadataName];
+          }
+        }
+        updateRequestBody = { ...updateRequestBody, metadata: groupMetadata };
+      }
+    }
+    updateRequestBody = { ...updateRequestBody, lastUpdate: Date.now() };
     return this.as(request.getUser()).document.update<AssetsGroupsBody>(
       engineId,
       InternalCollection.ASSETS_GROUPS,
       _id,
-      {
-        parent: null,
-        ...body,
-        lastUpdate: Date.now(),
-      },
+      updateRequestBody,
       { source: true },
     );
   }
@@ -380,7 +433,12 @@ export class AssetsGroupsController {
       engineId,
       InternalCollection.ASSETS_GROUPS,
       searchBody,
-      { from, lang, scroll, size },
+      {
+        from,
+        lang,
+        scroll,
+        size,
+      },
     );
   }
 
