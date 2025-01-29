@@ -192,35 +192,37 @@ export class DeviceService extends DigitalTwinService {
     metadata: Metadata,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    const device = await this.get(engineId, deviceId, request);
+    return lock(`device:${engineId}:${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId, request);
 
-    for (const key in metadata) {
-      if (key in device._source.metadata) {
-        device._source.metadata[key] = metadata[key];
+      for (const key in metadata) {
+        if (key in device._source.metadata) {
+          device._source.metadata[key] = metadata[key];
+        }
       }
-    }
 
-    const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
-      "device-manager:device:update:before",
-      { device: device, metadata },
-    );
+      const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
+        "device-manager:device:update:before",
+        { device: device, metadata },
+      );
 
-    const updatedDevice = await this.sdk.document.replace<DeviceContent>(
-      engineId,
-      InternalCollection.DEVICES,
-      deviceId,
-      updatedPayload.device._source,
-    );
+      const updatedDevice = await this.sdk.document.replace<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        deviceId,
+        updatedPayload.device._source,
+      );
 
-    await this.app.trigger<EventDeviceUpdateAfter>(
-      "device-manager:device:update:after",
-      {
-        device: updatedDevice,
-        metadata: updatedPayload.metadata,
-      },
-    );
+      await this.app.trigger<EventDeviceUpdateAfter>(
+        "device-manager:device:update:after",
+        {
+          device: updatedDevice,
+          metadata: updatedPayload.metadata,
+        },
+      );
 
-    return updatedDevice;
+      return updatedDevice;
+    });
   }
 
   /**
@@ -299,7 +301,7 @@ export class DeviceService extends DigitalTwinService {
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock<KDocument<DeviceContent>>(
-      `device:update:${deviceId}`,
+      `device:${engineId}:${deviceId}`,
       async () => {
         const device = await this.get(engineId, deviceId, request);
 
@@ -336,7 +338,7 @@ export class DeviceService extends DigitalTwinService {
     deviceId: string,
     request: KuzzleRequest,
   ) {
-    return lock<void>(`device:delete:${deviceId}`, async () => {
+    return lock<void>(`device:${engineId}:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId, request);
 
       const promises = [];
@@ -542,7 +544,7 @@ export class DeviceService extends DigitalTwinService {
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
-    return lock(`device:linkAsset:${deviceId}`, async () => {
+    return lock(`device:${engineId}:${deviceId}`, async () => {
       const device = await this.getInternalDevices(deviceId);
       const engine = await this.getEngine(engineId);
 
