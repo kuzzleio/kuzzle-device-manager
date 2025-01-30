@@ -82,6 +82,81 @@ export class DeviceService extends DigitalTwinService {
     );
   }
 
+  private async _create(
+    deviceId: string,
+    model: string,
+    reference: string,
+    metadata: JSONObject,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    let device: KDocument<DeviceContent> = {
+      _id: deviceId,
+      _source: {
+        assetId: null,
+        engineId: null,
+        lastMeasuredAt: 0,
+        measures: {},
+        metadata,
+        model,
+        reference,
+      },
+    };
+
+    const deviceModel = await this.getDeviceModel(model);
+    const engineId = request.getString("engineId");
+
+    for (const metadataName of Object.keys(
+      deviceModel.device.metadataMappings,
+    )) {
+      device._source.metadata[metadataName] ||= null;
+    }
+    for (const [metadataName, metadataValue] of Object.entries(
+      deviceModel.device.defaultMetadata,
+    )) {
+      _.set(device._source.metadata, metadataName, metadataValue);
+    }
+
+    const refreshableCollections: Array<{
+      index: string;
+      collection: string;
+    }> = [];
+
+    const { _source } = await this.createDocument<DeviceContent>(
+      request,
+      device,
+      {
+        collection: InternalCollection.DEVICES,
+        engineId: this.config.adminIndex,
+      },
+    );
+
+    device._source = _source;
+
+    refreshableCollections.push({
+      collection: InternalCollection.DEVICES,
+      index: this.config.adminIndex,
+    });
+
+    if (engineId && engineId !== this.config.adminIndex) {
+      device = await this.attachEngine(engineId, device._id, request);
+
+      refreshableCollections.push({
+        collection: InternalCollection.DEVICES,
+        index: engineId,
+      });
+    }
+
+    if (request.getRefresh() === "wait_for") {
+      await Promise.all(
+        refreshableCollections.map(({ index, collection }) =>
+          this.sdk.collection.refresh(index, collection),
+        ),
+      );
+    }
+
+    return device;
+  }
+
   /**
    * Create a new device.
    *
@@ -95,74 +170,11 @@ export class DeviceService extends DigitalTwinService {
     metadata: JSONObject,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    let device: KDocument<DeviceContent> = {
-      _id: DeviceSerializer.id(model, reference),
-      _source: {
-        assetId: null,
-        engineId: null,
-        lastMeasuredAt: 0,
-        measures: {},
-        metadata,
-        model,
-        reference,
-      },
-    };
+    const deviceId = DeviceSerializer.id(model, reference);
 
-    return lock(`device:create:${device._id}`, async () => {
-      const deviceModel = await this.getDeviceModel(model);
-      const engineId = request.getString("engineId");
-
-      for (const metadataName of Object.keys(
-        deviceModel.device.metadataMappings,
-      )) {
-        device._source.metadata[metadataName] ||= null;
-      }
-      for (const [metadataName, metadataValue] of Object.entries(
-        deviceModel.device.defaultMetadata,
-      )) {
-        _.set(device._source.metadata, metadataName, metadataValue);
-      }
-
-      const refreshableCollections: Array<{
-        index: string;
-        collection: string;
-      }> = [];
-
-      const { _source } = await this.createDocument<DeviceContent>(
-        request,
-        device,
-        {
-          collection: InternalCollection.DEVICES,
-          engineId: this.config.adminIndex,
-        },
-      );
-
-      device._source = _source;
-
-      refreshableCollections.push({
-        collection: InternalCollection.DEVICES,
-        index: this.config.adminIndex,
-      });
-
-      if (engineId && engineId !== this.config.adminIndex) {
-        device = await this.attachEngine(engineId, device._id, request);
-
-        refreshableCollections.push({
-          collection: InternalCollection.DEVICES,
-          index: engineId,
-        });
-      }
-
-      if (request.getRefresh() === "wait_for") {
-        await Promise.all(
-          refreshableCollections.map(({ index, collection }) =>
-            this.sdk.collection.refresh(index, collection),
-          ),
-        );
-      }
-
-      return device;
-    });
+    return lock(`device:${deviceId}`, async () =>
+      this._create(deviceId, model, reference, metadata, request),
+    );
   }
 
   public async get(
@@ -192,7 +204,7 @@ export class DeviceService extends DigitalTwinService {
     metadata: Metadata,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    return lock(`device:${engineId}:${deviceId}`, async () => {
+    return lock(`device:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId, request);
 
       for (const key in metadata) {
@@ -235,8 +247,9 @@ export class DeviceService extends DigitalTwinService {
     metadata: Metadata,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    const deviceId = `${model}-${reference}`;
-    return lock(`device:${engineId}:${deviceId}`, async () => {
+    const deviceId = DeviceSerializer.id(model, reference);
+
+    return lock(`device:${deviceId}`, async () => {
       const adminIndexDevice = await this.get(
         this.config.adminIndex,
         deviceId,
@@ -244,7 +257,7 @@ export class DeviceService extends DigitalTwinService {
       ).catch(() => null);
 
       if (!adminIndexDevice) {
-        return this.create(model, reference, metadata, request);
+        return this._create(deviceId, model, reference, metadata, request);
       }
 
       if (
@@ -300,37 +313,34 @@ export class DeviceService extends DigitalTwinService {
     metadata: Metadata,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    return lock<KDocument<DeviceContent>>(
-      `device:${engineId}:${deviceId}`,
-      async () => {
-        const device = await this.get(engineId, deviceId, request);
+    return lock(`device:${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId, request);
 
-        const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
-          "device-manager:device:update:before",
-          { device, metadata },
-        );
+      const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
+        "device-manager:device:update:before",
+        { device, metadata },
+      );
 
-        const updatedDevice = await this.updateDocument<DeviceContent>(
-          request,
-          {
-            _id: deviceId,
-            _source: { metadata: updatedPayload.metadata },
-          },
-          { collection: InternalCollection.DEVICES, engineId },
-          { source: true },
-        );
+      const updatedDevice = await this.updateDocument<DeviceContent>(
+        request,
+        {
+          _id: deviceId,
+          _source: { metadata: updatedPayload.metadata },
+        },
+        { collection: InternalCollection.DEVICES, engineId },
+        { source: true },
+      );
 
-        await this.app.trigger<EventDeviceUpdateAfter>(
-          "device-manager:device:update:after",
-          {
-            device: updatedDevice,
-            metadata: updatedPayload.metadata,
-          },
-        );
+      await this.app.trigger<EventDeviceUpdateAfter>(
+        "device-manager:device:update:after",
+        {
+          device: updatedDevice,
+          metadata: updatedPayload.metadata,
+        },
+      );
 
-        return updatedDevice;
-      },
-    );
+      return updatedDevice;
+    });
   }
 
   public async delete(
@@ -338,7 +348,7 @@ export class DeviceService extends DigitalTwinService {
     deviceId: string,
     request: KuzzleRequest,
   ) {
-    return lock<void>(`device:${engineId}:${deviceId}`, async () => {
+    return lock<void>(`device:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId, request);
 
       const promises = [];
@@ -432,7 +442,7 @@ export class DeviceService extends DigitalTwinService {
     deviceId: string,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    return lock(`device:attachEngine:${deviceId}`, async () => {
+    return lock(`device:${deviceId}`, async () => {
       const device = await this.getInternalDevices(deviceId);
 
       if (device._source.engineId) {
@@ -484,7 +494,7 @@ export class DeviceService extends DigitalTwinService {
     deviceId: string,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    return lock(`device:detachEngine:${deviceId}`, async () => {
+    return lock(`device:${deviceId}`, async () => {
       const device = await this.getInternalDevices(deviceId);
 
       this.checkAttachedToEngine(device);
@@ -544,7 +554,7 @@ export class DeviceService extends DigitalTwinService {
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
-    return lock(`device:${engineId}:${deviceId}`, async () => {
+    return lock(`device:${deviceId}`, async () => {
       const device = await this.getInternalDevices(deviceId);
       const engine = await this.getEngine(engineId);
 
@@ -799,7 +809,7 @@ export class DeviceService extends DigitalTwinService {
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
-    return lock(`device:unlinkAsset:${deviceId}`, async () => {
+    return lock(`device:${deviceId}`, async () => {
       const device = await this.getInternalDevices(deviceId);
       const engineId = device._source.engineId;
 
