@@ -1,3 +1,10 @@
+## [2.7.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.0...v2.7.1) (2025-01-30)
+
+
+### Bug Fixes
+
+* **digitalTwin:** correct race condition ([#398](https://github.com/kuzzleio/kuzzle-device-manager/issues/398)) ([8da2861](https://github.com/kuzzleio/kuzzle-device-manager/commit/8da2861f974868414505893f043781f57c55aa82))
+
 ## [2.7.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.6.0...v2.7.0) (2025-01-22)
 
 
