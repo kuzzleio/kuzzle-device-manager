@@ -430,6 +430,59 @@ export class DeviceService extends DigitalTwinService {
   }
 
   /**
+   * Internal logic to attach the device to an engine
+   *
+   * @param engineId Engine id to attach to
+   * @param deviceId Device id to attach
+   * @param options.refresh Wait for ES indexation
+   * @param options.strict If true, throw if an operation isn't possible
+   */
+  private async _attachEngine(
+    engineId: string,
+    deviceId: string,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    const device = await this.getInternalDevices(deviceId);
+
+    if (device._source.engineId) {
+      throw new BadRequestError(
+        `Device "${device._id}" is already attached to an engine.`,
+      );
+    }
+
+    await this.checkEngineExists(engineId);
+
+    device._source.engineId = engineId;
+
+    const [updatedDevice] = await Promise.all([
+      this.updateDocument<DeviceContent>(request, device, {
+        collection: InternalCollection.DEVICES,
+        engineId: this.config.adminIndex,
+      }),
+
+      this.createDocument<DeviceContent>(request, device, {
+        collection: InternalCollection.DEVICES,
+        engineId,
+      }),
+    ]);
+
+    if (request.getRefresh() === "wait_for") {
+      await Promise.all([
+        this.sdk.collection.refresh(
+          this.config.adminIndex,
+          InternalCollection.DEVICES,
+        ),
+        this.sdk.collection.refresh(
+          device._source.engineId,
+          InternalCollection.DEVICES,
+        ),
+      ]);
+    }
+
+    return updatedDevice;
+  }
+
+  /**
    * Attach the device to an engine
    *
    * @param engineId Engine id to attach to
@@ -442,46 +495,9 @@ export class DeviceService extends DigitalTwinService {
     deviceId: string,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    return lock(`device:${deviceId}`, async () => {
-      const device = await this.getInternalDevices(deviceId);
-
-      if (device._source.engineId) {
-        throw new BadRequestError(
-          `Device "${device._id}" is already attached to an engine.`,
-        );
-      }
-
-      await this.checkEngineExists(engineId);
-
-      device._source.engineId = engineId;
-
-      const [updatedDevice] = await Promise.all([
-        this.updateDocument<DeviceContent>(request, device, {
-          collection: InternalCollection.DEVICES,
-          engineId: this.config.adminIndex,
-        }),
-
-        this.createDocument<DeviceContent>(request, device, {
-          collection: InternalCollection.DEVICES,
-          engineId,
-        }),
-      ]);
-
-      if (request.getRefresh() === "wait_for") {
-        await Promise.all([
-          this.sdk.collection.refresh(
-            this.config.adminIndex,
-            InternalCollection.DEVICES,
-          ),
-          this.sdk.collection.refresh(
-            device._source.engineId,
-            InternalCollection.DEVICES,
-          ),
-        ]);
-      }
-
-      return updatedDevice;
-    });
+    return lock(`device:${deviceId}`, async () =>
+      this._attachEngine(engineId, deviceId, request),
+    );
   }
 
   /**
@@ -797,7 +813,107 @@ export class DeviceService extends DigitalTwinService {
   }
 
   /**
-   * Unlink a device of an asset
+   * Internal logic of unlink a device of an asset
+   *
+   * @param {string} deviceId Id of the device
+   * @param {KuzzleRequest} request kuzzle request
+   */
+  private async _unlinkAsset(
+    deviceId: string,
+    request: KuzzleRequest,
+  ): Promise<{
+    asset: KDocument<AssetContent>;
+    device: KDocument<DeviceContent>;
+  }> {
+    const device = await this.getInternalDevices(deviceId);
+    const engineId = device._source.engineId;
+
+    this.checkAttachedToEngine(device);
+
+    if (!device._source.assetId) {
+      throw new BadRequestError(
+        `Device "${device._id}" is not linked to an asset.`,
+      );
+    }
+
+    const asset = await this.sdk.document.get<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      device._source.assetId,
+    );
+
+    const linkedDevices = asset._source.linkedDevices.filter(
+      (link) => link._id !== device._id,
+    );
+
+    const [updatedDevice, , updatedAsset] = await Promise.all([
+      this.updateDocument<DeviceContent>(
+        request,
+        { _id: device._id, _source: { assetId: null } },
+        {
+          collection: InternalCollection.DEVICES,
+          engineId: this.config.adminIndex,
+        },
+        { source: true },
+      ),
+
+      this.updateDocument<DeviceContent>(
+        request,
+        { _id: device._id, _source: { assetId: null } },
+        {
+          collection: InternalCollection.DEVICES,
+          engineId,
+        },
+      ),
+
+      this.updateDocument<AssetContent>(
+        request,
+        { _id: asset._id, _source: { linkedDevices } },
+        {
+          collection: InternalCollection.ASSETS,
+          engineId,
+        },
+        { source: true },
+      ),
+    ]);
+
+    const event: AssetHistoryEventUnlink = {
+      name: "unlink",
+      unlink: {
+        deviceId,
+      },
+    };
+    await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
+      "ask:device-manager:asset:history:add",
+      {
+        engineId,
+        histories: [
+          {
+            asset: updatedAsset._source,
+            event,
+            id: updatedAsset._id,
+            timestamp: Date.now(),
+          },
+        ],
+      },
+    );
+
+    if (request.getRefresh() === "wait_for") {
+      await Promise.all([
+        this.sdk.collection.refresh(
+          this.config.adminIndex,
+          InternalCollection.DEVICES,
+        ),
+        this.sdk.collection.refresh(engineId, InternalCollection.DEVICES),
+        this.sdk.collection.refresh(engineId, InternalCollection.ASSETS),
+      ]);
+    }
+
+    return { asset: updatedAsset, device: updatedDevice };
+  }
+
+  /**
+   * Unlink a device of an asset with lock
    *
    * @param {string} deviceId Id of the device
    * @param {KuzzleRequest} request kuzzle request
@@ -809,93 +925,9 @@ export class DeviceService extends DigitalTwinService {
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
-    return lock(`device:${deviceId}`, async () => {
-      const device = await this.getInternalDevices(deviceId);
-      const engineId = device._source.engineId;
-
-      this.checkAttachedToEngine(device);
-
-      if (!device._source.assetId) {
-        throw new BadRequestError(
-          `Device "${device._id}" is not linked to an asset.`,
-        );
-      }
-
-      const asset = await this.sdk.document.get<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
-        device._source.assetId,
-      );
-
-      const linkedDevices = asset._source.linkedDevices.filter(
-        (link) => link._id !== device._id,
-      );
-
-      const [updatedDevice, , updatedAsset] = await Promise.all([
-        this.updateDocument<DeviceContent>(
-          request,
-          { _id: device._id, _source: { assetId: null } },
-          {
-            collection: InternalCollection.DEVICES,
-            engineId: this.config.adminIndex,
-          },
-          { source: true },
-        ),
-
-        this.updateDocument<DeviceContent>(
-          request,
-          { _id: device._id, _source: { assetId: null } },
-          {
-            collection: InternalCollection.DEVICES,
-            engineId,
-          },
-        ),
-
-        this.updateDocument<AssetContent>(
-          request,
-          { _id: asset._id, _source: { linkedDevices } },
-          {
-            collection: InternalCollection.ASSETS,
-            engineId,
-          },
-          { source: true },
-        ),
-      ]);
-
-      const event: AssetHistoryEventUnlink = {
-        name: "unlink",
-        unlink: {
-          deviceId,
-        },
-      };
-      await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
-        "ask:device-manager:asset:history:add",
-        {
-          engineId,
-          histories: [
-            {
-              asset: updatedAsset._source,
-              event,
-              id: updatedAsset._id,
-              timestamp: Date.now(),
-            },
-          ],
-        },
-      );
-
-      if (request.getRefresh() === "wait_for") {
-        await Promise.all([
-          this.sdk.collection.refresh(
-            this.config.adminIndex,
-            InternalCollection.DEVICES,
-          ),
-          this.sdk.collection.refresh(engineId, InternalCollection.DEVICES),
-          this.sdk.collection.refresh(engineId, InternalCollection.ASSETS),
-        ]);
-      }
-
-      return { asset: updatedAsset, device: updatedDevice };
-    });
+    return lock(`device:${deviceId}`, async () =>
+      this._unlinkAsset(deviceId, request),
+    );
   }
 
   private async checkEngineExists(engineId: string) {
