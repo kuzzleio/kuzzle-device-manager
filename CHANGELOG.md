@@ -1,3 +1,10 @@
+## [2.7.1-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.0...v2.7.1-dev.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* last measured at ([#399](https://github.com/kuzzleio/kuzzle-device-manager/issues/399)) ([07830c0](https://github.com/kuzzleio/kuzzle-device-manager/commit/07830c03e6bc44c289844a9ff4eafc0a5a7f2a2a))
+
 ## [2.7.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.6.0...v2.7.0) (2025-01-22)
 
 
