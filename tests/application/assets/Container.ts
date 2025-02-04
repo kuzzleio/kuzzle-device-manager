@@ -141,6 +141,16 @@ export const Container: AssetModel = {
         ],
       },
     },
+    locales: {
+      en: {
+        friendlyName: 'Container (translation by model)',
+        description: 'Containerized container',
+      },
+      fr: {
+        friendlyName: 'Conteneur (traduit par model)',
+        description: 'Conteneur conteneurisé',
+      },
+    },
   },
 };
 

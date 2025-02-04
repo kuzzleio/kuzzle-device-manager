@@ -204,6 +204,15 @@ export class AssetsController {
             },
           ],
         },
+        updateModelLocales: {
+          handler: this.updateModelLocales.bind(this),
+          http: [
+            {
+              path: "device-manager/assets/modelLocales",
+              verb: "patch",
+            },
+          ],
+        },
       },
     };
     /* eslint-enable sort-keys */
@@ -744,5 +753,17 @@ export class AssetsController {
     const assetIds = request.getBodyArray("ids");
 
     return this.assetService.mGetLastMeasuredAt(engineId, assetIds);
+  }
+
+  /**
+   * Update modelLocales of all assets related to the specified asset model.
+   * This operation is done to make the search assets feature  up to date
+   * @param request
+   */
+  async updateModelLocales(request: KuzzleRequest): Promise<void> {
+    const model = request.getString("model");
+    const engineGroup = request.getString("engineGroup", "commons");
+
+    await this.assetService.updateModelLocales(request, engineGroup, model);
   }
 }
