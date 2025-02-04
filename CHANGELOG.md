@@ -1,3 +1,15 @@
+## [2.8.0-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.1...v2.8.0-dev.2) (2025-02-04)
+
+
+### Features
+
+* **groupmodels:** add possibility to set up group models with metadatas ([#392](https://github.com/kuzzleio/kuzzle-device-manager/issues/392)) ([19b2b70](https://github.com/kuzzleio/kuzzle-device-manager/commit/19b2b703c8d84506909b8eb631d9a7c6f20b08ba))
+
+
+### Bug Fixes
+
+* clean on detach ([#400](https://github.com/kuzzleio/kuzzle-device-manager/issues/400)) ([cb8badf](https://github.com/kuzzleio/kuzzle-device-manager/commit/cb8badfb2ed6f37e5e618f0dbf859d772d9bfa36))
+
 ## [2.8.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.1-dev.1...v2.8.0-dev.1) (2025-02-04)
 
 
