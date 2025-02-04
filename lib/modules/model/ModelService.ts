@@ -24,6 +24,7 @@ import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupModelContent,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -34,6 +35,7 @@ import {
 import {
   AskModelAssetGet,
   AskModelDeviceGet,
+  AskModelGroupGet,
   AskModelMeasureGet,
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
@@ -67,6 +69,14 @@ export class ModelService extends BaseService {
         const deviceModel = await this.getDevice(model);
 
         return deviceModel._source;
+      },
+    );
+    onAsk<AskModelGroupGet>(
+      "ask:device-manager:model:group:get",
+      async ({ model }) => {
+        const groupModel = await this.getGroup(model);
+
+        return groupModel._source;
       },
     );
     onAsk<AskModelMeasureGet>(
@@ -125,6 +135,10 @@ export class ModelService extends BaseService {
       return elt.type === "device";
     }) as DeviceModelContent[];
 
+    const groups = documents.filter((elt) => {
+      return elt.type === "group";
+    }) as GroupModelContent[];
+
     const measures = documents.filter((elt) => {
       return elt.type === "measure";
     }) as MeasureModelContent[];
@@ -162,6 +176,22 @@ export class ModelService extends BaseService {
       if (conflicts.length > 0) {
         throw new MappingsConflictsError(
           `New devices mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+    }
+
+    if (groups.length > 0) {
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        {
+          groupModels: groups,
+        },
+      );
+
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New group mappings are causing conflicts`,
           conflicts,
         );
       }
@@ -342,7 +372,7 @@ export class ModelService extends BaseService {
 
     if (conflicts.length > 0) {
       throw new MappingsConflictsError(
-        `New assets mappings are causing conflicts`,
+        `New devices mappings are causing conflicts`,
         conflicts,
       );
     }
@@ -362,6 +392,59 @@ export class ModelService extends BaseService {
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
     return deviceModel;
+  }
+
+  async writeGroup(
+    engineGroup: string,
+    model: string,
+    metadataMappings: MetadataMappings,
+    defaultMetadata: JSONObject,
+    metadataDetails: MetadataDetails,
+    metadataGroups: MetadataGroups,
+  ): Promise<KDocument<GroupModelContent>> {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
+    }
+
+    const modelContent: GroupModelContent = {
+      engineGroup,
+      group: {
+        defaultMetadata,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+      },
+      type: "group",
+    };
+
+    const conflicts = await ask<AskEngineUpdateConflict>(
+      "ask:device-manager:engine:doesUpdateConflict",
+      { groupModels: [modelContent] },
+    );
+
+    if (conflicts.length > 0) {
+      throw new MappingsConflictsError(
+        `New group mappings are causing conflicts`,
+        conflicts,
+      );
+    }
+
+    const groupModel =
+      await this.sdk.document.createOrReplace<GroupModelContent>(
+        this.config.adminIndex,
+        InternalCollection.MODELS,
+        ModelSerializer.id<GroupModelContent>("group", modelContent),
+        modelContent,
+      );
+
+    await this.sdk.collection.refresh(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+    );
+    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+
+    return groupModel;
   }
 
   async writeMeasure(
@@ -436,6 +519,14 @@ export class ModelService extends BaseService {
     );
   }
 
+  async deleteGroup(_id: string) {
+    await this.sdk.document.delete(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      _id,
+    );
+  }
+
   async deleteMeasure(_id: string) {
     await this.sdk.document.delete(
       this.config.adminIndex,
@@ -461,6 +552,19 @@ export class ModelService extends BaseService {
     const result = await this.searchDevices({
       searchBody: {
         sort: { "device.model": "asc" },
+      },
+      size: 5000,
+    });
+
+    return result.hits;
+  }
+
+  async listGroups(
+    engineGroup: string,
+  ): Promise<KDocument<GroupModelContent>[]> {
+    const result = await this.searchGroups(engineGroup, {
+      searchBody: {
+        sort: { "group.model": "asc" },
       },
       size: 5000,
     });
@@ -526,6 +630,43 @@ export class ModelService extends BaseService {
     };
 
     return this.sdk.document.search<DeviceModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        ...searchParams.searchBody,
+        query,
+      },
+      {
+        from: searchParams.from,
+        lang: "elasticsearch",
+        scroll: searchParams.scrollTTL,
+        size: searchParams.size,
+      },
+    );
+  }
+
+  async searchGroups(
+    engineGroup: string,
+    searchParams: Partial<SearchParams>,
+  ): Promise<SearchResult<KHit<GroupModelContent>>> {
+    const query = {
+      bool: {
+        must: [
+          searchParams.searchBody.query,
+          { match: { type: "group" } },
+          {
+            bool: {
+              should: [
+                { match: { engineGroup } },
+                { match: { engineGroup: "commons" } },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    return this.sdk.document.search<GroupModelContent>(
       this.config.adminIndex,
       InternalCollection.MODELS,
       {
@@ -650,6 +791,33 @@ export class ModelService extends BaseService {
 
     if (result.total === 0) {
       throw new NotFoundError(`Unknown Device model "${model}".`);
+    }
+
+    return result.hits[0];
+  }
+
+  async getGroup(model: string): Promise<KDocument<GroupModelContent>> {
+    const query = {
+      and: [
+        { equals: { type: "group" } },
+        { equals: { "group.model": model } },
+      ],
+    };
+
+    const result = await this.sdk.document.search<GroupModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      { query },
+      { lang: "koncorde", size: 1 },
+    );
+
+    if (result.total === 0) {
+      throw new NotFoundError(`Unknown Group model "${model}".`);
+    }
+    if (result.total > 1) {
+      app.log.warn(
+        "More than 1 group definition have been found for this model",
+      );
     }
 
     return result.hits[0];

@@ -391,7 +391,136 @@ export interface DeviceModelContent extends KDocumentContent {
   };
 }
 
+export interface GroupModelContent extends KDocumentContent {
+  type: "group";
+
+  engineGroup: string;
+
+  group: {
+    /**
+     * Name of the model
+     */
+    model: string;
+
+    /**
+     * Metadata mappings.
+     *
+     * @example
+     * {
+     *   "company": {
+     *     "properties": {
+     *        "name": { "type": "keyword" },
+     *      }
+     *   }
+     * }
+     */
+    metadataMappings: MetadataMappings;
+
+    /**
+     * Default values for metadata.
+     *
+     * @example
+     * {
+     *    "company.name": "Firebird"
+     * }
+     */
+    defaultMetadata: JSONObject;
+    /**
+     * Metadata details
+     * @example
+     * {
+     *   "extTemp": {
+     *     "group": "buildingEnv",
+     *     "locales": {
+     *       "en": {
+     *          "friendlyName": "External temperature",
+     *          "description": "Building external temperature"
+     *       },
+     *       "fr": {
+     *         "friendlyName": "Température extérieure",
+     *         "description": "Température à l'exterieur du bâtiment"
+     *       },
+     *     },
+     *     "editorHint": {
+     *       "readOnly": true,
+     *       "type": EditorHintEnum.OPTION_SELECTOR,
+     *       "values": ["red", "blue"],
+     *       "customValueAllowed": true,
+     *     },
+     *   },
+     * }
+     */
+    metadataDetails?: MetadataDetails;
+    /**
+     * Metadata groups list
+     * @example
+     * {
+     *   "buildingEnv": {
+     *     "locales": {
+     *       "en": {
+     *         "groupFriendlyName": "Building environment",
+     *         "description": "The building environment"
+     *       },
+     *       "fr": {
+     *         "groupFriendlyName": "Environnement du bâtiment",
+     *         "description": "L'environnement du bâtiment"
+     *       }
+     *     }
+     *   }
+     * }
+     */
+    metadataGroups?: MetadataGroups;
+    /**
+     * List of tooltip models for this asset model
+     *
+     * @example
+     * [
+     *   "defaultTooltipKey": {
+     *     "tooltipLabel": "Default tooltip model",
+     *     "content": [
+     *       {
+     *         "metadataPath": "geolocation",
+     *         "label": {
+     *           "locales": {
+     *             "en": {
+     *               "description": "",
+     *               "friendlyName": "Container position"
+     *             },
+     *             "fr": {
+     *               "description": "",
+     *               "friendlyName": "Position du conteneur"
+     *             }
+     *           }
+     *         },
+     *         "category": "metadata"
+     *       },
+     *       {
+     *         "measureValuePath": "externalTemperature",
+     *         "measureSlot": "externalTemperature",
+     *         "label": {
+     *           "locales": {
+     *             "en": {
+     *               "description": "",
+     *               "friendlyName": "External temperature"
+     *             },
+     *             "fr": {
+     *               "description": "",
+     *               "friendlyName": "Température extérieure"
+     *             }
+     *           }
+     *         },
+     *         "category": "measure",
+     *         "suffix": "°C"
+     *       }
+     *     ]
+     *   }
+     * ]
+     */
+    tooltipModels?: TooltipModels;
+  };
+}
 export type ModelContent =
   | MeasureModelContent
   | AssetModelContent
-  | DeviceModelContent;
+  | DeviceModelContent
+  | GroupModelContent;

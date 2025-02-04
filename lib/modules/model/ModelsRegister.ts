@@ -11,6 +11,7 @@ import { MeasureDefinition } from "../measure";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupModelContent,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -30,6 +31,7 @@ export class ModelsRegister {
   private context: PluginContext;
   private assetModels: AssetModelContent[] = [];
   private deviceModels: DeviceModelContent[] = [];
+  private groupModels: GroupModelContent[] = [];
   private measureModels: MeasureModelContent[] = [];
 
   private get sdk() {
@@ -45,6 +47,7 @@ export class ModelsRegister {
     await Promise.all([
       this.load("asset", this.assetModels),
       this.load("device", this.deviceModels),
+      this.load("group", this.groupModels),
       this.load("measure", this.measureModels),
     ]);
 
@@ -153,6 +156,46 @@ export class ModelsRegister {
         model,
       },
       type: "device",
+    });
+  }
+
+  /**
+   * Registers a group model.
+   *
+   *
+   * @param engineGroup - The engine group name.
+   * @param model - The name of the group model, which must be in PascalCase.
+   * @param metadataMappings - The metadata mappings for the model, defaults to an empty object.
+   * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
+   * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
+   * @param metadataGroups - Optional groups for organizing metadata, with localizations.
+   * @throws PluginImplementationError if the model name is not in PascalCase.
+   */
+  registerGroup(
+    engineGroup: string,
+    model: string,
+    metadataMappings: MetadataMappings = {},
+    defaultMetadata: JSONObject = {},
+    metadataDetails: MetadataDetails = {},
+    metadataGroups: MetadataGroups = {},
+  ) {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new PluginImplementationError(
+        `Group model "${model}" must be PascalCase`,
+      );
+    }
+
+    // Construct and push the new group model to the groupModels array
+    this.groupModels.push({
+      engineGroup,
+      group: {
+        defaultMetadata,
+        metadataDetails,
+        metadataGroups,
+        metadataMappings,
+        model,
+      },
+      type: "group",
     });
   }
 

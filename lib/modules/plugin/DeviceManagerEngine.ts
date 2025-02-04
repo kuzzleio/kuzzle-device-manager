@@ -15,12 +15,13 @@ import {
 import { JSONObject } from "kuzzle-sdk";
 import _ from "lodash";
 
-import { assetGroupsMappings, assetsHistoryMappings } from "../asset";
+import { assetsHistoryMappings } from "../asset";
 import { NamedMeasures } from "../decoder";
 import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupModelContent,
   MeasureModelContent,
 } from "../model";
 
@@ -29,6 +30,7 @@ import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
 import {
   ConflictChunk,
+  getGroupConflicts,
   getMeasureConflicts,
   getTwinConflicts,
 } from "../model/ModelsConflicts";
@@ -74,6 +76,7 @@ export type AskEngineUpdateConflict = {
       models: TwinModelContent[];
     };
     measuresModels?: MeasureModelContent[];
+    groupModels?: GroupModelContent[];
   };
 
   result: ConflictChunk[];
@@ -123,7 +126,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
         if (
           payload.twin === undefined &&
-          payload.measuresModels === undefined
+          payload.measuresModels === undefined &&
+          payload.groupModels === undefined
         ) {
           return [];
         }
@@ -162,6 +166,16 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           return this.doesMeasuresUpdateConflicts(
             measureModels,
             payload.measuresModels,
+          );
+        }
+        if (payload.groupModels) {
+          const groupModels = await this.getModels<GroupModelContent>(
+            this.config.adminIndex,
+            "group",
+          );
+          return this.doesGroupsUpdateConflicts(
+            groupModels,
+            payload.groupModels,
           );
         }
 
@@ -206,6 +220,26 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       }
 
       conflicts.push(...getTwinConflicts(twinType, twinModels, additional));
+    }
+
+    return conflicts;
+  }
+
+  /**
+   * Return conflicts between the new and already present group models
+   *
+   * @param groupModels The already present group models
+   * @param additionalGroups The new or updated group models
+   * @returns An array of ConflictChunk
+   */
+  private async doesGroupsUpdateConflicts(
+    groupModels: GroupModelContent[],
+    additionalGroups: GroupModelContent[],
+  ): Promise<ConflictChunk[]> {
+    const conflicts: ConflictChunk[] = [];
+
+    for (const model of additionalGroups) {
+      conflicts.push(...getGroupConflicts(groupModels, model));
     }
 
     return conflicts;
@@ -406,9 +440,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    */
   async createAssetsGroupsCollection(engineId: string) {
     const settings = this.config.engineCollections.assetGroups.settings;
-
+    const mappings = await this.getAssetGroupsMappingFromDB();
     await this.tryCreateCollection(engineId, InternalCollection.ASSETS_GROUPS, {
-      mappings: assetGroupsMappings,
+      mappings,
       settings,
     });
 
@@ -615,6 +649,24 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     mappings.properties.origin.properties.deviceMetadata.properties =
       deviceMappings.properties.metadata.properties;
 
+    return mappings;
+  }
+
+  async getAssetGroupsMappingFromDB() {
+    const models = await this.getModels<GroupModelContent>(
+      this.config.adminIndex,
+      "group",
+    );
+    const mappings = JSON.parse(
+      JSON.stringify(this.config.engineCollections.assetGroups.mappings),
+    );
+
+    for (const model of models) {
+      _.merge(
+        mappings.properties.metadata.properties,
+        model.group.metadataMappings,
+      );
+    }
     return mappings;
   }
 

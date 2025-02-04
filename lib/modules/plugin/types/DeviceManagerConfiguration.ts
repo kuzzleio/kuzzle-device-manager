@@ -60,6 +60,7 @@ export type DeviceManagerConfiguration = {
     };
     assetGroups: {
       name: string;
+      mappings: JSONObject;
       settings?: JSONObject;
     };
     assetHistory: {
