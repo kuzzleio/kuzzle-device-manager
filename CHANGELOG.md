@@ -1,3 +1,10 @@
+## [2.8.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.1-dev.1...v2.8.0-dev.1) (2025-02-04)
+
+
+### Features
+
+* **deviceManagerEngine:** free devices after engine deletion ([#382](https://github.com/kuzzleio/kuzzle-device-manager/issues/382)) ([7c32f9f](https://github.com/kuzzleio/kuzzle-device-manager/commit/7c32f9f71498376e252ee250cb07efea6744f852))
+
 ## [2.7.1-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.0...v2.7.1-dev.1) (2025-02-03)
 
 
