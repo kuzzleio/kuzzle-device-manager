@@ -22,7 +22,6 @@ import {
   AskEngineList,
   DeviceManagerPlugin,
   InternalCollection,
-  SearchQueryResult,
 } from "../plugin";
 import {
   DigitalTwinService,
@@ -627,75 +626,51 @@ export class AssetService extends DigitalTwinService {
       group: engineGroup,
     });
 
-    const targets = engines.map((engine) => ({
-      collections: [InternalCollection.ASSETS],
-      index: engine.index,
-    }));
-
-    const { result: resultAssets } = await this.sdk.query<
-      BaseRequest,
-      SearchQueryResult<AssetContent>
-    >({
-      action: "search",
-      body: { query: { equals: { model } } },
-      controller: "document",
-      lang: "koncorde",
-      scroll: "2s",
-      size: 10,
-      targets,
-    });
-
-    const assets: KHit<AssetContent>[] = [];
-    assets.push(...resultAssets.hits);
-
-    let remaining = resultAssets.remaining as number;
-
-    while (remaining > 0) {
-      const { result: resultScroll } = await this.sdk.query<
-        BaseRequest,
-        SearchQueryResult<AssetContent>
-      >({
-        action: "scroll",
-        controller: "document",
-        scroll: "2s",
-        scrollId: resultAssets.scrollId,
-      });
-
-      remaining = resultScroll.remaining as number;
-      assets.push(...resultScroll.hits);
-    }
-
-    assets.map((asset) => {
-      asset._source.modelLocales = locales;
-    });
-
-    for (const asset of assets) {
-      const updatedAsset = await this.updateDocument<AssetContent>(
-        request,
-        {
-          _id: asset._id,
-          _source: { modelLocales: locales },
-        },
-        {
-          collection: InternalCollection.ASSETS,
-          engineId: asset.index,
-        },
-        { source: true },
+    for (const engine of engines) {
+      let result = await this.sdk.document.search<AssetContent>(
+        engine.index,
+        "assets",
+        { query: { equals: { model } } },
+        { lang: "koncorde", scroll: "2s", size: 50 },
       );
 
-      await this.assetHistoryService.add<AssetHistoryEventModelLocales>(
-        asset.index,
-        [
+      while (result) {
+        await this.sdk.document.updateByQuery<AssetContent>(
+          engine.index,
+          "assets",
           {
-            asset: updatedAsset._source,
-            event: {
-              name: "modelLocales",
-            },
-            id: updatedAsset._id,
-            timestamp: Date.now(),
+            and: [
+              {
+                terms: {
+                  reference: result.hits.map((d) => d._source.reference),
+                },
+              },
+            ],
           },
-        ],
-      );
+          {
+            modelLocales: locales,
+          },
+          { lang: "koncorde" },
+        );
+
+        for (const asset of result.hits) {
+          await this.assetHistoryService.add<AssetHistoryEventModelLocales>(
+            asset.index,
+            [
+              {
+                asset: asset._source,
+                event: {
+                  name: "modelLocales",
+                },
+                id: asset._id,
+                timestamp: Date.now(),
+              },
+            ],
+          );
+        }
+
+        result = await result.next();
+      }
     }
   }
 
