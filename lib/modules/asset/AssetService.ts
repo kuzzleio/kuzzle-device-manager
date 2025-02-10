@@ -22,6 +22,7 @@ import {
   AskEngineList,
   DeviceManagerPlugin,
   InternalCollection,
+  SearchQueryResult,
 } from "../plugin";
 import {
   DigitalTwinService,
@@ -612,7 +613,7 @@ export class AssetService extends DigitalTwinService {
     engineGroup: string,
     model: string,
   ): Promise<void> {
-    const { result } = await this.sdk.query({
+    const { result: resultModel } = await this.sdk.query({
       action: "getAsset",
       body: {},
       controller: "device-manager/models",
@@ -620,7 +621,7 @@ export class AssetService extends DigitalTwinService {
       model,
     });
 
-    const locales = result._source.asset.locales;
+    const locales = resultModel._source.asset.locales;
 
     const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
       group: engineGroup,
@@ -631,22 +632,44 @@ export class AssetService extends DigitalTwinService {
       index: engine.index,
     }));
 
-    const assets = await this.sdk.query<
+    const { result: resultAssets } = await this.sdk.query<
       BaseRequest,
-      DocumentSearchResult<AssetContent>
+      SearchQueryResult<AssetContent>
     >({
       action: "search",
       body: { query: { equals: { model } } },
       controller: "document",
       lang: "koncorde",
+      scroll: "2s",
+      size: 10,
       targets,
     });
 
-    assets.result.hits.map((asset) => {
+    const assets: KHit<AssetContent>[] = [];
+    assets.push(...resultAssets.hits);
+
+    let remaining = resultAssets.remaining as number;
+
+    while (remaining > 0) {
+      const { result: resultScroll } = await this.sdk.query<
+        BaseRequest,
+        SearchQueryResult<AssetContent>
+      >({
+        action: "scroll",
+        controller: "document",
+        scroll: "2s",
+        scrollId: resultAssets.scrollId,
+      });
+
+      remaining = resultScroll.remaining as number;
+      assets.push(...resultScroll.hits);
+    }
+
+    assets.map((asset) => {
       asset._source.modelLocales = locales;
     });
 
-    for (const asset of assets.result.hits) {
+    for (const asset of assets) {
       const updatedAsset = await this.updateDocument<AssetContent>(
         request,
         {
