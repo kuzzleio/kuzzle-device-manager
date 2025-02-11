@@ -92,9 +92,25 @@ The read-only feature allows to prevent users to edit a metadata.
 
 **NOTE:** The readOnly property can be set with **any** Enum type.
 
-Enum type: `BASE`
-
 :warning: Set to BASE if you **only** want the readOnly property.
+
+<table>
+  <thead>
+    <tr>
+      <th style="background-color: #e94e77" colspan="2" align="center">ENUM</th>
+    </tr>
+    <tr>
+      <th>Type</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BASE</td>
+      <td>base</td>
+    </tr>
+  </tbody>
+</table>
 
 <table>
   <thead>
@@ -121,6 +137,7 @@ Enum type: `BASE`
 **Example**
 
 ```js
+// Typescript
 {
   metadataMappings: {
     network: { type: "keyword" },
@@ -135,12 +152,44 @@ Enum type: `BASE`
   },
 },
 ```
+```js
+// Javascript
+{
+  metadataMappings: {
+    company: { type: "keyword" },
+  },
+  metadataDetails: {
+    company: {
+      editorHint: {
+        type: "base",
+        readOnly: true,
+      },
+    },
+  },
+},
+```
 
 <h3 id="dropdown-of-values" style="color: #e94e77">Dropdown of values <a href="#dropdown-of-values" class="heading-anchor-link">#</a></h3>
 
 The dropdown feature allows to display a list of values to choose in a dropdown.
 
-Enum type: `OPTION_SELECTOR`
+<table>
+  <thead>
+    <tr>
+      <th style="background-color: #e94e77" colspan="2" align="center">ENUM</th>
+    </tr>
+    <tr>
+      <th>Type</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>OPTION_SELECTOR</td>
+      <td>optionSelector</td>
+    </tr>
+  </tbody>
+</table>
 
 <table>
   <thead>
@@ -195,6 +244,23 @@ Enum type: `OPTION_SELECTOR`
 },
 ```
 
+```js
+{
+  metadataMappings: {
+    company: { type: "keyword" },
+  },
+  metadataDetails: {
+    company: {
+      editorHint: {
+        type: "optionSelector",
+        values: ["red", "blue"],
+        customValueAllowed: true,
+      },
+    },
+  },
+},
+```
+
 **Visual**
 
 ![dropdown-of-values](./dropdown-of-values.png)
@@ -203,7 +269,23 @@ Enum type: `OPTION_SELECTOR`
 
 This feature allows to display either a date picker with or without a time picker, or a clock picker.
 
-Enum type: `DATETIME`
+<table>
+  <thead>
+    <tr>
+      <th style="background-color: #e94e77" colspan="2" align="center">ENUM</th>
+    </tr>
+    <tr>
+      <th>Type</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>DATETIME</td>
+      <td>datetime</td>
+    </tr>
+  </tbody>
+</table>
 
 <table>
   <thead>
@@ -252,6 +334,24 @@ Enum type: `DATETIME`
     date: {
       editorHint: {
         type: EditorHintEnum.DATETIME,
+        date: true,
+        time: true,
+        customTimeZoneAllowed: true,
+      },
+    },
+  },
+},
+```
+
+```js
+{
+  metadataMappings: {
+    date: { type: "date" },
+  },
+  metadataDetails: {
+    date: {
+      editorHint: {
+        type: "datetime",
         date: true,
         time: true,
         customTimeZoneAllowed: true,
