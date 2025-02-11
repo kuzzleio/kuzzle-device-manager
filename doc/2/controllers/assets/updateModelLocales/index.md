@@ -7,7 +7,7 @@ description: Update all assets localization
 
 # update
 
-Update all assets localization.
+Update all existing assets localization.
 
 The `updateModelLocales` operation allows you to update the `locales` of all `assets` related to the specified `asset model`.
 The process retrieve the locales values stored in the asset model and update the locales of all the assets with these values. For the moment, this operation has to be done `manually` when the asset model locales changed to make the `search` operation on assets to `be up to date`.

@@ -101,12 +101,12 @@ await sdk.query({
     },
     locales: {
       en: {
-        friendlyName: "Light measurement",
-        description: "Light measurement",
+        modelFriendlyName: "Light measurement",
+        modelDescription: "Light measurement",
       },
       fr: {
-        friendlyName: "Mesure de lumière",
-        description: "Mesure de lumière",
+        modelFriendlyName: "Mesure de lumière",
+        modelDescription: "Mesure de lumière",
       },
     }
   },
