@@ -611,7 +611,7 @@ export class AssetService extends DigitalTwinService {
     request: KuzzleRequest,
     engineGroup: string,
     model: string,
-  ): Promise<void> {
+  ) {
     const { result: resultModel } = await this.sdk.query({
       action: "getAsset",
       body: {},
@@ -626,52 +626,50 @@ export class AssetService extends DigitalTwinService {
       group: engineGroup,
     });
 
-    for (const engine of engines) {
-      let result = await this.sdk.document.search<AssetContent>(
-        engine.index,
-        "assets",
-        { query: { equals: { model } } },
-        { lang: "koncorde", scroll: "2s", size: 50 },
-      );
+    const res = { errors: [], successes: [] };
 
-      while (result) {
+    for (const engine of engines) {
+      const resUpdateByQuery =
         await this.sdk.document.updateByQuery<AssetContent>(
           engine.index,
           "assets",
           {
-            and: [
-              {
-                terms: {
-                  reference: result.hits.map((d) => d._source.reference),
+            bool: {
+              must: [
+                {
+                  term: {
+                    model: "Container",
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
           {
             modelLocales: locales,
           },
-          { lang: "koncorde" },
         );
 
-        for (const asset of result.hits) {
-          await this.assetHistoryService.add<AssetHistoryEventModelLocales>(
-            asset.index,
-            [
-              {
-                asset: asset._source,
-                event: {
-                  name: "modelLocales",
-                },
-                id: asset._id,
-                timestamp: Date.now(),
-              },
-            ],
-          );
-        }
+      res.successes.push(...resUpdateByQuery.successes);
+      res.errors.push(...resUpdateByQuery.errors);
 
-        result = await result.next();
-      }
+      // for (const asset of res.successes) {
+      //   await this.assetHistoryService.add<AssetHistoryEventModelLocales>(
+      //     engine.index,
+      //     [
+      //       {
+      //         asset: asset._source,
+      //         event: {
+      //           name: "modelLocales",
+      //         },
+      //         id: asset._id,
+      //         timestamp: Date.now(),
+      //       },
+      //     ],
+      //   );
+      // }
     }
+
+    return res;
   }
 
   private async getEngine(engineId: string): Promise<JSONObject> {

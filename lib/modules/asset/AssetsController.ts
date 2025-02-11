@@ -760,10 +760,10 @@ export class AssetsController {
    * This operation is done to make the search assets feature  up to date
    * @param request
    */
-  async updateModelLocales(request: KuzzleRequest): Promise<void> {
+  async updateModelLocales(request: KuzzleRequest) {
     const model = request.getString("model");
     const engineGroup = request.getString("engineGroup", "commons");
 
-    await this.assetService.updateModelLocales(request, engineGroup, model);
+    return this.assetService.updateModelLocales(request, engineGroup, model);
   }
 }
