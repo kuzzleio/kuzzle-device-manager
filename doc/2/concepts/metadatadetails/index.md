@@ -78,9 +78,9 @@ First, create a `metadataGroups` object at the same level as `metadataDetails`, 
 
 This property allows to specify the frontend whether it should display a custom widget to edit the metadata, like a dropdown of values, a clock picker or date picker with or without time, make a metadata read-only, and so on.
 
-You have to set the enum type associated to the hint you want and fill the properties with your values.
+**You have to set** the `enum type` associated to the `hint` you want and fill the properties with your values.
 
-This is the list of the available hints:
+This is the list of the available `hints`:
 
 - [Read only](#read-only)
 - [Dropdown of values](#dropdown-of-values)
@@ -126,13 +126,13 @@ Enum type: `BASE`
     network: { type: "keyword" },
   },
   metadataDetails: {
-		network: {
-			editorHint: {
-				type: EditorHintEnum.BASE,
-				readOnly: true,
-			},
-		},
-	}
+    network: {
+      editorHint: {
+        type: EditorHintEnum.BASE,
+        readOnly: true,
+      },
+    },
+  },
 },
 ```
 
@@ -157,13 +157,19 @@ Enum type: `OPTION_SELECTOR`
   <tbody>
     <tr>
       <td>values</td>
-      <td><code>string[] | number[] | boolean[]</code></td>
-      <td>A list that represents all the values displayed in a dropdown.</td>
+      <td>
+        <code>string[]</br>number[]</br>boolean[]</code>
+      </td>
+      <td>
+        A list that represents all the values displayed in a dropdown.
+      </td>
       <td>No</td>
     </tr>
     <tr>
       <td>customValueAllowed</td>
-      <td><code>boolean</code></td>
+      <td>
+        <code>boolean</code>
+      </td>
       <td>Allows users to add custom values.</td>
       <td>Yes</td>
     </tr>
@@ -178,13 +184,13 @@ Enum type: `OPTION_SELECTOR`
     company: { type: "keyword" },
   },
   metadataDetails: {
-		company: {
-			editorHint: {
-				type: EditorHintEnum.OPTION_SELECTOR,
-				values: ["red", "blue"],
-				customValueAllowed: true,
-			},
-		}
+    company: {
+      editorHint: {
+        type: EditorHintEnum.OPTION_SELECTOR,
+        values: ["red", "blue"],
+        customValueAllowed: true,
+      },
+    },
   },
 },
 ```
@@ -214,14 +220,22 @@ Enum type: `DATETIME`
   <tbody>
     <tr>
       <td>date</td>
-      <td><code>boolean</code></td>
-      <td>If true, displays a date picker, otherwise displays a clock picker.</td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        If true, displays a date picker, otherwise displays a clock picker.
+      </td>
       <td>No</td>
     </tr>
     <tr>
       <td>time</td>
-      <td><code>boolean</code></td>
-      <td>If `date` is true, setting this to true will add time picking to the date picker.</td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        If `date` is true, setting this to true will add time picking to the date picker.
+      </td>
       <td>Yes</td>
     </tr>
   </tbody>
@@ -236,13 +250,13 @@ Enum type: `DATETIME`
   },
   metadataDetails: {
     date: {
-			editorHint: {
-				type: EditorHintEnum.DATETIME,
-				date: true,
-				time: true,
-				customTimeZoneAllowed: true,
-			},
-    }
+      editorHint: {
+        type: EditorHintEnum.DATETIME,
+        date: true,
+        time: true,
+        customTimeZoneAllowed: true,
+      },
+    },
   },
 },
 ```
