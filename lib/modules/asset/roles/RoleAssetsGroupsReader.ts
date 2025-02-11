@@ -32,6 +32,12 @@ export const RoleAssetsGroupsReader: KuzzleRole = {
           search: true,
         },
       },
+      "device-manager/models": {
+        actions: {
+          listGroups: true,
+          getGroup: true,
+        },
+      },
     },
   },
 };
