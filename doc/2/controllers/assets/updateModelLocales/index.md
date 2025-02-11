@@ -18,7 +18,7 @@ The process retrieve the locales values stored in the asset model and update the
 
 ```http
 URL: http://kuzzle:7512/_/device-manager/assets/modelLocales
-Method: PUT
+Method: PATCH
 ```
 
 ## Other protocols
