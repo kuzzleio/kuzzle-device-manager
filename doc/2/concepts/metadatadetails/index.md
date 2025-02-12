@@ -90,15 +90,17 @@ This is the list of the available `hints`:
 
 The read-only feature allows to prevent users to edit a metadata.
 
-**NOTE:** The readOnly property can be set with **any** Enum type.
+::: info
+Set to BASE if you **only** want the readOnly property.
+:::
+::: info
+The readOnly property can be set with **other** Enum type too.
+:::
 
-:warning: Set to BASE if you **only** want the readOnly property.
+### Enum
 
 <table>
   <thead>
-    <tr>
-      <th style="background-color: #e94e77" colspan="2" align="center">ENUM</th>
-    </tr>
     <tr>
       <th>Type</th>
       <th>Value</th>
@@ -106,17 +108,16 @@ The read-only feature allows to prevent users to edit a metadata.
   </thead>
   <tbody>
     <tr>
-      <td>BASE</td>
+      <td><code>BASE</code></td>
       <td>base</td>
     </tr>
   </tbody>
 </table>
 
+### Properties
+
 <table>
   <thead>
-    <tr>
-      <th style="background-color: #e94e77" colspan="4" align="center">PROPERTIES</th>
-    </tr>
     <tr>
       <th>Name</th>
       <th>Type</th>
@@ -126,15 +127,15 @@ The read-only feature allows to prevent users to edit a metadata.
   </thead>
   <tbody>
     <tr>
-      <td>readOnly</td>
-      <td><code>boolean</code></td>
+      <td><code>readOnly</code></td>
+      <td>boolean</td>
       <td>It displays or not the edit button</td>
-      <td>Yes</td>
+      <td><strong>Yes</strong></td>
     </tr>
   </tbody>
 </table>
 
-**Example**
+**Examples**
 
 ```js
 // Typescript
@@ -156,10 +157,10 @@ The read-only feature allows to prevent users to edit a metadata.
 // Javascript
 {
   metadataMappings: {
-    company: { type: "keyword" },
+    network: { type: "keyword" },
   },
   metadataDetails: {
-    company: {
+    network: {
       editorHint: {
         type: "base",
         readOnly: true,
@@ -173,11 +174,10 @@ The read-only feature allows to prevent users to edit a metadata.
 
 The dropdown feature allows to display a list of values to choose in a dropdown.
 
+### Enum
+
 <table>
   <thead>
-    <tr>
-      <th style="background-color: #e94e77" colspan="2" align="center">ENUM</th>
-    </tr>
     <tr>
       <th>Type</th>
       <th>Value</th>
@@ -185,17 +185,16 @@ The dropdown feature allows to display a list of values to choose in a dropdown.
   </thead>
   <tbody>
     <tr>
-      <td>OPTION_SELECTOR</td>
+      <td><code>OPTION_SELECTOR</code></td>
       <td>optionSelector</td>
     </tr>
   </tbody>
 </table>
 
+### Properties
+
 <table>
   <thead>
-    <tr>
-      <th style="background-color: #e94e77" colspan="4" align="center">PROPERTIES</th>
-    </tr>
     <tr>
       <th>Name</th>
       <th>Type</th>
@@ -205,22 +204,16 @@ The dropdown feature allows to display a list of values to choose in a dropdown.
   </thead>
   <tbody>
     <tr>
-      <td>values</td>
-      <td>
-        <code>string[]</br>number[]</br>boolean[]</code>
-      </td>
-      <td>
-        A list that represents all the values displayed in a dropdown.
-      </td>
-      <td>No</td>
+      <td><code>values</code></td>
+      <td>string[] <br> number[] <br> boolean[]</td>
+      <td>A list that represents all the values displayed in a dropdown.</td>
+      <td><strong>No</strong></td>
     </tr>
     <tr>
-      <td>customValueAllowed</td>
-      <td>
-        <code>boolean</code>
-      </td>
+      <td><code>customValueAllowed</code></td>
+      <td>boolean</td>
       <td>Allows users to add custom values.</td>
-      <td>Yes</td>
+      <td><strong>Yes</strong></td>
     </tr>
   </tbody>
 </table>
@@ -228,6 +221,7 @@ The dropdown feature allows to display a list of values to choose in a dropdown.
 **Example**
 
 ```js
+// Typescript
 {
   metadataMappings: {
     company: { type: "keyword" },
@@ -243,8 +237,8 @@ The dropdown feature allows to display a list of values to choose in a dropdown.
   },
 },
 ```
-
 ```js
+// Javascript
 {
   metadataMappings: {
     company: { type: "keyword" },
@@ -269,11 +263,10 @@ The dropdown feature allows to display a list of values to choose in a dropdown.
 
 This feature allows to display either a date picker with or without a time picker, or a clock picker.
 
+### Enum
+
 <table>
   <thead>
-    <tr>
-      <th style="background-color: #e94e77" colspan="2" align="center">ENUM</th>
-    </tr>
     <tr>
       <th>Type</th>
       <th>Value</th>
@@ -281,17 +274,16 @@ This feature allows to display either a date picker with or without a time picke
   </thead>
   <tbody>
     <tr>
-      <td>DATETIME</td>
+      <td><code>DATETIME</code></td>
       <td>datetime</td>
     </tr>
   </tbody>
 </table>
 
+### Properties
+
 <table>
   <thead>
-    <tr>
-      <th style="background-color: #e94e77" colspan="4" align="center">PROPERTIES</th>
-    </tr>
     <tr>
       <th>Name</th>
       <th>Type</th>
@@ -301,24 +293,16 @@ This feature allows to display either a date picker with or without a time picke
   </thead>
   <tbody>
     <tr>
-      <td>date</td>
-      <td>
-        <code>boolean</code>
-      </td>
-      <td>
-        If true, displays a date picker, otherwise displays a clock picker.
-      </td>
-      <td>No</td>
+      <td><code>date</code></td>
+      <td>boolean</td>
+      <td>If true, displays a date picker, otherwise displays a clock picker.</td>
+      <td><strong>No</strong></td>
     </tr>
     <tr>
-      <td>time</td>
-      <td>
-        <code>boolean</code>
-      </td>
-      <td>
-        If `date` is true, setting this to true will add time picking to the date picker.
-      </td>
-      <td>Yes</td>
+      <td><code>time</code></td>
+      <td>boolean</td>
+      <td>If <code>date</code> is true, setting this to true will add time picking to the date picker.</td>
+      <td><strong>Yes</strong></td>
     </tr>
   </tbody>
 </table>
@@ -326,6 +310,7 @@ This feature allows to display either a date picker with or without a time picke
 **Example**
 
 ```js
+// Typescript
 {
   metadataMappings: {
     date: { type: "date" },
@@ -342,8 +327,8 @@ This feature allows to display either a date picker with or without a time picke
   },
 },
 ```
-
 ```js
+// Javascript
 {
   metadataMappings: {
     date: { type: "date" },
