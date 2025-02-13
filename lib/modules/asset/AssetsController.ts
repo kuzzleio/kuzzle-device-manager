@@ -15,7 +15,7 @@ import {
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { DigitalTwinExporter, EmbeddedMeasure } from "../shared";
 
-import { AssetService, EngineUpdateByQuery } from "./AssetService";
+import { AssetService } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
 import {
   ApiAssetCreateResult,
@@ -31,6 +31,7 @@ import {
   ApiAssetMGetLastMeasuredAtResult,
   ApiAssetMGetLastMeasuresResult,
   ApiAssetGetLastMeasuredAtResult,
+  ApiAssetUpdateModelLocales,
 } from "./types/AssetApi";
 import { isSourceApi } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
@@ -762,21 +763,17 @@ export class AssetsController {
    */
   async updateModelLocales(
     request: KuzzleRequest,
-  ): Promise<EngineUpdateByQuery[]> {
+  ): Promise<ApiAssetUpdateModelLocales[]> {
     const model = request.getString("model");
     const engineGroup = request.getString("engineGroup", "commons");
 
-    let res;
-
     try {
-      res = this.assetService.updateModelLocales(request, engineGroup, model);
-      return res;
-    } catch (error) {
+      return this.assetService.updateModelLocales(request, engineGroup, model);
+    } catch (e) {
       request.response.configure({
-        status: (error as KuzzleError).status,
+        status: (e as KuzzleError).status,
       });
-
-      return res;
+      return e;
     }
   }
 }

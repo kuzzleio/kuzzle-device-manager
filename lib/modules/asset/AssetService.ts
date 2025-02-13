@@ -8,7 +8,6 @@ import {
   KHit,
   SearchResult,
   mReplaceResponse,
-  UpdateByQueryResponse,
 } from "kuzzle-sdk";
 import _ from "lodash";
 
@@ -35,7 +34,10 @@ import {
 
 import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetSerializer } from "./model/AssetSerializer";
-import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
+import {
+  ApiAssetMigrateTenantResult,
+  ApiAssetUpdateModelLocales,
+} from "./types/AssetApi";
 import { AssetContent } from "./types/AssetContent";
 import {
   AskAssetRefreshModel,
@@ -611,14 +613,25 @@ export class AssetService extends DigitalTwinService {
     request: KuzzleRequest,
     engineGroup: string,
     model: string,
-  ): Promise<EngineUpdateByQuery[]> {
-    const { result: resultModel } = await this.sdk.query({
-      action: "getAsset",
-      body: {},
-      controller: "device-manager/models",
-      engineGroup,
-      model,
-    });
+  ): Promise<ApiAssetUpdateModelLocales[]> {
+    let resultModel: JSONObject;
+
+    try {
+      const { result: fetchedResult } = await this.sdk.query({
+        action: "getAsset",
+        body: {},
+        controller: "device-manager/models",
+        engineGroup,
+        model,
+      });
+      resultModel = fetchedResult;
+    } catch (e) {
+      throw new BadRequestError(
+        `${e} Verify in your arguments that the asset model belongs to the engineGroup "${engineGroup}"`,
+        {},
+        400,
+      );
+    }
 
     const locales = resultModel._source.asset.locales;
 
@@ -626,10 +639,10 @@ export class AssetService extends DigitalTwinService {
       group: engineGroup,
     });
 
-    const res2: EngineUpdateByQuery[] = [];
+    const results: ApiAssetUpdateModelLocales[] = [];
 
     for (const engine of engines) {
-      const resUpdateByQuery =
+      const resultUpdateByQuery =
         await this.sdk.document.updateByQuery<AssetContent>(
           engine.index,
           "assets",
@@ -649,21 +662,22 @@ export class AssetService extends DigitalTwinService {
           },
         );
 
-      res2.push({
+      results.push({
         engineIndex: engine.index,
         result: {
-          errors: [...resUpdateByQuery.errors],
-          successes: [...resUpdateByQuery.successes],
+          errors: [...resultUpdateByQuery.errors],
+          successes: [...resultUpdateByQuery.successes],
         },
       });
     }
-    const errorsFiltered = res2.filter((re) => re.result.errors.length > 0);
 
-    if (errorsFiltered.length === res2.length) {
+    const errorsFiltered = results.filter((re) => re.result.errors.length > 0);
+
+    if (errorsFiltered.length === results.length) {
       throw new BadRequestError("All the assets failed to be updated", {}, 400);
     }
 
-    if (errorsFiltered.length < res2.length && errorsFiltered.length !== 0) {
+    if (errorsFiltered.length < results.length && errorsFiltered.length !== 0) {
       throw new PartialError(
         "Some assets failed to be updated",
         errorsFiltered,
@@ -672,7 +686,7 @@ export class AssetService extends DigitalTwinService {
       );
     }
 
-    return res2;
+    return results;
   }
 
   private async getEngine(engineId: string): Promise<JSONObject> {
@@ -756,9 +770,4 @@ export class AssetService extends DigitalTwinService {
       ),
     );
   }
-}
-
-export interface EngineUpdateByQuery {
-  engineIndex: string;
-  result: UpdateByQueryResponse<AssetContent>;
 }
