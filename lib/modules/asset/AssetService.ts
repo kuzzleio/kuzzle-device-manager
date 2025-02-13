@@ -8,6 +8,7 @@ import {
   KHit,
   SearchResult,
   mReplaceResponse,
+  UpdateByQueryResponse,
 } from "kuzzle-sdk";
 import _ from "lodash";
 
@@ -44,7 +45,6 @@ import {
 import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
-  AssetHistoryEventModelLocales,
 } from "./types/AssetHistoryContent";
 
 export class AssetService extends DigitalTwinService {
@@ -611,7 +611,7 @@ export class AssetService extends DigitalTwinService {
     request: KuzzleRequest,
     engineGroup: string,
     model: string,
-  ) {
+  ): Promise<EngineUpdateByQuery[]> {
     const { result: resultModel } = await this.sdk.query({
       action: "getAsset",
       body: {},
@@ -626,7 +626,7 @@ export class AssetService extends DigitalTwinService {
       group: engineGroup,
     });
 
-    const res = { errors: [], successes: [] };
+    const res2: EngineUpdateByQuery[] = [];
 
     for (const engine of engines) {
       const resUpdateByQuery =
@@ -638,7 +638,7 @@ export class AssetService extends DigitalTwinService {
               must: [
                 {
                   term: {
-                    model: "Container",
+                    model: model,
                   },
                 },
               ],
@@ -649,27 +649,16 @@ export class AssetService extends DigitalTwinService {
           },
         );
 
-      res.successes.push(...resUpdateByQuery.successes);
-      res.errors.push(...resUpdateByQuery.errors);
-
-      // for (const asset of res.successes) {
-      //   await this.assetHistoryService.add<AssetHistoryEventModelLocales>(
-      //     engine.index,
-      //     [
-      //       {
-      //         asset: asset._source,
-      //         event: {
-      //           name: "modelLocales",
-      //         },
-      //         id: asset._id,
-      //         timestamp: Date.now(),
-      //       },
-      //     ],
-      //   );
-      // }
+      res2.push({
+        engineIndex: engine.index,
+        result: {
+          errors: [...resUpdateByQuery.errors],
+          successes: [...resUpdateByQuery.successes],
+        },
+      });
     }
 
-    return res;
+    return res2;
   }
 
   private async getEngine(engineId: string): Promise<JSONObject> {
@@ -753,4 +742,9 @@ export class AssetService extends DigitalTwinService {
       ),
     );
   }
+}
+
+export interface EngineUpdateByQuery {
+  engineIndex: string;
+  result: UpdateByQueryResponse<AssetContent>;
 }

@@ -15,7 +15,7 @@ import {
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { DigitalTwinExporter, EmbeddedMeasure } from "../shared";
 
-import { AssetService } from "./AssetService";
+import { AssetService, EngineUpdateByQuery } from "./AssetService";
 import { AssetSerializer } from "./model/AssetSerializer";
 import {
   ApiAssetCreateResult,
@@ -760,7 +760,9 @@ export class AssetsController {
    * This operation is done to make the search assets feature  up to date
    * @param request
    */
-  async updateModelLocales(request: KuzzleRequest) {
+  async updateModelLocales(
+    request: KuzzleRequest,
+  ): Promise<EngineUpdateByQuery[]> {
     const model = request.getString("model");
     const engineGroup = request.getString("engineGroup", "commons");
 
