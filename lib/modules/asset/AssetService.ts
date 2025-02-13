@@ -1,4 +1,4 @@
-import { BadRequestError, KuzzleRequest, User } from "kuzzle";
+import { BadRequestError, KuzzleRequest, PartialError, User } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
@@ -656,6 +656,20 @@ export class AssetService extends DigitalTwinService {
           successes: [...resUpdateByQuery.successes],
         },
       });
+    }
+    const errorsFiltered = res2.filter((re) => re.result.errors.length > 0);
+
+    if (errorsFiltered.length === res2.length) {
+      throw new BadRequestError("All the assets failed to be updated", {}, 400);
+    }
+
+    if (errorsFiltered.length < res2.length && errorsFiltered.length !== 0) {
+      throw new PartialError(
+        "Some assets failed to be updated",
+        errorsFiltered,
+        {},
+        206,
+      );
     }
 
     return res2;

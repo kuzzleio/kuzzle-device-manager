@@ -766,6 +766,17 @@ export class AssetsController {
     const model = request.getString("model");
     const engineGroup = request.getString("engineGroup", "commons");
 
-    return this.assetService.updateModelLocales(request, engineGroup, model);
+    let res;
+
+    try {
+      res = this.assetService.updateModelLocales(request, engineGroup, model);
+      return res;
+    } catch (error) {
+      request.response.configure({
+        status: (error as KuzzleError).status,
+      });
+
+      return res;
+    }
   }
 }
