@@ -181,6 +181,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataDetails,
           definition.metadataGroups,
           definition.tooltipModels,
+          definition.locales,
         );
       },
 

@@ -1,4 +1,10 @@
-import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
+import {
+  JSONObject,
+  KDocument,
+  KHit,
+  SearchResult,
+  UpdateByQueryResponse,
+} from "kuzzle-sdk";
 
 import { MeasureContent, Measurement } from "../../../modules/measure";
 import {
@@ -257,3 +263,8 @@ export type ApiAssetMGetLastMeasuredAtRequest =
   ApiDigitalTwinMGetLastMeasuredAtRequest<AssetsControllerName>;
 export type ApiAssetMGetLastMeasuredAtResult =
   ApiDigitalTwinMGetLastMeasuredAtResult;
+
+export type ApiAssetUpdateModelLocales = {
+  engineIndex: string;
+  result: UpdateByQueryResponse<AssetContent>;
+};

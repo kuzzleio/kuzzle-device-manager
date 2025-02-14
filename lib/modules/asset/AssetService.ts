@@ -1,4 +1,4 @@
-import { BadRequestError, KuzzleRequest, User } from "kuzzle";
+import { BadRequestError, KuzzleRequest, PartialError, User } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
@@ -34,7 +34,10 @@ import {
 
 import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetSerializer } from "./model/AssetSerializer";
-import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
+import {
+  ApiAssetMigrateTenantResult,
+  ApiAssetUpdateModelLocales,
+} from "./types/AssetApi";
 import { AssetContent } from "./types/AssetContent";
 import {
   AskAssetRefreshModel,
@@ -314,6 +317,7 @@ export class AssetService extends DigitalTwinService {
             measures,
             metadata: { ...assetMetadata, ...metadata },
             model,
+            modelLocales: assetModel.asset.locales,
             reference,
             softTenant: [],
           },
@@ -596,6 +600,93 @@ export class AssetService extends DigitalTwinService {
     );
 
     return replacedAssets;
+  }
+
+  /**
+   * Retrieve locales with the specified model and search all assets related to the model to update the locales.
+   * The operation is historized.
+   * @param request
+   * @param engineGroup
+   * @param model
+   */
+  public async updateModelLocales(
+    request: KuzzleRequest,
+    engineGroup: string,
+    model: string,
+  ): Promise<ApiAssetUpdateModelLocales[]> {
+    let resultModel: JSONObject;
+
+    try {
+      const { result: fetchedResult } = await this.sdk.query({
+        action: "getAsset",
+        body: {},
+        controller: "device-manager/models",
+        engineGroup,
+        model,
+      });
+      resultModel = fetchedResult;
+    } catch (e) {
+      throw new BadRequestError(
+        `${e} Verify in your arguments that the asset model belongs to the engineGroup "${engineGroup}"`,
+        {},
+        400,
+      );
+    }
+
+    const locales = resultModel._source.asset.locales;
+
+    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+      group: engineGroup,
+    });
+
+    const results: ApiAssetUpdateModelLocales[] = [];
+
+    for (const engine of engines) {
+      const resultUpdateByQuery =
+        await this.sdk.document.updateByQuery<AssetContent>(
+          engine.index,
+          "assets",
+          {
+            bool: {
+              must: [
+                {
+                  term: {
+                    model: model,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            modelLocales: locales,
+          },
+        );
+
+      results.push({
+        engineIndex: engine.index,
+        result: {
+          errors: [...resultUpdateByQuery.errors],
+          successes: [...resultUpdateByQuery.successes],
+        },
+      });
+    }
+
+    const errorsFiltered = results.filter((re) => re.result.errors.length > 0);
+
+    if (errorsFiltered.length === results.length) {
+      throw new BadRequestError("All the assets failed to be updated", {}, 400);
+    }
+
+    if (errorsFiltered.length < results.length && errorsFiltered.length !== 0) {
+      throw new PartialError(
+        "Some assets failed to be updated",
+        errorsFiltered,
+        {},
+        206,
+      );
+    }
+
+    return results;
   }
 
   private async getEngine(engineId: string): Promise<JSONObject> {

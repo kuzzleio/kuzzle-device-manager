@@ -9,6 +9,7 @@ export interface MeasureModelContent extends KDocumentContent {
 
   measure: MeasureDefinition & {
     type: string;
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 
@@ -296,6 +297,8 @@ export interface AssetModelContent extends KDocumentContent {
      * ]
      */
     tooltipModels?: TooltipModels;
+
+    locales?: { [locale: string]: LocaleDetails };
   };
 }
 

@@ -4,6 +4,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
   GroupModelContent,
+  LocaleDetails,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -54,6 +55,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 export type ApiModelWriteAssetResult = KDocument<AssetModelContent>;
@@ -91,6 +93,9 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
 
   body: {
     type: string;
+    locales?: {
+      [valueName: string]: LocaleDetails;
+    };
     valuesMappings: JSONObject;
     validationSchema?: SchemaObject;
     valuesDetails?: MeasureValuesDetails;
@@ -111,6 +116,7 @@ export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 export type ApiModelUpdateAssetResult = KDocument<AssetModelContent>;
