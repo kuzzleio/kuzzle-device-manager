@@ -21,10 +21,6 @@ export type AssetHistoryEventMetadata = {
   metadata: AssetHistoryMetadata;
 };
 
-export type AssetHistoryEventModelLocales = {
-  name: "modelLocales";
-};
-
 export type AssetHistoryEventLink = {
   name: "link";
   link: {
@@ -43,8 +39,7 @@ export type AssetHistoryEvent =
   | AssetHistoryEventMeasure
   | AssetHistoryEventMetadata
   | AssetHistoryEventLink
-  | AssetHistoryEventUnlink
-  | AssetHistoryEventModelLocales;
+  | AssetHistoryEventUnlink;
 
 /**
  * Asset History document content
