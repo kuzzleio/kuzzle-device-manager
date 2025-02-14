@@ -1,3 +1,10 @@
+## [2.8.0-dev.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.3...v2.8.0-dev.4) (2025-02-14)
+
+
+### Features
+
+* update measure model for localization ([#385](https://github.com/kuzzleio/kuzzle-device-manager/issues/385)) ([429678f](https://github.com/kuzzleio/kuzzle-device-manager/commit/429678f3f224687911e78eb54f7fed4e932b9c38))
+
 ## [2.8.0-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.2...v2.8.0-dev.3) (2025-02-12)
 
 
