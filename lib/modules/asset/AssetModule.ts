@@ -9,18 +9,24 @@ import { RoleAssetsReader } from "./roles/RoleAssetsReader";
 import { RoleAssetsGroupsAdmin } from "./roles/RoleAssetsGroupsAdmin";
 import { RoleAssetsGroupsReader } from "./roles/RoleAssetsGroupsReader";
 import * as specificRoles from "./roles/specificRoles";
+import { AssetsGroupsService } from "./AssetsGroupsService";
 
 export class AssetModule extends Module {
   private assetService: AssetService;
   private assetHistoryService: AssetHistoryService;
   private assetController: AssetsController;
   private assetGroupsController: AssetsGroupsController;
+  private assetsGroupsService: AssetsGroupsService;
 
   public async init(): Promise<void> {
     this.assetHistoryService = new AssetHistoryService(this.plugin);
     this.assetService = new AssetService(this.plugin, this.assetHistoryService);
     this.assetController = new AssetsController(this.plugin, this.assetService);
-    this.assetGroupsController = new AssetsGroupsController(this.plugin);
+    this.assetsGroupsService = new AssetsGroupsService(this.plugin);
+    this.assetGroupsController = new AssetsGroupsController(
+      this.plugin,
+      this.assetsGroupsService,
+    );
 
     this.plugin.api["device-manager/assetsGroup"] =
       this.assetGroupsController.definition;
