@@ -1,3 +1,10 @@
+## [2.8.0-dev.6](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.5...v2.8.0-dev.6) (2025-02-17)
+
+
+### Bug Fixes
+
+* **device:** use `_attachEngine` on create and upsert ([#405](https://github.com/kuzzleio/kuzzle-device-manager/issues/405)) ([94d44ed](https://github.com/kuzzleio/kuzzle-device-manager/commit/94d44ed164f1731fcdbf2addeddbef7f82708a7d))
+* **digitalTwin:** correct race condition ([#398](https://github.com/kuzzleio/kuzzle-device-manager/issues/398)) ([8da2861](https://github.com/kuzzleio/kuzzle-device-manager/commit/8da2861f974868414505893f043781f57c55aa82))
 
 ## [2.7.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.1...v2.7.2) (2025-02-17)
 
