@@ -146,63 +146,65 @@ export class AssetService extends DigitalTwinService {
     metadata: Metadata,
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
-    const asset = await this.get(engineId, assetId, request);
-    const unknownMetadata = {};
-    for (const key in metadata) {
-      if (key in asset._source.metadata) {
-        asset._source.metadata[key] = metadata[key];
-      } else {
-        unknownMetadata[key] = metadata[key];
-      }
-    }
-    // ? If metadata key is unknown on the asset we check that it exists in the assetModel mappings
-    if (Object.keys(unknownMetadata).length > 0) {
-      const assetModel = await ask<AskModelAssetGet>(
-        "ask:device-manager:model:asset:get",
-        { engineGroup: engineId.split("-")[1], model: asset._source.model },
-      );
-      for (const key in unknownMetadata) {
-        if (key in assetModel.asset.metadataMappings) {
-          asset._source.metadata[key] = unknownMetadata[key];
+    return lock(`asset:${engineId}:${assetId}`, async () => {
+      const asset = await this.get(engineId, assetId, request);
+      const unknownMetadata = {};
+      for (const key in metadata) {
+        if (key in asset._source.metadata) {
+          asset._source.metadata[key] = metadata[key];
+        } else {
+          unknownMetadata[key] = metadata[key];
         }
       }
-    }
-    const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
-      "device-manager:asset:update:before",
-      { asset, metadata },
-    );
+      // ? If metadata key is unknown on the asset we check that it exists in the assetModel mappings
+      if (Object.keys(unknownMetadata).length > 0) {
+        const assetModel = await ask<AskModelAssetGet>(
+          "ask:device-manager:model:asset:get",
+          { engineGroup: engineId.split("-")[1], model: asset._source.model },
+        );
+        for (const key in unknownMetadata) {
+          if (key in assetModel.asset.metadataMappings) {
+            asset._source.metadata[key] = unknownMetadata[key];
+          }
+        }
+      }
+      const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
+        "device-manager:asset:update:before",
+        { asset, metadata },
+      );
 
-    const updatedAsset = await this.sdk.document.replace<AssetContent>(
-      engineId,
-      InternalCollection.ASSETS,
-      assetId,
-      updatedPayload.asset._source,
-      { triggerEvents: true },
-    );
+      const updatedAsset = await this.sdk.document.replace<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        assetId,
+        updatedPayload.asset._source,
+        { triggerEvents: true },
+      );
 
-    await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
-      {
-        asset: updatedAsset._source,
-        event: {
-          metadata: {
-            names: Object.keys(flattenObject(updatedPayload.metadata)),
+      await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
+        {
+          asset: updatedAsset._source,
+          event: {
+            metadata: {
+              names: Object.keys(flattenObject(updatedPayload.metadata)),
+            },
+            name: "metadata",
           },
-          name: "metadata",
+          id: updatedAsset._id,
+          timestamp: Date.now(),
         },
-        id: updatedAsset._id,
-        timestamp: Date.now(),
-      },
-    ]);
+      ]);
 
-    await this.app.trigger<EventAssetUpdateAfter>(
-      "device-manager:asset:update:after",
-      {
-        asset: updatedAsset,
-        metadata: updatedPayload.metadata,
-      },
-    );
+      await this.app.trigger<EventAssetUpdateAfter>(
+        "device-manager:asset:update:after",
+        {
+          asset: updatedAsset,
+          metadata: updatedPayload.metadata,
+        },
+      );
 
-    return updatedAsset;
+      return updatedAsset;
+    });
   }
 
   /**
@@ -215,14 +217,22 @@ export class AssetService extends DigitalTwinService {
     metadata: Metadata,
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
-    const assetId = `${model}-${reference}`;
+    const assetId = AssetSerializer.id(model, reference);
+
     return lock(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request).catch(
         () => null,
       );
 
       if (!asset) {
-        return this.create(engineId, model, reference, metadata, request);
+        return this._create(
+          assetId,
+          engineId,
+          model,
+          reference,
+          metadata,
+          request,
+        );
       }
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
@@ -269,6 +279,75 @@ export class AssetService extends DigitalTwinService {
     });
   }
 
+  private async _create(
+    assetId: string,
+    engineId: string,
+    model: string,
+    reference: string,
+    metadata: JSONObject,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetContent>> {
+    const engine = await this.getEngine(engineId);
+    const assetModel = await ask<AskModelAssetGet>(
+      "ask:device-manager:model:asset:get",
+      { engineGroup: engine.group, model },
+    );
+
+    const assetMetadata = {};
+    for (const metadataName of Object.keys(assetModel.asset.metadataMappings)) {
+      assetMetadata[metadataName] = null;
+    }
+    for (const [metadataName, metadataValue] of Object.entries(
+      assetModel.asset.defaultMetadata,
+    )) {
+      _.set(assetMetadata, metadataName, metadataValue);
+    }
+
+    const measures: Record<string, EmbeddedMeasure> = {};
+
+    for (const { name } of assetModel.asset.measures) {
+      measures[name] = null;
+    }
+
+    const asset = await this.createDocument<AssetContent>(
+      request,
+      {
+        _id: assetId,
+        _source: {
+          groups: [],
+          lastMeasuredAt: null,
+          linkedDevices: [],
+          measures,
+          metadata: { ...assetMetadata, ...metadata },
+          model,
+          modelLocales: assetModel.asset.locales,
+          reference,
+          softTenant: [],
+        },
+      },
+      {
+        collection: InternalCollection.ASSETS,
+        engineId,
+      },
+    );
+
+    await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
+      {
+        asset: asset._source,
+        event: {
+          metadata: {
+            names: Object.keys(flattenObject(asset._source.metadata)),
+          },
+          name: "metadata",
+        },
+        id: asset._id,
+        timestamp: Date.now(),
+      },
+    ]);
+
+    return asset;
+  }
+
   /**
    * Create an asset metadata
    */
@@ -280,70 +359,9 @@ export class AssetService extends DigitalTwinService {
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     const assetId = AssetSerializer.id(model, reference);
-
-    return lock(`asset:${engineId}:${assetId}`, async () => {
-      const engine = await this.getEngine(engineId);
-      const assetModel = await ask<AskModelAssetGet>(
-        "ask:device-manager:model:asset:get",
-        { engineGroup: engine.group, model },
-      );
-
-      const assetMetadata = {};
-      for (const metadataName of Object.keys(
-        assetModel.asset.metadataMappings,
-      )) {
-        assetMetadata[metadataName] = null;
-      }
-      for (const [metadataName, metadataValue] of Object.entries(
-        assetModel.asset.defaultMetadata,
-      )) {
-        _.set(assetMetadata, metadataName, metadataValue);
-      }
-
-      const measures: Record<string, EmbeddedMeasure> = {};
-
-      for (const { name } of assetModel.asset.measures) {
-        measures[name] = null;
-      }
-
-      const asset = await this.createDocument<AssetContent>(
-        request,
-        {
-          _id: assetId,
-          _source: {
-            groups: [],
-            lastMeasuredAt: null,
-            linkedDevices: [],
-            measures,
-            metadata: { ...assetMetadata, ...metadata },
-            model,
-            modelLocales: assetModel.asset.locales,
-            reference,
-            softTenant: [],
-          },
-        },
-        {
-          collection: InternalCollection.ASSETS,
-          engineId,
-        },
-      );
-
-      await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, [
-        {
-          asset: asset._source,
-          event: {
-            metadata: {
-              names: Object.keys(flattenObject(asset._source.metadata)),
-            },
-            name: "metadata",
-          },
-          id: asset._id,
-          timestamp: Date.now(),
-        },
-      ]);
-
-      return asset;
-    });
+    return lock(`asset:${engineId}:${assetId}`, async () =>
+      this._create(assetId, engineId, model, reference, metadata, request),
+    );
   }
 
   /**
