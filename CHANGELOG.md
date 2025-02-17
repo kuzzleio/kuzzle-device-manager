@@ -1,3 +1,10 @@
+## [2.8.0-dev.5](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.4...v2.8.0-dev.5) (2025-02-17)
+
+
+### Features
+
+* **assetsGroups:** add service to handle groups related actions in a way that triggers pipe like devices and assets ([1a43fe7](https://github.com/kuzzleio/kuzzle-device-manager/commit/1a43fe7cdb210b6f0b19dbefad49a422ef792e06))
+
 ## [2.8.0-dev.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.3...v2.8.0-dev.4) (2025-02-14)
 
 
