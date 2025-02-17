@@ -138,7 +138,7 @@ export class DeviceService extends DigitalTwinService {
     });
 
     if (engineId && engineId !== this.config.adminIndex) {
-      device = await this.attachEngine(engineId, device._id, request);
+      device = await this._attachEngine(engineId, device._id, request);
 
       refreshableCollections.push({
         collection: InternalCollection.DEVICES,
@@ -274,7 +274,7 @@ export class DeviceService extends DigitalTwinService {
       );
 
       if (!engineDevice) {
-        await this.attachEngine(engineId, deviceId, request);
+        await this._attachEngine(engineId, deviceId, request);
       }
 
       const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
