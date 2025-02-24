@@ -8,7 +8,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-
 jest.setTimeout(20000);
 
 describe("Device model measure slots propagation", () => {
