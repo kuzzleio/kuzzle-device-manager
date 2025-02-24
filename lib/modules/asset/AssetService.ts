@@ -306,6 +306,7 @@ export class AssetService extends DigitalTwinService {
       measures[name] = null;
     }
 
+
     const asset = await this.createDocument<AssetContent>(
       request,
       {

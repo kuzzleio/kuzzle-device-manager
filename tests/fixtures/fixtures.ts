@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Container, Warehouse } from "../application/assets";
+
 import {
   dummyTempDeviceMeasures,
   dummyTempPositionDeviceMeasures,
