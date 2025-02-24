@@ -3,6 +3,7 @@ import { AssetContent } from "../../index";
 export const assetAyseWarehouseLinked: AssetContent = {
   model: "Warehouse",
   reference: "linked",
+  measureSlots: [],
   metadata: {
     surface: 512,
   },
@@ -28,6 +29,7 @@ export const assetAyseWarehouseLinkedId = `${assetAyseWarehouseLinked.model}-${a
 export const assetAyseLinked1: AssetContent = {
   model: "Container",
   reference: "linked1",
+  measureSlots: [],
   metadata: {
     weight: 10,
     height: 11,
@@ -58,6 +60,7 @@ export const assetAyseLinked1Id = `${assetAyseLinked1.model}-${assetAyseLinked1.
 export const assetAyseLinked2: AssetContent = {
   model: "Container",
   reference: "linked2",
+  measureSlots: [],
   metadata: {
     weight: 42,
     height: 21,
@@ -89,6 +92,7 @@ export const assetAyseLinked2Id = `${assetAyseLinked2.model}-${assetAyseLinked2.
 export const assetAyseUnlinked: AssetContent = {
   model: "Container",
   reference: "unlinked1",
+  measureSlots: [],
   metadata: {
     weight: 20,
     height: 22,
@@ -104,6 +108,7 @@ export const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlink
 export const assetAyseGrouped: AssetContent = {
   model: "Container",
   reference: "grouped",
+  measureSlots: [],
   metadata: {
     weight: 20,
     height: 22,
@@ -128,6 +133,7 @@ export const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.
 export const assetAyseGrouped2: AssetContent = {
   model: "Container",
   reference: "grouped2",
+  measureSlots: [],
   metadata: {
     weight: 20,
     height: 22,
@@ -152,6 +158,7 @@ export const assetAyseGroupedId2 = `${assetAyseGrouped2.model}-${assetAyseGroupe
 export const assetAyseDebug1: AssetContent = {
   model: "MagicHouse",
   reference: "debug1",
+  measureSlots: [],
   metadata: {},
   linkedDevices: [],
   measures: {},
