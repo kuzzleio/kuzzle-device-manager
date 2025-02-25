@@ -24,12 +24,16 @@ describe("Ingestion Pipeline: process before", () => {
       },
     ]);
 
-    const asset = await sdk.document.get<ContainerAssetContent>(
-      "engine-ayse",
-      "assets",
-      "Container-linked1",
-    );
-    expect(asset._source.measures).toMatchObject({
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const lastMeasuresResponse = await sdk.query({
+      controller: "device-manager/assets",
+      action: "getLastMeasures",
+      engineId: "engine-ayse",
+      _id: "Container-linked1",
+    });
+
+    expect(lastMeasuresResponse.result).toMatchObject({
       temperatureExt: {
         values: {
           temperature: 21,

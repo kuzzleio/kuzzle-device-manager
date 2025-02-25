@@ -2,143 +2,135 @@ import { Backend } from "kuzzle";
 
 import {
   MeasureContent,
-  EventMeasureProcessBefore,
-  EventMeasurePersistBefore,
+  EventMeasureProcessSourceBefore,
+  EventMeasurePersistSourceBefore,
   TemperatureMeasurement,
 } from "../../../index";
 
+function handleTestPersistBefore(
+  source: any,
+  measures: MeasureContent[],
+): void {
+  if (source.metadata?.color !== "test-persist-before-event-temperature-42") {
+    return;
+  }
+
+  const temperatureExt = measures.find(
+    (m) => m.asset?.measureName === "temperatureExt",
+  );
+  if (!temperatureExt || temperatureExt.values.temperature !== 42) {
+    throw new Error(
+      "The updated temperatureExt measure was not found in the measures array",
+    );
+  }
+}
+
+function enrichTemperatureMeasures(measures: MeasureContent[]): void {
+  for (const measure of measures) {
+    if (measure.values.temperature) {
+      measure.values.temperature *= 2;
+    }
+  }
+}
+
+// Helper: Compute and return new temperature measures.
+function computeTemperatureIntMeasures(
+  measures: MeasureContent[],
+  asset: any,
+): MeasureContent[] {
+  return measures.reduce((computed: MeasureContent[], measure) => {
+    if (measure.type === "temperature") {
+      const computedMeasure: MeasureContent = {
+        asset: {
+          _id: measure.asset?._id ?? "",
+          groups: measure.asset?.groups ?? [],
+          measureName: "temperatureInt",
+          metadata: measure.asset?.metadata ?? {},
+          model: measure.asset?.model ?? "",
+          reference: measure.asset?.reference ? asset.reference : "",
+          softTenant:
+            measure.asset?.softTenant && measure.asset.softTenant.length
+              ? measure.asset.softTenant
+              : [],
+        },
+        measuredAt: measure.measuredAt,
+        origin: {
+          type: "computed",
+          _id: "compute-temperature-int",
+          measureName: "temperatureInt",
+          payloadUuids: measure.origin.payloadUuids,
+        },
+        type: "temperature",
+        values: {
+          temperature: measure.values.temperature * 2,
+        },
+      };
+      computed.push(computedMeasure);
+    }
+    return computed;
+  }, []);
+}
+
+function addTemperatureWeatherMeasure(
+  asset: any,
+  measures: MeasureContent[],
+): void {
+  const newMeasure: MeasureContent<TemperatureMeasurement> = {
+    measuredAt: Date.now(),
+    asset: {
+      _id: asset ? `${asset.model}-${asset.reference}` : "",
+      groups: asset ? asset.groups : [],
+      measureName: "temperatureWeather",
+      metadata: asset ? asset.metadata : {},
+      model: asset ? asset.model : "",
+      reference: asset ? asset.reference : "",
+      softTenant: asset ? asset.softTenant : [],
+    },
+    origin: {
+      type: "computed",
+      _id: "rule-weather-api",
+      measureName: "temperatureWeather",
+      payloadUuids: ["uuid"],
+    },
+    type: "temperature",
+    values: {
+      temperature: 21.21,
+    },
+  };
+  measures.push(newMeasure);
+}
+
 export function registerTestPipes(app: Backend) {
-  app.pipe.register<EventMeasurePersistBefore>(
-    "device-manager:measures:persist:before",
-    async ({ asset, device, measures }) => {
-      const color = device._source.metadata.color;
-
-      if (color === "test-persist-before-event-temperature-42") {
-        if (asset._source.measures.temperatureExt.values.temperature !== 42) {
-          throw new Error(
-            "The asset document in this event should already contains the updated measure",
-          );
-        }
-      }
-
-      return { asset, device, measures };
+  app.pipe.register<EventMeasurePersistSourceBefore>(
+    "device-manager:measures:persist:sourceBefore",
+    async ({ source, target, asset, measures }) => {
+      handleTestPersistBefore(source, measures);
+      return { source, target, asset, measures };
     },
   );
 
-  app.pipe.register<EventMeasureProcessBefore>(
-    "device-manager:measures:process:before",
-    async ({ asset, device, measures }) => {
-      if (device._id === "DummyTemp-enrich_me_master") {
-        for (const measure of measures) {
-          if (measure.values.temperature) {
-            if (device._source.measures.temperature) {
-              if (
-                measure.measuredAt <=
-                device._source.measures.temperature.measuredAt
-              ) {
-                throw new Error(
-                  `The measure has already been embedded into the device but it shouldn't at this stage of the ingestion pipeline`,
-                );
-              }
-            }
-
-            measure.values.temperature *= 2;
-          }
-        }
+  app.pipe.register<EventMeasureProcessSourceBefore>(
+    "device-manager:measures:process:sourceBefore",
+    async ({ source, target, asset, measures }) => {
+      if (source.id === "DummyTemp-enrich_me_master") {
+        enrichTemperatureMeasures(measures);
       }
 
-      if (device._id === "DummyTemp-compute_me_master") {
-        const computedMeasures: MeasureContent[] = [];
-
-        for (const measure of measures) {
-          if (measure.type === "temperature") {
-            const temperatureInt: MeasureContent = {
-              asset: {
-                _id: asset._id,
-                groups: asset._source.groups,
-                measureName: "temperatureInt",
-                metadata: asset._source.metadata,
-                model: asset._source.model,
-                reference: asset._source.reference,
-                softTenant: asset._source.softTenant,
-              },
-              measuredAt: measure.measuredAt,
-              origin: {
-                type: "computed",
-                _id: "compute-temperature-int",
-                measureName: "temperatureInt",
-                payloadUuids: measure.origin.payloadUuids,
-              },
-              type: "temperature",
-              values: {
-                temperature: measure.values.temperature * 2,
-              },
-            };
-
-            computedMeasures.push(temperatureInt);
-
-            asset._source.measures.temperatureInt = {
-              measuredAt: temperatureInt.measuredAt,
-              name: "temperatureInt",
-              payloadUuids: temperatureInt.origin.payloadUuids,
-              type: "temperature",
-              values: {
-                temperature: temperatureInt.values.temperature,
-              },
-              originId: device._id,
-            };
-          }
-        }
-
-        for (const computedMeasure of computedMeasures) {
-          measures.push(computedMeasure);
-        }
+      if (source.id === "DummyTemp-compute_me_master") {
+        const computedMeasures = computeTemperatureIntMeasures(measures, asset);
+        measures.push(...computedMeasures);
       }
 
-      const color = device._source.metadata.color;
-
-      if (color === "test-metadata-history-with-measure") {
-        asset._source.metadata.weight = 42042;
-        asset._source.metadata.trailer.capacity = 2048;
+      if (source.metadata?.color === "test-metadata-history-with-measure") {
+        asset.metadata.weight = 42042;
+        asset.metadata.trailer.capacity = 2048;
       }
 
-      if (color === "test-create-new-asset-measure") {
-        const measure: MeasureContent<TemperatureMeasurement> = {
-          measuredAt: Date.now(),
-          asset: {
-            _id: asset._id,
-            groups: asset._source.groups,
-            measureName: "temperatureWeather",
-            metadata: asset._source.metadata,
-            model: asset._source.model,
-            reference: asset._source.reference,
-            softTenant: asset._source.softTenant,
-          },
-          origin: {
-            type: "computed",
-            _id: "rule-weather-api",
-            measureName: "temperatureWeather",
-            payloadUuids: ["uuid"],
-          },
-          type: "temperature",
-          values: {
-            temperature: 21.21,
-          },
-        };
-
-        measures.push(measure);
-
-        asset._source.measures.temperatureWeather = {
-          name: measure.asset?.measureName as string,
-          measuredAt: measure.measuredAt,
-          payloadUuids: measure.origin.payloadUuids,
-          type: measure.type,
-          values: measure.values,
-          originId: device._id,
-        };
+      if (source.metadata?.color === "test-create-new-asset-measure") {
+        addTemperatureWeatherMeasure(asset, measures);
       }
 
-      return { asset, device, measures };
+      return { source, target, asset, measures };
     },
   );
 }

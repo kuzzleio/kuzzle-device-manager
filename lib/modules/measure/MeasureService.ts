@@ -18,16 +18,10 @@ import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
   AskMeasureIngest,
   AskMeasureSourceIngest,
-  EventMeasurePersistBefore,
   EventMeasurePersistSourceBefore,
-  EventMeasureProcessAfter,
-  EventMeasureProcessBefore,
   EventMeasureProcessSourceAfter,
   EventMeasureProcessSourceBefore,
-  TenantEventMeasurePersistBefore,
   TenantEventMeasurePersistSourceBefore,
-  TenantEventMeasureProcessAfter,
-  TenantEventMeasureProcessBefore,
   TenantEventMeasureProcessSourceAfter,
   TenantEventMeasureProcessSourceBefore,
 } from "./types/MeasureEvents";
@@ -277,23 +271,6 @@ export class MeasureService extends BaseService {
       );
 
       /**
-       * Event before starting to process new measures.
-       *
-       * Useful to enrich measures before they are saved.
-       */
-      await this.app.trigger<EventMeasureProcessBefore>(
-        "device-manager:measures:process:before",
-        { asset, device, measures },
-      );
-
-      if (engineId) {
-        await this.app.trigger<TenantEventMeasureProcessBefore>(
-          `engine:${engineId}:device-manager:measures:process:before`,
-          { asset, device, measures },
-        );
-      }
-
-      /**
        * Here are the new process before triggers using sources
        *
        * Event before starting to process new measures.
@@ -317,22 +294,6 @@ export class MeasureService extends BaseService {
       let assetStates = new Map<number, KDocument<AssetContent>>();
       if (asset) {
         assetStates = await this.updateAssetMeasures(asset, measures);
-      }
-
-      await this.app.trigger<EventMeasurePersistBefore>(
-        "device-manager:measures:persist:before",
-        {
-          asset,
-          device,
-          measures,
-        },
-      );
-
-      if (engineId) {
-        await this.app.trigger<TenantEventMeasurePersistBefore>(
-          `engine:${engineId}:device-manager:measures:persist:before`,
-          { asset, device, measures },
-        );
       }
 
       /**
@@ -422,29 +383,6 @@ export class MeasureService extends BaseService {
       }
 
       await Promise.all(promises);
-
-      /**
-       * Event at the end of the measure process pipeline.
-       *
-       * Useful to trigger business rules like alerts
-       *
-       * @todo test this
-       */
-      await this.app.trigger<EventMeasureProcessAfter>(
-        "device-manager:measures:process:after",
-        {
-          asset,
-          device,
-          measures,
-        },
-      );
-
-      if (engineId) {
-        await this.app.trigger<TenantEventMeasureProcessAfter>(
-          `engine:${engineId}:device-manager:measures:process:after`,
-          { asset, device, measures },
-        );
-      }
 
       /**
        * Here are the new process after triggers using sources
