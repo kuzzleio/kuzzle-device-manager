@@ -478,6 +478,10 @@ export class DeviceService extends DigitalTwinService {
       engineId: this.config.adminIndex,
     });
 
+    this.createDocument<DeviceContent>(request, device, {
+      collection: InternalCollection.DEVICES,
+      engineId,
+    });
     // Make sure the device is cleaned when attached to tenant
     device._source.lastMeasuredAt = null;
     device._source.measures = {};

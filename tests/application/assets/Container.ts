@@ -195,7 +195,7 @@ function neverCalled() {
     linkedDevices: [],
     groups: [],
     reference: "",
-    measureSlots: containerAssetDefinition.measures,
+    measureSlots: Container.definition.measures,
     metadata: undefined,
     measures,
     lastMeasuredAt: 0,

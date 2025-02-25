@@ -1,7 +1,6 @@
-import {
-  containerAssetDefinition,
-  warehouseAssetDefinition,
-} from "../application/assets";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Container, Warehouse } from "../application/assets";
+
 import {
   dummyTempDeviceMeasures,
   dummyTempPositionDeviceMeasures,
@@ -89,7 +88,7 @@ const deviceAyseWarehouseId = `${deviceAyseWarehouse.model}-${deviceAyseWarehous
 const assetAyseWarehouseLinked = {
   model: "Warehouse",
   reference: "linked",
-  measureSlots: warehouseAssetDefinition.measures,
+  measureSlots: Warehouse.definition.measures,
   metadata: {
     surface: 512,
   },
@@ -105,7 +104,7 @@ const assetAyseWarehouseLinkedId = `${assetAyseWarehouseLinked.model}-${assetAys
 const assetAyseLinked1 = {
   model: "Container",
   reference: "linked1",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 10,
     height: 11,
@@ -126,7 +125,7 @@ const assetAyseLinked1Id = `${assetAyseLinked1.model}-${assetAyseLinked1.referen
 const assetAyseLinked2 = {
   model: "Container",
   reference: "linked2",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 42,
     height: 21,
@@ -146,7 +145,7 @@ const assetAyseLinked2Id = `${assetAyseLinked2.model}-${assetAyseLinked2.referen
 const assetAyseUnlinked = {
   model: "Container",
   reference: "unlinked1",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 20,
     height: 22,
@@ -158,7 +157,7 @@ const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.refe
 const assetAyseGrouped = {
   model: "Container",
   reference: "grouped",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 20,
     height: 22,
@@ -180,7 +179,7 @@ const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.referen
 const assetAyseGrouped2 = {
   model: "Container",
   reference: "grouped2",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 20,
     height: 22,
