@@ -13,6 +13,7 @@ export const assetGroupTestBody: AssetsGroupsBody = {
   children: [],
   lastUpdate: Date.now(),
   parent: null,
+  type: null,
 };
 
 export const assetGroupTestParentBody1: AssetsGroupsBody = {
@@ -20,6 +21,7 @@ export const assetGroupTestParentBody1: AssetsGroupsBody = {
   children: [assetGroupTestChildrenId1],
   lastUpdate: Date.now(),
   parent: null,
+  type: "Type 1",
 };
 
 export const assetGroupTestParentBody2: AssetsGroupsBody = {
@@ -27,6 +29,7 @@ export const assetGroupTestParentBody2: AssetsGroupsBody = {
   children: [assetGroupTestChildrenId2],
   lastUpdate: Date.now(),
   parent: null,
+  type: null,
 };
 
 export const assetGroupTestChildrenBody1: AssetsGroupsBody = {
@@ -34,6 +37,7 @@ export const assetGroupTestChildrenBody1: AssetsGroupsBody = {
   children: [],
   lastUpdate: Date.now(),
   parent: assetGroupTestParentId1,
+  type: null,
 };
 
 export const assetGroupTestChildrenBody2: AssetsGroupsBody = {
@@ -41,6 +45,7 @@ export const assetGroupTestChildrenBody2: AssetsGroupsBody = {
   children: [],
   lastUpdate: Date.now(),
   parent: assetGroupTestParentId2,
+  type: "Type 2",
 };
 
 export const assetGroupParentWithAssetBody: AssetsGroupsBody = {
@@ -48,6 +53,7 @@ export const assetGroupParentWithAssetBody: AssetsGroupsBody = {
   children: [assetGroupChildrenWithAssetId],
   lastUpdate: Date.now(),
   parent: null,
+  type: null,
 };
 
 export const assetGroupChildrenWithAssetBody: AssetsGroupsBody = {
@@ -55,6 +61,7 @@ export const assetGroupChildrenWithAssetBody: AssetsGroupsBody = {
   children: [],
   lastUpdate: Date.now(),
   parent: assetGroupParentWithAssetId,
+  type: null,
 };
 
 export const assetGroupFixtures = {
