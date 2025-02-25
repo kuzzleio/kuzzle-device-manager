@@ -142,15 +142,17 @@ describe("features/Measure/IngestionPipeline", () => {
       _source: { measures: { temperature: { values: { temperature: 20 } } } },
     });
 
-    await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-unlinked1")
-    ).resolves.toMatchObject({
-      _source: {
-        measures: {
-          temperatureExt: { values: { temperature: 20 } },
-          temperatureInt: { values: { temperature: 40 } },
-        },
-      },
+    const lastMeasuresResponse = await sdk.query({
+      controller: "device-manager/assets",
+      action: "getLastMeasures",
+      engineId: "engine-ayse",
+      _id: "Container-unlinked1",
+      measureCount: 2,
+    });
+  
+    expect(lastMeasuresResponse.result).toMatchObject({
+      temperatureExt: { values: { temperature: 20 } },
+      temperatureInt: { values: { temperature: 40 } },
     });
   });
 

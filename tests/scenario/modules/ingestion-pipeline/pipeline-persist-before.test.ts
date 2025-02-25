@@ -5,8 +5,8 @@ jest.setTimeout(10000);
 describe("Ingestion Pipeline: persist before", () => {
   const sdk = setupHooks();
 
-  it("expose the updated asset and device", async () => {
-    // Pipe will fail if something is wrong
+  it("exposes the updated asset via the persist before event", async () => {
+    // The persist pipe (registered on "device-manager:measures:persist:sourceBefore")
     await expect(
       sendDummyTempPayloads(sdk, [
         {
