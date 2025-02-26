@@ -186,7 +186,6 @@ export class MeasureService extends BaseService {
      *
      * Useful to trigger business rules like alerts
      *
-     * @todo test this
      */
     await this.app.trigger<EventMeasureProcessSourceAfter>(
       "device-manager:measures:process:sourceAfter",
