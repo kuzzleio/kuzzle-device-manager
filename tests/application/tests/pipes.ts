@@ -121,11 +121,6 @@ export function registerTestPipes(app: Backend) {
         measures.push(...computedMeasures);
       }
 
-      if (source.metadata?.color === "test-metadata-history-with-measure") {
-        asset.metadata.weight = 42042;
-        asset.metadata.trailer.capacity = 2048;
-      }
-
       if (source.metadata?.color === "test-create-new-asset-measure") {
         addTemperatureWeatherMeasure(asset, measures);
       }
