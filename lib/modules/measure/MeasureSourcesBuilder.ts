@@ -19,31 +19,16 @@ export function apiSourceToOriginApi(
   };
 }
 
-export function toDeviceSource(
-  dataSourceId: string,
-  reference: string,
-  model: string,
-  metadata?: Metadata,
-  lastMeasuredAt?: number,
-): DeviceMeasureSource {
-  return {
-    id: dataSourceId,
-    lastMeasuredAt,
-    metadata,
-    model,
-    reference,
-    type: DATA_SOURCE_METADATA_TYPE.DEVICE,
-  };
-}
-
 export function deviceSourceToOriginDevice(
   source: DeviceMeasureSource,
   measureName: string,
   payloadUuids: string[],
+  deviceMetadata: Metadata,
 ): MeasureOriginDevice {
   const { id: dataSourceId, model, reference } = source;
   return {
     _id: dataSourceId,
+    deviceMetadata,
     deviceModel: model,
     measureName,
     metadata: source.metadata,

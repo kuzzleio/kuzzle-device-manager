@@ -1,30 +1,10 @@
-import { JSONObject, KDocument } from "kuzzle-sdk";
+import { JSONObject } from "kuzzle-sdk";
 
-import { DeviceContent } from "../../../modules/device";
 import { AssetContent } from "../../../modules/asset";
-import { Metadata } from "../../../modules/shared";
 
 import { DecodedMeasurement, MeasureContent } from "./MeasureContent";
 import { MeasureSource } from "./MeasureSources";
 import { MeasureTarget } from "./MeasureTarget";
-
-/**
- * @internal
- *
- * @deprecated Replaced by new Ask implementing data sources
- */
-export type AskMeasureIngest = {
-  name: "device-manager:measures:ingest";
-
-  payload: {
-    device: KDocument<DeviceContent>;
-    measurements: DecodedMeasurement<JSONObject>[];
-    metadata: Metadata;
-    payloadUuids: string[];
-  };
-
-  result: void;
-};
 
 /**
  * @internal
