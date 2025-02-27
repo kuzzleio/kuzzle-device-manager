@@ -31,7 +31,6 @@ export function deviceSourceToOriginDevice(
     deviceMetadata,
     deviceModel: model,
     measureName,
-    metadata: source.metadata,
     payloadUuids,
     reference: reference,
     type: DATA_SOURCE_METADATA_TYPE.DEVICE,

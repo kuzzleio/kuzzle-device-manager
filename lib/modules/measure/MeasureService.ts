@@ -32,6 +32,7 @@ import {
   isTargetDevice,
   MeasureTarget,
 } from "./types/MeasureTarget";
+import { merge } from "lodash";
 
 export class MeasureService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -208,7 +209,7 @@ export class MeasureService extends BaseService {
         source,
         measure.measureName,
         payloadUuids,
-        source.deviceMetadata,
+        merge(source.deviceMetadata, source.metadata),
       );
 
       deviceMeasures.push({
