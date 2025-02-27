@@ -59,40 +59,6 @@ export type TenantEventMeasureProcessSourceBefore = {
 };
 
 /**
- * Event triggered after updating the data source and asset with new measures but
- * before persistence in database.
- */
-export type EventMeasurePersistSourceBefore = {
-  name: "device-manager:measures:persist:sourceBefore";
-
-  args: [
-    {
-      source: MeasureSource;
-      target: MeasureTarget;
-      asset?: AssetContent;
-      measures: MeasureContent[];
-    },
-  ];
-};
-
-/**
- * Tenant event triggered after updating the data source and asset with new measures but
- * before persistence in database.
- */
-export type TenantEventMeasurePersistSourceBefore = {
-  name: `engine:${string}:device-manager:measures:persist:sourceBefore`;
-
-  args: [
-    {
-      source: MeasureSource;
-      target: MeasureTarget;
-      asset?: AssetContent;
-      measures: MeasureContent[];
-    },
-  ];
-};
-
-/**
  * Event after processing new measures from data source.
  */
 export type EventMeasureProcessSourceAfter = {

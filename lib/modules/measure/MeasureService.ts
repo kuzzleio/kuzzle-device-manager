@@ -8,10 +8,8 @@ import { BaseService } from "../shared";
 import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
   AskMeasureSourceIngest,
-  EventMeasurePersistSourceBefore,
   EventMeasureProcessSourceAfter,
   EventMeasureProcessSourceBefore,
-  TenantEventMeasurePersistSourceBefore,
   TenantEventMeasureProcessSourceAfter,
   TenantEventMeasureProcessSourceBefore,
 } from "./types/MeasureEvents";
@@ -123,18 +121,6 @@ export class MeasureService extends BaseService {
     if (indexId) {
       await this.app.trigger<TenantEventMeasureProcessSourceBefore>(
         `engine:${indexId}:device-manager:measures:process:sourceBefore`,
-        { asset, measures, source, target },
-      );
-    }
-
-    await this.app.trigger<EventMeasurePersistSourceBefore>(
-      "device-manager:measures:persist:sourceBefore",
-      { asset, measures, source, target },
-    );
-
-    if (indexId) {
-      await this.app.trigger<TenantEventMeasurePersistSourceBefore>(
-        `engine:${indexId}:device-manager:measures:persist:sourceBefore`,
         { asset, measures, source, target },
       );
     }

@@ -3,27 +3,8 @@ import { Backend } from "kuzzle";
 import {
   MeasureContent,
   EventMeasureProcessSourceBefore,
-  EventMeasurePersistSourceBefore,
   TemperatureMeasurement,
 } from "../../../index";
-
-function handleTestPersistBefore(
-  source: any,
-  measures: MeasureContent[],
-): void {
-  if (source.metadata?.color !== "test-persist-before-event-temperature-42") {
-    return;
-  }
-
-  const temperatureExt = measures.find(
-    (m) => m.asset?.measureName === "temperatureExt",
-  );
-  if (!temperatureExt || temperatureExt.values.temperature !== 42) {
-    throw new Error(
-      "The updated temperatureExt measure was not found in the measures array",
-    );
-  }
-}
 
 function enrichTemperatureMeasures(measures: MeasureContent[]): void {
   for (const measure of measures) {
@@ -33,7 +14,6 @@ function enrichTemperatureMeasures(measures: MeasureContent[]): void {
   }
 }
 
-// Helper: Compute and return new temperature measures.
 function computeTemperatureIntMeasures(
   measures: MeasureContent[],
   asset: any,
@@ -101,14 +81,6 @@ function addTemperatureWeatherMeasure(
 }
 
 export function registerTestPipes(app: Backend) {
-  app.pipe.register<EventMeasurePersistSourceBefore>(
-    "device-manager:measures:persist:sourceBefore",
-    async ({ source, target, asset, measures }) => {
-      handleTestPersistBefore(source, measures);
-      return { source, target, asset, measures };
-    },
-  );
-
   app.pipe.register<EventMeasureProcessSourceBefore>(
     "device-manager:measures:process:sourceBefore",
     async ({ source, target, asset, measures }) => {
