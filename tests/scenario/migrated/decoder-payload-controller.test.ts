@@ -23,30 +23,6 @@ describe("features/Decoder/PayloadController", () => {
     sdk.disconnect();
   });
 
-  it("Register a DummyTemp payload", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "12345", temperature: 21 },
-      { deviceEUI: "12345", temperature: 42 },
-    ]);
-
-    await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-12345")
-    ).resolves.toMatchObject({
-      _source: {
-        reference: "12345",
-        model: "DummyTemp",
-        measures: {
-          temperature: { type: "temperature", values: { temperature: 42 } },
-        },
-        engineId: null,
-        assetId: null,
-      },
-    });
-  });
-
   it("Reject if measuredAt is not unix timestamp", async () => {
     let response;
     let promise;
@@ -155,54 +131,6 @@ describe("features/Decoder/PayloadController", () => {
         battery: 0.8,
       },
     ]);
-
-    await expect(
-      sdk.document.get("device-manager", "devices", "DummyTempPosition-linked2")
-    ).resolves.toMatchObject({
-      _source: {
-        reference: "linked2",
-        model: "DummyTempPosition",
-        measures: {
-          temperature: { type: "temperature", values: { temperature: 21 } },
-          position: {
-            type: "position",
-            values: { position: { lat: 42.2, lon: 2.42 }, accuracy: 2100 },
-          },
-          battery: { type: "battery", values: { battery: 80 } },
-        },
-        engineId: "engine-ayse",
-        assetId: "Container-linked2",
-      },
-    });
-
-    await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-linked2")
-    ).resolves.toMatchObject({
-      _source: {
-        measures: {
-          temperatureExt: { values: { temperature: 21 } },
-          position: { values: { position: { lat: 42.2, lon: 2.42 } } },
-        },
-      },
-    });
-
-    await sdk.collection.refresh("engine-ayse", "assets-history");
-
-    const assetHistory = await sdk.query({
-      controller: "document",
-      action: "search",
-      index: "engine-ayse",
-      collection: "assets-history",
-      body: { sort: { "_kuzzle_info.createdAt": "desc" } },
-    });
-
-    expect(assetHistory.result.hits[0]._source).toMatchObject({
-      id: "Container-linked2",
-      event: {
-        name: "measure",
-        measure: { names: ["temperatureExt", "position"] },
-      },
-    });
 
     await sdk.collection.refresh("device-manager", "payloads");
     let exceptedResult = await sdk.document.search(

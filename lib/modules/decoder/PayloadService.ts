@@ -4,7 +4,7 @@ import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
 
 import { DeviceContent, DeviceSerializer } from "../device";
-import { AskMeasureIngest, DecodedMeasurement } from "../measure";
+import { AskMeasureSourceIngest, DecodedMeasurement } from "../measure";
 import { AskModelDeviceGet } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { BaseService } from "../shared";
@@ -92,12 +92,59 @@ export class PayloadService extends BaseService {
     );
 
     for (const device of devices) {
-      await ask<AskMeasureIngest>("device-manager:measures:ingest", {
-        device,
-        measurements: decodedPayload.getMeasurements(device._source.reference),
-        metadata: decodedPayload.getMetadata(device._source.reference),
-        payloadUuids: [uuid],
-      });
+      const {
+        _id,
+        _source: { reference, model, metadata, assetId, engineId },
+      } = device;
+      // ? Done here to avoid invoque Measure service only for device metadata change (if no engineId)
+      const deviceMetadataChanges = decodedPayload.getMetadata(reference);
+
+      if (
+        deviceMetadataChanges !== null &&
+        Object.values(deviceMetadataChanges).length > 0
+      ) {
+        await this.sdk.document.update<DeviceContent>(
+          this.config.adminIndex,
+          InternalCollection.DEVICES,
+          _id,
+          {
+            metadata: deviceMetadataChanges,
+          },
+        );
+        if (engineId !== null) {
+          await this.sdk.document.update<DeviceContent>(
+            engineId,
+            InternalCollection.DEVICES,
+            _id,
+            {
+              metadata: deviceMetadataChanges,
+            },
+          );
+        }
+      }
+
+      if (engineId !== null) {
+        await ask<AskMeasureSourceIngest>(
+          "device-manager:measures:sourceIngest",
+          {
+            measurements: decodedPayload.getMeasurements(reference),
+            payloadUuids: [uuid],
+            source: {
+              deviceMetadata: metadata,
+              id: _id,
+              metadata: decodedPayload.getMetadata(reference),
+              model: model,
+              reference: reference,
+              type: "device",
+            },
+            target: {
+              assetId: assetId ?? null,
+              indexId: engineId,
+              type: "device",
+            },
+          },
+        );
+      }
     }
 
     return { valid };
@@ -109,21 +156,42 @@ export class PayloadService extends BaseService {
     { payloadUuids }: { payloadUuids?: string[] } = {},
   ) {
     const apiAction = "device-manager/devices:receiveMeasure";
+    const {
+      _id,
+      _source: { reference, model, metadata, assetId, engineId },
+    } = device;
 
+    // TODO: do we want update a metadata from formatted payload to ?
     // Payload is already formated thus valid
     await this.savePayload(
-      device._source.model,
+      model,
       payloadUuids[0],
       true,
       measurements,
       apiAction,
     );
-    await ask<AskMeasureIngest>("device-manager:measures:ingest", {
-      device,
-      measurements,
-      metadata: {},
-      payloadUuids,
-    });
+
+    if (engineId !== null) {
+      await ask<AskMeasureSourceIngest>(
+        "device-manager:measures:sourceIngest",
+        {
+          measurements,
+          payloadUuids,
+          source: {
+            deviceMetadata: metadata,
+            id: _id,
+            model: model,
+            reference: reference,
+            type: "device",
+          },
+          target: {
+            assetId: assetId ?? null,
+            indexId: engineId,
+            type: "device",
+          },
+        },
+      );
+    }
   }
 
   /**

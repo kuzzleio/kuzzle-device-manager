@@ -93,7 +93,7 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    * Get the metadata for a device
    */
   getMetadata(deviceReference: string): JSONObject {
-    return this.metadataByDevice[deviceReference];
+    return this.metadataByDevice[deviceReference] ?? {};
   }
 
   private validateMeasurement<TMeasureValues>(
