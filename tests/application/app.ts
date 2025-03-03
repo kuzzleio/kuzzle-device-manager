@@ -13,11 +13,11 @@ const app = new Backend("kuzzle");
 const deviceManager = new DeviceManagerPlugin();
 
 //? Add custom mapping properties
-deviceManager.config.engineCollections.asset.mappings.properties["custom"] = {
+deviceManager.config.engineCollections.assets.mappings.properties["custom"] = {
   type: "keyword",
   fields: { text: { type: "text" } },
 };
-deviceManager.config.engineCollections.device.mappings.properties["custom"] = {
+deviceManager.config.engineCollections.devices.mappings.properties["custom"] = {
   type: "keyword",
   fields: { text: { type: "text" } },
 };

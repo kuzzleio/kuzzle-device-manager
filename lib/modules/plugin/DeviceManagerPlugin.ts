@@ -323,7 +323,7 @@ export class DeviceManagerPlugin extends Plugin {
             properties: {},
           },
         },
-        asset: {
+        assets: {
           name: InternalCollection.ASSETS,
           mappings: assetsMappings,
         },
@@ -333,7 +333,7 @@ export class DeviceManagerPlugin extends Plugin {
         assetHistory: {
           name: InternalCollection.ASSETS_HISTORY,
         },
-        device: {
+        devices: {
           name: InternalCollection.DEVICES,
           mappings: devicesMappings,
         },
