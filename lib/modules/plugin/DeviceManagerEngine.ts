@@ -34,7 +34,7 @@ import {
 } from "../model/ModelsConflicts";
 import { addSchemaToCache } from "../shared/utils/AJValidator";
 
-export type TwinType = "assets" | "devices";
+export type TwinType = "asset" | "device";
 
 export type TwinModelContent = AssetModelContent | DeviceModelContent;
 
@@ -351,7 +351,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    */
   async createAssetsCollection(engineId: string, engineGroup: string) {
     const mappings = await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
-      "assets",
+      "asset",
       engineGroup,
     );
     const settings = this.config.engineCollections.assets.settings;
@@ -375,7 +375,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async createAssetsHistoryCollection(engineId: string, engineGroup: string) {
     const assetsMappings =
       await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
-        "assets",
+        "asset",
         engineGroup,
       );
 
@@ -426,7 +426,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    */
   async createDevicesCollection(engineId: string) {
     const mappings =
-      await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("devices");
+      await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
     const settings = this.config.engineCollections.devices.settings;
 
     await this.tryCreateCollection(engineId, InternalCollection.DEVICES, {
@@ -580,11 +580,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     const assetsMappings = await this.getDigitalTwinMappingsFromDB(
-      "assets",
+      "asset",
       engineGroup,
     );
 
-    const deviceMappings = await this.getDigitalTwinMappingsFromDB("devices");
+    const deviceMappings = await this.getDigitalTwinMappingsFromDB("device");
 
     return this.getMeasuresMappings(models, assetsMappings, deviceMappings);
   }
