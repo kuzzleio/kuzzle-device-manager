@@ -9,6 +9,7 @@ interface AbstractMeasureSource {
 export interface DeviceMeasureSource extends AbstractMeasureSource {
   type: "device";
   reference: string;
+  deviceMetadata: Metadata;
   model: string;
   lastMeasuredAt?: number;
 }

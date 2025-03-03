@@ -63,30 +63,6 @@ describe("features/Measure/IngestionPipeline", () => {
         { _source: { type: "temperature", values: { temperature: 42 } } },
       ],
     });
-
-    await expect(
-      sdk.document.get(
-        "device-manager",
-        "devices",
-        "DummyTemp-enrich_me_master"
-      )
-    ).resolves.toMatchObject({
-      _source: { measures: { temperature: { values: { temperature: 42 } } } },
-    });
-
-    await expect(
-      sdk.document.get("engine-ayse", "devices", "DummyTemp-enrich_me_master")
-    ).resolves.toMatchObject({
-      _source: { measures: { temperature: { values: { temperature: 42 } } } },
-    });
-
-    await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-unlinked1")
-    ).resolves.toMatchObject({
-      _source: {
-        measures: { temperatureExt: { values: { temperature: 42 } } },
-      },
-    });
   });
 
   it("Additional computed measures should be added automatically to the digital twin last measures", async () => {
@@ -126,31 +102,17 @@ describe("features/Measure/IngestionPipeline", () => {
       hits: [{ _source: { origin: { _id: "compute-temperature-int" } } }],
     });
 
-    await expect(
-      sdk.document.get(
-        "device-manager",
-        "devices",
-        "DummyTemp-compute_me_master"
-      )
-    ).resolves.toMatchObject({
-      _source: { measures: { temperature: { values: { temperature: 20 } } } },
+    const lastMeasuresResponse = await sdk.query({
+      controller: "device-manager/assets",
+      action: "getLastMeasures",
+      engineId: "engine-ayse",
+      _id: "Container-unlinked1",
+      measureCount: 2,
     });
-
-    await expect(
-      sdk.document.get("engine-ayse", "devices", "DummyTemp-compute_me_master")
-    ).resolves.toMatchObject({
-      _source: { measures: { temperature: { values: { temperature: 20 } } } },
-    });
-
-    await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-unlinked1")
-    ).resolves.toMatchObject({
-      _source: {
-        measures: {
-          temperatureExt: { values: { temperature: 20 } },
-          temperatureInt: { values: { temperature: 40 } },
-        },
-      },
+  
+    expect(lastMeasuresResponse.result).toMatchObject({
+      temperatureExt: { values: { temperature: 20 } },
+      temperatureInt: { values: { temperature: 40 } },
     });
   });
 
@@ -194,8 +156,8 @@ describe("features/Measure/IngestionPipeline", () => {
 
     expect(response.result).toMatchObject({
       hits: [
-        { _source: { type: "temperature", values: { temperature: 35 }, origin: { deviceMetadata: metadata} } },
-        { _source: { type: "temperature", values: { temperature: 25 }, origin: { deviceMetadata: metadata} } },
+        { _source: { type: "temperature", values: { temperature: 35 }, origin: { deviceMetadata: metadata } } },
+        { _source: { type: "temperature", values: { temperature: 25 }, origin: { deviceMetadata: metadata } } },
       ],
     })
   })

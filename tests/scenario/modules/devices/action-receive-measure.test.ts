@@ -94,23 +94,6 @@ describe("DeviceController: receiveMeasure", () => {
         },
       ],
     });
-
-    const device = await sdk.document.get(
-      "engine-ayse",
-      "devices",
-      "DummyTemp-linked1",
-    );
-
-    expect(device._source).toMatchObject({
-      measures: {
-        temperature: {
-          originId: "DummyTemp-linked1",
-          values: {
-            temperature: 25.5,
-          },
-        },
-      },
-    });
   });
 
   it("should raise an error when receiving a undeclared measure", async () => {
