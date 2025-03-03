@@ -12,6 +12,7 @@ import {
   batteryMeasureModel,
   positionMeasureModel,
   movementMeasureModel,
+  humidityMeasureModel,
 } from "./measures";
 
 const measuresModels = [
@@ -25,6 +26,7 @@ const measuresModels = [
   batteryMeasureModel,
   positionMeasureModel,
   movementMeasureModel,
+  humidityMeasureModel,
 ];
 
 const devicesModels = [DummyTemp, DummyTempPosition];
