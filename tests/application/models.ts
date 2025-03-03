@@ -8,6 +8,10 @@ import {
   Illuminance,
   Magicule,
   PowerConsumption,
+  temperatureMeasureModel,
+  batteryMeasureModel,
+  positionMeasureModel,
+  movementMeasureModel,
 } from "./measures";
 
 const measuresModels = [
@@ -17,6 +21,10 @@ const measuresModels = [
   Illuminance,
   Magicule,
   PowerConsumption,
+  temperatureMeasureModel,
+  batteryMeasureModel,
+  positionMeasureModel,
+  movementMeasureModel,
 ];
 
 const devicesModels = [DummyTemp, DummyTempPosition];
