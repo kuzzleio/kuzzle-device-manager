@@ -527,15 +527,22 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     models: TDigitalTwin[],
     measureModels: MeasureModelContent[],
   ) {
+    const digitalTwinCollection =
+      digitalTwinType === "asset"
+        ? InternalCollection.ASSETS
+        : InternalCollection.DEVICES;
     if (
-      this.config.engineCollections[digitalTwinType] === undefined ||
-      this.config.engineCollections[digitalTwinType].mappings === undefined
+      this.config.engineCollections[digitalTwinCollection] === undefined ||
+      this.config.engineCollections[digitalTwinCollection].mappings ===
+        undefined
     ) {
       throw new InternalError(`Cannot find mapping for "${digitalTwinType}"`);
     }
 
     const mappings = JSON.parse(
-      JSON.stringify(this.config.engineCollections[digitalTwinType].mappings),
+      JSON.stringify(
+        this.config.engineCollections[digitalTwinCollection].mappings,
+      ),
     );
 
     for (const model of models) {
