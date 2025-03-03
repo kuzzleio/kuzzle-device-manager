@@ -8,14 +8,6 @@ export type AssetHistoryMetadata = {
   names: string[];
 };
 
-export type AssetHistoryEventMeasure = {
-  name: "measure";
-  measure: {
-    names: string[];
-  };
-  metadata?: AssetHistoryMetadata;
-};
-
 export type AssetHistoryEventMetadata = {
   name: "metadata";
   metadata: AssetHistoryMetadata;
@@ -36,7 +28,6 @@ export type AssetHistoryEventUnlink = {
 };
 
 export type AssetHistoryEvent =
-  | AssetHistoryEventMeasure
   | AssetHistoryEventMetadata
   | AssetHistoryEventLink
   | AssetHistoryEventUnlink;

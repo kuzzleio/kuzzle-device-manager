@@ -4,3 +4,8 @@ export * from "./CO2";
 export * from "./Illuminance";
 export * from "./Magicule";
 export * from "./PowerConsumption";
+export * from "./MovementMeasure";
+export * from "./PositionMeasure";
+export * from "./TemperatureMeasure";
+export * from "./HumidityMeasure";
+export * from "./BatteryMeasure";

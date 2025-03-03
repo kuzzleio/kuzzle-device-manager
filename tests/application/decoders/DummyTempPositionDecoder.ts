@@ -1,13 +1,13 @@
 import { PreconditionError } from "kuzzle";
 import { JSONObject } from "kuzzle-sdk";
 
+import { Decoder, DecodedPayload } from "../../../index";
 import {
-  Decoder,
   BatteryMeasurement,
   PositionMeasurement,
   TemperatureMeasurement,
-  DecodedPayload,
-} from "../../../index";
+} from "../measures";
+
 import { isMeasureDated } from "../../helpers/payloads";
 
 export const dummyTempPositionDeviceMeasures = [

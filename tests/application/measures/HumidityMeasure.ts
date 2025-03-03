@@ -1,4 +1,5 @@
-import { MeasureDefinition } from "./../types/MeasureDefinition";
+import { MeasureModel } from "lib/modules/shared";
+import { MeasureDefinition } from "../../../lib/modules/measure/types/MeasureDefinition";
 
 /* eslint-disable sort-keys */
 
@@ -6,7 +7,7 @@ export type HumidityMeasurement = {
   humidity: number;
 };
 
-export const humidityMeasureDefinition: MeasureDefinition = {
+const humidityMeasureDefinition: MeasureDefinition = {
   valuesMappings: { humidity: { type: "float" } },
   valuesDetails: {
     humidity: {
@@ -20,4 +21,9 @@ export const humidityMeasureDefinition: MeasureDefinition = {
       },
     },
   },
+};
+
+export const humidityMeasureModel: MeasureModel = {
+  modelName: "humidity",
+  definition: humidityMeasureDefinition,
 };
