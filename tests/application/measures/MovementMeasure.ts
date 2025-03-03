@@ -1,4 +1,5 @@
-import { MeasureDefinition } from "./../types/MeasureDefinition";
+import { MeasureModel } from "lib/modules/shared";
+import { MeasureDefinition } from "../../../lib/modules/measure/types/MeasureDefinition";
 
 /* eslint-disable sort-keys */
 
@@ -6,7 +7,7 @@ export type MovementMeasurement = {
   movement: boolean;
 };
 
-export const movementMeasureDefinition: MeasureDefinition = {
+const movementMeasureDefinition: MeasureDefinition = {
   valuesMappings: { movement: { type: "boolean" } },
   valuesDetails: {
     movement: {
@@ -18,4 +19,9 @@ export const movementMeasureDefinition: MeasureDefinition = {
       },
     },
   },
+};
+
+export const movementMeasureModel: MeasureModel = {
+  modelName: "movement",
+  definition: movementMeasureDefinition,
 };
