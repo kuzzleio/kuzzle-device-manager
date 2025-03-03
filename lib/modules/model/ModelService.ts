@@ -136,7 +136,7 @@ export class ModelService extends BaseService {
         {
           twin: {
             models: assets,
-            type: "asset",
+            type: "assets",
           },
         },
       );
@@ -155,7 +155,7 @@ export class ModelService extends BaseService {
         {
           twin: {
             models: devices,
-            type: "device",
+            type: "devices",
           },
         },
       );
@@ -225,7 +225,7 @@ export class ModelService extends BaseService {
 
     const conflicts = await ask<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
-      { twin: { models: [modelContent], type: "asset" } },
+      { twin: { models: [modelContent], type: "assets" } },
     );
 
     if (conflicts.length > 0) {
@@ -338,7 +338,7 @@ export class ModelService extends BaseService {
 
     const conflicts = await ask<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
-      { twin: { models: [modelContent], type: "device" } },
+      { twin: { models: [modelContent], type: "devices" } },
     );
 
     if (conflicts.length > 0) {
@@ -739,7 +739,7 @@ export class ModelService extends BaseService {
 
     const conflicts = await ask<AskEngineUpdateConflict>(
       "ask:device-manager:engine:doesUpdateConflict",
-      { twin: { models: [assetModelContent], type: "asset" } },
+      { twin: { models: [assetModelContent], type: "assets" } },
     );
 
     if (conflicts.length > 0) {
