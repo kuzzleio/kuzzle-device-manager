@@ -57,8 +57,7 @@ export type DeviceManagerConfiguration = {
       mappings: JSONObject;
       settings?: JSONObject;
     };
-    // ! TODO next major release: pluralize the collection name
-    asset: {
+    assets: {
       name: string;
       mappings: CollectionMappings;
       settings?: JSONObject;
@@ -72,8 +71,7 @@ export type DeviceManagerConfiguration = {
       name: string;
       settings?: JSONObject;
     };
-    // ! TODO next major release: pluralize the collection name
-    device: {
+    devices: {
       name: string;
       mappings: CollectionMappings;
       settings?: JSONObject;
