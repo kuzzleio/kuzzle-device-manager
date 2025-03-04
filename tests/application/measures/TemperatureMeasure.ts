@@ -1,4 +1,5 @@
-import { MeasureDefinition } from "./../types/MeasureDefinition";
+import { MeasureModel } from "lib/modules/shared";
+import { MeasureDefinition } from "../../../lib/modules/measure/types/MeasureDefinition";
 
 /* eslint-disable sort-keys */
 
@@ -6,7 +7,7 @@ export type TemperatureMeasurement = {
   temperature: number;
 };
 
-export const temperatureMeasureDefinition: MeasureDefinition = {
+const temperatureMeasureDefinition: MeasureDefinition = {
   valuesMappings: { temperature: { type: "float" } },
   valuesDetails: {
     temperature: {
@@ -20,4 +21,9 @@ export const temperatureMeasureDefinition: MeasureDefinition = {
       },
     },
   },
+};
+
+export const temperatureMeasureModel: MeasureModel = {
+  modelName: "temperature",
+  definition: temperatureMeasureDefinition,
 };

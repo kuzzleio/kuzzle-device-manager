@@ -1,4 +1,5 @@
-import { MeasureDefinition } from "./../types/MeasureDefinition";
+import { MeasureModel } from "lib/modules/shared";
+import { MeasureDefinition } from "../../../lib/modules/measure/types/MeasureDefinition";
 
 /* eslint-disable sort-keys */
 
@@ -11,7 +12,7 @@ export type PositionMeasurement = {
   accuracy?: number;
 };
 
-export const positionMeasureDefinition: MeasureDefinition = {
+const positionMeasureDefinition: MeasureDefinition = {
   valuesMappings: {
     position: { type: "geo_point" },
     accuracy: { type: "float" },
@@ -39,4 +40,9 @@ export const positionMeasureDefinition: MeasureDefinition = {
       },
     },
   },
+};
+
+export const positionMeasureModel: MeasureModel = {
+  modelName: "position",
+  definition: positionMeasureDefinition,
 };

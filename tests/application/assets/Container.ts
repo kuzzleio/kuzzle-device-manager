@@ -1,10 +1,13 @@
 import {
   Metadata,
   AssetContent,
-  TemperatureMeasurement,
-  PositionMeasurement,
   AssetModel,
 } from "../../../index";
+
+import {  
+  TemperatureMeasurement,
+  PositionMeasurement
+} from "../measures"
 
 const modelName = "Container";
 
