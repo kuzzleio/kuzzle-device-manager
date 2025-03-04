@@ -9,14 +9,7 @@ import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 import { JSONObject } from "kuzzle-sdk";
 import _ from "lodash";
 
-import {
-  batteryMeasureDefinition,
-  humidityMeasureDefinition,
-  MeasureDefinition,
-  movementMeasureDefinition,
-  positionMeasureDefinition,
-  temperatureMeasureDefinition,
-} from "../measure";
+import { MeasureDefinition } from "../measure";
 
 import { assetGroupsMappings, AssetModule, assetsMappings } from "../asset";
 import {
@@ -418,12 +411,6 @@ export class DeviceManagerPlugin extends Plugin {
     // Registers
     this.decodersRegister = new DecodersRegister();
     this.modelsRegister = new ModelsRegister();
-
-    this.models.registerMeasure("temperature", temperatureMeasureDefinition);
-    this.models.registerMeasure("position", positionMeasureDefinition);
-    this.models.registerMeasure("movement", movementMeasureDefinition);
-    this.models.registerMeasure("humidity", humidityMeasureDefinition);
-    this.models.registerMeasure("battery", batteryMeasureDefinition);
   }
 
   /**

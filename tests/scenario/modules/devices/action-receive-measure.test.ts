@@ -1,9 +1,8 @@
 import {
   ApiDeviceReceiveMeasuresRequest,
   ApiDeviceReceiveMeasuresResult,
-  TemperatureMeasurement,
 } from "../../../../index";
-
+import { TemperatureMeasurement } from "../../../application/measures";
 import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);

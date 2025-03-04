@@ -3,8 +3,9 @@ import { Backend } from "kuzzle";
 import {
   MeasureContent,
   EventMeasureProcessSourceBefore,
-  TemperatureMeasurement,
 } from "../../../index";
+
+import { TemperatureMeasurement } from "../measures";
 
 function enrichTemperatureMeasures(measures: MeasureContent[]): void {
   for (const measure of measures) {
