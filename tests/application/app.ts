@@ -20,12 +20,17 @@ deviceManager.config.engineCollections.device.mappings.properties["custom"] = {
   type: "keyword",
   fields: { text: { type: "text" } },
 };
+deviceManager.config.engineCollections.assetGroups.mappings.properties[
+  "custom"
+] = {
+  type: "keyword",
+  fields: { text: { type: "text" } },
+};
 
 registerModels(deviceManager);
 registerTestPipes(app);
 
 app.plugin.use(deviceManager);
-
 app.controller.use(new TestsController(app));
 
 app.hook.register("request:onError", async (request: KuzzleRequest) => {

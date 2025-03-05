@@ -176,7 +176,7 @@ export class MeasureService extends BaseService {
       promises.push(this.mutexUpdateAsset(indexId, assetId, asset));
 
       promises.push(
-        historizeAssetStates(
+        this.historizeAssetStates(
           assetStates,
           indexId,
           JSON.parse(JSON.stringify(asset.metadata)),
@@ -409,9 +409,8 @@ export class MeasureService extends BaseService {
           promises.push(
             this.mutexUpdateAsset(engineId, asset._id, asset._source),
           );
-
           promises.push(
-            historizeAssetStates(
+            this.historizeAssetStates(
               assetStates,
               engineId,
               originalAssetMetadata,
@@ -477,7 +476,7 @@ export class MeasureService extends BaseService {
       device._source.measures = {};
     }
 
-    let lastMeasuredAt = 0;
+    let lastMeasuredAt = device._source.lastMeasuredAt ?? 0;
 
     for (const measurement of measurements) {
       if (measurement.origin.type !== "device") {
@@ -528,7 +527,7 @@ export class MeasureService extends BaseService {
       asset._source.measures = {};
     }
 
-    let lastMeasuredAt = 0;
+    let lastMeasuredAt = asset._source.lastMeasuredAt ?? 0;
 
     for (const measurement of measurements) {
       if (measurement.origin.type === "computed") {
@@ -797,62 +796,110 @@ export class MeasureService extends BaseService {
         }),
     );
   }
-}
 
-/**
- * Create a new document in the collection asset-history, for each asset states
- */
-async function historizeAssetStates(
-  assetStates: Map<number, KDocument<AssetContent<any, any>>>,
-  engineId: string,
-  originalAssetMetadata: Metadata,
-  assetMetadata: Metadata,
-): Promise<void> {
-  const metadataChanges = objectDiff(originalAssetMetadata, assetMetadata);
-  const lastTimestampRecorded = Array.from(assetStates.keys()).pop();
+  /**
+   * Create a new document in the collection asset-history, for each asset state
+   */
+  private async historizeAssetStates(
+    assetStates: Map<number, KDocument<AssetContent<any, any>>>,
+    engineId: string,
+    originalAssetMetadata: Metadata,
+    assetMetadata: Metadata,
+  ): Promise<void> {
+    const metadataChanges = objectDiff(originalAssetMetadata, assetMetadata);
 
-  const histories: AssetHistoryContent[] = [];
-  for (const [measuredAt, assetState] of assetStates) {
-    const measureNames = [];
-
-    for (const measure of Object.values(assetState._source.measures)) {
-      if (measure?.measuredAt === measuredAt) {
-        measureNames.push(measure.name);
+    if (!this.config.assetsHistorizesMeasures) {
+      // If there are no metadata changes, nothing to do.
+      if (metadataChanges.length === 0) {
+        return;
       }
-    }
+      const timestamps = Array.from(assetStates.keys());
+      const lastTimestampRecorded = timestamps[timestamps.length - 1];
+      const lastAssetState = assetStates.get(lastTimestampRecorded);
+      if (!lastAssetState) {
+        return;
+      }
 
-    const event: AssetHistoryEventMeasure = {
-      measure: {
-        names: measureNames,
-      },
-      name: "measure",
-    };
+      // Update the asset's metadata to the new one.
+      lastAssetState._source.metadata = assetMetadata;
 
-    assetState._source.metadata = originalAssetMetadata;
-
-    if (metadataChanges.length !== 0 && measuredAt === lastTimestampRecorded) {
-      (event as unknown as AssetHistoryEventMetadata).metadata = {
-        names: metadataChanges,
+      // Create a metadata event.
+      const event: AssetHistoryEventMetadata = {
+        metadata: {
+          names: metadataChanges,
+        },
+        name: "metadata",
       };
 
-      assetState._source.metadata = assetMetadata;
+      const history: AssetHistoryContent = {
+        asset: lastAssetState._source,
+        event,
+        id: lastAssetState._id,
+        timestamp: lastTimestampRecorded,
+      };
+
+      return ask<AskAssetHistoryAdd<AssetHistoryEventMetadata>>(
+        "ask:device-manager:asset:history:add",
+        {
+          engineId,
+          histories: [history],
+        },
+      );
     }
 
-    histories.push({
-      asset: assetState._source,
-      event,
-      id: assetState._id,
-      timestamp: measuredAt,
-    });
-  }
+    // Otherwise, we record measure events (and metadata on the last state if needed)
+    const timestamps = Array.from(assetStates.keys());
+    const lastTimestampRecorded = timestamps[timestamps.length - 1];
 
-  return ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
-    "ask:device-manager:asset:history:add",
-    {
-      engineId,
-      // Reverse order because for now, measuredAt are sorted in ascending order
-      // While in mCreate the last item will be the first document to be created
-      histories: histories.reverse(),
-    },
-  );
+    const histories: AssetHistoryContent[] = [];
+    for (const [measuredAt, assetState] of assetStates) {
+      // Gather measure names corresponding to the current timestamp.
+      const measureNames: string[] = [];
+      for (const measure of Object.values(assetState._source.measures)) {
+        if (measure?.measuredAt === measuredAt) {
+          measureNames.push(measure.name);
+        }
+      }
+
+      // Build the measure event.
+      const event: AssetHistoryEventMeasure = {
+        measure: {
+          names: measureNames,
+        },
+        name: "measure",
+      };
+
+      // Initialize with the original metadata.
+      assetState._source.metadata = originalAssetMetadata;
+
+      // If we are at the last recorded state and there are metadata changes,
+      // update both the event and asset metadata.
+      if (
+        metadataChanges.length !== 0 &&
+        measuredAt === lastTimestampRecorded
+      ) {
+        (event as unknown as AssetHistoryEventMetadata).metadata = {
+          names: metadataChanges,
+        };
+        assetState._source.metadata = assetMetadata;
+      }
+
+      histories.push({
+        asset: assetState._source,
+        event,
+        id: assetState._id,
+        timestamp: measuredAt,
+      });
+    }
+
+    return ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
+      "ask:device-manager:asset:history:add",
+      {
+        engineId,
+        // Reverse order because measuredAt is sorted in ascending order,
+        // while in mCreate the last item will be the first document to be created
+        histories: histories.reverse(),
+      },
+    );
+  }
 }

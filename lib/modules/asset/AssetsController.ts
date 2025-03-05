@@ -31,6 +31,7 @@ import {
   ApiAssetMGetLastMeasuredAtResult,
   ApiAssetMGetLastMeasuresResult,
   ApiAssetGetLastMeasuredAtResult,
+  ApiAssetUpdateModelLocales,
 } from "./types/AssetApi";
 import { isSourceApi } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
@@ -201,6 +202,15 @@ export class AssetsController {
             {
               path: "device-manager/:engineId/assets/_mGetLastMeasuredAt",
               verb: "post",
+            },
+          ],
+        },
+        updateModelLocales: {
+          handler: this.updateModelLocales.bind(this),
+          http: [
+            {
+              path: "device-manager/assets/modelLocales",
+              verb: "patch",
             },
           ],
         },
@@ -744,5 +754,26 @@ export class AssetsController {
     const assetIds = request.getBodyArray("ids");
 
     return this.assetService.mGetLastMeasuredAt(engineId, assetIds);
+  }
+
+  /**
+   * Update modelLocales of all assets related to the specified asset model.
+   * This operation is done to make the search assets feature  up to date
+   * @param request
+   */
+  async updateModelLocales(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetUpdateModelLocales[]> {
+    const model = request.getString("model");
+    const engineGroup = request.getString("engineGroup", "commons");
+
+    try {
+      return this.assetService.updateModelLocales(request, engineGroup, model);
+    } catch (e) {
+      request.response.configure({
+        status: (e as KuzzleError).status,
+      });
+      return e;
+    }
   }
 }

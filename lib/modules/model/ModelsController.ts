@@ -18,6 +18,11 @@ import {
   ApiModelSearchAssetsResult,
   ApiModelSearchDevicesResult,
   ApiModelSearchMeasuresResult,
+  ApiModelDeleteGroupResult,
+  ApiModelGetGroupResult,
+  ApiModelListGroupsResult,
+  ApiModelSearchGroupsResult,
+  ApiModelWriteGroupResult,
 } from "./types/ModelApi";
 
 export class ModelsController {
@@ -38,6 +43,10 @@ export class ModelsController {
           handler: this.deleteDevice.bind(this),
           http: [{ path: "device-manager/models/device/:_id", verb: "delete" }],
         },
+        deleteGroup: {
+          handler: this.deleteGroup.bind(this),
+          http: [{ path: "device-manager/models/group/:_id", verb: "delete" }],
+        },
         deleteMeasure: {
           handler: this.deleteMeasure.bind(this),
           http: [
@@ -52,6 +61,10 @@ export class ModelsController {
           handler: this.getDevice.bind(this),
           http: [{ path: "device-manager/models/device/:model", verb: "get" }],
         },
+        getGroup: {
+          handler: this.getGroup.bind(this),
+          http: [{ path: "device-manager/models/group/:model", verb: "get" }],
+        },
         getMeasure: {
           handler: this.getMeasure.bind(this),
           http: [{ path: "device-manager/models/measure/:type", verb: "get" }],
@@ -63,6 +76,10 @@ export class ModelsController {
         listDevices: {
           handler: this.listDevices.bind(this),
           http: [{ path: "device-manager/models/devices", verb: "get" }],
+        },
+        listGroups: {
+          handler: this.listGroups.bind(this),
+          http: [{ path: "device-manager/models/groups", verb: "get" }],
         },
         listMeasures: {
           handler: this.listMeasures.bind(this),
@@ -78,6 +95,12 @@ export class ModelsController {
           handler: this.searchDevices.bind(this),
           http: [
             { path: "device-manager/models/devices/_search", verb: "post" },
+          ],
+        },
+        searchGroups: {
+          handler: this.searchGroups.bind(this),
+          http: [
+            { path: "device-manager/models/groups/_search", verb: "post" },
           ],
         },
         searchMeasures: {
@@ -99,6 +122,10 @@ export class ModelsController {
         writeDevice: {
           handler: this.writeDevice.bind(this),
           http: [{ path: "device-manager/models/devices", verb: "post" }],
+        },
+        writeGroup: {
+          handler: this.writeGroup.bind(this),
+          http: [{ path: "device-manager/models/groups", verb: "post" }],
         },
         writeMeasure: {
           handler: this.writeMeasure.bind(this),
@@ -125,6 +152,13 @@ export class ModelsController {
     return deviceModel;
   }
 
+  async getGroup(request: KuzzleRequest): Promise<ApiModelGetGroupResult> {
+    const model = request.getString("model");
+
+    const groupModel = await this.modelService.getGroup(model);
+
+    return groupModel;
+  }
   async getMeasure(request: KuzzleRequest): Promise<ApiModelGetMeasureResult> {
     const type = request.getString("type");
 
@@ -142,6 +176,7 @@ export class ModelsController {
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const tooltipModels = request.getBodyObject("tooltipModels", {});
+    const locales = request.getBodyObject("locales", {});
 
     const assetModel = await this.modelService.writeAsset(
       engineGroup,
@@ -152,6 +187,7 @@ export class ModelsController {
       metadataGroups,
       measures,
       tooltipModels,
+      locales,
     );
 
     return assetModel;
@@ -179,6 +215,26 @@ export class ModelsController {
     return deviceModel;
   }
 
+  async writeGroup(request: KuzzleRequest): Promise<ApiModelWriteGroupResult> {
+    const engineGroup = request.getBodyString("engineGroup");
+    const model = request.getBodyString("model");
+    const metadataMappings = request.getBodyObject("metadataMappings", {});
+    const defaultValues = request.getBodyObject("defaultValues", {});
+    const metadataDetails = request.getBodyObject("metadataDetails", {});
+    const metadataGroups = request.getBodyObject("metadataGroups", {});
+
+    const groupModel = await this.modelService.writeGroup(
+      engineGroup,
+      model,
+      metadataMappings,
+      defaultValues,
+      metadataDetails,
+      metadataGroups,
+    );
+
+    return groupModel;
+  }
+
   async writeMeasure(
     request: KuzzleRequest,
   ): Promise<ApiModelWriteMeasureResult> {
@@ -186,12 +242,14 @@ export class ModelsController {
     const valuesMappings = request.getBodyObject("valuesMappings");
     const validationSchema = request.getBodyObject("validationSchema", {});
     const valuesDetails = request.getBodyObject("valuesDetails", {});
+    const locales = request.getBodyObject("locales", {});
 
     const measureModel = await this.modelService.writeMeasure(
       type,
       valuesMappings,
       validationSchema,
       valuesDetails,
+      locales,
     );
 
     return measureModel;
@@ -211,6 +269,14 @@ export class ModelsController {
     const _id = request.getId();
 
     await this.modelService.deleteDevice(_id);
+  }
+
+  async deleteGroup(
+    request: KuzzleRequest,
+  ): Promise<ApiModelDeleteGroupResult> {
+    const _id = request.getId();
+
+    await this.modelService.deleteGroup(_id);
   }
 
   async deleteMeasure(
@@ -234,6 +300,16 @@ export class ModelsController {
 
   async listDevices(): Promise<ApiModelListDevicesResult> {
     const models = await this.modelService.listDevices();
+
+    return {
+      models,
+      total: models.length,
+    };
+  }
+
+  async listGroups(request: KuzzleRequest): Promise<ApiModelListGroupsResult> {
+    const engineGroup = request.getString("engineGroup");
+    const models = await this.modelService.listGroups(engineGroup);
 
     return {
       models,
@@ -265,6 +341,15 @@ export class ModelsController {
     return this.modelService.searchDevices(request.getSearchParams());
   }
 
+  async searchGroups(
+    request: KuzzleRequest,
+  ): Promise<ApiModelSearchGroupsResult> {
+    return this.modelService.searchGroups(
+      request.getString("engineGroup"),
+      request.getSearchParams(),
+    );
+  }
+
   async searchMeasures(
     request: KuzzleRequest,
   ): Promise<ApiModelSearchMeasuresResult> {
@@ -282,6 +367,7 @@ export class ModelsController {
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const tooltipModels = request.getBodyObject("tooltipModels", {});
+    const locales = request.getBodyObject("locales", {});
 
     const updatedAssetModel = await this.modelService.updateAsset(
       engineGroup,
@@ -292,6 +378,7 @@ export class ModelsController {
       metadataGroups,
       measures,
       tooltipModels,
+      locales,
       request,
     );
 

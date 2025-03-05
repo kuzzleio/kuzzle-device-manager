@@ -18,7 +18,7 @@ import {
   temperatureMeasureDefinition,
 } from "../measure";
 
-import { AssetModule, assetsMappings } from "../asset";
+import { assetGroupsMappings, AssetModule, assetsMappings } from "../asset";
 import {
   DecoderModule,
   DecodersRegister,
@@ -30,6 +30,7 @@ import { MeasureModule } from "../measure";
 import {
   AssetModelDefinition,
   DeviceModelDefinition,
+  GroupModelDefinition,
   ModelModule,
   modelsMappings,
   ModelsRegister,
@@ -180,6 +181,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataDetails,
           definition.metadataGroups,
           definition.tooltipModels,
+          definition.locales,
         );
       },
 
@@ -252,6 +254,73 @@ export class DeviceManagerPlugin extends Plugin {
       },
 
       /**
+       * Register a group.
+       *
+       * @param model Name of the group model
+       * @param definition Object containing the group model definition, including:
+       *                   - metadataMappings: Metadata mappings definition
+       *                   - defaultMetadata: Default metadata values
+       *                   - metadataDetails: Localizations, detailed metadata descriptions and definition
+       *                   - metadataGroups: Groups for organizing metadata, with localizations
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerGroup(
+       *   "Parking",
+       *   {
+       *     metadataMappings: {
+       *       geolocation: { type: "geo_point" },
+       *     },
+       *     defaultMetadata: {
+       *
+       *     },
+       *     metadataDetails: {
+       *       geolocation: {
+       *         group: "access",
+       *         locales: {
+       *           en: {
+       *             friendlyName: "Parking location",
+       *             description: "GPS position of the parking"
+       *           },
+       *           fr: {
+       *             friendlyName: "Emplacement du parking",
+       *             description: "Position GPS du parking"
+       *           }
+       *         }
+       *       }
+       *     },
+       *     metadataGroups: {
+       *       access: {
+       *         locales: {
+       *           en: {
+       *             groupFriendlyName: "Parking access info"
+       *           },
+       *           fr: {
+       *             groupFriendlyName: "Information d'accès au parking"
+       *           }
+       *         }
+       *       }
+       *     }
+       *   }
+       * );
+       * ```
+       */
+      registerGroup: (
+        engineGroup: string,
+        model: string,
+        definition: GroupModelDefinition,
+      ) => {
+        this.modelsRegister.registerGroup(
+          engineGroup,
+          model,
+          definition.metadataMappings,
+          definition.defaultMetadata,
+          definition.metadataDetails,
+          definition.metadataGroups,
+        );
+      },
+
+      /**
        * Register a new measure
        *
        * @param name Name of the measure
@@ -294,6 +363,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.config = {
       ignoreStartupErrors: false,
+      assetsHistorizesMeasures: false,
       engine: {
         autoUpdate: true,
       },
@@ -329,6 +399,7 @@ export class DeviceManagerPlugin extends Plugin {
         },
         assetGroups: {
           name: InternalCollection.ASSETS_GROUPS,
+          mappings: assetGroupsMappings,
         },
         assetHistory: {
           name: InternalCollection.ASSETS_HISTORY,

@@ -1,5 +1,9 @@
 import { MeasureDefinition } from "../../measure";
-import { AssetModelDefinition, DeviceModelDefinition } from "../../model";
+import {
+  AssetModelDefinition,
+  DeviceModelDefinition,
+  GroupModelDefinition,
+} from "../../model";
 
 interface ModelDefinition<Definition> {
   /**
@@ -15,3 +19,4 @@ interface ModelDefinition<Definition> {
 export type AssetModel = ModelDefinition<AssetModelDefinition>;
 export type DeviceModel = ModelDefinition<DeviceModelDefinition>;
 export type MeasureModel = ModelDefinition<MeasureDefinition>;
+export type GroupModel = ModelDefinition<GroupModelDefinition>;

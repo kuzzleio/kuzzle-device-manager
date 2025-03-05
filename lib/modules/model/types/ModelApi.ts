@@ -3,6 +3,8 @@ import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupModelContent,
+  LocaleDetails,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -29,6 +31,12 @@ export interface ApiModelGetDeviceRequest extends ModelsControllerRequest {
 }
 export type ApiModelGetDeviceResult = KDocument<DeviceModelContent>;
 
+export interface ApiModelGetGroupRequest extends ModelsControllerRequest {
+  action: "getGroup";
+  model: string;
+}
+export type ApiModelGetGroupResult = KDocument<GroupModelContent>;
+
 export interface ApiModelGetMeasureRequest extends ModelsControllerRequest {
   action: "getMeasure";
   type: string;
@@ -47,6 +55,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 export type ApiModelWriteAssetResult = KDocument<AssetModelContent>;
@@ -65,11 +74,28 @@ export interface ApiModelWriteDeviceRequest extends ModelsControllerRequest {
 }
 export type ApiModelWriteDeviceResult = KDocument<DeviceModelContent>;
 
+export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
+  action: "writeGroup";
+
+  body: {
+    engineGroup: string;
+    model: string;
+    metadataDetails?: MetadataDetails;
+    metadataGroups?: MetadataGroups;
+    metadataMappings?: MetadataMappings;
+    defaultValues?: JSONObject;
+  };
+}
+export type ApiModelWriteGroupResult = KDocument<GroupModelContent>;
+
 export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
   action: "writeMeasure";
 
   body: {
     type: string;
+    locales?: {
+      [valueName: string]: LocaleDetails;
+    };
     valuesMappings: JSONObject;
     validationSchema?: SchemaObject;
     valuesDetails?: MeasureValuesDetails;
@@ -90,6 +116,7 @@ export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 export type ApiModelUpdateAssetResult = KDocument<AssetModelContent>;
@@ -107,6 +134,13 @@ export interface ApiModelDeleteDeviceRequest extends ModelsControllerRequest {
   _id: string;
 }
 export type ApiModelDeleteDeviceResult = void;
+
+export interface ApiModelDeleteGroupRequest extends ModelsControllerRequest {
+  action: "deleteGroup";
+
+  _id: string;
+}
+export type ApiModelDeleteGroupResult = void;
 
 export interface ApiModelDeleteMeasureRequest extends ModelsControllerRequest {
   action: "deleteMeasure";
@@ -130,6 +164,15 @@ export interface ApiModelListDevicesRequest extends ModelsControllerRequest {
 }
 export type ApiModelListDevicesResult = {
   models: KDocument<DeviceModelContent>[];
+  total: number;
+};
+
+export interface ApiModelListGroupsRequest extends ModelsControllerRequest {
+  action: "listGroups";
+  engineGroup: string;
+}
+export type ApiModelListGroupsResult = {
+  models: KDocument<GroupModelContent>[];
   total: number;
 };
 
@@ -163,6 +206,17 @@ export interface ApiModelSearchDevicesRequest extends ModelsControllerRequest {
 export type ApiModelSearchDevicesResult = SearchResult<
   KHit<DeviceModelContent>
 >;
+
+export interface ApiModelSearchGroupsRequest extends ModelsControllerRequest {
+  action: "searchGroups";
+
+  engineGroup: string;
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchGroupsResult = SearchResult<KHit<GroupModelContent>>;
 
 export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
   action: "searchMeasures";

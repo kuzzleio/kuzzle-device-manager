@@ -6,8 +6,13 @@ jest.setTimeout(10000);
 
 describe("DeviceController: receiveMeasure", () => {
   const sdk = setupHooks();
+  it("should save asset history when measure is received and assetsHistorizesMeasures is true", async () => {
+    await sdk.query({
+      controller: "tests",
+      action: "setAssetsHistorizesMeasuresConfig",
+      assetsHistorizesMeasures: true,
+    });
 
-  it("should save asset history when measure is received", async () => {
     await sendDummyTempPayloads(sdk, [
       {
         deviceEUI: "linked1",
@@ -33,9 +38,20 @@ describe("DeviceController: receiveMeasure", () => {
       },
     });
     expect(result.hits[0]._source.event.metadata).toBeUndefined();
+
+    await sdk.query({
+      controller: "tests",
+      action: "setAssetsHistorizesMeasuresConfig",
+      assetsHistorizesMeasures: false,
+    });
   });
 
-  it("should historize asset for each measurements of the same measure received in non-chronological order", async () => {
+  it("should historize asset for each measurements of the same measure received in non-chronological order and assetsHistorizesMeasures is true", async () => {
+    await sdk.query({
+      controller: "tests",
+      action: "setAssetsHistorizesMeasuresConfig",
+      assetsHistorizesMeasures: true,
+    });
     await sendDummyTempPayloads(sdk, [
       {
         measurements: [
@@ -101,6 +117,11 @@ describe("DeviceController: receiveMeasure", () => {
         measures: { temperatureExt: { values: { temperature: 13.25 } } },
       },
     });
+    await sdk.query({
+      controller: "tests",
+      action: "setAssetsHistorizesMeasuresConfig",
+      assetsHistorizesMeasures: false,
+    });
   });
 
   it("should add a metadata event to the history entry", async () => {
@@ -128,10 +149,7 @@ describe("DeviceController: receiveMeasure", () => {
     expect(result.hits[0]._source).toMatchObject({
       id: "Container-linked1",
       event: {
-        name: "measure",
-        measure: {
-          names: ["temperatureExt"],
-        },
+        name: "metadata",
         metadata: {
           names: ["weight", "trailer.capacity"],
         },
@@ -297,14 +315,11 @@ describe("DeviceController: receiveMeasure", () => {
       "assets-history",
     );
 
-    expect(result.hits).toHaveLength(2);
+    expect(result.hits).toHaveLength(1);
     expect(result.hits[0]._source).toMatchObject({
       id: "Container-linked1",
       event: {
-        name: "measure",
-        measure: {
-          names: ["temperatureExt"],
-        },
+        name: "metadata",
         metadata: {
           names: ["weight", "trailer.capacity"],
         },
@@ -312,19 +327,6 @@ describe("DeviceController: receiveMeasure", () => {
       asset: {
         measures: { temperatureExt: { values: { temperature: 13.27 } } },
         metadata: { weight: 42042, trailer: { capacity: 2048 } },
-      },
-    });
-    expect(result.hits[1]._source).toMatchObject({
-      id: "Container-linked1",
-      event: {
-        name: "measure",
-        measure: {
-          names: ["temperatureExt"],
-        },
-      },
-      asset: {
-        measures: { temperatureExt: { values: { temperature: 13.26 } } },
-        metadata: { weight: 10, trailer: { capacity: 1024 } },
       },
     });
   });
