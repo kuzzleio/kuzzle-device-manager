@@ -363,6 +363,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.config = {
       ignoreStartupErrors: false,
+      assetsHistorizesMeasures: false,
       engine: {
         autoUpdate: true,
       },

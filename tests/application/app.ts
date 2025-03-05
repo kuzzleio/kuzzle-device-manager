@@ -31,7 +31,6 @@ registerModels(deviceManager);
 registerTestPipes(app);
 
 app.plugin.use(deviceManager);
-
 app.controller.use(new TestsController(app));
 
 app.hook.register("request:onError", async (request: KuzzleRequest) => {
