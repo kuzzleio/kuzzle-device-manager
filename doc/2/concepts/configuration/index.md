@@ -29,7 +29,7 @@ The following global options are available:
 | Name                  | Type    | Default          | Description                                                                                        |
 | --------------------- | ------- | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `ignoreStartupErrors`      | boolean | `false`          | If `true`, the plugin will not throw an error if the engine is not reachable at startup.           |
-| `assetsHistorizesMeasures` | boolean | `false`     | If `true`, the plugin creates an asset history document for every asset state update from measures. If set to false, only asset metadata updates will be registered.                     |
+| `assetsHistorizesMeasures` | boolean | `false`     | If `true`, the plugin creates an asset history document for every asset state update from measures. If set to false, only asset metadata updates will be registered. <SinceBadge since="2.8.0"/>                     |
 | `engine.autoUpdate`   | boolean | `true`           | If `true`, the plugin will automatically update the engine collections when the plugin is started.          |
 | `adminIndex`          | string  | `device-manager` | The index name where the plugin stores its configuration and devices.                              |
 
