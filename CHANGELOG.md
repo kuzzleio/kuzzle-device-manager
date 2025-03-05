@@ -1,3 +1,10 @@
+## [2.8.0-dev.7](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.6...v2.8.0-dev.7) (2025-03-05)
+
+
+### Features
+
+* measures should not be historized on asset ([#404](https://github.com/kuzzleio/kuzzle-device-manager/issues/404)) ([6a73786](https://github.com/kuzzleio/kuzzle-device-manager/commit/6a73786a5ab53dd1cbde1e495643fabe8b484b67))
+
 ## [2.8.0-dev.6](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.5...v2.8.0-dev.6) (2025-02-17)
 
 
