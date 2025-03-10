@@ -8,10 +8,10 @@ import { BaseService } from "../shared";
 import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
   AskMeasureSourceIngest,
-  EventMeasureProcessSourceAfter,
-  EventMeasureProcessSourceBefore,
-  TenantEventMeasureProcessSourceAfter,
-  TenantEventMeasureProcessSourceBefore,
+  EventMeasureProcessAfter,
+  EventMeasureProcessBefore,
+  TenantEventMeasureProcessAfter,
+  TenantEventMeasureProcessBefore,
 } from "./types/MeasureEvents";
 import {
   ApiMeasureSource,
@@ -113,14 +113,14 @@ export class MeasureService extends BaseService {
      *
      * Useful to enrich measures before they are saved.
      */
-    await this.app.trigger<EventMeasureProcessSourceBefore>(
-      "device-manager:measures:process:sourceBefore",
+    await this.app.trigger<EventMeasureProcessBefore>(
+      "device-manager:measures:process:before",
       { asset, measures, source, target },
     );
 
     if (indexId) {
-      await this.app.trigger<TenantEventMeasureProcessSourceBefore>(
-        `engine:${indexId}:device-manager:measures:process:sourceBefore`,
+      await this.app.trigger<TenantEventMeasureProcessBefore>(
+        `engine:${indexId}:device-manager:measures:process:before`,
         { asset, measures, source, target },
       );
     }
@@ -153,14 +153,14 @@ export class MeasureService extends BaseService {
      * Useful to trigger business rules like alerts
      *
      */
-    await this.app.trigger<EventMeasureProcessSourceAfter>(
-      "device-manager:measures:process:sourceAfter",
+    await this.app.trigger<EventMeasureProcessAfter>(
+      "device-manager:measures:process:after",
       { asset, measures, source, target },
     );
 
     if (indexId) {
-      await this.app.trigger<TenantEventMeasureProcessSourceAfter>(
-        `engine:${indexId}:device-manager:measures:process:sourceAfter`,
+      await this.app.trigger<TenantEventMeasureProcessAfter>(
+        `engine:${indexId}:device-manager:measures:process:after`,
         { asset, measures, source, target },
       );
     }

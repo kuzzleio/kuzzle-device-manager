@@ -1,9 +1,6 @@
 import { Backend } from "kuzzle";
 
-import {
-  MeasureContent,
-  EventMeasureProcessSourceBefore,
-} from "../../../index";
+import { MeasureContent, EventMeasureProcessBefore } from "../../../index";
 
 import { TemperatureMeasurement } from "../measures";
 
@@ -82,8 +79,8 @@ function addTemperatureWeatherMeasure(
 }
 
 export function registerTestPipes(app: Backend) {
-  app.pipe.register<EventMeasureProcessSourceBefore>(
-    "device-manager:measures:process:sourceBefore",
+  app.pipe.register<EventMeasureProcessBefore>(
+    "device-manager:measures:process:before",
     async ({ source, target, asset, measures }) => {
       if (source.id === "DummyTemp-enrich_me_master") {
         enrichTemperatureMeasures(measures);
