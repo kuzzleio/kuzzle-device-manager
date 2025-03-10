@@ -145,10 +145,11 @@ class AbeewayDecoder extends Decoder {
 
 The `decode` method is in charge of transforming the raw data into standardized measures.
 
-It receives two arguments:
+It receives three arguments:
 
 - `decodedPayload`: instance of `DecodedPayload` used to extract measures
 - `payload`: raw data
+- `request`: Kuzzle request
 
 Each measure must be extracted using the `addMeasurement` method of the `decodedPayload` object.
 
@@ -170,7 +171,8 @@ export class AbeewayDecoder extends Decoder {
 
    async decode(
      decodedPayload: DecodedPayload<AbeewayDecoder>,
-     payload: JSONObject
+     payload: JSONObject,
+     request: KuzzleRequest
    ) {
      decodedPayload.addMeasurement<TemperatureMeasurement>(
        payload.deviceEUI, // device reference
@@ -188,6 +190,7 @@ export class AbeewayDecoder extends Decoder {
    }
 }
 ```
+- `request` can be use to interract with [kuzzle request](https://docs.kuzzle.io/core/2/framework/classes/kuzzle-request/properties/) as documented onto kuzzle documentation. (ex: configure response format using [`request.response.configure`](https://docs.kuzzle.io/core/2/framework/classes/request-response/configure/).)
 
 ### Registration on the framework
 
