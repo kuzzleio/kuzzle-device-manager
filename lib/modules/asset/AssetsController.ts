@@ -765,10 +765,9 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetUpdateModelLocales[]> {
     const model = request.getString("model");
-    const engineGroup = request.getString("engineGroup", "commons");
 
     try {
-      return this.assetService.updateModelLocales(request, engineGroup, model);
+      return this.assetService.updateModelLocales(request, model);
     } catch (e) {
       request.response.configure({
         status: (e as KuzzleError).status,

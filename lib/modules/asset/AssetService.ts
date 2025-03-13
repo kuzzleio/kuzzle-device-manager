@@ -17,7 +17,12 @@ import {
   AskDeviceLinkAsset,
   AskDeviceUnlinkAsset,
 } from "../device";
-import { AskModelAssetGet, AssetModelContent } from "../model";
+import {
+  ApiModelGetAssetRequest,
+  ApiModelGetAssetResult,
+  AskModelAssetGet,
+  AssetModelContent,
+} from "../model";
 import {
   AskEngineList,
   DeviceManagerPlugin,
@@ -629,32 +634,23 @@ export class AssetService extends DigitalTwinService {
    */
   public async updateModelLocales(
     request: KuzzleRequest,
-    engineGroup: string,
     model: string,
   ): Promise<ApiAssetUpdateModelLocales[]> {
-    let resultModel: JSONObject;
+    const res = await this.sdk.query<
+      ApiModelGetAssetRequest,
+      ApiModelGetAssetResult
+    >({
+      action: "getAsset",
+      controller: "device-manager/models",
+      model,
+    });
 
-    try {
-      const { result: fetchedResult } = await this.sdk.query({
-        action: "getAsset",
-        body: {},
-        controller: "device-manager/models",
-        engineGroup,
-        model,
-      });
-      resultModel = fetchedResult;
-    } catch (e) {
-      throw new BadRequestError(
-        `${e} Verify in your arguments that the asset model belongs to the engineGroup "${engineGroup}"`,
-        {},
-        400,
-      );
-    }
-
-    const locales = resultModel._source.asset.locales;
+    const locales = res.result._source.asset.locales;
+    const engineGroup = res.result._source.engineGroup;
+    const group = engineGroup === "commons" ? null : engineGroup;
 
     const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: engineGroup,
+      group,
     });
 
     const results: ApiAssetUpdateModelLocales[] = [];

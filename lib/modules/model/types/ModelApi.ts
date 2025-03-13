@@ -21,7 +21,7 @@ interface ModelsControllerRequest {
 export interface ApiModelGetAssetRequest extends ModelsControllerRequest {
   action: "getAsset";
   model: string;
-  engineGroup: string;
+  engineGroup?: string;
 }
 export type ApiModelGetAssetResult = KDocument<AssetModelContent>;
 
