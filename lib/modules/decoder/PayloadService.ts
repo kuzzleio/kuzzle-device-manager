@@ -13,7 +13,6 @@ import { Decoder } from "./Decoder";
 import { DecodingState } from "./DecodingState";
 import { SkipError } from "./SkipError";
 import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
-import { PayloadContent } from "./types/PayloadContent";
 
 export class PayloadService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -27,16 +26,6 @@ export class PayloadService extends BaseService {
         });
       },
     );
-  }
-
-  async get(payloadUuid: string): Promise<KDocument<PayloadContent>> {
-    const payload = await this.sdk.document.get<PayloadContent>(
-      this.config.adminIndex,
-      "payloads",
-      payloadUuid,
-    );
-
-    return payload;
   }
 
   /**

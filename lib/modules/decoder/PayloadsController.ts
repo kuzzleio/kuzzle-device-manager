@@ -2,10 +2,7 @@ import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { DecodersRegister } from "./DecodersRegister";
 import { PayloadService } from "./PayloadService";
-import {
-  ApiPayloadGetResult,
-  ApiPayloadReceiveUnkownResult,
-} from "./types/PayloadApi";
+import { ApiPayloadReceiveUnkownResult } from "./types/PayloadApi";
 
 export class PayloadsController {
   private payloadService: PayloadService;
@@ -22,10 +19,6 @@ export class PayloadsController {
 
     this.definition = {
       actions: {
-        get: {
-          handler: this.get.bind(this),
-          http: [{ path: "device-manager/payload/:_id", verb: "get" }],
-        },
         receiveUnknown: {
           handler: this.receiveUnknown.bind(this),
           http: [
@@ -66,12 +59,6 @@ export class PayloadsController {
         http: decoder.http,
       };
     }
-  }
-
-  async get(request: KuzzleRequest): Promise<ApiPayloadGetResult> {
-    const payloadUuid = request.getString("_id", "");
-
-    return this.payloadService.get(payloadUuid);
   }
 
   async receiveUnknown(

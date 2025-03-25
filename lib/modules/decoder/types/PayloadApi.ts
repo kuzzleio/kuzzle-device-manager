@@ -1,5 +1,4 @@
-import { JSONObject, KDocument } from "kuzzle-sdk";
-import { PayloadContent } from "./PayloadContent";
+import { JSONObject } from "kuzzle-sdk";
 
 interface PayloadsControllerRequest {
   controller: "device-manager/payloads";
@@ -14,9 +13,3 @@ export interface ApiPayloadReceiveUnkownRequest
   body: JSONObject;
 }
 export type ApiPayloadReceiveUnkownResult = void;
-
-export interface ApiPayloadGetRequest extends PayloadsControllerRequest {
-  action: "get";
-  _id: string;
-}
-export type ApiPayloadGetResult = KDocument<PayloadContent>;
