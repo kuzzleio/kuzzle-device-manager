@@ -36,6 +36,7 @@ import {
   ModelsRegister,
 } from "../model";
 import { keepStack, lock } from "../shared";
+import { RawPayloadsModule } from "../rawPayloads";
 
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
@@ -54,6 +55,7 @@ export class DeviceManagerPlugin extends Plugin {
   private decoderModule: DecoderModule;
   private measureModule: MeasureModule;
   private modelModule: ModelModule;
+  private rawPayloadsModule: RawPayloadsModule;
 
   private modelsRegister: ModelsRegister;
   private decodersRegister: DecodersRegister;
@@ -443,6 +445,7 @@ export class DeviceManagerPlugin extends Plugin {
     this.decoderModule = new DecoderModule(this);
     this.measureModule = new MeasureModule(this);
     this.modelModule = new ModelModule(this);
+    this.rawPayloadsModule = new RawPayloadsModule(this);
 
     // Modules init
     await this.assetModule.init();
@@ -450,6 +453,7 @@ export class DeviceManagerPlugin extends Plugin {
     await this.decoderModule.init();
     await this.measureModule.init();
     await this.modelModule.init();
+    await this.rawPayloadsModule.init();
 
     this.decodersRegister.init(this, this.context);
     this.modelsRegister.init(this);
