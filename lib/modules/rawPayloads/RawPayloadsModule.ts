@@ -2,7 +2,7 @@ import { Module } from "../shared/Module";
 
 import { RawPayloadsController } from "./RawPayloadsController";
 import { RawPayloadsService } from "./RawPayloadsService";
-import { RoleRawPayloadsReader } from "./roles/RoleRawPayloadsReader";
+import { RoleRawPayloadsPlatformAdmin } from "./roles/RoleRawPayloadsPlatformAdmin";
 
 export class RawPayloadsModule extends Module {
   private rawPayloadsService: RawPayloadsService;
@@ -17,7 +17,7 @@ export class RawPayloadsModule extends Module {
     this.plugin.api["device-manager/rawPayloads"] =
       this.rawPayloadsController.definition;
 
-    this.plugin.imports.roles[RoleRawPayloadsReader.name] =
-      RoleRawPayloadsReader.definition;
+    this.plugin.imports.roles[RoleRawPayloadsPlatformAdmin.name] =
+      RoleRawPayloadsPlatformAdmin.definition;
   }
 }

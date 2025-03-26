@@ -13,8 +13,8 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
       },
     }
  */
-export const RoleRawPayloadsReader: KuzzleRole = {
-  name: "rawPayloads.reader",
+export const RoleRawPayloadsPlatformAdmin: KuzzleRole = {
+  name: "rawPayloads.platform-admin",
   definition: {
     controllers: {
       "device-manager/rawPayloads": {
