@@ -6,7 +6,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
  * It's a tenant role.
  *
  * @example
-    "device-manager/rawPayload": {
+    "device-manager/rawPayloads": {
       actions: {
         get: true,
 
