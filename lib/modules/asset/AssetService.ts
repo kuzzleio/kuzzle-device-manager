@@ -1,5 +1,5 @@
 import { BadRequestError, KuzzleRequest, PartialError, User } from "kuzzle";
-import { ask, onAsk } from "kuzzle-plugin-commons";
+import { ask, EngineContent, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -722,15 +722,25 @@ export class AssetService extends DigitalTwinService {
   }: {
     assetModel: AssetModelContent;
   }): Promise<void> {
-    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: assetModel.engineGroup,
-    });
-
+    let engines: EngineContent[];
+    // For engine group 'commons', fetch all engines
+    if (assetModel.engineGroup === "commons") {
+      engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+        group: null,
+      });
+    } else {
+      engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+        group: assetModel.engineGroup,
+      });
+    }
     const targets = engines.map((engine) => ({
       collections: [InternalCollection.ASSETS],
       index: engine.index,
     }));
-
+    // Return if no engine found
+    if (targets.length === 0) {
+      return;
+    }
     const assets = await this.sdk.query<
       BaseRequest,
       DocumentSearchResult<AssetContent>
