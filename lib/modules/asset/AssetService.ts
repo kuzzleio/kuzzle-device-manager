@@ -722,17 +722,12 @@ export class AssetService extends DigitalTwinService {
   }: {
     assetModel: AssetModelContent;
   }): Promise<void> {
-    let engines: EngineContent[];
     // For engine group 'commons', fetch all engines
-    if (assetModel.engineGroup === "commons") {
-      engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-        group: null,
-      });
-    } else {
-      engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-        group: assetModel.engineGroup,
-      });
-    }
+    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+      group:
+        assetModel.engineGroup === "commons" ? null : assetModel.engineGroup,
+    });
+
     const targets = engines.map((engine) => ({
       collections: [InternalCollection.ASSETS],
       index: engine.index,
