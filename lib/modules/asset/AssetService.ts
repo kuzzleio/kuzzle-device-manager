@@ -1,5 +1,5 @@
 import { BadRequestError, KuzzleRequest, PartialError, User } from "kuzzle";
-import { ask, EngineContent, onAsk } from "kuzzle-plugin-commons";
+import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
   DocumentSearchResult,
