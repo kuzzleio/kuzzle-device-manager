@@ -137,7 +137,7 @@ export class ModelsController {
 
   async getAsset(request: KuzzleRequest): Promise<ApiModelGetAssetResult> {
     const model = request.getString("model");
-    const engineGroup: string | undefined = request.input.args.engineGroup;
+    const engineGroup = request.getString("engineGroup", "commons");
 
     const assetModel = await this.modelService.getAsset(engineGroup, model);
 
