@@ -719,15 +719,20 @@ export class AssetService extends DigitalTwinService {
   }: {
     assetModel: AssetModelContent;
   }): Promise<void> {
+    // For engine group 'commons', fetch all engines
     const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: assetModel.engineGroup,
+      group:
+        assetModel.engineGroup === "commons" ? null : assetModel.engineGroup,
     });
 
     const targets = engines.map((engine) => ({
       collections: [InternalCollection.ASSETS],
       index: engine.index,
     }));
-
+    // Return if no engine found
+    if (targets.length === 0) {
+      return;
+    }
     const assets = await this.sdk.query<
       BaseRequest,
       DocumentSearchResult<AssetContent>
