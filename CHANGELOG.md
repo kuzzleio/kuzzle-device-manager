@@ -1,3 +1,10 @@
+## [2.8.0-dev.9](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.8...v2.8.0-dev.9) (2025-04-18)
+
+
+### Bug Fixes
+
+* asset commons case ([#418](https://github.com/kuzzleio/kuzzle-device-manager/issues/418)) ([c4bf2ac](https://github.com/kuzzleio/kuzzle-device-manager/commit/c4bf2ac21ec09e9afd48dac4ee9bec42adec80c5))
+
 ## [2.8.0-dev.8](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.7...v2.8.0-dev.8) (2025-04-17)
 
 
