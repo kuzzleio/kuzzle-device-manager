@@ -1,4 +1,10 @@
-import { BadRequestError, KuzzleRequest, PartialError, User } from "kuzzle";
+import {
+  BadRequestError,
+  KuzzleRequest,
+  NotFoundError,
+  PartialError,
+  User,
+} from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
@@ -645,6 +651,10 @@ export class AssetService extends DigitalTwinService {
       },
       { size: 1 },
     );
+
+    if (res.total === 0) {
+      throw new NotFoundError(`Unknown Asset model '${model}'.`);
+    }
 
     const modelDocument = res.hits[0];
     const locales = modelDocument._source.asset.locales;
