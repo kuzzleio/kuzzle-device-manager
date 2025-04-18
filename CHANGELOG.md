@@ -1,3 +1,10 @@
+## [2.8.0-dev.11](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.10...v2.8.0-dev.11) (2025-04-18)
+
+
+### Bug Fixes
+
+* manager error when asset model is not found ([#419](https://github.com/kuzzleio/kuzzle-device-manager/issues/419)) ([08e9a94](https://github.com/kuzzleio/kuzzle-device-manager/commit/08e9a9478d70d554d0359a51f615c70130e74fa0))
+
 ## [2.8.0-dev.10](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.9...v2.8.0-dev.10) (2025-04-18)
 
 
