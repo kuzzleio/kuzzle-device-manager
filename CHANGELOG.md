@@ -1,3 +1,10 @@
+## [2.8.0-dev.10](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.9...v2.8.0-dev.10) (2025-04-18)
+
+
+### Bug Fixes
+
+* **assetModels:** error on create asset model with commons engine ([#417](https://github.com/kuzzleio/kuzzle-device-manager/issues/417)) ([a5acf07](https://github.com/kuzzleio/kuzzle-device-manager/commit/a5acf070cd41d28fb8ca70e66a6d9e438329f1c1))
+
 ## [2.8.0-dev.9](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.8...v2.8.0-dev.9) (2025-04-18)
 
 
