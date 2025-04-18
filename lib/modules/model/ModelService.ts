@@ -754,18 +754,18 @@ export class ModelService extends BaseService {
     engineGroup: string,
     model: string,
   ): Promise<KDocument<AssetModelContent>> {
-    const query: JSONObject = {
+    const query = {
       and: [
+        {
+          or: [
+            { equals: { engineGroup } },
+            { equals: { engineGroup: "commons" } },
+          ],
+        },
         { equals: { type: "asset" } },
         { equals: { "asset.model": model } },
       ],
     };
-
-    if (engineGroup !== undefined) {
-      query.and.push({
-        or: [{ equals: { engineGroup } }],
-      });
-    }
 
     const result = await this.sdk.document.search<AssetModelContent>(
       this.config.adminIndex,
