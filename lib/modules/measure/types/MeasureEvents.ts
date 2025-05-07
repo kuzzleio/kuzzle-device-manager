@@ -27,8 +27,8 @@ export type AskMeasureSourceIngest = {
  *
  * Useful to enrich measures before they are saved.
  */
-export type EventMeasureProcessSourceBefore = {
-  name: "device-manager:measures:process:sourceBefore";
+export type EventMeasureProcessBefore = {
+  name: "device-manager:measures:process:before";
 
   args: [
     {
@@ -45,8 +45,8 @@ export type EventMeasureProcessSourceBefore = {
  *
  * Useful to enrich measures before they are saved.
  */
-export type TenantEventMeasureProcessSourceBefore = {
-  name: `engine:${string}:device-manager:measures:process:sourceBefore`;
+export type TenantEventMeasureProcessBefore = {
+  name: `engine:${string}:device-manager:measures:process:before`;
 
   args: [
     {
@@ -61,8 +61,8 @@ export type TenantEventMeasureProcessSourceBefore = {
 /**
  * Event after processing new measures from data source.
  */
-export type EventMeasureProcessSourceAfter = {
-  name: "device-manager:measures:process:sourceAfter";
+export type EventMeasureProcessAfter = {
+  name: "device-manager:measures:process:after";
 
   args: [
     {
@@ -78,8 +78,8 @@ export type EventMeasureProcessSourceAfter = {
  * Tenant event after processing new measures from data source.
  *
  */
-export type TenantEventMeasureProcessSourceAfter = {
-  name: `engine:${string}:device-manager:measures:process:sourceAfter`;
+export type TenantEventMeasureProcessAfter = {
+  name: `engine:${string}:device-manager:measures:process:after`;
 
   args: [
     {

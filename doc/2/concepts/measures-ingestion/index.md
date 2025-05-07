@@ -145,10 +145,11 @@ class AbeewayDecoder extends Decoder {
 
 The `decode` method is in charge of transforming the raw data into standardized measures.
 
-It receives two arguments:
+It receives three arguments:
 
 - `decodedPayload`: instance of `DecodedPayload` used to extract measures
 - `payload`: raw data
+- `request`: Kuzzle request
 
 Each measure must be extracted using the `addMeasurement` method of the `decodedPayload` object.
 
@@ -170,7 +171,8 @@ export class AbeewayDecoder extends Decoder {
 
    async decode(
      decodedPayload: DecodedPayload<AbeewayDecoder>,
-     payload: JSONObject
+     payload: JSONObject,
+     request: KuzzleRequest
    ) {
      decodedPayload.addMeasurement<TemperatureMeasurement>(
        payload.deviceEUI, // device reference
@@ -188,6 +190,7 @@ export class AbeewayDecoder extends Decoder {
    }
 }
 ```
+- `request` can be use to interract with [kuzzle request](https://docs.kuzzle.io/core/2/framework/classes/kuzzle-request/properties/) as documented onto kuzzle documentation. (ex: configure response format using [`request.response.configure`](https://docs.kuzzle.io/core/2/framework/classes/request-response/configure/).)
 
 ### Registration on the framework
 
@@ -252,164 +255,124 @@ For each measure contained in the Kuzzle IoT Platform, it is possible to go back
 
 The `payloadUuids` property contained in the measures allows you to search the `payloads` collection to find the corresponding data frames.
 
-# Ingestion pipeline events
+## Measures Sources
 
-It is possible to execute additional processing within the ingestion pipeline by using one of the events provided for this purpose.
+Measures can originate from different sources:
 
-Adding new business rules is done using the Kuzzle pipe mechanism (See [Event System](/core/2/guides/develop-on-kuzzle/event-system/)).
+### Device Measure Source
 
-Depending on the treatments, it is better to choose one or the other and that is what we are going to see now.
+Represents measures coming directly from a physical device.
+
+- **Properties:**
+  - `type`: Always "device"
+  - `id`: Unique identifier of the source
+  - `reference`: Device reference
+  - `deviceMetadata`: Metadata of the device
+  - `model`: Device model
+  - `lastMeasuredAt`: (optional) Timestamp of the last measurement
+
+### API Measure Source
+
+Represents measures coming from an API call.
+
+- **Properties:**
+  - `type`: Always "api"
+  - `id`: Unique identifier of the source
+
+## Measures Targets
+
+Measures are directed towards specific targets:
+
+### Device Measure Target
+
+Targets a device entity within the platform.
+
+- **Properties:**
+  - `type`: Always "device"
+  - `assetId`: (optional) linked Asset identifier
+  - `indexId`: Index identifier
+
+### API Measure Target
+
+Targets an API entity or external systems.
+
+- **Properties:**
+  - `type`: Always "api"
+  - `assetId`: Associated asset identifier
+  - `engineGroup`: (optional) Specific engine group targeted
+  - `indexId`: Index identifier
+
+
+## Events Emitted During Measure Processing
+
+To enrich or modify measures during ingestion, the Kuzzle IoT Platform provides events emitted at various stages. Below are the details on events triggered during measure processing:
 
 ![Ingestion pipeline](./ingestion-pipeline.png)
 
-## Data enrichment processing (before)
+### Event Before process : `device-manager:measures:process:before`
 
-It is best to enrich data at this level of the ingestion pipeline to limit the number of document versions.
+Triggered before measures are processed and persisted. Ideal for enriching measures or adjusting metadata prior to saving.
 
-Also, the measures will be propagated to the different entities of the Kuzzle IoT Platform, so it is more difficult to modify them afterwards.
+- **Event properties:**
+  - `source`: Origin of the measures (Device or API).
+  - `target`: Intended target for the measures (Device or API).
+  - `asset`: (optional) Asset associated with the device.
+  - `measures`: Array of measures to be processed.
 
-The ingest pipeline offers a mechanism to modify them before they are propagated and then persisted, so it is possible to modify their contents before this step.
+_Example of enriching a measure:_
 
-The `device-manager:measures:process:before` event is triggered with an object containing 3 properties:
-
-- `device`: the last state of the device associated with the measures
-- `measures`: table of measures
-- `asset`: (optional) the last state of the asset linked to the device
-
-::: info
-An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:before`
-:::
-
-Another event is triggered after updating the asset and the device with the latest measures but before being persisted: `device-manager:measures:persist:after`.
-
-The object passed to the event is the same as for the previous event.
-
-### Enrich existing measures
-
-It is possible to modify the fields of existing measures directly by manipulating the table of measures.
-
-- **_Example: calculation of power in watts from volts and amps_**
-
-  ```jsx
-  app.pipe.register <
-    EventMeasureProcessBefore >
-    ("device-manager:measures:process:before",
-    async ({ measures, device, asset }) => {
-      for (const measure of measures) {
-        if (measure.type === "power") {
-          measure.values.watt = measure.values.volt * measure.values.ampere;
-        }
-      }
-
-      return { measures, device, asset };
-    });
-  ```
-
-### Add new measures
-
-New measures can be created and added to the measure table.
-
-If these measures are present in the device or device, then they must also be added to them.
-
-- **_Example: retrieving the temperature from an API from the current position_**
-
-  ```jsx
-  app.pipe.register <
-    EventMeasureProcessBefore >
-    ("device-manager:measures:process:before",
-    async ({ measures, device, asset }) => {
-      const measuresCopy = [...measures];
-
-      // Iterate on a copy because we are mutating the original array
-      for (const measure of measuresCopy) {
-        if (measure.type === "position") {
-          const temperature = await weatherApi.getTemperature(
-            measure.values.position
-          );
-
-          const temperatureMeasure: MeasureContent = {
-            measuredAt: Date.now(),
-            type: "temperature",
-            asset: {
-              _id: asset._id,
-              measureName: "temperature",
-              metadata: asset._source.metadata,
-              model: asset._source.model,
-              reference: asset._source.reference,
-            },
-            origin: {
-              type: "computed",
-              measureName: "temperature",
-              _id: "weather-api",
-              payloadUuids: measure.origin.payloadUuids,
-            },
-            values: { temperature },
-          };
-
-          // Add the new measure to the array so it will be persisted
-          measures.push(temperatureMeasure);
-
-          // Embed the new measure in the asset so it will be persisted
-          asset._source.measures.temperature = {
-            name: "temperature",
-            type: "temperature",
-            measuredAt: Date.now(),
-            originId: "weather-api",
-            values: { temperature },
-            payloadUuids: measure.origin.payloadUuids,
-          };
-        }
-      }
-
-      return { measures, device, asset };
-    });
-  ```
-
-### Edit metadata
-
-The metadata of the device and the asset can also be modified according to the information received in the measures.
-
-** Example: automatic switch to low battery mode**
-
-```jsx
-app.pipe.register <
-  EventMeasureProcessBefore >
-  ("device-manager:measures:process:before",
-  async ({ measures, device, asset }) => {
-    for (const measure of measures) {
-      if (measure.type === "battery" && measure.values.volts < 1.5) {
-        device._source.metadata.mode = "saving";
-      }
+```javascript
+app.pipe.register('device-manager:measures:process:before', async ({ measures, source, target, asset }) => {
+  for (const measure of measures) {
+    if (measure.type === "temperature" && measure.values.celsius) {
+      measure.values.fahrenheit = measure.values.celsius * 9/5 + 32;
     }
+  }
 
-    return { measures, device, asset };
-  });
+  return { measures, source, target, asset };
+});
 ```
 
-## Processing in reaction to the data (after)
+### Tenant-specific event
 
-Once the data has been enriched and persisted, it is possible to trigger additional processing.
+An isolated tenant-specific event variant is also available:
 
-These treatments are not intended to modify the existing data (measure, device and asset).
+```typescript
+engine:<engine-id>:device-manager:measures:process:before
+```
 
-The `device-manager:measures:process:after` event is triggered with an object containing 3 properties:
+### Event After Process(`device-manager:measures:process:after`)
 
-- `device`: the new state of the device associated with the measures
-- `measures`: table of measures
-- `asset`: (optional) the new state of the asset linked to the device
+Triggered after measures have been processed and persisted. Suitable for triggering further actions based on new data.
 
-::: info
-An isolated version of the event is also available: `engine:<engine-id>:device-manager:measures:process:after`
-:::
+- **Event properties:**
+  - `source`: Origin of the measures.
+  - `target`: Destination for the measures.
+  - `asset`: (optional) Updated asset state associated with the measures.
+  - `measures`: Array of persisted measures.
 
-## Ingestion Pipeline Concurrency
+_Example: Trigger an alert after processing measures_
 
-In order to avoid race conditions in the pipeline, a Mutex ensures that the measures of a device are processed one after the other.
+```javascript
+app.pipe("device-manager:measures:process:after", async ({ measures, source, asset }) => {
+  for (const measure of measures) {
+    if (measure.type === "security_alert" && measure.values.alertType === "forced_entry") {
+      notifySecurityTeam(asset, measure);
+    }
+  }
 
-This Mutex is related to the device ID of the processed measures.
+  return { measures, source, target, asset };
+});
+```
 
-Examples:
+### Tenant-specific events
 
-- reception of 1 data frame containing 4 measures for 4 devices ⇒ execution of 4 pipelines in parallel,
-- reception of 1 data frame containing 2 measures for 1 device ⇒ execution of a pipeline processing the two measures for the device
-- reception of 2 data frames containing 1 measure for 1 device ⇒ execution of 2 pipelines sequentially for the device
+Tenant-specific events are also available for isolated measure processing:
+
+- **Before processing:**
+  - `engine:<engine-id>:device-manager:measures:process:before`
+- **After processing:**
+  - `engine:<engine-id>:device-manager:measures:process:after`
+
+These events carry the same properties as their global counterparts and allow for tenant-specific customizations and workflows.
+
