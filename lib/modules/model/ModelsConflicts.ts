@@ -1,6 +1,10 @@
 import _ from "lodash";
 import { TwinModelContent, TwinType } from "../plugin";
-import { MeasureModelContent, ModelContent } from "./exports";
+import {
+  GroupModelContent,
+  MeasureModelContent,
+  ModelContent,
+} from "./exports";
 
 export type ConflictChunk = {
   sourceModel: string;
@@ -80,6 +84,29 @@ export function getTwinConflicts<TDigitalTwin extends TwinModelContent>(
     models,
     additional,
     metadataPath,
+    modelIdPath,
+  );
+}
+/**
+ * Return every conflicts between the mappings of group models and a new group model
+ *
+ * @param groups The already present group models
+ * @param additional The new group model
+ * @returns An array of ConflictChunk between current groups and the new group
+ */
+export function getGroupConflicts(
+  measures: GroupModelContent[],
+  additional: GroupModelContent,
+): ConflictChunk[] {
+  const modelType = "group";
+  const mappingsPath = "group.metadataMappings";
+  const modelIdPath = "group.model";
+
+  return getModelConflicts(
+    modelType,
+    measures,
+    additional,
+    mappingsPath,
     modelIdPath,
   );
 }

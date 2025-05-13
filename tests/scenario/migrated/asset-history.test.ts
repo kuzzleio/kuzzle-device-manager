@@ -132,9 +132,16 @@ describe("features/Asset/History", () => {
     });
   });
 
-  it("Historize asset after receiving a new measure", async () => {
+  it("Historize asset after receiving a new measure and assetsHistorizesMeasures is true", async () => {
+
     let response;
     let promise;
+
+    await sdk.query({
+      controller: "tests",
+      action: "setAssetsHistorizesMeasuresConfig",
+      assetsHistorizesMeasures: true,
+    });
 
     response = await sendPayloads(sdk, "dummy-temp", [
       { deviceEUI: "linked1", temperature: 42.2 },
@@ -164,6 +171,12 @@ describe("features/Asset/History", () => {
         length: 1,
       },
     });
+
+    await sdk.query({
+      controller: "tests",
+      action: "setAssetsHistorizesMeasuresConfig",
+      assetsHistorizesMeasures: false,
+    });
   });
 
   it("Historize asset when metadata have been updated when receiving a measure", async () => {
@@ -187,8 +200,7 @@ describe("features/Asset/History", () => {
     expect(result.hits[0]._source).toMatchObject({
       id: "Container-linked1",
       event: {
-        name: "measure",
-        measure: { names: ["temperatureExt"] },
+        name: "metadata",
         metadata: { names: ["weight", "trailer.capacity"] },
       },
       asset: {

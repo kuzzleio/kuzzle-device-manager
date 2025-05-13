@@ -78,9 +78,9 @@ First, create a `metadataGroups` object at the same level as `metadataDetails`, 
 
 This property allows to specify the frontend whether it should display a custom widget to edit the metadata, like a dropdown of values, a clock picker or date picker with or without time, make a metadata read-only, and so on.
 
-You have to set the enum type associated to the hint you want and fill the properties with your values.
+**You have to set** the `enum type` associated to the `hint` you want and fill the properties with your values.
 
-This is the list of the available hints:
+This is the list of the available `hints`:
 
 - [Read only](#read-only)
 - [Dropdown of values](#dropdown-of-values)
@@ -90,17 +90,34 @@ This is the list of the available hints:
 
 The read-only feature allows to prevent users to edit a metadata.
 
-**NOTE:** The readOnly property can be set with **any** Enum type.
+::: info
+Set to BASE if you **only** want the readOnly property.
+:::
+::: info
+The readOnly property can be set with **other** Enum type too.
+:::
 
-Enum type: `BASE`
-
-:warning: Set to BASE if you **only** want the readOnly property.
+### Enum
 
 <table>
   <thead>
     <tr>
-      <th style="background-color: #e94e77" colspan="4" align="center">PROPERTIES</th>
+      <th>Type</th>
+      <th>Value</th>
     </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>BASE</code></td>
+      <td>base</td>
+    </tr>
+  </tbody>
+</table>
+
+### Properties
+
+<table>
+  <thead>
     <tr>
       <th>Name</th>
       <th>Type</th>
@@ -110,29 +127,46 @@ Enum type: `BASE`
   </thead>
   <tbody>
     <tr>
-      <td>readOnly</td>
-      <td><code>boolean</code></td>
+      <td><code>readOnly</code></td>
+      <td>boolean</td>
       <td>It displays or not the edit button</td>
-      <td>Yes</td>
+      <td><strong>Yes</strong></td>
     </tr>
   </tbody>
 </table>
 
-**Example**
+**Examples**
 
 ```js
+// Typescript
 {
   metadataMappings: {
     network: { type: "keyword" },
   },
   metadataDetails: {
-		network: {
-			editorHint: {
-				type: EditorHintEnum.BASE,
-				readOnly: true,
-			},
-		},
-	}
+    network: {
+      editorHint: {
+        type: EditorHintEnum.BASE,
+        readOnly: true,
+      },
+    },
+  },
+},
+```
+```js
+// Javascript
+{
+  metadataMappings: {
+    network: { type: "keyword" },
+  },
+  metadataDetails: {
+    network: {
+      editorHint: {
+        type: "base",
+        readOnly: true,
+      },
+    },
+  },
 },
 ```
 
@@ -140,13 +174,27 @@ Enum type: `BASE`
 
 The dropdown feature allows to display a list of values to choose in a dropdown.
 
-Enum type: `OPTION_SELECTOR`
+### Enum
 
 <table>
   <thead>
     <tr>
-      <th style="background-color: #e94e77" colspan="4" align="center">PROPERTIES</th>
+      <th>Type</th>
+      <th>Value</th>
     </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>OPTION_SELECTOR</code></td>
+      <td>optionSelector</td>
+    </tr>
+  </tbody>
+</table>
+
+### Properties
+
+<table>
+  <thead>
     <tr>
       <th>Name</th>
       <th>Type</th>
@@ -156,16 +204,16 @@ Enum type: `OPTION_SELECTOR`
   </thead>
   <tbody>
     <tr>
-      <td>values</td>
-      <td><code>string[] | number[] | boolean[]</code></td>
+      <td><code>values</code></td>
+      <td>string[] <br> number[] <br> boolean[]</td>
       <td>A list that represents all the values displayed in a dropdown.</td>
-      <td>No</td>
+      <td><strong>No</strong></td>
     </tr>
     <tr>
-      <td>customValueAllowed</td>
-      <td><code>boolean</code></td>
+      <td><code>customValueAllowed</code></td>
+      <td>boolean</td>
       <td>Allows users to add custom values.</td>
-      <td>Yes</td>
+      <td><strong>Yes</strong></td>
     </tr>
   </tbody>
 </table>
@@ -173,18 +221,36 @@ Enum type: `OPTION_SELECTOR`
 **Example**
 
 ```js
+// Typescript
 {
   metadataMappings: {
     company: { type: "keyword" },
   },
   metadataDetails: {
-		company: {
-			editorHint: {
-				type: EditorHintEnum.OPTION_SELECTOR,
-				values: ["red", "blue"],
-				customValueAllowed: true,
-			},
-		}
+    company: {
+      editorHint: {
+        type: EditorHintEnum.OPTION_SELECTOR,
+        values: ["red", "blue"],
+        customValueAllowed: true,
+      },
+    },
+  },
+},
+```
+```js
+// Javascript
+{
+  metadataMappings: {
+    company: { type: "keyword" },
+  },
+  metadataDetails: {
+    company: {
+      editorHint: {
+        type: "optionSelector",
+        values: ["red", "blue"],
+        customValueAllowed: true,
+      },
+    },
   },
 },
 ```
@@ -197,13 +263,27 @@ Enum type: `OPTION_SELECTOR`
 
 This feature allows to display either a date picker with or without a time picker, or a clock picker.
 
-Enum type: `DATETIME`
+### Enum
 
 <table>
   <thead>
     <tr>
-      <th style="background-color: #e94e77" colspan="4" align="center">PROPERTIES</th>
+      <th>Type</th>
+      <th>Value</th>
     </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>DATETIME</code></td>
+      <td>datetime</td>
+    </tr>
+  </tbody>
+</table>
+
+### Properties
+
+<table>
+  <thead>
     <tr>
       <th>Name</th>
       <th>Type</th>
@@ -213,16 +293,16 @@ Enum type: `DATETIME`
   </thead>
   <tbody>
     <tr>
-      <td>date</td>
-      <td><code>boolean</code></td>
+      <td><code>date</code></td>
+      <td>boolean</td>
       <td>If true, displays a date picker, otherwise displays a clock picker.</td>
-      <td>No</td>
+      <td><strong>No</strong></td>
     </tr>
     <tr>
-      <td>time</td>
-      <td><code>boolean</code></td>
-      <td>If `date` is true, setting this to true will add time picking to the date picker.</td>
-      <td>Yes</td>
+      <td><code>time</code></td>
+      <td>boolean</td>
+      <td>If <code>date</code> is true, setting this to true will add time picking to the date picker.</td>
+      <td><strong>Yes</strong></td>
     </tr>
   </tbody>
 </table>
@@ -230,19 +310,38 @@ Enum type: `DATETIME`
 **Example**
 
 ```js
+// Typescript
 {
   metadataMappings: {
     date: { type: "date" },
   },
   metadataDetails: {
     date: {
-			editorHint: {
-				type: EditorHintEnum.DATETIME,
-				date: true,
-				time: true,
-				customTimeZoneAllowed: true,
-			},
-    }
+      editorHint: {
+        type: EditorHintEnum.DATETIME,
+        date: true,
+        time: true,
+        customTimeZoneAllowed: true,
+      },
+    },
+  },
+},
+```
+```js
+// Javascript
+{
+  metadataMappings: {
+    date: { type: "date" },
+  },
+  metadataDetails: {
+    date: {
+      editorHint: {
+        type: "datetime",
+        date: true,
+        time: true,
+        customTimeZoneAllowed: true,
+      },
+    },
   },
 },
 ```

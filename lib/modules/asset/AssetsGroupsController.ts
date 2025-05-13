@@ -6,13 +6,10 @@ import {
   NameGenerator,
   User,
 } from "kuzzle";
+import { ask } from "kuzzle-plugin-commons";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { AssetContent } from "./exports";
-import {
-  AssetsGroupContent,
-  AssetsGroupsBody,
-} from "./types/AssetGroupContent";
+import { AssetsGroupContent } from "./types/AssetGroupContent";
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
@@ -25,11 +22,16 @@ import {
   ApiGroupUpdateResult,
   AssetsGroupsBodyRequest,
 } from "./types/AssetGroupsApi";
+import { AskModelGroupGet } from "../model";
+import { AssetsGroupsService } from "./AssetsGroupsService";
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
 
-  constructor(private plugin: DeviceManagerPlugin) {
+  constructor(
+    private plugin: DeviceManagerPlugin,
+    private assetsGroupsService: AssetsGroupsService,
+  ) {
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
@@ -215,51 +217,29 @@ export class AssetsGroupsController {
 
   async create(request: KuzzleRequest): Promise<ApiGroupCreateResult> {
     const engineId = request.getString("engineId");
+    const name = request.getBodyString("name");
+    const metadata = request.getBodyObject("metadata", {});
+    const body = request.getBody();
+    const model = body.model ?? null;
+    const parent = body.parent ?? null;
+
     const _id = request.getId({
       generator: () => NameGenerator.generateRandomName({ prefix: "group" }),
       ifMissing: "generate",
     });
-    const body = request.getBody() as AssetsGroupsBodyRequest;
 
-    await this.checkParent(engineId, body.parent);
-    await this.checkGroupName(engineId, body.name);
-
-    if (typeof body.name !== "string") {
-      throw new BadRequestError(`A group must have a name`);
+    await this.checkGroupName(engineId, name);
+    if (parent !== null) {
+      await this.checkParent(engineId, parent);
     }
-
-    if (typeof body.parent === "string") {
-      const parentGroup = await this.sdk.document.get<AssetsGroupsBody>(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        body.parent,
-      );
-
-      const children = parentGroup._source.children ?? [];
-      children.push(_id);
-
-      await this.sdk.document.update<AssetsGroupsBody>(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        body.parent,
-        {
-          children,
-          lastUpdate: Date.now(),
-        },
-      );
-    }
-
-    return this.as(request.getUser()).document.create<AssetsGroupsBody>(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      {
-        children: [],
-        lastUpdate: Date.now(),
-        name: body.name,
-        parent: body.parent ?? null,
-        type: body.type ?? null,
-      },
+    return this.assetsGroupsService.create(
       _id,
+      engineId,
+      metadata,
+      model,
+      name,
+      parent,
+      request,
     );
   }
 
@@ -267,189 +247,78 @@ export class AssetsGroupsController {
     const engineId = request.getString("engineId");
     const _id = request.getId();
 
-    return this.as(request.getUser()).document.get<AssetsGroupsBody>(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      _id,
-    );
+    return this.assetsGroupsService.get(engineId, _id, request);
   }
 
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    const body = request.getBody() as AssetsGroupsBodyRequest;
+    const body = request.getBody();
+    const name = body.name;
+    const metadata = body.metadata;
+    const children = body.children;
+    const parent = body.parent;
 
-    await this.checkParent(engineId, body.parent);
-    await this.checkChildren(engineId, body.children);
-    await this.checkGroupName(engineId, body.name, _id);
+    let updateRequestBody = {};
+    if (parent !== undefined) {
+      await this.checkParent(engineId, parent);
+      updateRequestBody = { ...updateRequestBody, parent };
+    }
+    if (children !== undefined) {
+      await this.checkChildren(engineId, children);
+      updateRequestBody = { ...updateRequestBody, children };
+    }
+    if (name !== undefined) {
+      await this.checkGroupName(engineId, name, _id);
+      updateRequestBody = { ...updateRequestBody, name };
+    }
 
-    return this.as(request.getUser()).document.update<AssetsGroupsBody>(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
+    if (metadata !== undefined) {
+      const group = await this.get(request);
+      const { model, metadata: groupMetadata } = group._source;
+      if (model !== null) {
+        const groupModel = await ask<AskModelGroupGet>(
+          "ask:device-manager:model:group:get",
+          { model },
+        );
+        for (const metadataName of Object.keys(
+          groupModel.group.metadataMappings,
+        )) {
+          if (metadata[metadataName] !== undefined) {
+            groupMetadata[metadataName] = metadata[metadataName];
+          }
+        }
+        updateRequestBody = { ...updateRequestBody, metadata: groupMetadata };
+      }
+    }
+    updateRequestBody = { ...updateRequestBody, lastUpdate: Date.now() };
+    return this.assetsGroupsService.update(
+      request,
       _id,
-      {
-        parent: null,
-        ...body,
-        lastUpdate: Date.now(),
-      },
-      { source: true },
+      engineId,
+      updateRequestBody,
     );
   }
 
   async delete(request: KuzzleRequest): Promise<ApiGroupDeleteResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-
-    const { _source: assetGroup } =
-      await this.sdk.document.get<AssetsGroupsBody>(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        _id,
-      );
-
-    if (assetGroup.parent !== null) {
-      const { _source: parentGroup } =
-        await this.sdk.document.get<AssetsGroupsBody>(
-          engineId,
-          InternalCollection.ASSETS_GROUPS,
-          assetGroup.parent,
-        );
-      await this.sdk.document.update(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        assetGroup.parent,
-        {
-          children: parentGroup.children.filter((children) => children !== _id),
-          lastUpdate: Date.now(),
-        },
-      );
-    }
-
-    await this.sdk.document.mUpdate(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      assetGroup.children.map((childrenId) => ({
-        _id: childrenId,
-        body: {
-          lastUpdate: Date.now(),
-          parent: null,
-        },
-      })),
-      { strict: true },
-    );
-
-    const { hits: assets } = await this.sdk.document.search<AssetContent>(
-      engineId,
-      InternalCollection.ASSETS,
-      { query: { equals: { "groups.id": _id } } },
-      { lang: "koncorde" },
-    );
-
-    await this.sdk.document.mUpdate(
-      engineId,
-      InternalCollection.ASSETS,
-      assets.map((asset) => ({
-        _id: asset._id,
-        body: {
-          groups: asset._source.groups.filter(
-            ({ id: groupId }) => groupId !== _id,
-          ),
-        },
-      })),
-      { strict: true },
-    );
-
-    await this.as(request.getUser()).document.delete(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      _id,
-    );
+    await this.assetsGroupsService.delete(_id, engineId, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiGroupSearchResult> {
     const engineId = request.getString("engineId");
-    const {
-      searchBody,
-      from,
-      size,
-      scrollTTL: scroll,
-    } = request.getSearchParams();
-    const lang = request.getLangParam();
+    const searchParams = request.getSearchParams();
 
-    return this.as(request.getUser()).document.search<AssetsGroupContent>(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      searchBody,
-      { from, lang, scroll, size },
-    );
+    return this.assetsGroupsService.search(engineId, searchParams, request);
   }
 
   async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
-
-    // ? Get document to check if really exists, even if not indexed
-    const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      _id,
-    );
-
-    const assets = [];
-    for (const assetId of body.assetIds) {
-      const assetContent = (
-        await this.sdk.document.get(
-          engineId,
-          InternalCollection.ASSETS,
-          assetId,
-        )
-      )._source;
-
-      if (!Array.isArray(assetContent.groups)) {
-        assetContent.groups = [];
-      }
-
-      if (assetGroup._source.parent !== null) {
-        assetContent.groups.push({
-          date: Date.now(),
-          id: assetGroup._source.parent,
-        });
-      }
-
-      assetContent.groups.push({
-        date: Date.now(),
-        id: _id,
-      });
-
-      assets.push({
-        _id: assetId,
-        body: assetContent,
-      });
-    }
-
-    const assetsGroupsUpdate = await this.as(
-      request.getUser(),
-    ).document.update<AssetsGroupsBody>(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      _id,
-      {
-        lastUpdate: Date.now(),
-      },
-      { source: true },
-    );
-
-    const update = await this.sdk.document.mReplace(
-      engineId,
-      InternalCollection.ASSETS,
-      assets,
-    );
-
-    return {
-      ...update,
-      assetsGroups: assetsGroupsUpdate,
-    };
+    const assetIds = body.assetIds;
+    return this.assetsGroupsService.addAsset(engineId, _id, assetIds, request);
   }
 
   async removeAsset(
@@ -459,62 +328,11 @@ export class AssetsGroupsController {
     const _id = request.getId();
     const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
 
-    // ? Get document to check if really exists, even if not indexed
-    const { _source: AssetGroupContent } =
-      await this.sdk.document.get<AssetsGroupContent>(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        _id,
-      );
-
-    const removedGroups = AssetGroupContent.children;
-    removedGroups.push(_id);
-
-    const assets = [];
-    for (const assetId of body.assetIds) {
-      const assetContent = (
-        await this.sdk.document.get<AssetContent>(
-          engineId,
-          InternalCollection.ASSETS,
-          assetId,
-        )
-      )._source;
-
-      if (!Array.isArray(assetContent.groups)) {
-        continue;
-      }
-
-      assetContent.groups = assetContent.groups.filter(
-        ({ id: groupId }) => !removedGroups.includes(groupId),
-      );
-
-      assets.push({
-        _id: assetId,
-        body: assetContent,
-      });
-    }
-
-    const assetsGroupsUpdate = await this.as(
-      request.getUser(),
-    ).document.update<AssetsGroupsBody>(
+    return this.assetsGroupsService.removeAsset(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
       _id,
-      {
-        lastUpdate: Date.now(),
-      },
-      { source: true },
+      body.assetIds,
+      request,
     );
-
-    const update = await this.sdk.document.mReplace(
-      engineId,
-      InternalCollection.ASSETS,
-      assets,
-    );
-
-    return {
-      ...update,
-      assetsGroups: assetsGroupsUpdate,
-    };
   }
 }
