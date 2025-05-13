@@ -1,3 +1,17 @@
+## [2.9.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0...v2.9.0-dev.1) (2025-05-13)
+
+
+### Features
+
+* remove engineGroup parameter and handle the case commons ([#415](https://github.com/kuzzleio/kuzzle-device-manager/issues/415)) ([4ac4972](https://github.com/kuzzleio/kuzzle-device-manager/commit/4ac4972858aca389e82a62ad14cab8f360420bf9))
+
+
+### Bug Fixes
+
+* asset commons case ([#418](https://github.com/kuzzleio/kuzzle-device-manager/issues/418)) ([c4bf2ac](https://github.com/kuzzleio/kuzzle-device-manager/commit/c4bf2ac21ec09e9afd48dac4ee9bec42adec80c5))
+* **assetModels:** error on create asset model with commons engine ([#417](https://github.com/kuzzleio/kuzzle-device-manager/issues/417)) ([a5acf07](https://github.com/kuzzleio/kuzzle-device-manager/commit/a5acf070cd41d28fb8ca70e66a6d9e438329f1c1))
+* manager error when asset model is not found ([#419](https://github.com/kuzzleio/kuzzle-device-manager/issues/419)) ([08e9a94](https://github.com/kuzzleio/kuzzle-device-manager/commit/08e9a9478d70d554d0359a51f615c70130e74fa0))
+
 ## [2.8.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.2...v2.8.0) (2025-05-13)
 
 
