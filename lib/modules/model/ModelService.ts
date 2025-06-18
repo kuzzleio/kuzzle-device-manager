@@ -282,7 +282,7 @@ export class ModelService extends BaseService {
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
     await ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
-      assetModel: modelContent,
+      assetModel: assetModel._source,
     });
 
     return assetModel;
@@ -935,7 +935,7 @@ export class ModelService extends BaseService {
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
 
     await ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
-      assetModel: assetModelContent,
+      assetModel: endDocument._source,
     });
 
     return endDocument;
