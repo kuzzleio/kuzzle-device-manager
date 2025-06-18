@@ -1,3 +1,10 @@
+## [2.9.0-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0-dev.2...v2.9.0-dev.3) (2025-06-18)
+
+
+### Bug Fixes
+
+* **model:** asset model metadata update ([#423](https://github.com/kuzzleio/kuzzle-device-manager/issues/423)) ([ddc95dd](https://github.com/kuzzleio/kuzzle-device-manager/commit/ddc95ddf441631271ccd8e97c0cbb46ab6c8df06))
+
 ## [2.9.0-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0-dev.1...v2.9.0-dev.2) (2025-05-15)
 
 
