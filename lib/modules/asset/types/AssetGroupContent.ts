@@ -5,8 +5,7 @@ export interface AssetsGroupsBody<TMetadata extends Metadata = Metadata>
   extends KDocumentContent {
   name: string;
   model?: string | null;
-  children: string[];
-  parent: string | null;
+  path: string;
   lastUpdate: number;
   metadata?: TMetadata;
 }

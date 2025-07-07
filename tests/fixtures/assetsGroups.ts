@@ -10,11 +10,10 @@ export const assetGroupChildrenWithAssetId = "test-children-asset";
 
 export const assetGroupTestBody: AssetsGroupsBody = {
   name: "Test group",
-  children: [],
   lastUpdate: Date.now(),
-  parent: null,
   model: null,
   metadata: {},
+  path: `${assetGroupTestId}`,
 };
 export const assetGroupParking: AssetsGroupsBody = {
   name: "Test group with parking model",
@@ -26,54 +25,48 @@ export const assetGroupParking: AssetsGroupsBody = {
 };
 export const assetGroupTestParentBody1: AssetsGroupsBody = {
   name: "Test parent 1",
-  children: [assetGroupTestChildrenId1],
+  path: `${assetGroupTestParentId1}`,
   lastUpdate: Date.now(),
-  parent: null,
   model: "Type 1",
   metadata: {},
 };
 
 export const assetGroupTestParentBody2: AssetsGroupsBody = {
   name: "Test parent 2",
-  children: [assetGroupTestChildrenId2],
+  path: `${assetGroupTestParentId2}`,
   lastUpdate: Date.now(),
-  parent: null,
   model: null,
   metadata: {},
 };
 
 export const assetGroupTestChildrenBody1: AssetsGroupsBody = {
   name: "Test children 1",
-  children: [],
   lastUpdate: Date.now(),
-  parent: assetGroupTestParentId1,
+  path: `${assetGroupTestParentId1}.${assetGroupTestChildrenId1}`,
   model: null,
   metadata: {},
 };
 
 export const assetGroupTestChildrenBody2: AssetsGroupsBody = {
   name: "Test children 2",
-  children: [],
   lastUpdate: Date.now(),
-  parent: assetGroupTestParentId2,
+  path: `${assetGroupTestParentId2}.${assetGroupTestChildrenId2}`,
   model: "Type 2",
   metadata: {},
 };
 
 export const assetGroupParentWithAssetBody: AssetsGroupsBody = {
   name: "Parent Group with asset",
-  children: [assetGroupChildrenWithAssetId],
   lastUpdate: Date.now(),
-  parent: null,
+  path: `${assetGroupParentWithAssetId}`,
   model: null,
   metadata: {},
 };
 
 export const assetGroupChildrenWithAssetBody: AssetsGroupsBody = {
   name: "Children Group with asset",
-  children: [],
   lastUpdate: Date.now(),
-  parent: assetGroupParentWithAssetId,
+  path: `${assetGroupParentWithAssetId}.${assetGroupChildrenWithAssetId}`,
   model: null,
   metadata: {},
 };

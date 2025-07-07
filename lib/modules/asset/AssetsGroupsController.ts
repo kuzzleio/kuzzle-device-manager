@@ -9,10 +9,11 @@ import {
 import { ask } from "kuzzle-plugin-commons";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { AssetsGroupContent } from "./types/AssetGroupContent";
+import { AssetsGroupContent, AssetsGroupsBody } from "./types/AssetGroupContent";
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
+  ApiGroupCreateRequest,
   ApiGroupCreateResult,
   ApiGroupDeleteResult,
   ApiGroupGetResult,
@@ -24,6 +25,7 @@ import {
 } from "./types/AssetGroupsApi";
 import { AskModelGroupGet } from "../model";
 import { AssetsGroupsService } from "./AssetsGroupsService";
+import { AssetContent } from "./exports";
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
@@ -114,62 +116,43 @@ export class AssetsGroupsController {
     };
   }
 
-  async checkParent(
+  /**
+   * Check that the path property is valid, and closest parent exists.
+   * @param {string} engineId Engine ID
+   * @param {string} path The path of a group
+   * @throws {BadRequestError} If the path is not a string or if the path is not valid.
+   * @returns {void}
+   */
+  async checkPath(
     engineId: string,
-    parent: AssetsGroupsBodyRequest["parent"],
-  ): Promise<void> {
-    if (typeof parent !== "string") {
-      return;
+    path: AssetsGroupsBodyRequest["path"],
+    groupId?: string,
+  ) {
+    if (typeof path !== "string") {
+      throw new BadRequestError("The path property should be a string");
     }
-
-    try {
-      const assetGroup = await this.sdk.document.get<AssetsGroupContent>(
-        engineId,
-        InternalCollection.ASSETS_GROUPS,
-        parent,
-      );
-
-      if (assetGroup._source.parent !== null) {
-        throw new BadRequestError(
-          `Can't create asset group with more than one nesting level`,
-        );
-      }
-    } catch (error) {
-      if (error.status === 404) {
-        throw new BadRequestError(
-          `The parent group "${parent}" does not exist`,
-        );
-      }
-      throw error;
-    }
-  }
-
-  async checkChildren(
-    engineId: string,
-    children: AssetsGroupsBodyRequest["children"],
-  ): Promise<void> {
-    if (!Array.isArray(children)) {
-      throw new BadRequestError("The Children property should be an array");
-    }
-
-    if (children.length === 0) {
-      return;
-    }
-
-    const { result } = await this.sdk.query({
-      action: "mExists",
-      body: {
-        ids: children,
-      },
-      collection: InternalCollection.ASSETS_GROUPS,
-      controller: "document",
-      index: engineId,
-    });
-
-    if (Array.isArray(result.errors) && result.errors.length > 0) {
+    const groups = path.split(".");
+    if (groupId && groups.pop() !== groupId) {
       throw new BadRequestError(
-        `The children group "${result.errors.join(",")}" does not exist`,
+        `The last part of the path "${path}" should be the group ID "${groupId}"`,
       );
+    }
+    if (groups.length < 2) {
+      return;
+    }
+    const closestParentId = groups[groups.length - 2];
+    const parent = await this.sdk.document.get<AssetsGroupContent>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      closestParentId,
+    );
+    if (!parent) {
+      throw new BadRequestError(
+        `The closest parent group "${closestParentId}" does not exist`,
+      );
+    }
+    if (parent._source.path !== groups.slice(0, groups.length - 1).join(".")) {
+      throw new BadRequestError(`The parent path does not match`);
     }
   }
 
@@ -219,27 +202,36 @@ export class AssetsGroupsController {
     const engineId = request.getString("engineId");
     const name = request.getBodyString("name");
     const metadata = request.getBodyObject("metadata", {});
-    const body = request.getBody();
+    const body = request.getBody() as ApiGroupCreateRequest["body"];
     const model = body.model ?? null;
-    const parent = body.parent ?? null;
 
     const _id = request.getId({
       generator: () => NameGenerator.generateRandomName({ prefix: "group" }),
       ifMissing: "generate",
     });
 
-    await this.checkGroupName(engineId, name);
-    if (parent !== null) {
-      await this.checkParent(engineId, parent);
+    let path = body.path ?? _id;
+    if (!path.includes(_id)) {
+      path += `.${_id}`;
     }
-    return this.assetsGroupsService.create(
-      _id,
+    await this.checkPath(engineId, path, _id);
+
+    await this.checkGroupName(engineId, body.name);
+
+    if (typeof body.name !== "string") {
+      throw new BadRequestError(`A group must have a name`);
+    }
+
+    return this.as(request.getUser()).document.create<AssetsGroupsBody>(
       engineId,
-      metadata,
-      model,
-      name,
-      parent,
-      request,
+      InternalCollection.ASSETS_GROUPS,
+      {
+        lastUpdate: Date.now(),
+        name: body.name,
+        path,
+        model
+      },
+      _id,
     );
   }
 
@@ -253,57 +245,185 @@ export class AssetsGroupsController {
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    const body = request.getBody();
-    const name = body.name;
-    const metadata = body.metadata;
-    const children = body.children;
-    const parent = body.parent;
+    const body = request.getBody() as AssetsGroupsBodyRequest;
 
-    let updateRequestBody = {};
-    if (parent !== undefined) {
-      await this.checkParent(engineId, parent);
-      updateRequestBody = { ...updateRequestBody, parent };
-    }
-    if (children !== undefined) {
-      await this.checkChildren(engineId, children);
-      updateRequestBody = { ...updateRequestBody, children };
-    }
-    if (name !== undefined) {
-      await this.checkGroupName(engineId, name, _id);
-      updateRequestBody = { ...updateRequestBody, name };
-    }
-
-    if (metadata !== undefined) {
-      const group = await this.get(request);
-      const { model, metadata: groupMetadata } = group._source;
-      if (model !== null) {
-        const groupModel = await ask<AskModelGroupGet>(
-          "ask:device-manager:model:group:get",
-          { model },
-        );
-        for (const metadataName of Object.keys(
-          groupModel.group.metadataMappings,
-        )) {
-          if (metadata[metadataName] !== undefined) {
-            groupMetadata[metadataName] = metadata[metadataName];
-          }
-        }
-        updateRequestBody = { ...updateRequestBody, metadata: groupMetadata };
-      }
-    }
-    updateRequestBody = { ...updateRequestBody, lastUpdate: Date.now() };
-    return this.assetsGroupsService.update(
-      request,
-      _id,
+    await this.checkGroupName(engineId, body.name, _id);
+    await this.checkPath(engineId, body.path, _id);
+    const groupToUpdate = await this.sdk.document.get<AssetsGroupContent>(
       engineId,
-      updateRequestBody,
+      InternalCollection.ASSETS_GROUPS,
+      _id,
     );
+    const updatedGroup = await this.as(
+      request.getUser(),
+    ).document.update<AssetsGroupsBody>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id,
+      {
+        ...body,
+        lastUpdate: Date.now(),
+      },
+      { source: true },
+    );
+    if (updatedGroup._source.path !== groupToUpdate._source.path) {
+      const { hits: assets } = await this.sdk.document.search<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        {
+          query: {
+            regexp: {
+              "groups.path": {
+                value: `${groupToUpdate._source.path}.*`,
+              },
+            },
+          },
+        },
+        { lang: "koncorde" },
+      );
+
+      await this.sdk.document.mUpdate(
+        engineId,
+        InternalCollection.ASSETS,
+        assets.map((asset) => ({
+          _id: asset._id,
+          body: {
+            groups: asset._source.groups
+              .filter((grp) => grp.path !== groupToUpdate._source.path)
+              .map((grp) => {
+                if (grp.path.includes(groupToUpdate._source.path)) {
+                  grp.path = grp.path.replace(
+                    groupToUpdate._source.path,
+                    updatedGroup._source.path,
+                  );
+                  grp.date = Date.now();
+                }
+                return grp;
+              }),
+          },
+        })),
+        { strict: true },
+      );
+      const { hits: childrenGroups } =
+        await this.sdk.document.search<AssetsGroupContent>(
+          engineId,
+          InternalCollection.ASSETS_GROUPS,
+          {
+            query: {
+              and: [
+                {
+                  regexp: {
+                    path: {
+                      value: `${groupToUpdate._source.path}.*`,
+                    },
+                  },
+                },
+                {
+                  not: { equals: { path: groupToUpdate._source.path } },
+                },
+              ],
+            },
+          },
+          { lang: "koncorde" },
+        );
+
+      await this.sdk.document.mUpdate(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        childrenGroups.map((grp) => {
+          grp._source.path = grp._source.path.replace(
+            groupToUpdate._source.path,
+            updatedGroup._source.path,
+          );
+          grp._source.lastUpdate = Date.now();
+          return { _id: grp._id, body: grp._source };
+        }),
+        { strict: true },
+      );
+    }
+    return updatedGroup;
   }
 
   async delete(request: KuzzleRequest): Promise<ApiGroupDeleteResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    await this.assetsGroupsService.delete(_id, engineId, request);
+    const group = await this.sdk.document.get<AssetsGroupContent>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id,
+    );
+    if (!group) {
+      throw new BadRequestError(`The group with id "${_id}" does not exist`);
+    }
+    const { hits: assets } = await this.sdk.document.search<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      {
+        query: {
+          regexp: {
+            "groups.path": {
+              value: `${group._source.path}.*`,
+            },
+          },
+        },
+      },
+      { lang: "koncorde" },
+    );
+
+    await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.ASSETS,
+      assets.map((asset) => ({
+        _id: asset._id,
+        body: {
+          groups: asset._source.groups
+            .filter((grp) => grp.path !== group._source.path)
+            .map((grp) => {
+              if (grp.path.includes(group._source.path)) {
+                grp.path = grp.path.replace(`${group._source.path}.`, "");
+                grp.date = Date.now();
+              }
+              return grp;
+            }),
+        },
+      })),
+      { strict: true },
+    );
+    const { hits: childrenGroups } =
+      await this.sdk.document.search<AssetsGroupContent>(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        {
+          query: {
+            regexp: {
+              path: {
+                value: `.*${_id}.*`,
+              },
+            },
+          },
+        },
+        { lang: "koncorde" },
+      );
+
+    await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      childrenGroups.map((grp) => {
+        grp._source.path = grp._source.path.replace(
+          `${group._source.path}.`,
+          "",
+        );
+        grp._source.lastUpdate = Date.now();
+        return { _id: grp._id, body: grp._source };
+      }),
+      { strict: true },
+    );
+
+    await this.as(request.getUser()).document.delete(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      _id,
+    );
   }
 
   async search(request: KuzzleRequest): Promise<ApiGroupSearchResult> {
@@ -315,24 +435,119 @@ export class AssetsGroupsController {
 
   async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
     const engineId = request.getString("engineId");
-    const _id = request.getId();
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
-    const assetIds = body.assetIds;
-    return this.assetsGroupsService.addAsset(engineId, _id, assetIds, request);
+    const path = request.getBodyString("path");
+    const groupId = path.split(".").pop();
+    this.checkPath(engineId, path);
+    if (
+      !(await this.sdk.document.exists(
+        engineId,
+        InternalCollection.ASSETS_GROUPS,
+        groupId,
+      ))
+    ) {
+      throw new BadRequestError(`The group with path "${path}" does not exist`);
+    }
+
+    const { successes: assets, errors } = await this.sdk.document.mGet(
+      engineId,
+      InternalCollection.ASSETS,
+      body.assetIds,
+    );
+    if (errors.length > 0) {
+      throw new BadRequestError(
+        `The assets with ids "${errors.join(", ")}" do not exist`,
+      );
+    }
+    assets.map((asset) => {
+      if (!Array.isArray(asset._source.groups)) {
+        asset._source.groups = [];
+      }
+
+      asset._source.groups.push({
+        date: Date.now(),
+        path: path,
+      });
+      return asset;
+    });
+
+    const assetsGroupsUpdate = await this.as(
+      request.getUser(),
+    ).document.update<AssetsGroupsBody>(
+      engineId,
+      InternalCollection.ASSETS_GROUPS,
+      groupId,
+      {
+        lastUpdate: Date.now(),
+      },
+      { source: true },
+    );
+
+    const update = await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.ASSETS,
+      assets.map((asset) => ({ _id: asset._id, body: asset._source })),
+    );
+
+    return {
+      ...update,
+      assetsGroups: assetsGroupsUpdate,
+    };
   }
 
   async removeAsset(
     request: KuzzleRequest,
   ): Promise<ApiGroupRemoveAssetsResult> {
     const engineId = request.getString("engineId");
-    const _id = request.getId();
+    const path = request.getBodyString("path");
     const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
+    this.checkPath(engineId, path);
+    // ? Get document to check if really exists, even if not indexed
 
-    return this.assetsGroupsService.removeAsset(
+    const assets = [];
+    for (const assetId of body.assetIds) {
+      const assetContent = (
+        await this.sdk.document.get<AssetContent>(
+          engineId,
+          InternalCollection.ASSETS,
+          assetId,
+        )
+      )._source;
+
+      if (!Array.isArray(assetContent.groups)) {
+        continue;
+      }
+
+      assetContent.groups = assetContent.groups.filter(
+        (group) => group.path !== path,
+      );
+
+      assets.push({
+        _id: assetId,
+        body: assetContent,
+      });
+    }
+
+    const assetsGroupsUpdate = await this.as(
+      request.getUser(),
+    ).document.update<AssetsGroupsBody>(
       engineId,
-      _id,
-      body.assetIds,
-      request,
+      InternalCollection.ASSETS_GROUPS,
+      path.split(".").pop(),
+      {
+        lastUpdate: Date.now(),
+      },
+      { source: true },
     );
+
+    const update = await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.ASSETS,
+      assets,
+    );
+    return{
+      ...update,
+      assetsGroups: assetsGroupsUpdate,
+    };
   }
 }

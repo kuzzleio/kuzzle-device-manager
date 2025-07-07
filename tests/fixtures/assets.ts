@@ -117,11 +117,7 @@ export const assetAyseGrouped: AssetContent = {
   measures: {},
   groups: [
     {
-      id: "test-parent-asset",
-      date: Date.now(),
-    },
-    {
-      id: "test-children-asset",
+      path: "test-parent-asset.test-children-asset",
       date: Date.now(),
     },
   ],
@@ -142,11 +138,7 @@ export const assetAyseGrouped2: AssetContent = {
   measures: {},
   groups: [
     {
-      id: "test-parent-asset",
-      date: Date.now(),
-    },
-    {
-      id: "test-children-asset",
+      path: "test-parent-asset",
       date: Date.now(),
     },
   ],
