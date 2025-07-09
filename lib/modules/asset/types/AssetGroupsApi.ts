@@ -24,7 +24,7 @@ interface GroupControllerRequest {
 export interface ApiGroupCreateRequest extends GroupControllerRequest {
   action: "create";
   _id?: string;
-  body: AssetsGroupsBodyRequest & { path?: string };
+  body: AssetsGroupsBodyRequest & { path: string };
 }
 
 export type ApiGroupCreateResult = KDocument<AssetsGroupContent>;

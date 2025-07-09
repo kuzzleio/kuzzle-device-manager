@@ -134,26 +134,39 @@ describe("AssetsGroupsController", () => {
     expect(result._id).toEqual(assetGroupTestId);
     expect(result._source).toMatchObject({
       name: "root group",
+      path: assetGroupTestId,
     });
     expect(result._source.lastUpdate).toBeGreaterThanOrEqual(now);
 
-    /*  const { result: resultChildren } = await sdk.query<ApiGroupUpdateRequest>({
+    const { result: resultPathChanged } =
+      await sdk.query<ApiGroupUpdateRequest>({
+        controller: "device-manager/assetsGroup",
+        engineId: "engine-ayse",
+        action: "update",
+        _id: assetGroupParentWithAssetId,
+        body: {
+          name: "Parent Group with asset",
+          path: `${assetGroupTestParentId1}.${assetGroupParentWithAssetId}`,
+        },
+      });
+    expect(resultPathChanged._id).toEqual(assetGroupParentWithAssetId);
+    expect(resultPathChanged._source).toMatchObject({
+      path: `${assetGroupTestParentId1}.${assetGroupParentWithAssetId}`,
+    });
+    expect(resultPathChanged._source.lastUpdate).toBeGreaterThanOrEqual(now);
+
+    const { result: resultChildren } = await sdk.query<ApiGroupGetRequest>({
       controller: "device-manager/assetsGroup",
       engineId: "engine-ayse",
-      action: "update",
-      _id: assetGroupTestId,
-      body: {
-        name: "root group",
-      },
+      action: "get",
+      _id: assetGroupChildrenWithAssetId,
     });
 
-    expect(resultChildren._id).toEqual(assetGroupTestId);
+    expect(resultChildren._id).toEqual(assetGroupChildrenWithAssetId);
     expect(resultChildren._source).toMatchObject({
-      name: "root group",
-      children: [assetGroupTestChildrenId1],
-      parent: null,
+      path: `${assetGroupTestParentId1}.${assetGroupParentWithAssetId}.${assetGroupChildrenWithAssetId}`,
     });
-    expect(resultChildren._source.lastUpdate).toBeGreaterThanOrEqual(now); */
+    expect(resultChildren._source.lastUpdate).toBeGreaterThanOrEqual(now);
   });
 
   it("can delete a group", async () => {
@@ -193,12 +206,11 @@ describe("AssetsGroupsController", () => {
       _id: assetGroupParentWithAssetId,
     });
 
-    const { _source: assetGrouped } =
-      await sdk.document.get<AssetsGroupContent>(
-        "engine-ayse",
-        InternalCollection.ASSETS,
-        "Container-grouped",
-      );
+    const { _source: assetGrouped } = await sdk.document.get<AssetContent>(
+      "engine-ayse",
+      InternalCollection.ASSETS,
+      "Container-grouped",
+    );
 
     expect(assetGrouped).toMatchObject({
       groups: [
