@@ -1,6 +1,6 @@
 import { CollectionMappings } from "kuzzle";
 
-export const assetGroupsMappings: CollectionMappings = {
+export const groupsMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {
     metadata: {

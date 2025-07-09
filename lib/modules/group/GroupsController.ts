@@ -9,7 +9,10 @@ import {
 import { ask } from "kuzzle-plugin-commons";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+<<<<<<< HEAD:lib/modules/asset/AssetsGroupsController.ts
 import { AssetsGroupContent, AssetsGroupsBody } from "./types/AssetGroupContent";
+=======
+>>>>>>> fd554d5 (feat(group): separate group logic from assets):lib/modules/group/GroupsController.ts
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
@@ -21,13 +24,20 @@ import {
   ApiGroupRemoveAssetsResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
+<<<<<<< HEAD:lib/modules/asset/AssetsGroupsController.ts
   AssetsGroupsBodyRequest,
 } from "./types/AssetGroupsApi";
 import { AskModelGroupGet } from "../model";
 import { AssetsGroupsService } from "./AssetsGroupsService";
 import { AssetContent } from "./exports";
+=======
+  GroupsBodyRequest,
+} from "./types/GroupsApi";
+import { GroupContent, GroupsBody } from "./types/GroupContent";
+import { AssetContent } from "../asset";
+>>>>>>> fd554d5 (feat(group): separate group logic from assets):lib/modules/group/GroupsController.ts
 
-export class AssetsGroupsController {
+export class GroupsController {
   definition: ControllerDefinition;
 
   constructor(
@@ -41,28 +51,24 @@ export class AssetsGroupsController {
           handler: this.create.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/:_id",
+              path: "device-manager/:engineId/groups/:_id",
               verb: "post",
             },
           ],
         },
         get: {
           handler: this.get.bind(this),
-          http: [
-            { path: "device-manager/:engineId/assetsGroups/:_id", verb: "get" },
-          ],
+          http: [{ path: "device-manager/:engineId/groups/:_id", verb: "get" }],
         },
         update: {
           handler: this.update.bind(this),
-          http: [
-            { path: "device-manager/:engineId/assetsGroups/:_id", verb: "put" },
-          ],
+          http: [{ path: "device-manager/:engineId/groups/:_id", verb: "put" }],
         },
         delete: {
           handler: this.delete.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/:_id",
+              path: "device-manager/:engineId/groups/:_id",
               verb: "delete",
             },
           ],
@@ -71,11 +77,11 @@ export class AssetsGroupsController {
           handler: this.search.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/_search",
+              path: "device-manager/:engineId/groups/_search",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/assetsGroups/_search",
+              path: "device-manager/:engineId/groups/_search",
               verb: "post",
             },
           ],
@@ -84,7 +90,7 @@ export class AssetsGroupsController {
           handler: this.addAsset.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/:_id/addAsset",
+              path: "device-manager/:engineId/groups/:_id/addAsset",
               verb: "post",
             },
           ],
@@ -93,7 +99,7 @@ export class AssetsGroupsController {
           handler: this.removeAsset.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/:_id/removeAsset",
+              path: "device-manager/:engineId/groups/:_id/removeAsset",
               verb: "post",
             },
           ],
@@ -125,40 +131,48 @@ export class AssetsGroupsController {
    */
   async checkPath(
     engineId: string,
-    path: AssetsGroupsBodyRequest["path"],
+    path: GroupsBodyRequest["path"],
     groupId?: string,
   ) {
     if (typeof path !== "string") {
       throw new BadRequestError("The path property should be a string");
     }
     const groups = path.split(".");
-    if (groupId && groups.pop() !== groupId) {
+    const lastGroup = groups.pop();
+    if (groupId && lastGroup !== groupId) {
       throw new BadRequestError(
         `The last part of the path "${path}" should be the group ID "${groupId}"`,
       );
     }
-    if (groups.length < 2) {
+    if (groups.length === 0) {
       return;
     }
-    const closestParentId = groups[groups.length - 2];
-    const parent = await this.sdk.document.get<AssetsGroupContent>(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      closestParentId,
-    );
+    const closestParentId = groups[groups.length - 1];
+    let parent;
+    try {
+      parent = await this.sdk.document.get<GroupContent>(
+        engineId,
+        InternalCollection.GROUPS,
+        closestParentId,
+      );
+    } catch {
+      throw new BadRequestError(
+        `The closest parent group "${closestParentId}" does not exist`,
+      );
+    }
     if (!parent) {
       throw new BadRequestError(
         `The closest parent group "${closestParentId}" does not exist`,
       );
     }
-    if (parent._source.path !== groups.slice(0, groups.length - 1).join(".")) {
+    if (parent._source.path !== groups.join(".")) {
       throw new BadRequestError(`The parent path does not match`);
     }
   }
 
   async checkGroupName(
     engineId: string,
-    name: AssetsGroupsBodyRequest["name"],
+    name: GroupsBodyRequest["name"],
     assetId?: string,
   ) {
     if (typeof name !== "string") {
@@ -167,7 +181,7 @@ export class AssetsGroupsController {
 
     const groupsCount = await this.sdk.document.count(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       {
         query: {
           bool: {
@@ -222,9 +236,9 @@ export class AssetsGroupsController {
       throw new BadRequestError(`A group must have a name`);
     }
 
-    return this.as(request.getUser()).document.create<AssetsGroupsBody>(
+    return this.as(request.getUser()).document.create<GroupsBody>(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       {
         lastUpdate: Date.now(),
         name: body.name,
@@ -239,26 +253,34 @@ export class AssetsGroupsController {
     const engineId = request.getString("engineId");
     const _id = request.getId();
 
+<<<<<<< HEAD:lib/modules/asset/AssetsGroupsController.ts
     return this.assetsGroupsService.get(engineId, _id, request);
+=======
+    return this.as(request.getUser()).document.get<GroupsBody>(
+      engineId,
+      InternalCollection.GROUPS,
+      _id,
+    );
+>>>>>>> fd554d5 (feat(group): separate group logic from assets):lib/modules/group/GroupsController.ts
   }
 
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    const body = request.getBody() as AssetsGroupsBodyRequest;
+    const body = request.getBody() as GroupsBodyRequest;
 
     await this.checkGroupName(engineId, body.name, _id);
     await this.checkPath(engineId, body.path, _id);
-    const groupToUpdate = await this.sdk.document.get<AssetsGroupContent>(
+    const groupToUpdate = await this.sdk.document.get<GroupContent>(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       _id,
     );
     const updatedGroup = await this.as(
       request.getUser(),
-    ).document.update<AssetsGroupsBody>(
+    ).document.update<GroupsBody>(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       _id,
       {
         ...body,
@@ -305,9 +327,9 @@ export class AssetsGroupsController {
         { strict: true },
       );
       const { hits: childrenGroups } =
-        await this.sdk.document.search<AssetsGroupContent>(
+        await this.sdk.document.search<GroupContent>(
           engineId,
-          InternalCollection.ASSETS_GROUPS,
+          InternalCollection.GROUPS,
           {
             query: {
               and: [
@@ -329,7 +351,7 @@ export class AssetsGroupsController {
 
       await this.sdk.document.mUpdate(
         engineId,
-        InternalCollection.ASSETS_GROUPS,
+        InternalCollection.GROUPS,
         childrenGroups.map((grp) => {
           grp._source.path = grp._source.path.replace(
             groupToUpdate._source.path,
@@ -347,9 +369,9 @@ export class AssetsGroupsController {
   async delete(request: KuzzleRequest): Promise<ApiGroupDeleteResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    const group = await this.sdk.document.get<AssetsGroupContent>(
+    const group = await this.sdk.document.get<GroupContent>(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       _id,
     );
     if (!group) {
@@ -390,9 +412,9 @@ export class AssetsGroupsController {
       { strict: true },
     );
     const { hits: childrenGroups } =
-      await this.sdk.document.search<AssetsGroupContent>(
+      await this.sdk.document.search<GroupContent>(
         engineId,
-        InternalCollection.ASSETS_GROUPS,
+        InternalCollection.GROUPS,
         {
           query: {
             regexp: {
@@ -407,7 +429,7 @@ export class AssetsGroupsController {
 
     await this.sdk.document.mUpdate(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       childrenGroups.map((grp) => {
         grp._source.path = grp._source.path.replace(
           `${group._source.path}.`,
@@ -421,7 +443,7 @@ export class AssetsGroupsController {
 
     await this.as(request.getUser()).document.delete(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       _id,
     );
   }
@@ -430,7 +452,16 @@ export class AssetsGroupsController {
     const engineId = request.getString("engineId");
     const searchParams = request.getSearchParams();
 
+<<<<<<< HEAD:lib/modules/asset/AssetsGroupsController.ts
     return this.assetsGroupsService.search(engineId, searchParams, request);
+=======
+    return this.as(request.getUser()).document.search<GroupContent>(
+      engineId,
+      InternalCollection.GROUPS,
+      searchBody,
+      { from, lang, scroll, size },
+    );
+>>>>>>> fd554d5 (feat(group): separate group logic from assets):lib/modules/group/GroupsController.ts
   }
 
   async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
@@ -442,7 +473,7 @@ export class AssetsGroupsController {
     if (
       !(await this.sdk.document.exists(
         engineId,
-        InternalCollection.ASSETS_GROUPS,
+        InternalCollection.GROUPS,
         groupId,
       ))
     ) {
@@ -471,11 +502,11 @@ export class AssetsGroupsController {
       return asset;
     });
 
-    const assetsGroupsUpdate = await this.as(
+    const groupsUpdate = await this.as(
       request.getUser(),
-    ).document.update<AssetsGroupsBody>(
+    ).document.update<GroupsBody>(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       groupId,
       {
         lastUpdate: Date.now(),
@@ -491,7 +522,7 @@ export class AssetsGroupsController {
 
     return {
       ...update,
-      assetsGroups: assetsGroupsUpdate,
+      groups: groupsUpdate,
     };
   }
 
@@ -528,11 +559,11 @@ export class AssetsGroupsController {
       });
     }
 
-    const assetsGroupsUpdate = await this.as(
+    const groupsUpdate = await this.as(
       request.getUser(),
-    ).document.update<AssetsGroupsBody>(
+    ).document.update<GroupsBody>(
       engineId,
-      InternalCollection.ASSETS_GROUPS,
+      InternalCollection.GROUPS,
       path.split(".").pop(),
       {
         lastUpdate: Date.now(),
@@ -547,7 +578,7 @@ export class AssetsGroupsController {
     );
     return{
       ...update,
-      assetsGroups: assetsGroupsUpdate,
+      groups: groupsUpdate,
     };
   }
 }

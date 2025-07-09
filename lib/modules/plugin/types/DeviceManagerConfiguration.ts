@@ -62,9 +62,9 @@ export type DeviceManagerConfiguration = {
       mappings: CollectionMappings;
       settings?: JSONObject;
     };
-    assetGroups: {
+    groups: {
       name: string;
-      mappings: JSONObject;
+      mappings: CollectionMappings;
       settings?: JSONObject;
     };
     assetHistory: {

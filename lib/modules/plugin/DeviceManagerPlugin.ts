@@ -11,7 +11,7 @@ import _ from "lodash";
 
 import { MeasureDefinition } from "../measure";
 
-import { assetGroupsMappings, AssetModule, assetsMappings } from "../asset";
+import { groupsMappings, AssetModule, assetsMappings } from "../asset";
 import {
   DecoderModule,
   DecodersRegister,
@@ -33,6 +33,7 @@ import { keepStack, lock } from "../shared";
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
+import { GroupModule } from "../group/GroupModule";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -44,6 +45,7 @@ export class DeviceManagerPlugin extends Plugin {
 
   private assetModule: AssetModule;
   private deviceModule: DeviceModule;
+  private groupModule: GroupModule;
   private decoderModule: DecoderModule;
   private measureModule: MeasureModule;
   private modelModule: ModelModule;
@@ -390,9 +392,9 @@ export class DeviceManagerPlugin extends Plugin {
           name: InternalCollection.ASSETS,
           mappings: assetsMappings,
         },
-        assetGroups: {
-          name: InternalCollection.ASSETS_GROUPS,
-          mappings: assetGroupsMappings,
+        groups: {
+          name: InternalCollection.GROUPS,
+          mappings: groupsMappings,
         },
         assetHistory: {
           name: InternalCollection.ASSETS_HISTORY,
@@ -427,13 +429,14 @@ export class DeviceManagerPlugin extends Plugin {
     // Modules creation
     this.assetModule = new AssetModule(this);
     this.deviceModule = new DeviceModule(this);
+    this.groupModule = new GroupModule(this);
     this.decoderModule = new DecoderModule(this);
     this.measureModule = new MeasureModule(this);
     this.modelModule = new ModelModule(this);
-
     // Modules init
     await this.assetModule.init();
     await this.deviceModule.init();
+    await this.groupModule.init();
     await this.decoderModule.init();
     await this.measureModule.init();
     await this.modelModule.init();

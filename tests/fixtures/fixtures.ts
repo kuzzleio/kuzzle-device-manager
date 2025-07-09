@@ -6,7 +6,7 @@ import {
   dummyTempPositionDeviceMeasures,
 } from "../application/decoders";
 
-import { assetGroupFixtures } from "./assetsGroups";
+import { groupFixtures } from "./groups";
 import { ayseAssets } from "./assets";
 import { ayseDevices, internalDevices } from "./devices";
 
@@ -216,6 +216,6 @@ export default {
   "engine-ayse": {
     devices: ayseDevices,
     assets: ayseAssets,
-    ...assetGroupFixtures,
+    ...groupFixtures,
   },
 };
