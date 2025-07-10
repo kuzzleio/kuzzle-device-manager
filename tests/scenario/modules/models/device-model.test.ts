@@ -114,10 +114,11 @@ describe("ModelsController:devices", () => {
     });
 
     expect(listDevices.result).toMatchObject({
-      total: 3,
+      total: 4,
       models: [
         { _id: "model-device-DummyTemp" },
         { _id: "model-device-DummyTempPosition" },
+        { _id: "model-device-EmptyTemp" },
         { _id: "model-device-Zigbee" },
       ],
     });
