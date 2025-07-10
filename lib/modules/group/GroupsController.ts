@@ -9,10 +9,6 @@ import {
 import { ask } from "kuzzle-plugin-commons";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-<<<<<<< HEAD:lib/modules/asset/AssetsGroupsController.ts
-import { AssetsGroupContent, AssetsGroupsBody } from "./types/AssetGroupContent";
-=======
->>>>>>> fd554d5 (feat(group): separate group logic from assets):lib/modules/group/GroupsController.ts
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
@@ -20,29 +16,22 @@ import {
   ApiGroupCreateResult,
   ApiGroupDeleteResult,
   ApiGroupGetResult,
-  ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
-<<<<<<< HEAD:lib/modules/asset/AssetsGroupsController.ts
-  AssetsGroupsBodyRequest,
-} from "./types/AssetGroupsApi";
-import { AskModelGroupGet } from "../model";
-import { AssetsGroupsService } from "./AssetsGroupsService";
-import { AssetContent } from "./exports";
-=======
   GroupsBodyRequest,
 } from "./types/GroupsApi";
 import { GroupContent, GroupsBody } from "./types/GroupContent";
 import { AssetContent } from "../asset";
->>>>>>> fd554d5 (feat(group): separate group logic from assets):lib/modules/group/GroupsController.ts
+import { GroupsService } from "./GroupsService";
+import { AskModelGroupGet } from "../model";
 
 export class GroupsController {
   definition: ControllerDefinition;
 
   constructor(
     private plugin: DeviceManagerPlugin,
-    private assetsGroupsService: AssetsGroupsService,
+    private groupsService: GroupsService,
   ) {
     /* eslint-disable sort-keys */
     this.definition = {
@@ -230,22 +219,19 @@ export class GroupsController {
     }
     await this.checkPath(engineId, path, _id);
 
-    await this.checkGroupName(engineId, body.name);
+    await this.checkGroupName(engineId, name);
 
-    if (typeof body.name !== "string") {
+    if (typeof name !== "string") {
       throw new BadRequestError(`A group must have a name`);
     }
-
-    return this.as(request.getUser()).document.create<GroupsBody>(
-      engineId,
-      InternalCollection.GROUPS,
-      {
-        lastUpdate: Date.now(),
-        name: body.name,
-        path,
-        model
-      },
+    return this.groupsService.create(
       _id,
+      engineId,
+      metadata,
+      model,
+      name,
+      path,
+      request,
     );
   }
 
@@ -253,41 +239,60 @@ export class GroupsController {
     const engineId = request.getString("engineId");
     const _id = request.getId();
 
-<<<<<<< HEAD:lib/modules/asset/AssetsGroupsController.ts
-    return this.assetsGroupsService.get(engineId, _id, request);
-=======
-    return this.as(request.getUser()).document.get<GroupsBody>(
-      engineId,
-      InternalCollection.GROUPS,
-      _id,
-    );
->>>>>>> fd554d5 (feat(group): separate group logic from assets):lib/modules/group/GroupsController.ts
+    return this.groupsService.get(engineId, _id, request);
   }
 
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
     const body = request.getBody() as GroupsBodyRequest;
+    const name = body.name;
+    const path = body.path;
+    const metadata = body.metadata;
 
-    await this.checkGroupName(engineId, body.name, _id);
-    await this.checkPath(engineId, body.path, _id);
+    let updateRequestBody = {};
+
+    if (name !== undefined) {
+      await this.checkGroupName(engineId, name, _id);
+      updateRequestBody = { ...updateRequestBody, name };
+    }
+
+    if (path !== undefined) {
+      await this.checkPath(engineId, path, _id);
+      updateRequestBody = { ...updateRequestBody, path };
+    }
+
+    if (metadata !== undefined) {
+      const group = await this.get(request);
+      const { model, metadata: groupMetadata } = group._source;
+      if (model !== null) {
+        const groupModel = await ask<AskModelGroupGet>(
+          "ask:device-manager:model:group:get",
+          { model },
+        );
+        for (const metadataName of Object.keys(
+          groupModel.group.metadataMappings,
+        )) {
+          if (metadata[metadataName] !== undefined) {
+            groupMetadata[metadataName] = metadata[metadataName];
+          }
+        }
+        updateRequestBody = { ...updateRequestBody, metadata: groupMetadata };
+      }
+    }
+
     const groupToUpdate = await this.sdk.document.get<GroupContent>(
       engineId,
       InternalCollection.GROUPS,
       _id,
     );
-    const updatedGroup = await this.as(
-      request.getUser(),
-    ).document.update<GroupsBody>(
-      engineId,
-      InternalCollection.GROUPS,
+    const updatedGroup = await this.groupsService.update(
+      request,
       _id,
-      {
-        ...body,
-        lastUpdate: Date.now(),
-      },
-      { source: true },
+      engineId,
+      updateRequestBody,
     );
+
     if (updatedGroup._source.path !== groupToUpdate._source.path) {
       const { hits: assets } = await this.sdk.document.search<AssetContent>(
         engineId,
@@ -369,170 +374,34 @@ export class GroupsController {
   async delete(request: KuzzleRequest): Promise<ApiGroupDeleteResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    const group = await this.sdk.document.get<GroupContent>(
-      engineId,
-      InternalCollection.GROUPS,
-      _id,
-    );
-    if (!group) {
-      throw new BadRequestError(`The group with id "${_id}" does not exist`);
-    }
-    const { hits: assets } = await this.sdk.document.search<AssetContent>(
-      engineId,
-      InternalCollection.ASSETS,
-      {
-        query: {
-          regexp: {
-            "groups.path": {
-              value: `${group._source.path}.*`,
-            },
-          },
-        },
-      },
-      { lang: "koncorde" },
-    );
-
-    await this.sdk.document.mUpdate(
-      engineId,
-      InternalCollection.ASSETS,
-      assets.map((asset) => ({
-        _id: asset._id,
-        body: {
-          groups: asset._source.groups
-            .filter((grp) => grp.path !== group._source.path)
-            .map((grp) => {
-              if (grp.path.includes(group._source.path)) {
-                grp.path = grp.path.replace(`${group._source.path}.`, "");
-                grp.date = Date.now();
-              }
-              return grp;
-            }),
-        },
-      })),
-      { strict: true },
-    );
-    const { hits: childrenGroups } =
-      await this.sdk.document.search<GroupContent>(
-        engineId,
-        InternalCollection.GROUPS,
-        {
-          query: {
-            regexp: {
-              path: {
-                value: `.*${_id}.*`,
-              },
-            },
-          },
-        },
-        { lang: "koncorde" },
-      );
-
-    await this.sdk.document.mUpdate(
-      engineId,
-      InternalCollection.GROUPS,
-      childrenGroups.map((grp) => {
-        grp._source.path = grp._source.path.replace(
-          `${group._source.path}.`,
-          "",
-        );
-        grp._source.lastUpdate = Date.now();
-        return { _id: grp._id, body: grp._source };
-      }),
-      { strict: true },
-    );
-
-    await this.as(request.getUser()).document.delete(
-      engineId,
-      InternalCollection.GROUPS,
-      _id,
-    );
+    await this.groupsService.delete(_id, engineId, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiGroupSearchResult> {
     const engineId = request.getString("engineId");
     const searchParams = request.getSearchParams();
-
-<<<<<<< HEAD:lib/modules/asset/AssetsGroupsController.ts
-    return this.assetsGroupsService.search(engineId, searchParams, request);
-=======
-    return this.as(request.getUser()).document.search<GroupContent>(
-      engineId,
-      InternalCollection.GROUPS,
-      searchBody,
-      { from, lang, scroll, size },
-    );
->>>>>>> fd554d5 (feat(group): separate group logic from assets):lib/modules/group/GroupsController.ts
+    return this.groupsService.search(engineId, searchParams, request);
   }
 
   async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
     const engineId = request.getString("engineId");
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
     const path = request.getBodyString("path");
-    const groupId = path.split(".").pop();
+    const assetIds = body.assetIds;
     this.checkPath(engineId, path);
-    if (
-      !(await this.sdk.document.exists(
-        engineId,
-        InternalCollection.GROUPS,
-        groupId,
-      ))
-    ) {
-      throw new BadRequestError(`The group with path "${path}" does not exist`);
-    }
-
-    const { successes: assets, errors } = await this.sdk.document.mGet(
-      engineId,
-      InternalCollection.ASSETS,
-      body.assetIds,
-    );
-    if (errors.length > 0) {
-      throw new BadRequestError(
-        `The assets with ids "${errors.join(", ")}" do not exist`,
-      );
-    }
-    assets.map((asset) => {
-      if (!Array.isArray(asset._source.groups)) {
-        asset._source.groups = [];
-      }
-
-      asset._source.groups.push({
-        date: Date.now(),
-        path: path,
-      });
-      return asset;
-    });
-
-    const groupsUpdate = await this.as(
-      request.getUser(),
-    ).document.update<GroupsBody>(
-      engineId,
-      InternalCollection.GROUPS,
-      groupId,
-      {
-        lastUpdate: Date.now(),
-      },
-      { source: true },
-    );
-
-    const update = await this.sdk.document.mUpdate(
-      engineId,
-      InternalCollection.ASSETS,
-      assets.map((asset) => ({ _id: asset._id, body: asset._source })),
-    );
-
-    return {
-      ...update,
-      groups: groupsUpdate,
-    };
+    return this.groupsService.addAsset(engineId, path, assetIds, request);
   }
 
   async removeAsset(
     request: KuzzleRequest,
   ): Promise<ApiGroupRemoveAssetsResult> {
     const engineId = request.getString("engineId");
+    const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
     const path = request.getBodyString("path");
-    const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
+    const assetIds = body.assetIds;
     this.checkPath(engineId, path);
+    return this.groupsService.removeAsset(engineId, path, assetIds, request);
+
     // ? Get document to check if really exists, even if not indexed
 
     const assets = [];
@@ -576,9 +445,9 @@ export class GroupsController {
       InternalCollection.ASSETS,
       assets,
     );
-    return{
+    return {
       ...update,
-      groups: groupsUpdate,
+      group: groupsUpdate,
     };
   }
 }

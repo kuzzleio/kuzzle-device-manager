@@ -6,7 +6,6 @@ import { AssetService } from "./AssetService";
 import { RoleAssetsAdmin } from "./roles/RoleAssetsAdmin";
 import { RoleAssetsReader } from "./roles/RoleAssetsReader";
 import * as specificRoles from "./roles/specificRoles";
-import { AssetsGroupsService } from "./AssetsGroupsService";
 
 export class AssetModule extends Module {
   private assetService: AssetService;

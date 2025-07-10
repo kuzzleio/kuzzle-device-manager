@@ -393,7 +393,7 @@ describe("GroupsController", () => {
     expect(assets[0]._source.groups[0].date).toBeGreaterThan(now);
     expect(assets[1]._source.groups[0].date).toBeGreaterThan(now);
 
-    expect(result.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result.group._source.lastUpdate).toBeGreaterThan(now);
 
     // Add assets in an second group
     const { result: result2 } = await sdk.query<
@@ -448,7 +448,7 @@ describe("GroupsController", () => {
     expect(assets2[1]._source.groups[0].date).toBeLessThan(Date.now());
     expect(assets2[1]._source.groups[1].date).toBeGreaterThan(now);
 
-    expect(result2.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
 
     // Add an asset to a subgroup also add the reference of the parent group
     const { result: result3 } = await sdk.query<
@@ -483,7 +483,7 @@ describe("GroupsController", () => {
     const assets3 = result3.successes as KDocument<AssetContent>[];
     expect(assets3[0]._source.groups[0].date).toBeGreaterThan(now);
 
-    expect(result3.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result3.group._source.lastUpdate).toBeGreaterThan(now);
   });
 
   it("can remove asset to group", async () => {
@@ -522,7 +522,7 @@ describe("GroupsController", () => {
       },
     };
     await expect(sdk.query(badIdQuery)).rejects.toThrow(
-      /^Document "bad-path" not found in "engine-ayse":"groups".$/,
+      'The group with path "bad-path" does not exist',
     );
 
     const { result } = await sdk.query<
@@ -547,7 +547,7 @@ describe("GroupsController", () => {
       },
     });
 
-    expect(result.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result.group._source.lastUpdate).toBeGreaterThan(now);
 
     const { result: result2 } = await sdk.query<
       ApiGroupRemoveAssetsRequest,
@@ -571,6 +571,6 @@ describe("GroupsController", () => {
       },
     });
 
-    expect(result2.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
   });
 });

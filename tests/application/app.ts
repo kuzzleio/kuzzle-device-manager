@@ -20,7 +20,7 @@ deviceManager.config.engineCollections.devices.mappings.properties["custom"] = {
   type: "keyword",
   fields: { text: { type: "text" } },
 };
-deviceManager.config.engineCollections.assetGroups.mappings.properties[
+deviceManager.config.engineCollections.groups.mappings.properties[
   "custom"
 ] = {
   type: "keyword",

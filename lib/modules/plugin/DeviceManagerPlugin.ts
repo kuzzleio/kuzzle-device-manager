@@ -33,7 +33,7 @@ import { keepStack, lock } from "../shared";
 import { DeviceManagerEngine } from "./DeviceManagerEngine";
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
-import { GroupModule } from "../group/GroupModule";
+import { GroupsModule } from "../group/GroupsModule";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -45,7 +45,7 @@ export class DeviceManagerPlugin extends Plugin {
 
   private assetModule: AssetModule;
   private deviceModule: DeviceModule;
-  private groupModule: GroupModule;
+  private groupModule: GroupsModule;
   private decoderModule: DecoderModule;
   private measureModule: MeasureModule;
   private modelModule: ModelModule;
@@ -429,7 +429,7 @@ export class DeviceManagerPlugin extends Plugin {
     // Modules creation
     this.assetModule = new AssetModule(this);
     this.deviceModule = new DeviceModule(this);
-    this.groupModule = new GroupModule(this);
+    this.groupModule = new GroupsModule(this);
     this.decoderModule = new DecoderModule(this);
     this.measureModule = new MeasureModule(this);
     this.modelModule = new ModelModule(this);

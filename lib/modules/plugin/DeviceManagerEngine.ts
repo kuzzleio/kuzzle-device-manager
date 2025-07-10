@@ -15,7 +15,7 @@ import {
 import { JSONObject } from "kuzzle-sdk";
 import _ from "lodash";
 
-import { groupsMappings, assetsHistoryMappings } from "../asset";
+import { assetsHistoryMappings } from "../asset";
 import { NamedMeasures } from "../decoder";
 import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
 import {
@@ -322,7 +322,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createAssetsHistoryCollection(index, group));
 
-    promises.push(this.createAssetsGroupsCollection(index));
+    promises.push(this.createGroupsCollection(index));
 
     promises.push(this.createDevicesCollection(index));
 
@@ -342,7 +342,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createAssetsHistoryCollection(index, group));
 
-    promises.push(this.createAssetsGroupsCollection(index));
+    promises.push(this.createGroupsCollection(index));
 
     promises.push(this.createDevicesCollection(index));
 
@@ -431,14 +431,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   /**
-   * Create the assets groups collection with the assets groups mappings in the engine
+   * Create the groups collection with the groups mappings in the engine
    *
    * @param engineId The target engine Id
    * @param engineGroup The engine group
    *
-   * @throws If it failed during the assets groups collection creation
+   * @throws If it failed during the groups collection creation
    */
-  async createAssetsGroupsCollection(engineId: string) {
+  async createGroupsCollection(engineId: string) {
     const settings = this.config.engineCollections.groups.settings;
     const mappings = await this.getAssetGroupsMappingFromDB();
     await this.tryCreateCollection(engineId, InternalCollection.GROUPS, {

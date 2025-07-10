@@ -216,7 +216,7 @@ describe("ModelsController:groups", () => {
 
     const tenantGroupMapping = await sdk.collection.getMapping(
       "engine-ayse",
-      "assets-groups",
+      "groups",
     );
     expect(tenantGroupMapping.properties).toMatchObject({
       metadata: {

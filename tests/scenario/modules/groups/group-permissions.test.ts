@@ -33,7 +33,7 @@ import { GroupContent } from "lib/modules/group/types/GroupContent";
 
 jest.setTimeout(10000);
 
-describe("AssetsGroupsController", () => {
+describe("GroupsController", () => {
   const sdk = setupHooks();
   const now = Date.now();
 
@@ -303,7 +303,7 @@ describe("AssetsGroupsController", () => {
     expect(assets[0]._source.groups[0].date).toBeGreaterThan(now);
     expect(assets[1]._source.groups[0].date).toBeGreaterThan(now);
 
-    expect(result.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result.group._source.lastUpdate).toBeGreaterThan(now);
 
     // Add assets in an second group
     const { result: result2 } = await sdk.query<
@@ -358,7 +358,7 @@ describe("AssetsGroupsController", () => {
     expect(assets2[1]._source.groups[0].date).toBeLessThan(Date.now());
     expect(assets2[1]._source.groups[1].date).toBeGreaterThan(now);
 
-    expect(result2.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
 
     // Add an asset to a subgroup also add the reference of the parent group
     const { result: result3 } = await sdk.query<
@@ -393,7 +393,7 @@ describe("AssetsGroupsController", () => {
     const assets3 = result3.successes as KDocument<AssetContent>[];
     expect(assets3[0]._source.groups[0].date).toBeGreaterThan(now);
 
-    expect(result3.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result3.group._source.lastUpdate).toBeGreaterThan(now);
   });
 
   it("can remove asset to group", async () => {
@@ -419,7 +419,7 @@ describe("AssetsGroupsController", () => {
       },
     });
 
-    expect(result.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result.group._source.lastUpdate).toBeGreaterThan(now);
 
     const { result: result2 } = await sdk.query<
       ApiGroupRemoveAssetsRequest,
@@ -443,6 +443,6 @@ describe("AssetsGroupsController", () => {
       },
     });
 
-    expect(result2.groups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
   });
 });

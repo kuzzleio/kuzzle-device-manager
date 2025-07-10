@@ -13,7 +13,7 @@ export type GroupsBodyRequest = Partial<GroupsRequest> &
   Omit<GroupsRequest, "type">;
 
 export type UpdateAssetLinkResponse = mUpdateResponse & {
-  groups: KDocument<GroupContent>;
+  group: KDocument<GroupContent>;
 };
 
 interface GroupControllerRequest {

@@ -1,4 +1,4 @@
-import { AssetsGroupContent } from "lib/modules/asset/exports";
+import { GroupContent } from "lib/modules/group/exports";
 import { GroupModel, Metadata } from "lib/modules/shared";
 
 const modelName = "Parking";
@@ -10,8 +10,7 @@ export interface ParkingMetadata extends Metadata {
   };
 }
 
-export interface ParkingGroupContent
-  extends AssetsGroupContent<ParkingMetadata> {
+export interface ParkingGroupContent extends GroupContent<ParkingMetadata> {
   model: typeof modelName;
 }
 
