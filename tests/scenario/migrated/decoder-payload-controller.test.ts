@@ -117,12 +117,6 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Receive a payload with 3 measures but only 2 are propagated to the asset", async () => {
-    await sdk.query({
-      controller: "tests",
-      action: "setAssetsHistorizesMeasuresConfig",
-      assetsHistorizesMeasures: true,
-    });
-
     await sendPayloads(sdk, "dummy-temp-position", [
       {
         deviceEUI: "linked2",
@@ -151,12 +145,6 @@ describe("features/Decoder/PayloadController", () => {
     });
     expect(hit.valid).toBeTruthy();
     expect(hit.state).toBe("VALID");
-
-    await sdk.query({
-      controller: "tests",
-      action: "setAssetsHistorizesMeasuresConfig",
-      assetsHistorizesMeasures: false,
-    });
   });
 
   it("Historize the measures with device and asset context", async () => {
