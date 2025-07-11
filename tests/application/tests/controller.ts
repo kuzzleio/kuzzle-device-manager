@@ -16,16 +16,8 @@ export class TestsController extends Controller {
         createDigitalTwinFromBackend: {
           handler: this.createDigitalTwinFromBackend,
         },
-        setAssetsHistorizesMeasuresConfig: {
-          handler: this.setAssetsHistorizesMeasuresConfig,
-        },
       },
     };
-  }
-
-  async setAssetsHistorizesMeasuresConfig(request: KuzzleRequest) {
-    this.app.plugin.get("device-manager").config.assetsHistorizesMeasures =
-      request.getBoolean("assetsHistorizesMeasures");
   }
 
   async createDigitalTwinFromBackend(request: KuzzleRequest) {

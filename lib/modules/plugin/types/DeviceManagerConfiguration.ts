@@ -7,12 +7,6 @@ export type DeviceManagerConfiguration = {
    * Useful to start the plugin even if the mappings are not up to date.
    */
   ignoreStartupErrors: boolean;
-  /**
-   * Should be set to true to historize measures in asset-history collection (deprecated)
-   *
-   * Should be enabled only for backward compatibility because it leads to important performance costs.
-   */
-  assetsHistorizesMeasures: boolean;
   engine: {
     /**
      * Auto update collection mappings with models
