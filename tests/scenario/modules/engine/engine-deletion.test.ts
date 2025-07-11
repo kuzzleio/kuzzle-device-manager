@@ -53,12 +53,12 @@ describe("Engine deletion", () => {
       query: { bool: { must: { term: { engineId } } } },
     });
     expect(devices.total).toBeGreaterThan(0);
-
     await sdk.query({
       controller: "device-manager/engine",
       action: "delete",
       index: engineId,
     });
+    await sdk.collection.refresh(adminIndex, "devices");
 
     const result = await sdk.document.search(adminIndex, "devices", {
       _source: false,
