@@ -28,12 +28,6 @@ interface AssetsControllerRequest {
   controller: AssetsControllerName;
 
   engineId: string;
-
-  /**
-   * ? Request parameter used by SoftTenant module
-   * ! Not used directly in this plugin
-   */
-  softTenantId?: string | string[] | null;
 }
 
 export interface ApiAssetGetRequest extends AssetsControllerRequest {

@@ -39,10 +39,6 @@ export const measuresMappings = {
             date: { type: "date" },
           },
         },
-        softTenant: {
-          type: "keyword",
-          fields: { text: { type: "text" } },
-        },
       },
     },
 

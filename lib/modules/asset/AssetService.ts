@@ -329,7 +329,6 @@ export class AssetService extends DigitalTwinService {
           model,
           modelLocales: assetModel.asset.locales,
           reference,
-          softTenant: [],
         },
       },
       {

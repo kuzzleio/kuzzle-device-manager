@@ -95,7 +95,6 @@ describe("AssetsController:SCRUD", () => {
       linkedDevices: [],
       model: "Container",
       reference: "A1",
-      softTenant: [],
     });
     expect(withoutMetadata.result._source.measures).toMatchObject({
       position: null,
@@ -163,7 +162,6 @@ describe("AssetsController:SCRUD", () => {
       linkedDevices: [],
       model: "Container",
       reference: "A2",
-      softTenant: [],
     });
   });
 
