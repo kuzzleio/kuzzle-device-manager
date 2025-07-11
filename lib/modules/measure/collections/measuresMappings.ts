@@ -32,7 +32,7 @@ export const measuresMappings = {
         },
         groups: {
           properties: {
-            id: {
+            path: {
               type: "keyword",
               fields: { text: { type: "text" } },
             },

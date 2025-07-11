@@ -9,8 +9,7 @@ import { GroupsBody, GroupContent } from "./GroupContent";
 
 // Remove "lastUpdate" property for request
 type GroupsRequest = Omit<GroupsBody, "lastUpdate">;
-export type GroupsBodyRequest = Partial<GroupsRequest> &
-  Omit<GroupsRequest, "type">;
+export type GroupsBodyRequest = Partial<GroupsRequest>;
 
 export type UpdateAssetLinkResponse = mUpdateResponse & {
   group: KDocument<GroupContent>;
@@ -24,7 +23,7 @@ interface GroupControllerRequest {
 export interface ApiGroupCreateRequest extends GroupControllerRequest {
   action: "create";
   _id?: string;
-  body: GroupsBodyRequest & { path: string };
+  body: GroupsBodyRequest;
 }
 
 export type ApiGroupCreateResult = KDocument<GroupContent>;
