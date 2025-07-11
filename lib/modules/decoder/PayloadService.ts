@@ -1,4 +1,4 @@
-import { BadRequestError, KuzzleRequest } from "kuzzle";
+import { KuzzleRequest } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
