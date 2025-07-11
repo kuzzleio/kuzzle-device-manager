@@ -74,8 +74,8 @@ jobs:
 
   release-device-manager:
     name: Release package
-    runs-on: ubuntu-22.04
-    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta'|| github.ref == 'refs/heads/next' || github.ref == 'refs/heads/2-dev') }}
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/2-dev') }}
     needs: [functional-tests]
     permissions:
       contents: write

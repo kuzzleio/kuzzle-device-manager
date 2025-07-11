@@ -20,6 +20,117 @@
 
 * change in the management of measurement models
 
+## [2.9.0-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0-dev.2...v2.9.0-dev.3) (2025-06-18)
+
+
+### Bug Fixes
+
+* **model:** asset model metadata update ([#423](https://github.com/kuzzleio/kuzzle-device-manager/issues/423)) ([ddc95dd](https://github.com/kuzzleio/kuzzle-device-manager/commit/ddc95ddf441631271ccd8e97c0cbb46ab6c8df06))
+
+## [2.9.0-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0-dev.1...v2.9.0-dev.2) (2025-05-15)
+
+
+### Features
+
+* update tenant role for attach and detach device ([#420](https://github.com/kuzzleio/kuzzle-device-manager/issues/420)) ([67b7dcb](https://github.com/kuzzleio/kuzzle-device-manager/commit/67b7dcbf0e649b9c81c30adaead6dd4f07ce09bd))
+
+
+### Bug Fixes
+
+* **plugin exports:** export pipe event for DocumentBefore/Aftersearch ([#421](https://github.com/kuzzleio/kuzzle-device-manager/issues/421)) ([d12d93f](https://github.com/kuzzleio/kuzzle-device-manager/commit/d12d93ff69d1ea758e4c5e43dfda1142693f9c68))
+
+## [2.9.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0...v2.9.0-dev.1) (2025-05-13)
+
+
+### Features
+
+* remove engineGroup parameter and handle the case commons ([#415](https://github.com/kuzzleio/kuzzle-device-manager/issues/415)) ([4ac4972](https://github.com/kuzzleio/kuzzle-device-manager/commit/4ac4972858aca389e82a62ad14cab8f360420bf9))
+
+
+### Bug Fixes
+
+* asset commons case ([#418](https://github.com/kuzzleio/kuzzle-device-manager/issues/418)) ([c4bf2ac](https://github.com/kuzzleio/kuzzle-device-manager/commit/c4bf2ac21ec09e9afd48dac4ee9bec42adec80c5))
+* **assetModels:** error on create asset model with commons engine ([#417](https://github.com/kuzzleio/kuzzle-device-manager/issues/417)) ([a5acf07](https://github.com/kuzzleio/kuzzle-device-manager/commit/a5acf070cd41d28fb8ca70e66a6d9e438329f1c1))
+* manager error when asset model is not found ([#419](https://github.com/kuzzleio/kuzzle-device-manager/issues/419)) ([08e9a94](https://github.com/kuzzleio/kuzzle-device-manager/commit/08e9a9478d70d554d0359a51f615c70130e74fa0))
+
+## [2.8.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.2...v2.8.0) (2025-05-13)
+
+
+### Features
+
+* **assetsGroups:** add service to handle groups related actions in a way that triggers pipe like devices and assets ([1a43fe7](https://github.com/kuzzleio/kuzzle-device-manager/commit/1a43fe7cdb210b6f0b19dbefad49a422ef792e06))
+* **deviceManagerEngine:** free devices after engine deletion ([#382](https://github.com/kuzzleio/kuzzle-device-manager/issues/382)) ([7c32f9f](https://github.com/kuzzleio/kuzzle-device-manager/commit/7c32f9f71498376e252ee250cb07efea6744f852))
+* **groupmodels:** add possibility to set up group models with metadatas ([#392](https://github.com/kuzzleio/kuzzle-device-manager/issues/392)) ([19b2b70](https://github.com/kuzzleio/kuzzle-device-manager/commit/19b2b703c8d84506909b8eb631d9a7c6f20b08ba))
+* measures should not be historized on asset ([#404](https://github.com/kuzzleio/kuzzle-device-manager/issues/404)) ([6a73786](https://github.com/kuzzleio/kuzzle-device-manager/commit/6a73786a5ab53dd1cbde1e495643fabe8b484b67))
+* update measure model for localization ([#385](https://github.com/kuzzleio/kuzzle-device-manager/issues/385)) ([429678f](https://github.com/kuzzleio/kuzzle-device-manager/commit/429678f3f224687911e78eb54f7fed4e932b9c38))
+
+
+### Bug Fixes
+
+* clean on detach ([#400](https://github.com/kuzzleio/kuzzle-device-manager/issues/400)) ([cb8badf](https://github.com/kuzzleio/kuzzle-device-manager/commit/cb8badfb2ed6f37e5e618f0dbf859d772d9bfa36))
+* last measured at ([#399](https://github.com/kuzzleio/kuzzle-device-manager/issues/399)) ([07830c0](https://github.com/kuzzleio/kuzzle-device-manager/commit/07830c03e6bc44c289844a9ff4eafc0a5a7f2a2a))
+* update documentation for indentations ([#401](https://github.com/kuzzleio/kuzzle-device-manager/issues/401)) ([fdd758e](https://github.com/kuzzleio/kuzzle-device-manager/commit/fdd758e51c6113bfdfea2991a3b8f0c100a25054))
+
+## [2.8.0-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.2...v2.8.0-beta.1) (2025-03-05)
+
+
+### Features
+
+* **assetsGroups:** add service to handle groups related actions in a way that triggers pipe like devices and assets ([1a43fe7](https://github.com/kuzzleio/kuzzle-device-manager/commit/1a43fe7cdb210b6f0b19dbefad49a422ef792e06))
+* **deviceManagerEngine:** free devices after engine deletion ([#382](https://github.com/kuzzleio/kuzzle-device-manager/issues/382)) ([7c32f9f](https://github.com/kuzzleio/kuzzle-device-manager/commit/7c32f9f71498376e252ee250cb07efea6744f852))
+* **groupmodels:** add possibility to set up group models with metadatas ([#392](https://github.com/kuzzleio/kuzzle-device-manager/issues/392)) ([19b2b70](https://github.com/kuzzleio/kuzzle-device-manager/commit/19b2b703c8d84506909b8eb631d9a7c6f20b08ba))
+* measures should not be historized on asset ([#404](https://github.com/kuzzleio/kuzzle-device-manager/issues/404)) ([6a73786](https://github.com/kuzzleio/kuzzle-device-manager/commit/6a73786a5ab53dd1cbde1e495643fabe8b484b67))
+* update measure model for localization ([#385](https://github.com/kuzzleio/kuzzle-device-manager/issues/385)) ([429678f](https://github.com/kuzzleio/kuzzle-device-manager/commit/429678f3f224687911e78eb54f7fed4e932b9c38))
+
+
+### Bug Fixes
+
+* clean on detach ([#400](https://github.com/kuzzleio/kuzzle-device-manager/issues/400)) ([cb8badf](https://github.com/kuzzleio/kuzzle-device-manager/commit/cb8badfb2ed6f37e5e618f0dbf859d772d9bfa36))
+* last measured at ([#399](https://github.com/kuzzleio/kuzzle-device-manager/issues/399)) ([07830c0](https://github.com/kuzzleio/kuzzle-device-manager/commit/07830c03e6bc44c289844a9ff4eafc0a5a7f2a2a))
+* update documentation for indentations ([#401](https://github.com/kuzzleio/kuzzle-device-manager/issues/401)) ([fdd758e](https://github.com/kuzzleio/kuzzle-device-manager/commit/fdd758e51c6113bfdfea2991a3b8f0c100a25054))
+
+## [2.8.0-dev.11](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.10...v2.8.0-dev.11) (2025-04-18)
+
+
+### Bug Fixes
+
+* manager error when asset model is not found ([#419](https://github.com/kuzzleio/kuzzle-device-manager/issues/419)) ([08e9a94](https://github.com/kuzzleio/kuzzle-device-manager/commit/08e9a9478d70d554d0359a51f615c70130e74fa0))
+
+## [2.8.0-dev.10](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.9...v2.8.0-dev.10) (2025-04-18)
+
+
+### Bug Fixes
+
+* **assetModels:** error on create asset model with commons engine ([#417](https://github.com/kuzzleio/kuzzle-device-manager/issues/417)) ([a5acf07](https://github.com/kuzzleio/kuzzle-device-manager/commit/a5acf070cd41d28fb8ca70e66a6d9e438329f1c1))
+
+## [2.8.0-dev.9](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.8...v2.8.0-dev.9) (2025-04-18)
+
+
+### Bug Fixes
+
+* asset commons case ([#418](https://github.com/kuzzleio/kuzzle-device-manager/issues/418)) ([c4bf2ac](https://github.com/kuzzleio/kuzzle-device-manager/commit/c4bf2ac21ec09e9afd48dac4ee9bec42adec80c5))
+
+## [2.8.0-dev.8](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.7...v2.8.0-dev.8) (2025-04-17)
+
+
+### Features
+
+* remove engineGroup parameter and handle the case commons ([#415](https://github.com/kuzzleio/kuzzle-device-manager/issues/415)) ([4ac4972](https://github.com/kuzzleio/kuzzle-device-manager/commit/4ac4972858aca389e82a62ad14cab8f360420bf9))
+
+## [2.8.0-dev.7](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.6...v2.8.0-dev.7) (2025-03-05)
+
+
+### Features
+
+* measures should not be historized on asset ([#404](https://github.com/kuzzleio/kuzzle-device-manager/issues/404)) ([6a73786](https://github.com/kuzzleio/kuzzle-device-manager/commit/6a73786a5ab53dd1cbde1e495643fabe8b484b67))
+
+## [2.8.0-dev.6](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.5...v2.8.0-dev.6) (2025-02-17)
+
+
+### Bug Fixes
+
+* **device:** use `_attachEngine` on create and upsert ([#405](https://github.com/kuzzleio/kuzzle-device-manager/issues/405)) ([94d44ed](https://github.com/kuzzleio/kuzzle-device-manager/commit/94d44ed164f1731fcdbf2addeddbef7f82708a7d))
+* **digitalTwin:** correct race condition ([#398](https://github.com/kuzzleio/kuzzle-device-manager/issues/398)) ([8da2861](https://github.com/kuzzleio/kuzzle-device-manager/commit/8da2861f974868414505893f043781f57c55aa82))
 
 ## [2.7.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.1...v2.7.2) (2025-02-17)
 
@@ -27,6 +138,53 @@
 ### Bug Fixes
 
 * **device:** use `_attachEngine` on create and upsert ([#405](https://github.com/kuzzleio/kuzzle-device-manager/issues/405)) ([94d44ed](https://github.com/kuzzleio/kuzzle-device-manager/commit/94d44ed164f1731fcdbf2addeddbef7f82708a7d))
+
+## [2.8.0-dev.5](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.4...v2.8.0-dev.5) (2025-02-17)
+
+
+### Features
+
+* **assetsGroups:** add service to handle groups related actions in a way that triggers pipe like devices and assets ([1a43fe7](https://github.com/kuzzleio/kuzzle-device-manager/commit/1a43fe7cdb210b6f0b19dbefad49a422ef792e06))
+
+## [2.8.0-dev.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.3...v2.8.0-dev.4) (2025-02-14)
+
+
+### Features
+
+* update measure model for localization ([#385](https://github.com/kuzzleio/kuzzle-device-manager/issues/385)) ([429678f](https://github.com/kuzzleio/kuzzle-device-manager/commit/429678f3f224687911e78eb54f7fed4e932b9c38))
+
+## [2.8.0-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.2...v2.8.0-dev.3) (2025-02-12)
+
+
+### Bug Fixes
+
+* update documentation for indentations ([#401](https://github.com/kuzzleio/kuzzle-device-manager/issues/401)) ([fdd758e](https://github.com/kuzzleio/kuzzle-device-manager/commit/fdd758e51c6113bfdfea2991a3b8f0c100a25054))
+
+## [2.8.0-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.1...v2.8.0-dev.2) (2025-02-04)
+
+
+### Features
+
+* **groupmodels:** add possibility to set up group models with metadatas ([#392](https://github.com/kuzzleio/kuzzle-device-manager/issues/392)) ([19b2b70](https://github.com/kuzzleio/kuzzle-device-manager/commit/19b2b703c8d84506909b8eb631d9a7c6f20b08ba))
+
+
+### Bug Fixes
+
+* clean on detach ([#400](https://github.com/kuzzleio/kuzzle-device-manager/issues/400)) ([cb8badf](https://github.com/kuzzleio/kuzzle-device-manager/commit/cb8badfb2ed6f37e5e618f0dbf859d772d9bfa36))
+
+## [2.8.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.1-dev.1...v2.8.0-dev.1) (2025-02-04)
+
+
+### Features
+
+* **deviceManagerEngine:** free devices after engine deletion ([#382](https://github.com/kuzzleio/kuzzle-device-manager/issues/382)) ([7c32f9f](https://github.com/kuzzleio/kuzzle-device-manager/commit/7c32f9f71498376e252ee250cb07efea6744f852))
+
+## [2.7.1-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.0...v2.7.1-dev.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* last measured at ([#399](https://github.com/kuzzleio/kuzzle-device-manager/issues/399)) ([07830c0](https://github.com/kuzzleio/kuzzle-device-manager/commit/07830c03e6bc44c289844a9ff4eafc0a5a7f2a2a))
 
 ## [2.7.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.0...v2.7.1) (2025-01-30)
 
@@ -36,6 +194,7 @@
 * **digitalTwin:** correct race condition ([#398](https://github.com/kuzzleio/kuzzle-device-manager/issues/398)) ([8da2861](https://github.com/kuzzleio/kuzzle-device-manager/commit/8da2861f974868414505893f043781f57c55aa82))
 
 ## [2.7.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.6.0...v2.7.0) (2025-01-22)
+
 
 ### Features
 

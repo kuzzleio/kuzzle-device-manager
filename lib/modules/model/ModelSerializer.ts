@@ -2,6 +2,7 @@ import { BadRequestError } from "kuzzle";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupModelContent,
   MeasureModelContent,
   ModelContent,
 } from "./types/ModelContent";
@@ -12,6 +13,8 @@ export class ModelSerializer {
       return `model-asset-${ModelSerializer.title(type, model)}`;
     } else if (type === "device") {
       return `model-device-${ModelSerializer.title(type, model)}`;
+    } else if (type === "group") {
+      return `model-group-${ModelSerializer.title(type, model)}`;
     } else if (type === "measure") {
       return `model-measure-${ModelSerializer.title(type, model)}`;
     }
@@ -24,6 +27,8 @@ export class ModelSerializer {
       return (model as AssetModelContent).asset.model;
     } else if (type === "device") {
       return (model as DeviceModelContent).device.model;
+    } else if (type === "group") {
+      return (model as GroupModelContent).group.model;
     } else if (type === "measure") {
       return (model as MeasureModelContent).measure.type;
     }

@@ -40,13 +40,16 @@ describe("features/Device/Roles", () => {
       controllers: {
         "device-manager/devices": {
           actions: {
+            attachEngine: true,
             create: true,
+            detachEngine: true,
             get: true,
-            update: true,
-            search: true,
-            delete: true,
             linkAsset: true,
+            search: true,
             unlinkAsset: true,
+            update: true,
+            getMeasures: true,
+            exportMeasures: true,
           },
         },
         "device-manager/models": {

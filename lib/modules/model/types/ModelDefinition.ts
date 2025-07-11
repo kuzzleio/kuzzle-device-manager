@@ -1,6 +1,7 @@
 import { JSONObject } from "kuzzle-sdk";
 import { Decoder, NamedMeasures } from "../../../modules/decoder";
 import {
+  LocaleDetails,
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
@@ -100,7 +101,17 @@ import {
  *           }
  *         ]
  *       }
- *     }
+ *     },
+ *     locales: {
+ *       en: {
+ *         friendlyName: 'Container (translation by model)',
+ *         description: 'Containerized container',
+ *       },
+ *       fr: {
+ *         friendlyName: 'Conteneur (traduit par model)',
+ *         description: 'Conteneur conteneurisé',
+ *       },
+ *     },
  *   }
  *
  */
@@ -134,6 +145,8 @@ export type AssetModelDefinition = {
    * Tooltip models
    */
   tooltipModels?: TooltipModels;
+
+  locales?: { [valueName: string]: LocaleDetails };
 };
 
 /**
@@ -211,4 +224,100 @@ export type DeviceModelDefinition = {
    * Metadata groups list and details.
    */
   metadataGroups?: MetadataGroups;
+};
+
+/**
+ * Define a group model
+ *
+ * @example
+ *   {
+ *     metadataMappings: {
+ *       position: { type: "geo_point" },
+ *     },
+ *     defaultMetadata: {
+ *       position: {
+ *          lat: 41.12,
+ *          lon: -71.34
+ *       }
+ *     },
+ *     metadataDetails: {
+ *       "position": {
+ *         "group": "geolocation",
+ *         "locales": {
+ *           "en": {
+ *             "friendlyName": "Parking position",
+ *             "description": "The coordinates of the parking"
+ *           },
+ *           "fr": {
+ *             "friendlyName": "Position du parking",
+ *             "description": "Les coordonnées GPS du parking"
+ *           }
+ *         },
+ *       },
+ *     },
+ *     metadataGroups: {
+ *       geolocation: {
+ *         locales: {
+ *           en: {
+ *             groupFriendlyName: "Parking geolocation",
+ *             description: "The parking geolocation"
+ *           },
+ *           fr: {
+ *             groupFriendlyName: "Localisation du parking",
+ *             description: "La localisation du parking"
+ *           }
+ *         }
+ *       }
+ *     },
+ *     tooltipModels: {
+ *       "defaultTooltipKey": {
+ *         "tooltipLabel": "Default Tooltip Model",
+ *         "content": [
+ *           {
+ *             "category": "metadata",
+ *             "label": {
+ *               "locales": {
+ *                 "en": {
+ *                   "friendlyName": "Parking position",
+ *                   "description": ""
+ *                 },
+ *                 "fr": {
+ *                   "friendlyName": "Position du parking",
+ *                   "description": ""
+ *                 }
+ *               }
+ *             },
+ *             "metadataPath": "position"
+ *           },
+ *         ]
+ *       }
+ *     }
+ *   }
+ *
+ */
+export type GroupModelDefinition = {
+  /**
+   * Metadata mappings definition
+   */
+  metadataMappings?: MetadataMappings;
+
+  /**
+   * Default metadata values
+   */
+  defaultMetadata?: JSONObject;
+
+  /**
+   * Metadata details including tanslations and group.
+   */
+  metadataDetails?: MetadataDetails;
+
+  /**
+   * Metadata groups
+   */
+  metadataGroups?: MetadataGroups;
+
+  /**
+   * Tooltip models
+   */
+  tooltipModels?: TooltipModels;
 };

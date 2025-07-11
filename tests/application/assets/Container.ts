@@ -144,6 +144,16 @@ export const Container: AssetModel = {
         ],
       },
     },
+    locales: {
+      en: {
+        friendlyName: 'Container (translation by model)',
+        description: 'Containerized container',
+      },
+      fr: {
+        friendlyName: 'Conteneur (traduit par model)',
+        description: 'Conteneur conteneurisé',
+      },
+    },
   },
 };
 
@@ -192,7 +202,6 @@ function neverCalled() {
     metadata: undefined,
     measures,
     lastMeasuredAt: 0,
-    softTenant: [],
   };
 
   container.metadata.height = 40;

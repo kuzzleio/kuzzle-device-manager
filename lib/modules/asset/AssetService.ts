@@ -1,4 +1,10 @@
-import { BadRequestError, KuzzleRequest, User } from "kuzzle";
+import {
+  BadRequestError,
+  KuzzleRequest,
+  NotFoundError,
+  PartialError,
+  User,
+} from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
@@ -34,7 +40,10 @@ import {
 
 import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetSerializer } from "./model/AssetSerializer";
-import { ApiAssetMigrateTenantResult } from "./types/AssetApi";
+import {
+  ApiAssetMigrateTenantResult,
+  ApiAssetUpdateModelLocales,
+} from "./types/AssetApi";
 import { AssetContent } from "./types/AssetContent";
 import {
   AskAssetRefreshModel,
@@ -318,8 +327,8 @@ export class AssetService extends DigitalTwinService {
           measures,
           metadata: { ...assetMetadata, ...metadata },
           model,
+          modelLocales: assetModel.asset.locales,
           reference,
-          softTenant: [],
         },
       },
       {
@@ -356,7 +365,6 @@ export class AssetService extends DigitalTwinService {
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     const assetId = AssetSerializer.id(model, reference);
-
     return lock(`asset:${engineId}:${assetId}`, async () =>
       this._create(assetId, engineId, model, reference, metadata, request),
     );
@@ -618,6 +626,94 @@ export class AssetService extends DigitalTwinService {
     return replacedAssets;
   }
 
+  /**
+   * Retrieve locales with the specified model and search all assets related to the model to update the locales.
+   * The operation is historized.
+   * @param request
+   * @param model
+   */
+  public async updateModelLocales(
+    request: KuzzleRequest,
+    model: string,
+  ): Promise<ApiAssetUpdateModelLocales[]> {
+    const res = await this.sdk.document.search<AssetModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        query: {
+          bool: {
+            must: [
+              { term: { type: "asset" } },
+              { term: { "asset.model": model } },
+            ],
+          },
+        },
+      },
+      { size: 1 },
+    );
+
+    if (res.total === 0) {
+      throw new NotFoundError(`Unknown Asset model '${model}'.`);
+    }
+
+    const modelDocument = res.hits[0];
+    const locales = modelDocument._source.asset.locales;
+
+    const engines = await ask<AskEngineList>(
+      "ask:device-manager:engine:list",
+      {},
+    );
+
+    const results: ApiAssetUpdateModelLocales[] = [];
+
+    for (const engine of engines) {
+      const resultUpdateByQuery =
+        await this.sdk.document.updateByQuery<AssetContent>(
+          engine.index,
+          "assets",
+          {
+            bool: {
+              must: [
+                {
+                  term: {
+                    model: model,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            modelLocales: locales,
+          },
+        );
+
+      results.push({
+        engineIndex: engine.index,
+        result: {
+          errors: [...resultUpdateByQuery.errors],
+          successes: [...resultUpdateByQuery.successes],
+        },
+      });
+    }
+
+    const errorsFiltered = results.filter((re) => re.result.errors.length > 0);
+
+    if (errorsFiltered.length === results.length) {
+      throw new BadRequestError("All the assets failed to be updated", {}, 400);
+    }
+
+    if (errorsFiltered.length < results.length && errorsFiltered.length !== 0) {
+      throw new PartialError(
+        "Some assets failed to be updated",
+        errorsFiltered,
+        {},
+        206,
+      );
+    }
+
+    return results;
+  }
+
   private async getEngine(engineId: string): Promise<JSONObject> {
     const engine = await this.sdk.document.get(
       this.config.adminIndex,
@@ -633,15 +729,20 @@ export class AssetService extends DigitalTwinService {
   }: {
     assetModel: AssetModelContent;
   }): Promise<void> {
+    // For engine group 'commons', fetch all engines
     const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: assetModel.engineGroup,
+      group:
+        assetModel.engineGroup === "commons" ? null : assetModel.engineGroup,
     });
 
     const targets = engines.map((engine) => ({
       collections: [InternalCollection.ASSETS],
       index: engine.index,
     }));
-
+    // Return if no engine found
+    if (targets.length === 0) {
+      return;
+    }
     const assets = await this.sdk.query<
       BaseRequest,
       DocumentSearchResult<AssetContent>

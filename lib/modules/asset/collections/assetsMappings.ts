@@ -12,22 +12,45 @@ export const assetsMappings: CollectionMappings = {
       type: "keyword",
       fields: { text: { type: "text" } },
     },
+    modelLocales: {
+      dynamic: "false",
+      properties: {
+        en: {
+          properties: {
+            description: {
+              type: "text",
+            },
+            friendlyName: {
+              type: "keyword",
+              fields: { text: { type: "text" } },
+            },
+          },
+        },
+        fr: {
+          properties: {
+            description: {
+              type: "text",
+            },
+            friendlyName: {
+              type: "keyword",
+              fields: { text: { type: "text" } },
+            },
+          },
+        },
+      },
+    },
     reference: {
       type: "keyword",
       fields: { text: { type: "text" } },
     },
     groups: {
       properties: {
-        id: {
+        path: {
           type: "keyword",
           fields: { text: { type: "text" } },
         },
         date: { type: "date" },
       },
-    },
-    softTenant: {
-      type: "keyword",
-      fields: { text: { type: "text" } },
     },
     metadata: {
       properties: {

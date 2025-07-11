@@ -1,42 +1,39 @@
 import { KDocument } from "kuzzle-sdk";
 import {
-  assetGroupTestId,
-  assetGroupTestBody,
-  assetGroupTestParentId1,
-  assetGroupTestParentBody1,
-  assetGroupTestChildrenId1,
-  assetGroupTestChildrenBody1,
-  assetGroupTestChildrenId2,
-  assetGroupTestParentId2,
-  assetGroupChildrenWithAssetId,
-  assetGroupParentWithAssetId,
-} from "../../../fixtures/assetsGroups";
+  groupTestId,
+  groupTestBody,
+  groupTestParentId1,
+  groupTestParentBody1,
+  groupTestChildrenId1,
+  groupTestChildrenBody1,
+  groupChildrenWithAssetId,
+  groupParentWithAssetId,
+} from "../../../fixtures/groups";
 
 // Lib
+
+import { AssetContent } from "../../../../lib/modules/asset/exports";
+import { InternalCollection } from "../../../../lib/modules/plugin";
+import { setupHooks } from "../../../helpers";
+import { loadSecurityDefault } from "../../../hooks/security";
 import {
+  ApiGroupAddAssetsRequest,
+  ApiGroupAddAssetsResult,
   ApiGroupCreateRequest,
   ApiGroupCreateResult,
   ApiGroupDeleteRequest,
   ApiGroupGetRequest,
+  ApiGroupRemoveAssetsRequest,
+  ApiGroupRemoveAssetsResult,
   ApiGroupSearchRequest,
   ApiGroupSearchResult,
   ApiGroupUpdateRequest,
-  ApiGroupAddAssetsRequest,
-  ApiGroupAddAssetsResult,
-  ApiGroupRemoveAssetsRequest,
-  ApiGroupRemoveAssetsResult,
-} from "../../../../lib/modules/asset/types/AssetGroupsApi";
-import {
-  AssetContent,
-  AssetsGroupContent,
-} from "../../../../lib/modules/asset/exports";
-import { InternalCollection } from "../../../../lib/modules/plugin";
-import { setupHooks } from "../../../helpers";
-import { loadSecurityDefault } from "../../../hooks/security";
+} from "lib/modules/group/types/GroupsApi";
+import { GroupContent } from "lib/modules/group/types/GroupContent";
 
 jest.setTimeout(10000);
 
-describe("AssetsGroupsController", () => {
+describe("GroupsController", () => {
   const sdk = setupHooks();
   const now = Date.now();
 
@@ -50,193 +47,173 @@ describe("AssetsGroupsController", () => {
   });
 
   it("can create a group", async () => {
-    const { result: assetGroupRoot } = await sdk.query<
+    const { result: groupRoot } = await sdk.query<
       ApiGroupCreateRequest,
       ApiGroupCreateResult
     >({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "create",
       _id: "root-group",
       body: {
         name: "root group",
+        path: undefined,
+        model: null,
       },
     });
 
-    expect(assetGroupRoot._id).toBe("root-group");
-    expect(assetGroupRoot._source).toMatchObject({
+    expect(groupRoot._id).toBe("root-group");
+    expect(groupRoot._source).toMatchObject({
       name: "root group",
-      children: [],
-      parent: null,
+      path: "root-group",
     });
-    expect(assetGroupRoot._source.lastUpdate).toBeGreaterThanOrEqual(now);
+    expect(groupRoot._source.lastUpdate).toBeGreaterThanOrEqual(now);
 
-    const { result: assetGroupChildren } = await sdk.query<
+    const { result: groupChildren } = await sdk.query<
       ApiGroupCreateRequest,
       ApiGroupCreateResult
     >({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "create",
       _id: "children-group",
       body: {
         name: "children group",
-        parent: "root-group",
+        path: "root-group",
       },
     });
 
-    const { _source: rootGroup } = await sdk.document.get<AssetsGroupContent>(
-      "engine-ayse",
-      InternalCollection.ASSETS_GROUPS,
-      "root-group",
-    );
-
-    expect(rootGroup).toMatchObject({
-      children: ["children-group"],
-    });
-    expect(rootGroup.lastUpdate).toBeGreaterThanOrEqual(now);
-
-    expect(assetGroupChildren._id).toBe("children-group");
-    expect(assetGroupChildren._source).toMatchObject({
+    expect(groupChildren._id).toBe("children-group");
+    expect(groupChildren._source).toMatchObject({
       name: "children group",
-      children: [],
-      parent: "root-group",
+      path: "root-group.children-group",
     });
-    expect(assetGroupChildren._source.lastUpdate).toBeGreaterThanOrEqual(now);
+    expect(groupChildren._source.lastUpdate).toBeGreaterThanOrEqual(now);
 
-    const { result: assetGroupWithoutIdSpecified } = await sdk.query<
+    const { result: groupWithoutIdSpecified } = await sdk.query<
       ApiGroupCreateRequest,
       ApiGroupCreateResult
     >({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       action: "create",
       engineId: "engine-ayse",
       body: {
         name: "group",
+        path: undefined,
       },
     });
 
-    expect(typeof assetGroupWithoutIdSpecified._id).toBe("string");
+    expect(typeof groupWithoutIdSpecified._id).toBe("string");
   });
 
   it("can get a group", async () => {
     const { result } = await sdk.query<ApiGroupGetRequest>({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "get",
-      _id: assetGroupTestId,
+      _id: groupTestId,
     });
 
-    expect(result._id).toEqual(assetGroupTestId);
-    expect(result._source).toMatchObject(assetGroupTestBody);
+    expect(result._id).toEqual(groupTestId);
+    expect(result._source).toMatchObject(groupTestBody);
   });
 
   it("can update a group", async () => {
     const { result } = await sdk.query<ApiGroupUpdateRequest>({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "update",
-      _id: assetGroupTestId,
+      _id: groupTestId,
       body: {
         name: "root group",
-        children: [],
+        path: groupTestId,
       },
     });
 
-    expect(result._id).toEqual(assetGroupTestId);
+    expect(result._id).toEqual(groupTestId);
     expect(result._source).toMatchObject({
       name: "root group",
-      children: [],
-      parent: null,
+      path: groupTestId,
     });
     expect(result._source.lastUpdate).toBeGreaterThanOrEqual(now);
 
-    const { result: resultChildren } = await sdk.query<ApiGroupUpdateRequest>({
-      controller: "device-manager/assetsGroup",
+    const { result: resultPathChanged } =
+      await sdk.query<ApiGroupUpdateRequest>({
+        controller: "device-manager/groups",
+        engineId: "engine-ayse",
+        action: "update",
+        _id: groupParentWithAssetId,
+        body: {
+          name: "Parent Group with asset",
+          path: `${groupTestParentId1}.${groupParentWithAssetId}`,
+        },
+      });
+    expect(resultPathChanged._id).toEqual(groupParentWithAssetId);
+    expect(resultPathChanged._source).toMatchObject({
+      path: `${groupTestParentId1}.${groupParentWithAssetId}`,
+    });
+    expect(resultPathChanged._source.lastUpdate).toBeGreaterThanOrEqual(now);
+
+    const { result: resultChildren } = await sdk.query<ApiGroupGetRequest>({
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
-      action: "update",
-      _id: assetGroupTestId,
-      body: {
-        name: "root group",
-        children: [assetGroupTestChildrenId1],
-      },
+      action: "get",
+      _id: groupChildrenWithAssetId,
     });
 
-    expect(resultChildren._id).toEqual(assetGroupTestId);
+    expect(resultChildren._id).toEqual(groupChildrenWithAssetId);
     expect(resultChildren._source).toMatchObject({
-      name: "root group",
-      children: [assetGroupTestChildrenId1],
-      parent: null,
+      path: `${groupTestParentId1}.${groupParentWithAssetId}.${groupChildrenWithAssetId}`,
     });
     expect(resultChildren._source.lastUpdate).toBeGreaterThanOrEqual(now);
   });
 
   it("can delete a group", async () => {
     const { error, status } = await sdk.query<ApiGroupDeleteRequest>({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "delete",
-      _id: assetGroupTestId,
+      _id: groupTestId,
     });
 
     expect(error).toBeNull();
     expect(status).toBe(200);
 
     await sdk.query<ApiGroupDeleteRequest>({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "delete",
-      _id: assetGroupTestParentId1,
+      _id: groupTestParentId1,
     });
 
-    const { _source: childrenGroup } =
-      await sdk.document.get<AssetsGroupContent>(
-        "engine-ayse",
-        InternalCollection.ASSETS_GROUPS,
-        assetGroupTestChildrenId1,
-      );
+    const { _source: childrenGroup } = await sdk.document.get<GroupContent>(
+      "engine-ayse",
+      InternalCollection.GROUPS,
+      groupTestChildrenId1,
+    );
 
     expect(childrenGroup).toMatchObject({
-      parent: null,
+      path: groupTestChildrenId1,
     });
     expect(childrenGroup.lastUpdate).toBeGreaterThanOrEqual(now);
 
     await sdk.query<ApiGroupDeleteRequest>({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "delete",
-      _id: assetGroupTestChildrenId2,
+      _id: groupParentWithAssetId,
     });
 
-    const { _source: parentGroup } = await sdk.document.get<AssetsGroupContent>(
+    const { _source: assetGrouped } = await sdk.document.get<AssetContent>(
       "engine-ayse",
-      InternalCollection.ASSETS_GROUPS,
-      assetGroupTestParentId2,
+      InternalCollection.ASSETS,
+      "Container-grouped",
     );
-
-    expect(parentGroup).toMatchObject({
-      children: [],
-    });
-    expect(parentGroup.lastUpdate).toBeGreaterThanOrEqual(now);
-
-    await sdk.query<ApiGroupDeleteRequest>({
-      controller: "device-manager/assetsGroup",
-      engineId: "engine-ayse",
-      action: "delete",
-      _id: assetGroupParentWithAssetId,
-    });
-
-    const { _source: assetGrouped } =
-      await sdk.document.get<AssetsGroupContent>(
-        "engine-ayse",
-        InternalCollection.ASSETS,
-        "Container-grouped",
-      );
 
     expect(assetGrouped).toMatchObject({
       groups: [
         {
-          id: assetGroupChildrenWithAssetId,
+          path: groupChildrenWithAssetId,
         },
       ],
     });
@@ -244,17 +221,13 @@ describe("AssetsGroupsController", () => {
 
   it("can search groups", async () => {
     const { result } = await sdk.query<ApiGroupSearchRequest>({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "search",
       body: {
         query: {
           ids: {
-            values: [
-              assetGroupTestId,
-              assetGroupTestParentId1,
-              assetGroupTestChildrenId1,
-            ],
+            values: [groupTestId, groupTestParentId1, groupTestChildrenId1],
           },
         },
       },
@@ -263,19 +236,19 @@ describe("AssetsGroupsController", () => {
 
     const hits: ApiGroupSearchResult["hits"] = [
       {
-        _id: assetGroupTestId,
+        _id: groupTestId,
         _score: 1,
-        _source: assetGroupTestBody,
+        _source: groupTestBody,
       },
       {
-        _id: assetGroupTestParentId1,
+        _id: groupTestParentId1,
         _score: 1,
-        _source: assetGroupTestParentBody1,
+        _source: groupTestParentBody1,
       },
       {
-        _id: assetGroupTestChildrenId1,
+        _id: groupTestChildrenId1,
         _score: 1,
-        _source: assetGroupTestChildrenBody1,
+        _source: groupTestChildrenBody1,
       },
     ];
 
@@ -291,11 +264,11 @@ describe("AssetsGroupsController", () => {
       ApiGroupAddAssetsRequest,
       ApiGroupAddAssetsResult
     >({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "addAsset",
-      _id: assetGroupTestId,
       body: {
+        path: groupTestId,
         assetIds: ["Container-linked1", "Container-linked2"],
       },
     });
@@ -308,7 +281,7 @@ describe("AssetsGroupsController", () => {
         _source: {
           groups: [
             {
-              id: assetGroupTestId,
+              path: groupTestId,
             },
           ],
         },
@@ -318,7 +291,7 @@ describe("AssetsGroupsController", () => {
         _source: {
           groups: [
             {
-              id: assetGroupTestId,
+              path: groupTestId,
             },
           ],
         },
@@ -330,18 +303,18 @@ describe("AssetsGroupsController", () => {
     expect(assets[0]._source.groups[0].date).toBeGreaterThan(now);
     expect(assets[1]._source.groups[0].date).toBeGreaterThan(now);
 
-    expect(result.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result.group._source.lastUpdate).toBeGreaterThan(now);
 
     // Add assets in an second group
     const { result: result2 } = await sdk.query<
       ApiGroupAddAssetsRequest,
       ApiGroupAddAssetsResult
     >({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "addAsset",
-      _id: assetGroupTestParentId1,
       body: {
+        path: groupTestParentId1,
         assetIds: ["Container-linked1", "Container-linked2"],
       },
     });
@@ -354,10 +327,10 @@ describe("AssetsGroupsController", () => {
         _source: {
           groups: [
             {
-              id: assetGroupTestId,
+              path: groupTestId,
             },
             {
-              id: assetGroupTestParentId1,
+              path: groupTestParentId1,
             },
           ],
         },
@@ -367,10 +340,10 @@ describe("AssetsGroupsController", () => {
         _source: {
           groups: [
             {
-              id: assetGroupTestId,
+              path: groupTestId,
             },
             {
-              id: assetGroupTestParentId1,
+              path: groupTestParentId1,
             },
           ],
         },
@@ -385,18 +358,18 @@ describe("AssetsGroupsController", () => {
     expect(assets2[1]._source.groups[0].date).toBeLessThan(Date.now());
     expect(assets2[1]._source.groups[1].date).toBeGreaterThan(now);
 
-    expect(result2.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
 
     // Add an asset to a subgroup also add the reference of the parent group
     const { result: result3 } = await sdk.query<
       ApiGroupAddAssetsRequest,
       ApiGroupAddAssetsResult
     >({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "addAsset",
-      _id: assetGroupTestChildrenId1,
       body: {
+        path: `${groupTestParentId1}.${groupTestChildrenId1}`,
         assetIds: ["Container-unlinked1"],
       },
     });
@@ -409,10 +382,7 @@ describe("AssetsGroupsController", () => {
         _source: {
           groups: [
             {
-              id: assetGroupTestParentId1,
-            },
-            {
-              id: assetGroupTestChildrenId1,
+              path: `${groupTestParentId1}.${groupTestChildrenId1}`,
             },
           ],
         },
@@ -422,9 +392,8 @@ describe("AssetsGroupsController", () => {
     // ? Dates should be separately because is not really predictable
     const assets3 = result3.successes as KDocument<AssetContent>[];
     expect(assets3[0]._source.groups[0].date).toBeGreaterThan(now);
-    expect(assets3[0]._source.groups[1].date).toBeGreaterThan(now);
 
-    expect(result3.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result3.group._source.lastUpdate).toBeGreaterThan(now);
   });
 
   it("can remove asset to group", async () => {
@@ -432,11 +401,11 @@ describe("AssetsGroupsController", () => {
       ApiGroupRemoveAssetsRequest,
       ApiGroupRemoveAssetsResult
     >({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "removeAsset",
-      _id: assetGroupChildrenWithAssetId,
       body: {
+        path: `${groupParentWithAssetId}.${groupChildrenWithAssetId}`,
         assetIds: ["Container-grouped"],
       },
     });
@@ -446,25 +415,21 @@ describe("AssetsGroupsController", () => {
     expect(result.successes[0]).toMatchObject({
       _id: "Container-grouped",
       _source: {
-        groups: [
-          {
-            id: assetGroupParentWithAssetId,
-          },
-        ],
+        groups: [],
       },
     });
 
-    expect(result.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result.group._source.lastUpdate).toBeGreaterThan(now);
 
     const { result: result2 } = await sdk.query<
       ApiGroupRemoveAssetsRequest,
       ApiGroupRemoveAssetsResult
     >({
-      controller: "device-manager/assetsGroup",
+      controller: "device-manager/groups",
       engineId: "engine-ayse",
       action: "removeAsset",
-      _id: assetGroupParentWithAssetId,
       body: {
+        path: groupParentWithAssetId,
         assetIds: ["Container-grouped2"],
       },
     });
@@ -478,6 +443,6 @@ describe("AssetsGroupsController", () => {
       },
     });
 
-    expect(result2.assetsGroups._source.lastUpdate).toBeGreaterThan(now);
+    expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
   });
 });

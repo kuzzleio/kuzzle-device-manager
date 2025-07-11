@@ -35,14 +35,9 @@ export interface AssetContent<
    * Id's of asset groups
    */
   groups: Array<{
-    id: string;
+    path: string;
     date: number;
   }>;
-  /**
-   * Id's of soft tenants
-   * ! Not used directly in this plugin
-   */
-  softTenant?: Array<string>;
 }
 
 /**
@@ -60,5 +55,5 @@ export type AssetMeasureContext<TMetadata extends Metadata = Metadata> = {
   measureName: string;
 } & Pick<
   AssetContent<JSONObject, TMetadata>,
-  "model" | "reference" | "metadata" | "groups" | "softTenant"
+  "model" | "reference" | "metadata" | "groups"
 >;

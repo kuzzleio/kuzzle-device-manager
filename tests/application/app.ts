@@ -3,7 +3,6 @@ import util from "node:util";
 import { Backend, KuzzleRequest } from "kuzzle";
 
 import { DeviceManagerPlugin } from "../../index";
-
 import { TestsController } from "./tests/controller";
 import { registerTestPipes } from "./tests/pipes";
 import { registerModels } from "./models";
@@ -21,12 +20,17 @@ deviceManager.config.engineCollections.devices.mappings.properties["custom"] = {
   type: "keyword",
   fields: { text: { type: "text" } },
 };
+deviceManager.config.engineCollections.groups.mappings.properties[
+  "custom"
+] = {
+  type: "keyword",
+  fields: { text: { type: "text" } },
+};
 
 registerModels(deviceManager);
 registerTestPipes(app);
 
 app.plugin.use(deviceManager);
-
 app.controller.use(new TestsController(app));
 
 app.hook.register("request:onError", async (request: KuzzleRequest) => {

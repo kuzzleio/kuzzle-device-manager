@@ -55,7 +55,7 @@ export default {
           ],
         },
         {
-          roleId: "assetsGroup.admin",
+          roleId: "group.admin",
           restrictedTo: [
             {
               index: "engine-ayse",
@@ -73,7 +73,7 @@ export default {
           restrictedTo: {},
         },
         {
-          roleId: "assetsGroup.admin",
+          roleId: "group.admin",
           restrictedTo: {},
         },
       ],
