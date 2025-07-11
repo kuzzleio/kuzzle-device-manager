@@ -1,6 +1,6 @@
 import { DeviceManagerPlugin } from "../../index";
 import { Container, Warehouse, MagicHouse, Room, StreetLamp } from "./assets";
-import { DummyTemp, DummyTempPosition } from "./devices";
+import { DummyTemp, DummyTempPosition, EmptyTemp } from "./devices";
 import {
   Acceleration,
   Brightness,
@@ -29,7 +29,7 @@ const measuresModels = [
   humidityMeasureModel,
 ];
 
-const devicesModels = [DummyTemp, DummyTempPosition];
+const devicesModels = [DummyTemp, DummyTempPosition, EmptyTemp];
 
 const assetsModels = {
   // Register assets for the "commons" group

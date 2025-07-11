@@ -84,6 +84,18 @@ export const deviceAyseWarehouse: DeviceContent = {
 };
 export const deviceAyseWarehouseId = `${deviceAyseWarehouse.model}-${deviceAyseWarehouse.reference}`;
 
+export const deviceEmptyTemp: DeviceContent = {
+  model: "EmptyTemp",
+  reference: "empty",
+  measureSlots: [],
+  metadata: {},
+  measures: {},
+  engineId: "engine-ayse",
+  assetId: null,
+  lastMeasuredAt: null,
+};
+export const deviceEmptyTempId = `${deviceEmptyTemp.model}-${deviceEmptyTemp.reference}`;
+
 export const internalDevices = [
   { index: { _id: deviceAyseLinked1Id } },
   deviceAyseLinked1,
@@ -105,6 +117,9 @@ export const internalDevices = [
 
   { index: { _id: deviceAyseWarehouseId } },
   deviceAyseWarehouse,
+
+  { index: { _id: deviceEmptyTempId } },
+  deviceEmptyTemp,
 ];
 
 export const ayseDevices = [

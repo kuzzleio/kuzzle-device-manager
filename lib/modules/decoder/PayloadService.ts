@@ -1,4 +1,4 @@
-import { BadRequestError, KuzzleRequest } from "kuzzle";
+import { KuzzleRequest } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
@@ -82,7 +82,11 @@ export class PayloadService extends BaseService {
     decodedPayload = await decoder.decode(decodedPayload, payload, request);
 
     if (decodedPayload.references.length === 0) {
-      throw new BadRequestError("No measurement has been decoded");
+      this.app.log.warn(
+        `No measurement has been decoded for device model "${decoder.deviceModel}", skipping ingestion`,
+      );
+
+      return { valid };
     }
 
     const devices = await this.retrieveDevices(

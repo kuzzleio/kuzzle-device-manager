@@ -2,6 +2,7 @@ import { beforeEachTruncateCollections } from "../../../hooks";
 import { ApiDecoderListRequest, ApiDecoderListResult } from "../../../../index";
 
 import { useSdk, sendPayloads } from "../../../helpers";
+import { deviceEmptyTempId } from "../../../fixtures/devices";
 
 jest.setTimeout(10000);
 
@@ -122,5 +123,23 @@ describe("DecodersController", () => {
         }),
       ]),
     );
+  });
+
+  it("should not throw an error when decoding a payload without measures", async () => {
+    await sendPayloads(sdk, "empty-temp", [
+      { deviceEUI: "empty", metadata: { color: "BLUE" } },
+    ]);
+
+    await sdk.collection.refresh("device-manager", "payloads");
+
+    const device = await sdk.query({
+      controller: "document",
+      action: "get",
+      index: "device-manager",
+      collection: "devices",
+      _id: deviceEmptyTempId,
+    });
+
+    expect(device.result.metadata.color).toBe("BLUE");
   });
 });
