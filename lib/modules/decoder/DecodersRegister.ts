@@ -66,8 +66,8 @@ export class DecodersRegister {
     decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
 
     if (decoder.measures.length === 0) {
-      this.context.log.warn(
-        `Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property, no payload will be ingested`,
+      global.app.log.warn(
+        `[DeviceManager] Decoder "${decoder.deviceModel}" did not declare any measures in the "decoder.measures" property, no payload will be ingested`,
       );
     }
 
