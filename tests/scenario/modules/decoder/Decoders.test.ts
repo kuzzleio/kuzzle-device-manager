@@ -142,7 +142,7 @@ describe("DecodersController", () => {
       controller: "document",
       action: "get",
       collection: "devices",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: deviceEmptyTempId,
     });
 
