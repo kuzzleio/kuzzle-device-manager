@@ -88,7 +88,9 @@ export const deviceEmptyTemp: DeviceContent = {
   model: "EmptyTemp",
   reference: "empty",
   measureSlots: [],
-  metadata: {},
+  metadata: {
+    color: "BLUE",
+  },
   measures: {},
   engineId: "engine-ayse",
   assetId: null,
@@ -140,4 +142,7 @@ export const ayseDevices = [
 
   { index: { _id: deviceAyseWarehouseId } },
   deviceAyseWarehouse,
+
+  { index: { _id: deviceEmptyTempId } },
+  deviceEmptyTemp,
 ];

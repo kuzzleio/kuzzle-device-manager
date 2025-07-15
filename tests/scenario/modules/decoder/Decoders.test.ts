@@ -1,4 +1,8 @@
-import { beforeEachTruncateCollections } from "../../../hooks";
+import {
+  beforeAllCreateEngines,
+  beforeEachLoadFixtures,
+  beforeEachTruncateCollections,
+} from "../../../hooks";
 import { ApiDecoderListRequest, ApiDecoderListResult } from "../../../../index";
 
 import { useSdk, sendPayloads } from "../../../helpers";
@@ -11,6 +15,7 @@ describe("DecodersController", () => {
 
   beforeAll(async () => {
     await sdk.connect();
+    await beforeAllCreateEngines(sdk);
 
     // ? Force provisioning strategy to "auto"
     await sdk.query({
@@ -25,6 +30,7 @@ describe("DecodersController", () => {
 
   beforeEach(async () => {
     await beforeEachTruncateCollections(sdk);
+    await beforeEachLoadFixtures(sdk);
   });
 
   afterAll(async () => {
@@ -127,7 +133,7 @@ describe("DecodersController", () => {
 
   it("should not throw an error when decoding a payload without measures", async () => {
     await sendPayloads(sdk, "empty-temp", [
-      { deviceEUI: "empty", metadata: { color: "BLUE" } },
+      { deviceEUI: "empty", metadata: { color: "RED" } },
     ]);
 
     await sdk.collection.refresh("device-manager", "payloads");
@@ -135,11 +141,11 @@ describe("DecodersController", () => {
     const device = await sdk.query({
       controller: "document",
       action: "get",
-      index: "device-manager",
       collection: "devices",
+      engineId: "engine-ayse",
       _id: deviceEmptyTempId,
     });
 
-    expect(device.result.metadata.color).toBe("BLUE");
+    expect(device.result._source.metadata.color).toBe("RED");
   });
 });
