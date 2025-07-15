@@ -28,7 +28,10 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
   }
 
   get references() {
-    return Object.keys(this.measurementsByDevice);
+    return [
+      ...Object.keys(this.measurementsByDevice),
+      ...Object.keys(this.metadataByDevice),
+    ];
   }
 
   /**
@@ -94,6 +97,14 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
    */
   getMetadata(deviceReference: string): JSONObject {
     return this.metadataByDevice[deviceReference] ?? {};
+  }
+
+  hasMeasurements(): boolean {
+    return Object.values(this.measurementsByDevice).length > 0;
+  }
+
+  hasMetadata(): boolean {
+    return Object.values(this.metadataByDevice).length > 0;
   }
 
   private validateMeasurement<TMeasureValues>(
