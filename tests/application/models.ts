@@ -1,6 +1,5 @@
 import { DeviceManagerPlugin } from "../../index";
 import { Container, Warehouse, MagicHouse, Room, StreetLamp } from "./assets";
-import { DummyTemp, DummyTempPosition } from "./devices";
 import { Parking } from "./groups/Parking";
 import { DummyTemp, DummyTempPosition, EmptyTemp } from "./devices";
 import {
