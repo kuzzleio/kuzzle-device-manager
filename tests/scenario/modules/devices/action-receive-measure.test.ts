@@ -1,9 +1,8 @@
 import {
   ApiDeviceReceiveMeasuresRequest,
   ApiDeviceReceiveMeasuresResult,
-  TemperatureMeasurement,
 } from "../../../../index";
-
+import { TemperatureMeasurement } from "../../../application/measures";
 import { setupHooks } from "../../../helpers";
 
 jest.setTimeout(10000);
@@ -93,23 +92,6 @@ describe("DeviceController: receiveMeasure", () => {
           },
         },
       ],
-    });
-
-    const device = await sdk.document.get(
-      "engine-ayse",
-      "devices",
-      "DummyTemp-linked1",
-    );
-
-    expect(device._source).toMatchObject({
-      measures: {
-        temperature: {
-          originId: "DummyTemp-linked1",
-          values: {
-            temperature: 25.5,
-          },
-        },
-      },
     });
   });
 

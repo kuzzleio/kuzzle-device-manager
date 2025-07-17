@@ -1,13 +1,14 @@
-import {
-  containerAssetDefinition,
-  warehouseAssetDefinition,
-} from "../application/assets";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Container, Warehouse } from "../application/assets";
+
 import {
   dummyTempDeviceMeasures,
   dummyTempPositionDeviceMeasures,
 } from "../application/decoders";
 
 import { assetGroupFixtures } from "./assetsGroups";
+import { ayseAssets } from "./assets";
+import { ayseDevices, internalDevices } from "./devices";
 
 const deviceDetached1 = {
   model: "DummyTemp",
@@ -87,7 +88,7 @@ const deviceAyseWarehouseId = `${deviceAyseWarehouse.model}-${deviceAyseWarehous
 const assetAyseWarehouseLinked = {
   model: "Warehouse",
   reference: "linked",
-  measureSlots: warehouseAssetDefinition.measures,
+  measureSlots: Warehouse.definition.measures,
   metadata: {
     surface: 512,
   },
@@ -103,7 +104,7 @@ const assetAyseWarehouseLinkedId = `${assetAyseWarehouseLinked.model}-${assetAys
 const assetAyseLinked1 = {
   model: "Container",
   reference: "linked1",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 10,
     height: 11,
@@ -124,7 +125,7 @@ const assetAyseLinked1Id = `${assetAyseLinked1.model}-${assetAyseLinked1.referen
 const assetAyseLinked2 = {
   model: "Container",
   reference: "linked2",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 42,
     height: 21,
@@ -144,7 +145,7 @@ const assetAyseLinked2Id = `${assetAyseLinked2.model}-${assetAyseLinked2.referen
 const assetAyseUnlinked = {
   model: "Container",
   reference: "unlinked1",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 20,
     height: 22,
@@ -156,7 +157,7 @@ const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.refe
 const assetAyseGrouped = {
   model: "Container",
   reference: "grouped",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 20,
     height: 22,
@@ -178,7 +179,7 @@ const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.referen
 const assetAyseGrouped2 = {
   model: "Container",
   reference: "grouped2",
-  measureSlots: containerAssetDefinition.measures,
+  measureSlots: Container.definition.measures,
   metadata: {
     weight: 20,
     height: 22,
@@ -208,73 +209,13 @@ const assetAyseDebug1Id = `${assetAyseDebug1.model}-${assetAyseDebug1.reference}
 
 export default {
   "device-manager": {
-    devices: [
-      { index: { _id: deviceAyseLinked1Id } },
-      deviceAyseLinked1,
-
-      { index: { _id: deviceAyseLinked2Id } },
-      deviceAyseLinked2,
-
-      { index: { _id: deviceDetached1Id } },
-      deviceDetached1,
-
-      { index: { _id: deviceAyseUnlinked1Id } },
-      deviceAyseUnlinked1,
-
-      { index: { _id: deviceAyseUnlinked2Id } },
-      deviceAyseUnlinked2,
-
-      { index: { _id: deviceAyseUnlinked3Id } },
-      deviceAyseUnlinked3,
-
-      { index: { _id: deviceAyseWarehouseId } },
-      deviceAyseWarehouse,
-    ],
+    devices: internalDevices,
   },
 
   // Index "engine-ayse"
   "engine-ayse": {
-    devices: [
-      { index: { _id: deviceAyseLinked1Id } },
-      deviceAyseLinked1,
-
-      { index: { _id: deviceAyseLinked2Id } },
-      deviceAyseLinked2,
-
-      { index: { _id: deviceAyseUnlinked1Id } },
-      deviceAyseUnlinked1,
-
-      { index: { _id: deviceAyseUnlinked2Id } },
-      deviceAyseUnlinked2,
-
-      { index: { _id: deviceAyseUnlinked3Id } },
-      deviceAyseUnlinked3,
-
-      { index: { _id: deviceAyseWarehouseId } },
-      deviceAyseWarehouse,
-    ],
-    assets: [
-      { index: { _id: assetAyseLinked1Id } },
-      assetAyseLinked1,
-
-      { index: { _id: assetAyseLinked2Id } },
-      assetAyseLinked2,
-
-      { index: { _id: assetAyseUnlinkedId } },
-      assetAyseUnlinked,
-
-      { index: { _id: assetAyseGroupedId } },
-      assetAyseGrouped,
-
-      { index: { _id: assetAyseGroupedId2 } },
-      assetAyseGrouped2,
-
-      { index: { _id: assetAyseWarehouseLinkedId } },
-      assetAyseWarehouseLinked,
-
-      { index: { _id: assetAyseDebug1Id } },
-      assetAyseDebug1,
-    ],
+    devices: ayseDevices,
+    assets: ayseAssets,
     ...assetGroupFixtures,
   },
 };

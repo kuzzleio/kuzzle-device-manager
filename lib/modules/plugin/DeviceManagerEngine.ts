@@ -354,7 +354,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       "asset",
       engineGroup,
     );
-    const settings = this.config.engineCollections.asset.settings;
+    const settings = this.config.engineCollections.assets.settings;
 
     await this.tryCreateCollection(engineId, InternalCollection.ASSETS, {
       mappings,
@@ -427,7 +427,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async createDevicesCollection(engineId: string) {
     const mappings =
       await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
-    const settings = this.config.engineCollections.device.settings;
+    const settings = this.config.engineCollections.devices.settings;
 
     await this.tryCreateCollection(engineId, InternalCollection.DEVICES, {
       mappings,
@@ -527,15 +527,22 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     models: TDigitalTwin[],
     measureModels: MeasureModelContent[],
   ) {
+    const digitalTwinCollection =
+      digitalTwinType === "asset"
+        ? InternalCollection.ASSETS
+        : InternalCollection.DEVICES;
     if (
-      this.config.engineCollections[digitalTwinType] === undefined ||
-      this.config.engineCollections[digitalTwinType].mappings === undefined
+      this.config.engineCollections[digitalTwinCollection] === undefined ||
+      this.config.engineCollections[digitalTwinCollection].mappings ===
+        undefined
     ) {
       throw new InternalError(`Cannot find mapping for "${digitalTwinType}"`);
     }
 
     const mappings = JSON.parse(
-      JSON.stringify(this.config.engineCollections[digitalTwinType].mappings),
+      JSON.stringify(
+        this.config.engineCollections[digitalTwinCollection].mappings,
+      ),
     );
 
     for (const model of models) {

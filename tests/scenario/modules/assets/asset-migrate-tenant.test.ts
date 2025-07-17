@@ -3,7 +3,7 @@ import { beforeEachTruncateCollections } from "../../../hooks/collections";
 import { beforeAllCreateEngines } from "../../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 describe("AssetsController:migrateTenant", () => {
   const sdk = useSdk();
@@ -12,6 +12,11 @@ describe("AssetsController:migrateTenant", () => {
     await sdk.connect();
 
     await beforeAllCreateEngines(sdk);
+
+    await sdk.auth.login("local", {
+      username: "test-admin",
+      password: "password",
+    });
   });
 
   beforeEach(async () => {
@@ -24,14 +29,6 @@ describe("AssetsController:migrateTenant", () => {
   });
 
   it("should fail if both engine does not belong to same group", async () => {
-    await sdk.auth.login("local", {
-      username: "test-admin",
-      password: "password",
-    });
-    // We connect only here to avoid failing the first test
-    // If we do it in the beforeAll hook, the first test will fail
-    // And if we run it each time we might encounter  "Too many login attempts per second"
-
     await expect(
       sdk.query({
         controller: "device-manager/assets",

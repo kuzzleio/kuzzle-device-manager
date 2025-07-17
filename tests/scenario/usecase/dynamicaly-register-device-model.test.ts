@@ -5,6 +5,8 @@ import {
   ApiDeviceCreateResult,
   ApiDeviceReceiveMeasuresRequest,
   ApiDeviceReceiveMeasuresResult,
+  ApiDeviceGetLastMeasuresRequest,
+  ApiDeviceGetLastMeasuresResult,
 } from "../../../index";
 
 import { setupHooks } from "../../helpers";
@@ -62,24 +64,27 @@ describe("DeviceScenario: dynamicaly register device model and receive a measure
         ],
       },
     });
+    await sdk.collection.refresh("engine-ayse", "measures");
 
-    const device = await sdk.document.get(
-      "device-manager",
-      "devices",
-      "Enginko-24BA98",
-    );
+    const { result } = await sdk.query<
+      ApiDeviceGetLastMeasuresRequest,
+      ApiDeviceGetLastMeasuresResult
+    >({
+      _id: "Enginko-24BA98",
+      controller: "device-manager/devices",
+      action: "getLastMeasures",
+      engineId: "engine-ayse",
+    });
 
-    expect(device._source).toMatchObject({
-      measures: {
-        temperatureInternal: {
-          values: {
-            temperature: 28,
-          },
+    expect(result).toMatchObject({
+      temperatureInternal: {
+        values: {
+          temperature: 28,
         },
-        temperatureExternal: {
-          values: {
-            temperature: 12,
-          },
+      },
+      temperatureExternal: {
+        values: {
+          temperature: 12,
         },
       },
     });
