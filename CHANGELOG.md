@@ -1,3 +1,28 @@
+## [3.0.0-next.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.2...v3.0.0-next.3) (2025-07-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove kdm measures export (#410)
+* rename engine collections (#408)
+* remove deprecations support (#409)
+
+### Features
+
+* **decoder:** warn no measures instead of throwing error ([#425](https://github.com/kuzzleio/kuzzle-device-manager/issues/425)) ([c2fe3f6](https://github.com/kuzzleio/kuzzle-device-manager/commit/c2fe3f68fdd30fa54c9620f4db91730ada44e980))
+* remove deprecations support ([#409](https://github.com/kuzzleio/kuzzle-device-manager/issues/409)) ([3937249](https://github.com/kuzzleio/kuzzle-device-manager/commit/393724987dce9e5ed59efdd410ad238be1638ac9))
+* remove kdm measures export ([#410](https://github.com/kuzzleio/kuzzle-device-manager/issues/410)) ([897097f](https://github.com/kuzzleio/kuzzle-device-manager/commit/897097f579b87293b2a91fb8a7806d75d5cc3c17))
+
+
+### Bug Fixes
+
+* engines name ([9cf6da3](https://github.com/kuzzleio/kuzzle-device-manager/commit/9cf6da31841db9591e1373ec837c162d97746751))
+* fix types from last merge ([5f3c973](https://github.com/kuzzleio/kuzzle-device-manager/commit/5f3c9733d06bb4f4e3680efcacf764eece95e00f))
+* **ModelService:** twin types ([7d4fc85](https://github.com/kuzzleio/kuzzle-device-manager/commit/7d4fc8582ac89dcb2f993b38866b3274b1c7c2be))
+* rename engine collections ([#408](https://github.com/kuzzleio/kuzzle-device-manager/issues/408)) ([220aa51](https://github.com/kuzzleio/kuzzle-device-manager/commit/220aa51b7fbc8ac5bf6bdb6ec0e3da1979b42431))
+* types ([#411](https://github.com/kuzzleio/kuzzle-device-manager/issues/411)) ([aeb3e35](https://github.com/kuzzleio/kuzzle-device-manager/commit/aeb3e35d5e162512193b2096c41de2cca3b00904))
+* use original event with new payload ([#414](https://github.com/kuzzleio/kuzzle-device-manager/issues/414)) ([3fd1557](https://github.com/kuzzleio/kuzzle-device-manager/commit/3fd1557b2a3b68a43958fac9dd86dbfd5705e085))
+
 # [3.0.0-next.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.1...v3.0.0-next.2) (2024-11-18)
 
 
