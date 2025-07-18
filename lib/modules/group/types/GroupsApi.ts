@@ -11,7 +11,7 @@ import { GroupsBody, GroupContent } from "./GroupContent";
 type GroupsRequest = Omit<GroupsBody, "lastUpdate">;
 export type GroupsBodyRequest = Partial<GroupsRequest>;
 
-export type UpdateAssetLinkResponse = mUpdateResponse & {
+export type UpdateLinkResponse = mUpdateResponse & {
   group: KDocument<GroupContent>;
 };
 
@@ -67,7 +67,7 @@ export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupAddAssetsResult = UpdateAssetLinkResponse;
+export type ApiGroupAddAssetsResult = UpdateLinkResponse;
 
 export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
   action: "removeAsset";
@@ -76,4 +76,21 @@ export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupRemoveAssetsResult = UpdateAssetLinkResponse;
+export type ApiGroupRemoveAssetsResult = UpdateLinkResponse;
+export interface ApiGroupAddDeviceRequest extends GroupControllerRequest {
+  action: "addDevice";
+  body: {
+    path: string;
+    deviceIds: string[];
+  };
+}
+export type ApiGroupAddDevicesResult = UpdateLinkResponse;
+
+export interface ApiGroupRemoveDeviceRequest extends GroupControllerRequest {
+  action: "removeDevice";
+  body: {
+    path: string;
+    deviceIds: string[];
+  };
+}
+export type ApiGroupRemoveDeviceResult = UpdateLinkResponse;

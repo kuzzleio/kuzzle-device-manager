@@ -11,7 +11,7 @@ export const groupChildrenWithAssetId = "test-children-asset";
 export const groupTestBody: GroupsBody = {
   name: "Test group",
   lastUpdate: Date.now(),
-  model: null,
+  model: "AssetRestricted",
   path: `${groupTestId}`,
 };
 
@@ -19,14 +19,13 @@ export const groupTestParentBody1: GroupsBody = {
   name: "Test parent 1",
   path: `${groupTestParentId1}`,
   lastUpdate: Date.now(),
-  model: "Type 1",
 };
 
 export const groupTestParentBody2: GroupsBody = {
   name: "Test parent 2",
   path: `${groupTestParentId2}`,
   lastUpdate: Date.now(),
-  model: null,
+  model: "DeviceRestricted",
 };
 
 export const groupTestChildrenBody1: GroupsBody = {

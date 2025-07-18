@@ -1,7 +1,13 @@
 import { DeviceManagerPlugin } from "../../index";
 import { Container, Warehouse, MagicHouse, Room, StreetLamp } from "./assets";
+<<<<<<< Updated upstream
 import { Parking } from "./groups/Parking";
 import { DummyTemp, DummyTempPosition, EmptyTemp } from "./devices";
+=======
+import { DummyTemp, DummyTempPosition } from "./devices";
+import { AssetRestricted, DeviceRestricted, Parking } from "./groups";
+
+>>>>>>> Stashed changes
 import {
   Acceleration,
   Brightness,
@@ -41,7 +47,7 @@ const assetsModels = {
   public_lighting: [StreetLamp],
 };
 const groupModels = {
-  air_quality: [Parking],
+  air_quality: [Parking, AssetRestricted, DeviceRestricted],
 };
 
 export function registerModels(deviceManager: DeviceManagerPlugin) {

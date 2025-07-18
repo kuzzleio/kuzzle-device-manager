@@ -12,16 +12,21 @@ import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
+  ApiGroupAddDeviceRequest,
+  ApiGroupAddDevicesResult,
   ApiGroupCreateRequest,
   ApiGroupCreateResult,
   ApiGroupDeleteResult,
   ApiGroupGetResult,
+  ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
+  ApiGroupRemoveDeviceRequest,
+  ApiGroupRemoveDeviceResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
   GroupsBodyRequest,
 } from "./types/GroupsApi";
-import { GroupContent, GroupsBody } from "./types/GroupContent";
+import { GroupContent } from "./types/GroupContent";
 import { AssetContent } from "../asset";
 import { GroupsService } from "./GroupsService";
 import { AskModelGroupGet } from "../model";
@@ -89,6 +94,24 @@ export class GroupsController {
           http: [
             {
               path: "device-manager/:engineId/groups/:_id/removeAsset",
+              verb: "post",
+            },
+          ],
+        },
+        addDevice: {
+          handler: this.addDevice.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/:_id/addDevice",
+              verb: "post",
+            },
+          ],
+        },
+        removeDevice: {
+          handler: this.removeDevice.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/:_id/removeDevice",
               verb: "post",
             },
           ],
@@ -396,58 +419,30 @@ export class GroupsController {
     request: KuzzleRequest,
   ): Promise<ApiGroupRemoveAssetsResult> {
     const engineId = request.getString("engineId");
-    const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
+    const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
     const path = request.getBodyString("path");
     const assetIds = body.assetIds;
     this.checkPath(engineId, path);
     return this.groupsService.removeAsset(engineId, path, assetIds, request);
+  }
 
-    // ? Get document to check if really exists, even if not indexed
+  async addDevice(request: KuzzleRequest): Promise<ApiGroupAddDevicesResult> {
+    const engineId = request.getString("engineId");
+    const body = request.getBody() as ApiGroupAddDeviceRequest["body"];
+    const path = request.getBodyString("path");
+    const deviceIds = body.deviceIds;
+    this.checkPath(engineId, path);
+    return this.groupsService.addDevice(engineId, path, deviceIds, request);
+  }
 
-    const assets = [];
-    for (const assetId of body.assetIds) {
-      const assetContent = (
-        await this.sdk.document.get<AssetContent>(
-          engineId,
-          InternalCollection.ASSETS,
-          assetId,
-        )
-      )._source;
-
-      if (!Array.isArray(assetContent.groups)) {
-        continue;
-      }
-
-      assetContent.groups = assetContent.groups.filter(
-        (group) => group.path !== path,
-      );
-
-      assets.push({
-        _id: assetId,
-        body: assetContent,
-      });
-    }
-
-    const groupsUpdate = await this.as(
-      request.getUser(),
-    ).document.update<GroupsBody>(
-      engineId,
-      InternalCollection.GROUPS,
-      path.split(".").pop(),
-      {
-        lastUpdate: Date.now(),
-      },
-      { source: true },
-    );
-
-    const update = await this.sdk.document.mUpdate(
-      engineId,
-      InternalCollection.ASSETS,
-      assets,
-    );
-    return {
-      ...update,
-      group: groupsUpdate,
-    };
+  async removeDevice(
+    request: KuzzleRequest,
+  ): Promise<ApiGroupRemoveDeviceResult> {
+    const engineId = request.getString("engineId");
+    const body = request.getBody() as ApiGroupRemoveDeviceRequest["body"];
+    const path = request.getBodyString("path");
+    const deviceIds = body.deviceIds;
+    this.checkPath(engineId, path);
+    return this.groupsService.removeDevice(engineId, path, deviceIds, request);
   }
 }

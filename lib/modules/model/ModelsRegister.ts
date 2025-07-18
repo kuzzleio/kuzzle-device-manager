@@ -11,6 +11,7 @@ import { MeasureDefinition } from "../measure";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupAffinity,
   GroupModelContent,
   LocaleDetails,
   MeasureModelContent,
@@ -168,6 +169,7 @@ export class ModelsRegister {
    *
    * @param engineGroup - The engine group name.
    * @param model - The name of the group model, which must be in PascalCase.
+   * @param affinity - The type of object accepted and their model affinity.
    * @param metadataMappings - The metadata mappings for the model, defaults to an empty object.
    * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
    * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
@@ -177,6 +179,7 @@ export class ModelsRegister {
   registerGroup(
     engineGroup: string,
     model: string,
+    affinity: GroupAffinity,
     metadataMappings: MetadataMappings = {},
     defaultMetadata: JSONObject = {},
     metadataDetails: MetadataDetails = {},
@@ -192,6 +195,7 @@ export class ModelsRegister {
     this.groupModels.push({
       engineGroup,
       group: {
+        affinity,
         defaultMetadata,
         metadataDetails,
         metadataGroups,

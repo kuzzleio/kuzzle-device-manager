@@ -16,6 +16,11 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
+        affinity: {
+          type: ["assets"],
+          models: { assets: [] },
+          strict: false,
+        },
         engineGroup: "air_quality",
         model: "TruckFleet",
         metadataMappings: {
@@ -72,6 +77,14 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
+        affinity: {
+          type: ["assets", "devices"],
+          models: {
+            assets: ["truck"],
+            devices: [],
+          },
+          strict: true,
+        },
         engineGroup: "air_quality",
         model: "TruckFleet",
         metadataMappings: {
@@ -233,8 +246,10 @@ describe("ModelsController:groups", () => {
       engineGroup: "air_quality",
     });
     expect(listGroups.result).toMatchObject({
-      total: 2,
+      total: 4,
       models: [
+        { _id: "model-group-AssetRestricted" },
+        { _id: "model-group-DeviceRestricted" },
         { _id: "model-group-Parking" },
         { _id: "model-group-TruckFleet" },
       ],
@@ -257,6 +272,14 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
+        affinity: {
+          type: ["assets", "devices"],
+          models: {
+            assets: ["truck"],
+            devices: [],
+          },
+          strict: true,
+        },
         engineGroup: "air_quality",
         model: "TruckFleet",
         metadataMappings: {
@@ -327,6 +350,14 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
+        affinity: {
+          type: ["assets", "devices"],
+          models: {
+            assets: [],
+            devices: [],
+          },
+          strict: false,
+        },
         engineGroup: "air_quality",
         model: "Building",
         metadataMappings: {
@@ -362,6 +393,14 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
+        affinity: {
+          type: ["assets", "devices"],
+          models: {
+            assets: [],
+            devices: [],
+          },
+          strict: false,
+        },
         engineGroup: "commons",
         model: "flatgroupnape",
         metadataMappings: { size: { type: "integer" } },
@@ -379,6 +418,14 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
+        affinity: {
+          type: ["assets", "devices"],
+          models: {
+            assets: ["truck"],
+            devices: [],
+          },
+          strict: true,
+        },
         engineGroup: "air_quality",
         model: "TruckFleet",
         metadataMappings: {
@@ -404,6 +451,14 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
+        affinity: {
+          type: ["assets", "devices"],
+          models: {
+            assets: ["truck"],
+            devices: [],
+          },
+          strict: true,
+        },
         engineGroup: "air_quality",
         model: "BadModel",
         metadataMappings: {
@@ -428,6 +483,82 @@ describe("ModelsController:groups", () => {
     });
     await expect(badMappingRequest).rejects.toThrow(
       "New group mappings are causing conflicts",
+    );
+  });
+  it("Should throw if affinity isn't valid", async () => {
+    const noTypeRequest = sdk.query<ApiModelWriteGroupRequest>({
+      controller: "device-manager/models",
+      action: "writeGroup",
+      body: {
+        affinity: {
+          type: [],
+          models: {
+            assets: ["truck"],
+            devices: [],
+          },
+          strict: true,
+        },
+        engineGroup: "air_quality",
+        model: "BadType",
+        metadataMappings: {
+          size: { type: "integer" },
+        },
+        metadataDetails: {
+          size: {
+            locales: {
+              en: {
+                friendlyName: "Truck fleet size",
+                description:
+                  "The word representing the size of trucks in the fleet",
+              },
+              fr: {
+                friendlyName: "Taille de la flotte",
+                description: "Le nombre en lettre de camions dans la flotte",
+              },
+            },
+          },
+        },
+      },
+    });
+    await expect(noTypeRequest).rejects.toThrow(
+      'The group type must be an array containing "assets" and/or "devices"',
+    );
+
+    const noModels = sdk.query<ApiModelWriteGroupRequest>({
+      controller: "device-manager/models",
+      action: "writeGroup",
+      body: {
+        affinity: {
+          type: ["assets"],
+          models: {
+            devices: [],
+          },
+          strict: true,
+        },
+        engineGroup: "air_quality",
+        model: "BadModels",
+        metadataMappings: {
+          size: { type: "integer" },
+        },
+        metadataDetails: {
+          size: {
+            locales: {
+              en: {
+                friendlyName: "Truck fleet size",
+                description:
+                  "The word representing the size of trucks in the fleet",
+              },
+              fr: {
+                friendlyName: "Taille de la flotte",
+                description: "Le nombre en lettre de camions dans la flotte",
+              },
+            },
+          },
+        },
+      },
+    });
+    await expect(noModels).rejects.toThrow(
+      "The group affinity must contain an array for every present type",
     );
   });
 });

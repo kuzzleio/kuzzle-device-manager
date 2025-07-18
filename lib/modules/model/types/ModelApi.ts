@@ -3,6 +3,7 @@ import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupAffinity,
   GroupModelContent,
   LocaleDetails,
   MeasureModelContent,
@@ -78,6 +79,7 @@ export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
   action: "writeGroup";
 
   body: {
+    affinity: GroupAffinity;
     engineGroup: string;
     model: string;
     metadataDetails?: MetadataDetails;
