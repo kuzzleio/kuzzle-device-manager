@@ -1,3 +1,15 @@
+## [3.0.0-next.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.3...v3.0.0-next.4) (2025-07-18)
+
+
+### Features
+
+* **groups:** rework asset groups into broader groups ([#424](https://github.com/kuzzleio/kuzzle-device-manager/issues/424)) ([6cfcede](https://github.com/kuzzleio/kuzzle-device-manager/commit/6cfcede72a2d2ca18c88b7a275e1b5f23de26a0c))
+
+
+### Bug Fixes
+
+* restore next version releasing ([9bebc53](https://github.com/kuzzleio/kuzzle-device-manager/commit/9bebc53dd2e539104d7eb4e89e42f0659bd81212))
+
 ## [3.0.0-next.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.2...v3.0.0-next.3) (2025-07-17)
 
 
