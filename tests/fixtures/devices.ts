@@ -112,6 +112,7 @@ export const deviceEmptyTemp: DeviceContent = {
   engineId: "engine-ayse",
   assetId: null,
   lastMeasuredAt: null,
+  groups: [],
 };
 export const deviceEmptyTempId = `${deviceEmptyTemp.model}-${deviceEmptyTemp.reference}`;
 
