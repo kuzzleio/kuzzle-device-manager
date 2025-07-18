@@ -1,4 +1,10 @@
-import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
+import {
+  JSONObject,
+  KDocument,
+  KHit,
+  SearchResult,
+  UpdateByQueryResponse,
+} from "kuzzle-sdk";
 
 import { MeasureContent, Measurement } from "../../../modules/measure";
 import {
@@ -22,12 +28,6 @@ interface AssetsControllerRequest {
   controller: AssetsControllerName;
 
   engineId: string;
-
-  /**
-   * ? Request parameter used by SoftTenant module
-   * ! Not used directly in this plugin
-   */
-  softTenantId?: string | string[] | null;
 }
 
 export interface ApiAssetGetRequest extends AssetsControllerRequest {
@@ -257,3 +257,8 @@ export type ApiAssetMGetLastMeasuredAtRequest =
   ApiDigitalTwinMGetLastMeasuredAtRequest<AssetsControllerName>;
 export type ApiAssetMGetLastMeasuredAtResult =
   ApiDigitalTwinMGetLastMeasuredAtResult;
+
+export type ApiAssetUpdateModelLocales = {
+  engineIndex: string;
+  result: UpdateByQueryResponse<AssetContent>;
+};

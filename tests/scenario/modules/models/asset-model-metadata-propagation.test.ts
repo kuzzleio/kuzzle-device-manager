@@ -7,6 +7,7 @@ import {
 } from "../../../../lib/modules/asset";
 import {
   ApiModelDeleteAssetRequest,
+  ApiModelUpdateAssetRequest,
   ApiModelWriteAssetRequest,
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
@@ -357,5 +358,73 @@ describe("Asset model metadata propagation", () => {
     });
 
     expect(asset6).not.toHaveProperty("result._source.metadata.tareWeight");
+  });
+
+  it("should not remove metadata from linked assets if no metadata is provided for the update", async () => {
+    await sdk.query<ApiModelWriteAssetRequest>({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroup: "commons",
+        model: "Pallet",
+        metadataMappings: {
+          depth: { type: "integer" },
+          width: { type: "integer" },
+        },
+        defaultValues: {
+          depth: 80,
+          width: 120,
+        },
+      },
+    });
+
+    await sdk.query<ApiAssetCreateRequest>({
+      controller: "device-manager/assets",
+      action: "create",
+      engineId: "engine-ayse",
+      body: {
+        model: "Pallet",
+        reference: "unlinked7",
+        metadata: {
+          depth: 82,
+          width: 122,
+        },
+      },
+    });
+
+    await sdk.query<ApiModelUpdateAssetRequest>({
+      controller: "device-manager/models",
+      action: "updateAsset",
+      engineGroup: "commons",
+      model: "Pallet",
+      body: {
+        locales: {
+          en: {
+            friendlyName: "Depth",
+            description: "Depth of the pallet",
+          },
+        },
+      },
+    });
+
+    const asset7 = await sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
+      controller: "device-manager/assets",
+      action: "get",
+      engineId: "engine-ayse",
+      _id: "Pallet-unlinked7",
+    });
+
+    expect(asset7).toMatchObject<
+      PartialDeep<ResponsePayload<ApiAssetGetResult>>
+    >({
+      result: {
+        _source: {
+          metadata: {
+            depth: 82,
+            width: 122,
+          },
+        },
+      },
+    });
   });
 });

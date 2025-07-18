@@ -1,15 +1,12 @@
 import { CollectionMappings } from "kuzzle";
 
-export const assetGroupsMappings: CollectionMappings = {
+export const groupsMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {
-    children: {
-      fields: {
-        text: {
-          type: "text",
-        },
+    metadata: {
+      properties: {
+        // populated with group models
       },
-      type: "keyword",
     },
     name: {
       fields: {
@@ -19,7 +16,7 @@ export const assetGroupsMappings: CollectionMappings = {
       },
       type: "keyword",
     },
-    parent: {
+    path: {
       fields: {
         text: {
           type: "text",
@@ -27,7 +24,7 @@ export const assetGroupsMappings: CollectionMappings = {
       },
       type: "keyword",
     },
-    type: {
+    model: {
       fields: {
         text: {
           type: "text",

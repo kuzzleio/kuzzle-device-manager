@@ -32,16 +32,12 @@ export const measuresMappings = {
         },
         groups: {
           properties: {
-            id: {
+            path: {
               type: "keyword",
               fields: { text: { type: "text" } },
             },
             date: { type: "date" },
           },
-        },
-        softTenant: {
-          type: "keyword",
-          fields: { text: { type: "text" } },
         },
       },
     },

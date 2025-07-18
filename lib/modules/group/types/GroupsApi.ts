@@ -5,45 +5,43 @@ import {
   SearchResult,
   mUpdateResponse,
 } from "kuzzle-sdk";
-import { AssetsGroupsBody, AssetsGroupContent } from "./AssetGroupContent";
+import { GroupsBody, GroupContent } from "./GroupContent";
 
 // Remove "lastUpdate" property for request
-type AssetsGroupsRequest = Omit<AssetsGroupsBody, "lastUpdate">;
-// Make "parent" property to optional for request
-export type AssetsGroupsBodyRequest = Partial<AssetsGroupsRequest> &
-  Omit<AssetsGroupsRequest, "parent" | "type">;
+type GroupsRequest = Omit<GroupsBody, "lastUpdate">;
+export type GroupsBodyRequest = Partial<GroupsRequest>;
 
 export type UpdateAssetLinkResponse = mUpdateResponse & {
-  assetsGroups: KDocument<AssetsGroupContent>;
+  group: KDocument<GroupContent>;
 };
 
 interface GroupControllerRequest {
-  controller: "device-manager/assetsGroup";
+  controller: "device-manager/groups";
   engineId: string;
 }
 
 export interface ApiGroupCreateRequest extends GroupControllerRequest {
   action: "create";
   _id?: string;
-  body: Omit<AssetsGroupsBodyRequest, "children">;
+  body: GroupsBodyRequest;
 }
 
-export type ApiGroupCreateResult = KDocument<AssetsGroupContent>;
+export type ApiGroupCreateResult = KDocument<GroupContent>;
 
 export interface ApiGroupGetRequest extends GroupControllerRequest {
   action: "get";
   _id: string;
 }
 
-export type ApiGroupGetResult = KDocument<AssetsGroupContent>;
+export type ApiGroupGetResult = KDocument<GroupContent>;
 
 export interface ApiGroupUpdateRequest extends GroupControllerRequest {
   action: "update";
   _id: string;
-  body: AssetsGroupsBodyRequest;
+  body: GroupsBodyRequest;
 }
 
-export type ApiGroupUpdateResult = KDocument<AssetsGroupContent>;
+export type ApiGroupUpdateResult = KDocument<GroupContent>;
 
 export interface ApiGroupDeleteRequest extends GroupControllerRequest {
   action: "delete";
@@ -60,12 +58,12 @@ export interface ApiGroupSearchRequest extends GroupControllerRequest {
   lang?: "koncorde" | "elasticsearch";
   body: JSONObject;
 }
-export type ApiGroupSearchResult = SearchResult<KHit<AssetsGroupContent>>;
+export type ApiGroupSearchResult = SearchResult<KHit<GroupContent>>;
 
 export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
   action: "addAsset";
-  _id: string;
   body: {
+    path: string;
     assetIds: string[];
   };
 }
@@ -73,8 +71,8 @@ export type ApiGroupAddAssetsResult = UpdateAssetLinkResponse;
 
 export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
   action: "removeAsset";
-  _id: string;
   body: {
+    path: string;
     assetIds: string[];
   };
 }
