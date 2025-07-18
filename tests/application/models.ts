@@ -1,13 +1,7 @@
 import { DeviceManagerPlugin } from "../../index";
 import { Container, Warehouse, MagicHouse, Room, StreetLamp } from "./assets";
-<<<<<<< Updated upstream
 import { Parking } from "./groups/Parking";
 import { DummyTemp, DummyTempPosition, EmptyTemp } from "./devices";
-=======
-import { DummyTemp, DummyTempPosition } from "./devices";
-import { AssetRestricted, DeviceRestricted, Parking } from "./groups";
-
->>>>>>> Stashed changes
 import {
   Acceleration,
   Brightness,
@@ -21,6 +15,7 @@ import {
   movementMeasureModel,
   humidityMeasureModel,
 } from "./measures";
+import { AssetRestricted, DeviceRestricted } from "./groups";
 
 const measuresModels = [
   Acceleration,
