@@ -29,6 +29,10 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        locales: {
+          dynamic: "false",
+          properties: {},
+        },
       },
     },
 
@@ -64,6 +68,10 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        locales: {
+          dynamic: "false",
+          properties: {},
+        },
       },
     },
 
@@ -94,6 +102,35 @@ export const modelsMappings: CollectionMappings = {
             type: { type: "keyword" },
             name: { type: "keyword" },
           },
+        },
+      },
+    },
+
+    /**
+     * Group model
+     */
+    group: {
+      properties: {
+        model: { type: "keyword" },
+        metadataMappings: {
+          dynamic: "false",
+          properties: {},
+        },
+        defaultMetadata: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataDetails: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataGroups: {
+          dynamic: "false",
+          properties: {},
+        },
+        tooltipModels: {
+          dynamic: "false",
+          properties: {},
         },
       },
     },

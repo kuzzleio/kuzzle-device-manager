@@ -35,8 +35,9 @@ export const RoleDevicesAdmin: KuzzleRole = {
     controllers: {
       "device-manager/devices": {
         actions: {
+          attachEngine: true,
           create: true,
-          delete: true,
+          detachEngine: true,
           get: true,
           linkAsset: true,
           search: true,

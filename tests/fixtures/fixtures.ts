@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Container, Warehouse } from "../application/assets";
 
-import {
-  dummyTempDeviceMeasures,
-  dummyTempPositionDeviceMeasures,
-} from "../application/decoders";
-
-import { assetGroupFixtures } from "./assetsGroups";
+import { groupFixtures } from "./groups";
 import { ayseAssets } from "./assets";
 import { ayseDevices, internalDevices } from "./devices";
+import { dummyTempDeviceMeasures } from "../application/decoders/DummyTempDecoder";
+import { dummyTempPositionDeviceMeasures } from "../application/decoders/DummyTempPositionDecoder";
 
 const deviceDetached1 = {
   model: "DummyTemp",
@@ -216,6 +213,6 @@ export default {
   "engine-ayse": {
     devices: ayseDevices,
     assets: ayseAssets,
-    ...assetGroupFixtures,
+    ...groupFixtures,
   },
 };

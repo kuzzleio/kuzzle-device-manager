@@ -26,10 +26,6 @@ function computeTemperatureIntMeasures(
           metadata: measure.asset?.metadata ?? {},
           model: measure.asset?.model ?? "",
           reference: measure.asset?.reference ? asset.reference : "",
-          softTenant:
-            measure.asset?.softTenant && measure.asset.softTenant.length
-              ? measure.asset.softTenant
-              : [],
         },
         measuredAt: measure.measuredAt,
         origin: {
@@ -62,7 +58,6 @@ function addTemperatureWeatherMeasure(
       metadata: asset ? asset.metadata : {},
       model: asset ? asset.model : "",
       reference: asset ? asset.reference : "",
-      softTenant: asset ? asset.softTenant : [],
     },
     origin: {
       type: "computed",

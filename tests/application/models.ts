@@ -1,5 +1,6 @@
 import { DeviceManagerPlugin } from "../../index";
 import { Container, Warehouse, MagicHouse, Room, StreetLamp } from "./assets";
+import { Parking } from "./groups/Parking";
 import { DummyTemp, DummyTempPosition, EmptyTemp } from "./devices";
 import {
   Acceleration,
@@ -39,6 +40,9 @@ const assetsModels = {
   air_quality: [Room],
   public_lighting: [StreetLamp],
 };
+const groupModels = {
+  air_quality: [Parking],
+};
 
 export function registerModels(deviceManager: DeviceManagerPlugin) {
   for (const model of measuresModels) {
@@ -52,6 +56,15 @@ export function registerModels(deviceManager: DeviceManagerPlugin) {
   for (const [engine, models] of Object.entries(assetsModels)) {
     for (const model of models) {
       deviceManager.models.registerAsset(
+        engine,
+        model.modelName,
+        model.definition,
+      );
+    }
+  }
+  for (const [engine, models] of Object.entries(groupModels)) {
+    for (const model of models) {
+      deviceManager.models.registerGroup(
         engine,
         model.modelName,
         model.definition,

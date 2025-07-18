@@ -92,7 +92,6 @@ export class DeviceService extends DigitalTwinService {
         await this.attachEngine(engineId, deviceId, request);
       },
     );
-
     onAsk<AskDeviceRefreshModel>(
       "ask:device-manager:device:refresh-model",
       this.refreshModel.bind(this),
@@ -107,7 +106,7 @@ export class DeviceService extends DigitalTwinService {
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     let device: KDocument<DeviceContent> = {
-      _id: DeviceSerializer.id(model, reference),
+      _id: deviceId,
       _source: {
         assetId: null,
         engineId: null,
@@ -158,7 +157,7 @@ export class DeviceService extends DigitalTwinService {
     });
 
     if (engineId && engineId !== this.config.adminIndex) {
-      device = await this.attachEngine(engineId, device._id, request);
+      device = await this._attachEngine(engineId, device._id, request);
 
       refreshableCollections.push({
         collection: InternalCollection.DEVICES,
@@ -474,17 +473,23 @@ export class DeviceService extends DigitalTwinService {
 
     device._source.engineId = engineId;
 
-    const [updatedDevice] = await Promise.all([
-      this.updateDocument<DeviceContent>(request, device, {
-        collection: InternalCollection.DEVICES,
-        engineId: this.config.adminIndex,
-      }),
+    await this.updateDocument<DeviceContent>(request, device, {
+      collection: InternalCollection.DEVICES,
+      engineId: this.config.adminIndex,
+    });
 
-      this.createDocument<DeviceContent>(request, device, {
+    // Make sure the device is cleaned when attached to tenant
+    device._source.lastMeasuredAt = null;
+    device._source.measures = {};
+
+    const updatedDevice = await this.createDocument<DeviceContent>(
+      request,
+      device,
+      {
         collection: InternalCollection.DEVICES,
         engineId,
-      }),
-    ]);
+      },
+    );
 
     if (request.getRefresh() === "wait_for") {
       await Promise.all([

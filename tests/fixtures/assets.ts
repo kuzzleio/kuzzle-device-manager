@@ -21,7 +21,6 @@ export const assetAyseWarehouseLinked: AssetContent = {
   ],
   measures: {},
   groups: [],
-  softTenant: [],
   lastMeasuredAt: null,
 };
 export const assetAyseWarehouseLinkedId = `${assetAyseWarehouseLinked.model}-${assetAyseWarehouseLinked.reference}`;
@@ -52,7 +51,6 @@ export const assetAyseLinked1: AssetContent = {
   ],
   measures: {},
   groups: [],
-  softTenant: [],
   lastMeasuredAt: null,
 };
 export const assetAyseLinked1Id = `${assetAyseLinked1.model}-${assetAyseLinked1.reference}`;
@@ -84,7 +82,6 @@ export const assetAyseLinked2: AssetContent = {
   ],
   measures: {},
   groups: [],
-  softTenant: [],
   lastMeasuredAt: null,
 };
 export const assetAyseLinked2Id = `${assetAyseLinked2.model}-${assetAyseLinked2.reference}`;
@@ -100,7 +97,6 @@ export const assetAyseUnlinked: AssetContent = {
   linkedDevices: [],
   measures: {},
   groups: [],
-  softTenant: [],
   lastMeasuredAt: null,
 };
 export const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.reference}`;
@@ -117,15 +113,10 @@ export const assetAyseGrouped: AssetContent = {
   measures: {},
   groups: [
     {
-      id: "test-parent-asset",
-      date: Date.now(),
-    },
-    {
-      id: "test-children-asset",
+      path: "test-parent-asset.test-children-asset",
       date: Date.now(),
     },
   ],
-  softTenant: [],
   lastMeasuredAt: null,
 };
 export const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.reference}`;
@@ -142,15 +133,10 @@ export const assetAyseGrouped2: AssetContent = {
   measures: {},
   groups: [
     {
-      id: "test-parent-asset",
-      date: Date.now(),
-    },
-    {
-      id: "test-children-asset",
+      path: "test-parent-asset",
       date: Date.now(),
     },
   ],
-  softTenant: [],
   lastMeasuredAt: null,
 };
 export const assetAyseGroupedId2 = `${assetAyseGrouped2.model}-${assetAyseGrouped2.reference}`;
@@ -163,7 +149,6 @@ export const assetAyseDebug1: AssetContent = {
   linkedDevices: [],
   measures: {},
   groups: [],
-  softTenant: [],
   lastMeasuredAt: null,
 };
 

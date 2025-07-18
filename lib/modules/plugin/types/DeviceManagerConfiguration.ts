@@ -7,7 +7,6 @@ export type DeviceManagerConfiguration = {
    * Useful to start the plugin even if the mappings are not up to date.
    */
   ignoreStartupErrors: boolean;
-
   engine: {
     /**
      * Auto update collection mappings with models
@@ -57,8 +56,9 @@ export type DeviceManagerConfiguration = {
       mappings: CollectionMappings;
       settings?: JSONObject;
     };
-    assetGroups: {
+    groups: {
       name: string;
+      mappings: CollectionMappings;
       settings?: JSONObject;
     };
     assetHistory: {

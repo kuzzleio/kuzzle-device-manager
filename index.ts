@@ -11,3 +11,5 @@ export * from "./lib/modules/decoder/exports";
 export * from "./lib/modules/shared/exports";
 
 export * from "./lib/modules/model/exports";
+
+export * from "./lib/modules/group/exports";

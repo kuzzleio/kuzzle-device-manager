@@ -1,13 +1,13 @@
 import { KuzzleRole } from "../../shared/types/KuzzleRole";
 
 /**
- * This role allows to manage assets and their models.
+ * This role allows to manage groups and their models.
  *
  * It's a tenant role.
  *
  * @example
  *
-    "device-manager/assets": {
+    "device-manager/groups": {
       actions: {
         "*": true,
       },
@@ -22,13 +22,19 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
       },
     },
  */
-export const RoleAssetsGroupsAdmin: KuzzleRole = {
-  name: "assetsGroup.admin",
+export const RoleGroupsAdmin: KuzzleRole = {
+  name: "group.admin",
   definition: {
     controllers: {
-      "device-manager/assetsGroup": {
+      "device-manager/groups": {
         actions: {
           "*": true,
+        },
+      },
+      "device-manager/models": {
+        actions: {
+          listGroups: true,
+          getGroup: true,
         },
       },
     },

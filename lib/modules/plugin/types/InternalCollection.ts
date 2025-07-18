@@ -1,7 +1,7 @@
 export enum InternalCollection {
   ASSETS = "assets",
   ASSETS_HISTORY = "assets-history",
-  ASSETS_GROUPS = "assets-groups",
+  GROUPS = "groups",
   DEVICES = "devices",
   MEASURES = "measures",
   MODELS = "models",
