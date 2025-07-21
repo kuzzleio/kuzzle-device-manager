@@ -95,9 +95,9 @@ export class GroupsService extends BaseService {
       InternalCollection.ASSETS,
       {
         query: {
-          regexp: {
+          prefix: {
             "groups.path": {
-              value: `${group._source.path}.*`,
+              value: group._source.path,
             },
           },
         },
@@ -130,9 +130,9 @@ export class GroupsService extends BaseService {
         InternalCollection.GROUPS,
         {
           query: {
-            regexp: {
+            prefix: {
               path: {
-                value: `.*${_id}.*`,
+                value: _id,
               },
             },
           },
@@ -169,6 +169,60 @@ export class GroupsService extends BaseService {
       engineId,
     });
   }
+
+  async listItems(
+    engineId: string,
+    _id: string,
+    includeChildren: boolean,
+    options: { from?: number; size?: number },
+    request: KuzzleRequest,
+  ) {
+    const group = await this.get(engineId, _id, request);
+    if (!group) {
+      throw new BadRequestError(`The group with _id "${_id}" does not exist`);
+    }
+    /*     let model: GroupModelContent;
+    if (group._source.model) {
+      model = await ask<AskModelGroupGet>(
+        "ask:device-manager:model:group:get",
+        { model: group._source.model },
+      );
+    } */
+    const body = includeChildren
+      ? {
+          query: {
+            prefix: {
+              "groups.path": {
+                value: group._source.path,
+              },
+            },
+          },
+        }
+      : {
+          query: {
+            term: {
+              "groups.path": group._source.path,
+            },
+          },
+        };
+    const { hits: assetHits } = await this.sdk.document.search<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      body,
+      options,
+    );
+    const { hits: deviceHits } = await this.sdk.document.search<DeviceContent>(
+      engineId,
+      InternalCollection.DEVICES,
+      body,
+      options,
+    );
+    return {
+      assets: assetHits,
+      devices: deviceHits,
+    };
+  }
+
   async addAsset(
     engineId: string,
     path: string,

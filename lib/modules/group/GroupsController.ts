@@ -18,6 +18,7 @@ import {
   ApiGroupCreateResult,
   ApiGroupDeleteResult,
   ApiGroupGetResult,
+  ApiGroupListItemsResult,
   ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
   ApiGroupRemoveDeviceRequest,
@@ -30,6 +31,7 @@ import { GroupContent } from "./types/GroupContent";
 import { AssetContent } from "../asset";
 import { GroupsService } from "./GroupsService";
 import { AskModelGroupGet } from "../model";
+import { DeviceContent } from "../device";
 
 export class GroupsController {
   definition: ControllerDefinition;
@@ -93,7 +95,7 @@ export class GroupsController {
           handler: this.removeAsset.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id/removeAsset",
+              path: "device-manager/:engineId/groups/removeAsset",
               verb: "post",
             },
           ],
@@ -102,7 +104,7 @@ export class GroupsController {
           handler: this.addDevice.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id/addDevice",
+              path: "device-manager/:engineId/groups/addDevice",
               verb: "post",
             },
           ],
@@ -111,8 +113,17 @@ export class GroupsController {
           handler: this.removeDevice.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id/removeDevice",
+              path: "device-manager/:engineId/groups/removeDevice",
               verb: "post",
+            },
+          ],
+        },
+        listItems: {
+          handler: this.listItems.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/:_id/listItems",
+              verb: "get",
             },
           ],
         },
@@ -322,34 +333,65 @@ export class GroupsController {
         InternalCollection.ASSETS,
         {
           query: {
-            regexp: {
+            prefix: {
               "groups.path": {
-                value: `${groupToUpdate._source.path}.*`,
+                value: groupToUpdate._source.path,
               },
             },
           },
         },
         { lang: "koncorde" },
       );
-
+      const { hits: devices } = await this.sdk.document.search<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        {
+          query: {
+            prefix: {
+              "groups.path": {
+                value: groupToUpdate._source.path,
+              },
+            },
+          },
+        },
+        { lang: "koncorde" },
+      );
       await this.sdk.document.mUpdate(
         engineId,
         InternalCollection.ASSETS,
         assets.map((asset) => ({
           _id: asset._id,
           body: {
-            groups: asset._source.groups
-              .filter((grp) => grp.path !== groupToUpdate._source.path)
-              .map((grp) => {
-                if (grp.path.includes(groupToUpdate._source.path)) {
-                  grp.path = grp.path.replace(
-                    groupToUpdate._source.path,
-                    updatedGroup._source.path,
-                  );
-                  grp.date = Date.now();
-                }
-                return grp;
-              }),
+            groups: asset._source.groups.map((grp) => {
+              if (grp.path.includes(groupToUpdate._source.path)) {
+                grp.path = grp.path.replace(
+                  groupToUpdate._source.path,
+                  updatedGroup._source.path,
+                );
+                grp.date = Date.now();
+              }
+              return grp;
+            }),
+          },
+        })),
+        { strict: true },
+      );
+      await this.sdk.document.mUpdate(
+        engineId,
+        InternalCollection.DEVICES,
+        devices.map((device) => ({
+          _id: device._id,
+          body: {
+            groups: device._source.groups.map((grp) => {
+              if (grp.path.includes(groupToUpdate._source.path)) {
+                grp.path = grp.path.replace(
+                  groupToUpdate._source.path,
+                  updatedGroup._source.path,
+                );
+                grp.date = Date.now();
+              }
+              return grp;
+            }),
           },
         })),
         { strict: true },
@@ -362,9 +404,9 @@ export class GroupsController {
             query: {
               and: [
                 {
-                  regexp: {
+                  prefix: {
                     path: {
-                      value: `${groupToUpdate._source.path}.*`,
+                      value: groupToUpdate._source.path,
                     },
                   },
                 },
@@ -404,6 +446,21 @@ export class GroupsController {
     const engineId = request.getString("engineId");
     const searchParams = request.getSearchParams();
     return this.groupsService.search(engineId, searchParams, request);
+  }
+
+  async listItems(request: KuzzleRequest): Promise<ApiGroupListItemsResult> {
+    const engineId = request.getString("engineId");
+    const _id = request.getId();
+    const includeChildren = request.getBodyBoolean("includeChildren");
+    const searchParams = request.getSearchParams();
+    const { from, size } = searchParams;
+    return this.groupsService.listItems(
+      engineId,
+      _id,
+      includeChildren,
+      { from, size },
+      request,
+    );
   }
 
   async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {

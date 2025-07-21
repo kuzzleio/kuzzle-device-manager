@@ -6,6 +6,8 @@ import {
   mUpdateResponse,
 } from "kuzzle-sdk";
 import { GroupsBody, GroupContent } from "./GroupContent";
+import { DeviceContent } from "lib/modules/device";
+import { AssetContent } from "lib/modules/asset";
 
 // Remove "lastUpdate" property for request
 type GroupsRequest = Omit<GroupsBody, "lastUpdate">;
@@ -59,6 +61,17 @@ export interface ApiGroupSearchRequest extends GroupControllerRequest {
   body: JSONObject;
 }
 export type ApiGroupSearchResult = SearchResult<KHit<GroupContent>>;
+
+export interface ApiGroupListItemsRequest extends GroupControllerRequest {
+  action: "listItems";
+  from?: number;
+  size?: number;
+  body: { includeChildren?: boolean };
+}
+export type ApiGroupListItemsResult = {
+  assets: Array<KHit<AssetContent>>;
+  devices: Array<KHit<DeviceContent>>;
+};
 
 export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
   action: "addAsset";
