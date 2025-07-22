@@ -181,13 +181,6 @@ export class GroupsService extends BaseService {
     if (!group) {
       throw new BadRequestError(`The group with _id "${_id}" does not exist`);
     }
-    /*     let model: GroupModelContent;
-    if (group._source.model) {
-      model = await ask<AskModelGroupGet>(
-        "ask:device-manager:model:group:get",
-        { model: group._source.model },
-      );
-    } */
     const body = includeChildren
       ? {
           query: {
@@ -205,21 +198,23 @@ export class GroupsService extends BaseService {
             },
           },
         };
-    const { hits: assetHits } = await this.sdk.document.search<AssetContent>(
-      engineId,
-      InternalCollection.ASSETS,
-      body,
-      options,
-    );
-    const { hits: deviceHits } = await this.sdk.document.search<DeviceContent>(
-      engineId,
-      InternalCollection.DEVICES,
-      body,
-      options,
-    );
+    const { hits: assetHits, total: assetTotal } =
+      await this.sdk.document.search<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        body,
+        options,
+      );
+    const { hits: deviceHits, total: deviceTotal } =
+      await this.sdk.document.search<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        body,
+        options,
+      );
     return {
-      assets: assetHits,
-      devices: deviceHits,
+      assets: { hits: assetHits, total: assetTotal },
+      devices: { hits: deviceHits, total: deviceTotal },
     };
   }
 

@@ -28,6 +28,8 @@ import {
   ApiGroupAddDevicesResult,
   ApiGroupRemoveDeviceRequest,
   ApiGroupRemoveDeviceResult,
+  ApiGroupListItemsRequest,
+  ApiGroupListItemsResult,
 } from "../../../../lib/modules/group/types/GroupsApi";
 import { AssetContent } from "../../../../lib/modules/asset/exports";
 import { InternalCollection } from "../../../../lib/modules/plugin";
@@ -522,6 +524,7 @@ describe("GroupsController", () => {
       `Groups of model AssetRestricted can not contain assets of model MagicHouse`,
     );
   });
+
   it("can remove asset from group", async () => {
     const missingPathQuery: Omit<ApiGroupRemoveAssetsRequest, "body"> & {
       body: {
@@ -884,5 +887,65 @@ describe("GroupsController", () => {
     });
 
     expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
+  });
+
+  it("can list the items of a group", async () => {
+    const { result } = await sdk.query<
+      ApiGroupListItemsRequest,
+      ApiGroupListItemsResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "listItems",
+      _id: groupParentWithAssetId,
+      body: {},
+    });
+    expect(result.assets.hits).toHaveLength(1);
+    expect(result.assets.total).toBe(1);
+    expect(result.assets.hits[0]).toMatchObject({
+      _id: "Container-grouped2",
+      _source: {
+        groups: [{ path: groupParentWithAssetId }],
+      },
+    });
+    expect(result.devices.hits).toHaveLength(1);
+    expect(result.devices.total).toBe(1);
+    expect(result.devices.hits[0]).toMatchObject({
+      _id: "DummyTempPosition-linked2",
+      _source: {
+        groups: [{ path: groupParentWithAssetId }],
+      },
+    });
+    const { result: resWithChildren } = await sdk.query<
+      ApiGroupListItemsRequest,
+      ApiGroupListItemsResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "listItems",
+      _id: groupParentWithAssetId,
+      body: { includeChildren: true },
+    });
+    expect(resWithChildren.assets.hits).toHaveLength(2);
+    expect(resWithChildren.assets.total).toBe(2);
+
+    expect(resWithChildren.assets.hits[0]).toMatchObject({
+      _id: "Container-grouped",
+      _source: {
+        groups: [
+          { path: groupParentWithAssetId + "." + groupChildrenWithAssetId },
+        ],
+      },
+    });
+    expect(resWithChildren.devices.hits).toHaveLength(2);
+    expect(resWithChildren.devices.total).toBe(2);
+    expect(resWithChildren.devices.hits[1]).toMatchObject({
+      _id: "DummyTempPosition-warehouse",
+      _source: {
+        groups: [
+          { path: groupParentWithAssetId + "." + groupChildrenWithAssetId },
+        ],
+      },
+    });
   });
 });

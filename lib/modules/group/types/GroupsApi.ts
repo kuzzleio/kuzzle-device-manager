@@ -67,10 +67,11 @@ export interface ApiGroupListItemsRequest extends GroupControllerRequest {
   from?: number;
   size?: number;
   body: { includeChildren?: boolean };
+  _id: string;
 }
 export type ApiGroupListItemsResult = {
-  assets: Array<KHit<AssetContent>>;
-  devices: Array<KHit<DeviceContent>>;
+  assets: { hits: Array<KHit<AssetContent>>; total: number };
+  devices: { hits: Array<KHit<DeviceContent>>; total: number };
 };
 
 export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
