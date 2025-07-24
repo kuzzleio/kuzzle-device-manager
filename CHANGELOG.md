@@ -1,3 +1,17 @@
+## [3.0.0-next.5](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.4...v3.0.0-next.5) (2025-07-24)
+
+
+### Features
+
+* **group:** add endpoint to list items of a group ([813fe49](https://github.com/kuzzleio/kuzzle-device-manager/commit/813fe49d1cac0b87fbb2ad28483b60a113119428))
+* **groupModels:** add group affinity and allow groups to contain devices ([110217e](https://github.com/kuzzleio/kuzzle-device-manager/commit/110217eb1e7a1a4b8f0b35ec32045b6f0bdeed69))
+
+
+### Bug Fixes
+
+* **fixtures:** add missign groups property in device emptytemp ([bf313e1](https://github.com/kuzzleio/kuzzle-device-manager/commit/bf313e102929d52d26ca2f86262fb7f97e113208))
+* **test app:** fix imports ([b635f59](https://github.com/kuzzleio/kuzzle-device-manager/commit/b635f599d8f39af943fd8fb4949ac37a43a2c175))
+
 ## [3.0.0-next.4](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.3...v3.0.0-next.4) (2025-07-18)
 
 
