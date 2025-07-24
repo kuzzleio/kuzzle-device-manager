@@ -15,6 +15,7 @@ import {
   movementMeasureModel,
   humidityMeasureModel,
 } from "./measures";
+import { AssetRestricted, DeviceRestricted } from "./groups";
 
 const measuresModels = [
   Acceleration,
@@ -41,7 +42,7 @@ const assetsModels = {
   public_lighting: [StreetLamp],
 };
 const groupModels = {
-  air_quality: [Parking],
+  air_quality: [Parking, AssetRestricted, DeviceRestricted],
 };
 
 export function registerModels(deviceManager: DeviceManagerPlugin) {

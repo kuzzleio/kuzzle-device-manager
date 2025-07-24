@@ -112,6 +112,24 @@ export const modelsMappings: CollectionMappings = {
     group: {
       properties: {
         model: { type: "keyword" },
+        affinity: {
+          properties: {
+            type: {
+              type: "keyword",
+            },
+            models: {
+              properties: {
+                assets: {
+                  type: "keyword",
+                },
+                devices: {
+                  type: "keyword",
+                },
+              },
+            },
+            strict: { type: "boolean" },
+          },
+        },
         metadataMappings: {
           dynamic: "false",
           properties: {},

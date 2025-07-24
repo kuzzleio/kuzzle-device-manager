@@ -9,6 +9,7 @@ export const deviceDetached1: DeviceContent = {
   engineId: null,
   assetId: null,
   lastMeasuredAt: null,
+  groups: [],
 };
 export const deviceDetached1Id = `${deviceDetached1.model}-${deviceDetached1.reference}`;
 
@@ -21,6 +22,7 @@ export const deviceAyseLinked1 = {
   engineId: "engine-ayse",
   assetId: "Container-linked1",
   lastMeasuredAt: null,
+  groups: [],
 };
 export const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinked1.reference}`;
 
@@ -33,6 +35,12 @@ export const deviceAyseLinked2: DeviceContent = {
   engineId: "engine-ayse",
   assetId: "Container-linked2",
   lastMeasuredAt: null,
+  groups: [
+    {
+      path: "test-parent-asset",
+      date: Date.now(),
+    },
+  ],
 };
 export const deviceAyseLinked2Id = `${deviceAyseLinked2.model}-${deviceAyseLinked2.reference}`;
 
@@ -45,6 +53,7 @@ export const deviceAyseUnlinked1: DeviceContent = {
   engineId: "engine-ayse",
   assetId: null,
   lastMeasuredAt: null,
+  groups: [],
 };
 export const deviceAyseUnlinked1Id = `${deviceAyseUnlinked1.model}-${deviceAyseUnlinked1.reference}`;
 
@@ -57,6 +66,7 @@ export const deviceAyseUnlinked2: DeviceContent = {
   engineId: "engine-ayse",
   assetId: null,
   lastMeasuredAt: null,
+  groups: [],
 };
 export const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
 
@@ -69,6 +79,7 @@ export const deviceAyseUnlinked3: DeviceContent = {
   engineId: "engine-ayse",
   assetId: null,
   lastMeasuredAt: null,
+  groups: [],
 };
 export const deviceAyseUnlinked3Id = `${deviceAyseUnlinked3.model}-${deviceAyseUnlinked3.reference}`;
 
@@ -81,6 +92,12 @@ export const deviceAyseWarehouse: DeviceContent = {
   engineId: "engine-ayse",
   assetId: "Warehouse-linked",
   lastMeasuredAt: null,
+  groups: [
+    {
+      path: "test-parent-asset.test-children-asset",
+      date: Date.now(),
+    },
+  ],
 };
 export const deviceAyseWarehouseId = `${deviceAyseWarehouse.model}-${deviceAyseWarehouse.reference}`;
 
@@ -95,6 +112,7 @@ export const deviceEmptyTemp: DeviceContent = {
   engineId: "engine-ayse",
   assetId: null,
   lastMeasuredAt: null,
+  groups: [],
 };
 export const deviceEmptyTempId = `${deviceEmptyTemp.model}-${deviceEmptyTemp.reference}`;
 

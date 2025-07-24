@@ -29,6 +29,23 @@ export interface MetadataMappings {
   [key: string]: MetadataProperty | MetadataObject;
 }
 
+export interface GroupAffinity {
+  /**
+   * Type of elements accepted in the group
+   */
+  type: Array<"assets" | "devices">;
+  /**
+   * Models accepted in the group
+   */
+  models: {
+    assets?: string[];
+    devices?: string[];
+  };
+  /**
+   * Weather the affinities are a strict restriction or not
+   */
+  strict: boolean;
+}
 export interface LocaleDetails {
   friendlyName: string;
   description: string;
@@ -405,6 +422,10 @@ export interface GroupModelContent extends KDocumentContent {
      */
     model: string;
 
+    /**
+     * Group types and model affinities
+     */
+    affinity: GroupAffinity;
     /**
      * Metadata mappings.
      *

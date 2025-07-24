@@ -8,6 +8,7 @@ import {
   groupTestChildrenBody1,
   groupChildrenWithAssetId,
   groupParentWithAssetId,
+  groupTestParentId2,
 } from "../../../fixtures/groups";
 
 // Lib
@@ -23,11 +24,23 @@ import {
   ApiGroupAddAssetsResult,
   ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
+  ApiGroupAddDeviceRequest,
+  ApiGroupAddDevicesResult,
+  ApiGroupRemoveDeviceRequest,
+  ApiGroupRemoveDeviceResult,
+  ApiGroupListItemsRequest,
+  ApiGroupListItemsResult,
 } from "../../../../lib/modules/group/types/GroupsApi";
 import { AssetContent } from "../../../../lib/modules/asset/exports";
 import { InternalCollection } from "../../../../lib/modules/plugin";
 import { setupHooks } from "../../../helpers";
 import { GroupContent } from "lib/modules/group/types/GroupContent";
+import {
+  assetAyseDebug1Id,
+  deviceAyseLinked2Id,
+  deviceAyseWarehouseId,
+} from "../../../fixtures";
+import { DeviceContent } from "lib/modules/device";
 
 jest.setTimeout(10000);
 
@@ -347,7 +360,7 @@ describe("GroupsController", () => {
       },
     };
     await expect(sdk.query(badIdQuery)).rejects.toThrow(
-      'The group with path "bad-id" does not exist',
+      'Document "bad-id" not found in "engine-ayse":"groups".',
     );
 
     const { result } = await sdk.query<
@@ -484,9 +497,35 @@ describe("GroupsController", () => {
     expect(assets3[0]._source.groups[0].date).toBeGreaterThan(now);
 
     expect(result3.group._source.lastUpdate).toBeGreaterThan(now);
+
+    const restrictedGroup: ApiGroupAddAssetsRequest = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addAsset",
+      body: {
+        path: groupTestParentId2,
+        assetIds: ["Container-linked1"],
+      },
+    };
+    await expect(sdk.query(restrictedGroup)).rejects.toThrow(
+      `The group ${groupTestParentId2} of model DeviceRestricted can not contain assets`,
+    );
+
+    const wrongAssetModel: ApiGroupAddAssetsRequest = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addAsset",
+      body: {
+        path: groupTestId,
+        assetIds: [assetAyseDebug1Id],
+      },
+    };
+    await expect(sdk.query(wrongAssetModel)).rejects.toThrow(
+      `Groups of model AssetRestricted can not contain assets of model MagicHouse`,
+    );
   });
 
-  it("can remove asset to group", async () => {
+  it("can remove asset from group", async () => {
     const missingPathQuery: Omit<ApiGroupRemoveAssetsRequest, "body"> & {
       body: {
         assetIds: string[];
@@ -572,5 +611,341 @@ describe("GroupsController", () => {
     });
 
     expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
+  });
+
+  it("can add device to a group", async () => {
+    const missingBodyQuery: Omit<ApiGroupAddDeviceRequest, "body"> = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addDevice",
+    };
+    await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
+      /^The request must specify a body.$/,
+    );
+
+    const badIdQuery: ApiGroupAddDeviceRequest = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addDevice",
+      body: {
+        path: "bad-id",
+        deviceIds: ["DummyTemp-linked1"],
+      },
+    };
+    await expect(sdk.query(badIdQuery)).rejects.toThrow(
+      'Document "bad-id" not found in "engine-ayse":"groups".',
+    );
+
+    const { result } = await sdk.query<
+      ApiGroupAddDeviceRequest,
+      ApiGroupAddDevicesResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addDevice",
+      body: {
+        path: groupParentWithAssetId,
+        deviceIds: ["DummyTemp-unlinked1", "DummyTemp-unlinked2"],
+      },
+    });
+
+    expect(result.errors).toHaveLength(0);
+
+    expect(result.successes).toMatchObject([
+      {
+        _id: "DummyTemp-unlinked1",
+        _source: {
+          groups: [
+            {
+              path: groupParentWithAssetId,
+            },
+          ],
+        },
+      },
+      {
+        _id: "DummyTemp-unlinked2",
+        _source: {
+          groups: [
+            {
+              path: groupParentWithAssetId,
+            },
+          ],
+        },
+      },
+    ]);
+
+    // ? Dates should be separately because is not really predictable
+    const devices = result.successes as KDocument<DeviceContent>[];
+    expect(devices[0]._source.groups[0].date).toBeGreaterThan(now);
+    expect(devices[1]._source.groups[0].date).toBeGreaterThan(now);
+
+    expect(result.group._source.lastUpdate).toBeGreaterThan(now);
+
+    // Add devices in an second group
+    const { result: result2 } = await sdk.query<
+      ApiGroupAddDeviceRequest,
+      ApiGroupAddDevicesResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addDevice",
+      body: {
+        path: groupTestParentId1,
+        deviceIds: ["DummyTemp-unlinked1", "DummyTemp-unlinked2"],
+      },
+    });
+
+    expect(result2.errors).toHaveLength(0);
+
+    expect(result2.successes).toMatchObject([
+      {
+        _id: "DummyTemp-unlinked1",
+        _source: {
+          groups: [
+            {
+              path: groupParentWithAssetId,
+            },
+            {
+              path: groupTestParentId1,
+            },
+          ],
+        },
+      },
+      {
+        _id: "DummyTemp-unlinked2",
+        _source: {
+          groups: [
+            {
+              path: groupParentWithAssetId,
+            },
+            {
+              path: groupTestParentId1,
+            },
+          ],
+        },
+      },
+    ]);
+
+    // ? Dates should be separately because is not really predictable
+    const devices2 = result2.successes as KDocument<DeviceContent>[];
+    expect(devices2[0]._source.groups[0].date).toBeLessThan(Date.now());
+    expect(devices2[0]._source.groups[1].date).toBeGreaterThan(now);
+
+    expect(devices2[1]._source.groups[0].date).toBeLessThan(Date.now());
+    expect(devices2[1]._source.groups[1].date).toBeGreaterThan(now);
+
+    expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
+
+    // Add an device to a subgroup also add the reference of the parent group
+    const { result: result3 } = await sdk.query<
+      ApiGroupAddDeviceRequest,
+      ApiGroupAddDevicesResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addDevice",
+      body: {
+        path: groupTestParentId1 + "." + groupTestChildrenId1,
+        deviceIds: ["DummyTempPosition-linked2"],
+      },
+    });
+
+    expect(result3.errors).toHaveLength(0);
+
+    expect(result3.successes).toMatchObject([
+      {
+        _id: "DummyTempPosition-linked2",
+        _source: {
+          groups: [
+            {
+              path: groupParentWithAssetId,
+            },
+            {
+              path: groupTestParentId1 + "." + groupTestChildrenId1,
+            },
+          ],
+        },
+      },
+    ]);
+
+    // ? Dates should be separately because is not really predictable
+    const devices3 = result3.successes as KDocument<DeviceContent>[];
+    expect(devices3[0]._source.groups[1].date).toBeGreaterThan(now);
+
+    expect(result3.group._source.lastUpdate).toBeGreaterThan(now);
+
+    const restrictedGroup: ApiGroupAddDeviceRequest = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addDevice",
+      body: {
+        path: groupTestId,
+        deviceIds: ["DummyTempPosition-unlinked3"],
+      },
+    };
+    await expect(sdk.query(restrictedGroup)).rejects.toThrow(
+      `The group ${groupTestId} of model AssetRestricted can not contain devices`,
+    );
+
+    const wrongDeviceModel: ApiGroupAddDeviceRequest = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "addDevice",
+      body: {
+        path: groupTestParentId2,
+        deviceIds: ["DummyTempPosition-unlinked3"],
+      },
+    };
+    await expect(sdk.query(wrongDeviceModel)).rejects.toThrow(
+      `Groups of model DeviceRestricted can not contain devices of model DummyTempPosition`,
+    );
+  });
+
+  it("can remove device from group", async () => {
+    const missingPathQuery: Omit<ApiGroupRemoveDeviceRequest, "body"> & {
+      body: {
+        deviceIds: string[];
+      };
+    } = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "removeDevice",
+      body: {
+        deviceIds: [deviceAyseWarehouseId],
+      },
+    };
+    await expect(sdk.query(missingPathQuery)).rejects.toThrow(
+      /^Missing argument "body.path".$/,
+    );
+
+    const missingBodyQuery: Omit<ApiGroupRemoveDeviceRequest, "body"> = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "removeDevice",
+    };
+    await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
+      /^The request must specify a body.$/,
+    );
+
+    const badIdQuery: ApiGroupRemoveDeviceRequest = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "removeDevice",
+      body: {
+        path: "bad-path",
+        deviceIds: [],
+      },
+    };
+    await expect(sdk.query(badIdQuery)).rejects.toThrow(
+      'The group with path "bad-path" does not exist',
+    );
+
+    const { result } = await sdk.query<
+      ApiGroupRemoveDeviceRequest,
+      ApiGroupRemoveDeviceResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "removeDevice",
+      body: {
+        path: groupParentWithAssetId + "." + groupChildrenWithAssetId,
+        deviceIds: [deviceAyseWarehouseId],
+      },
+    });
+
+    expect(result.errors).toHaveLength(0);
+
+    expect(result.successes[0]).toMatchObject({
+      _id: deviceAyseWarehouseId,
+      _source: {
+        groups: [],
+      },
+    });
+
+    expect(result.group._source.lastUpdate).toBeGreaterThan(now);
+
+    const { result: result2 } = await sdk.query<
+      ApiGroupRemoveDeviceRequest,
+      ApiGroupRemoveDeviceResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "removeDevice",
+      body: {
+        path: groupParentWithAssetId,
+        deviceIds: [deviceAyseLinked2Id],
+      },
+    });
+
+    expect(result2.errors).toHaveLength(0);
+
+    expect(result2.successes[0]).toMatchObject({
+      _id: deviceAyseLinked2Id,
+      _source: {
+        groups: [],
+      },
+    });
+
+    expect(result2.group._source.lastUpdate).toBeGreaterThan(now);
+  });
+
+  it("can list the items of a group", async () => {
+    const { result } = await sdk.query<
+      ApiGroupListItemsRequest,
+      ApiGroupListItemsResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "listItems",
+      _id: groupParentWithAssetId,
+      body: {},
+    });
+    expect(result.assets.hits).toHaveLength(1);
+    expect(result.assets.total).toBe(1);
+    expect(result.assets.hits[0]).toMatchObject({
+      _id: "Container-grouped2",
+      _source: {
+        groups: [{ path: groupParentWithAssetId }],
+      },
+    });
+    expect(result.devices.hits).toHaveLength(1);
+    expect(result.devices.total).toBe(1);
+    expect(result.devices.hits[0]).toMatchObject({
+      _id: "DummyTempPosition-linked2",
+      _source: {
+        groups: [{ path: groupParentWithAssetId }],
+      },
+    });
+    const { result: resWithChildren } = await sdk.query<
+      ApiGroupListItemsRequest,
+      ApiGroupListItemsResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "listItems",
+      _id: groupParentWithAssetId,
+      body: { includeChildren: true },
+    });
+    expect(resWithChildren.assets.hits).toHaveLength(2);
+    expect(resWithChildren.assets.total).toBe(2);
+
+    expect(resWithChildren.assets.hits[0]).toMatchObject({
+      _id: "Container-grouped",
+      _source: {
+        groups: [
+          { path: groupParentWithAssetId + "." + groupChildrenWithAssetId },
+        ],
+      },
+    });
+    expect(resWithChildren.devices.hits).toHaveLength(2);
+    expect(resWithChildren.devices.total).toBe(2);
+    expect(resWithChildren.devices.hits[1]).toMatchObject({
+      _id: "DummyTempPosition-warehouse",
+      _source: {
+        groups: [
+          { path: groupParentWithAssetId + "." + groupChildrenWithAssetId },
+        ],
+      },
+    });
   });
 });

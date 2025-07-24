@@ -308,6 +308,7 @@ export class DeviceManagerPlugin extends Plugin {
         this.modelsRegister.registerGroup(
           engineGroup,
           model,
+          definition.affinity,
           definition.metadataMappings,
           definition.defaultMetadata,
           definition.metadataDetails,

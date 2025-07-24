@@ -17,4 +17,11 @@ export interface DeviceContent<
   /**
    */
   engineId: string;
+  /**
+   * Path's of device's groups
+   */
+  groups: Array<{
+    path: string;
+    date: number;
+  }>;
 }

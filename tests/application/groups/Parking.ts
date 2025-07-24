@@ -17,6 +17,11 @@ export interface ParkingGroupContent extends GroupContent<ParkingMetadata> {
 export const Parking: GroupModel = {
   modelName,
   definition: {
+    affinity: {
+      type: ["assets"],
+      models: { assets: [] },
+      strict: false,
+    },
     metadataMappings: {
       geolocation: { type: "geo_point" },
     },

@@ -3,10 +3,11 @@ import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { BaseService, SearchParams } from "../shared";
 import { BadRequestError, KuzzleRequest } from "kuzzle";
 
-import { AskModelGroupGet } from "../model";
+import { AskModelGroupGet, GroupModelContent } from "../model";
 import { ask } from "kuzzle-plugin-commons";
 import { AssetContent } from "../asset/types/AssetContent";
 import { GroupContent } from "./exports";
+import { DeviceContent } from "../device";
 
 export class GroupsService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -94,9 +95,9 @@ export class GroupsService extends BaseService {
       InternalCollection.ASSETS,
       {
         query: {
-          regexp: {
+          prefix: {
             "groups.path": {
-              value: `${group._source.path}.*`,
+              value: group._source.path,
             },
           },
         },
@@ -129,9 +130,9 @@ export class GroupsService extends BaseService {
         InternalCollection.GROUPS,
         {
           query: {
-            regexp: {
+            prefix: {
               path: {
-                value: `.*${_id}.*`,
+                value: _id,
               },
             },
           },
@@ -168,6 +169,55 @@ export class GroupsService extends BaseService {
       engineId,
     });
   }
+
+  async listItems(
+    engineId: string,
+    _id: string,
+    includeChildren: boolean,
+    options: { from?: number; size?: number },
+    request: KuzzleRequest,
+  ) {
+    const group = await this.get(engineId, _id, request);
+    if (!group) {
+      throw new BadRequestError(`The group with _id "${_id}" does not exist`);
+    }
+    const body = includeChildren
+      ? {
+          query: {
+            prefix: {
+              "groups.path": {
+                value: group._source.path,
+              },
+            },
+          },
+        }
+      : {
+          query: {
+            term: {
+              "groups.path": group._source.path,
+            },
+          },
+        };
+    const { hits: assetHits, total: assetTotal } =
+      await this.sdk.document.search<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        body,
+        options,
+      );
+    const { hits: deviceHits, total: deviceTotal } =
+      await this.sdk.document.search<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        body,
+        options,
+      );
+    return {
+      assets: { hits: assetHits, total: assetTotal },
+      devices: { hits: deviceHits, total: deviceTotal },
+    };
+  }
+
   async addAsset(
     engineId: string,
     path: string,
@@ -175,14 +225,26 @@ export class GroupsService extends BaseService {
     request: KuzzleRequest,
   ) {
     const _id = path.split(".").pop();
-    if (
-      !(await this.sdk.document.exists(
-        engineId,
-        InternalCollection.GROUPS,
-        _id,
-      ))
-    ) {
+    const group = await this.sdk.document.get<GroupContent>(
+      engineId,
+      InternalCollection.GROUPS,
+      _id,
+    );
+
+    if (!group) {
       throw new BadRequestError(`The group with path "${path}" does not exist`);
+    }
+    let model: GroupModelContent;
+    if (group._source.model) {
+      model = await ask<AskModelGroupGet>(
+        "ask:device-manager:model:group:get",
+        { model: group._source.model },
+      );
+    }
+    if (model && !model.group.affinity.type.includes("assets")) {
+      throw new BadRequestError(
+        `The group ${group._id} of model ${group._source.model} can not contain assets`,
+      );
     }
 
     const { successes: assets, errors } =
@@ -191,10 +253,20 @@ export class GroupsService extends BaseService {
         InternalCollection.ASSETS,
         assetIds,
       );
+
     if (errors.length > 0) {
       throw new BadRequestError(
         `The assets with ids "${errors.join(", ")}" do not exist`,
       );
+    }
+    if (model && model.group.affinity.strict) {
+      for (const asset of assets) {
+        if (!model.group.affinity.models.assets.includes(asset._source.model)) {
+          throw new BadRequestError(
+            `Groups of model ${group._source.model} can not contain assets of model ${asset._source.model}`,
+          );
+        }
+      }
     }
     const assetsToUpdate = assets.map((asset) => {
       if (!Array.isArray(asset._source.groups)) {
@@ -266,6 +338,142 @@ export class GroupsService extends BaseService {
       engineId,
       InternalCollection.ASSETS,
       assetsToUpdate.map((asset) => ({ _id: asset._id, body: asset._source })),
+      { triggerEvents: true },
+    );
+
+    return {
+      ...update,
+      group: groupUpdate,
+    };
+  }
+  async addDevice(
+    engineId: string,
+    path: string,
+    deviceIds: string[],
+    request: KuzzleRequest,
+  ) {
+    const _id = path.split(".").pop();
+    const group = await this.sdk.document.get<GroupContent>(
+      engineId,
+      InternalCollection.GROUPS,
+      _id,
+    );
+
+    if (!group) {
+      throw new BadRequestError(`The group with path "${path}" does not exist`);
+    }
+    let model: GroupModelContent;
+    if (group._source.model) {
+      model = await ask<AskModelGroupGet>(
+        "ask:device-manager:model:group:get",
+        { model: group._source.model },
+      );
+    }
+    if (model && !model.group.affinity.type.includes("devices")) {
+      throw new BadRequestError(
+        `The group ${group._id} of model ${group._source.model} can not contain devices`,
+      );
+    }
+
+    const { successes: devices, errors } =
+      await this.sdk.document.mGet<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        deviceIds,
+      );
+
+    if (errors.length > 0) {
+      throw new BadRequestError(
+        `The devices with ids "${errors.join(", ")}" do not exist`,
+      );
+    }
+    if (model && model.group.affinity.strict) {
+      for (const device of devices) {
+        if (
+          !model.group.affinity.models.devices.includes(device._source.model)
+        ) {
+          throw new BadRequestError(
+            `Groups of model ${group._source.model} can not contain devices of model ${device._source.model}`,
+          );
+        }
+      }
+    }
+    const devicesToUpdate = devices.map((device) => {
+      if (!Array.isArray(device._source.groups)) {
+        device._source.groups = [];
+      }
+
+      device._source.groups.push({
+        date: Date.now(),
+        path: path,
+      });
+      return device;
+    });
+
+    const groupUpdate = await this.update(request, _id, engineId, {
+      lastUpdate: Date.now(),
+    });
+
+    const update = await this.sdk.document.mReplace(
+      engineId,
+      InternalCollection.DEVICES,
+      devicesToUpdate.map((device) => ({
+        _id: device._id,
+        body: device._source,
+      })),
+      { triggerEvents: true },
+    );
+
+    return {
+      ...update,
+      group: groupUpdate,
+    };
+  }
+  async removeDevice(
+    engineId: string,
+    path: string,
+    deviceIds: string[],
+    request: KuzzleRequest,
+  ) {
+    const _id = path.split(".").pop();
+    if (
+      !(await this.sdk.document.exists(
+        engineId,
+        InternalCollection.GROUPS,
+        _id,
+      ))
+    ) {
+      throw new BadRequestError(`The group with path "${path}" does not exist`);
+    }
+    const { successes: devices, errors } =
+      await this.sdk.document.mGet<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        deviceIds,
+      );
+    if (errors.length > 0) {
+      throw new BadRequestError(
+        `The devices with ids "${errors.join(", ")}" do not exist`,
+      );
+    }
+    const devicesToUpdate = devices.map((device) => {
+      device._source.groups = device._source.groups.filter(
+        (grp) => grp.path !== path,
+      );
+      return device;
+    });
+
+    const groupUpdate = await this.update(request, _id, engineId, {
+      lastUpdate: Date.now(),
+    });
+
+    const update = await this.sdk.document.mReplace(
+      engineId,
+      InternalCollection.DEVICES,
+      devicesToUpdate.map((device) => ({
+        _id: device._id,
+        body: device._source,
+      })),
       { triggerEvents: true },
     );
 

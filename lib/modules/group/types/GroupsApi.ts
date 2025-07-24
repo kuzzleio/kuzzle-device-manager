@@ -6,12 +6,14 @@ import {
   mUpdateResponse,
 } from "kuzzle-sdk";
 import { GroupsBody, GroupContent } from "./GroupContent";
+import { DeviceContent } from "lib/modules/device";
+import { AssetContent } from "lib/modules/asset";
 
 // Remove "lastUpdate" property for request
 type GroupsRequest = Omit<GroupsBody, "lastUpdate">;
 export type GroupsBodyRequest = Partial<GroupsRequest>;
 
-export type UpdateAssetLinkResponse = mUpdateResponse & {
+export type UpdateLinkResponse = mUpdateResponse & {
   group: KDocument<GroupContent>;
 };
 
@@ -60,6 +62,18 @@ export interface ApiGroupSearchRequest extends GroupControllerRequest {
 }
 export type ApiGroupSearchResult = SearchResult<KHit<GroupContent>>;
 
+export interface ApiGroupListItemsRequest extends GroupControllerRequest {
+  action: "listItems";
+  from?: number;
+  size?: number;
+  body: { includeChildren?: boolean };
+  _id: string;
+}
+export type ApiGroupListItemsResult = {
+  assets: { hits: Array<KHit<AssetContent>>; total: number };
+  devices: { hits: Array<KHit<DeviceContent>>; total: number };
+};
+
 export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
   action: "addAsset";
   body: {
@@ -67,7 +81,7 @@ export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupAddAssetsResult = UpdateAssetLinkResponse;
+export type ApiGroupAddAssetsResult = UpdateLinkResponse;
 
 export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
   action: "removeAsset";
@@ -76,4 +90,21 @@ export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupRemoveAssetsResult = UpdateAssetLinkResponse;
+export type ApiGroupRemoveAssetsResult = UpdateLinkResponse;
+export interface ApiGroupAddDeviceRequest extends GroupControllerRequest {
+  action: "addDevice";
+  body: {
+    path: string;
+    deviceIds: string[];
+  };
+}
+export type ApiGroupAddDevicesResult = UpdateLinkResponse;
+
+export interface ApiGroupRemoveDeviceRequest extends GroupControllerRequest {
+  action: "removeDevice";
+  body: {
+    path: string;
+    deviceIds: string[];
+  };
+}
+export type ApiGroupRemoveDeviceResult = UpdateLinkResponse;

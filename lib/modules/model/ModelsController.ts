@@ -218,6 +218,11 @@ export class ModelsController {
   async writeGroup(request: KuzzleRequest): Promise<ApiModelWriteGroupResult> {
     const engineGroup = request.getBodyString("engineGroup");
     const model = request.getBodyString("model");
+    const affinity = request.getBodyObject("affinity", {
+      models: { assets: [], devices: [] },
+      strict: false,
+      type: ["assets", "devices"],
+    });
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
     const metadataDetails = request.getBodyObject("metadataDetails", {});
@@ -226,6 +231,7 @@ export class ModelsController {
     const groupModel = await this.modelService.writeGroup(
       engineGroup,
       model,
+      affinity,
       metadataMappings,
       defaultValues,
       metadataDetails,

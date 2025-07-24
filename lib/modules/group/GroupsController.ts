@@ -12,19 +12,26 @@ import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
+  ApiGroupAddDeviceRequest,
+  ApiGroupAddDevicesResult,
   ApiGroupCreateRequest,
   ApiGroupCreateResult,
   ApiGroupDeleteResult,
   ApiGroupGetResult,
+  ApiGroupListItemsResult,
+  ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
+  ApiGroupRemoveDeviceRequest,
+  ApiGroupRemoveDeviceResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
   GroupsBodyRequest,
 } from "./types/GroupsApi";
-import { GroupContent, GroupsBody } from "./types/GroupContent";
+import { GroupContent } from "./types/GroupContent";
 import { AssetContent } from "../asset";
 import { GroupsService } from "./GroupsService";
 import { AskModelGroupGet } from "../model";
+import { DeviceContent } from "../device";
 
 export class GroupsController {
   definition: ControllerDefinition;
@@ -88,8 +95,35 @@ export class GroupsController {
           handler: this.removeAsset.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id/removeAsset",
+              path: "device-manager/:engineId/groups/removeAsset",
               verb: "post",
+            },
+          ],
+        },
+        addDevice: {
+          handler: this.addDevice.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/addDevice",
+              verb: "post",
+            },
+          ],
+        },
+        removeDevice: {
+          handler: this.removeDevice.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/removeDevice",
+              verb: "post",
+            },
+          ],
+        },
+        listItems: {
+          handler: this.listItems.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/:_id/listItems",
+              verb: "get",
             },
           ],
         },
@@ -299,34 +333,65 @@ export class GroupsController {
         InternalCollection.ASSETS,
         {
           query: {
-            regexp: {
+            prefix: {
               "groups.path": {
-                value: `${groupToUpdate._source.path}.*`,
+                value: groupToUpdate._source.path,
               },
             },
           },
         },
         { lang: "koncorde" },
       );
-
+      const { hits: devices } = await this.sdk.document.search<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        {
+          query: {
+            prefix: {
+              "groups.path": {
+                value: groupToUpdate._source.path,
+              },
+            },
+          },
+        },
+        { lang: "koncorde" },
+      );
       await this.sdk.document.mUpdate(
         engineId,
         InternalCollection.ASSETS,
         assets.map((asset) => ({
           _id: asset._id,
           body: {
-            groups: asset._source.groups
-              .filter((grp) => grp.path !== groupToUpdate._source.path)
-              .map((grp) => {
-                if (grp.path.includes(groupToUpdate._source.path)) {
-                  grp.path = grp.path.replace(
-                    groupToUpdate._source.path,
-                    updatedGroup._source.path,
-                  );
-                  grp.date = Date.now();
-                }
-                return grp;
-              }),
+            groups: asset._source.groups.map((grp) => {
+              if (grp.path.includes(groupToUpdate._source.path)) {
+                grp.path = grp.path.replace(
+                  groupToUpdate._source.path,
+                  updatedGroup._source.path,
+                );
+                grp.date = Date.now();
+              }
+              return grp;
+            }),
+          },
+        })),
+        { strict: true },
+      );
+      await this.sdk.document.mUpdate(
+        engineId,
+        InternalCollection.DEVICES,
+        devices.map((device) => ({
+          _id: device._id,
+          body: {
+            groups: device._source.groups.map((grp) => {
+              if (grp.path.includes(groupToUpdate._source.path)) {
+                grp.path = grp.path.replace(
+                  groupToUpdate._source.path,
+                  updatedGroup._source.path,
+                );
+                grp.date = Date.now();
+              }
+              return grp;
+            }),
           },
         })),
         { strict: true },
@@ -339,9 +404,9 @@ export class GroupsController {
             query: {
               and: [
                 {
-                  regexp: {
+                  prefix: {
                     path: {
-                      value: `${groupToUpdate._source.path}.*`,
+                      value: groupToUpdate._source.path,
                     },
                   },
                 },
@@ -383,6 +448,21 @@ export class GroupsController {
     return this.groupsService.search(engineId, searchParams, request);
   }
 
+  async listItems(request: KuzzleRequest): Promise<ApiGroupListItemsResult> {
+    const engineId = request.getString("engineId");
+    const _id = request.getId();
+    const includeChildren = request.getBodyBoolean("includeChildren");
+    const searchParams = request.getSearchParams();
+    const { from, size } = searchParams;
+    return this.groupsService.listItems(
+      engineId,
+      _id,
+      includeChildren,
+      { from, size },
+      request,
+    );
+  }
+
   async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
     const engineId = request.getString("engineId");
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
@@ -396,58 +476,30 @@ export class GroupsController {
     request: KuzzleRequest,
   ): Promise<ApiGroupRemoveAssetsResult> {
     const engineId = request.getString("engineId");
-    const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
+    const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
     const path = request.getBodyString("path");
     const assetIds = body.assetIds;
     this.checkPath(engineId, path);
     return this.groupsService.removeAsset(engineId, path, assetIds, request);
+  }
 
-    // ? Get document to check if really exists, even if not indexed
+  async addDevice(request: KuzzleRequest): Promise<ApiGroupAddDevicesResult> {
+    const engineId = request.getString("engineId");
+    const body = request.getBody() as ApiGroupAddDeviceRequest["body"];
+    const path = request.getBodyString("path");
+    const deviceIds = body.deviceIds;
+    this.checkPath(engineId, path);
+    return this.groupsService.addDevice(engineId, path, deviceIds, request);
+  }
 
-    const assets = [];
-    for (const assetId of body.assetIds) {
-      const assetContent = (
-        await this.sdk.document.get<AssetContent>(
-          engineId,
-          InternalCollection.ASSETS,
-          assetId,
-        )
-      )._source;
-
-      if (!Array.isArray(assetContent.groups)) {
-        continue;
-      }
-
-      assetContent.groups = assetContent.groups.filter(
-        (group) => group.path !== path,
-      );
-
-      assets.push({
-        _id: assetId,
-        body: assetContent,
-      });
-    }
-
-    const groupsUpdate = await this.as(
-      request.getUser(),
-    ).document.update<GroupsBody>(
-      engineId,
-      InternalCollection.GROUPS,
-      path.split(".").pop(),
-      {
-        lastUpdate: Date.now(),
-      },
-      { source: true },
-    );
-
-    const update = await this.sdk.document.mUpdate(
-      engineId,
-      InternalCollection.ASSETS,
-      assets,
-    );
-    return {
-      ...update,
-      group: groupsUpdate,
-    };
+  async removeDevice(
+    request: KuzzleRequest,
+  ): Promise<ApiGroupRemoveDeviceResult> {
+    const engineId = request.getString("engineId");
+    const body = request.getBody() as ApiGroupRemoveDeviceRequest["body"];
+    const path = request.getBodyString("path");
+    const deviceIds = body.deviceIds;
+    this.checkPath(engineId, path);
+    return this.groupsService.removeDevice(engineId, path, deviceIds, request);
   }
 }

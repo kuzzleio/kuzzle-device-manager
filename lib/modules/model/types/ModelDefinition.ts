@@ -1,6 +1,7 @@
 import { JSONObject } from "kuzzle-sdk";
 import { Decoder, NamedMeasures } from "../../../modules/decoder";
 import {
+  GroupAffinity,
   LocaleDetails,
   MetadataDetails,
   MetadataGroups,
@@ -296,6 +297,11 @@ export type DeviceModelDefinition = {
  *
  */
 export type GroupModelDefinition = {
+  /**
+   * Metadata mappings definition
+   */
+  affinity: GroupAffinity;
+
   /**
    * Metadata mappings definition
    */

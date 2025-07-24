@@ -110,6 +110,7 @@ export class DeviceService extends DigitalTwinService {
       _source: {
         assetId: null,
         engineId: null,
+        groups: [],
         lastMeasuredAt: 0,
         measureSlots: [],
         measures: {},

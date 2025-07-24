@@ -12,6 +12,15 @@ export const devicesMappings: CollectionMappings = {
       type: "keyword",
       fields: { text: { type: "text" } },
     },
+    groups: {
+      properties: {
+        path: {
+          type: "keyword",
+          fields: { text: { type: "text" } },
+        },
+        date: { type: "date" },
+      },
+    },
     reference: {
       type: "keyword",
       fields: { text: { type: "text" } },

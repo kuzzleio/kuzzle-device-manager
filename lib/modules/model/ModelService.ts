@@ -24,6 +24,7 @@ import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
   DeviceModelContent,
+  GroupAffinity,
   GroupModelContent,
   LocaleDetails,
   MeasureModelContent,
@@ -216,6 +217,90 @@ export class ModelService extends BaseService {
     }
   }
 
+  private checkDefaultValues(
+    metadataMappings: MetadataMappings,
+    defaultMetadata: JSONObject,
+  ) {
+    const flattenedMetadataMappings = flattenObject(metadataMappings);
+
+    const metadata = Object.keys(
+      JSON.parse(
+        JSON.stringify(flattenedMetadataMappings)
+          .replace(/properties\./g, "")
+          .replace(/\.type/g, ""),
+      ),
+    );
+
+    const values = Object.keys(flattenObject(defaultMetadata));
+
+    for (let i = 0; i < values.length; i++) {
+      const key = values[i];
+
+      // ? Check if the exact key exists in the metadata
+      if (!metadata.includes(key)) {
+        // ? Extract base key for complex types like geo_point or geo_shape
+        const baseKey = key.includes(".") ? key.split(".")[0] : key;
+
+        // ? Check if the base key is in the metadata
+        if (!metadata.includes(baseKey)) {
+          throw new BadRequestError(
+            `The default value "${key}" is not in the metadata mappings.`,
+          );
+        }
+
+        // ? Accept nested properties for geo_point or geo_shape
+        const baseKeyMetadata = flattenedMetadataMappings[`${baseKey}.type`];
+        if (
+          baseKeyMetadata === "geo_point" ||
+          baseKeyMetadata === "geo_shape"
+        ) {
+          continue;
+        }
+
+        throw new BadRequestError(
+          `The default value "${values[i]}" is not in the metadata mappings.`,
+        );
+      }
+    }
+  }
+
+  private checkGroupAffinity(affinity: JSONObject): GroupAffinity {
+    const { type, strict, models } = affinity;
+
+    if (!type || strict === undefined || !models) {
+      throw new BadRequestError(
+        `The group affinity must specify a type array, models and strictness`,
+      );
+    }
+    if (
+      !Array.isArray(type) ||
+      type.length > 2 ||
+      type.length < 1 ||
+      !type.every((t) => ["assets", "devices"].includes(t))
+    ) {
+      throw new BadRequestError(
+        `The group type must be an array containing "assets" and/or "devices"`,
+      );
+    }
+    if (typeof strict !== "boolean") {
+      throw new BadRequestError(
+        `The group affinity strict field must be a boolean`,
+      );
+    }
+    for (const t of type) {
+      if (!models[t] || !Array.isArray(models[t])) {
+        throw new BadRequestError(
+          `The group affinity must contain an array for every present type`,
+        );
+      }
+      if (!models[t].every((model) => typeof model === "string")) {
+        throw new BadRequestError(
+          `The group affinity models must be an array of models id`,
+        );
+      }
+    }
+    return { models, strict, type };
+  }
   async writeAsset(
     engineGroup: string,
     model: string,
@@ -287,53 +372,6 @@ export class ModelService extends BaseService {
     });
 
     return assetModel;
-  }
-
-  private checkDefaultValues(
-    metadataMappings: MetadataMappings,
-    defaultMetadata: JSONObject,
-  ) {
-    const flattenedMetadataMappings = flattenObject(metadataMappings);
-
-    const metadata = Object.keys(
-      JSON.parse(
-        JSON.stringify(flattenedMetadataMappings)
-          .replace(/properties\./g, "")
-          .replace(/\.type/g, ""),
-      ),
-    );
-
-    const values = Object.keys(flattenObject(defaultMetadata));
-
-    for (let i = 0; i < values.length; i++) {
-      const key = values[i];
-
-      // ? Check if the exact key exists in the metadata
-      if (!metadata.includes(key)) {
-        // ? Extract base key for complex types like geo_point or geo_shape
-        const baseKey = key.includes(".") ? key.split(".")[0] : key;
-
-        // ? Check if the base key is in the metadata
-        if (!metadata.includes(baseKey)) {
-          throw new BadRequestError(
-            `The default value "${key}" is not in the metadata mappings.`,
-          );
-        }
-
-        // ? Accept nested properties for geo_point or geo_shape
-        const baseKeyMetadata = flattenedMetadataMappings[`${baseKey}.type`];
-        if (
-          baseKeyMetadata === "geo_point" ||
-          baseKeyMetadata === "geo_shape"
-        ) {
-          continue;
-        }
-
-        throw new BadRequestError(
-          `The default value "${values[i]}" is not in the metadata mappings.`,
-        );
-      }
-    }
   }
 
   async writeDevice(
@@ -408,6 +446,7 @@ export class ModelService extends BaseService {
   async writeGroup(
     engineGroup: string,
     model: string,
+    affinity: JSONObject,
     metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
     metadataDetails: MetadataDetails,
@@ -416,10 +455,11 @@ export class ModelService extends BaseService {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
     }
-
+    const groupAffinity = this.checkGroupAffinity(affinity);
     const modelContent: GroupModelContent = {
       engineGroup,
       group: {
+        affinity: groupAffinity,
         defaultMetadata,
         metadataDetails,
         metadataGroups,
