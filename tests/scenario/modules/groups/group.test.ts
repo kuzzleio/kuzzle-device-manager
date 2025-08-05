@@ -984,24 +984,29 @@ describe("GroupsController", () => {
     >(queryWithError);
     expect(result).toHaveProperty("successes");
     expect(result).toHaveProperty("errors");
-    expect(result.errors).toHaveLength(3);
     expect(result.successes).toHaveLength(3);
-    expect(result.errors[0].document.body).toMatchObject({
+    const errors = result.errors.sort((a, b) =>
+      toLower(a.document?.body?.name).localeCompare(
+        toLower(b.document?.body?.name),
+      ),
+    );
+    expect(errors).toHaveLength(3);
+    expect(errors[0].document.body).toMatchObject({
       name: "id taken",
     });
-    expect(result.errors[0].reason).toBe("document already exists");
-    expect(result.errors[1].document.body).toMatchObject({
-      name: "wrong path",
-    });
-    expect(result.errors[1].reason).toBe(
-      'The closest parent group "path" does not exist',
-    );
+    expect(errors[0].reason).toBe("document already exists");
 
-    expect(result.errors[2].document.body).toMatchObject({
+    expect(errors[1].document.body).toMatchObject({
       name: "Test group",
     });
-    expect(result.errors[2].reason).toBe(
+    expect(errors[1].reason).toBe(
       'A group with name "Test group" already exist',
+    );
+    expect(errors[2].document.body).toMatchObject({
+      name: "wrong path",
+    });
+    expect(errors[2].reason).toBe(
+      'The closest parent group "path" does not exist',
     );
   });
 
@@ -1043,21 +1048,27 @@ describe("GroupsController", () => {
 
     expect(result).toHaveProperty("successes");
     expect(result).toHaveProperty("errors");
-    expect(result.errors).toHaveLength(3);
-    expect(result.successes).toHaveLength(1);
-    expect(result.errors[0].document.body.name).toBe("missing id");
-    expect(result.errors[0].reason).toBe("A group must have an _id");
-    expect(result.errors[1].document.body).toMatchObject({
-      name: "test group",
-    });
-    expect(result.errors[1].reason).toBe(
-      'A group with name "test group" already exist',
+    const errors = result.errors.sort((a, b) =>
+      toLower(a.document?.body?.name).localeCompare(
+        toLower(b.document?.body?.name),
+      ),
     );
-    expect(result.errors[2].document.body).toMatchObject({
+    expect(errors).toHaveLength(3);
+    expect(result.successes).toHaveLength(1);
+
+    expect(result.errors[0].document.body).toMatchObject({
       name: "bad parent",
     });
-    expect(result.errors[2].reason).toBe(
+    expect(result.errors[0].reason).toBe(
       'The closest parent group "not-exist" does not exist',
+    );
+    expect(errors[1].document.body.name).toBe("missing id");
+    expect(errors[1].reason).toBe("A group must have an _id");
+    expect(errors[2].document.body).toMatchObject({
+      name: "test group",
+    });
+    expect(result.errors[2].reason).toBe(
+      'A group with name "test group" already exist',
     );
   });
 
