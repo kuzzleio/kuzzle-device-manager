@@ -57,15 +57,7 @@ export const assetsMappings: CollectionMappings = {
         // populated with asset models
       },
     },
-
-    measures: {
-      properties: {
-        // populated with asset models
-      },
-    },
-
     lastMeasuredAt: { type: "date" },
-
     linkedDevices: {
       properties: {
         _id: { type: "keyword" },

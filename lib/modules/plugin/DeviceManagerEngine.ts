@@ -17,7 +17,7 @@ import _ from "lodash";
 
 import { assetsHistoryMappings } from "../asset";
 import { NamedMeasures } from "../decoder";
-import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
+import { measuresMappings } from "../measure";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -584,9 +584,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         model[digitalTwinType].metadataMappings,
       );
 
-      for (const { name: measureName, type: measureType } of model[
-        digitalTwinType
-      ].measures as NamedMeasures) {
+      for (const { type: measureType } of model[digitalTwinType]
+        .measures as NamedMeasures) {
         const measureModel = measureModels.find(
           (m) => m.measure.type === measureType,
         );
@@ -598,9 +597,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
             ]} "${model[digitalTwinType].model}"`,
           );
         }
-
-        mappings.properties.measures.properties[measureName] =
-          getEmbeddedMeasureMappings(measureModel.measure.valuesMappings);
       }
     }
 

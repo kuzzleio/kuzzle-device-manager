@@ -31,7 +31,6 @@ import {
 } from "../plugin";
 import {
   DigitalTwinService,
-  EmbeddedMeasure,
   Metadata,
   SearchParams,
   flattenObject,
@@ -309,12 +308,6 @@ export class AssetService extends DigitalTwinService {
       _.set(assetMetadata, metadataName, metadataValue);
     }
 
-    const measures: Record<string, EmbeddedMeasure> = {};
-
-    for (const { name } of assetModel.asset.measures) {
-      measures[name] = null;
-    }
-
     const asset = await this.createDocument<AssetContent>(
       request,
       {
@@ -324,7 +317,6 @@ export class AssetService extends DigitalTwinService {
           lastMeasuredAt: null,
           linkedDevices: [],
           measureSlots: assetModel.asset.measures,
-          measures,
           metadata: { ...assetMetadata, ...metadata },
           model,
           modelLocales: assetModel.asset.locales,

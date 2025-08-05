@@ -38,11 +38,6 @@ export const devicesMappings: CollectionMappings = {
         // populated with device models
       },
     },
-    measures: {
-      properties: {
-        // populated with measure models
-      },
-    },
     lastMeasuredAt: { type: "date" },
     measureSlots: {
       properties: {

@@ -220,12 +220,6 @@ describe("features/Decoder/PayloadController", () => {
     await expect(promise).rejects.toMatchObject({
       message: 'Decoder "DummyTemp" has no measure named "unknownMeasureName"',
     });
-
-    await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-test")
-    ).resolves.toMatchObject({
-      _source: { measures: {} },
-    });
   });
 
   it("Receive a payload from unknown device", async () => {

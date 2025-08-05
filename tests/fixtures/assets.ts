@@ -19,7 +19,6 @@ export const assetAyseWarehouseLinked: AssetContent = {
       _id: "DummyTempPosition-warehouse",
     },
   ],
-  measures: {},
   groups: [],
   lastMeasuredAt: null,
 };
@@ -49,7 +48,6 @@ export const assetAyseLinked1: AssetContent = {
       _id: "DummyTemp-linked1",
     },
   ],
-  measures: {},
   groups: [],
   lastMeasuredAt: null,
 };
@@ -80,7 +78,6 @@ export const assetAyseLinked2: AssetContent = {
       _id: "DummyTempPosition-linked2",
     },
   ],
-  measures: {},
   groups: [],
   lastMeasuredAt: null,
 };
@@ -95,7 +92,6 @@ export const assetAyseUnlinked: AssetContent = {
     height: 22,
   },
   linkedDevices: [],
-  measures: {},
   groups: [],
   lastMeasuredAt: null,
 };
@@ -110,7 +106,6 @@ export const assetAyseGrouped: AssetContent = {
     height: 22,
   },
   linkedDevices: [],
-  measures: {},
   groups: [
     {
       path: "test-parent-asset.test-children-asset",
@@ -130,7 +125,6 @@ export const assetAyseGrouped2: AssetContent = {
     height: 22,
   },
   linkedDevices: [],
-  measures: {},
   groups: [
     {
       path: "test-parent-asset",
@@ -147,7 +141,6 @@ export const assetAyseDebug1: AssetContent = {
   measureSlots: [],
   metadata: {},
   linkedDevices: [],
-  measures: {},
   groups: [],
   lastMeasuredAt: null,
 };

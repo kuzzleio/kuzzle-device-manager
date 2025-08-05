@@ -324,7 +324,6 @@ export class PayloadService extends BaseService {
         groups: [],
         lastMeasuredAt: 0,
         measureSlots: deviceModelContent.device.measures,
-        measures: {},
         metadata: {},
         model: deviceModel,
         reference,

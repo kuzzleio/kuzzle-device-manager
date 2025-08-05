@@ -139,7 +139,6 @@ export abstract class BaseService {
     const [modifiedDocument] = await this.app.trigger<
       EventGenericDocumentBeforeWrite<T>
     >("generic:document:beforeWrite", [document], kuzzleRequest);
-
     const newDocument = await this.impersonatedSdk(user).document.create<T>(
       engineId,
       collection,

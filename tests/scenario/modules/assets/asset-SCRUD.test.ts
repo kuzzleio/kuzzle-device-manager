@@ -96,12 +96,6 @@ describe("AssetsController:SCRUD", () => {
       model: "Container",
       reference: "A1",
     });
-    expect(withoutMetadata.result._source.measures).toMatchObject({
-      position: null,
-      temperatureExt: null,
-      temperatureInt: null,
-      temperatureWeather: null,
-    });
     expect(withoutMetadata.result._source.metadata).toMatchObject({
       height: 20,
       person: null,
@@ -144,12 +138,13 @@ describe("AssetsController:SCRUD", () => {
     );
     expect(assetDocument._source).toMatchObject({
       groups: [],
-      measures: {
-        position: null,
-        temperatureExt: null,
-        temperatureInt: null,
-        temperatureWeather: null,
-      },
+      measureSlots: [
+        { type: "temperature", name: "temperatureExt" },
+        { type: "temperature", name: "temperatureInt" },
+        { type: "position", name: "position" },
+        { type: "temperature", name: "temperatureWeather" },
+      ],
+
       metadata: {
         height: 5,
         person: {

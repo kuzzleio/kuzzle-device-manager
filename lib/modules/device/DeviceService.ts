@@ -113,7 +113,6 @@ export class DeviceService extends DigitalTwinService {
         groups: [],
         lastMeasuredAt: 0,
         measureSlots: [],
-        measures: {},
         metadata,
         model,
         reference,
@@ -481,7 +480,6 @@ export class DeviceService extends DigitalTwinService {
 
     // Make sure the device is cleaned when attached to tenant
     device._source.lastMeasuredAt = null;
-    device._source.measures = {};
 
     const updatedDevice = await this.createDocument<DeviceContent>(
       request,
@@ -669,7 +667,7 @@ export class DeviceService extends DigitalTwinService {
         measureNames: updatedMeasureNames,
       });
 
-      const [updatedDevice, , updatedAsset] = await Promise.all([
+      const [, updatedDevice, updatedAsset] = await Promise.all([
         this.updateDocument<DeviceContent>(
           request,
           device,
