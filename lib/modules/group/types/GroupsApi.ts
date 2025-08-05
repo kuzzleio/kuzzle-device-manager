@@ -3,7 +3,9 @@ import {
   KDocument,
   KHit,
   SearchResult,
+  mCreateResponse,
   mUpdateResponse,
+  mUpsertResponse,
 } from "kuzzle-sdk";
 import { GroupsBody, GroupContent } from "./GroupContent";
 import { DeviceContent } from "lib/modules/device";
@@ -45,6 +47,13 @@ export interface ApiGroupUpdateRequest extends GroupControllerRequest {
 
 export type ApiGroupUpdateResult = KDocument<GroupContent>;
 
+export interface ApiGroupUpsertRequest extends GroupControllerRequest {
+  action: "upsert";
+  _id?: string;
+  body: GroupsBodyRequest;
+}
+
+export type ApiGroupUpsertResult = KDocument<GroupContent>;
 export interface ApiGroupDeleteRequest extends GroupControllerRequest {
   action: "delete";
   _id: string;
@@ -108,3 +117,44 @@ export interface ApiGroupRemoveDeviceRequest extends GroupControllerRequest {
   };
 }
 export type ApiGroupRemoveDeviceResult = UpdateLinkResponse;
+
+export interface ApiGroupMCreateRequest extends GroupControllerRequest {
+  action: "mCreate";
+  body: {
+    groups: Array<GroupsBodyRequest & { _id?: string }>;
+  };
+}
+export type ApiGroupMCreateResult = mCreateResponse & {
+  successes: Array<{
+    _id: string;
+    _source: GroupContent;
+    created: boolean;
+  }>;
+};
+
+export interface ApiGroupMUpdateRequest extends GroupControllerRequest {
+  action: "mUpdate";
+  body: {
+    groups: Array<GroupsBody & { _id: string }>;
+  };
+}
+export type ApiGroupMUpdateResult = {
+  errors: mUpdateResponse["errors"];
+  successes: KDocument<GroupContent>[];
+};
+
+export interface ApiGroupMUpsertRequest extends GroupControllerRequest {
+  action: "mUpsert";
+  body: {
+    groups: Array<GroupsBody & { _id?: string }>;
+  };
+}
+export type ApiGroupMUpsertResult = {
+  errors: Array<
+    ApiGroupMCreateResult["errors"][0] | ApiGroupMUpdateResult["errors"][0]
+  >;
+  successes: Array<
+    | ApiGroupMCreateResult["successes"][0]
+    | ApiGroupMUpdateResult["successes"][0]
+  >;
+};

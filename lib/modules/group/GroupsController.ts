@@ -2,11 +2,11 @@ import {
   BadRequestError,
   ControllerDefinition,
   EmbeddedSDK,
+  KuzzleError,
   KuzzleRequest,
   NameGenerator,
   User,
 } from "kuzzle";
-import { ask } from "kuzzle-plugin-commons";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import {
@@ -19,19 +19,21 @@ import {
   ApiGroupDeleteResult,
   ApiGroupGetResult,
   ApiGroupListItemsResult,
+  ApiGroupMCreateResult,
+  ApiGroupMUpdateResult,
+  ApiGroupMUpsertResult,
   ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
   ApiGroupRemoveDeviceRequest,
   ApiGroupRemoveDeviceResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
+  ApiGroupUpsertResult,
   GroupsBodyRequest,
 } from "./types/GroupsApi";
 import { GroupContent } from "./types/GroupContent";
-import { AssetContent } from "../asset";
 import { GroupsService } from "./GroupsService";
-import { AskModelGroupGet } from "../model";
-import { DeviceContent } from "../device";
+import { Metadata } from "../shared";
 
 export class GroupsController {
   definition: ControllerDefinition;
@@ -59,6 +61,10 @@ export class GroupsController {
         update: {
           handler: this.update.bind(this),
           http: [{ path: "device-manager/:engineId/groups/:_id", verb: "put" }],
+        },
+        upsert: {
+          handler: this.upsert.bind(this),
+          http: [{ path: "device-manager/:engineId/groups", verb: "put" }],
         },
         delete: {
           handler: this.delete.bind(this),
@@ -124,6 +130,33 @@ export class GroupsController {
             {
               path: "device-manager/:engineId/groups/:_id/listItems",
               verb: "get",
+            },
+          ],
+        },
+        mCreate: {
+          handler: this.mCreate.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/_mCreate",
+              verb: "post",
+            },
+          ],
+        },
+        mUpdate: {
+          handler: this.mUpdate.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/_mUpdate",
+              verb: "put",
+            },
+          ],
+        },
+        mUpsert: {
+          handler: this.mUpsert.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/groups/_mUpsert",
+              verb: "put",
             },
           ],
         },
@@ -276,6 +309,50 @@ export class GroupsController {
     return this.groupsService.get(engineId, _id, request);
   }
 
+  async upsert(request: KuzzleRequest): Promise<ApiGroupUpsertResult> {
+    const engineId = request.getString("engineId");
+    const _id = request.getId({
+      generator: () => NameGenerator.generateRandomName({ prefix: "group" }),
+      ifMissing: "generate",
+    });
+    const body = request.getBody() as GroupsBodyRequest;
+    const name = body.name;
+    let path = body.path;
+    const model = body.model;
+    const metadata = body.metadata;
+    if (name !== undefined) {
+      await this.checkGroupName(engineId, name, _id);
+    }
+
+    if (path !== undefined) {
+      await this.checkPath(engineId, path, _id);
+    }
+    const group = await this.get(request);
+    if (!group) {
+      path = body.path ?? _id;
+      if (!path.includes(_id)) {
+        path += `.${_id}`;
+      }
+      return this.groupsService.create(
+        _id,
+        engineId,
+        metadata,
+        model,
+        name,
+        path,
+        request,
+      );
+    }
+    return this.groupsService.update(
+      request,
+      _id,
+      engineId,
+      name,
+      path,
+      metadata,
+    );
+  }
+
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
@@ -283,157 +360,21 @@ export class GroupsController {
     const name = body.name;
     const path = body.path;
     const metadata = body.metadata;
-
-    let updateRequestBody = {};
-
     if (name !== undefined) {
       await this.checkGroupName(engineId, name, _id);
-      updateRequestBody = { ...updateRequestBody, name };
     }
 
     if (path !== undefined) {
       await this.checkPath(engineId, path, _id);
-      updateRequestBody = { ...updateRequestBody, path };
     }
-
-    if (metadata !== undefined) {
-      const group = await this.get(request);
-      const { model, metadata: groupMetadata } = group._source;
-      if (model !== null) {
-        const groupModel = await ask<AskModelGroupGet>(
-          "ask:device-manager:model:group:get",
-          { model },
-        );
-        for (const metadataName of Object.keys(
-          groupModel.group.metadataMappings,
-        )) {
-          if (metadata[metadataName] !== undefined) {
-            groupMetadata[metadataName] = metadata[metadataName];
-          }
-        }
-        updateRequestBody = { ...updateRequestBody, metadata: groupMetadata };
-      }
-    }
-
-    const groupToUpdate = await this.sdk.document.get<GroupContent>(
-      engineId,
-      InternalCollection.GROUPS,
-      _id,
-    );
-    const updatedGroup = await this.groupsService.update(
+    return this.groupsService.update(
       request,
       _id,
       engineId,
-      updateRequestBody,
+      name,
+      path,
+      metadata,
     );
-
-    if (updatedGroup._source.path !== groupToUpdate._source.path) {
-      const { hits: assets } = await this.sdk.document.search<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
-        {
-          query: {
-            prefix: {
-              "groups.path": {
-                value: groupToUpdate._source.path,
-              },
-            },
-          },
-        },
-        { lang: "koncorde" },
-      );
-      const { hits: devices } = await this.sdk.document.search<DeviceContent>(
-        engineId,
-        InternalCollection.DEVICES,
-        {
-          query: {
-            prefix: {
-              "groups.path": {
-                value: groupToUpdate._source.path,
-              },
-            },
-          },
-        },
-        { lang: "koncorde" },
-      );
-      await this.sdk.document.mUpdate(
-        engineId,
-        InternalCollection.ASSETS,
-        assets.map((asset) => ({
-          _id: asset._id,
-          body: {
-            groups: asset._source.groups.map((grp) => {
-              if (grp.path.includes(groupToUpdate._source.path)) {
-                grp.path = grp.path.replace(
-                  groupToUpdate._source.path,
-                  updatedGroup._source.path,
-                );
-                grp.date = Date.now();
-              }
-              return grp;
-            }),
-          },
-        })),
-        { strict: true },
-      );
-      await this.sdk.document.mUpdate(
-        engineId,
-        InternalCollection.DEVICES,
-        devices.map((device) => ({
-          _id: device._id,
-          body: {
-            groups: device._source.groups.map((grp) => {
-              if (grp.path.includes(groupToUpdate._source.path)) {
-                grp.path = grp.path.replace(
-                  groupToUpdate._source.path,
-                  updatedGroup._source.path,
-                );
-                grp.date = Date.now();
-              }
-              return grp;
-            }),
-          },
-        })),
-        { strict: true },
-      );
-      const { hits: childrenGroups } =
-        await this.sdk.document.search<GroupContent>(
-          engineId,
-          InternalCollection.GROUPS,
-          {
-            query: {
-              and: [
-                {
-                  prefix: {
-                    path: {
-                      value: groupToUpdate._source.path,
-                    },
-                  },
-                },
-                {
-                  not: { equals: { path: groupToUpdate._source.path } },
-                },
-              ],
-            },
-          },
-          { lang: "koncorde" },
-        );
-
-      await this.sdk.document.mUpdate(
-        engineId,
-        InternalCollection.GROUPS,
-        childrenGroups.map((grp) => {
-          grp._source.path = grp._source.path.replace(
-            groupToUpdate._source.path,
-            updatedGroup._source.path,
-          );
-          grp._source.lastUpdate = Date.now();
-          return { _id: grp._id, body: grp._source };
-        }),
-        { strict: true },
-      );
-    }
-    return updatedGroup;
   }
 
   async delete(request: KuzzleRequest): Promise<ApiGroupDeleteResult> {
@@ -501,5 +442,184 @@ export class GroupsController {
     const deviceIds = body.deviceIds;
     this.checkPath(engineId, path);
     return this.groupsService.removeDevice(engineId, path, deviceIds, request);
+  }
+
+  async mCreate(request: KuzzleRequest): Promise<ApiGroupMCreateResult> {
+    const engineId = request.getString("engineId");
+    const groups = request.getBodyArray("groups");
+    const errors = [];
+    const promises: Array<() => Promise<void>> = [];
+    const toCreate: Array<{
+      _id: string;
+      metadata: Metadata;
+      model: string;
+      name: string;
+      path: string;
+    }> = [];
+    for (const g of groups) {
+      const name = g.name;
+      const metadata = g.metadata ?? {};
+      const model = g.model ?? null;
+
+      const _id =
+        g._id ?? NameGenerator.generateRandomName({ prefix: "group" });
+      let path = g.path ?? _id;
+      if (!path.includes(_id)) {
+        path += `.${_id}`;
+      }
+      promises.push(async () => {
+        try {
+          if (typeof name !== "string") {
+            throw new BadRequestError(`A group must have a name`);
+          }
+          await this.checkPath(engineId, path, _id);
+
+          await this.checkGroupName(engineId, name);
+
+          toCreate.push({ _id, metadata, model, name, path });
+        } catch (error) {
+          let reason: string = "";
+          let status: number = 400;
+          if (error instanceof KuzzleError) {
+            reason = error.message;
+            status = error.code;
+          }
+          errors.push({
+            document: { _id, body: { metadata, model, name, path } },
+            reason,
+            status,
+          });
+        }
+      });
+    }
+    await Promise.allSettled(
+      promises.map((f) => new Promise((resolve) => f().then(resolve))),
+    );
+    const res = await this.groupsService.mCreate(engineId, toCreate);
+    return {
+      errors: [...res.errors, ...errors],
+      successes: res.successes,
+    };
+  }
+
+  async mUpdate(request: KuzzleRequest): Promise<ApiGroupMUpdateResult> {
+    const engineId = request.getString("engineId");
+    const groups = request.getBodyArray("groups");
+    const errors = [];
+    const promises: Array<() => Promise<void>> = [];
+    const toUpdate: Array<{
+      _id: string;
+      metadata: Metadata;
+      model: string;
+      name: string;
+      path: string;
+    }> = [];
+    for (const g of groups) {
+      const name = g.name;
+      const metadata = g.metadata ?? {};
+      const model = g.model ?? null;
+
+      const _id = g._id;
+      const path = g.path;
+      promises.push(async () => {
+        try {
+          if (typeof _id !== "string") {
+            throw new BadRequestError(`A group must have an _id`);
+          }
+          if (name) {
+            if (typeof name !== "string" || name.trim() === "") {
+              throw new BadRequestError(
+                `A group name must be a non-empty string`,
+              );
+            }
+            await this.checkGroupName(engineId, name, _id);
+          }
+
+          if (path) {
+            await this.checkPath(engineId, path, _id);
+          }
+          toUpdate.push({ _id, metadata, model, name, path });
+        } catch (error) {
+          let reason: string = "";
+          let status: number = 400;
+          if (error instanceof KuzzleError) {
+            reason = error.message;
+            status = error.code;
+          }
+          errors.push({
+            document: { _id, body: { metadata, model, name, path } },
+            reason,
+            status,
+          });
+        }
+      });
+    }
+    await Promise.allSettled(
+      promises.map((f) => new Promise((resolve) => f().then(resolve))),
+    );
+    const res = await this.groupsService.mUpdate(engineId, toUpdate, request);
+    return { errors: [...res.errors, ...errors], successes: res.successes };
+  }
+  async mUpsert(request: KuzzleRequest): Promise<ApiGroupMUpsertResult> {
+    const engineId = request.getString("engineId");
+    const groups = request.getBodyArray("groups");
+    const errors = [];
+    const promises: Array<() => Promise<void>> = [];
+    const toUpsert: Array<{
+      _id: string;
+      metadata: Metadata;
+      model: string;
+      name: string;
+      path: string;
+    }> = [];
+    for (const g of groups) {
+      const name = g.name;
+      const metadata = g.metadata ?? {};
+      const model = g.model ?? null;
+
+      const _id =
+        g._id ?? NameGenerator.generateRandomName({ prefix: "group" });
+      let path: string = g.path;
+      promises.push(async () => {
+        try {
+          if (typeof _id !== "string") {
+            throw new BadRequestError(`A group must have an _id`);
+          }
+          if (name) {
+            if (typeof name !== "string" || name.trim() === "") {
+              throw new BadRequestError(
+                `A group name must be a non-empty string`,
+              );
+            }
+            await this.checkGroupName(engineId, name, _id);
+          }
+
+          if (path) {
+            if (!g._id) {
+              path += `.${_id}`;
+            }
+            await this.checkPath(engineId, path, _id);
+          }
+          toUpsert.push({ _id, metadata, model, name, path });
+        } catch (error) {
+          let reason: string = "";
+          let status: number = 400;
+          if (error instanceof KuzzleError) {
+            reason = error.message;
+            status = error.code;
+          }
+          errors.push({
+            document: { _id, body: { metadata, model, name, path } },
+            reason,
+            status,
+          });
+        }
+      });
+    }
+    await Promise.allSettled(
+      promises.map((f) => new Promise((resolve) => f().then(resolve))),
+    );
+    const res = await this.groupsService.mUpsert(engineId, toUpsert, request);
+    return { errors: [...errors, ...res.errors], successes: res.successes };
   }
 }
