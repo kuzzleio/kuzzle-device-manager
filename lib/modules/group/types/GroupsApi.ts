@@ -5,7 +5,6 @@ import {
   SearchResult,
   mCreateResponse,
   mUpdateResponse,
-  mUpsertResponse,
 } from "kuzzle-sdk";
 import { GroupsBody, GroupContent } from "./GroupContent";
 import { DeviceContent } from "lib/modules/device";
