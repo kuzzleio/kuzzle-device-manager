@@ -598,7 +598,7 @@ export class DeviceService extends DigitalTwinService {
   }> {
     return lock(`device:${deviceId}`, async () => {
       const device = await this.getInternalDevices(deviceId);
-      delete device._source.metadata;
+      delete device._source.metadata; // ! Quick fix to avoid metadata values to be removed when link to an asset
 
       const engine = await this.getEngine(engineId);
 
