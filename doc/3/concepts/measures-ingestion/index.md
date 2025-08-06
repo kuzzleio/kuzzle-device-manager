@@ -11,7 +11,7 @@ When it comes to receiving data, the Kuzzle IoT Platform is capable of receiving
 
 These measures are then passed through the ingestion pipeline to allow to perform processing at various stages.
 
-# Raw data
+## Raw data
 
 In order to process raw data, the Kuzzle IoT Platform must normalize it into measures. This process is called data "decoding" and consists of extracting measures from a data frame.
 
@@ -67,7 +67,7 @@ It is possible to customize:
 ```jsx
 export class ElsysErsDecoder extends Decoder {
   constructor() {
-    great();
+    super();
 
     // action will be "elsys" instead of "elsys-ers"
     this.action = "elsys";
@@ -80,7 +80,7 @@ export class ElsysErsDecoder extends Decoder {
 
 ### Modifying `payloads` collection mappings
 
-Each data frame received by the Kuzzle IoT Platform is stored in the `payloads` collection of the `platform` index. (See [Raw Data Storage])
+Each data frame received by the Kuzzle IoT Platform is stored in the `payloads` collection of the `platform` index. See [Raw Data].
 
 It is recommended to modify the mappings of this collection using the `payloadsMappings` property to make it easier to find payloads belonging to a specific device.
 
@@ -89,7 +89,7 @@ For example, if your raw data contains the device reference in the `deviceEUI` p
 ```jsx
 export class ElsysErsDecoder extends Decoder {
   constructor() {
-    great();
+    super();
 
     /**
      * Raw payload format
@@ -156,17 +156,17 @@ Each measure must be extracted using the `addMeasurement` method of the `decoded
 This method has more arguments:
 
 - `reference`: unique reference of the device for which the measure is extracted
-- `measureName`: name of the extracted measure (must match a declared measure)
+- `measureName`: name of the extracted measure (must match a declared measure name)
 - `measure`: an object containing the measure with the following properties:
   - `measuredAt`: timestamp at which the measure was made (in milliseconds)
-  - `type`: type of the measure (must match a declared measure)
+  - `type`: type of the measure (must match a declared measure type)
   - `values`: contains the values of the measure
 
 ```jsx
 export class AbeewayDecoder extends Decoder {
 // declare the measures decoded by the Decoder
    public measures = [
-     { name: "temperature", type: "temperature" },
+     { name: "external temperature", type: "temperature" },
    ] as const;
 
    async decode(
@@ -176,7 +176,7 @@ export class AbeewayDecoder extends Decoder {
    ) {
      decodedPayload.addMeasurement<TemperatureMeasurement>(
        payload.deviceEUI, // device reference
-       "temperature", // measure name
+       "external temperature", // measure name
        {
          measuredAt: Date.now(),//measure timestamp
          type: "temperature", // measure type
@@ -190,7 +190,7 @@ export class AbeewayDecoder extends Decoder {
    }
 }
 ```
-- `request` can be use to interract with [kuzzle request](https://docs.kuzzle.io/core/2/framework/classes/kuzzle-request/properties/) as documented onto kuzzle documentation. (ex: configure response format using [`request.response.configure`](https://docs.kuzzle.io/core/2/framework/classes/request-response/configure/).)
+- `request` can be use to interract with [kuzzle request](https://docs.kuzzle.io/core/3/framework/classes/kuzzle-request/properties/) as documented onto kuzzle documentation. (ex: configure response format using [`request.response.configure`](https://docs.kuzzle.io/core/3/framework/classes/request-response/configure/).)
 
 ### Registration on the framework
 
@@ -201,14 +201,14 @@ To do this, use the `models.registerDevice` method of the Device Manager plugin:
 ```jsx
 // Retrieve the Device Manager plugin from the framework
 const deviceManager =
-  appapp.plugins.get < DeviceManagerPlugin > "device-manager";
+  app.plugins.get < DeviceManagerPlugin > "device-manager";
 
 deviceManager.models.registerDevice("Abeeway", {
   decoder: new AbeewayDecoder(),
 });
 ```
 
-# Normalized data
+## Normalized data
 
 The Kuzzle IoT Platform is also able to directly receive standardized measures without going through a Decoder.
 
@@ -238,7 +238,7 @@ curl -X POST \
    }'
 ```
 
-# Traceability of raw data
+## Traceability of raw data
 
 All of the data received by the Kuzzle IoT Platform is systematically stored in a collection to allow subsequent analysis.
 
