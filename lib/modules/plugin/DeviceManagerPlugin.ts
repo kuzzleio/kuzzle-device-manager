@@ -18,7 +18,7 @@ import {
   NamedMeasures,
   payloadsMappings,
 } from "../decoder";
-import { DeviceModule, devicesMappings } from "../device";
+import { DeviceModule, devicesAdminMappings, devicesMappings } from "../device";
 import { MeasureModule } from "../measure";
 import {
   AssetModelDefinition,
@@ -373,7 +373,7 @@ export class DeviceManagerPlugin extends Plugin {
         },
         devices: {
           name: "devices",
-          mappings: devicesMappings,
+          mappings: devicesAdminMappings,
         },
         payloads: {
           name: "payloads",
@@ -545,7 +545,7 @@ export class DeviceManagerPlugin extends Plugin {
       await this.modelsRegister.loadModels();
 
       await this.deviceManagerEngine
-        .createDevicesCollection(this.config.adminIndex)
+        .createAdminDevicesCollection()
         .catch((error) => {
           throw keepStack(
             error,

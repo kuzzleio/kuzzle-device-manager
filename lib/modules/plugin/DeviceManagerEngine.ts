@@ -35,6 +35,7 @@ import {
   getTwinConflicts,
 } from "../model/ModelsConflicts";
 import { addSchemaToCache } from "../shared/utils/AJValidator";
+import { devicesAdminMappings } from "../device";
 
 export type TwinType = "asset" | "device";
 
@@ -113,7 +114,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       async () => {
         await this.updateEngines();
         await this.updateMeasuresSchema();
-        await this.createDevicesCollection(this.config.adminIndex);
+        await this.createAdminDevicesCollection();
       },
     );
 
@@ -469,7 +470,28 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     return InternalCollection.DEVICES;
   }
+  /**
+   * Generate devices mappings and create the devices collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the devices collection creation
+   */
+  async createAdminDevicesCollection() {
+    const settings = this.config.engineCollections.devices.settings;
 
+    await this.tryCreateCollection(
+      this.config.adminIndex,
+      InternalCollection.DEVICES,
+      {
+        mappings: devicesAdminMappings,
+        settings,
+      },
+    );
+
+    return InternalCollection.DEVICES;
+  }
   /**
    * Generate measures mappings and create the measures collection in the engine
    *

@@ -186,7 +186,6 @@ export abstract class BaseService {
       modifiedDocument._source,
       { refresh, ...options },
     );
-
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterUpdate<T>
     >("generic:document:afterUpdate", [updatedDocument], kuzzleRequest);

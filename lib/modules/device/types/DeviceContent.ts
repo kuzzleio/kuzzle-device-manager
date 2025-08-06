@@ -21,3 +21,9 @@ export interface DeviceContent<TMetadata extends Metadata = any>
     date: number;
   }>;
 }
+
+/**
+ * Admin index Device document content
+ */
+export interface AdminDeviceContent
+  extends Omit<DeviceContent, "metadata" | "groups"> {}

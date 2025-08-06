@@ -199,7 +199,15 @@ const assetAyseDebug1Id = `${assetAyseDebug1.model}-${assetAyseDebug1.reference}
 
 export default {
   "device-manager": {
-    devices: internalDevices,
+    devices: internalDevices.map((device) => {
+      if ("metadata" in device && device.metadata) {
+        const { groups, metadata, ...rest } = device;
+        return {
+          ...rest,
+        };
+      }
+      return device;
+    }),
   },
 
   // Index "engine-ayse"

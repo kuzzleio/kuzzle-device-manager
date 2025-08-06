@@ -47,3 +47,37 @@ export const devicesMappings: CollectionMappings = {
     },
   },
 };
+
+/**
+ * Mappings for the "devices" collection of the admin index.
+ *
+ * Those mappings does not contains the `measures`, `groups` and `metadata` mappings.
+ */
+export const devicesAdminMappings: CollectionMappings = {
+  dynamic: "strict",
+  properties: {
+    model: {
+      type: "keyword",
+      fields: { text: { type: "text" } },
+    },
+    reference: {
+      type: "keyword",
+      fields: { text: { type: "text" } },
+    },
+    assetId: {
+      type: "keyword",
+      fields: { text: { type: "text" } },
+    },
+    engineId: {
+      type: "keyword",
+      fields: { text: { type: "text" } },
+    },
+    lastMeasuredAt: { type: "date" },
+    measureSlots: {
+      properties: {
+        name: { type: "keyword" },
+        type: { type: "keyword" },
+      },
+    },
+  },
+};

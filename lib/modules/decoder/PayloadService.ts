@@ -3,7 +3,7 @@ import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
 
-import { DeviceContent, DeviceSerializer } from "../device";
+import { AdminDeviceContent, DeviceContent, DeviceSerializer } from "../device";
 import { AskMeasureSourceIngest, DecodedMeasurement } from "../measure";
 import { AskModelDeviceGet } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
@@ -116,20 +116,11 @@ export class PayloadService extends BaseService {
       } = device;
       // ? Done here to avoid invoque Measure service only for device metadata change (if no engineId)
       const deviceMetadataChanges = decodedPayload.getMetadata(reference);
-
       if (
         changeMetadata &&
         deviceMetadataChanges !== null &&
         Object.values(deviceMetadataChanges).length > 0
       ) {
-        await this.sdk.document.update<DeviceContent>(
-          this.config.adminIndex,
-          InternalCollection.DEVICES,
-          _id,
-          {
-            metadata: deviceMetadataChanges,
-          },
-        );
         if (engineId !== null) {
           await this.sdk.document.update<DeviceContent>(
             engineId,
@@ -254,7 +245,7 @@ export class PayloadService extends BaseService {
     } = {},
   ) {
     const { successes: devices, errors } =
-      await this.sdk.document.mGet<DeviceContent>(
+      await this.sdk.document.mGet<AdminDeviceContent>(
         this.config.adminIndex,
         InternalCollection.DEVICES,
         references.map((reference) =>
@@ -298,7 +289,7 @@ export class PayloadService extends BaseService {
       }
     }
 
-    return updatedDevices;
+    return updatedDevices as KDocument<DeviceContent>[];
   }
 
   private async provisionDevices(
@@ -318,13 +309,11 @@ export class PayloadService extends BaseService {
       const [, ...rest] = deviceId.split("-");
       const reference = rest.join("-");
 
-      const body: DeviceContent = {
+      const body: AdminDeviceContent = {
         assetId: null,
         engineId: null,
-        groups: [],
         lastMeasuredAt: 0,
         measureSlots: deviceModelContent.device.measures,
-        metadata: {},
         model: deviceModel,
         reference,
       };

@@ -123,6 +123,7 @@ describe("features/Decoder/PayloadController", () => {
         temperature: 21,
         location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
         battery: 0.8,
+        metadata:{ color: "skidibabap" },
       },
     ]);
 
@@ -197,7 +198,6 @@ describe("features/Decoder/PayloadController", () => {
       _source: {
         reference: "12345",
         model: "DummyTemp",
-        metadata: { color: "RED" },
       },
     });
   });
