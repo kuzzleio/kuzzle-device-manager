@@ -47,7 +47,6 @@ import {
   deviceAyseWarehouseId,
 } from "../../../fixtures";
 import { DeviceContent } from "lib/modules/device";
-import { toLower } from "lodash";
 
 jest.setTimeout(10000);
 
@@ -985,28 +984,27 @@ describe("GroupsController", () => {
     expect(result).toHaveProperty("successes");
     expect(result).toHaveProperty("errors");
     expect(result.successes).toHaveLength(3);
-    const errors = result.errors.sort((a, b) =>
-      toLower(a.document?.body?.name).localeCompare(
-        toLower(b.document?.body?.name),
-      ),
-    );
-    expect(errors).toHaveLength(3);
-    expect(errors[0].document.body).toMatchObject({
-      name: "id taken",
-    });
-    expect(errors[0].reason).toBe("document already exists");
-
-    expect(errors[1].document.body).toMatchObject({
-      name: "Test group",
-    });
-    expect(errors[1].reason).toBe(
-      'A group with name "Test group" already exist',
-    );
-    expect(errors[2].document.body).toMatchObject({
-      name: "wrong path",
-    });
-    expect(errors[2].reason).toBe(
-      'The closest parent group "path" does not exist',
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reason: "document already exists",
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "id taken" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'A group with name "Test group" already exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "Test group" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'The closest parent group "path" does not exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "wrong path" }),
+          }),
+        }),
+      ]),
     );
   });
 
@@ -1048,27 +1046,30 @@ describe("GroupsController", () => {
 
     expect(result).toHaveProperty("successes");
     expect(result).toHaveProperty("errors");
-    const errors = result.errors.sort((a, b) =>
-      toLower(a.document?.body?.name).localeCompare(
-        toLower(b.document?.body?.name),
-      ),
-    );
-    expect(errors).toHaveLength(3);
-    expect(result.successes).toHaveLength(1);
 
-    expect(result.errors[0].document.body).toMatchObject({
-      name: "bad parent",
-    });
-    expect(result.errors[0].reason).toBe(
-      'The closest parent group "not-exist" does not exist',
-    );
-    expect(errors[1].document.body.name).toBe("missing id");
-    expect(errors[1].reason).toBe("A group must have an _id");
-    expect(errors[2].document.body).toMatchObject({
-      name: "test group",
-    });
-    expect(result.errors[2].reason).toBe(
-      'A group with name "test group" already exist',
+    expect(result.errors).toHaveLength(3);
+    expect(result.successes).toHaveLength(1);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reason: 'The closest parent group "not-exist" does not exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "bad parent" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: "A group must have an _id",
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "missing id" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'A group with name "test group" already exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "test group" }),
+          }),
+        }),
+      ]),
     );
   });
 
@@ -1095,7 +1096,7 @@ describe("GroupsController", () => {
     };
     const updateNameTaken = {
       _id: groupTestParentId1,
-      name: "Test group",
+      name: "test group",
       path: groupTestParentId1,
     };
 
@@ -1125,34 +1126,35 @@ describe("GroupsController", () => {
     expect(result).toHaveProperty("successes");
     expect(result).toHaveProperty("errors");
     expect(result.successes).toHaveLength(4);
-    const errors = result.errors.sort((a, b) =>
-      toLower(a.document?.body?.name).localeCompare(
-        toLower(b.document?.body?.name),
-      ),
-    );
-    expect(errors).toHaveLength(4);
 
-    expect(errors[0].document.body.name).toBe("bad parent");
-    expect(errors[0].reason).toBe(
-      'The closest parent group "not-exist" does not exist',
-    );
-    expect(result.errors[1].document.body).toMatchObject({
-      name: "Test group",
-    });
-    expect(result.errors[1].reason).toBe(
-      'A group with name "Test group" already exist',
-    );
-    expect(result.errors[2].document.body).toMatchObject({
-      name: "Test group",
-    });
-    expect(result.errors[2].reason).toBe(
-      'A group with name "Test group" already exist',
-    );
-    expect(result.errors[3].document.body).toMatchObject({
-      name: "wrong path",
-    });
-    expect(errors[3].reason).toBe(
-      'The closest parent group "path" does not exist',
+    expect(result.errors).toHaveLength(4);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reason: 'The closest parent group "not-exist" does not exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "bad parent" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'A group with name "Test group" already exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "Test group" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'A group with name "test group" already exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "test group" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'The closest parent group "path" does not exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "wrong path" }),
+          }),
+        }),
+      ]),
     );
   });
 });
