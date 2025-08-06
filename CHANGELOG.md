@@ -1,3 +1,10 @@
+## [3.0.0-next.6](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.5...v3.0.0-next.6) (2025-08-06)
+
+
+### Bug Fixes
+
+* remove metadata property to avoid update ([#432](https://github.com/kuzzleio/kuzzle-device-manager/issues/432)) ([6925e81](https://github.com/kuzzleio/kuzzle-device-manager/commit/6925e819bd2260cbf854c8c250e8db8ad5bcfea1))
+
 ## [3.0.0-next.5](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.4...v3.0.0-next.5) (2025-07-24)
 
 
