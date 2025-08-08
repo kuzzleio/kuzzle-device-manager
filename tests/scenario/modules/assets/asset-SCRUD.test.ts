@@ -152,7 +152,6 @@ describe("AssetsController:SCRUD", () => {
         trailer: null,
         weight: 10,
       },
-      lastMeasuredAt: null,
       linkedDevices: [],
       model: "Container",
       reference: "A2",
