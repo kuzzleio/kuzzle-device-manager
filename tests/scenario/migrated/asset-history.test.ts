@@ -1,4 +1,4 @@
-import { AssetHistoryContent } from "../../../index";
+import { ApiDeviceLinkAssetsRequest, ApiDeviceUnlinkAssetsRequest, AssetHistoryContent } from "../../../index";
 
 import { useSdk, sendPayloads } from "../../helpers";
 import { beforeEachTruncateCollections } from "../../hooks/collections";
@@ -70,19 +70,20 @@ describe("features/Asset/History", () => {
     let response;
     let promise;
 
-    response = await sdk.query({
+    response = await sdk.query<ApiDeviceLinkAssetsRequest>({
       controller: "device-manager/devices",
-      action: "linkAsset",
+      action: "linkAssets",
       _id: "DummyTemp-unlinked1",
-      assetId: "Container-unlinked1",
       engineId: "engine-ayse",
       body: {
-        measureNames: [{ device: "temperature", asset: "temperatureExt" }],
+        linkedMeasures:[{
+          assetId: "Container-unlinked1",
+          measureSlots:[{ device: "temperature", asset: "temperatureExt" }]}],
       },
     });
 
     expect(
-      response.result.asset._source.linkedMeasures[0].measureSlots
+      response.result.assets[0]._source.linkedMeasures[0].measureSlots
     ).toMatchObject([
       {
         asset: "temperatureExt",
@@ -90,13 +91,19 @@ describe("features/Asset/History", () => {
       },
     ]);
 
-    response = await sdk.query({
+    response = await sdk.query<ApiDeviceUnlinkAssetsRequest>({
       controller: "device-manager/devices",
-      action: "unlinkAsset",
+      action: "unlinkAssets",
       engineId: "engine-ayse",
       _id: "DummyTemp-unlinked1",
-      assetId: "Container-unlinked1",
-
+      body: {
+        linkedMeasures: [
+          {
+            assetId: "Container-unlinked1",
+            allMeasures: true,
+          },
+        ],
+      }
     });
 
     await sdk.collection.refresh("engine-ayse", "assets-history");

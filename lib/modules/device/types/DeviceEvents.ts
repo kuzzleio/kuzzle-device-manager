@@ -5,7 +5,7 @@ import { DeviceModelContent } from "../../../modules/model";
 import { Metadata } from "../../../modules/shared";
 
 import { DeviceContent } from "./DeviceContent";
-import { ApiDeviceLinkAssetRequest } from "./DeviceApi";
+import { ApiDeviceLinkAssetsRequest } from "./DeviceApi";
 
 export type EventDeviceUpdateBefore = {
   name: "device-manager:device:update:before";
@@ -30,7 +30,7 @@ export type AskDeviceLinkAsset = {
     assetId: string;
     deviceId: string;
     user: User;
-    measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"];
+    measureSlots: ApiDeviceLinkAssetsRequest["body"]["linkedMeasures"][0]["measureSlots"];
   };
 
   result: void;
@@ -42,6 +42,8 @@ export type AskDeviceUnlinkAsset = {
   payload: {
     deviceId: string;
     assetId: string;
+    measureSlots: ApiDeviceLinkAssetsRequest["body"]["linkedMeasures"][0]["measureSlots"];
+    allMeasures: undefined | boolean;
     user: User;
   };
 

@@ -103,17 +103,41 @@ export interface ApiDeviceSearchRequest extends DevicesControllerRequest {
 }
 export type ApiDeviceSearchResult = SearchResult<KHit<DeviceContent>>;
 
-export interface ApiDeviceUnlinkAssetRequest extends DevicesControllerRequest {
-  action: "unlinkAsset";
+export interface ApiDeviceUnlinkAssetsRequest extends DevicesControllerRequest {
+  action: "unlinkAssets";
 
   _id: string;
 
   strict?: boolean;
 
   refresh?: string;
+
+  body: {
+    linkedMeasures: Array<{
+      assetId: string;
+      /**
+       * This option allows to not specify the names of all the measures that should
+       * be unlinked from the asset.
+       */
+      allMeasures?: boolean;
+      /**
+       * Names of the linked measures.
+       *
+       * Array<{ asset: string, device: string }>
+       *
+       * @example
+       *
+       * [
+       *   { asset: "externalTemperature", device: "temperature" }
+       * ]
+       */
+      measureSlots?: Array<{ asset: string; device: string }>;
+    }>;
+  };
 }
-export type ApiDeviceUnlinkAssetResult = {
-  asset: KDocument<AssetContent>;
+
+export type ApiDeviceUnlinkAssetsResult = {
+  assets: KDocument<AssetContent>[];
   device: KDocument<DeviceContent>;
 };
 
@@ -135,50 +159,49 @@ export interface ApiDeviceDetachEngineRequest extends DevicesControllerRequest {
 }
 export type ApiDeviceDetachEngineResult = void;
 
-export interface ApiDeviceLinkAssetRequest extends DevicesControllerRequest {
-  action: "linkAsset";
+export interface ApiDeviceLinkAssetsRequest extends DevicesControllerRequest {
+  action: "linkAssets";
 
   _id: string;
 
   refresh?: string;
-
-  assetId: string;
-
-  /**
-   * This option allows to not specify the names of all the measures that should
-   * be linked to the asset.
-   *
-   * The algorithm will go through all the measures names provided by the device
-   * and add the one who are present with the same name in the asset.
-   *
-   * It will not add the measure if:
-   *   - it has been specified in the link request
-   *   - it was already present in the asset
-   *
-   * @example
-   *   if the device provide a measure of type "temperature" with the name "temp"
-   *   if the asset has declared a measure of type "temperature" with the name "temp"
-   *   then the measure will be automatically added in the link and will later be propagated to the asset
-   */
-  implicitMeasuresLinking?: boolean;
-
-  body?: {
-    /**
-     * Names of the linked measures.
-     *
-     * Array<{ asset: string, device: string }>
-     *
-     * @example
-     *
-     * [
-     *   { asset: "externalTemperature", device: "temperature" }
-     * ]
-     */
-    measureNames?: Array<{ asset: string; device: string }>;
+  body: {
+    linkedMeasures: Array<{
+      assetId: string;
+      /**
+       * This option allows to not specify the names of all the measures that should
+       * be linked to the asset.
+       *
+       * The algorithm will go through all the measures names provided by the device
+       * and add the one who are present with the same name in the asset.
+       *
+       * It will not add the measure if:
+       *   - it has been specified in the link request
+       *   - it was already present in the asset
+       *
+       * @example
+       *   if the device provide a measure of type "temperature" with the name "temp"
+       *   if the asset has declared a measure of type "temperature" with the name "temp"
+       *   then the measure will be automatically added in the link and will later be propagated to the asset
+       */
+      implicitMeasuresLinking?: boolean;
+      /**
+       * Names of the linked measures.
+       *
+       * Array<{ asset: string, device: string }>
+       *
+       * @example
+       *
+       * [
+       *   { asset: "externalTemperature", device: "temperature" }
+       * ]
+       */
+      measureSlots?: Array<{ asset: string; device: string }>;
+    }>;
   };
 }
-export type ApiDeviceLinkAssetResult = {
-  asset: KDocument<AssetContent>;
+export type ApiDeviceLinkAssetsResult = {
+  assets: KDocument<AssetContent>[];
   device: KDocument<DeviceContent>;
 };
 

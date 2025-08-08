@@ -384,7 +384,13 @@ export class AssetService extends DigitalTwinService {
       for (const { deviceId } of asset._source.linkedMeasures) {
         await ask<AskDeviceUnlinkAsset>(
           "ask:device-manager:device:unlink-asset",
-          { assetId: asset._id, deviceId, user },
+          {
+            allMeasures: true,
+            assetId: asset._id,
+            deviceId,
+            measureSlots: [],
+            user,
+          },
         );
       }
 
@@ -530,7 +536,7 @@ export class AssetService extends DigitalTwinService {
               assetId: asset._id,
               deviceId: link.deviceId,
               engineId: newEngineId,
-              measureNames: link.measureSlots,
+              measureSlots: link.measureSlots,
               user,
             },
           );

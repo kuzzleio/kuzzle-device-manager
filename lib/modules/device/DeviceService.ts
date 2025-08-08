@@ -31,7 +31,7 @@ import {
 
 import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 import { DeviceSerializer } from "./model/DeviceSerializer";
-import { ApiDeviceLinkAssetRequest } from "./types/DeviceApi";
+import { ApiDeviceLinkAssetsRequest } from "./types/DeviceApi";
 import {
   DeviceProvisioningContent,
   DeviceContent,
@@ -46,7 +46,7 @@ import {
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
 
-type MeasureName = { asset: string; device: string };
+type MeasureSlot = { asset: string; device: string };
 
 export class DeviceService extends DigitalTwinService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -58,13 +58,13 @@ export class DeviceService extends DigitalTwinService {
 
     onAsk<AskDeviceLinkAsset>(
       "ask:device-manager:device:link-asset",
-      async ({ deviceId, engineId, user, assetId, measureNames }) => {
+      async ({ deviceId, engineId, user, assetId, measureSlots }) => {
         const request = new KuzzleRequest({ refresh: "false" }, { user });
         await this.linkAsset(
           engineId,
           deviceId,
           assetId,
-          measureNames,
+          measureSlots,
           false,
           request,
         );
@@ -73,9 +73,15 @@ export class DeviceService extends DigitalTwinService {
 
     onAsk<AskDeviceUnlinkAsset>(
       "ask:device-manager:device:unlink-asset",
-      async ({ deviceId, assetId, user }) => {
+      async ({ deviceId, assetId, user, allMeasures, measureSlots }) => {
         const request = new KuzzleRequest({ refresh: "false" }, { user });
-        await this.unlinkAsset(deviceId, assetId, request);
+        await this.unlinkAsset(
+          deviceId,
+          assetId,
+          measureSlots,
+          allMeasures,
+          request,
+        );
       },
     );
 
@@ -581,7 +587,7 @@ export class DeviceService extends DigitalTwinService {
       if (device._source.linkedMeasures?.length) {
         await Promise.all(
           device._source.linkedMeasures.map((link) =>
-            this.unlinkAsset(deviceId, link.assetId, request),
+            this.unlinkAsset(deviceId, link.assetId, [], true, request),
           ),
         );
       }
@@ -630,7 +636,7 @@ export class DeviceService extends DigitalTwinService {
     engineId: string,
     deviceId: string,
     assetId: string,
-    measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"],
+    measureSlots: ApiDeviceLinkAssetsRequest["body"]["linkedMeasures"][0]["measureSlots"],
     implicitMeasuresLinking: boolean,
     request: KuzzleRequest,
   ): Promise<{
@@ -673,8 +679,8 @@ export class DeviceService extends DigitalTwinService {
         this.getDeviceModel(deviceProvisioning._source.model),
       ]);
 
-      const updatedMeasureSlots: MeasureName[] = [];
-      for (const measure of measureNames) {
+      const updatedMeasureSlots: MeasureSlot[] = [];
+      for (const measure of measureSlots) {
         const foundMeasure = deviceModel.device.measures.find(
           (deviceMeasure) => deviceMeasure.name === measure.device,
         );
@@ -838,7 +844,7 @@ export class DeviceService extends DigitalTwinService {
   private checkAlreadyProvidedMeasures(
     asset: KDocument<AssetContent>,
     deviceId: string,
-    requestedMeasureNames: MeasureName[],
+    requestedMeasureNames: MeasureSlot[],
   ) {
     const measureAlreadyProvided = (assetMeasureName: string): boolean => {
       return asset._source.linkedMeasures.some((link) =>
@@ -864,7 +870,7 @@ export class DeviceService extends DigitalTwinService {
   private checkAlreadyProvidingMeasures(
     device: KDocument<DeviceContent>,
     assetId: string,
-    requestedMeasureNames: MeasureName[],
+    requestedMeasureNames: MeasureSlot[],
   ) {
     const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
       return device._source.linkedMeasures.some((link) =>
@@ -894,7 +900,7 @@ export class DeviceService extends DigitalTwinService {
     device: KDocument<DeviceContent>,
     assetModel: AssetModelContent,
     deviceModel: DeviceModelContent,
-    requestedMeasureNames: MeasureName[],
+    requestedMeasureNames: MeasureSlot[],
   ) {
     const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
       return asset._source.linkedMeasures.some((link) =>
@@ -946,6 +952,8 @@ export class DeviceService extends DigitalTwinService {
   private async _unlinkAsset(
     deviceId: string,
     assetId: string,
+    measureSlots: MeasureSlot[],
+    allMeasures: undefined | boolean,
     request: KuzzleRequest,
   ): Promise<{
     asset: KDocument<AssetContent>;
@@ -975,13 +983,41 @@ export class DeviceService extends DigitalTwinService {
       InternalCollection.ASSETS,
       assetId,
     );
+    let linkedMeasuresAssets = asset._source.linkedMeasures;
+    let linkedMeasuresDevices = device._source.linkedMeasures;
 
-    const linkedMeasuresAssets = asset._source.linkedMeasures.filter(
-      (link) => link.deviceId !== device._id,
-    );
-    const linkedMeasuresDevices = device._source.linkedMeasures.filter(
-      (link) => link.assetId !== asset._id,
-    );
+    if (allMeasures) {
+      linkedMeasuresAssets = asset._source.linkedMeasures.filter(
+        (link) => link.deviceId !== device._id,
+      );
+      linkedMeasuresDevices = device._source.linkedMeasures.filter(
+        (link) => link.assetId !== asset._id,
+      );
+    } else {
+      linkedMeasuresAssets = asset._source.linkedMeasures.map((link) => {
+        if (link.deviceId !== device._id) {
+          return link;
+        }
+        return {
+          ...link,
+          measureSlots: link.measureSlots.filter(
+            (measure) => !measureSlots.some((m) => m.asset === measure.asset),
+          ),
+        };
+      });
+      linkedMeasuresDevices = device._source.linkedMeasures.map((link) => {
+        if (link.assetId !== asset._id) {
+          return link;
+        }
+        return {
+          ...link,
+          measureSlots: link.measureSlots.filter(
+            (measure) => !measureSlots.some((m) => m.device === measure.device),
+          ),
+        };
+      });
+    }
+
     const [updatedDevice, updatedAsset] = await Promise.all([
       this.updateDocument<DeviceContent>(
         request,
@@ -1043,18 +1079,21 @@ export class DeviceService extends DigitalTwinService {
    * Unlink a device of an asset with lock
    *
    * @param {string} deviceId Id of the device
+   * @param {string} assetId Id of the asset
    * @param {KuzzleRequest} request kuzzle request
    */
   async unlinkAsset(
     deviceId: string,
     assetId: string,
+    measureSlots: MeasureSlot[],
+    allMeasures: undefined | boolean,
     request: KuzzleRequest,
   ): Promise<{
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
     return lock(`device:${deviceId}`, async () =>
-      this._unlinkAsset(deviceId, assetId, request),
+      this._unlinkAsset(deviceId, assetId, measureSlots, allMeasures, request),
     );
   }
 

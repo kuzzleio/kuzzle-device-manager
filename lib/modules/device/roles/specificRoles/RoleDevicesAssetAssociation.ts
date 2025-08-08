@@ -10,7 +10,7 @@ export const RoleDevicesAssetAssociation: KuzzleRole = {
   definition: {
     controllers: {
       "device-manager/devices": {
-        actions: { linkAsset: true, unlinkAsset: true },
+        actions: { linkAssets: true, unlinkAssets: true },
       },
     },
   },
