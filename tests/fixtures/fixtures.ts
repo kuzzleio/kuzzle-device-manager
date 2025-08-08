@@ -205,6 +205,7 @@ export default {
           device;
         return {
           ...rest,
+          provisionedAt: Date.now(),
         };
       }
       return device;
