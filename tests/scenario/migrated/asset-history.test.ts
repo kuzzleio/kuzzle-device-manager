@@ -82,11 +82,10 @@ describe("features/Asset/History", () => {
     });
 
     expect(
-      response.result.asset._source.linkedDevices[0].measureNames
+      response.result.asset._source.linkedMeasures[0].measureSlots
     ).toMatchObject([
       {
         asset: "temperatureExt",
-        type: "temperature",
         device: "temperature",
       },
     ]);
@@ -119,14 +118,14 @@ describe("features/Asset/History", () => {
               name: "unlink",
               unlink: { deviceId: "DummyTemp-unlinked1" },
             },
-            asset: { linkedDevices: [] },
+            asset: { linkedMeasures: [] },
           },
         },
         "1": {
           _source: {
             id: "Container-unlinked1",
             event: { name: "link", link: { deviceId: "DummyTemp-unlinked1" } },
-            asset: { linkedDevices: [{ _id: "DummyTemp-unlinked1" }] },
+            asset: { linkedMeasures: [{ deviceId: "DummyTemp-unlinked1" }] },
           },
         },
         length: 2,

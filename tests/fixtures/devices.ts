@@ -19,7 +19,7 @@ export const deviceDetached1: DeviceContent = {
   ],
   metadata: {},
   engineId: null,
-  linkedAssets: [],
+  linkedMeasures: [],
   groups: [],
   associatedAt: Date.now(),
 };
@@ -44,16 +44,15 @@ export const deviceAyseLinked1: DeviceContent = {
   ],
   metadata: {},
   engineId: "engine-ayse",
-  linkedAssets: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "temperatureExt",
           device: "temperature",
-          type: "temperature",
         },
       ],
-      _id: "Container-linked1",
+      assetId: "Container-linked1",
     },
   ],
   groups: [],
@@ -80,19 +79,17 @@ export const deviceAyseLinked2: DeviceContent = {
   ],
   metadata: {},
   engineId: "engine-ayse",
-  linkedAssets: [
+  linkedMeasures: [
     {
-      _id: "Container-linked2",
-      measureNames: [
+      assetId: "Container-linked2",
+      measureSlots: [
         {
           asset: "temperatureExt",
           device: "temperature",
-          type: "temperature",
         },
         {
           asset: "position",
           device: "position",
-          type: "position",
         },
       ],
     },
@@ -127,7 +124,7 @@ export const deviceAyseUnlinked1: DeviceContent = {
   ],
   metadata: {},
   engineId: "engine-ayse",
-  linkedAssets: [],
+  linkedMeasures: [],
   groups: [],
   associatedAt: Date.now(),
 };
@@ -152,7 +149,7 @@ export const deviceAyseUnlinked2: DeviceContent = {
   ],
   metadata: {},
   engineId: "engine-ayse",
-  linkedAssets: [],
+  linkedMeasures: [],
   groups: [],
   associatedAt: Date.now(),
 };
@@ -177,7 +174,7 @@ export const deviceAyseUnlinked3: DeviceContent = {
   ],
   metadata: {},
   engineId: "engine-ayse",
-  linkedAssets: [],
+  linkedMeasures: [],
   groups: [],
   associatedAt: Date.now(),
 };
@@ -202,16 +199,15 @@ export const deviceAyseWarehouse: DeviceContent = {
   ],
   metadata: {},
   engineId: "engine-ayse",
-  linkedAssets: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "position",
           device: "position",
-          type: "position",
         },
       ],
-      _id: "Warehouse-linked",
+      assetId: "Warehouse-linked",
     },
   ],
   groups: [
@@ -232,7 +228,7 @@ export const deviceEmptyTemp: DeviceContent = {
     color: "BLUE",
   },
   engineId: "engine-ayse",
-  linkedAssets: [],
+  linkedMeasures: [],
   groups: [],
   associatedAt: Date.now(),
 };

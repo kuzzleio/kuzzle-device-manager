@@ -46,7 +46,7 @@ import {
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
 
-type MeasureName = { asset: string; device: string; type: string };
+type MeasureName = { asset: string; device: string };
 
 export class DeviceService extends DigitalTwinService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -113,7 +113,7 @@ export class DeviceService extends DigitalTwinService {
         associatedAt: 0, // Will be set when attached to an engine
         engineId: null,
         groups: [],
-        linkedAssets: [],
+        linkedMeasures: [],
         measureSlots: [],
         metadata,
         model,
@@ -382,17 +382,17 @@ export class DeviceService extends DigitalTwinService {
 
       const promises = [];
 
-      if (device._source.linkedAssets?.length) {
+      if (device._source.linkedMeasures?.length) {
         const { successes: assets } =
           await this.sdk.document.mGet<AssetContent>(
             engineId,
             InternalCollection.ASSETS,
-            device._source.linkedAssets.map((asset) => asset._id),
+            device._source.linkedMeasures.map((link) => link.assetId),
           );
 
         for (const asset of assets) {
-          const linkedDevices = asset._source.linkedDevices.filter(
-            (link) => link._id !== device._id,
+          const linkedDevices = asset._source.linkedMeasures.filter(
+            (link) => link.deviceId !== device._id,
           );
           promises.push(
             // Potential race condition if someone update the asset linkedDevices
@@ -401,7 +401,7 @@ export class DeviceService extends DigitalTwinService {
               request,
               {
                 _id: asset._id,
-                _source: { linkedDevices },
+                _source: { linkedMeasures: linkedDevices },
               },
               { collection: InternalCollection.ASSETS, engineId },
             ).then(async (updatedAsset) => {
@@ -497,7 +497,7 @@ export class DeviceService extends DigitalTwinService {
         associatedAt: Date.now(),
         engineId,
         groups: [],
-        linkedAssets: [],
+        linkedMeasures: [],
         measureSlots: device._source.measureSlots,
         metadata: {},
         model: device._source.model,
@@ -578,10 +578,10 @@ export class DeviceService extends DigitalTwinService {
         InternalCollection.DEVICES,
         deviceId,
       );
-      if (device._source.linkedAssets?.length) {
+      if (device._source.linkedMeasures?.length) {
         await Promise.all(
-          device._source.linkedAssets.map((asset) =>
-            this.unlinkAsset(deviceId, asset._id, request),
+          device._source.linkedMeasures.map((link) =>
+            this.unlinkAsset(deviceId, link.assetId, request),
           ),
         );
       }
@@ -668,25 +668,12 @@ export class DeviceService extends DigitalTwinService {
         assetId,
       );
 
-      // Remove existing links for this device
-      asset._source.linkedDevices = asset._source.linkedDevices.filter(
-        (link) => {
-          return link._id !== deviceId;
-        },
-      );
-      // Remove existing links for this asset
-      device._source.linkedAssets = device._source.linkedAssets.filter(
-        (link) => {
-          return link._id !== assetId;
-        },
-      );
-
       const [assetModel, deviceModel] = await Promise.all([
         this.getAssetModel(engine.group, asset._source.model),
         this.getDeviceModel(deviceProvisioning._source.model),
       ]);
 
-      const updatedMeasureNames: MeasureName[] = [];
+      const updatedMeasureSlots: MeasureName[] = [];
       for (const measure of measureNames) {
         const foundMeasure = deviceModel.device.measures.find(
           (deviceMeasure) => deviceMeasure.name === measure.device,
@@ -696,16 +683,14 @@ export class DeviceService extends DigitalTwinService {
             `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`,
           );
         }
-        const { type } = foundMeasure;
-        updatedMeasureNames.push({
+        updatedMeasureSlots.push({
           asset: measure.asset,
           device: measure.device,
-          type,
         });
       }
 
-      this.checkAlreadyProvidedMeasures(asset, updatedMeasureNames);
-      this.checkAlreadyProvidingMeasures(device, updatedMeasureNames);
+      this.checkAlreadyProvidedMeasures(asset, deviceId, updatedMeasureSlots);
+      this.checkAlreadyProvidingMeasures(device, assetId, updatedMeasureSlots);
 
       if (implicitMeasuresLinking) {
         this.generateMissingAssetMeasureNames(
@@ -713,22 +698,48 @@ export class DeviceService extends DigitalTwinService {
           device,
           assetModel,
           deviceModel,
-          updatedMeasureNames,
+          updatedMeasureSlots,
         );
       }
-      if (updatedMeasureNames.length === 0) {
+      if (updatedMeasureSlots.length === 0) {
         throw new BadRequestError(
           `No measure can be linked from"${deviceId}" to asset "${assetId}".`,
         );
       }
-      device._source.linkedAssets.push({
-        _id: asset._id,
-        measureNames: updatedMeasureNames,
-      });
-      asset._source.linkedDevices.push({
-        _id: deviceId,
-        measureNames: updatedMeasureNames,
-      });
+      const previousDeviceLink = device._source.linkedMeasures.find(
+        (link) => link.assetId === asset._id,
+      );
+      if (previousDeviceLink) {
+        previousDeviceLink.measureSlots = [
+          ...updatedMeasureSlots,
+          ...previousDeviceLink.measureSlots.filter(
+            (measure) =>
+              !updatedMeasureSlots.some((m) => m.device === measure.device),
+          ),
+        ];
+      } else {
+        device._source.linkedMeasures.push({
+          assetId: asset._id,
+          measureSlots: updatedMeasureSlots,
+        });
+      }
+      const previousAssetLink = asset._source.linkedMeasures.find(
+        (link) => link.deviceId === device._id,
+      );
+      if (previousAssetLink) {
+        previousAssetLink.measureSlots = [
+          ...updatedMeasureSlots,
+          ...previousAssetLink.measureSlots.filter(
+            (measure) =>
+              !updatedMeasureSlots.some((m) => m.asset === measure.asset),
+          ),
+        ];
+      } else {
+        asset._source.linkedMeasures.push({
+          deviceId,
+          measureSlots: updatedMeasureSlots,
+        });
+      }
 
       const [updatedDevice, updatedAsset] = await Promise.all([
         this.updateDocument<DeviceContent>(request, device, {
@@ -826,11 +837,15 @@ export class DeviceService extends DigitalTwinService {
    */
   private checkAlreadyProvidedMeasures(
     asset: KDocument<AssetContent>,
+    deviceId: string,
     requestedMeasureNames: MeasureName[],
   ) {
     const measureAlreadyProvided = (assetMeasureName: string): boolean => {
-      return asset._source.linkedDevices.some((link) =>
-        link.measureNames.some((names) => names.asset === assetMeasureName),
+      return asset._source.linkedMeasures.some((link) =>
+        link.measureSlots.some(
+          (names) =>
+            names.asset === assetMeasureName && link.deviceId !== deviceId,
+        ),
       );
     };
 
@@ -848,11 +863,15 @@ export class DeviceService extends DigitalTwinService {
    */
   private checkAlreadyProvidingMeasures(
     device: KDocument<DeviceContent>,
+    assetId: string,
     requestedMeasureNames: MeasureName[],
   ) {
     const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
-      return device._source.linkedAssets.some((link) =>
-        link.measureNames.some((names) => names.device === deviceMeasureName),
+      return device._source.linkedMeasures.some((link) =>
+        link.measureSlots.some(
+          (names) =>
+            names.device === deviceMeasureName && link.assetId !== assetId,
+        ),
       );
     };
 
@@ -878,8 +897,8 @@ export class DeviceService extends DigitalTwinService {
     requestedMeasureNames: MeasureName[],
   ) {
     const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
-      return asset._source.linkedDevices.some((link) =>
-        link.measureNames.some(
+      return asset._source.linkedMeasures.some((link) =>
+        link.measureSlots.some(
           (measureName) => measureName.device === deviceMeasureName,
         ),
       );
@@ -897,8 +916,8 @@ export class DeviceService extends DigitalTwinService {
       );
     };
     const measureSlotTaken = (deviceMeasureName: string): boolean => {
-      return device._source.linkedAssets.some((link) =>
-        link.measureNames.map((m) => m.device).includes(deviceMeasureName),
+      return device._source.linkedMeasures.some((link) =>
+        link.measureSlots.map((m) => m.device).includes(deviceMeasureName),
       );
     };
     for (const deviceMeasure of deviceModel.device.measures) {
@@ -914,7 +933,6 @@ export class DeviceService extends DigitalTwinService {
       requestedMeasureNames.push({
         asset: deviceMeasure.name,
         device: deviceMeasure.name,
-        type: deviceMeasure.type,
       });
     }
   }
@@ -942,7 +960,11 @@ export class DeviceService extends DigitalTwinService {
       InternalCollection.DEVICES,
       deviceId,
     );
-    if (!device._source.linkedAssets.map((a) => a._id).includes(assetId)) {
+    if (
+      !device._source.linkedMeasures
+        .map((measure) => measure.assetId)
+        .includes(assetId)
+    ) {
       throw new BadRequestError(
         `Device "${deviceProvisioning._id}" is not linked to an asset.`,
       );
@@ -954,16 +976,16 @@ export class DeviceService extends DigitalTwinService {
       assetId,
     );
 
-    const linkedDevices = asset._source.linkedDevices.filter(
-      (link) => link._id !== deviceProvisioning._id,
+    const linkedMeasuresAssets = asset._source.linkedMeasures.filter(
+      (link) => link.deviceId !== device._id,
     );
-    const linkedAssets = device._source.linkedAssets.filter(
-      (link) => link._id !== asset._id,
+    const linkedMeasuresDevices = device._source.linkedMeasures.filter(
+      (link) => link.assetId !== asset._id,
     );
     const [updatedDevice, updatedAsset] = await Promise.all([
       this.updateDocument<DeviceContent>(
         request,
-        { _id: deviceId, _source: { linkedAssets } },
+        { _id: deviceId, _source: { linkedMeasures: linkedMeasuresDevices } },
         {
           collection: InternalCollection.DEVICES,
           engineId,
@@ -973,7 +995,7 @@ export class DeviceService extends DigitalTwinService {
 
       this.updateDocument<AssetContent>(
         request,
-        { _id: asset._id, _source: { linkedDevices } },
+        { _id: asset._id, _source: { linkedMeasures: linkedMeasuresAssets } },
         {
           collection: InternalCollection.ASSETS,
           engineId,

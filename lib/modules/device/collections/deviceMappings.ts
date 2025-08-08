@@ -25,14 +25,13 @@ export const devicesMappings: CollectionMappings = {
       type: "keyword",
       fields: { text: { type: "text" } },
     },
-    linkedAssets: {
+    linkedMeasures: {
       properties: {
-        _id: { type: "keyword" },
-        measureNames: {
+        assetId: { type: "keyword" },
+        measureSlots: {
           properties: {
             asset: { type: "keyword" },
             device: { type: "keyword" },
-            type: { type: "keyword" },
           },
         },
       },

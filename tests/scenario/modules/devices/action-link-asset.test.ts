@@ -46,14 +46,13 @@ describe("DeviceController: receiveMeasure", () => {
       documentGet(sdk, "engine-ayse", "devices", "DummyTemp-unlinked1"),
     ).resolves.toEqual(
       expect.objectContaining({
-        linkedAssets: expect.arrayContaining([
+        linkedMeasures: expect.arrayContaining([
           {
-            _id: "Container-unlinked1",
-            measureNames: [
+            assetId: "Container-unlinked1",
+            measureSlots: [
               {
                 asset: "temperatureExt",
                 device: "temperature",
-                type: "temperature",
               },
             ],
           },
@@ -63,14 +62,13 @@ describe("DeviceController: receiveMeasure", () => {
     await expect(
       documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
-      linkedDevices: [
+      linkedMeasures: [
         {
-          _id: "DummyTemp-unlinked1",
-          measureNames: [
+          deviceId: "DummyTemp-unlinked1",
+          measureSlots: [
             {
               asset: "temperatureExt",
               device: "temperature",
-              type: "temperature",
             },
           ],
         },
@@ -100,14 +98,14 @@ describe("DeviceController: receiveMeasure", () => {
     await expect(
       documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
-      linkedDevices: [
+      linkedMeasures: [
         {
-          _id: "DummyTemp-unlinked1",
-          measureNames: [{ asset: "temperatureExt", device: "temperature" }],
+          deviceId: "DummyTemp-unlinked1",
+          measureSlots: [{ asset: "temperatureExt", device: "temperature" }],
         },
         {
-          _id: "DummyTemp-unlinked2",
-          measureNames: [{ asset: "temperatureInt", device: "temperature" }],
+          deviceId: "DummyTemp-unlinked2",
+          measureSlots: [{ asset: "temperatureInt", device: "temperature" }],
         },
       ],
       _kuzzle_info: {
@@ -154,16 +152,15 @@ describe("DeviceController: receiveMeasure", () => {
     await expect(
       documentGet(sdk, "engine-ayse", "devices", "DummyTempPosition-unlinked3"),
     ).resolves.toMatchObject({
-      linkedAssets: expect.arrayContaining([
+      linkedMeasures: expect.arrayContaining([
         {
-          _id: "Container-linked1",
-          measureNames: [
+          assetId: "Container-linked1",
+          measureSlots: [
             {
               device: "temperature",
               asset: "temperatureInt",
-              type: "temperature",
             },
-            { device: "position", asset: "position", type: "position" },
+            { device: "position", asset: "position" },
           ],
         },
       ]),
@@ -175,9 +172,9 @@ describe("DeviceController: receiveMeasure", () => {
       "Container-linked1",
     );
 
-    expect(container.linkedDevices[1]).toMatchObject({
-      _id: "DummyTempPosition-unlinked3",
-      measureNames: [
+    expect(container.linkedMeasures[1]).toMatchObject({
+      deviceId: "DummyTempPosition-unlinked3",
+      measureSlots: [
         { asset: "temperatureInt", device: "temperature" },
         { asset: "position", device: "position" },
       ],
@@ -221,26 +218,24 @@ describe("DeviceController: receiveMeasure", () => {
     await expect(
       documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
-      linkedDevices: expect.arrayContaining([
+      linkedMeasures: expect.arrayContaining([
         {
-          _id: "DummyTemp-unlinked1",
-          measureNames: [
+          deviceId: "DummyTemp-unlinked1",
+          measureSlots: [
             {
               asset: "temperatureExt",
               device: "temperature",
-              type: "temperature",
             },
           ],
         },
         {
-          _id: "DummyTempPosition-unlinked3",
-          measureNames: [
+          deviceId: "DummyTempPosition-unlinked3",
+          measureSlots: [
             {
               asset: "temperatureInt",
               device: "temperature",
-              type: "temperature",
             },
-            { asset: "position", device: "position", type: "position" },
+            { asset: "position", device: "position" },
           ],
         },
       ]),
@@ -283,22 +278,19 @@ describe("DeviceController: receiveMeasure", () => {
     await expect(
       documentGet(sdk, "engine-ayse", "devices", "DummyTempPosition-unlinked3"),
     ).resolves.toMatchObject({
-      linkedAssets: expect.arrayContaining([
+      linkedMeasures: expect.arrayContaining([
         {
-          _id: "Container-unlinked1",
-          measureNames: [
+          assetId: "Container-unlinked1",
+          measureSlots: [
             {
               device: "temperature",
               asset: "temperatureExt",
-              type: "temperature",
             },
           ],
         },
         {
-          _id: "Container-linked1",
-          measureNames: [
-            { device: "position", asset: "position", type: "position" },
-          ],
+          assetId: "Container-linked1",
+          measureSlots: [{ device: "position", asset: "position" }],
         },
       ]),
     });

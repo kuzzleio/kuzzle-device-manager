@@ -82,7 +82,7 @@ describe("features/Device/Controller/DetachEngine", () => {
     await expect(
       sdk.document.get("engine-ayse", "assets", "Container-linked1")
     ).resolves.toMatchObject({
-      _source: { linkedDevices: [] },
+      _source: { linkedMeasures: [] },
     });
 
 

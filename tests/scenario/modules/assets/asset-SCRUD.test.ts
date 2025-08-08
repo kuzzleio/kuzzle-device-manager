@@ -91,7 +91,7 @@ describe("AssetsController:SCRUD", () => {
     expect(withoutMetadata.result._id).toBe("Container-A1");
     expect(withoutMetadata.result._source).toMatchObject({
       groups: [],
-      linkedDevices: [],
+      linkedMeasures: [],
       model: "Container",
       reference: "A1",
     });
@@ -152,7 +152,7 @@ describe("AssetsController:SCRUD", () => {
         trailer: null,
         weight: 10,
       },
-      linkedDevices: [],
+      linkedMeasures: [],
       model: "Container",
       reference: "A2",
     });
@@ -324,7 +324,7 @@ describe("AssetsController:SCRUD", () => {
       deviceAyseLinked1Id,
     );
     expect(engineDeviceDocument._source).toMatchObject({
-      linkedAssets: [],
+      linkedMeasures: [],
     });
   });
 

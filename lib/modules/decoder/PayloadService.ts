@@ -115,7 +115,7 @@ export class PayloadService extends BaseService {
     for (const device of devices) {
       const {
         _id,
-        _source: { reference, model, metadata, linkedAssets, engineId },
+        _source: { reference, model, metadata, linkedMeasures, engineId },
       } = device;
       // ? Done here to avoid invoque Measure service only for device metadata change (if no engineId)
       const deviceMetadataChanges = decodedPayload.getMetadata(reference);
@@ -163,11 +163,11 @@ export class PayloadService extends BaseService {
           continue;
         }
         // Handle every linked assets
-        for (const linkedAsset of linkedAssets) {
-          const assetId = linkedAsset._id;
+        for (const link of linkedMeasures) {
+          const assetId = link.assetId;
           const assetMeasurements = measurements.filter((m) =>
-            linkedAsset.measureNames
-              .map((mn) => mn.device)
+            link.measureSlots
+              .map((slot) => slot.device)
               .includes(m.measureName),
           );
           await ask<AskMeasureSourceIngest>(
@@ -194,8 +194,10 @@ export class PayloadService extends BaseService {
         // HANDLE MEASURES NOT LINKED
         const unlinkedMeasurements = measurements.filter(
           (m) =>
-            !linkedAssets.some((asset) =>
-              asset.measureNames.map((mn) => mn.device).includes(m.measureName),
+            !linkedMeasures.some((link) =>
+              link.measureSlots
+                .map((slot) => slot.device)
+                .includes(m.measureName),
             ),
         );
         if (unlinkedMeasurements.length > 0) {
@@ -234,7 +236,7 @@ export class PayloadService extends BaseService {
     const apiAction = "device-manager/devices:receiveMeasure";
     const {
       _id,
-      _source: { reference, model, metadata, linkedAssets, engineId },
+      _source: { reference, model, metadata, linkedMeasures, engineId },
     } = device;
 
     // TODO: do we want update a metadata from formatted payload to ?
@@ -248,12 +250,10 @@ export class PayloadService extends BaseService {
     );
 
     if (engineId !== null) {
-      for (const linkedAsset of linkedAssets) {
-        const assetId = linkedAsset._id;
+      for (const link of linkedMeasures) {
+        const assetId = link.assetId;
         const assetMeasurements = measurements.filter((m) =>
-          linkedAsset.measureNames
-            .map((mn) => mn.device)
-            .includes(m.measureName),
+          link.measureSlots.map((mn) => mn.device).includes(m.measureName),
         );
         await ask<AskMeasureSourceIngest>(
           "device-manager:measures:sourceIngest",
@@ -278,9 +278,9 @@ export class PayloadService extends BaseService {
       // HANDLE MEASURES NOT LINKED
       const unlinkedMeasurements = measurements.filter(
         (measurement) =>
-          !linkedAssets.some((asset) =>
-            asset.measureNames
-              .map((measureName) => measureName.device)
+          !linkedMeasures.some((link) =>
+            link.measureSlots
+              .map((slot) => slot.device)
               .includes(measurement.measureName),
           ),
       );

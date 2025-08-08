@@ -12,16 +12,15 @@ export const assetAyseWarehouseLinked: AssetContent = {
   metadata: {
     surface: 512,
   },
-  linkedDevices: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "position",
           device: "position",
-          type: "position",
         },
       ],
-      _id: "DummyTempPosition-warehouse",
+      deviceId: "DummyTempPosition-warehouse",
     },
   ],
   groups: [],
@@ -39,16 +38,15 @@ export const assetAyseWarehouseLinked2: AssetContent = {
   metadata: {
     surface: 512,
   },
-  linkedDevices: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "position",
           device: "position",
-          type: "position",
         },
       ],
-      _id: "DummyTempPosition-linked2",
+      deviceId: "DummyTempPosition-linked2",
     },
   ],
   groups: [],
@@ -84,16 +82,15 @@ export const assetAyseLinked1: AssetContent = {
       capacity: 1024,
     },
   },
-  linkedDevices: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "temperatureExt",
           device: "temperature",
-          type: "temperature",
         },
       ],
-      _id: "DummyTemp-linked1",
+      deviceId: "DummyTemp-linked1",
     },
   ],
   groups: [],
@@ -125,21 +122,19 @@ export const assetAyseLinked2: AssetContent = {
     weight: 42,
     height: 21,
   },
-  linkedDevices: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "temperatureExt",
           device: "temperature",
-          type: "temperature",
         },
         {
           asset: "position",
           device: "position",
-          type: "position",
         },
       ],
-      _id: "DummyTempPosition-linked2",
+      deviceId: "DummyTempPosition-linked2",
     },
   ],
   groups: [],
@@ -171,7 +166,7 @@ export const assetAyseUnlinked: AssetContent = {
     weight: 20,
     height: 22,
   },
-  linkedDevices: [],
+  linkedMeasures: [],
   groups: [],
 };
 export const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.reference}`;
@@ -201,7 +196,7 @@ export const assetAyseGrouped: AssetContent = {
     weight: 20,
     height: 22,
   },
-  linkedDevices: [],
+  linkedMeasures: [],
   groups: [
     {
       path: "test-parent-asset.test-children-asset",
@@ -236,7 +231,7 @@ export const assetAyseGrouped2: AssetContent = {
     weight: 20,
     height: 22,
   },
-  linkedDevices: [],
+  linkedMeasures: [],
   groups: [
     {
       path: "test-parent-asset",
@@ -260,7 +255,7 @@ export const assetAyseDebug1: AssetContent = {
     },
   ],
   metadata: {},
-  linkedDevices: [],
+  linkedMeasures: [],
   groups: [],
 };
 

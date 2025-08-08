@@ -195,7 +195,7 @@ const measures = {
 function neverCalled() {
   const container: ContainerAssetContent = {
     model: "Container",
-    linkedDevices: [],
+    linkedMeasures: [],
     groups: [],
     reference: "",
     measureSlots: Container.definition.measures,

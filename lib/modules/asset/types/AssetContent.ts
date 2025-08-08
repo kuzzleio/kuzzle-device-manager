@@ -8,11 +8,11 @@ export interface AssetContent<TMetadata extends Metadata = any>
   /**
    * Link with attached devices
    */
-  linkedDevices: Array<{
+  linkedMeasures: Array<{
     /**
      * Device ID
      */
-    _id: string;
+    deviceId: string;
 
     /**
      * Names of the linked measures
@@ -22,10 +22,10 @@ export interface AssetContent<TMetadata extends Metadata = any>
      * @example
      *
      * [
-     *   { asset: "externalTemperature", device: "temperature", type: "temperature" }
+     *   { asset: "externalTemperature", device: "temperature" }
      * ]
      */
-    measureNames: Array<{ asset: string; device: string; type: string }>;
+    measureSlots: Array<{ asset: string; device: string }>;
   }>;
   /**
    * Path's of asset groups

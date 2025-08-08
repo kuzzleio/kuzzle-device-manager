@@ -7,26 +7,26 @@ import { DigitalTwinContent, Metadata } from "../../shared";
 export interface DeviceContent<TMetadata extends Metadata = any>
   extends DigitalTwinContent<TMetadata> {
   /**
-   * Link with attached devices
+   * Link with attached assets
    */
-  linkedAssets: Array<{
+  linkedMeasures: Array<{
     /**
      * Asset ID
      */
-    _id: string;
+    assetId: string;
 
     /**
-     * Names of the linked measures
+     * Slots of the linked measures
      *
      * Array<{ asset: string, device: string, type: string }>
      *
      * @example
      *
      * [
-     *   { asset: "externalTemperature", device: "temperature", type: "temperature" }
+     *   { asset: "externalTemperature", device: "temperature", }
      * ]
      */
-    measureNames: Array<{ asset: string; device: string; type: string }>;
+    measureSlots: Array<{ asset: string; device: string }>;
   }>;
 
   /**

@@ -314,7 +314,7 @@ export class AssetService extends DigitalTwinService {
         _id: assetId,
         _source: {
           groups: [],
-          linkedDevices: [],
+          linkedMeasures: [],
           measureSlots: assetModel.asset.measures,
           metadata: { ...assetMetadata, ...metadata },
           model,
@@ -375,13 +375,13 @@ export class AssetService extends DigitalTwinService {
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request);
 
-      if (strict && asset._source.linkedDevices.length !== 0) {
+      if (strict && asset._source.linkedMeasures.length !== 0) {
         throw new BadRequestError(
           `Asset "${assetId}" is still linked to devices.`,
         );
       }
 
-      for (const { _id: deviceId } of asset._source.linkedDevices) {
+      for (const { deviceId } of asset._source.linkedMeasures) {
         await ask<AskDeviceUnlinkAsset>(
           "ask:device-manager:device:unlink-asset",
           { assetId: asset._id, deviceId, user },
@@ -479,7 +479,7 @@ export class AssetService extends DigitalTwinService {
       //We want to create the new asset with linked devices and groups empty
       const assetsContentCopy = _.cloneDeep(assetsContent);
       for (const asset of assetsContentCopy) {
-        asset.body.linkedDevices = [];
+        asset.body.linkedMeasures = [];
         asset.body.groups = [];
       }
 
@@ -507,23 +507,20 @@ export class AssetService extends DigitalTwinService {
         const assetOriginal = assets.successes.find((a) => a._id === asset._id);
 
         // get linked devices to this asset, if any
-        const linkedDevices = assetOriginal._source.linkedDevices.map((d) => ({
-          _id: d._id,
-          measureNames: d.measureNames,
-        }));
+        const linkedMeasures = assetOriginal._source.linkedMeasures;
 
         // ... and iterate over this list
-        for (const device of linkedDevices) {
+        for (const link of linkedMeasures) {
           // detach linked devices from current tenant (it also unkinks asset)
           await ask<AskDeviceDetachEngine>(
             "ask:device-manager:device:detach-engine",
-            { deviceId: device._id, user },
+            { deviceId: link.deviceId, user },
           );
 
           // ... and attach to new tenant
           await ask<AskDeviceAttachEngine>(
             "ask:device-manager:device:attach-engine",
-            { deviceId: device._id, engineId: newEngineId, user },
+            { deviceId: link.deviceId, engineId: newEngineId, user },
           );
 
           // ... and link this device to the asset in the new tenant
@@ -531,9 +528,9 @@ export class AssetService extends DigitalTwinService {
             "ask:device-manager:device:link-asset",
             {
               assetId: asset._id,
-              deviceId: device._id,
+              deviceId: link.deviceId,
               engineId: newEngineId,
-              measureNames: device.measureNames,
+              measureNames: link.measureSlots,
               user,
             },
           );

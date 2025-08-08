@@ -414,8 +414,8 @@ export class MeasureService extends BaseService {
     measureType: string,
     asset: AssetContent,
   ): string | null {
-    const linkedDevice = asset.linkedDevices.find(
-      (link) => link._id === deviceId,
+    const linkedDevice = asset.linkedMeasures.find(
+      (link) => link.deviceId === deviceId,
     );
 
     if (!linkedDevice) {
@@ -424,7 +424,7 @@ export class MeasureService extends BaseService {
       );
     }
 
-    const assetMeasureName = linkedDevice.measureNames.find(
+    const assetMeasureName = linkedDevice.measureSlots.find(
       (m) => m.device === measureType,
     );
 

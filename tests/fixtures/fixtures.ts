@@ -201,7 +201,7 @@ export default {
   "device-manager": {
     devices: internalDevices.map((device) => {
       if ("metadata" in device && device.metadata) {
-        const { groups, metadata, linkedAssets, associatedAt, ...rest } =
+        const { groups, metadata, linkedMeasures, associatedAt, ...rest } =
           device;
         return {
           ...rest,
