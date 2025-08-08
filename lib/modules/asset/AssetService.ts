@@ -314,7 +314,6 @@ export class AssetService extends DigitalTwinService {
         _id: assetId,
         _source: {
           groups: [],
-          lastMeasuredAt: null,
           linkedDevices: [],
           measureSlots: assetModel.asset.measures,
           metadata: { ...assetMetadata, ...metadata },
@@ -385,7 +384,7 @@ export class AssetService extends DigitalTwinService {
       for (const { _id: deviceId } of asset._source.linkedDevices) {
         await ask<AskDeviceUnlinkAsset>(
           "ask:device-manager:device:unlink-asset",
-          { deviceId, user },
+          { assetId: asset._id, deviceId, user },
         );
       }
 
@@ -568,7 +567,7 @@ export class AssetService extends DigitalTwinService {
         },
         {
           collection: InternalCollection.DEVICES,
-          index: this.config.adminIndex,
+          index: this.config.platformIndex,
         },
       ].map(({ index, collection }) => {
         return this.sdk.collection.refresh(index, collection);
@@ -629,7 +628,7 @@ export class AssetService extends DigitalTwinService {
     model: string,
   ): Promise<ApiAssetUpdateModelLocales[]> {
     const res = await this.sdk.document.search<AssetModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       {
         query: {
@@ -708,7 +707,7 @@ export class AssetService extends DigitalTwinService {
 
   private async getEngine(engineId: string): Promise<JSONObject> {
     const engine = await this.sdk.document.get(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.CONFIG,
       `engine-device-manager--${engineId}`,
     );

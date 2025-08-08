@@ -2,7 +2,7 @@ import { beforeEachTruncateCollections } from "../../hooks/collections";
 import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
-import { useSdk, sendPayloads } from "../../helpers";
+import { useSdk } from "../../helpers";
 
 jest.setTimeout(10000);
 
@@ -85,10 +85,6 @@ describe("features/Device/Controller/DetachEngine", () => {
       _source: { linkedDevices: [] },
     });
 
-    await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-linked1")
-    ).resolves.toMatchObject({
-      _source: { assetId: null },
-    });
+
   });
 });

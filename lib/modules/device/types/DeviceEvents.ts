@@ -41,6 +41,7 @@ export type AskDeviceUnlinkAsset = {
 
   payload: {
     deviceId: string;
+    assetId: string;
     user: User;
   };
 

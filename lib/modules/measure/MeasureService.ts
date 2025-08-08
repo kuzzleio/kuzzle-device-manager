@@ -31,6 +31,7 @@ import {
   MeasureTarget,
 } from "./types/MeasureTarget";
 import { merge } from "lodash";
+import { DeviceProvisioningContent } from "../device";
 
 export class MeasureService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -91,7 +92,10 @@ export class MeasureService extends BaseService {
         );
       asset = assetResult;
       measures = measuresResult;
-    } else if (isTargetDevice(target) && isSourceDevice(source)) {
+    } else if (
+      isSourceDevice(source) &&
+      (isTargetDevice(target) || indexId === null)
+    ) {
       const { asset: assetResult, measures: measuresResult } =
         await this.ingestDeviceMeasures(
           assetId,
@@ -126,7 +130,6 @@ export class MeasureService extends BaseService {
     }
 
     const promises: Promise<any>[] = [];
-
     if (indexId) {
       promises.push(
         this.sdk.document
@@ -143,9 +146,35 @@ export class MeasureService extends BaseService {
             }
           }),
       );
+      await Promise.all(promises);
+    } else if (isSourceDevice(source)) {
+      const deviceProvisioning =
+        await this.sdk.document.get<DeviceProvisioningContent>(
+          this.config.platformIndex,
+          InternalCollection.DEVICES,
+          source.id,
+        );
+      const lastMeasures = [...deviceProvisioning._source.lastMeasures];
+      for (const measure of measures) {
+        lastMeasures.push({
+          measureName: measure.origin.measureName,
+          measuredAt: measure.measuredAt,
+          type: measure.type,
+          values: measure.values,
+        });
+      }
+      lastMeasures.sort((a, b) => b.measuredAt - a.measuredAt);
+      lastMeasures.splice(5);
+      await this.sdk.document.update<DeviceProvisioningContent>(
+        this.config.platformIndex,
+        InternalCollection.DEVICES,
+        source.id,
+        {
+          lastMeasuredAt: lastMeasures[0].measuredAt,
+          lastMeasures,
+        },
+      );
     }
-
-    await Promise.all(promises);
 
     /**
      * Event at the end of the measure process pipeline.

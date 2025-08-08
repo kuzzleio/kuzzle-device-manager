@@ -32,24 +32,19 @@ describe("features/Device/Controller/UnlinkAsset", () => {
       action: "unlinkAsset",
       engineId: "engine-ayse",
       _id: "DummyTemp-linked1",
-    });
-
-    await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-linked1")
-    ).resolves.toMatchObject({
-      _source: { assetId: null },
+      assetId: "Container-linked1",
     });
 
     await expect(
       sdk.document.get("engine-ayse", "devices", "DummyTemp-linked1")
     ).resolves.toMatchObject({
-      _source: { assetId: null },
+      _source: { linkedAssets: [] },
     });
 
     await expect(
       sdk.document.get("engine-ayse", "assets", "Container-linked1")
     ).resolves.toMatchObject({
-      _source: { linkedDevices: { length: 0 } },
+      _source: { linkedDevices: [] },
     });
   });
 
@@ -61,6 +56,7 @@ describe("features/Device/Controller/UnlinkAsset", () => {
       controller: "device-manager/devices",
       action: "unlinkAsset",
       _id: "DummyTemp-unlinked1",
+      assetId: "Container-linked1",
     });
 
     await expect(promise).rejects.toMatchObject({

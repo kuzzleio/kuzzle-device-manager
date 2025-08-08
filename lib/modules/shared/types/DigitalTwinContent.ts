@@ -14,7 +14,5 @@ export interface DigitalTwinContent<TMetadata extends Metadata = Metadata>
 
   metadata: TMetadata;
 
-  lastMeasuredAt: number;
-
   measureSlots: NamedMeasures;
 }

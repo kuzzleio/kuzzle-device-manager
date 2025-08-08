@@ -43,28 +43,36 @@ describe("DeviceController: receiveMeasure", () => {
     });
 
     await expect(
-      documentGet(sdk, "device-manager", "devices", "DummyTemp-unlinked1"),
-    ).resolves.toMatchObject({
-      assetId: "Container-unlinked1",
-      _kuzzle_info: {
-        updater: "-1",
-      },
-    });
-    await expect(
       documentGet(sdk, "engine-ayse", "devices", "DummyTemp-unlinked1"),
-    ).resolves.toMatchObject({
-      assetId: "Container-unlinked1",
-      _kuzzle_info: {
-        updater: "-1",
-      },
-    });
+    ).resolves.toEqual(
+      expect.objectContaining({
+        linkedAssets: expect.arrayContaining([
+          {
+            _id: "Container-unlinked1",
+            measureNames: [
+              {
+                asset: "temperatureExt",
+                device: "temperature",
+                type: "temperature",
+              },
+            ],
+          },
+        ]),
+      }),
+    );
     await expect(
       documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
       linkedDevices: [
         {
           _id: "DummyTemp-unlinked1",
-          measureNames: [{ asset: "temperatureExt", device: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+              type: "temperature",
+            },
+          ],
         },
       ],
       _kuzzle_info: {
@@ -144,19 +152,21 @@ describe("DeviceController: receiveMeasure", () => {
     });
 
     await expect(
-      documentGet(
-        sdk,
-        "device-manager",
-        "devices",
-        "DummyTempPosition-unlinked3",
-      ),
-    ).resolves.toMatchObject({
-      assetId: "Container-linked1",
-    });
-    await expect(
       documentGet(sdk, "engine-ayse", "devices", "DummyTempPosition-unlinked3"),
     ).resolves.toMatchObject({
-      assetId: "Container-linked1",
+      linkedAssets: expect.arrayContaining([
+        {
+          _id: "Container-linked1",
+          measureNames: [
+            {
+              device: "temperature",
+              asset: "temperatureInt",
+              type: "temperature",
+            },
+            { device: "position", asset: "position", type: "position" },
+          ],
+        },
+      ]),
     });
     const container = await documentGet<AssetContent>(
       sdk,
@@ -211,34 +221,86 @@ describe("DeviceController: receiveMeasure", () => {
     await expect(
       documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
-      linkedDevices: [
+      linkedDevices: expect.arrayContaining([
         {
           _id: "DummyTemp-unlinked1",
-          measureNames: [{ asset: "temperatureExt", device: "temperature" }],
+          measureNames: [
+            {
+              asset: "temperatureExt",
+              device: "temperature",
+              type: "temperature",
+            },
+          ],
         },
         {
           _id: "DummyTempPosition-unlinked3",
           measureNames: [
-            { asset: "temperatureInt", device: "temperature" },
-            { asset: "position", device: "position" },
+            {
+              asset: "temperatureInt",
+              device: "temperature",
+              type: "temperature",
+            },
+            { asset: "position", device: "position", type: "position" },
           ],
         },
-      ],
+      ]),
     });
   });
 
-  it("should throw an error if the device is linked to another asset", async () => {
+  it("should link a device to several assets", async () => {
+    await sdk.query<ApiDeviceLinkAssetRequest>({
+      controller: "device-manager/devices",
+      action: "linkAsset",
+      engineId: "engine-ayse",
+      _id: "DummyTempPosition-unlinked3",
+      assetId: "Container-unlinked1",
+      body: {
+        measureNames: [
+          {
+            device: "temperature",
+            asset: "temperatureExt",
+          },
+        ],
+      },
+    });
+
+    await sdk.query<ApiDeviceLinkAssetRequest>({
+      controller: "device-manager/devices",
+      action: "linkAsset",
+      engineId: "engine-ayse",
+      _id: "DummyTempPosition-unlinked3",
+      assetId: "Container-linked1",
+      body: {
+        measureNames: [
+          {
+            device: "position",
+            asset: "position",
+          },
+        ],
+      },
+    });
+
     await expect(
-      sdk.query<ApiDeviceLinkAssetRequest>({
-        controller: "device-manager/devices",
-        action: "linkAsset",
-        engineId: "engine-ayse",
-        _id: "DummyTemp-linked1",
-        assetId: "Container-unlinked1",
-        implicitMeasuresLinking: true,
-      }),
-    ).rejects.toMatchObject({
-      message: 'Device "DummyTemp-linked1" is already linked to another asset.',
+      documentGet(sdk, "engine-ayse", "devices", "DummyTempPosition-unlinked3"),
+    ).resolves.toMatchObject({
+      linkedAssets: expect.arrayContaining([
+        {
+          _id: "Container-unlinked1",
+          measureNames: [
+            {
+              device: "temperature",
+              asset: "temperatureExt",
+              type: "temperature",
+            },
+          ],
+        },
+        {
+          _id: "Container-linked1",
+          measureNames: [
+            { device: "position", asset: "position", type: "position" },
+          ],
+        },
+      ]),
     });
   });
 
@@ -345,6 +407,20 @@ describe("DeviceController: receiveMeasure", () => {
     ).rejects.toMatchObject({
       message:
         'You must provide at least one measure name or set "implicitMeasuresLinking" to true.',
+    });
+
+    await expect(
+      sdk.query<ApiDeviceLinkAssetRequest>({
+        controller: "device-manager/devices",
+        action: "linkAsset",
+        engineId: "engine-ayse",
+        _id: "DummyTemp-linked1",
+        assetId: "Container-unlinked1",
+        implicitMeasuresLinking: true,
+      }),
+    ).rejects.toMatchObject({
+      message:
+        'No measure can be linked from"DummyTemp-linked1" to asset "Container-unlinked1".',
     });
   });
 });

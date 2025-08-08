@@ -200,7 +200,6 @@ function neverCalled() {
     reference: "",
     measureSlots: Container.definition.measures,
     metadata: undefined,
-    lastMeasuredAt: 0,
   };
 
   container.metadata.height = 40;

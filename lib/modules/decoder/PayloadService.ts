@@ -3,7 +3,11 @@ import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
 
-import { AdminDeviceContent, DeviceContent, DeviceSerializer } from "../device";
+import {
+  DeviceProvisioningContent,
+  DeviceContent,
+  DeviceSerializer,
+} from "../device";
 import { AskMeasureSourceIngest, DecodedMeasurement } from "../measure";
 import { AskModelDeviceGet } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
@@ -108,11 +112,10 @@ export class PayloadService extends BaseService {
       decodedPayload.references,
       { refresh },
     );
-
     for (const device of devices) {
       const {
         _id,
-        _source: { reference, model, metadata, assetId, engineId },
+        _source: { reference, model, metadata, linkedAssets, engineId },
       } = device;
       // ? Done here to avoid invoque Measure service only for device metadata change (if no engineId)
       const deviceMetadataChanges = decodedPayload.getMetadata(reference);
@@ -133,27 +136,90 @@ export class PayloadService extends BaseService {
         }
       }
 
-      if (engineId !== null && ingestMeasurements) {
-        await ask<AskMeasureSourceIngest>(
-          "device-manager:measures:sourceIngest",
-          {
-            measurements: decodedPayload.getMeasurements(reference),
-            payloadUuids: [uuid],
-            source: {
-              deviceMetadata: metadata,
-              id: _id,
-              metadata: decodedPayload.getMetadata(reference),
-              model: model,
-              reference: reference,
-              type: "device",
+      if (ingestMeasurements) {
+        const measurements = decodedPayload.getMeasurements(reference);
+        // Handle device not attached to an engine
+        if (engineId === null) {
+          await ask<AskMeasureSourceIngest>(
+            "device-manager:measures:sourceIngest",
+            {
+              measurements,
+              payloadUuids: [uuid],
+              source: {
+                deviceMetadata: metadata,
+                id: _id,
+                metadata: deviceMetadataChanges,
+                model: model,
+                reference: reference,
+                type: "device",
+              },
+              target: {
+                assetId: null,
+                indexId: engineId,
+                type: "device",
+              },
             },
-            target: {
-              assetId: assetId ?? null,
-              indexId: engineId,
-              type: "device",
+          );
+          continue;
+        }
+        // Handle every linked assets
+        for (const linkedAsset of linkedAssets) {
+          const assetId = linkedAsset._id;
+          const assetMeasurements = measurements.filter((m) =>
+            linkedAsset.measureNames
+              .map((mn) => mn.device)
+              .includes(m.measureName),
+          );
+          await ask<AskMeasureSourceIngest>(
+            "device-manager:measures:sourceIngest",
+            {
+              measurements: assetMeasurements,
+              payloadUuids: [uuid],
+              source: {
+                deviceMetadata: metadata,
+                id: _id,
+                metadata: deviceMetadataChanges,
+                model: model,
+                reference: reference,
+                type: "device",
+              },
+              target: {
+                assetId: assetId,
+                indexId: engineId,
+                type: "device",
+              },
             },
-          },
+          );
+        }
+        // HANDLE MEASURES NOT LINKED
+        const unlinkedMeasurements = measurements.filter(
+          (m) =>
+            !linkedAssets.some((asset) =>
+              asset.measureNames.map((mn) => mn.device).includes(m.measureName),
+            ),
         );
+        if (unlinkedMeasurements.length > 0) {
+          await ask<AskMeasureSourceIngest>(
+            "device-manager:measures:sourceIngest",
+            {
+              measurements: unlinkedMeasurements,
+              payloadUuids: [uuid],
+              source: {
+                deviceMetadata: metadata,
+                id: _id,
+                metadata: deviceMetadataChanges,
+                model: model,
+                reference: reference,
+                type: "device",
+              },
+              target: {
+                assetId: null,
+                indexId: engineId,
+                type: "device",
+              },
+            },
+          );
+        }
       }
     }
 
@@ -168,7 +234,7 @@ export class PayloadService extends BaseService {
     const apiAction = "device-manager/devices:receiveMeasure";
     const {
       _id,
-      _source: { reference, model, metadata, assetId, engineId },
+      _source: { reference, model, metadata, linkedAssets, engineId },
     } = device;
 
     // TODO: do we want update a metadata from formatted payload to ?
@@ -182,25 +248,63 @@ export class PayloadService extends BaseService {
     );
 
     if (engineId !== null) {
-      await ask<AskMeasureSourceIngest>(
-        "device-manager:measures:sourceIngest",
-        {
-          measurements,
-          payloadUuids,
-          source: {
-            deviceMetadata: metadata,
-            id: _id,
-            model: model,
-            reference: reference,
-            type: "device",
+      for (const linkedAsset of linkedAssets) {
+        const assetId = linkedAsset._id;
+        const assetMeasurements = measurements.filter((m) =>
+          linkedAsset.measureNames
+            .map((mn) => mn.device)
+            .includes(m.measureName),
+        );
+        await ask<AskMeasureSourceIngest>(
+          "device-manager:measures:sourceIngest",
+          {
+            measurements: assetMeasurements,
+            payloadUuids,
+            source: {
+              deviceMetadata: metadata,
+              id: _id,
+              model: model,
+              reference: reference,
+              type: "device",
+            },
+            target: {
+              assetId: assetId,
+              indexId: engineId,
+              type: "device",
+            },
           },
-          target: {
-            assetId: assetId ?? null,
-            indexId: engineId,
-            type: "device",
-          },
-        },
+        );
+      }
+      // HANDLE MEASURES NOT LINKED
+      const unlinkedMeasurements = measurements.filter(
+        (measurement) =>
+          !linkedAssets.some((asset) =>
+            asset.measureNames
+              .map((measureName) => measureName.device)
+              .includes(measurement.measureName),
+          ),
       );
+      if (unlinkedMeasurements.length > 0) {
+        await ask<AskMeasureSourceIngest>(
+          "device-manager:measures:sourceIngest",
+          {
+            measurements: unlinkedMeasurements,
+            payloadUuids,
+            source: {
+              deviceMetadata: metadata,
+              id: _id,
+              model: model,
+              reference: reference,
+              type: "device",
+            },
+            target: {
+              assetId: null,
+              indexId: engineId,
+              type: "device",
+            },
+          },
+        );
+      }
     }
   }
 
@@ -220,7 +324,7 @@ export class PayloadService extends BaseService {
   ) {
     try {
       await this.sdk.document.create(
-        this.config.adminIndex,
+        this.config.platformIndex,
         "payloads",
         { apiAction, deviceModel, payload, reason, state, uuid, valid },
         uuid,
@@ -243,10 +347,10 @@ export class PayloadService extends BaseService {
     }: {
       refresh?: any;
     } = {},
-  ) {
-    const { successes: devices, errors } =
-      await this.sdk.document.mGet<AdminDeviceContent>(
-        this.config.adminIndex,
+  ): Promise<KDocument<DeviceContent>[]> {
+    const { successes: provisioningDevices, errors } =
+      await this.sdk.document.mGet<DeviceProvisioningContent>(
+        this.config.platformIndex,
         InternalCollection.DEVICES,
         references.map((reference) =>
           DeviceSerializer.id(deviceModel, reference),
@@ -256,22 +360,22 @@ export class PayloadService extends BaseService {
     // Due to the existence of a "devices" collection in the tenant index and a platform index,
     // we need to fetch the device content from the associated tenant if it exists.
     const updatedDevices = await Promise.all(
-      devices.map((device) =>
-        device._source.engineId && device._source.engineId.trim() !== ""
+      provisioningDevices.map((deviceProvisioning) =>
+        deviceProvisioning._source.engineId &&
+        deviceProvisioning._source.engineId.trim() !== ""
           ? this.sdk.document.get<DeviceContent>(
-              device._source.engineId,
+              deviceProvisioning._source.engineId,
               InternalCollection.DEVICES,
-              device._id,
+              deviceProvisioning._id,
             )
-          : device,
+          : deviceProvisioning,
       ),
     );
-
     // If we have unknown devices, let's check if we should register them
     if (errors.length > 0) {
       const { _source } = await this.sdk.document.get(
-        this.config.adminIndex,
-        this.config.adminCollections.config.name,
+        this.config.platformIndex,
+        this.config.platformCollections.config.name,
         "plugin--device-manager",
       );
 
@@ -309,12 +413,13 @@ export class PayloadService extends BaseService {
       const [, ...rest] = deviceId.split("-");
       const reference = rest.join("-");
 
-      const body: AdminDeviceContent = {
-        assetId: null,
+      const body: DeviceProvisioningContent = {
         engineId: null,
         lastMeasuredAt: 0,
+        lastMeasures: [],
         measureSlots: deviceModelContent.device.measures,
         model: deviceModel,
+        provisionedAt: Date.now(),
         reference,
       };
 
@@ -326,7 +431,7 @@ export class PayloadService extends BaseService {
 
     const { successes, errors } =
       await this.sdk.document.mCreate<DeviceContent>(
-        this.config.adminIndex,
+        this.config.platformIndex,
         InternalCollection.DEVICES,
         newDevices,
         { refresh },
@@ -366,7 +471,7 @@ export class PayloadService extends BaseService {
     }
 
     const deleted = await this.sdk.bulk.deleteByQuery(
-      this.config.adminIndex,
+      this.config.platformIndex,
       "payloads",
       { query: { bool: { filter } } },
     );

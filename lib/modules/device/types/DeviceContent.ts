@@ -1,3 +1,4 @@
+import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 import { DigitalTwinContent, Metadata } from "../../shared";
 
 /**
@@ -6,9 +7,27 @@ import { DigitalTwinContent, Metadata } from "../../shared";
 export interface DeviceContent<TMetadata extends Metadata = any>
   extends DigitalTwinContent<TMetadata> {
   /**
-   * Linked asset unique identifier
+   * Link with attached devices
    */
-  assetId: string | null;
+  linkedAssets: Array<{
+    /**
+     * Asset ID
+     */
+    _id: string;
+
+    /**
+     * Names of the linked measures
+     *
+     * Array<{ asset: string, device: string, type: string }>
+     *
+     * @example
+     *
+     * [
+     *   { asset: "externalTemperature", device: "temperature", type: "temperature" }
+     * ]
+     */
+    measureNames: Array<{ asset: string; device: string; type: string }>;
+  }>;
 
   /**
    */
@@ -20,10 +39,39 @@ export interface DeviceContent<TMetadata extends Metadata = any>
     path: string;
     date: number;
   }>;
+  /**
+   * Date of association of the device on the engine
+   */
+  associatedAt: number;
 }
 
 /**
- * Admin index Device document content
+ * Platform index Device document content
  */
-export interface AdminDeviceContent
-  extends Omit<DeviceContent, "metadata" | "groups"> {}
+
+interface DeviceProvisioningContentFields
+  extends Pick<
+    DeviceContent,
+    "model" | "reference" | "engineId" | "measureSlots"
+  > {
+  /**
+   * Date of provisioning of the device on the platform
+   */
+  provisionedAt: number;
+  /**
+   * Date of last measure from the device
+   */
+  lastMeasuredAt: number | null;
+  /**
+   * An array containing the 5 last measures from the device
+   */
+  lastMeasures: Array<{
+    measureName: string;
+    values: JSONObject;
+    measuredAt: number;
+    type: string;
+  }>;
+}
+
+export type DeviceProvisioningContent = DeviceProvisioningContentFields &
+  KDocumentContent;

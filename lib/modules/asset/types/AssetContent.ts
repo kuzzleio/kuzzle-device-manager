@@ -6,7 +6,7 @@ import { DigitalTwinContent, Metadata } from "../../shared";
 export interface AssetContent<TMetadata extends Metadata = any>
   extends DigitalTwinContent<TMetadata> {
   /**
-   * Link with attached device
+   * Link with attached devices
    */
   linkedDevices: Array<{
     /**

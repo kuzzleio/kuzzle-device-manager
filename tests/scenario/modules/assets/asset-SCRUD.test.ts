@@ -91,7 +91,6 @@ describe("AssetsController:SCRUD", () => {
     expect(withoutMetadata.result._id).toBe("Container-A1");
     expect(withoutMetadata.result._source).toMatchObject({
       groups: [],
-      lastMeasuredAt: null,
       linkedDevices: [],
       model: "Container",
       reference: "A1",
@@ -320,21 +319,13 @@ describe("AssetsController:SCRUD", () => {
     );
     expect(assetExists).toBe(false);
 
-    const deviceDocument = await sdk.document.get(
-      "device-manager",
-      InternalCollection.DEVICES,
-      "DummyTemp-linked1",
-    );
-    expect(deviceDocument._source).toMatchObject({
-      assetId: null,
-    });
     const engineDeviceDocument = await sdk.document.get(
       "engine-ayse",
       InternalCollection.DEVICES,
       deviceAyseLinked1Id,
     );
     expect(engineDeviceDocument._source).toMatchObject({
-      assetId: null,
+      linkedAssets: [],
     });
   });
 

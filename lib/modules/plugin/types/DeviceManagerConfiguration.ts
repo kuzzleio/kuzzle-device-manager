@@ -18,14 +18,14 @@ export type DeviceManagerConfiguration = {
   };
 
   /**
-   * Administration index name
+   * Platform index name
    */
-  adminIndex: string;
+  platformIndex: string;
 
   /**
-   * Administration collections mappings (in admin index)
+   * Collection mappings for the platform index
    */
-  adminCollections: {
+  platformCollections: {
     config: {
       name: string;
       mappings: JSONObject;

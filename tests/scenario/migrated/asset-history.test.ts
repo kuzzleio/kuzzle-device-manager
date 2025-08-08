@@ -96,6 +96,8 @@ describe("features/Asset/History", () => {
       action: "unlinkAsset",
       engineId: "engine-ayse",
       _id: "DummyTemp-unlinked1",
+      assetId: "Container-unlinked1",
+
     });
 
     await sdk.collection.refresh("engine-ayse", "assets-history");

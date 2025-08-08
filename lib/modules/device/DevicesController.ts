@@ -384,9 +384,10 @@ export class DevicesController {
     request: KuzzleRequest,
   ): Promise<ApiDeviceUnlinkAssetResult> {
     const deviceId = request.getId();
-
+    const assetId = request.getString("assetId");
     const { asset, device } = await this.deviceService.unlinkAsset(
       deviceId,
+      assetId,
       request,
     );
 

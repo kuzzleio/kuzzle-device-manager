@@ -54,7 +54,7 @@ export class ModelsRegister {
     ]);
 
     await this.sdk.collection.refresh(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
     );
   }
@@ -245,7 +245,7 @@ export class ModelsRegister {
     );
 
     await this.sdk.document.mCreateOrReplace(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       documents as any,
       { strict: true },

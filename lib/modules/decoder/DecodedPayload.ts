@@ -29,8 +29,10 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
 
   get references() {
     return [
-      ...Object.keys(this.measurementsByDevice),
-      ...Object.keys(this.metadataByDevice),
+      ...new Set<string>([
+        ...Object.keys(this.measurementsByDevice),
+        ...Object.keys(this.metadataByDevice),
+      ]),
     ];
   }
 
