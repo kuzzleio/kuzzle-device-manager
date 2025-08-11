@@ -17,12 +17,7 @@ import {
 } from "kuzzle-sdk";
 import _ from "lodash";
 
-import {
-  AskDeviceAttachEngine,
-  AskDeviceDetachEngine,
-  AskDeviceLinkAsset,
-  AskDeviceUnlinkAsset,
-} from "../device";
+import { AskDeviceAttachEngine, AskDeviceDetachEngine } from "../device";
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
   AskEngineList,
@@ -369,7 +364,6 @@ export class AssetService extends DigitalTwinService {
     assetId: string,
     request: KuzzleRequest,
   ) {
-    const user = request.getUser();
     const strict = request.getBoolean("strict");
 
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
@@ -382,16 +376,7 @@ export class AssetService extends DigitalTwinService {
       }
 
       for (const { deviceId } of asset._source.linkedMeasures) {
-        await ask<AskDeviceUnlinkAsset>(
-          "ask:device-manager:device:unlink-asset",
-          {
-            allMeasures: true,
-            assetId: asset._id,
-            deviceId,
-            measureSlots: [],
-            user,
-          },
-        );
+        await this.unlinkAssetDevice(deviceId, assetId, [], true, request);
       }
 
       await this.deleteDocument(request, assetId, {
@@ -417,6 +402,8 @@ export class AssetService extends DigitalTwinService {
     assetsList: string[],
     engineId: string,
     newEngineId: string,
+    includeDevices: boolean,
+    request: KuzzleRequest,
   ): Promise<ApiAssetMigrateTenantResult> {
     let errors = [];
     let successes = [];
@@ -517,33 +504,41 @@ export class AssetService extends DigitalTwinService {
 
         // ... and iterate over this list
         for (const link of linkedMeasures) {
-          // detach linked devices from current tenant (it also unkinks asset)
-          await ask<AskDeviceDetachEngine>(
-            "ask:device-manager:device:detach-engine",
-            { deviceId: link.deviceId, user },
-          );
+          if (includeDevices === true) {
+            // detach linked devices from current tenant (it also unkinks asset)
+            await ask<AskDeviceDetachEngine>(
+              "ask:device-manager:device:detach-engine",
+              { deviceId: link.deviceId, user },
+            );
 
-          // ... and attach to new tenant
-          await ask<AskDeviceAttachEngine>(
-            "ask:device-manager:device:attach-engine",
-            { deviceId: link.deviceId, engineId: newEngineId, user },
-          );
+            // ... and attach to new tenant
+            await ask<AskDeviceAttachEngine>(
+              "ask:device-manager:device:attach-engine",
+              { deviceId: link.deviceId, engineId: newEngineId, user },
+            );
 
-          // ... and link this device to the asset in the new tenant
-          await ask<AskDeviceLinkAsset>(
-            "ask:device-manager:device:link-asset",
-            {
-              assetId: asset._id,
-              deviceId: link.deviceId,
-              engineId: newEngineId,
-              measureSlots: link.measureSlots,
-              user,
-            },
-          );
+            // ... and link this device to the asset in the new tenant
+            await this.linkAssetDevice(
+              newEngineId,
+              link.deviceId,
+              asset._id,
+              link.measureSlots,
+              false,
+              request,
+            );
+          } else {
+            await this.unlinkAssetDevice(
+              link.deviceId,
+              asset._id,
+              link.measureSlots,
+              false,
+              request,
+            );
+          }
         }
       }
 
-      // Finally here, we can delete the newly create assets in the source engine !
+      // Finally here, we can delete the successefully migrated assets from the source engine !
       await this.sdk.document.mDelete(
         engineId,
         InternalCollection.ASSETS,
@@ -706,16 +701,6 @@ export class AssetService extends DigitalTwinService {
     }
 
     return results;
-  }
-
-  private async getEngine(engineId: string): Promise<JSONObject> {
-    const engine = await this.sdk.document.get(
-      this.config.platformIndex,
-      InternalCollection.CONFIG,
-      `engine-device-manager--${engineId}`,
-    );
-
-    return engine._source.engine;
   }
 
   private async refreshModel({

@@ -3,6 +3,7 @@ import {
   ControllerDefinition,
   HttpStream,
   JSONObject,
+  KDocument,
   KuzzleError,
   KuzzleRequest,
 } from "kuzzle";
@@ -32,6 +33,10 @@ import {
   ApiAssetMGetLastMeasuresResult,
   ApiAssetGetLastMeasuredAtResult,
   ApiAssetUpdateModelLocales,
+  ApiAssetLinkDevicesResult,
+  ApiAssetlinkDevicesRequest,
+  ApiAssetUnlinkDevicesResult,
+  ApiAssetUnlinkDevicesRequest,
 } from "./types/AssetApi";
 import { isSourceApi } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
@@ -44,6 +49,7 @@ import {
 } from "../measure/MeasureValidationError";
 import { AskModelAssetGet } from "../model";
 import { AssetContent } from "./exports";
+import { DeviceContent, DeviceSerializer } from "../device";
 
 export class AssetsController {
   public definition: ControllerDefinition;
@@ -211,6 +217,24 @@ export class AssetsController {
             {
               path: "device-manager/assets/modelLocales",
               verb: "patch",
+            },
+          ],
+        },
+        linkDevices: {
+          handler: this.linkDevices.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/_link/",
+              verb: "put",
+            },
+          ],
+        },
+        unlinkDevices: {
+          handler: this.unlinkDevices.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/_unlink/",
+              verb: "delete",
             },
           ],
         },
@@ -720,12 +744,14 @@ export class AssetsController {
     const assetsList = request.getBodyArray("assetsList");
     const engineId = request.getString("engineId");
     const newEngineId = request.getBodyString("newEngineId");
-
+    const includeDevices = request.getBodyBoolean("includeDevices");
     const { errors, successes } = await this.assetService.migrateTenant(
       request.getUser(),
       assetsList,
       engineId,
       newEngineId,
+      includeDevices,
+      request,
     );
 
     return { errors, successes };
@@ -774,5 +800,88 @@ export class AssetsController {
       });
       return e;
     }
+  }
+
+  /**
+   * Link an asset to devices.
+   */
+  async linkDevices(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetLinkDevicesResult> {
+    const assetId = request.getId();
+    const engineId = request.getString("engineId");
+    const measuresTolink = request.getBodyArray(
+      "linkedMeasures",
+      [],
+    ) as ApiAssetlinkDevicesRequest["body"]["linkedMeasures"];
+
+    if (measuresTolink.length === 0) {
+      throw new BadRequestError(
+        `You must provide at least one asset to be linked.`,
+      );
+    }
+    const devices: KDocument<DeviceContent>[] = [];
+    let asset: KDocument<AssetContent>;
+    for (const measure of measuresTolink) {
+      const { deviceId, implicitMeasuresLinking, measureSlots } = measure;
+      if (!measureSlots?.length && !implicitMeasuresLinking) {
+        throw new BadRequestError(
+          `You must provide at least one measure name or set "implicitMeasuresLinking" to true.`,
+        );
+      }
+      const { asset: updatedAsset, device } =
+        await this.assetService.linkAssetDevice(
+          engineId,
+          deviceId,
+          assetId,
+          measureSlots || [],
+          implicitMeasuresLinking,
+          request,
+        );
+      devices.push(DeviceSerializer.serialize(device));
+      asset = updatedAsset;
+    }
+    return {
+      asset: AssetSerializer.serialize(asset),
+      devices,
+    };
+  }
+
+  /**
+   * Unlink assets from a device.
+   */
+  async unlinkDevices(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetUnlinkDevicesResult> {
+    const assetId = request.getId();
+    const measureToUnlink = request.getBodyArray(
+      "linkedMeasures",
+    ) as ApiAssetUnlinkDevicesRequest["body"]["linkedMeasures"];
+
+    const devices: KDocument<DeviceContent>[] = [];
+    let asset: KDocument<AssetContent>;
+    for (const measure of measureToUnlink) {
+      const { deviceId, allMeasures, measureSlots } = measure;
+      if (!measureSlots?.length && !allMeasures) {
+        throw new BadRequestError(
+          `You must provide at least one measure name or set "allMeasures" to true.`,
+        );
+      }
+      const { asset: updatedAsset, device } =
+        await this.assetService.unlinkAssetDevice(
+          deviceId,
+          assetId,
+          measureSlots,
+          allMeasures,
+          request,
+        );
+      devices.push(DeviceSerializer.serialize(device));
+      asset = updatedAsset;
+    }
+
+    return {
+      asset: AssetSerializer.serialize(asset),
+      devices,
+    };
   }
 }

@@ -23,6 +23,7 @@ import { AssetContent } from "./AssetContent";
 
 type AssetsControllerName = "device-manager/assets";
 import { ApiMeasureSource } from "../../measure/types/MeasureSources";
+import { DeviceContent } from "lib/modules/device";
 
 interface AssetsControllerRequest {
   controller: AssetsControllerName;
@@ -241,6 +242,7 @@ export interface ApiAssetMigrateTenantRequest extends AssetsControllerRequest {
   body: {
     assetsList: string[];
     newEngineId: string;
+    includeDevices?: boolean;
   };
 }
 export type ApiAssetMigrateTenantResult = {
@@ -261,4 +263,88 @@ export type ApiAssetMGetLastMeasuredAtResult =
 export type ApiAssetUpdateModelLocales = {
   engineIndex: string;
   result: UpdateByQueryResponse<AssetContent>;
+};
+
+export interface ApiAssetlinkDevicesRequest extends AssetsControllerRequest {
+  action: "linkDevices";
+
+  _id: string;
+
+  refresh?: string;
+  body: {
+    linkedMeasures: Array<{
+      deviceId: string;
+      /**
+       * This option allows to not specify the names of all the measures that should
+       * be linked to the asset.
+       *
+       * The algorithm will go through all the measures names provided by the device
+       * and add the one who are present with the same name in the asset.
+       *
+       * It will not add the measure if:
+       *   - it has been specified in the link request
+       *   - it was already present in the asset
+       *
+       * @example
+       *   if the device provide a measure of type "temperature" with the name "temp"
+       *   if the asset has declared a measure of type "temperature" with the name "temp"
+       *   then the measure will be automatically added in the link and will later be propagated to the asset
+       */
+      implicitMeasuresLinking?: boolean;
+      /**
+       * Names of the linked measures.
+       *
+       * Array<{ asset: string, device: string }>
+       *
+       * @example
+       *
+       * [
+       *   { asset: "externalTemperature", device: "temperature" }
+       * ]
+       */
+      measureSlots?: Array<{ asset: string; device: string }>;
+    }>;
+  };
+}
+export type ApiAssetLinkDevicesResult = {
+  asset: KDocument<AssetContent>;
+  devices: KDocument<DeviceContent>[];
+};
+
+export interface ApiAssetUnlinkDevicesRequest extends AssetsControllerRequest {
+  action: "unlinkDevices";
+
+  _id: string;
+
+  strict?: boolean;
+
+  refresh?: string;
+
+  body: {
+    linkedMeasures: Array<{
+      deviceId: string;
+      /**
+       * This option allows to not specify the names of all the measures that should
+       * be unlinked from the asset.
+       */
+      allMeasures?: boolean;
+      /**
+       * Names of the linked measures.
+       *
+       * Array<{ asset: string, device: string }>
+       *
+       * @example
+       *
+       * [
+       *   { asset: "externalTemperature", device: "temperature" }
+       * ]
+       */
+      measureSlots?: Array<{ asset: string; device: string }>;
+    }>;
+  };
+}
+
+export type ApiAssetUnlinkDevicesResult = {
+  asset: KDocument<AssetContent>;
+  devices: KDocument<DeviceContent>[];
 };

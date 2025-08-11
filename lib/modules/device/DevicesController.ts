@@ -113,7 +113,7 @@ export class DevicesController {
           handler: this.linkAssets.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/_link/:assetId",
+              path: "device-manager/:engineId/devices/:_id/_link/",
               verb: "put",
             },
           ],
@@ -346,7 +346,7 @@ export class DevicesController {
   }
 
   /**
-   * Link a device to an asset.
+   * Link a device to several assets.
    */
   async linkAssets(request: KuzzleRequest): Promise<ApiDeviceLinkAssetsResult> {
     const deviceId = request.getId();
@@ -371,7 +371,7 @@ export class DevicesController {
         );
       }
       const { asset, device: updatedDevice } =
-        await this.deviceService.linkAsset(
+        await this.deviceService.linkAssetDevice(
           engineId,
           deviceId,
           assetId,
@@ -409,7 +409,7 @@ export class DevicesController {
         );
       }
       const { asset, device: updatedDevice } =
-        await this.deviceService.unlinkAsset(
+        await this.deviceService.unlinkAssetDevice(
           deviceId,
           assetId,
           measureSlots,
