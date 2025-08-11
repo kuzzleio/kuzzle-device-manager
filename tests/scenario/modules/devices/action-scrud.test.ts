@@ -77,7 +77,6 @@ describe("Device SCRUD", () => {
         updater: "-1",
       },
     });
-    expect(device._source.associatedAt).toBeGreaterThanOrEqual(now);
     const provisioningDevice = await sdk.document.get(
       "device-manager",
       "devices",

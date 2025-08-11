@@ -75,7 +75,6 @@ export class DeviceService extends DigitalTwinService {
     let device: KDocument<DeviceContent> = {
       _id: deviceId,
       _source: {
-        associatedAt: 0, // Will be set when attached to an engine
         engineId: null,
         groups: [],
         linkedMeasures: [],
@@ -451,7 +450,6 @@ export class DeviceService extends DigitalTwinService {
     const engineDevice: KDocument<DeviceContent> = {
       _id: device._id,
       _source: {
-        associatedAt: Date.now(),
         engineId,
         groups: [],
         linkedMeasures: [],

@@ -39,10 +39,6 @@ export interface DeviceContent<TMetadata extends Metadata = any>
     path: string;
     date: number;
   }>;
-  /**
-   * Date of association of the device on the engine
-   */
-  associatedAt: number;
 }
 
 /**

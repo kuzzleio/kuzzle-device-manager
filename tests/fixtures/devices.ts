@@ -21,7 +21,6 @@ export const deviceDetached1: DeviceContent = {
   engineId: null,
   linkedMeasures: [],
   groups: [],
-  associatedAt: Date.now(),
 };
 export const deviceDetached1Id = `${deviceDetached1.model}-${deviceDetached1.reference}`;
 
@@ -56,7 +55,6 @@ export const deviceAyseLinked1: DeviceContent = {
     },
   ],
   groups: [],
-  associatedAt: Date.now(),
 };
 export const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinked1.reference}`;
 
@@ -94,8 +92,6 @@ export const deviceAyseLinked2: DeviceContent = {
       ],
     },
   ],
-  associatedAt: Date.now(),
-
   groups: [
     {
       path: "test-parent-asset",
@@ -126,7 +122,6 @@ export const deviceAyseUnlinked1: DeviceContent = {
   engineId: "engine-ayse",
   linkedMeasures: [],
   groups: [],
-  associatedAt: Date.now(),
 };
 export const deviceAyseUnlinked1Id = `${deviceAyseUnlinked1.model}-${deviceAyseUnlinked1.reference}`;
 
@@ -151,7 +146,6 @@ export const deviceAyseUnlinked2: DeviceContent = {
   engineId: "engine-ayse",
   linkedMeasures: [],
   groups: [],
-  associatedAt: Date.now(),
 };
 export const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
 
@@ -176,7 +170,6 @@ export const deviceAyseUnlinked3: DeviceContent = {
   engineId: "engine-ayse",
   linkedMeasures: [],
   groups: [],
-  associatedAt: Date.now(),
 };
 export const deviceAyseUnlinked3Id = `${deviceAyseUnlinked3.model}-${deviceAyseUnlinked3.reference}`;
 
@@ -216,7 +209,6 @@ export const deviceAyseWarehouse: DeviceContent = {
       date: Date.now(),
     },
   ],
-  associatedAt: Date.now(),
 };
 export const deviceAyseWarehouseId = `${deviceAyseWarehouse.model}-${deviceAyseWarehouse.reference}`;
 
@@ -230,7 +222,6 @@ export const deviceEmptyTemp: DeviceContent = {
   engineId: "engine-ayse",
   linkedMeasures: [],
   groups: [],
-  associatedAt: Date.now(),
 };
 export const deviceEmptyTempId = `${deviceEmptyTemp.model}-${deviceEmptyTemp.reference}`;
 

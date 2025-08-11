@@ -45,7 +45,6 @@ export const devicesMappings: CollectionMappings = {
         // populated with device models
       },
     },
-    associatedAt: { type: "date" },
 
     measureSlots: {
       properties: {
