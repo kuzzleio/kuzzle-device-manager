@@ -33,6 +33,9 @@ export const RoleDevicesAdmin: KuzzleRole = {
   name: "devices.admin",
   definition: {
     controllers: {
+      "device-manager/assets": {
+        actions: { linkDevices: true, unlinkDevices: true },
+      },
       "device-manager/devices": {
         actions: {
           attachEngine: true,
