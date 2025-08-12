@@ -695,28 +695,33 @@ export class DigitalTwinService extends BaseService {
         (link) => link.assetId !== asset._id,
       );
     } else {
-      linkedMeasuresAssets = asset._source.linkedMeasures.map((link) => {
-        if (link.deviceId !== device._id) {
-          return link;
-        }
-        return {
-          ...link,
-          measureSlots: link.measureSlots.filter(
-            (measure) => !measureSlots.some((m) => m.asset === measure.asset),
-          ),
-        };
-      });
-      linkedMeasuresDevices = device._source.linkedMeasures.map((link) => {
-        if (link.assetId !== asset._id) {
-          return link;
-        }
-        return {
-          ...link,
-          measureSlots: link.measureSlots.filter(
-            (measure) => !measureSlots.some((m) => m.device === measure.device),
-          ),
-        };
-      });
+      linkedMeasuresAssets = asset._source.linkedMeasures
+        .map((link) => {
+          if (link.deviceId !== device._id) {
+            return link;
+          }
+          return {
+            ...link,
+            measureSlots: link.measureSlots.filter(
+              (measure) => !measureSlots.some((m) => m.asset === measure.asset),
+            ),
+          };
+        })
+        .filter((link) => link.measureSlots.length > 0);
+      linkedMeasuresDevices = device._source.linkedMeasures
+        .map((link) => {
+          if (link.assetId !== asset._id) {
+            return link;
+          }
+          return {
+            ...link,
+            measureSlots: link.measureSlots.filter(
+              (measure) =>
+                !measureSlots.some((m) => m.device === measure.device),
+            ),
+          };
+        })
+        .filter((link) => link.measureSlots.length > 0);
     }
 
     const [updatedDevice, updatedAsset] = await Promise.all([
