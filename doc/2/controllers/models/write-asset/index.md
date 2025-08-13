@@ -120,6 +120,9 @@ Method: POST
     },
     "measures": [
       // Array of measure definition with type and name
+    ],
+     "locales": [
+      //Translations specific to the asset model
     ]
   }
 }
@@ -137,6 +140,7 @@ Method: POST
 - `metadataGroups`: Groups list with translations for group name
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
+- `locales`: Translations specific to the asset model.
 
 ---
 

@@ -119,9 +119,14 @@ Method: PUT
     },
     "measures": [
       // Array of measure definition with type and name
-    ]
+    ],
+    "locales":{
+/*        [locale] : {
+      friendlyName: string,
+      description:string */
+      }
+    }
   }
-}
 ```
 
 ---
@@ -141,6 +146,7 @@ Method: PUT
 - `metadataGroups`: Groups list with translations for group name
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item defines `type` and `name` properties for the measure.
+- `locales`: Translations specific to the model.
 
 ---
 

@@ -9,7 +9,7 @@ description: Write a group model
 
 Write a group model.
 
-This action acts like a create or replace
+This action acts like a create or replace.
 
 ## Query Syntax
 
@@ -30,8 +30,17 @@ Method: POST
     "engineGroup": "<engine group>",
     "model": "<group model>",
 
-    // Optional
+    // Required
+    "affinity": {
+      "type": ["assets", "devices"], // Array of accepted types
+      "models": {
+        "assets": ["AssetModelA", "AssetModelB"], // Accepted asset models
+        "devices": ["DeviceModelA"] // Accepted device models
+      },
+      "strict": false // If true, restricts group membership to specified types/models
+    },
 
+    // Optional
     "metadataMappings": {
       // Metadata mappings
     },
@@ -40,7 +49,7 @@ Method: POST
     },
     "metadataDetails": {
       /*
-        Metadata details including tanslations, group and editor hint.
+        Metadata details including translations, group and editor hint.
           [name: string]: {
             group?: string;
             locales: {
@@ -128,12 +137,12 @@ Method: POST
 
 - `engineGroup`: Name of the engine group
 - `model`: Group model name
+- `affinity`: Specifies accepted types and models for group membership (see above)
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Translations, metadata group, and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
 - `metadataGroups`: Groups list with translations for group name
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
-
 
 ---
 
@@ -160,4 +169,3 @@ Method: POST
 | error                                                                          | code    | cause                                               |
 | ------------------------------------------------------------------------------ | ------- | --------------------------------------------------- |
 | [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md)        | **409** | Writing a group with conflicting metadata mappings |
-

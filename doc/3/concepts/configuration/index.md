@@ -20,9 +20,9 @@ You can customize the behavior of the Device Manager plugin by providing a confi
 }
 ```
 
-# Options
+## Options
 
-## Global
+### Global
 
 The following global options are available:
 
@@ -30,9 +30,9 @@ The following global options are available:
 | --------------------- | ------- | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `ignoreStartupErrors`      | boolean | `false`          | If `true`, the plugin will not throw an error if the engine is not reachable at startup.           |
 | `engine.autoUpdate`   | boolean | `true`           | If `true`, the plugin will automatically update the engine collections when the plugin is started.          |
-| `adminIndex`          | string  | `device-manager` | The index name where the plugin stores its configuration and devices.                              |
+| `platformIndex`          | string  | `device-manager` | The index name where the plugin stores its configuration and devices.                              |
 
-## Collections
+### Collections
 
 In order to customize the collections used by the plugin, you can provide a configuration object for each collection. All of these support the following properties:
 
@@ -40,7 +40,7 @@ In order to customize the collections used by the plugin, you can provide a conf
 - `mappings`: The mappings of the collection (according to the [Elasticsearch mapping specification](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html)).
 - `settings`: The settings of the collection (according to the [Elasticsearch settings specification](https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html)). This property is optional but can be useful to define the number of shards and replicas of the Elasticsearch index or use custom analyzers.
 
-### Admin collections 
+#### Platform index collections 
 
 The following collections are used by the plugin. They're automatically created when the plugin is started and shared accross all the engines.
 
@@ -48,7 +48,7 @@ The following collections are used by the plugin. They're automatically created 
 - `config`: The collection that stores the plugin configuration.
 - `payloads`: The collection that stores the raw payloads before they are processed and decoded by the plugin.
 
-### Engine collections
+#### Engine collections
 
 The following collections are used by the plugin. They're automatically created when the plugin is started and are specific to each engine:
 
@@ -59,9 +59,9 @@ The following collections are used by the plugin. They're automatically created 
 - `groups`: The collection that stores the groups.
 - `assetHistory`: The collection that stores the assets history.
 
-# Example
+## Example
 
-```js
+```json
 {
   "plugins": {
     "device-manager": {
@@ -69,8 +69,8 @@ The following collections are used by the plugin. They're automatically created 
       "engine": {
         "autoUpdate": true
       },
-      "adminIndex": "device-manager",
-      "adminCollections": {
+      "platformIndex": "device-manager",
+      "platformCollections": {
         "devices": {
           "name": "devices",
           "mappings": {

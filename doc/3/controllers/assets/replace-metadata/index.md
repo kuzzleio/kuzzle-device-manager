@@ -59,11 +59,7 @@ Method: PATCH
         "_id": /** asset id */,
         "_source": {
             "groups": [],
-            "lastMeasuredAt": null,
-            "linkedDevices": [],
-            "measures": {
-                /** mesures */
-            },
+            "linkedMeasures": [],
             "metadata": {
                 /** REPLACED METADATA */
             },

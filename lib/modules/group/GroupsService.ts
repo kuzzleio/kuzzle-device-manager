@@ -268,6 +268,40 @@ export class GroupsService extends BaseService {
       })),
       { strict: true },
     );
+    const { hits: devices } = await this.sdk.document.search<AssetContent>(
+      engineId,
+      InternalCollection.DEVICES,
+      {
+        query: {
+          prefix: {
+            "groups.path": {
+              value: group._source.path,
+            },
+          },
+        },
+      },
+      { lang: "koncorde" },
+    );
+
+    await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.DEVICES,
+      devices.map((device) => ({
+        _id: device._id,
+        body: {
+          groups: device._source.groups
+            .filter((grp) => grp.path !== group._source.path)
+            .map((grp) => {
+              if (grp.path.includes(group._source.path)) {
+                grp.path = grp.path.replace(`${group._source.path}.`, "");
+                grp.date = Date.now();
+              }
+              return grp;
+            }),
+        },
+      })),
+      { strict: true },
+    );
     const { hits: childrenGroups } =
       await this.sdk.document.search<GroupContent>(
         engineId,

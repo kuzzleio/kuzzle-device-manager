@@ -80,13 +80,13 @@ export class ElsysErsDecoder extends Decoder {
 
 ### Modifying `payloads` collection mappings
 
-Each data frame received by the Kuzzle IoT Platform is stored in the `payloads` collection of the `platform` index. See [Raw Data].
+Each data frame received by the Kuzzle IoT Platform is stored in the `payloads` collection of the `platform` index. See [Raw Data](#raw-data).
 
 It is recommended to modify the mappings of this collection using the `payloadsMappings` property to make it easier to find payloads belonging to a specific device.
 
 For example, if your raw data contains the device reference in the `deviceEUI` property, then it makes sense to add this property so that you can list all frames belonging to a device.
 
-```jsx
+```ts
 export class ElsysErsDecoder extends Decoder {
   constructor() {
     super();
@@ -124,7 +124,7 @@ For each case, a state and a reason is stored inside the payload document:
 2. the payload is discarded by user validation and has a SKIP state and a dedicated reason (which can be overridden by throwing a SkipError exception).
 3. the payload has an ERROR state and a reason equal to the error message.
 
-```jsx
+```ts
 class AbeewayDecoder extends Decoder {
   async validate(payload: JSONObject) {
     if (payload.deviceEUI === undefined) {
@@ -162,7 +162,7 @@ This method has more arguments:
   - `type`: type of the measure (must match a declared measure type)
   - `values`: contains the values of the measure
 
-```jsx
+```ts
 export class AbeewayDecoder extends Decoder {
 // declare the measures decoded by the Decoder
    public measures = [

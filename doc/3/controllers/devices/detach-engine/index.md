@@ -24,7 +24,6 @@ Method: DELETE
 {
   "controller": "device-manager/devices",
   "action": "detachEngine",
-  "engineId": "<engineId>",
   "_id": "<deviceId>",
 }
 ```
@@ -33,7 +32,6 @@ Method: DELETE
 
 ## Arguments
 
-- `engineId`: Engine ID
 - `_id`: Device ID
 
 ---

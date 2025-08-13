@@ -42,7 +42,7 @@ const fullLink = `http${sdk.protocol.ssl ? 's' : ''}://${sdk.protocol.host}:${sd
 
 ```http
 POST: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures/_export
-GET: device-manager/:engineId/assets/:_id/measures/_export/:exportId
+GET:  http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures/_export/:exportId
 ```
 
 ### Other protocols

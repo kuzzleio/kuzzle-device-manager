@@ -29,6 +29,7 @@ Method: POST
   "body": {
     "assetsList": ["<assetId>"],
     "newEngineId": "<newEngineId>"
+    "includeDevices": "<boolean>"
   }
 }
 ```
@@ -43,6 +44,7 @@ Method: POST
 
 - `assetsList`: An array containing a list of asset ids to migrate
 - `newEngineId`: The id of the engine you want to migrate the assets to
+- `includeDevices`: Boolean indicating if the devices linked to the asset should be migrated with it.
 
 ---
 

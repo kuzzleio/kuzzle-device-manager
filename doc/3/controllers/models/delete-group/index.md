@@ -5,7 +5,7 @@ title: deleteGroup
 description: Deletes a group model
 ---
 
-# deleteGroup
+# Delete Group
 
 Deletes a group model.
 
