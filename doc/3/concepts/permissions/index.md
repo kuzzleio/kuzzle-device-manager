@@ -37,7 +37,7 @@ Roles are defined hierarchically, permissions from previous roles are included i
 3. `assets.creation`: allows to create, update, and delete assets (`create`, `upsert`, `delete`)
 4. `assets.admin`: allows to create, modify and delete assets as well as create/delete asset templates
 
-These roles are intended for users of an engine.
+These roles are intended for users of a tenant.
 
 ## Groups permissions
 
@@ -48,7 +48,7 @@ Roles are defined hierarchically, permissions from previous roles are included i
 1. `groups.reader`: allows to list groups and their models
 2. `groups.admin`: allows creating, modifying, and deleting groups, as well as creating/deleting group templates
 
-These roles are intended for users of a engine.
+These roles are intended for users of a tenant.
 
 ## Permission measures
 
@@ -59,7 +59,7 @@ Roles are defined hierarchically, permissions from previous roles are included i
 1. `measures.reader`: allows to list the measurement models
 2. `measures.admin`: used to create, modify and delete measurement templates
 
-These roles are intended for users of an engine.
+These roles are intended for users of a tenant.
 
 ## Payloads permissions
 

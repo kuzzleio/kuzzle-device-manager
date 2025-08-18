@@ -333,9 +333,9 @@ app.pipe.register('device-manager:measures:process:before', async ({ measures, s
 });
 ```
 
-### Engine-specific event
+### Tenant-specific event
 
-An isolated engine-specific event variant is also available:
+An isolated tenant-specific event variant is also available:
 
 ```typescript
 engine:<engine-id>:device-manager:measures:process:before
@@ -365,14 +365,14 @@ app.pipe("device-manager:measures:process:after", async ({ measures, source, ass
 });
 ```
 
-### Engine-specific events
+### Tenant-specific events
 
-Engine-specific events are also available for isolated measure processing:
+Tenant-specific events are also available for isolated measure processing:
 
 - **Before processing:**
   - `engine:<engine-id>:device-manager:measures:process:before`
 - **After processing:**
   - `engine:<engine-id>:device-manager:measures:process:after`
 
-These events carry the same properties as their global counterparts and allow for engine-specific customizations and workflows.
+These events carry the same properties as their global counterparts and allow for tenant-specific customizations and workflows.
 

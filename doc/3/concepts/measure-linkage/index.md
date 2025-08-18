@@ -13,7 +13,7 @@ An asset can have measures linked with different devices. Similarly a device can
 
 ## Link in digital twins
 
-In the engine index, the link will be displayed in the array `linkedMeasures` of the `devices` and `assets` collections. Each item of this array represents a link with a digital twin. It contains:
+In the tenant index, the link will be displayed in the array `linkedMeasures` of the `devices` and `assets` collections. Each item of this array represents a link with a digital twin. It contains:
 - The `assetId` or `deviceId` depending of the type of the digital twin.
 - An array of `measureSlots` linked between the two digital twins. Those slots indicates the name of the measurement used for the asset and for the device.
 

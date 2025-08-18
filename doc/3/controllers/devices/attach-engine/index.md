@@ -2,12 +2,12 @@
 code: true
 type: page
 title: attachEngine
-description: Attach a device to an engine
+description: Attach a device to a tenant engine
 ---
 
 # attachEngine
 
-Attach a device to an engine.
+Attach a device to a tenant engine.
 
 ## Query Syntax
 

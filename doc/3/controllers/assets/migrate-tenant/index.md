@@ -2,12 +2,12 @@
 code: true
 type: page
 title: migrateTenant
-description: Migrates a list of assets and their attached devices to another engine
+description: Migrates a list of assets and their attached devices to another tenant
 ---
 
 # update
 
-This action allow to migrates a list of assets and their attached devices to another engine.
+This action allow to migrates a list of assets and their attached devices to another tenant.
 
 
 ## Query Syntax
