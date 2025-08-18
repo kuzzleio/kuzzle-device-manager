@@ -223,7 +223,7 @@ _Example of sending measures in HTTP_
 ```bash
 curl -X POST \
    -H "Content-Type: application/json"\
-   "http://localhost:7512/_/device-manager/{tenant}/device/{deviceId}/measures"\
+   "http://localhost:7512/_/device-manager/{engine}/device/{deviceId}/measures"\
    --data '{
      "measures":[
          {
@@ -333,9 +333,9 @@ app.pipe.register('device-manager:measures:process:before', async ({ measures, s
 });
 ```
 
-### Tenant-specific event
+### Engine-specific event
 
-An isolated tenant-specific event variant is also available:
+An isolated engine-specific event variant is also available:
 
 ```typescript
 engine:<engine-id>:device-manager:measures:process:before
@@ -365,14 +365,14 @@ app.pipe("device-manager:measures:process:after", async ({ measures, source, ass
 });
 ```
 
-### Tenant-specific events
+### Engine-specific events
 
-Tenant-specific events are also available for isolated measure processing:
+Engine-specific events are also available for isolated measure processing:
 
 - **Before processing:**
   - `engine:<engine-id>:device-manager:measures:process:before`
 - **After processing:**
   - `engine:<engine-id>:device-manager:measures:process:after`
 
-These events carry the same properties as their global counterparts and allow for tenant-specific customizations and workflows.
+These events carry the same properties as their global counterparts and allow for engine-specific customizations and workflows.
 

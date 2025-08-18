@@ -22,9 +22,9 @@ Roles are defined hierarchically, permissions from previous roles are included i
 3. `devices.assetAssociation`: allows to associate and dissociate devices and assets (`linkAsset`, `unlinkAsset`)
 4. `devices.creation`: allows to create, update, and delete devices (`create`, `upsert`, `attachEngine`, `detachEngine`)
 5. `devices.admin`: allows creating, modifying, deleting and linking devices as well as creating/deleting device templates
-6. `devices.platform-admin`: allows to assign devices to a tenant
+6. `devices.platform-admin`: allows to assign devices to an engine
 
-The `devices.reader`, `devices.configuration`, `devices.assetAssociation`, `devices.creation`, and `devices.admin` roles are for tenant users while the `devices.platform-admin` role is for IoT platform administrators.
+The `devices.reader`, `devices.configuration`, `devices.assetAssociation`, `devices.creation`, and `devices.admin` roles are for engine users while the `devices.platform-admin` role is for IoT platform administrators.
 
 ## Assets permissions
 
@@ -37,7 +37,7 @@ Roles are defined hierarchically, permissions from previous roles are included i
 3. `assets.creation`: allows to create, update, and delete assets (`create`, `upsert`, `delete`)
 4. `assets.admin`: allows to create, modify and delete assets as well as create/delete asset templates
 
-These roles are intended for users of a tenant.
+These roles are intended for users of an engine.
 
 ## Groups permissions
 
@@ -48,7 +48,7 @@ Roles are defined hierarchically, permissions from previous roles are included i
 1. `groups.reader`: allows to list groups and their models
 2. `groups.admin`: allows creating, modifying, and deleting groups, as well as creating/deleting group templates
 
-These roles are intended for users of a tenant.
+These roles are intended for users of a engine.
 
 ## Permission measures
 
@@ -59,7 +59,7 @@ Roles are defined hierarchically, permissions from previous roles are included i
 1. `measures.reader`: allows to list the measurement models
 2. `measures.admin`: used to create, modify and delete measurement templates
 
-These roles are intended for users of a tenant.
+These roles are intended for users of an engine.
 
 ## Payloads permissions
 
