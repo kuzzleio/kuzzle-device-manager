@@ -176,15 +176,6 @@ export class DigitalTwinService extends BaseService {
         deviceId,
       );
 
-      /*   if (
-          device._source.linkedAssets.length &&
-          device._source.assetId !== assetId
-        ) {
-          throw new BadRequestError(
-            `Device "${deviceProvisioning._id}" is already linked to another asset.`,
-          );
-        } */
-
       const asset = await this.sdk.document.get<AssetContent>(
         engineId,
         InternalCollection.ASSETS,

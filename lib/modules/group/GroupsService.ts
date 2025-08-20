@@ -417,11 +417,12 @@ export class GroupsService extends BaseService {
       if (!Array.isArray(asset._source.groups)) {
         asset._source.groups = [];
       }
-
-      asset._source.groups.push({
-        date: Date.now(),
-        path: path,
-      });
+      if (!asset._source.groups.some((g) => g.path === path)) {
+        asset._source.groups.push({
+          date: Date.now(),
+          path: path,
+        });
+      }
       return asset;
     });
 
@@ -549,11 +550,12 @@ export class GroupsService extends BaseService {
       if (!Array.isArray(device._source.groups)) {
         device._source.groups = [];
       }
-
-      device._source.groups.push({
-        date: Date.now(),
-        path: path,
-      });
+      if (!device._source.groups.some((g) => g.path === path)) {
+        device._source.groups.push({
+          date: Date.now(),
+          path: path,
+        });
+      }
       return device;
     });
 
