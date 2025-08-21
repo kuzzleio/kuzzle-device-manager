@@ -1,3 +1,10 @@
+## [3.0.0-next.7](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.6...v3.0.0-next.7) (2025-08-21)
+
+
+### Features
+
+* **group:** Add upsert and mCreate/mUpdate/mUpsert actions ([#431](https://github.com/kuzzleio/kuzzle-device-manager/issues/431)) ([c458f38](https://github.com/kuzzleio/kuzzle-device-manager/commit/c458f38ba0e17911316336ff9985dc07fa755bd4))
+
 ## [3.0.0-next.6](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.5...v3.0.0-next.6) (2025-08-06)
 
 
