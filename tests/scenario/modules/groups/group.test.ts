@@ -30,6 +30,12 @@ import {
   ApiGroupRemoveDeviceResult,
   ApiGroupListItemsRequest,
   ApiGroupListItemsResult,
+  ApiGroupMCreateRequest,
+  ApiGroupMCreateResult,
+  ApiGroupMUpdateRequest,
+  ApiGroupMUpdateResult,
+  ApiGroupMUpsertRequest,
+  ApiGroupMUpsertResult,
 } from "../../../../lib/modules/group/types/GroupsApi";
 import { AssetContent } from "../../../../lib/modules/asset/exports";
 import { InternalCollection } from "../../../../lib/modules/plugin";
@@ -947,5 +953,208 @@ describe("GroupsController", () => {
         ],
       },
     });
+  });
+
+  it("can create multiple groups at once", async () => {
+    const queryWithError: ApiGroupMCreateRequest = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "mCreate",
+      body: {
+        groups: [
+          { name: "no-parents" },
+          {
+            name: "parking with model",
+            model: "DeviceRestricted",
+          },
+          { name: "test child", path: groupTestId },
+          // ERRORS
+          { name: "id taken", _id: groupTestId },
+          { name: "wrong path", path: "wrong.path" },
+          //Name already taken
+          { name: "Test group" },
+        ],
+      },
+    };
+
+    const { result } = await sdk.query<
+      ApiGroupMCreateRequest,
+      ApiGroupMCreateResult
+    >(queryWithError);
+    expect(result).toHaveProperty("successes");
+    expect(result).toHaveProperty("errors");
+    expect(result.successes).toHaveLength(3);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reason: "document already exists",
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "id taken" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'A group with name "Test group" already exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "Test group" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'The closest parent group "path" does not exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "wrong path" }),
+          }),
+        }),
+      ]),
+    );
+  });
+
+  it("can update multiple groups at once", async () => {
+    const missingIdBody = { name: "missing id" };
+    const badParentId = {
+      _id: groupTestId,
+      name: "bad parent",
+      path: "not-exist." + groupTestId,
+    };
+    const duplicateGroupNameBody = {
+      _id: groupTestParentId1,
+      name: "test group",
+      path: groupTestParentId1,
+    };
+    const updateNameBody = {
+      _id: groupTestId,
+      name: "root group",
+      path: groupTestId,
+    };
+    const mUpdateQuery = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "mUpdate",
+      body: {
+        groups: [
+          missingIdBody,
+          badParentId,
+          duplicateGroupNameBody,
+          updateNameBody,
+        ],
+      },
+    } as ApiGroupMUpdateRequest;
+
+    const { result } = await sdk.query<
+      ApiGroupMUpdateRequest,
+      ApiGroupMUpdateResult
+    >(mUpdateQuery);
+
+    expect(result).toHaveProperty("successes");
+    expect(result).toHaveProperty("errors");
+
+    expect(result.errors).toHaveLength(3);
+    expect(result.successes).toHaveLength(1);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reason: 'The closest parent group "not-exist" does not exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "bad parent" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: "A group must have an _id",
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "missing id" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'A group with name "test group" already exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "test group" }),
+          }),
+        }),
+      ]),
+    );
+  });
+
+  it("can upsert multiple groups at once", async () => {
+    const createNoParent = { name: "no-parents" };
+    const createWithModel = {
+      name: "parking with model",
+      model: "DeviceRestricted",
+    };
+    const createWithParent = { name: "test child", path: groupTestId };
+    const updateNameBody = {
+      _id: groupTestId,
+      name: "root group",
+      path: groupTestId,
+    };
+    // ERRORS
+    const createBadPath = { name: "wrong path", path: "wrong.path" };
+    //Name already taken
+    const createNameTaken = { name: "Test group" };
+    const updateBadParent = {
+      _id: groupTestId,
+      name: "bad parent",
+      path: "not-exist." + groupTestId,
+    };
+    const updateNameTaken = {
+      _id: groupTestParentId1,
+      name: "test group",
+      path: groupTestParentId1,
+    };
+
+    const mUpsertQuery = {
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "mUpsert",
+      body: {
+        groups: [
+          createNoParent,
+          createWithModel,
+          createWithParent,
+          createBadPath,
+          createNameTaken,
+          updateBadParent,
+          updateNameTaken,
+          updateNameBody,
+        ],
+      },
+    } as ApiGroupMUpsertRequest;
+
+    const { result } = await sdk.query<
+      ApiGroupMUpsertRequest,
+      ApiGroupMUpsertResult
+    >(mUpsertQuery);
+
+    expect(result).toHaveProperty("successes");
+    expect(result).toHaveProperty("errors");
+    expect(result.successes).toHaveLength(4);
+
+    expect(result.errors).toHaveLength(4);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reason: 'The closest parent group "not-exist" does not exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "bad parent" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'A group with name "Test group" already exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "Test group" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'A group with name "test group" already exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "test group" }),
+          }),
+        }),
+        expect.objectContaining({
+          reason: 'The closest parent group "path" does not exist',
+          document: expect.objectContaining({
+            body: expect.objectContaining({ name: "wrong path" }),
+          }),
+        }),
+      ]),
+    );
   });
 });
