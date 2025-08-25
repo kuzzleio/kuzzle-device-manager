@@ -1,3 +1,10 @@
+## [3.0.0-next.8](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.7...v3.0.0-next.8) (2025-08-25)
+
+
+### Features
+
+* **twins:** many-to-many link relations ([#433](https://github.com/kuzzleio/kuzzle-device-manager/issues/433)) ([719b8cd](https://github.com/kuzzleio/kuzzle-device-manager/commit/719b8cdea3d4a6aeaa12b0c5da3670d8fae033b3))
+
 ## [3.0.0-next.7](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.6...v3.0.0-next.7) (2025-08-21)
 
 
