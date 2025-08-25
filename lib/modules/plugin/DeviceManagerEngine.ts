@@ -17,7 +17,7 @@ import _ from "lodash";
 
 import { assetsHistoryMappings } from "../asset";
 import { NamedMeasures } from "../decoder";
-import { getEmbeddedMeasureMappings, measuresMappings } from "../measure";
+import { measuresMappings } from "../measure";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -35,6 +35,7 @@ import {
   getTwinConflicts,
 } from "../model/ModelsConflicts";
 import { addSchemaToCache } from "../shared/utils/AJValidator";
+import { devicesPlatformMappings } from "../device";
 
 export type TwinType = "asset" | "device";
 
@@ -91,14 +92,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
   constructor(
     plugin: Plugin,
-    adminConfigManager: ConfigManager,
+    platformConfigManager: ConfigManager,
     engineConfigManager: ConfigManager,
   ) {
     super(
       "device-manager",
       plugin,
-      plugin.config.adminIndex,
-      adminConfigManager,
+      plugin.config.platformIndex,
+      platformConfigManager,
       engineConfigManager,
     );
 
@@ -113,7 +114,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       async () => {
         await this.updateEngines();
         await this.updateMeasuresSchema();
-        await this.createDevicesCollection(this.config.adminIndex);
+        await this.createPlatformDevicesCollection();
       },
     );
 
@@ -133,7 +134,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         }
 
         const measureModels = await this.getModels<MeasureModelContent>(
-          this.config.adminIndex,
+          this.config.platformIndex,
           "measure",
         );
 
@@ -144,7 +145,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         for (const group of groups) {
           if (payload.twin) {
             const twinModels = await this.getModels<TwinModelContent>(
-              this.config.adminIndex,
+              this.config.platformIndex,
               payload.twin.type,
               group,
             );
@@ -170,7 +171,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         }
         if (payload.groupModels) {
           const groupModels = await this.getModels<GroupModelContent>(
-            this.config.adminIndex,
+            this.config.platformIndex,
             "group",
           );
           return this.doesGroupsUpdateConflicts(
@@ -282,7 +283,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    */
   async getEngines(): Promise<EngineDocument[]> {
     const result = await this.sdk.document.search<EngineDocument>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.CONFIG,
       {
         query: {
@@ -297,7 +298,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
   async updateMeasuresSchema() {
     const models = await this.getModels<MeasureModelContent>(
-      this.adminIndex,
+      this.config.platformIndex,
       "measure",
     );
 
@@ -368,7 +369,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         }
       }),
     );
-    await this.detachDevicesFromAdminIndex(index);
+    await this.detachDevicesFromPlatformIndex(index);
     return {
       collections,
     };
@@ -469,7 +470,33 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     return InternalCollection.DEVICES;
   }
+  /**
+   * Generate devices mappings and create the devices collection in the engine
+   *
+   * @param engineId The target engine Id
+   * @param engineGroup The engine group
+   *
+   * @throws If it failed during the devices collection creation
+   */
+  async createPlatformDevicesCollection() {
+    const settings = this.config.engineCollections.devices.settings;
+    const enrichedMappings: any = { ...devicesPlatformMappings };
+    const enrichedMeasureMappings = await this.getMeasuresMappingsFromDB(
+      this.config.platformIndex,
+    );
+    enrichedMappings.properties.lastMeasures.properties.values.properties =
+      enrichedMeasureMappings.properties.values.properties;
+    await this.tryCreateCollection(
+      this.config.platformIndex,
+      InternalCollection.DEVICES,
+      {
+        mappings: devicesPlatformMappings,
+        settings,
+      },
+    );
 
+    return InternalCollection.DEVICES;
+  }
   /**
    * Generate measures mappings and create the measures collection in the engine
    *
@@ -530,13 +557,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     TDigitalTwin extends TwinModelContent,
   >(digitalTwinType: TwinType, engineGroup?: string) {
     const models = await this.getModels<TDigitalTwin>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       digitalTwinType,
       engineGroup,
     );
 
     const measureModels = await this.getModels<MeasureModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       "measure",
     );
 
@@ -584,9 +611,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         model[digitalTwinType].metadataMappings,
       );
 
-      for (const { name: measureName, type: measureType } of model[
-        digitalTwinType
-      ].measures as NamedMeasures) {
+      for (const { type: measureType } of model[digitalTwinType]
+        .measures as NamedMeasures) {
         const measureModel = measureModels.find(
           (m) => m.measure.type === measureType,
         );
@@ -598,9 +624,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
             ]} "${model[digitalTwinType].model}"`,
           );
         }
-
-        mappings.properties.measures.properties[measureName] =
-          getEmbeddedMeasureMappings(measureModel.measure.valuesMappings);
       }
     }
 
@@ -615,7 +638,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    */
   private async getMeasuresMappingsFromDB(engineGroup: string) {
     const models = await this.getModels<MeasureModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       "measure",
     );
 
@@ -661,7 +684,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
   async getAssetGroupsMappingFromDB() {
     const models = await this.getModels<GroupModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       "group",
     );
     const mappings = JSON.parse(
@@ -714,16 +737,16 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   /**
-   * Detach all devices of an index in the admin index
+   * Detach all devices of an index in the platform index
    *
    * @param engineId The target engine Id
    * @returns {any}
    */
-  private async detachDevicesFromAdminIndex(engineId: string) {
+  private async detachDevicesFromPlatformIndex(engineId: string) {
     const devices = [];
 
     let result = await this.sdk.document.search(
-      this.adminIndex,
+      this.config.platformIndex,
       "devices",
       {
         _source: false,
@@ -740,10 +763,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     }
     if (devices.length > 0) {
       void this.sdk.document.mUpdate(
-        this.adminIndex,
+        this.config.platformIndex,
         "devices",
         devices.map((device) => {
-          return { _id: device._id, body: { assetId: null, engineId: null } };
+          return { _id: device._id, body: { engineId: null } };
         }),
       );
     }

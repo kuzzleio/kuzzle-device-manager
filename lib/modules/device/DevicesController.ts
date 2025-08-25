@@ -2,6 +2,7 @@ import {
   BadRequestError,
   ControllerDefinition,
   HttpStream,
+  KDocument,
   KuzzleError,
   KuzzleRequest,
 } from "kuzzle";
@@ -20,10 +21,10 @@ import {
   ApiDeviceDeleteResult,
   ApiDeviceDetachEngineResult,
   ApiDeviceGetResult,
-  ApiDeviceLinkAssetRequest,
-  ApiDeviceLinkAssetResult,
+  ApiDeviceLinkAssetsRequest,
+  ApiDeviceLinkAssetsResult,
   ApiDeviceSearchResult,
-  ApiDeviceUnlinkAssetResult,
+  ApiDeviceUnlinkAssetsResult,
   ApiDeviceUpdateResult,
   ApiDeviceGetMeasuresResult,
   ApiDeviceUpsertResult,
@@ -32,7 +33,10 @@ import {
   ApiDeviceGetLastMeasuredAtResult,
   ApiDeviceMGetLastMeasuredAtResult,
   ApiDeviceMetadataReplaceResult,
+  ApiDeviceUnlinkAssetsRequest,
 } from "./types/DeviceApi";
+import { AssetContent } from "../asset";
+import { DeviceContent } from "./exports";
 
 export class DevicesController {
   public definition: ControllerDefinition;
@@ -105,17 +109,17 @@ export class DevicesController {
             { path: "device-manager/devices/:_id/_detach", verb: "delete" },
           ],
         },
-        linkAsset: {
-          handler: this.linkAsset.bind(this),
+        linkAssets: {
+          handler: this.linkAssets.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/_link/:assetId",
+              path: "device-manager/:engineId/devices/:_id/_link/",
               verb: "put",
             },
           ],
         },
-        unlinkAsset: {
-          handler: this.unlinkAsset.bind(this),
+        unlinkAssets: {
+          handler: this.unlinkAssets.bind(this),
           http: [
             {
               path: "device-manager/:engineId/devices/:_id/_unlink",
@@ -342,56 +346,82 @@ export class DevicesController {
   }
 
   /**
-   * Link a device to an asset.
+   * Link a device to several assets.
    */
-  async linkAsset(request: KuzzleRequest): Promise<ApiDeviceLinkAssetResult> {
+  async linkAssets(request: KuzzleRequest): Promise<ApiDeviceLinkAssetsResult> {
     const deviceId = request.getId();
     const engineId = request.getString("engineId");
-    const assetId = request.getString("assetId");
-    const measureNames = request.getBodyArray(
-      "measureNames",
+    const measuresTolink = request.getBodyArray(
+      "linkedMeasures",
       [],
-    ) as ApiDeviceLinkAssetRequest["body"]["measureNames"];
-    const implicitMeasuresLinking = request.getBoolean(
-      "implicitMeasuresLinking",
-    );
+    ) as ApiDeviceLinkAssetsRequest["body"]["linkedMeasures"];
 
-    if (measureNames.length === 0 && !implicitMeasuresLinking) {
+    if (measuresTolink.length === 0) {
       throw new BadRequestError(
-        `You must provide at least one measure name or set "implicitMeasuresLinking" to true.`,
+        `You must provide at least one asset to be linked.`,
       );
     }
-
-    const { asset, device } = await this.deviceService.linkAsset(
-      engineId,
-      deviceId,
-      assetId,
-      measureNames,
-      implicitMeasuresLinking,
-      request,
-    );
-
+    const assets: KDocument<AssetContent>[] = [];
+    let device: KDocument<DeviceContent>;
+    for (const measure of measuresTolink) {
+      const { assetId, implicitMeasuresLinking, measureSlots } = measure;
+      if (!measureSlots?.length && !implicitMeasuresLinking) {
+        throw new BadRequestError(
+          `You must provide at least one measure name or set "implicitMeasuresLinking" to true.`,
+        );
+      }
+      const { asset, device: updatedDevice } =
+        await this.deviceService.linkAssetDevice(
+          engineId,
+          deviceId,
+          assetId,
+          measureSlots || [],
+          implicitMeasuresLinking,
+          request,
+        );
+      assets.push(AssetSerializer.serialize(asset));
+      device = updatedDevice;
+    }
     return {
-      asset: AssetSerializer.serialize(asset),
+      assets,
       device: DeviceSerializer.serialize(device),
     };
   }
 
   /**
-   * Unlink a device from an asset.
+   * Unlink assets from a device.
    */
-  async unlinkAsset(
+  async unlinkAssets(
     request: KuzzleRequest,
-  ): Promise<ApiDeviceUnlinkAssetResult> {
+  ): Promise<ApiDeviceUnlinkAssetsResult> {
     const deviceId = request.getId();
+    const measureToUnlink = request.getBodyArray(
+      "linkedMeasures",
+    ) as ApiDeviceUnlinkAssetsRequest["body"]["linkedMeasures"];
 
-    const { asset, device } = await this.deviceService.unlinkAsset(
-      deviceId,
-      request,
-    );
+    const assets: KDocument<AssetContent>[] = [];
+    let device: KDocument<DeviceContent>;
+    for (const measure of measureToUnlink) {
+      const { assetId, allMeasures, measureSlots } = measure;
+      if (!measureSlots?.length && !allMeasures) {
+        throw new BadRequestError(
+          `You must provide at least one measure name or set "allMeasures" to true.`,
+        );
+      }
+      const { asset, device: updatedDevice } =
+        await this.deviceService.unlinkAssetDevice(
+          deviceId,
+          assetId,
+          measureSlots,
+          allMeasures,
+          request,
+        );
+      assets.push(AssetSerializer.serialize(asset));
+      device = updatedDevice;
+    }
 
     return {
-      asset: AssetSerializer.serialize(asset),
+      assets,
       device: DeviceSerializer.serialize(device),
     };
   }

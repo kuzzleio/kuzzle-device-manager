@@ -109,54 +109,6 @@ describe("ModelsController:measures", () => {
       },
     });
 
-    const tenantDeviceMapping = await sdk.collection.getMapping(
-      "engine-ayse",
-      "devices",
-    );
-    expect(tenantDeviceMapping.properties).toMatchObject({
-      measures: {
-        properties: {
-          presence: {
-            properties: {
-              measuredAt: { type: "date" },
-              payloadUuids: { type: "keyword" },
-              type: { type: "keyword" },
-              values: {
-                properties: {
-                  presence: { type: "boolean" },
-                  presence2: { type: "boolean" },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const platformDevicesMapping = await sdk.collection.getMapping(
-      "device-manager",
-      "devices",
-    );
-    expect(platformDevicesMapping.properties).toMatchObject({
-      measures: {
-        properties: {
-          presence: {
-            properties: {
-              measuredAt: { type: "date" },
-              payloadUuids: { type: "keyword" },
-              type: { type: "keyword" },
-              values: {
-                properties: {
-                  presence: { type: "boolean" },
-                  presence2: { type: "boolean" },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-
     const listMeasures = await sdk.query<
       ApiModelListMeasuresRequest,
       ApiModelListMeasuresResult

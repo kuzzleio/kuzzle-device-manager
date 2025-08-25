@@ -17,12 +17,7 @@ import {
 } from "kuzzle-sdk";
 import _ from "lodash";
 
-import {
-  AskDeviceAttachEngine,
-  AskDeviceDetachEngine,
-  AskDeviceLinkAsset,
-  AskDeviceUnlinkAsset,
-} from "../device";
+import { AskDeviceAttachEngine, AskDeviceDetachEngine } from "../device";
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
   AskEngineList,
@@ -31,7 +26,6 @@ import {
 } from "../plugin";
 import {
   DigitalTwinService,
-  EmbeddedMeasure,
   Metadata,
   SearchParams,
   flattenObject,
@@ -309,22 +303,14 @@ export class AssetService extends DigitalTwinService {
       _.set(assetMetadata, metadataName, metadataValue);
     }
 
-    const measures: Record<string, EmbeddedMeasure> = {};
-
-    for (const { name } of assetModel.asset.measures) {
-      measures[name] = null;
-    }
-
     const asset = await this.createDocument<AssetContent>(
       request,
       {
         _id: assetId,
         _source: {
           groups: [],
-          lastMeasuredAt: null,
-          linkedDevices: [],
+          linkedMeasures: [],
           measureSlots: assetModel.asset.measures,
-          measures,
           metadata: { ...assetMetadata, ...metadata },
           model,
           modelLocales: assetModel.asset.locales,
@@ -378,23 +364,19 @@ export class AssetService extends DigitalTwinService {
     assetId: string,
     request: KuzzleRequest,
   ) {
-    const user = request.getUser();
     const strict = request.getBoolean("strict");
 
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request);
 
-      if (strict && asset._source.linkedDevices.length !== 0) {
+      if (strict && asset._source.linkedMeasures.length !== 0) {
         throw new BadRequestError(
           `Asset "${assetId}" is still linked to devices.`,
         );
       }
 
-      for (const { _id: deviceId } of asset._source.linkedDevices) {
-        await ask<AskDeviceUnlinkAsset>(
-          "ask:device-manager:device:unlink-asset",
-          { deviceId, user },
-        );
+      for (const { deviceId } of asset._source.linkedMeasures) {
+        await this.unlinkAssetDevice(deviceId, assetId, [], true, request);
       }
 
       await this.deleteDocument(request, assetId, {
@@ -420,6 +402,8 @@ export class AssetService extends DigitalTwinService {
     assetsList: string[],
     engineId: string,
     newEngineId: string,
+    includeDevices: boolean,
+    request: KuzzleRequest,
   ): Promise<ApiAssetMigrateTenantResult> {
     let errors = [];
     let successes = [];
@@ -488,7 +472,7 @@ export class AssetService extends DigitalTwinService {
       //We want to create the new asset with linked devices and groups empty
       const assetsContentCopy = _.cloneDeep(assetsContent);
       for (const asset of assetsContentCopy) {
-        asset.body.linkedDevices = [];
+        asset.body.linkedMeasures = [];
         asset.body.groups = [];
       }
 
@@ -516,40 +500,45 @@ export class AssetService extends DigitalTwinService {
         const assetOriginal = assets.successes.find((a) => a._id === asset._id);
 
         // get linked devices to this asset, if any
-        const linkedDevices = assetOriginal._source.linkedDevices.map((d) => ({
-          _id: d._id,
-          measureNames: d.measureNames,
-        }));
+        const linkedMeasures = assetOriginal._source.linkedMeasures;
 
         // ... and iterate over this list
-        for (const device of linkedDevices) {
-          // detach linked devices from current tenant (it also unkinks asset)
-          await ask<AskDeviceDetachEngine>(
-            "ask:device-manager:device:detach-engine",
-            { deviceId: device._id, user },
-          );
+        for (const link of linkedMeasures) {
+          if (includeDevices === true) {
+            // detach linked devices from current tenant (it also unkinks asset)
+            await ask<AskDeviceDetachEngine>(
+              "ask:device-manager:device:detach-engine",
+              { deviceId: link.deviceId, user },
+            );
 
-          // ... and attach to new tenant
-          await ask<AskDeviceAttachEngine>(
-            "ask:device-manager:device:attach-engine",
-            { deviceId: device._id, engineId: newEngineId, user },
-          );
+            // ... and attach to new tenant
+            await ask<AskDeviceAttachEngine>(
+              "ask:device-manager:device:attach-engine",
+              { deviceId: link.deviceId, engineId: newEngineId, user },
+            );
 
-          // ... and link this device to the asset in the new tenant
-          await ask<AskDeviceLinkAsset>(
-            "ask:device-manager:device:link-asset",
-            {
-              assetId: asset._id,
-              deviceId: device._id,
-              engineId: newEngineId,
-              measureNames: device.measureNames,
-              user,
-            },
-          );
+            // ... and link this device to the asset in the new tenant
+            await this.linkAssetDevice(
+              newEngineId,
+              link.deviceId,
+              asset._id,
+              link.measureSlots,
+              false,
+              request,
+            );
+          } else {
+            await this.unlinkAssetDevice(
+              link.deviceId,
+              asset._id,
+              link.measureSlots,
+              false,
+              request,
+            );
+          }
         }
       }
 
-      // Finally here, we can delete the newly create assets in the source engine !
+      // Finally here, we can delete the successefully migrated assets from the source engine !
       await this.sdk.document.mDelete(
         engineId,
         InternalCollection.ASSETS,
@@ -576,7 +565,7 @@ export class AssetService extends DigitalTwinService {
         },
         {
           collection: InternalCollection.DEVICES,
-          index: this.config.adminIndex,
+          index: this.config.platformIndex,
         },
       ].map(({ index, collection }) => {
         return this.sdk.collection.refresh(index, collection);
@@ -637,7 +626,7 @@ export class AssetService extends DigitalTwinService {
     model: string,
   ): Promise<ApiAssetUpdateModelLocales[]> {
     const res = await this.sdk.document.search<AssetModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       {
         query: {
@@ -712,16 +701,6 @@ export class AssetService extends DigitalTwinService {
     }
 
     return results;
-  }
-
-  private async getEngine(engineId: string): Promise<JSONObject> {
-    const engine = await this.sdk.document.get(
-      this.config.adminIndex,
-      InternalCollection.CONFIG,
-      `engine-device-manager--${engineId}`,
-    );
-
-    return engine._source.engine;
   }
 
   private async refreshModel({

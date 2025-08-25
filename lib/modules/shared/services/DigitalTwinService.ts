@@ -1,13 +1,31 @@
-import { NotFoundError } from "kuzzle";
-import { onAsk } from "kuzzle-plugin-commons";
-import { JSONObject, KHit } from "kuzzle-sdk";
+import { BadRequestError, KuzzleRequest, NotFoundError } from "kuzzle";
+import { ask, onAsk } from "kuzzle-plugin-commons";
+import { JSONObject, KDocument, KHit } from "kuzzle-sdk";
 
 import { MeasureContent } from "../../measure";
 import { DeviceManagerPlugin, InternalCollection } from "../../plugin";
 import { ApiDigitalTwinMGetLastMeasuredAtResult } from "../types/DigitalTwinApi";
-import { AskDigitalTwinLastMeasuresGet } from "../types/DigitalTwinEvents";
+import {
+  AskDigitalTwinLastMeasuresGet,
+  AskDigitalTwinLink,
+  AskDigitalTwinUnlink,
+} from "../types/DigitalTwinEvents";
 
 import { BaseService } from "./BaseService";
+import {
+  AskAssetHistoryAdd,
+  AssetContent,
+  AssetHistoryEventLink,
+  AssetHistoryEventUnlink,
+} from "lib/modules/asset";
+import { DeviceContent, DeviceProvisioningContent } from "lib/modules/device";
+import {
+  AskModelAssetGet,
+  AskModelDeviceGet,
+  AssetModelContent,
+  DeviceModelContent,
+} from "lib/modules/model";
+import { lock } from "../utils";
 
 type MGetLastMeasuresAggregation = {
   byDigitalTwin: {
@@ -47,6 +65,7 @@ type DigitalTwinAggregationQueryParameters = {
   idField: string;
   query: JSONObject;
 };
+type MeasureSlot = { asset: string; device: string };
 
 export class DigitalTwinService extends BaseService {
   private readonly digitalTwinType: "asset" | "device";
@@ -68,6 +87,38 @@ export class DigitalTwinService extends BaseService {
       `ask:device-manager:${this.digitalTwinType}:get-last-measures`,
       (payload) => {
         return this.getLastMeasures(payload.engineId, payload.digitalTwinId);
+      },
+    );
+
+    onAsk<AskDigitalTwinLink>(
+      this.digitalTwinType === "asset"
+        ? `ask:device-manager:asset:link-device`
+        : `ask:device-manager:device:link-asset`,
+      async ({ deviceId, engineId, user, assetId, measureSlots }) => {
+        const request = new KuzzleRequest({ refresh: "false" }, { user });
+        await this.linkAssetDevice(
+          engineId,
+          deviceId,
+          assetId,
+          measureSlots,
+          false,
+          request,
+        );
+      },
+    );
+    onAsk<AskDigitalTwinUnlink>(
+      this.digitalTwinType === "asset"
+        ? `ask:device-manager:asset:unlink-device`
+        : `ask:device-manager:device:unlink-asset`,
+      async ({ deviceId, assetId, user, allMeasures, measureSlots }) => {
+        const request = new KuzzleRequest({ refresh: "false" }, { user });
+        await this.unlinkAssetDevice(
+          deviceId,
+          assetId,
+          measureSlots,
+          allMeasures,
+          request,
+        );
       },
     );
   }
@@ -95,6 +146,209 @@ export class DigitalTwinService extends BaseService {
     return measures[digitalTwinId];
   }
 
+  /**
+   * Link a device to an asset.
+   */
+  async linkAssetDevice(
+    engineId: string,
+    deviceId: string,
+    assetId: string,
+    measureSlots: { asset: string; device: string }[],
+    implicitMeasuresLinking: boolean,
+    request: KuzzleRequest,
+  ): Promise<{
+    asset: KDocument<AssetContent>;
+    device: KDocument<DeviceContent>;
+  }> {
+    return lock(`device:${deviceId}`, async () => {
+      const deviceProvisioning = await this.getDeviceProvisioning(deviceId);
+      const engine = await this.getEngine(engineId);
+
+      this.checkDeviceAttachedToEngine(deviceProvisioning);
+      if (deviceProvisioning._source.engineId !== engineId) {
+        throw new BadRequestError(
+          `Device "${deviceProvisioning._id}" is not attached to the specified engine.`,
+        );
+      }
+      const device = await this.sdk.document.get<DeviceContent>(
+        engineId,
+        InternalCollection.DEVICES,
+        deviceId,
+      );
+
+      const asset = await this.sdk.document.get<AssetContent>(
+        engineId,
+        InternalCollection.ASSETS,
+        assetId,
+      );
+
+      const [assetModel, deviceModel] = await Promise.all([
+        this.getAssetModel(engine.group, asset._source.model),
+        this.getDeviceModel(deviceProvisioning._source.model),
+      ]);
+
+      const updatedMeasureSlots: MeasureSlot[] = [];
+      for (const measure of measureSlots) {
+        const foundMeasure = deviceModel.device.measures.find(
+          (deviceMeasure) => deviceMeasure.name === measure.device,
+        );
+        if (!foundMeasure && !implicitMeasuresLinking) {
+          throw new BadRequestError(
+            `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`,
+          );
+        }
+        updatedMeasureSlots.push({
+          asset: measure.asset,
+          device: measure.device,
+        });
+      }
+
+      this.checkAssetAlreadyProvidedMeasures(
+        asset,
+        deviceId,
+        updatedMeasureSlots,
+      );
+      this.checkDeviceAlreadyProvidingMeasures(
+        device,
+        assetId,
+        updatedMeasureSlots,
+      );
+
+      if (implicitMeasuresLinking) {
+        this.generateMissingAssetMeasureNames(
+          asset,
+          device,
+          assetModel,
+          deviceModel,
+          updatedMeasureSlots,
+        );
+      }
+      if (updatedMeasureSlots.length === 0) {
+        throw new BadRequestError(
+          `No measure can be linked from"${deviceId}" to asset "${assetId}".`,
+        );
+      }
+      const previousDeviceLink = device._source.linkedMeasures.find(
+        (link) => link.assetId === asset._id,
+      );
+      if (previousDeviceLink) {
+        previousDeviceLink.measureSlots = [
+          ...updatedMeasureSlots,
+          ...previousDeviceLink.measureSlots.filter(
+            (measure) =>
+              !updatedMeasureSlots.some((m) => m.device === measure.device),
+          ),
+        ];
+      } else {
+        device._source.linkedMeasures.push({
+          assetId: asset._id,
+          measureSlots: updatedMeasureSlots,
+        });
+      }
+      const previousAssetLink = asset._source.linkedMeasures.find(
+        (link) => link.deviceId === device._id,
+      );
+      if (previousAssetLink) {
+        previousAssetLink.measureSlots = [
+          ...updatedMeasureSlots,
+          ...previousAssetLink.measureSlots.filter(
+            (measure) =>
+              !updatedMeasureSlots.some((m) => m.asset === measure.asset),
+          ),
+        ];
+      } else {
+        asset._source.linkedMeasures.push({
+          deviceId,
+          measureSlots: updatedMeasureSlots,
+        });
+      }
+
+      const [updatedDevice, updatedAsset] = await Promise.all([
+        this.updateDocument<DeviceContent>(request, device, {
+          collection: InternalCollection.DEVICES,
+          engineId: deviceProvisioning._source.engineId,
+        }),
+
+        lock(`asset:${engineId}:${asset._id}`, async () =>
+          this.updateDocument<AssetContent>(
+            request,
+            asset,
+            {
+              collection: InternalCollection.ASSETS,
+              engineId: deviceProvisioning._source.engineId,
+            },
+            { source: true },
+          ),
+        ),
+      ]);
+
+      const event: AssetHistoryEventLink = {
+        link: {
+          deviceId: deviceProvisioning._id,
+        },
+        name: "link",
+      };
+      await ask<AskAssetHistoryAdd<AssetHistoryEventLink>>(
+        "ask:device-manager:asset:history:add",
+        {
+          engineId,
+          histories: [
+            {
+              asset: updatedAsset._source,
+              event,
+              id: updatedAsset._id,
+              timestamp: Date.now(),
+            },
+          ],
+        },
+      );
+
+      if (request.getRefresh() === "wait_for") {
+        await Promise.all([
+          this.sdk.collection.refresh(
+            this.config.platformIndex,
+            InternalCollection.DEVICES,
+          ),
+          this.sdk.collection.refresh(
+            deviceProvisioning._source.engineId,
+            InternalCollection.DEVICES,
+          ),
+          this.sdk.collection.refresh(
+            deviceProvisioning._source.engineId,
+            InternalCollection.ASSETS,
+          ),
+        ]);
+      }
+      return { asset: updatedAsset, device: updatedDevice };
+    });
+  }
+  /**
+   * Unlink a device of an asset with lock
+   *
+   * @param {string} deviceId Id of the device
+   * @param {string} assetId Id of the asset
+   * @param {KuzzleRequest} request kuzzle request
+   */
+  async unlinkAssetDevice(
+    deviceId: string,
+    assetId: string,
+    measureSlots: MeasureSlot[],
+    allMeasures: undefined | boolean,
+    request: KuzzleRequest,
+  ): Promise<{
+    asset: KDocument<AssetContent>;
+    device: KDocument<DeviceContent>;
+  }> {
+    return lock(`device:${deviceId}`, async () =>
+      this._unlinkAssetDevice(
+        deviceId,
+        assetId,
+        measureSlots,
+        allMeasures,
+        request,
+      ),
+    );
+  }
   /**
    * Gets the last measures of multiple digital twins
    */
@@ -276,6 +530,294 @@ export class DigitalTwinService extends BaseService {
             },
           },
         };
+    }
+  }
+  /**
+   * Checks if the asset does not already have a linked device using one of the
+   * requested measure slots.
+   */
+  protected checkAssetAlreadyProvidedMeasures(
+    asset: KDocument<AssetContent>,
+    deviceId: string,
+    requestedMeasureNames: MeasureSlot[],
+  ) {
+    const measureAlreadyProvided = (assetMeasureName: string): boolean => {
+      return asset._source.linkedMeasures.some((link) =>
+        link.measureSlots.some(
+          (names) =>
+            names.asset === assetMeasureName && link.deviceId !== deviceId,
+        ),
+      );
+    };
+
+    for (const name of requestedMeasureNames) {
+      if (measureAlreadyProvided(name.asset)) {
+        throw new BadRequestError(
+          `Measure name "${name.asset}" is already provided by another device on this asset.`,
+        );
+      }
+    }
+  }
+  /**
+   * Checks if the device does not already have a linked asset using one of the
+   * requested measure slots.
+   */
+  protected checkDeviceAlreadyProvidingMeasures(
+    device: KDocument<DeviceContent>,
+    assetId: string,
+    requestedMeasureNames: MeasureSlot[],
+  ) {
+    const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
+      return device._source.linkedMeasures.some((link) =>
+        link.measureSlots.some(
+          (names) =>
+            names.device === deviceMeasureName && link.assetId !== assetId,
+        ),
+      );
+    };
+
+    for (const name of requestedMeasureNames) {
+      if (measureAlreadyProvided(name.asset)) {
+        throw new BadRequestError(
+          `Measure name "${name.device}" is already provided to another asset by this device.`,
+        );
+      }
+    }
+  }
+  /**
+   * Goes through the device available measures and add them into the link if:
+   *  - they are not already provided by another device
+   *  - they are not already present in the link request
+   *  - they are declared in the asset model
+   */
+  protected generateMissingAssetMeasureNames(
+    asset: KDocument<AssetContent>,
+    device: KDocument<DeviceContent>,
+    assetModel: AssetModelContent,
+    deviceModel: DeviceModelContent,
+    requestedMeasureNames: MeasureSlot[],
+  ) {
+    const measureAlreadyProvided = (deviceMeasureName: string): boolean => {
+      return asset._source.linkedMeasures.some((link) =>
+        link.measureSlots.some(
+          (measureName) => measureName.device === deviceMeasureName,
+        ),
+      );
+    };
+
+    const measureAlreadyRequested = (deviceMeasureName: string): boolean => {
+      return requestedMeasureNames.some(
+        (measureName) => measureName.device === deviceMeasureName,
+      );
+    };
+
+    const measureUndeclared = (deviceMeasureType: string): boolean => {
+      return !assetModel.asset.measures.some(
+        (measure) => measure.type === deviceMeasureType,
+      );
+    };
+    const measureSlotTaken = (deviceMeasureName: string): boolean => {
+      return device._source.linkedMeasures.some((link) =>
+        link.measureSlots.map((m) => m.device).includes(deviceMeasureName),
+      );
+    };
+    for (const deviceMeasure of deviceModel.device.measures) {
+      if (
+        measureSlotTaken(deviceMeasure.name) ||
+        measureAlreadyRequested(deviceMeasure.name) ||
+        measureAlreadyProvided(deviceMeasure.name) ||
+        measureUndeclared(deviceMeasure.type)
+      ) {
+        continue;
+      }
+
+      requestedMeasureNames.push({
+        asset: deviceMeasure.name,
+        device: deviceMeasure.name,
+      });
+    }
+  }
+  /**
+   * Internal logic of unlink a device of an asset
+   *
+   * @param {string} deviceId Id of the device
+   * @param {KuzzleRequest} request kuzzle request
+   */
+  protected async _unlinkAssetDevice(
+    deviceId: string,
+    assetId: string,
+    measureSlots: MeasureSlot[],
+    allMeasures: undefined | boolean,
+    request: KuzzleRequest,
+  ): Promise<{
+    asset: KDocument<AssetContent>;
+    device: KDocument<DeviceContent>;
+  }> {
+    const deviceProvisioning = await this.getDeviceProvisioning(deviceId);
+    const engineId = deviceProvisioning._source.engineId;
+
+    this.checkDeviceAttachedToEngine(deviceProvisioning);
+    const device = await this.sdk.document.get<DeviceContent>(
+      engineId,
+      InternalCollection.DEVICES,
+      deviceId,
+    );
+    if (
+      !device._source.linkedMeasures
+        .map((measure) => measure.assetId)
+        .includes(assetId)
+    ) {
+      throw new BadRequestError(
+        `Device "${deviceProvisioning._id}" is not linked to an asset.`,
+      );
+    }
+
+    const asset = await this.sdk.document.get<AssetContent>(
+      engineId,
+      InternalCollection.ASSETS,
+      assetId,
+    );
+    let linkedMeasuresAssets = asset._source.linkedMeasures;
+    let linkedMeasuresDevices = device._source.linkedMeasures;
+
+    if (allMeasures) {
+      linkedMeasuresAssets = asset._source.linkedMeasures.filter(
+        (link) => link.deviceId !== device._id,
+      );
+      linkedMeasuresDevices = device._source.linkedMeasures.filter(
+        (link) => link.assetId !== asset._id,
+      );
+    } else {
+      linkedMeasuresAssets = asset._source.linkedMeasures
+        .map((link) => {
+          if (link.deviceId !== device._id) {
+            return link;
+          }
+          return {
+            ...link,
+            measureSlots: link.measureSlots.filter(
+              (measure) => !measureSlots.some((m) => m.asset === measure.asset),
+            ),
+          };
+        })
+        .filter((link) => link.measureSlots.length > 0);
+      linkedMeasuresDevices = device._source.linkedMeasures
+        .map((link) => {
+          if (link.assetId !== asset._id) {
+            return link;
+          }
+          return {
+            ...link,
+            measureSlots: link.measureSlots.filter(
+              (measure) =>
+                !measureSlots.some((m) => m.device === measure.device),
+            ),
+          };
+        })
+        .filter((link) => link.measureSlots.length > 0);
+    }
+
+    const [updatedDevice, updatedAsset] = await Promise.all([
+      this.updateDocument<DeviceContent>(
+        request,
+        { _id: deviceId, _source: { linkedMeasures: linkedMeasuresDevices } },
+        {
+          collection: InternalCollection.DEVICES,
+          engineId,
+        },
+        { source: true },
+      ),
+
+      lock(`asset:${engineId}:${asset._id}`, async () =>
+        this.updateDocument<AssetContent>(
+          request,
+          { _id: asset._id, _source: { linkedMeasures: linkedMeasuresAssets } },
+          {
+            collection: InternalCollection.ASSETS,
+            engineId,
+          },
+          { source: true },
+        ),
+      ),
+    ]);
+
+    const event: AssetHistoryEventUnlink = {
+      name: "unlink",
+      unlink: {
+        deviceId,
+      },
+    };
+    await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
+      "ask:device-manager:asset:history:add",
+      {
+        engineId,
+        histories: [
+          {
+            asset: updatedAsset._source,
+            event,
+            id: updatedAsset._id,
+            timestamp: Date.now(),
+          },
+        ],
+      },
+    );
+
+    if (request.getRefresh() === "wait_for") {
+      await Promise.all([
+        this.sdk.collection.refresh(
+          this.config.platformIndex,
+          InternalCollection.DEVICES,
+        ),
+        this.sdk.collection.refresh(engineId, InternalCollection.DEVICES),
+        this.sdk.collection.refresh(engineId, InternalCollection.ASSETS),
+      ]);
+    }
+
+    return { asset: updatedAsset, device: updatedDevice };
+  }
+  /**
+   * Retrieve the model document of an asset
+   * @param {any} engineGroup:string
+   * @param {any} model:string
+   * @returns {any}
+   */
+  protected getAssetModel(
+    engineGroup: string,
+    model: string,
+  ): Promise<AssetModelContent> {
+    return ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
+      engineGroup,
+      model,
+    });
+  }
+  protected getDeviceModel(model: string): Promise<DeviceModelContent> {
+    return ask<AskModelDeviceGet>("ask:device-manager:model:device:get", {
+      model,
+    });
+  }
+  protected async getEngine(engineId: string): Promise<JSONObject> {
+    const engine = await this.sdk.document.get(
+      this.config.platformIndex,
+      InternalCollection.CONFIG,
+      `engine-device-manager--${engineId}`,
+    );
+
+    return engine._source.engine;
+  }
+  protected async getDeviceProvisioning(deviceId: string) {
+    return this.sdk.document.get<DeviceProvisioningContent>(
+      this.config.platformIndex,
+      InternalCollection.DEVICES,
+      deviceId,
+    );
+  }
+  protected checkDeviceAttachedToEngine(
+    device: KDocument<DeviceProvisioningContent>,
+  ) {
+    if (!device._source.engineId) {
+      throw new BadRequestError(
+        `Device "${device._id}" is not attached to an engine.`,
+      );
     }
   }
 }

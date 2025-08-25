@@ -74,7 +74,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
 
   protected async getEngine(engineId: string): Promise<EngineContent> {
     const engine = await this.sdk.document.get<{ engine: EngineContent }>(
-      this.plugin.config.adminIndex,
+      this.plugin.config.platformIndex,
       InternalCollection.CONFIG,
       `engine-device-manager--${engineId}`,
     );

@@ -363,7 +363,7 @@ export class GroupsService extends BaseService {
     };
   }
 
-  async addAsset(
+  async addAssets(
     engineId: string,
     path: string,
     assetIds: string[],
@@ -417,11 +417,12 @@ export class GroupsService extends BaseService {
       if (!Array.isArray(asset._source.groups)) {
         asset._source.groups = [];
       }
-
-      asset._source.groups.push({
-        date: Date.now(),
-        path: path,
-      });
+      if (!asset._source.groups.some((g) => g.path === path)) {
+        asset._source.groups.push({
+          date: Date.now(),
+          path: path,
+        });
+      }
       return asset;
     });
 
@@ -441,8 +442,7 @@ export class GroupsService extends BaseService {
       group: groupUpdate,
     };
   }
-
-  async removeAsset(
+  async removeAssets(
     engineId: string,
     path: string,
     assetIds: string[],
@@ -492,8 +492,7 @@ export class GroupsService extends BaseService {
       group: groupUpdate,
     };
   }
-
-  async addDevice(
+  async addDevices(
     engineId: string,
     path: string,
     deviceIds: string[],
@@ -549,11 +548,12 @@ export class GroupsService extends BaseService {
       if (!Array.isArray(device._source.groups)) {
         device._source.groups = [];
       }
-
-      device._source.groups.push({
-        date: Date.now(),
-        path: path,
-      });
+      if (!device._source.groups.some((g) => g.path === path)) {
+        device._source.groups.push({
+          date: Date.now(),
+          path: path,
+        });
+      }
       return device;
     });
 
@@ -576,8 +576,7 @@ export class GroupsService extends BaseService {
       group: groupUpdate,
     };
   }
-
-  async removeDevice(
+  async removeDevices(
     engineId: string,
     path: string,
     deviceIds: string[],

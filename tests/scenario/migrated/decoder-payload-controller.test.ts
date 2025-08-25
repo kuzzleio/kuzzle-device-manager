@@ -123,6 +123,7 @@ describe("features/Decoder/PayloadController", () => {
         temperature: 21,
         location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
         battery: 0.8,
+        metadata:{ color: "skidibabap" },
       },
     ]);
 
@@ -146,6 +147,76 @@ describe("features/Decoder/PayloadController", () => {
     expect(hit.valid).toBeTruthy();
     expect(hit.state).toBe("VALID");
   });
+
+    it("Receive a payload from unattached device", async () => {
+    await sendPayloads(sdk, "dummy-temp-position", [
+      {
+        deviceEUI: "unknown",
+        temperature: 21,
+        location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
+        battery: 0.8,
+        metadata:{ color: "skidibabap" },
+      },
+    ]);
+
+    await sdk.collection.refresh("device-manager", "devices");
+    let exceptedResult = await sdk.document.get(
+      "device-manager",
+      "devices",
+      "DummyTempPosition-unknown"
+    );
+    expect(exceptedResult._source).toMatchObject({
+  model: "DummyTempPosition",
+  reference: "unknown",
+  measureSlots: [
+    {
+      name: "temperature",
+      type: "temperature",
+    },
+    {
+      name: "battery",
+      type: "battery",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+  ],
+  engineId: null,
+  lastMeasures: expect.arrayContaining([
+    {
+      values: {
+        temperature: 21,
+      },
+      measuredAt: expect.any(Number),
+      type: "temperature",
+      measureName: "temperature",
+    },
+    {
+      values: {
+        accuracy: 2100,
+        position: {
+          lat: 42.2,
+          lon: 2.42,
+        },
+      },
+      measuredAt: expect.any(Number),
+      type: "position",
+      measureName: "position",
+    },
+    {
+      values: {
+        battery: 80,
+      },
+      measuredAt: expect.any(Number),
+      type: "battery",
+      measureName: "battery",
+    },
+  ]),
+}
+)
+  });
+
 
   it("Historize the measures with device and asset context", async () => {
     let response;
@@ -197,7 +268,6 @@ describe("features/Decoder/PayloadController", () => {
       _source: {
         reference: "12345",
         model: "DummyTemp",
-        metadata: { color: "RED" },
       },
     });
   });
@@ -219,12 +289,6 @@ describe("features/Decoder/PayloadController", () => {
 
     await expect(promise).rejects.toMatchObject({
       message: 'Decoder "DummyTemp" has no measure named "unknownMeasureName"',
-    });
-
-    await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-test")
-    ).resolves.toMatchObject({
-      _source: { measures: {} },
     });
   });
 

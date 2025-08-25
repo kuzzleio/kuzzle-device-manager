@@ -266,7 +266,7 @@ describe("GroupsController", () => {
     >({
       controller: "device-manager/groups",
       engineId: "engine-ayse",
-      action: "addAsset",
+      action: "addAssets",
       body: {
         path: groupTestId,
         assetIds: ["Container-linked1", "Container-linked2"],
@@ -312,7 +312,7 @@ describe("GroupsController", () => {
     >({
       controller: "device-manager/groups",
       engineId: "engine-ayse",
-      action: "addAsset",
+      action: "addAssets",
       body: {
         path: groupTestParentId1,
         assetIds: ["Container-linked1", "Container-linked2"],
@@ -367,7 +367,7 @@ describe("GroupsController", () => {
     >({
       controller: "device-manager/groups",
       engineId: "engine-ayse",
-      action: "addAsset",
+      action: "addAssets",
       body: {
         path: `${groupTestParentId1}.${groupTestChildrenId1}`,
         assetIds: ["Container-unlinked1"],
@@ -403,7 +403,7 @@ describe("GroupsController", () => {
     >({
       controller: "device-manager/groups",
       engineId: "engine-ayse",
-      action: "removeAsset",
+      action: "removeAssets",
       body: {
         path: `${groupParentWithAssetId}.${groupChildrenWithAssetId}`,
         assetIds: ["Container-grouped"],
@@ -427,7 +427,7 @@ describe("GroupsController", () => {
     >({
       controller: "device-manager/groups",
       engineId: "engine-ayse",
-      action: "removeAsset",
+      action: "removeAssets",
       body: {
         path: groupParentWithAssetId,
         assetIds: ["Container-grouped2"],

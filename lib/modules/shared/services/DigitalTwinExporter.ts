@@ -100,7 +100,7 @@ export class DigitalTwinExporter extends AbstractExporter {
     let result = await this.sdk.document.search<
       AssetModelContent | DeviceModelContent
     >(
-      this.plugin.config.adminIndex,
+      this.plugin.config.platformIndex,
       InternalCollection.MODELS,
       {
         query: { equals: { type } },

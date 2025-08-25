@@ -46,6 +46,9 @@ describe("DevicesController:exportMeasures", () => {
       {
         deviceEUI: "linked1",
         temperature: 23.3,
+        metadata: {
+          color: "red",
+        },
         battery: 0.8,
         // ? Use date now - 1s to ensure this asset are second in export
         measuredAt: measureDate - 1000,

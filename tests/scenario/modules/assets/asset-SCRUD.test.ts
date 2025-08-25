@@ -91,16 +91,9 @@ describe("AssetsController:SCRUD", () => {
     expect(withoutMetadata.result._id).toBe("Container-A1");
     expect(withoutMetadata.result._source).toMatchObject({
       groups: [],
-      lastMeasuredAt: null,
-      linkedDevices: [],
+      linkedMeasures: [],
       model: "Container",
       reference: "A1",
-    });
-    expect(withoutMetadata.result._source.measures).toMatchObject({
-      position: null,
-      temperatureExt: null,
-      temperatureInt: null,
-      temperatureWeather: null,
     });
     expect(withoutMetadata.result._source.metadata).toMatchObject({
       height: 20,
@@ -144,12 +137,13 @@ describe("AssetsController:SCRUD", () => {
     );
     expect(assetDocument._source).toMatchObject({
       groups: [],
-      measures: {
-        position: null,
-        temperatureExt: null,
-        temperatureInt: null,
-        temperatureWeather: null,
-      },
+      measureSlots: [
+        { type: "temperature", name: "temperatureExt" },
+        { type: "temperature", name: "temperatureInt" },
+        { type: "position", name: "position" },
+        { type: "temperature", name: "temperatureWeather" },
+      ],
+
       metadata: {
         height: 5,
         person: {
@@ -158,8 +152,7 @@ describe("AssetsController:SCRUD", () => {
         trailer: null,
         weight: 10,
       },
-      lastMeasuredAt: null,
-      linkedDevices: [],
+      linkedMeasures: [],
       model: "Container",
       reference: "A2",
     });
@@ -325,21 +318,13 @@ describe("AssetsController:SCRUD", () => {
     );
     expect(assetExists).toBe(false);
 
-    const deviceDocument = await sdk.document.get(
-      "device-manager",
-      InternalCollection.DEVICES,
-      "DummyTemp-linked1",
-    );
-    expect(deviceDocument._source).toMatchObject({
-      assetId: null,
-    });
     const engineDeviceDocument = await sdk.document.get(
       "engine-ayse",
       InternalCollection.DEVICES,
       deviceAyseLinked1Id,
     );
     expect(engineDeviceDocument._source).toMatchObject({
-      assetId: null,
+      linkedMeasures: [],
     });
   });
 

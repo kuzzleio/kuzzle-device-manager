@@ -11,9 +11,9 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         create: true,
         delete: true,
         get: true,
-        linkAsset: true,
+        linkAssets: true,
         search: true,
-        unlinkAsset: true,
+        unlinkAssets: true,
         update: true,
         getMeasures: true,
         exportMeasures: true,
@@ -33,15 +33,18 @@ export const RoleDevicesAdmin: KuzzleRole = {
   name: "devices.admin",
   definition: {
     controllers: {
+      "device-manager/assets": {
+        actions: { linkDevices: true, unlinkDevices: true },
+      },
       "device-manager/devices": {
         actions: {
           attachEngine: true,
           create: true,
           detachEngine: true,
           get: true,
-          linkAsset: true,
+          linkAssets: true,
           search: true,
-          unlinkAsset: true,
+          unlinkAssets: true,
           update: true,
           getMeasures: true,
           exportMeasures: true,

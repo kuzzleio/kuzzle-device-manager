@@ -18,7 +18,11 @@ import {
   NamedMeasures,
   payloadsMappings,
 } from "../decoder";
-import { DeviceModule, devicesMappings } from "../device";
+import {
+  DeviceModule,
+  devicesPlatformMappings,
+  devicesMappings,
+} from "../device";
 import { MeasureModule } from "../measure";
 import {
   AssetModelDefinition,
@@ -39,7 +43,7 @@ export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
 
   private deviceManagerEngine: DeviceManagerEngine;
-  private adminConfigManager: ConfigManager;
+  private platformConfigManager: ConfigManager;
   private engineConfigManager: ConfigManager;
   private engineController: EngineController<DeviceManagerPlugin>;
 
@@ -362,8 +366,8 @@ export class DeviceManagerPlugin extends Plugin {
       engine: {
         autoUpdate: true,
       },
-      adminIndex: "device-manager",
-      adminCollections: {
+      platformIndex: "device-manager",
+      platformCollections: {
         config: {
           name: "config",
           mappings: {
@@ -373,7 +377,7 @@ export class DeviceManagerPlugin extends Plugin {
         },
         devices: {
           name: "devices",
-          mappings: devicesMappings,
+          mappings: devicesPlatformMappings,
         },
         payloads: {
           name: "payloads",
@@ -444,17 +448,17 @@ export class DeviceManagerPlugin extends Plugin {
     this.decodersRegister.init(this, this.context);
     this.modelsRegister.init(this);
 
-    this.adminConfigManager = new ConfigManager(this, {
-      mappings: this.config.adminCollections.config.mappings,
-      settings: this.config.adminCollections.config.settings,
+    this.platformConfigManager = new ConfigManager(this, {
+      mappings: this.config.platformCollections.config.mappings,
+      settings: this.config.platformCollections.config.settings,
     });
-    this.adminConfigManager.register("device-manager", {
+    this.platformConfigManager.register("device-manager", {
       properties: {
         provisioningStrategy: { type: "keyword" },
       },
     });
 
-    this.adminConfigManager.register("engine", {
+    this.platformConfigManager.register("engine", {
       properties: {
         group: { type: "keyword" },
         index: { type: "keyword" },
@@ -469,7 +473,7 @@ export class DeviceManagerPlugin extends Plugin {
 
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
-      this.adminConfigManager,
+      this.platformConfigManager,
       this.engineConfigManager,
     );
 
@@ -502,16 +506,16 @@ export class DeviceManagerPlugin extends Plugin {
   }
 
   /**
-   * Initialize the administration index of the plugin
+   * Initialize the platform index of the plugin
    */
   private async initDatabase() {
     await lock("device-manager/initDatabase", async () => {
-      if (!(await this.sdk.index.exists(this.config.adminIndex))) {
+      if (!(await this.sdk.index.exists(this.config.platformIndex))) {
         // Possible race condition because of index cache propagation.
         // The index has been created but the node didn't receive the index
         // cache update message yet, causing index:exists to returns false
         try {
-          await this.sdk.index.create(this.config.adminIndex);
+          await this.sdk.index.create(this.config.platformIndex);
         } catch (error) {
           if (!error.message.includes("already exists")) {
             throw error;
@@ -519,52 +523,52 @@ export class DeviceManagerPlugin extends Plugin {
         }
       }
 
-      await this.adminConfigManager
-        .createCollection(this.config.adminIndex)
+      await this.platformConfigManager
+        .createCollection(this.config.platformIndex)
         .catch((error) => {
           throw keepStack(
             error,
             new PluginImplementationError(
-              `Cannot create admin "config" collection: ${error}`,
+              `Cannot create platform "config" collection: ${error}`,
             ),
           );
         });
 
       await this.sdk.collection
-        .create(this.config.adminIndex, InternalCollection.MODELS, {
+        .create(this.config.platformIndex, InternalCollection.MODELS, {
           mappings: modelsMappings,
         })
         .catch((error) => {
           throw keepStack(
             error,
             new PluginImplementationError(
-              `Cannot create admin "models" collection: ${error}`,
+              `Cannot create platform "models" collection: ${error}`,
             ),
           );
         });
       await this.modelsRegister.loadModels();
 
       await this.deviceManagerEngine
-        .createDevicesCollection(this.config.adminIndex)
+        .createPlatformDevicesCollection()
         .catch((error) => {
           throw keepStack(
             error,
             new PluginImplementationError(
-              `Cannot create admin "devices" collection: ${error}`,
+              `Cannot create platform "devices" collection: ${error}`,
             ),
           );
         });
 
       await this.sdk.collection
-        .create(this.config.adminIndex, "payloads", {
+        .create(this.config.platformIndex, "payloads", {
           mappings: this.getPayloadsMappings(),
-          settings: this.config.adminCollections.payloads.settings,
+          settings: this.config.platformCollections.payloads.settings,
         })
         .catch((error) => {
           throw keepStack(
             error,
             new PluginImplementationError(
-              `Cannot create admin "payloads" collection: ${error}`,
+              `Cannot create platform "payloads" collection: ${error}`,
             ),
           );
         });
@@ -592,7 +596,7 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private getPayloadsMappings(): JSONObject {
     const { mappings } = JSON.parse(
-      JSON.stringify(this.config.adminCollections.payloads),
+      JSON.stringify(this.config.platformCollections.payloads),
     );
 
     for (const decoder of this.decodersRegister.decoders) {
@@ -610,15 +614,15 @@ export class DeviceManagerPlugin extends Plugin {
    */
   private async initializeConfig() {
     const exists = await this.sdk.document.exists(
-      this.config.adminIndex,
-      this.adminConfigManager.collection,
+      this.config.platformIndex,
+      this.platformConfigManager.collection,
       "plugin--device-manager",
     );
 
     if (!exists) {
       await this.sdk.document.create(
-        this.config.adminIndex,
-        this.adminConfigManager.collection,
+        this.config.platformIndex,
+        this.platformConfigManager.collection,
         {
           "device-manager": { provisioningStrategy: "auto" },
           type: "device-manager",
@@ -631,7 +635,7 @@ export class DeviceManagerPlugin extends Plugin {
   private async pipeCheckEngine(request: KuzzleRequest) {
     const engineId = request.getString("engineId");
 
-    if (engineId !== this.config.adminIndex) {
+    if (engineId !== this.config.platformIndex) {
       const {
         result: { exists },
       } = await this.sdk.query({

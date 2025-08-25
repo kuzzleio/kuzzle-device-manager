@@ -3,25 +3,57 @@ import { DeviceContent } from "../../index";
 export const deviceDetached1: DeviceContent = {
   model: "DummyTemp",
   reference: "detached1",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperature",
+      type: "temperature",
+    },
+    {
+      name: "accelerationSensor",
+      type: "acceleration",
+    },
+    {
+      name: "battery",
+      type: "battery",
+    },
+  ],
   metadata: {},
-  measures: {},
   engineId: null,
-  assetId: null,
-  lastMeasuredAt: null,
+  linkedMeasures: [],
   groups: [],
 };
 export const deviceDetached1Id = `${deviceDetached1.model}-${deviceDetached1.reference}`;
 
-export const deviceAyseLinked1 = {
+export const deviceAyseLinked1: DeviceContent = {
   model: "DummyTemp",
   reference: "linked1",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperature",
+      type: "temperature",
+    },
+    {
+      name: "accelerationSensor",
+      type: "acceleration",
+    },
+    {
+      name: "battery",
+      type: "battery",
+    },
+  ],
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
-  assetId: "Container-linked1",
-  lastMeasuredAt: null,
+  linkedMeasures: [
+    {
+      measureSlots: [
+        {
+          asset: "temperatureExt",
+          device: "temperature",
+        },
+      ],
+      assetId: "Container-linked1",
+    },
+  ],
   groups: [],
 };
 export const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinked1.reference}`;
@@ -29,12 +61,37 @@ export const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinke
 export const deviceAyseLinked2: DeviceContent = {
   model: "DummyTempPosition",
   reference: "linked2",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperature",
+      type: "temperature",
+    },
+    {
+      name: "battery",
+      type: "battery",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+  ],
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
-  assetId: "Container-linked2",
-  lastMeasuredAt: null,
+  linkedMeasures: [
+    {
+      assetId: "Container-linked2",
+      measureSlots: [
+        {
+          asset: "temperatureExt",
+          device: "temperature",
+        },
+        {
+          asset: "position",
+          device: "position",
+        },
+      ],
+    },
+  ],
   groups: [
     {
       path: "test-parent-asset",
@@ -47,12 +104,23 @@ export const deviceAyseLinked2Id = `${deviceAyseLinked2.model}-${deviceAyseLinke
 export const deviceAyseUnlinked1: DeviceContent = {
   model: "DummyTemp",
   reference: "unlinked1",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperature",
+      type: "temperature",
+    },
+    {
+      name: "accelerationSensor",
+      type: "acceleration",
+    },
+    {
+      name: "battery",
+      type: "battery",
+    },
+  ],
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
-  assetId: null,
-  lastMeasuredAt: null,
+  linkedMeasures: [],
   groups: [],
 };
 export const deviceAyseUnlinked1Id = `${deviceAyseUnlinked1.model}-${deviceAyseUnlinked1.reference}`;
@@ -60,12 +128,23 @@ export const deviceAyseUnlinked1Id = `${deviceAyseUnlinked1.model}-${deviceAyseU
 export const deviceAyseUnlinked2: DeviceContent = {
   model: "DummyTemp",
   reference: "unlinked2",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperature",
+      type: "temperature",
+    },
+    {
+      name: "accelerationSensor",
+      type: "acceleration",
+    },
+    {
+      name: "battery",
+      type: "battery",
+    },
+  ],
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
-  assetId: null,
-  lastMeasuredAt: null,
+  linkedMeasures: [],
   groups: [],
 };
 export const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
@@ -73,12 +152,23 @@ export const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseU
 export const deviceAyseUnlinked3: DeviceContent = {
   model: "DummyTempPosition",
   reference: "unlinked3",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperature",
+      type: "temperature",
+    },
+    {
+      name: "battery",
+      type: "battery",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+  ],
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
-  assetId: null,
-  lastMeasuredAt: null,
+  linkedMeasures: [],
   groups: [],
 };
 export const deviceAyseUnlinked3Id = `${deviceAyseUnlinked3.model}-${deviceAyseUnlinked3.reference}`;
@@ -86,12 +176,33 @@ export const deviceAyseUnlinked3Id = `${deviceAyseUnlinked3.model}-${deviceAyseU
 export const deviceAyseWarehouse: DeviceContent = {
   model: "DummyTempPosition",
   reference: "warehouse",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperature",
+      type: "temperature",
+    },
+    {
+      name: "battery",
+      type: "battery",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+  ],
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
-  assetId: "Warehouse-linked",
-  lastMeasuredAt: null,
+  linkedMeasures: [
+    {
+      measureSlots: [
+        {
+          asset: "position",
+          device: "position",
+        },
+      ],
+      assetId: "Warehouse-linked",
+    },
+  ],
   groups: [
     {
       path: "test-parent-asset.test-children-asset",
@@ -108,10 +219,8 @@ export const deviceEmptyTemp: DeviceContent = {
   metadata: {
     color: "BLUE",
   },
-  measures: {},
   engineId: "engine-ayse",
-  assetId: null,
-  lastMeasuredAt: null,
+  linkedMeasures: [],
   groups: [],
 };
 export const deviceEmptyTempId = `${deviceEmptyTemp.model}-${deviceEmptyTemp.reference}`;

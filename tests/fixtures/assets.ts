@@ -3,32 +3,77 @@ import { AssetContent } from "../../index";
 export const assetAyseWarehouseLinked: AssetContent = {
   model: "Warehouse",
   reference: "linked",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "position",
+      type: "position",
+    },
+  ],
   metadata: {
     surface: 512,
   },
-  linkedDevices: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "position",
           device: "position",
-          type: "position",
         },
       ],
-      _id: "DummyTempPosition-warehouse",
+      deviceId: "DummyTempPosition-warehouse",
     },
   ],
-  measures: {},
   groups: [],
-  lastMeasuredAt: null,
 };
 export const assetAyseWarehouseLinkedId = `${assetAyseWarehouseLinked.model}-${assetAyseWarehouseLinked.reference}`;
+export const assetAyseWarehouseLinked2: AssetContent = {
+  model: "Warehouse",
+  reference: "linked2",
+  measureSlots: [
+    {
+      name: "position",
+      type: "position",
+    },
+  ],
+  metadata: {
+    surface: 512,
+  },
+  linkedMeasures: [
+    {
+      measureSlots: [
+        {
+          asset: "position",
+          device: "position",
+        },
+      ],
+      deviceId: "DummyTempPosition-linked2",
+    },
+  ],
+  groups: [],
+};
+export const assetAyseWarehouseLinked2Id = `${assetAyseWarehouseLinked2.model}-${assetAyseWarehouseLinked2.reference}`;
 
 export const assetAyseLinked1: AssetContent = {
   model: "Container",
   reference: "linked1",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperatureExt",
+      type: "temperature",
+    },
+    {
+      name: "temperatureInt",
+      type: "temperature",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+    {
+      name: "temperatureWeather",
+      type: "temperature",
+    },
+  ],
   metadata: {
     weight: 10,
     height: 11,
@@ -37,119 +82,181 @@ export const assetAyseLinked1: AssetContent = {
       capacity: 1024,
     },
   },
-  linkedDevices: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "temperatureExt",
           device: "temperature",
-          type: "temperature",
         },
       ],
-      _id: "DummyTemp-linked1",
+      deviceId: "DummyTemp-linked1",
     },
   ],
-  measures: {},
   groups: [],
-  lastMeasuredAt: null,
 };
 export const assetAyseLinked1Id = `${assetAyseLinked1.model}-${assetAyseLinked1.reference}`;
 
 export const assetAyseLinked2: AssetContent = {
   model: "Container",
   reference: "linked2",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperatureExt",
+      type: "temperature",
+    },
+    {
+      name: "temperatureInt",
+      type: "temperature",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+    {
+      name: "temperatureWeather",
+      type: "temperature",
+    },
+  ],
   metadata: {
     weight: 42,
     height: 21,
   },
-  linkedDevices: [
+  linkedMeasures: [
     {
-      measureNames: [
+      measureSlots: [
         {
           asset: "temperatureExt",
           device: "temperature",
-          type: "temperature",
         },
         {
           asset: "position",
           device: "position",
-          type: "position",
         },
       ],
-      _id: "DummyTempPosition-linked2",
+      deviceId: "DummyTempPosition-linked2",
     },
   ],
-  measures: {},
   groups: [],
-  lastMeasuredAt: null,
 };
 export const assetAyseLinked2Id = `${assetAyseLinked2.model}-${assetAyseLinked2.reference}`;
 
 export const assetAyseUnlinked: AssetContent = {
   model: "Container",
   reference: "unlinked1",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperatureExt",
+      type: "temperature",
+    },
+    {
+      name: "temperatureInt",
+      type: "temperature",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+    {
+      name: "temperatureWeather",
+      type: "temperature",
+    },
+  ],
   metadata: {
     weight: 20,
     height: 22,
   },
-  linkedDevices: [],
-  measures: {},
+  linkedMeasures: [],
   groups: [],
-  lastMeasuredAt: null,
 };
 export const assetAyseUnlinkedId = `${assetAyseUnlinked.model}-${assetAyseUnlinked.reference}`;
 
 export const assetAyseGrouped: AssetContent = {
   model: "Container",
   reference: "grouped",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperatureExt",
+      type: "temperature",
+    },
+    {
+      name: "temperatureInt",
+      type: "temperature",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+    {
+      name: "temperatureWeather",
+      type: "temperature",
+    },
+  ],
   metadata: {
     weight: 20,
     height: 22,
   },
-  linkedDevices: [],
-  measures: {},
+  linkedMeasures: [],
   groups: [
     {
       path: "test-parent-asset.test-children-asset",
       date: Date.now(),
     },
   ],
-  lastMeasuredAt: null,
 };
 export const assetAyseGroupedId = `${assetAyseGrouped.model}-${assetAyseGrouped.reference}`;
 
 export const assetAyseGrouped2: AssetContent = {
   model: "Container",
   reference: "grouped2",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "temperatureExt",
+      type: "temperature",
+    },
+    {
+      name: "temperatureInt",
+      type: "temperature",
+    },
+    {
+      name: "position",
+      type: "position",
+    },
+    {
+      name: "temperatureWeather",
+      type: "temperature",
+    },
+  ],
   metadata: {
     weight: 20,
     height: 22,
   },
-  linkedDevices: [],
-  measures: {},
+  linkedMeasures: [],
   groups: [
     {
       path: "test-parent-asset",
       date: Date.now(),
     },
   ],
-  lastMeasuredAt: null,
 };
 export const assetAyseGroupedId2 = `${assetAyseGrouped2.model}-${assetAyseGrouped2.reference}`;
 
 export const assetAyseDebug1: AssetContent = {
   model: "MagicHouse",
   reference: "debug1",
-  measureSlots: [],
+  measureSlots: [
+    {
+      name: "magiculeExt",
+      type: "magicule",
+    },
+    {
+      name: "magiculeInt",
+      type: "magicule",
+    },
+  ],
   metadata: {},
-  linkedDevices: [],
-  measures: {},
+  linkedMeasures: [],
   groups: [],
-  lastMeasuredAt: null,
 };
 
 export const assetAyseDebug1Id = `${assetAyseDebug1.model}-${assetAyseDebug1.reference}`;
@@ -175,4 +282,6 @@ export const ayseAssets = [
 
   { index: { _id: assetAyseDebug1Id } },
   assetAyseDebug1,
+  { index: { _id: assetAyseWarehouseLinked2Id } },
+  assetAyseWarehouseLinked2,
 ];

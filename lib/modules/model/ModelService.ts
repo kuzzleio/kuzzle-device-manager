@@ -97,7 +97,7 @@ export class ModelService extends BaseService {
     ) => {
       const { index, collection } = request.input.args;
 
-      if (index === this.config.adminIndex && collection === "models") {
+      if (index === this.config.platformIndex && collection === "models") {
         const models = documents.map((elt) => {
           return elt._source;
         }) as ModelContent[];
@@ -122,7 +122,7 @@ export class ModelService extends BaseService {
       async (documents, request) => {
         const { index, collection } = request.input.args;
 
-        if (index === this.config.adminIndex && collection === "models") {
+        if (index === this.config.platformIndex && collection === "models") {
           await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
         }
       },
@@ -355,14 +355,14 @@ export class ModelService extends BaseService {
 
     const assetModel =
       await this.sdk.document.createOrReplace<AssetModelContent>(
-        this.config.adminIndex,
+        this.config.platformIndex,
         InternalCollection.MODELS,
         ModelSerializer.id<AssetModelContent>("asset", modelContent),
         modelContent,
       );
 
     await this.sdk.collection.refresh(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
@@ -421,14 +421,14 @@ export class ModelService extends BaseService {
 
     const deviceModel =
       await this.sdk.document.createOrReplace<DeviceModelContent>(
-        this.config.adminIndex,
+        this.config.platformIndex,
         InternalCollection.MODELS,
         ModelSerializer.id<DeviceModelContent>("device", modelContent),
         modelContent,
       );
 
     await this.sdk.collection.refresh(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
@@ -483,14 +483,14 @@ export class ModelService extends BaseService {
 
     const groupModel =
       await this.sdk.document.createOrReplace<GroupModelContent>(
-        this.config.adminIndex,
+        this.config.platformIndex,
         InternalCollection.MODELS,
         ModelSerializer.id<GroupModelContent>("group", modelContent),
         modelContent,
       );
 
     await this.sdk.collection.refresh(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
@@ -543,14 +543,14 @@ export class ModelService extends BaseService {
 
     const measureModel =
       await this.sdk.document.createOrReplace<MeasureModelContent>(
-        this.config.adminIndex,
+        this.config.platformIndex,
         InternalCollection.MODELS,
         ModelSerializer.id<MeasureModelContent>("measure", modelContent),
         modelContent,
       );
 
     await this.sdk.collection.refresh(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
     );
     await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
@@ -560,7 +560,7 @@ export class ModelService extends BaseService {
 
   async deleteAsset(_id: string) {
     await this.sdk.document.delete(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       _id,
     );
@@ -568,7 +568,7 @@ export class ModelService extends BaseService {
 
   async deleteDevice(_id: string) {
     await this.sdk.document.delete(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       _id,
     );
@@ -576,7 +576,7 @@ export class ModelService extends BaseService {
 
   async deleteGroup(_id: string) {
     await this.sdk.document.delete(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       _id,
     );
@@ -584,7 +584,7 @@ export class ModelService extends BaseService {
 
   async deleteMeasure(_id: string) {
     await this.sdk.document.delete(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       _id,
     );
@@ -660,7 +660,7 @@ export class ModelService extends BaseService {
     };
 
     return this.sdk.document.search<AssetModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       {
         ...searchParams.searchBody,
@@ -685,7 +685,7 @@ export class ModelService extends BaseService {
     };
 
     return this.sdk.document.search<DeviceModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       {
         ...searchParams.searchBody,
@@ -722,7 +722,7 @@ export class ModelService extends BaseService {
     };
 
     return this.sdk.document.search<GroupModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       {
         ...searchParams.searchBody,
@@ -747,7 +747,7 @@ export class ModelService extends BaseService {
     };
 
     return this.sdk.document.search<MeasureModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       {
         ...searchParams.searchBody,
@@ -771,7 +771,7 @@ export class ModelService extends BaseService {
     };
 
     const result = await this.sdk.document.search(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       { query },
       { lang: "koncorde", size: 1 },
@@ -789,7 +789,7 @@ export class ModelService extends BaseService {
     };
 
     const result = await this.sdk.document.search(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       { query },
       { lang: "koncorde", size: 1 },
@@ -816,7 +816,7 @@ export class ModelService extends BaseService {
     };
 
     const result = await this.sdk.document.search<AssetModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       { query },
       { lang: "koncorde", size: 1 },
@@ -838,7 +838,7 @@ export class ModelService extends BaseService {
     };
 
     const result = await this.sdk.document.search<DeviceModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       { query },
       { lang: "koncorde", size: 1 },
@@ -860,7 +860,7 @@ export class ModelService extends BaseService {
     };
 
     const result = await this.sdk.document.search<GroupModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       { query },
       { lang: "koncorde", size: 1 },
@@ -887,7 +887,7 @@ export class ModelService extends BaseService {
     };
 
     const result = await this.sdk.document.search<MeasureModelContent>(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       { query },
       { lang: "koncorde", size: 1 },
@@ -925,7 +925,7 @@ export class ModelService extends BaseService {
 
     // The field must be deleted if an element of the table is to be deleted
     await this.sdk.document.deleteFields(
-      this.config.adminIndex,
+      this.config.platformIndex,
       InternalCollection.MODELS,
       existingAsset._id,
       ["asset.tooltipModels"],
@@ -971,7 +971,7 @@ export class ModelService extends BaseService {
       assetModel,
       {
         collection: InternalCollection.MODELS,
-        engineId: this.config.adminIndex,
+        engineId: this.config.platformIndex,
       },
       { source: true },
     );
@@ -979,7 +979,7 @@ export class ModelService extends BaseService {
     // ? Only update engines and refresh asset models when necessary
     if (Object.keys(metadataMappings).length > 0 || measures.length > 0) {
       await this.sdk.collection.refresh(
-        this.config.adminIndex,
+        this.config.platformIndex,
         InternalCollection.MODELS,
       );
 

@@ -19,6 +19,7 @@ describe("Device SCRUD", () => {
   const sdk = setupHooks();
 
   it("should create a device, update metadata then get and search it", async () => {
+    const now = Date.now();
     await sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
       controller: "device-manager/devices",
       action: "create",
@@ -76,7 +77,14 @@ describe("Device SCRUD", () => {
         updater: "-1",
       },
     });
-
+    const provisioningDevice = await sdk.document.get(
+      "device-manager",
+      "devices",
+      "DummyTemp-scrudme",
+    );
+    expect(provisioningDevice._source.provisionedAt).toBeGreaterThanOrEqual(
+      now,
+    );
     await sdk.collection.refresh("engine-ayse", "devices");
 
     const { result } = await sdk.query<

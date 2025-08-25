@@ -12,7 +12,7 @@ import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
-  ApiGroupAddDeviceRequest,
+  ApiGroupAddDevicesRequest,
   ApiGroupAddDevicesResult,
   ApiGroupCreateRequest,
   ApiGroupCreateResult,
@@ -24,8 +24,8 @@ import {
   ApiGroupMUpsertResult,
   ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
-  ApiGroupRemoveDeviceRequest,
-  ApiGroupRemoveDeviceResult,
+  ApiGroupRemoveDevicesRequest,
+  ApiGroupRemoveDevicesResult,
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
   ApiGroupUpsertResult,
@@ -88,38 +88,38 @@ export class GroupsController {
             },
           ],
         },
-        addAsset: {
-          handler: this.addAsset.bind(this),
+        addAssets: {
+          handler: this.addAssets.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id/addAsset",
+              path: "device-manager/:engineId/groups/:_id/addAssets",
               verb: "post",
             },
           ],
         },
-        removeAsset: {
-          handler: this.removeAsset.bind(this),
+        removeAssets: {
+          handler: this.removeAssets.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/removeAsset",
+              path: "device-manager/:engineId/groups/removeAssets",
               verb: "post",
             },
           ],
         },
-        addDevice: {
-          handler: this.addDevice.bind(this),
+        addDevices: {
+          handler: this.addDevices.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/addDevice",
+              path: "device-manager/:engineId/groups/addDevices",
               verb: "post",
             },
           ],
         },
-        removeDevice: {
-          handler: this.removeDevice.bind(this),
+        removeDevices: {
+          handler: this.removeDevices.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/removeDevice",
+              path: "device-manager/:engineId/groups/removeDevices",
               verb: "post",
             },
           ],
@@ -404,16 +404,16 @@ export class GroupsController {
     );
   }
 
-  async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
+  async addAssets(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
     const engineId = request.getString("engineId");
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
     const path = request.getBodyString("path");
     const assetIds = body.assetIds;
     this.checkPath(engineId, path);
-    return this.groupsService.addAsset(engineId, path, assetIds, request);
+    return this.groupsService.addAssets(engineId, path, assetIds, request);
   }
 
-  async removeAsset(
+  async removeAssets(
     request: KuzzleRequest,
   ): Promise<ApiGroupRemoveAssetsResult> {
     const engineId = request.getString("engineId");
@@ -421,27 +421,27 @@ export class GroupsController {
     const path = request.getBodyString("path");
     const assetIds = body.assetIds;
     this.checkPath(engineId, path);
-    return this.groupsService.removeAsset(engineId, path, assetIds, request);
+    return this.groupsService.removeAssets(engineId, path, assetIds, request);
   }
 
-  async addDevice(request: KuzzleRequest): Promise<ApiGroupAddDevicesResult> {
+  async addDevices(request: KuzzleRequest): Promise<ApiGroupAddDevicesResult> {
     const engineId = request.getString("engineId");
-    const body = request.getBody() as ApiGroupAddDeviceRequest["body"];
+    const body = request.getBody() as ApiGroupAddDevicesRequest["body"];
     const path = request.getBodyString("path");
     const deviceIds = body.deviceIds;
     this.checkPath(engineId, path);
-    return this.groupsService.addDevice(engineId, path, deviceIds, request);
+    return this.groupsService.addDevices(engineId, path, deviceIds, request);
   }
 
-  async removeDevice(
+  async removeDevices(
     request: KuzzleRequest,
-  ): Promise<ApiGroupRemoveDeviceResult> {
+  ): Promise<ApiGroupRemoveDevicesResult> {
     const engineId = request.getString("engineId");
-    const body = request.getBody() as ApiGroupRemoveDeviceRequest["body"];
+    const body = request.getBody() as ApiGroupRemoveDevicesRequest["body"];
     const path = request.getBodyString("path");
     const deviceIds = body.deviceIds;
     this.checkPath(engineId, path);
-    return this.groupsService.removeDevice(engineId, path, deviceIds, request);
+    return this.groupsService.removeDevices(engineId, path, deviceIds, request);
   }
 
   async mCreate(request: KuzzleRequest): Promise<ApiGroupMCreateResult> {

@@ -1,4 +1,4 @@
-import { JSONObject, KDocumentContent } from "kuzzle-sdk";
+import { KDocumentContent } from "kuzzle-sdk";
 
 import { Metadata } from "../../shared";
 
@@ -37,7 +37,6 @@ export type AssetHistoryEvent =
  */
 export interface AssetHistoryContent<
   TAssetHistoryEvent extends AssetHistoryEvent = any,
-  TMeasures extends JSONObject = any,
   TMetadata extends Metadata = any,
 > extends KDocumentContent {
   /**
@@ -58,7 +57,7 @@ export interface AssetHistoryContent<
   /**
    * Asset content after the event
    */
-  asset: AssetContent<TMeasures, TMetadata>;
+  asset: AssetContent<TMetadata>;
 
   /**
    * Timestamp of the event according to its type

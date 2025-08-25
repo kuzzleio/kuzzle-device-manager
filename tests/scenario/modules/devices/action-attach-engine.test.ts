@@ -31,8 +31,6 @@ describe("DevicesController:attachEngine", () => {
     ).resolves.toMatchObject({
       _source: {
         engineId: "engine-kuzzle",
-        lastMeasuredAt: null,
-        measures: {},
         _kuzzle_info: {
           author: "-1",
         },

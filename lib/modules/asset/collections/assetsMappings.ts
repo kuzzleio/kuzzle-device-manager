@@ -57,23 +57,13 @@ export const assetsMappings: CollectionMappings = {
         // populated with asset models
       },
     },
-
-    measures: {
+    linkedMeasures: {
       properties: {
-        // populated with asset models
-      },
-    },
-
-    lastMeasuredAt: { type: "date" },
-
-    linkedDevices: {
-      properties: {
-        _id: { type: "keyword" },
-        measureNames: {
+        deviceId: { type: "keyword" },
+        measureSlots: {
           properties: {
             asset: { type: "keyword" },
             device: { type: "keyword" },
-            type: { type: "keyword" },
           },
         },
       },

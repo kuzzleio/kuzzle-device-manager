@@ -94,20 +94,6 @@ describe("ModelsController:devices", () => {
       },
     });
 
-    const platformDevicesMapping = await sdk.collection.getMapping(
-      "device-manager",
-      "devices",
-    );
-    expect(platformDevicesMapping.properties).toMatchObject({
-      metadata: {
-        properties: {
-          color: { type: "keyword" },
-          network: { type: "keyword" },
-          network2: { type: "keyword" },
-        },
-      },
-    });
-
     const listDevices = await sdk.query({
       controller: "device-manager/models",
       action: "listDevices",

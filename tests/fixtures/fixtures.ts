@@ -12,7 +12,6 @@ const deviceDetached1 = {
   reference: "detached1",
   measureSlots: dummyTempDeviceMeasures,
   metadata: {},
-  measures: {},
 };
 const deviceDetached1Id = `${deviceDetached1.model}-${deviceDetached1.reference}`;
 
@@ -21,7 +20,6 @@ const deviceAyseLinked1 = {
   reference: "linked1",
   measureSlots: dummyTempDeviceMeasures,
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
   assetId: "Container-linked1",
 };
@@ -32,7 +30,6 @@ const deviceAyseLinked2 = {
   reference: "linked2",
   measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
   assetId: "Container-linked2",
 };
@@ -43,7 +40,6 @@ const deviceAyseUnlinked1 = {
   reference: "unlinked1",
   measureSlots: dummyTempDeviceMeasures,
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
   assetId: null,
 };
@@ -54,7 +50,6 @@ const deviceAyseUnlinked2 = {
   reference: "unlinked2",
   measureSlots: dummyTempDeviceMeasures,
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
   assetId: null,
 };
@@ -65,7 +60,6 @@ const deviceAyseUnlinked3 = {
   reference: "unlinked3",
   measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
   assetId: null,
 };
@@ -76,7 +70,6 @@ const deviceAyseWarehouse = {
   reference: "warehouse",
   measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
-  measures: {},
   engineId: "engine-ayse",
   assetId: "Warehouse-linked",
 };
@@ -206,7 +199,16 @@ const assetAyseDebug1Id = `${assetAyseDebug1.model}-${assetAyseDebug1.reference}
 
 export default {
   "device-manager": {
-    devices: internalDevices,
+    devices: internalDevices.map((device) => {
+      if ("metadata" in device && device.metadata) {
+        const { groups, metadata, linkedMeasures, ...rest } = device;
+        return {
+          ...rest,
+          provisionedAt: Date.now(),
+        };
+      }
+      return device;
+    }),
   },
 
   // Index "engine-ayse"

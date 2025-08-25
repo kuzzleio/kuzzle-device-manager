@@ -1,4 +1,8 @@
-import { AssetContent, ApiDeviceLinkAssetsRequest } from "../../../../index";
+import {
+  AssetContent,
+  ApiDeviceLinkAssetsRequest,
+  ApiAssetlinkDevicesRequest,
+} from "../../../../index";
 
 import { beforeEachTruncateCollections } from "../../../hooks/collections";
 import { beforeAllCreateEngines } from "../../../hooks/engines";
@@ -8,7 +12,7 @@ import { useSdk, documentGet } from "../../../helpers";
 
 jest.setTimeout(10000);
 
-describe("DeviceController: receiveMeasure", () => {
+describe("AssetController: linkDevices", () => {
   const sdk = useSdk();
 
   beforeAll(async () => {
@@ -26,15 +30,15 @@ describe("DeviceController: receiveMeasure", () => {
   });
 
   it("should link devices with selected measures to the asset", async () => {
-    await sdk.query<ApiDeviceLinkAssetsRequest>({
-      controller: "device-manager/devices",
-      action: "linkAssets",
+    await sdk.query<ApiAssetlinkDevicesRequest>({
+      controller: "device-manager/assets",
+      action: "linkDevices",
       engineId: "engine-ayse",
-      _id: "DummyTemp-unlinked1",
+      _id: "Container-unlinked1",
       body: {
         linkedMeasures: [
           {
-            assetId: "Container-unlinked1",
+            deviceId: "DummyTemp-unlinked1",
             measureSlots: [{ device: "temperature", asset: "temperatureExt" }],
           },
         ],
@@ -78,15 +82,15 @@ describe("DeviceController: receiveMeasure", () => {
     });
 
     // Link a second device
-    await sdk.query<ApiDeviceLinkAssetsRequest>({
-      controller: "device-manager/devices",
-      action: "linkAssets",
+    await sdk.query<ApiAssetlinkDevicesRequest>({
+      controller: "device-manager/assets",
+      action: "linkDevices",
       engineId: "engine-ayse",
-      _id: "DummyTemp-unlinked2",
+      _id: "Container-unlinked1",
       body: {
         linkedMeasures: [
           {
-            assetId: "Container-unlinked1",
+            deviceId: "DummyTemp-unlinked2",
 
             measureSlots: [
               {
@@ -119,15 +123,15 @@ describe("DeviceController: receiveMeasure", () => {
   });
 
   it("should update the link if it already exists", async () => {
-    await sdk.query<ApiDeviceLinkAssetsRequest>({
-      controller: "device-manager/devices",
-      action: "linkAssets",
+    await sdk.query<ApiAssetlinkDevicesRequest>({
+      controller: "device-manager/assets",
+      action: "linkDevices",
       engineId: "engine-ayse",
-      _id: "DummyTempPosition-unlinked3",
+      _id: "Container-linked1",
       body: {
         linkedMeasures: [
           {
-            assetId: "Container-linked1",
+            deviceId: "DummyTempPosition-unlinked3",
             measureSlots: [
               {
                 device: "temperature",
@@ -140,15 +144,15 @@ describe("DeviceController: receiveMeasure", () => {
     });
 
     // Update the link with a new measure
-    await sdk.query<ApiDeviceLinkAssetsRequest>({
-      controller: "device-manager/devices",
-      action: "linkAssets",
+    await sdk.query<ApiAssetlinkDevicesRequest>({
+      controller: "device-manager/assets",
+      action: "linkDevices",
       engineId: "engine-ayse",
-      _id: "DummyTempPosition-unlinked3",
+      _id: "Container-linked1",
       body: {
         linkedMeasures: [
           {
-            assetId: "Container-linked1",
+            deviceId: "DummyTempPosition-unlinked3",
             measureSlots: [{ device: "position", asset: "position" }],
           },
         ],
@@ -188,15 +192,15 @@ describe("DeviceController: receiveMeasure", () => {
   });
 
   it("should link a device measure implictely", async () => {
-    await sdk.query<ApiDeviceLinkAssetsRequest>({
-      controller: "device-manager/devices",
-      action: "linkAssets",
+    await sdk.query<ApiAssetlinkDevicesRequest>({
+      controller: "device-manager/assets",
+      action: "linkDevices",
       engineId: "engine-ayse",
-      _id: "DummyTemp-unlinked1",
+      _id: "Container-unlinked1",
       body: {
         linkedMeasures: [
           {
-            assetId: "Container-unlinked1",
+            deviceId: "DummyTemp-unlinked1",
             measureSlots: [
               {
                 device: "temperature",
@@ -204,19 +208,8 @@ describe("DeviceController: receiveMeasure", () => {
               },
             ],
           },
-        ],
-      },
-    });
-
-    await sdk.query<ApiDeviceLinkAssetsRequest>({
-      controller: "device-manager/devices",
-      action: "linkAssets",
-      engineId: "engine-ayse",
-      _id: "DummyTempPosition-unlinked3",
-      body: {
-        linkedMeasures: [
           {
-            assetId: "Container-unlinked1",
+            deviceId: "DummyTempPosition-unlinked3",
             implicitMeasuresLinking: true,
             measureSlots: [
               {
@@ -256,16 +249,16 @@ describe("DeviceController: receiveMeasure", () => {
     });
   });
 
-  it("should link a device to several assets", async () => {
-    await sdk.query<ApiDeviceLinkAssetsRequest>({
-      controller: "device-manager/devices",
-      action: "linkAssets",
+  it("should link an asset to several devices", async () => {
+    await sdk.query<ApiAssetlinkDevicesRequest>({
+      controller: "device-manager/assets",
+      action: "linkDevices",
       engineId: "engine-ayse",
-      _id: "DummyTempPosition-unlinked3",
+      _id: "Container-unlinked1",
       body: {
         linkedMeasures: [
           {
-            assetId: "Container-unlinked1",
+            deviceId: "DummyTemp-unlinked2",
             measureSlots: [
               {
                 device: "temperature",
@@ -274,7 +267,7 @@ describe("DeviceController: receiveMeasure", () => {
             ],
           },
           {
-            assetId: "Container-linked1",
+            deviceId: "DummyTempPosition-unlinked3",
             measureSlots: [
               {
                 device: "position",
@@ -287,11 +280,11 @@ describe("DeviceController: receiveMeasure", () => {
     });
 
     await expect(
-      documentGet(sdk, "engine-ayse", "devices", "DummyTempPosition-unlinked3"),
+      documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
       linkedMeasures: expect.arrayContaining([
         {
-          assetId: "Container-unlinked1",
+          deviceId: "DummyTemp-unlinked2",
           measureSlots: [
             {
               device: "temperature",
@@ -300,7 +293,7 @@ describe("DeviceController: receiveMeasure", () => {
           ],
         },
         {
-          assetId: "Container-linked1",
+          deviceId: "DummyTempPosition-unlinked3",
           measureSlots: [{ device: "position", asset: "position" }],
         },
       ]),
@@ -309,15 +302,15 @@ describe("DeviceController: receiveMeasure", () => {
 
   it("should throw an error when linking a measure already provided on the asset", async () => {
     await expect(
-      sdk.query<ApiDeviceLinkAssetsRequest>({
-        controller: "device-manager/devices",
-        action: "linkAssets",
+      sdk.query<ApiAssetlinkDevicesRequest>({
+        controller: "device-manager/assets",
+        action: "linkDevices",
         engineId: "engine-ayse",
-        _id: "DummyTemp-unlinked1",
+        _id: "Container-linked1",
         body: {
           linkedMeasures: [
             {
-              assetId: "Container-linked1",
+              deviceId: "DummyTemp-unlinked1",
               measureSlots: [
                 {
                   asset: "temperatureExt",
@@ -336,15 +329,15 @@ describe("DeviceController: receiveMeasure", () => {
 
   it("should throw an error when the device is not attached to an engine", async () => {
     await expect(
-      sdk.query<ApiDeviceLinkAssetsRequest>({
-        controller: "device-manager/devices",
-        action: "linkAssets",
+      sdk.query<ApiAssetlinkDevicesRequest>({
+        controller: "device-manager/assets",
+        action: "linkDevices",
         engineId: "engine-ayse",
-        _id: "DummyTemp-detached1",
+        _id: "Container-unlinked1",
         body: {
           linkedMeasures: [
             {
-              assetId: "Container-unlinked1",
+              deviceId: "DummyTemp-detached1",
               measureSlots: [
                 {
                   asset: "temperatureExt",
@@ -362,15 +355,15 @@ describe("DeviceController: receiveMeasure", () => {
 
   it("should throw an error when the wrong engine is provided", async () => {
     await expect(
-      sdk.query<ApiDeviceLinkAssetsRequest>({
-        controller: "device-manager/devices",
-        action: "linkAssets",
+      sdk.query<ApiAssetlinkDevicesRequest>({
+        controller: "device-manager/assets",
+        action: "linkDevices",
         engineId: "engine-kuzzle",
-        _id: "DummyTemp-unlinked1",
+        _id: "Container-unlinked1",
         body: {
           linkedMeasures: [
             {
-              assetId: "Container-unlinked1",
+              deviceId: "DummyTemp-unlinked1",
               measureSlots: [
                 {
                   asset: "temperatureExt",
@@ -389,15 +382,15 @@ describe("DeviceController: receiveMeasure", () => {
 
   it("should throw an error when the asset does not exists", async () => {
     await expect(
-      sdk.query<ApiDeviceLinkAssetsRequest>({
-        controller: "device-manager/devices",
-        action: "linkAssets",
+      sdk.query<ApiAssetlinkDevicesRequest>({
+        controller: "device-manager/assets",
+        action: "linkDevices",
         engineId: "engine-ayse",
-        _id: "DummyTemp-unlinked1",
+        _id: "Container-notexisting",
         body: {
           linkedMeasures: [
             {
-              assetId: "Container-notexisting",
+              deviceId: "DummyTemp-unlinked1",
               measureSlots: [
                 {
                   asset: "temperatureExt",
@@ -416,15 +409,15 @@ describe("DeviceController: receiveMeasure", () => {
 
   it("should throw an error if no measures are selected", async () => {
     await expect(
-      sdk.query<ApiDeviceLinkAssetsRequest>({
-        controller: "device-manager/devices",
-        action: "linkAssets",
+      sdk.query<ApiAssetlinkDevicesRequest>({
+        controller: "device-manager/assets",
+        action: "linkDevices",
         engineId: "engine-ayse",
-        _id: "DummyTempPosition-unlinked3",
+        _id: "Container-unlinked1",
         body: {
           linkedMeasures: [
             {
-              assetId: "Container-unlinked1",
+              deviceId: "DummyTempPosition-unlinked3",
             },
           ],
         },

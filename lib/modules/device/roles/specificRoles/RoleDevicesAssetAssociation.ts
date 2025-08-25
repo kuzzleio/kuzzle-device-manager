@@ -9,8 +9,11 @@ import { KuzzleRole } from "../../../shared/types/KuzzleRole";
 export const RoleDevicesAssetAssociation: KuzzleRole = {
   definition: {
     controllers: {
+      "device-manager/assets": {
+        actions: { linkDevices: true, unlinkDevices: true },
+      },
       "device-manager/devices": {
-        actions: { linkAsset: true, unlinkAsset: true },
+        actions: { linkAssets: true, unlinkAssets: true },
       },
     },
   },

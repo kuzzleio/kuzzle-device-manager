@@ -42,6 +42,7 @@ describe("AssetsController:exportMeasures", () => {
     const measureDate = Date.now();
 
     await sendDummyTempPositionPayloads(sdk, [
+      // DummyTempPosition-warehouse linked with Warehouse-linked for position
       {
         deviceEUI: "warehouse",
         temperature: 23.3,
@@ -50,6 +51,7 @@ describe("AssetsController:exportMeasures", () => {
         // ? Use date now - 1s to ensure this asset are second in export
         measuredAt: measureDate - 2000,
       },
+      // DummyTempPosition-linked2 linked with Container-linked2 for temperatureExt and position
       {
         deviceEUI: "linked2",
         temperature: 23.3,

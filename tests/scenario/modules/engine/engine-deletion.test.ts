@@ -21,12 +21,12 @@ describe("Engine deletion", () => {
   afterAll(async () => {
     sdk.disconnect();
   });
-  const adminIndex = "device-manager";
+  const platformIndex = "device-manager";
   const engineId = "engine-ayse";
 
-  it("Deletes the engine from admin index", async () => {
+  it("Deletes the engine from platform index", async () => {
     const engine = await sdk.document.get(
-      adminIndex,
+      platformIndex,
       "config",
       `engine-device-manager--${engineId}`,
     );
@@ -40,15 +40,15 @@ describe("Engine deletion", () => {
     });
 
     const promise = sdk.document.get(
-      adminIndex,
+      platformIndex,
       "config",
       `engine-device-manager--${engineId}`,
     );
 
     await expect(promise).rejects.toThrow();
   });
-  it("Detach devices from engine in the admin index on engine deletion", async () => {
-    const devices = await sdk.document.search(adminIndex, "devices", {
+  it("Detach devices from engine in the platform index on engine deletion", async () => {
+    const devices = await sdk.document.search(platformIndex, "devices", {
       _source: false,
       query: { bool: { must: { term: { engineId } } } },
     });
@@ -58,9 +58,9 @@ describe("Engine deletion", () => {
       action: "delete",
       index: engineId,
     });
-    await sdk.collection.refresh(adminIndex, "devices");
+    await sdk.collection.refresh(platformIndex, "devices");
 
-    const result = await sdk.document.search(adminIndex, "devices", {
+    const result = await sdk.document.search(platformIndex, "devices", {
       _source: false,
       query: { bool: { must: { term: { engineId } } } },
     });
