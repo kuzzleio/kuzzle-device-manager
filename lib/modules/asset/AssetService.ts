@@ -1,4 +1,10 @@
-import { BadRequestError, KuzzleRequest, PartialError, User } from "kuzzle";
+import {
+  BadRequestError,
+  KuzzleRequest,
+  NotFoundError,
+  PartialError,
+  User,
+} from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
@@ -624,38 +630,39 @@ export class AssetService extends DigitalTwinService {
    * Retrieve locales with the specified model and search all assets related to the model to update the locales.
    * The operation is historized.
    * @param request
-   * @param engineGroup
    * @param model
    */
   public async updateModelLocales(
     request: KuzzleRequest,
-    engineGroup: string,
     model: string,
   ): Promise<ApiAssetUpdateModelLocales[]> {
-    let resultModel: JSONObject;
+    const res = await this.sdk.document.search<AssetModelContent>(
+      this.config.adminIndex,
+      InternalCollection.MODELS,
+      {
+        query: {
+          bool: {
+            must: [
+              { term: { type: "asset" } },
+              { term: { "asset.model": model } },
+            ],
+          },
+        },
+      },
+      { size: 1 },
+    );
 
-    try {
-      const { result: fetchedResult } = await this.sdk.query({
-        action: "getAsset",
-        body: {},
-        controller: "device-manager/models",
-        engineGroup,
-        model,
-      });
-      resultModel = fetchedResult;
-    } catch (e) {
-      throw new BadRequestError(
-        `${e} Verify in your arguments that the asset model belongs to the engineGroup "${engineGroup}"`,
-        {},
-        400,
-      );
+    if (res.total === 0) {
+      throw new NotFoundError(`Unknown Asset model '${model}'.`);
     }
 
-    const locales = resultModel._source.asset.locales;
+    const modelDocument = res.hits[0];
+    const locales = modelDocument._source.asset.locales;
 
-    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: engineGroup,
-    });
+    const engines = await ask<AskEngineList>(
+      "ask:device-manager:engine:list",
+      {},
+    );
 
     const results: ApiAssetUpdateModelLocales[] = [];
 
@@ -722,15 +729,20 @@ export class AssetService extends DigitalTwinService {
   }: {
     assetModel: AssetModelContent;
   }): Promise<void> {
+    // For engine group 'commons', fetch all engines
     const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: assetModel.engineGroup,
+      group:
+        assetModel.engineGroup === "commons" ? null : assetModel.engineGroup,
     });
 
     const targets = engines.map((engine) => ({
       collections: [InternalCollection.ASSETS],
       index: engine.index,
     }));
-
+    // Return if no engine found
+    if (targets.length === 0) {
+      return;
+    }
     const assets = await this.sdk.query<
       BaseRequest,
       DocumentSearchResult<AssetContent>

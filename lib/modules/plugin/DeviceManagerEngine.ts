@@ -53,7 +53,7 @@ export type AskEngineList = {
   name: "ask:device-manager:engine:list";
 
   payload: {
-    group: string | null;
+    group?: string;
   };
 
   result: EngineContent[];

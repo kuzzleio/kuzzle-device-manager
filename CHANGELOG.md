@@ -1,3 +1,36 @@
+## [2.9.0-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0-dev.2...v2.9.0-dev.3) (2025-06-18)
+
+
+### Bug Fixes
+
+* **model:** asset model metadata update ([#423](https://github.com/kuzzleio/kuzzle-device-manager/issues/423)) ([ddc95dd](https://github.com/kuzzleio/kuzzle-device-manager/commit/ddc95ddf441631271ccd8e97c0cbb46ab6c8df06))
+
+## [2.9.0-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0-dev.1...v2.9.0-dev.2) (2025-05-15)
+
+
+### Features
+
+* update tenant role for attach and detach device ([#420](https://github.com/kuzzleio/kuzzle-device-manager/issues/420)) ([67b7dcb](https://github.com/kuzzleio/kuzzle-device-manager/commit/67b7dcbf0e649b9c81c30adaead6dd4f07ce09bd))
+
+
+### Bug Fixes
+
+* **plugin exports:** export pipe event for DocumentBefore/Aftersearch ([#421](https://github.com/kuzzleio/kuzzle-device-manager/issues/421)) ([d12d93f](https://github.com/kuzzleio/kuzzle-device-manager/commit/d12d93ff69d1ea758e4c5e43dfda1142693f9c68))
+
+## [2.9.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0...v2.9.0-dev.1) (2025-05-13)
+
+
+### Features
+
+* remove engineGroup parameter and handle the case commons ([#415](https://github.com/kuzzleio/kuzzle-device-manager/issues/415)) ([4ac4972](https://github.com/kuzzleio/kuzzle-device-manager/commit/4ac4972858aca389e82a62ad14cab8f360420bf9))
+
+
+### Bug Fixes
+
+* asset commons case ([#418](https://github.com/kuzzleio/kuzzle-device-manager/issues/418)) ([c4bf2ac](https://github.com/kuzzleio/kuzzle-device-manager/commit/c4bf2ac21ec09e9afd48dac4ee9bec42adec80c5))
+* **assetModels:** error on create asset model with commons engine ([#417](https://github.com/kuzzleio/kuzzle-device-manager/issues/417)) ([a5acf07](https://github.com/kuzzleio/kuzzle-device-manager/commit/a5acf070cd41d28fb8ca70e66a6d9e438329f1c1))
+* manager error when asset model is not found ([#419](https://github.com/kuzzleio/kuzzle-device-manager/issues/419)) ([08e9a94](https://github.com/kuzzleio/kuzzle-device-manager/commit/08e9a9478d70d554d0359a51f615c70130e74fa0))
+
 ## [2.8.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.7.2...v2.8.0) (2025-05-13)
 
 
@@ -33,6 +66,34 @@
 * clean on detach ([#400](https://github.com/kuzzleio/kuzzle-device-manager/issues/400)) ([cb8badf](https://github.com/kuzzleio/kuzzle-device-manager/commit/cb8badfb2ed6f37e5e618f0dbf859d772d9bfa36))
 * last measured at ([#399](https://github.com/kuzzleio/kuzzle-device-manager/issues/399)) ([07830c0](https://github.com/kuzzleio/kuzzle-device-manager/commit/07830c03e6bc44c289844a9ff4eafc0a5a7f2a2a))
 * update documentation for indentations ([#401](https://github.com/kuzzleio/kuzzle-device-manager/issues/401)) ([fdd758e](https://github.com/kuzzleio/kuzzle-device-manager/commit/fdd758e51c6113bfdfea2991a3b8f0c100a25054))
+
+## [2.8.0-dev.11](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.10...v2.8.0-dev.11) (2025-04-18)
+
+
+### Bug Fixes
+
+* manager error when asset model is not found ([#419](https://github.com/kuzzleio/kuzzle-device-manager/issues/419)) ([08e9a94](https://github.com/kuzzleio/kuzzle-device-manager/commit/08e9a9478d70d554d0359a51f615c70130e74fa0))
+
+## [2.8.0-dev.10](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.9...v2.8.0-dev.10) (2025-04-18)
+
+
+### Bug Fixes
+
+* **assetModels:** error on create asset model with commons engine ([#417](https://github.com/kuzzleio/kuzzle-device-manager/issues/417)) ([a5acf07](https://github.com/kuzzleio/kuzzle-device-manager/commit/a5acf070cd41d28fb8ca70e66a6d9e438329f1c1))
+
+## [2.8.0-dev.9](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.8...v2.8.0-dev.9) (2025-04-18)
+
+
+### Bug Fixes
+
+* asset commons case ([#418](https://github.com/kuzzleio/kuzzle-device-manager/issues/418)) ([c4bf2ac](https://github.com/kuzzleio/kuzzle-device-manager/commit/c4bf2ac21ec09e9afd48dac4ee9bec42adec80c5))
+
+## [2.8.0-dev.8](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.7...v2.8.0-dev.8) (2025-04-17)
+
+
+### Features
+
+* remove engineGroup parameter and handle the case commons ([#415](https://github.com/kuzzleio/kuzzle-device-manager/issues/415)) ([4ac4972](https://github.com/kuzzleio/kuzzle-device-manager/commit/4ac4972858aca389e82a62ad14cab8f360420bf9))
 
 ## [2.8.0-dev.7](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0-dev.6...v2.8.0-dev.7) (2025-03-05)
 
