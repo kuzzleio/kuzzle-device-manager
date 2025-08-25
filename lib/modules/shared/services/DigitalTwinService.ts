@@ -269,14 +269,16 @@ export class DigitalTwinService extends BaseService {
           engineId: deviceProvisioning._source.engineId,
         }),
 
-        this.updateDocument<AssetContent>(
-          request,
-          asset,
-          {
-            collection: InternalCollection.ASSETS,
-            engineId: deviceProvisioning._source.engineId,
-          },
-          { source: true },
+        lock(`asset:${engineId}:${asset._id}`, async () =>
+          this.updateDocument<AssetContent>(
+            request,
+            asset,
+            {
+              collection: InternalCollection.ASSETS,
+              engineId: deviceProvisioning._source.engineId,
+            },
+            { source: true },
+          ),
         ),
       ]);
 
@@ -726,14 +728,16 @@ export class DigitalTwinService extends BaseService {
         { source: true },
       ),
 
-      this.updateDocument<AssetContent>(
-        request,
-        { _id: asset._id, _source: { linkedMeasures: linkedMeasuresAssets } },
-        {
-          collection: InternalCollection.ASSETS,
-          engineId,
-        },
-        { source: true },
+      lock(`asset:${engineId}:${asset._id}`, async () =>
+        this.updateDocument<AssetContent>(
+          request,
+          { _id: asset._id, _source: { linkedMeasures: linkedMeasuresAssets } },
+          {
+            collection: InternalCollection.ASSETS,
+            engineId,
+          },
+          { source: true },
+        ),
       ),
     ]);
 

@@ -83,7 +83,7 @@ export type ApiGroupListItemsResult = {
 };
 
 export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
-  action: "addAsset";
+  action: "addAssets";
   body: {
     path: string;
     assetIds: string[];
@@ -92,15 +92,15 @@ export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
 export type ApiGroupAddAssetsResult = UpdateLinkResponse;
 
 export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
-  action: "removeAsset";
+  action: "removeAssets";
   body: {
     path: string;
     assetIds: string[];
   };
 }
 export type ApiGroupRemoveAssetsResult = UpdateLinkResponse;
-export interface ApiGroupAddDeviceRequest extends GroupControllerRequest {
-  action: "addDevice";
+export interface ApiGroupAddDevicesRequest extends GroupControllerRequest {
+  action: "addDevices";
   body: {
     path: string;
     deviceIds: string[];
@@ -108,14 +108,14 @@ export interface ApiGroupAddDeviceRequest extends GroupControllerRequest {
 }
 export type ApiGroupAddDevicesResult = UpdateLinkResponse;
 
-export interface ApiGroupRemoveDeviceRequest extends GroupControllerRequest {
-  action: "removeDevice";
+export interface ApiGroupRemoveDevicesRequest extends GroupControllerRequest {
+  action: "removeDevices";
   body: {
     path: string;
     deviceIds: string[];
   };
 }
-export type ApiGroupRemoveDeviceResult = UpdateLinkResponse;
+export type ApiGroupRemoveDevicesResult = UpdateLinkResponse;
 
 export interface ApiGroupMCreateRequest extends GroupControllerRequest {
   action: "mCreate";

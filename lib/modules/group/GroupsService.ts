@@ -363,7 +363,7 @@ export class GroupsService extends BaseService {
     };
   }
 
-  async addAsset(
+  async addAssets(
     engineId: string,
     path: string,
     assetIds: string[],
@@ -442,8 +442,7 @@ export class GroupsService extends BaseService {
       group: groupUpdate,
     };
   }
-
-  async removeAsset(
+  async removeAssets(
     engineId: string,
     path: string,
     assetIds: string[],
@@ -493,8 +492,7 @@ export class GroupsService extends BaseService {
       group: groupUpdate,
     };
   }
-
-  async addDevice(
+  async addDevices(
     engineId: string,
     path: string,
     deviceIds: string[],
@@ -578,8 +576,7 @@ export class GroupsService extends BaseService {
       group: groupUpdate,
     };
   }
-
-  async removeDevice(
+  async removeDevices(
     engineId: string,
     path: string,
     deviceIds: string[],

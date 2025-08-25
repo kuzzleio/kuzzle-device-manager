@@ -351,38 +351,38 @@ export class DeviceService extends DigitalTwinService {
             (link) => link.deviceId !== device._id,
           );
           promises.push(
-            // Potential race condition if someone update the asset linkedDevices
-            // at the same time (e.g link or unlink asset)
-            this.updateDocument<AssetContent>(
-              request,
-              {
-                _id: asset._id,
-                _source: { linkedMeasures: linkedDevices },
-              },
-              { collection: InternalCollection.ASSETS, engineId },
-            ).then(async (updatedAsset) => {
-              const event: AssetHistoryEventUnlink = {
-                name: "unlink",
-                unlink: {
-                  deviceId,
-                },
-              };
-
-              await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
-                "ask:device-manager:asset:history:add",
+            lock(`asset:${engineId}:${asset._id}`, async () =>
+              this.updateDocument<AssetContent>(
+                request,
                 {
-                  engineId,
-                  histories: [
-                    {
-                      asset: updatedAsset._source,
-                      event,
-                      id: updatedAsset._id,
-                      timestamp: Date.now(),
-                    },
-                  ],
+                  _id: asset._id,
+                  _source: { linkedMeasures: linkedDevices },
                 },
-              );
-            }),
+                { collection: InternalCollection.ASSETS, engineId },
+              ).then(async (updatedAsset) => {
+                const event: AssetHistoryEventUnlink = {
+                  name: "unlink",
+                  unlink: {
+                    deviceId,
+                  },
+                };
+
+                await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
+                  "ask:device-manager:asset:history:add",
+                  {
+                    engineId,
+                    histories: [
+                      {
+                        asset: updatedAsset._source,
+                        event,
+                        id: updatedAsset._id,
+                        timestamp: Date.now(),
+                      },
+                    ],
+                  },
+                );
+              }),
+            ),
           );
         }
       }
