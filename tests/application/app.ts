@@ -40,12 +40,10 @@ app.hook.register("request:onError", async (request: KuzzleRequest) => {
 util.inspect.defaultOptions = {
   depth: 10,
 };
-// @ts-ignore
-app.config.content.plugins["kuzzle-plugin-logger"].services.stdout.level =
-  "debug";
+
 // @ts-ignore
 app.config.content.limits.documentsWriteCount = 5000;
-
+console.log(app.config.content.plugins['kuzzle-plugin-logger'])
 app
   .start()
   .then(() => {
