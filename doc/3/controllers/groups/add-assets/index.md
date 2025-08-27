@@ -1,16 +1,16 @@
 ---
 code: true
 type: page
-title: addDevice
-description: Add devices to a group
+title: addAssets
+description: Add assets to a group
 ---
 
-# Add Device
+# Add Assets
 
-Adds one or more devices to a group.
+Adds one or more assets to a group.
 
-This endpoint allows you to associate devices with a group by specifying their IDs and the group's path.  
-The devices will be linked to the group and their `groups` property will be updated accordingly.
+This endpoint allows you to associate assets with a group by specifying their IDs and the group's path.  
+The assets will be linked to the group and their `groups` property will be updated accordingly.
 
 ---
 
@@ -19,7 +19,7 @@ The devices will be linked to the group and their `groups` property will be upda
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/addDevice
+URL: http://kuzzle:7512/_/device-manager/:engineId/groups/:_id/addAssets
 Method: POST
 ```
 
@@ -28,11 +28,12 @@ Method: POST
 ```js
 {
   "controller": "device-manager/groups",
-  "action": "addDevice",
+  "action": "addAssets",
   "engineId": "<engineId>",
+  "_id": "<groupId>",
   "body": {
     "path": "<group path>",
-    "deviceIds": ["<deviceId1>", "<deviceId2>", ...]
+    "assetIds": ["<assetId1>", "<assetId2>", ...]
   }
 }
 ```
@@ -42,11 +43,12 @@ Method: POST
 ## Arguments
 
 - `engineId`: Engine ID (required)
+- `_id`: Group ID (required)
 
 ## Body properties
 
 - `path`: Path of the group (required)
-- `deviceIds`: Array of device IDs to add to the group (required)
+- `assetIds`: Array of asset IDs to add to the group (required)
 
 ---
 
@@ -57,16 +59,16 @@ Method: POST
   "status": 200,
   "error": null,
   "controller": "device-manager/groups",
-  "action": "addDevice",
+  "action": "addAssets",
   "requestId": "<unique request identifier>",
   "result": {
     "successes": [
-      { "_id": "<deviceId1>", "body": { /* updated device content */ } },
-      { "_id": "<deviceId2>", "body": { /* updated device content */ } }
+      { "_id": "<assetId1>", "body": { /* updated asset content */ } },
+      { "_id": "<assetId2>", "body": { /* updated asset content */ } }
       // ...
     ],
     "errors": [
-      // If any device update failed, error details here
+      // If any asset update failed, error details here
     ],
     "group": {
       "_id": "<groupId>",
@@ -81,10 +83,9 @@ Method: POST
   }
 }
 ```
-
 ---
 
 ## Errors
 
 - Returns an error if the group path is invalid or does not exist.
-- Returns an error if any device ID does not exist.
+- Returns an error if any asset ID does not exist.

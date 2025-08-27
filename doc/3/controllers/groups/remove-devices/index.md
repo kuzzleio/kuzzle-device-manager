@@ -1,16 +1,16 @@
 ---
 code: true
 type: page
-title: removeAsset
-description: Remove assets from a group
+title: removeDevices
+description: Remove devices from a group
 ---
 
-# removeAsset
+# Remove Devices
 
-Removes one or more assets from a group.
+Removes one or more devices from a group.
 
-This endpoint allows you to dissociate assets from a group by specifying their IDs and the group's path.  
-The assets will be unlinked from the group and their `groups` property will be updated accordingly.
+This endpoint allows you to dissociate devices from a group by specifying their IDs and the group's path.  
+The devices will be unlinked from the group and their `groups` property will be updated accordingly.
 
 ---
 
@@ -19,12 +19,8 @@ The assets will be unlinked from the group and their `groups` property will be u
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/removeAsset
+URL: http://kuzzle:7512/_/device-manager/:engineId/groups/removeDevices
 Method: POST
-Body: {
-  "path": "<group path>",
-  "assetIds": ["<assetId1>", "<assetId2>", ...]
-}
 ```
 
 ### Other protocols
@@ -32,11 +28,11 @@ Body: {
 ```js
 {
   "controller": "device-manager/groups",
-  "action": "removeAsset",
+  "action": "removeDevices",
   "engineId": "<engineId>",
   "body": {
     "path": "<group path>",
-    "assetIds": ["<assetId1>", "<assetId2>", ...]
+    "deviceIds": ["<deviceId1>", "<deviceId2>", ...]
   }
 }
 ```
@@ -50,7 +46,7 @@ Body: {
 ## Body properties
 
 - `path`: Path of the group (required)
-- `assetIds`: Array of asset IDs to remove from the group (required)
+- `deviceIds`: Array of device IDs to remove from the group (required)
 
 ---
 
@@ -61,16 +57,16 @@ Body: {
   "status": 200,
   "error": null,
   "controller": "device-manager/groups",
-  "action": "removeAsset",
+  "action": "removeDevices",
   "requestId": "<unique request identifier>",
   "result": {
     "successes": [
-      { "_id": "<assetId1>", "body": { /* updated asset content */ } },
-      { "_id": "<assetId2>", "body": { /* updated asset content */ } }
+      { "_id": "<deviceId1>", "body": { /* updated device content */ } },
+      { "_id": "<deviceId2>", "body": { /* updated device content */ } }
       // ...
     ],
     "errors": [
-      // If any asset update failed, error details here
+      // If any device update failed, error details here
     ],
     "group": {
       "_id": "<groupId>",
@@ -91,4 +87,4 @@ Body: {
 ## Errors
 
 - Returns an error if the group path is invalid or does not exist.
-- Returns an error if any asset ID does not exist.
+- Returns an error if any device ID does not exist.
