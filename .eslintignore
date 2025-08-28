@@ -5,3 +5,4 @@ types/dist/
 tests/scenario/migrated
 tests/application/assets/Container.ts
 tests/application/app.ts
+migration/
