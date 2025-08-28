@@ -10,6 +10,8 @@ description: Migration guide from Device Managetr 2.x to 3.x
 
 This guide outlines the steps to migrate your Kuzzle Device Manager from version 2 to version 3.
 
+You need to have the cli `kourou` installed. You can refere to its documentation here [Kourou](https://github.com/kuzzleio/kourou)
+
 ## 1. Export Data
 
 First, you need to export your existing platform and engine indices. Use the kourou index:export command for this. Replace INDEX with the name of the index you are exporting.
