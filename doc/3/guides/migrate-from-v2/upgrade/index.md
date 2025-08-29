@@ -24,6 +24,10 @@ kourou index:export INDEX
 
 The Kuzzle Device Manager v3 ships migrating scripts to help in the migration of your data.
 
+::: warning
+The scripts will rewrite your dump data to fit the new data models, you can make a copy of your original data if you don't want to lose it.
+:::
+
 ### Upgrade your device manager version
 
 Upgrade the version of your`kuzzle-device-manager` dependency to `^3.0.0` and run 
@@ -39,8 +43,8 @@ Assuming the migration scripts are located in node_modules/kuzzle-device-manager
 
 ```JSON
 {
-    "migrate:platform": "node node_modules/kuzzle-device-manager/migration/migration_platform_index.js",
-    "migrate:tenant": "node node_modules/kuzzle-device-manager/migration/migration_tenant_index.js"
+    "migrate:platform": "node node_modules/kuzzle-device-manager/dist/bin/migration/migration_platform_index.js",
+    "migrate:tenant": "node node_modules/kuzzle-device-manager/dist/bin/migration/migration_tenant_index.js"
 }
 ```
 If you're using the multi-tenancy plugin along the device manager you should add the following environment variable to the `migrate:tenant` script : `WITH_SOFT_TENANTS=true`
@@ -53,8 +57,8 @@ You would then have package.json looking like this:
 "name": "my-project",
 "version": "1.0.0",
 "scripts": {
-"migrate:platform": "node node_modules/kuzzle-device-manager/migration/migration_platform_index.js",
-"migrate:tenant": "node node_modules/kuzzle-device-manager/migration/migration_tenant_index.js",
+"migrate:platform": "node node_modules/kuzzle-device-manager/dist/bin/migration/migration_platform_index.js",
+"migrate:tenant": "node node_modules/kuzzle-device-manager/dist/binmigration/migration_tenant_index.js",
 "test": "echo \"Error: no test specified\" && exit 1"
 },
 "dependencies": {
@@ -80,7 +84,7 @@ For each engine index dump, run the migrate:tenant script.
 
 ```bash
 
-TENANT_INDEX=path/to/engine/index/dump npm run migrate:tenant
+PLATFORM_INDEX=path/to/platform/index/dump TENANT_INDEX=path/to/engine/index/dump npm run migrate:tenant
 ```
 
 ## 3. Start up a new instance
@@ -92,19 +96,24 @@ Start your application with new empty elasticsearch volumes.
 Import the updated platform index dump into your new instance using the kourou index:import command.
 
 ```bash
-kourou index:import PATH
+kourou index:import PATH --no-mappings
 ```
 
 ## 5. Restart and Recreate Engine Indices
 
-Restart the new Kuzzle instance. The missing engine indices will be created automatically.
+Restart the new Kuzzle instance. The missing engine indices will be created automatically. If you're using the `muti-tenancy` plugin alongside the device manager you should run the action `multi-tenancy/tenant:updateAll` to recrate missing tenants and collections.
 
 ## 6. Import Engine Indices
 
 Finally, for each engine, import the updated dump.
 
 ```bash
-kourou index:import PATH
+kourou index:import PATH --no-mappings
 ```
 
-By following these steps, you should be able to successfully migrate your Kuzzle Device Manager from v2 to v3.
+::: warning
+Use the flag `--no-mappings` to only import the data without the mappings of the previous instance
+:::
+
+
+By following these steps, you should be able to successfully migrate your data from Kuzzle Device Manager v2 to v3.

@@ -9,7 +9,7 @@ import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 import { JSONObject } from "kuzzle-sdk";
 import _ from "lodash";
 
-import { MeasureDefinition } from "../measure";
+import { MeasureDefinition, measuresMappings } from "../measure";
 
 import { groupsMappings, AssetModule, assetsMappings } from "../asset";
 import {
@@ -409,6 +409,7 @@ export class DeviceManagerPlugin extends Plugin {
         },
         measures: {
           name: InternalCollection.MEASURES,
+          mappings: measuresMappings,
         },
       },
     };
