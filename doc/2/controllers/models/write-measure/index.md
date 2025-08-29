@@ -38,6 +38,10 @@ Method: POST
       // Optional
     "validationSchema": {
       // Valid JSON Schema
+    },
+     // Optional
+    "locales": {
+      // Translations specific to the measure model
     }
   }
 }
@@ -51,6 +55,7 @@ Method: POST
 - `valuesMappings`: Mappings of the measure values in Elasticsearch format
 - `valuesDetails`: (optional) Measurement translations and units
 - `validationSchema`: (optional) Measurement validation JSON schema
+- `locales`: (optional) Translations specific to the measure model
 
 ---
 
