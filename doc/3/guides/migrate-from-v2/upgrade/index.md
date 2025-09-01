@@ -3,14 +3,14 @@ code: false
 type: page
 order: 100
 title: Migration guide
-description: Migration guide from Device Managetr 2.x to 3.x
+description: Migration guide from Device Manager 2.x to 3.x
 ---
 
 # Migration Guide: Kuzzle Device Manager v2 to v3
 
 This guide outlines the steps to migrate your Kuzzle Device Manager from version 2 to version 3.
 
-You need to have the cli `kourou` installed. You can refere to its documentation here [Kourou](https://github.com/kuzzleio/kourou)
+You need to have the cli `kourou` installed. You can refer to its documentation here [Kourou](https://github.com/kuzzleio/kourou)
 
 ## 1. Export Data
 
@@ -44,7 +44,7 @@ Assuming the migration scripts are located in node_modules/kuzzle-device-manager
 ```JSON
 {
     "migrate:platform": "node node_modules/kuzzle-device-manager/dist/bin/migration/migration_platform_index.js",
-    "migrate:tenant": "node node_modules/kuzzle-device-manager/dist/bin/migration/migration_tenant_index.js"
+    "migrate:tenant": "WITH_SOFT_TENANTS=true node node_modules/kuzzle-device-manager/dist/bin/migration/migration_tenant_index.js"
 }
 ```
 If you're using the multi-tenancy plugin along the device manager you should add the following environment variable to the `migrate:tenant` script : `WITH_SOFT_TENANTS=true`
@@ -101,7 +101,7 @@ kourou index:import PATH --no-mappings
 
 ## 5. Restart and Recreate Engine Indices
 
-Restart the new Kuzzle instance. The missing engine indices will be created automatically. If you're using the `muti-tenancy` plugin alongside the device manager you should run the action `multi-tenancy/tenant:updateAll` to recrate missing tenants and collections.
+Restart the new Kuzzle instance. The missing engine indices will be created automatically. If you're using the `muti-tenancy` plugin alongside the device manager you should run the action `multi-tenancy/tenant:updateAll` to recreate missing tenants and collections.
 
 ## 6. Import Engine Indices
 
