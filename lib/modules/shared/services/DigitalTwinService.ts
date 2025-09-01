@@ -605,10 +605,10 @@ export class DigitalTwinService extends BaseService {
     requestedMeasureSlots: MeasureSlot[],
   ) {
     const measureProvidedByOtherDevice = (
-      deviceMeasureName: string,
+      assetMeasureName: string,
     ): boolean => {
       return asset._source.linkedMeasures.some((link) =>
-        link.measureSlots.some((slot) => slot.device === deviceMeasureName),
+        link.measureSlots.some((slot) => slot.asset === assetMeasureName),
       );
     };
 
@@ -634,16 +634,29 @@ export class DigitalTwinService extends BaseService {
       if (
         measureSlotTaken(deviceMeasure.name) ||
         measureRequestedByOtherLink(deviceMeasure.name) ||
-        measureProvidedByOtherDevice(deviceMeasure.name) ||
         noTypeInCommon(deviceMeasure.type)
       ) {
         continue;
       }
-
-      requestedMeasureSlots.push({
-        asset: deviceMeasure.name,
-        device: deviceMeasure.name,
+      const availableMeasures = assetModel.asset.measures.filter((measure) => {
+        // Check measures of same type
+        if (measure.type !== deviceMeasure.type) {
+          return false;
+        }
+        // Check measures are not provided by another device
+        if (measureProvidedByOtherDevice(measure.name)) {
+          return false;
+        }
+        return true;
       });
+      const assetMeasure = availableMeasures[0];
+      // If one assetMeasure exists, request a link
+      if (assetMeasure) {
+        requestedMeasureSlots.push({
+          asset: assetMeasure.name,
+          device: deviceMeasure.name,
+        });
+      }
     }
   }
   /**
