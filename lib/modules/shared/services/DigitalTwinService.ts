@@ -230,7 +230,7 @@ export class DigitalTwinService extends BaseService {
           )
         ) {
           throw new BadRequestError(
-            `No measure can be linked from"${deviceId}" to asset "${assetId}".`,
+            `No free compatible measure slot available to linked device "${deviceId}" to asset "${assetId}".`,
           );
         }
       }
