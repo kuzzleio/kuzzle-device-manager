@@ -1,3 +1,26 @@
+## [3.0.0-next.10](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.9...v3.0.0-next.10) (2025-09-04)
+
+
+### Features
+
+* **doc 3:** added documentation for the Groups controller ([a22f657](https://github.com/kuzzleio/kuzzle-device-manager/commit/a22f657a7fded378e6ea7f4ecb9947501de46c67))
+* **doc:** add breaking changes ([bb1ce3f](https://github.com/kuzzleio/kuzzle-device-manager/commit/bb1ce3fe0c92a140399a0b75f1754e1739319514))
+* **doc:** add measure linkage + screenshots ([a552dfb](https://github.com/kuzzleio/kuzzle-device-manager/commit/a552dfb48664cf74af2d834d20aaa60020aaa808))
+* **doc:** add migration documentation and migration scripts ([fc1cf1c](https://github.com/kuzzleio/kuzzle-device-manager/commit/fc1cf1c43ca08baac31f7344609767ebaf6c444a))
+* **doc:** add migration scripts ([6eb9515](https://github.com/kuzzleio/kuzzle-device-manager/commit/6eb9515d8002f4d2cf7986fca1c445e37122f693))
+* **doc:** add new group endpoints ([3c04d76](https://github.com/kuzzleio/kuzzle-device-manager/commit/3c04d765e00c9703bfb2134878a9a70f25c52ab1))
+* **doc:** add new linkAssets/devices endpoint doc ([6e321ef](https://github.com/kuzzleio/kuzzle-device-manager/commit/6e321efde3819fd531ee935a93b26dc369718585))
+* **doc:** reword engine into tenant engine where necessary for comprehension ([30c9a52](https://github.com/kuzzleio/kuzzle-device-manager/commit/30c9a52ca18a17ce0e849ca73c233fc80ec9bc06))
+* **docs:** duplicate v2 doc ([d6f6dca](https://github.com/kuzzleio/kuzzle-device-manager/commit/d6f6dcab28348f57563e93c3d5747fe948ed6ec1))
+* **doc:** update digitial twins devices assets ([d9b086a](https://github.com/kuzzleio/kuzzle-device-manager/commit/d9b086afd7900bc4b1281ab497078d094102e7ea))
+* **doc:** update measure-propagation screen + remove tenant references ([3f284e9](https://github.com/kuzzleio/kuzzle-device-manager/commit/3f284e904fb8ec75cfc2d228157500b2967523e7))
+* **doc:** update migration scripts and docs to be used with  npx ([a414c58](https://github.com/kuzzleio/kuzzle-device-manager/commit/a414c580fcd9578a19a673ce287c56a91ddb31a2))
+
+
+### Bug Fixes
+
+* **doc:** typo ([33fab8a](https://github.com/kuzzleio/kuzzle-device-manager/commit/33fab8a96e01419d61bced5f21b5aac488430e85))
+
 ## [3.0.0-next.9](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.8...v3.0.0-next.9) (2025-09-04)
 
 
