@@ -444,7 +444,7 @@ describe("AssetController: linkDevices", () => {
       }),
     ).rejects.toMatchObject({
       message:
-        'No measure can be linked from"DummyTemp-linked1" to asset "Container-unlinked1".',
+        'No free compatible measure slot available to link device "DummyTemp-linked1" to asset "Container-unlinked1".',
     });
   });
 });
