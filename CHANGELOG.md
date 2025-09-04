@@ -1,3 +1,10 @@
+## [3.0.0-next.11](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.10...v3.0.0-next.11) (2025-09-04)
+
+
+### Features
+
+* **groupservice:** add refresh option ([#437](https://github.com/kuzzleio/kuzzle-device-manager/issues/437)) ([2587f3b](https://github.com/kuzzleio/kuzzle-device-manager/commit/2587f3bbcc7ca7c96d1b1e96167907fde6a3f01a))
+
 ## [3.0.0-next.10](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.9...v3.0.0-next.10) (2025-09-04)
 
 
