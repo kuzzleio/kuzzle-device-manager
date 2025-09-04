@@ -846,6 +846,7 @@ export class GroupsService extends BaseService {
     engineId: string,
     updateContent: JSONObject,
   ) {
+    const refresh = request.getRefresh();
     return this.updateDocument<GroupContent>(
       request,
       {
@@ -853,7 +854,7 @@ export class GroupsService extends BaseService {
         _source: { ...updateContent, lastUpdate: Date.now() },
       },
       { collection: InternalCollection.GROUPS, engineId },
-      { refresh: "wait_for", source: true, triggerEvents: true },
+      { refresh, source: true, triggerEvents: true },
     );
   }
 }
