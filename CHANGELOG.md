@@ -1,3 +1,10 @@
+## [3.0.0-next.9](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.8...v3.0.0-next.9) (2025-09-04)
+
+
+### Bug Fixes
+
+* **implicitMeasureLinking:** no error if link already exists ([#436](https://github.com/kuzzleio/kuzzle-device-manager/issues/436)) ([0e01111](https://github.com/kuzzleio/kuzzle-device-manager/commit/0e011114bbead33fea65eb691f7b9be397032afa))
+
 ## [3.0.0-next.8](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.7...v3.0.0-next.8) (2025-08-25)
 
 
