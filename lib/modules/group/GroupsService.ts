@@ -33,7 +33,9 @@ export class GroupsService extends BaseService {
     if (model !== null) {
       const groupModel = await ask<AskModelGroupGet>(
         "ask:device-manager:model:group:get",
-        { model },
+        {
+          model,
+        },
       );
       for (const metadataName of Object.keys(
         groupModel.group.metadataMappings,
@@ -95,7 +97,9 @@ export class GroupsService extends BaseService {
       if (model !== null) {
         const groupModel = await ask<AskModelGroupGet>(
           "ask:device-manager:model:group:get",
-          { model },
+          {
+            model,
+          },
         );
         for (const metadataName of Object.keys(
           groupModel.group.metadataMappings,
@@ -417,7 +421,9 @@ export class GroupsService extends BaseService {
     if (group._source.model) {
       model = await ask<AskModelGroupGet>(
         "ask:device-manager:model:group:get",
-        { model: group._source.model },
+        {
+          model: group._source.model,
+        },
       );
     }
     if (model && !model.group.affinity.type.includes("assets")) {
@@ -464,11 +470,12 @@ export class GroupsService extends BaseService {
       lastUpdate: Date.now(),
     });
 
+    const refresh = request.getRefresh();
     const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.ASSETS,
       assetsToUpdate.map((asset) => ({ _id: asset._id, body: asset._source })),
-      { triggerEvents: true },
+      { refresh, triggerEvents: true },
     );
 
     return {
@@ -513,12 +520,13 @@ export class GroupsService extends BaseService {
     const groupUpdate = await this._update(request, _id, engineId, {
       lastUpdate: Date.now(),
     });
+    const refresh = request.getRefresh();
 
     const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.ASSETS,
       assetsToUpdate.map((asset) => ({ _id: asset._id, body: asset._source })),
-      { triggerEvents: true },
+      { refresh, triggerEvents: true },
     );
 
     return {
@@ -546,7 +554,9 @@ export class GroupsService extends BaseService {
     if (group._source.model) {
       model = await ask<AskModelGroupGet>(
         "ask:device-manager:model:group:get",
-        { model: group._source.model },
+        {
+          model: group._source.model,
+        },
       );
     }
     if (model && !model.group.affinity.type.includes("devices")) {
@@ -595,6 +605,8 @@ export class GroupsService extends BaseService {
       lastUpdate: Date.now(),
     });
 
+    const refresh = request.getRefresh();
+
     const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.DEVICES,
@@ -602,7 +614,7 @@ export class GroupsService extends BaseService {
         _id: device._id,
         body: device._source,
       })),
-      { triggerEvents: true },
+      { refresh, triggerEvents: true },
     );
 
     return {
@@ -648,6 +660,7 @@ export class GroupsService extends BaseService {
       lastUpdate: Date.now(),
     });
 
+    const refresh = request.getRefresh();
     const update = await this.sdk.document.mReplace(
       engineId,
       InternalCollection.DEVICES,
@@ -655,7 +668,7 @@ export class GroupsService extends BaseService {
         _id: device._id,
         body: device._source,
       })),
-      { triggerEvents: true },
+      { refresh, triggerEvents: true },
     );
 
     return {
@@ -682,7 +695,9 @@ export class GroupsService extends BaseService {
         if (g.model !== null) {
           const groupModel = await ask<AskModelGroupGet>(
             "ask:device-manager:model:group:get",
-            { model: g.model },
+            {
+              model: g.model,
+            },
           );
           for (const metadataName of Object.keys(
             groupModel.group.metadataMappings,
