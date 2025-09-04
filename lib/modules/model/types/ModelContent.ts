@@ -314,7 +314,9 @@ export interface AssetModelContent extends KDocumentContent {
      * ]
      */
     tooltipModels?: TooltipModels;
-
+    /**
+     * Translations specific to the model
+     */
     locales?: { [locale: string]: LocaleDetails };
   };
 }

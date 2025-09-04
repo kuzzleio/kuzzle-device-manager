@@ -1,9 +1,11 @@
+import { CollectionMappings } from "kuzzle-sdk";
+
 /**
  * Base mappings for the "measures" collection.
  *
  * Those mappings does not contains the `values` mappings and `asset.metadata` mappings.
  */
-export const measuresMappings = {
+export const measuresMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {
     type: { type: "keyword" },
