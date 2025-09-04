@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* eslint-disable no-console */
 import {
   transformDocuments,
@@ -6,9 +7,31 @@ import {
   ModelRegistry,
 } from "./utils.js";
 
-const pathToTenantIndex = process.env.TENANT_INDEX;
-const pathToPlatformIndex = process.env.PLATFORM_INDEX;
-const includeSoftTenants = process.env.WITH_SOFT_TENANTS;
+const args: any = {};
+for (let index = 0; index < process.argv.length; index++) {
+  const val = process.argv[index];
+  if (val.startsWith("--")) {
+    const [key, value] = val.replace("--", "").split("=");
+    args[key] = value || true;
+  }
+}
+
+const pathToTenantIndex = args["tenant-index"] || process.env.TENANT_INDEX;
+const pathToPlatformIndex =
+  args["platform-index"] || process.env.PLATFORM_INDEX;
+const includeSoftTenants =
+  args["with-soft-tenants"] || process.env.WITH_SOFT_TENANTS;
+
+if (!pathToTenantIndex) {
+  throw new Error(
+    "TENANT_INDEX env variable or --tenant-index flag is required",
+  );
+}
+if (!pathToPlatformIndex) {
+  throw new Error(
+    "PLATFORM_INDEX env variable or --platform-index is required",
+  );
+}
 
 const linkedDevices = {};
 

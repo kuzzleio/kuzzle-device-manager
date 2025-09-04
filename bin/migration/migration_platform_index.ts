@@ -1,11 +1,27 @@
+#!/usr/bin/env node
 import { transformDocuments, clearProperties } from "./utils.js";
 
-const pathToPlatformIndex = process.env.PLATFORM_INDEX;
+const args: any = {};
+for (let index = 0; index < process.argv.length; index++) {
+  const val = process.argv[index];
+  if (val.startsWith("--")) {
+    const [key, value] = val.replace("--", "").split("=");
+    args[key] = value || true;
+  }
+}
 
+const pathToPlatformIndex =
+  args["platform-index"] || process.env.PLATFORM_INDEX;
+
+if (!pathToPlatformIndex) {
+  throw new Error(
+    "PLATFORM_INDEX env variable or --platform-index is required",
+  );
+}
 // eslint-disable-next-line no-console
 console.info("MIGRATING " + pathToPlatformIndex);
-// DEVICES
 
+// DEVICES
 transformDocuments("devices", pathToPlatformIndex, (line) => {
   const propertiesToDelete = [
     "assetId",
