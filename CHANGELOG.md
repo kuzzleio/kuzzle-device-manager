@@ -1,3 +1,10 @@
+## [3.0.0-next.12](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.11...v3.0.0-next.12) (2025-09-19)
+
+
+### Bug Fixes
+
+* **assetsController:** await a promise inside of a try-catch ([1720df3](https://github.com/kuzzleio/kuzzle-device-manager/commit/1720df39b3c4422ab9469a8e61ab88830d0c63e8))
+
 ## [3.0.0-next.11](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.10...v3.0.0-next.11) (2025-09-04)
 
 
