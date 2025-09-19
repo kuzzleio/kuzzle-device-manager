@@ -1,3 +1,17 @@
+## [2.9.1-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0...v2.9.1-beta.1) (2025-09-19)
+
+
+### Bug Fixes
+
+* **assetsController:** await promise in try catch ([cc860dc](https://github.com/kuzzleio/kuzzle-device-manager/commit/cc860dc8819f081b69b5053755129c1b22801914))
+
+## [2.9.1-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0...v2.9.1-dev.1) (2025-09-19)
+
+
+### Bug Fixes
+
+* **assetsController:** await promise in try catch ([cc860dc](https://github.com/kuzzleio/kuzzle-device-manager/commit/cc860dc8819f081b69b5053755129c1b22801914))
+
 ## [2.9.0](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.8.0...v2.9.0) (2025-08-25)
 
 
