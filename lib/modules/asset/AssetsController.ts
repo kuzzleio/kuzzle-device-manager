@@ -793,7 +793,7 @@ export class AssetsController {
     const model = request.getString("model");
 
     try {
-      return this.assetService.updateModelLocales(request, model);
+      return await this.assetService.updateModelLocales(request, model);
     } catch (e) {
       request.response.configure({
         status: (e as KuzzleError).status,
