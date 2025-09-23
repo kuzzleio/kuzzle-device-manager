@@ -1,12 +1,12 @@
-import { beforeEachTruncateCollections } from "../../hooks/collections";
-import { beforeAllCreateEngines } from "../../hooks/engines";
-import { beforeEachLoadFixtures } from "../../hooks/fixtures";
+import { beforeEachTruncateCollections } from '../../hooks/collections';
+import { beforeAllCreateEngines } from '../../hooks/engines';
+import { beforeEachLoadFixtures } from '../../hooks/fixtures';
 
-import { useSdk, sendPayloads } from "../../helpers";
+import { useSdk, sendPayloads } from '../../helpers';
 
 jest.setTimeout(10000);
 
-describe("features/Decoder/PayloadController", () => {
+describe('features/Decoder/PayloadController', () => {
   const sdk = useSdk();
 
   beforeAll(async () => {
@@ -23,23 +23,23 @@ describe("features/Decoder/PayloadController", () => {
     sdk.disconnect();
   });
 
-  it("Register a DummyTemp payload", async () => {
+  it('Register a DummyTemp payload', async () => {
     let response;
     let promise;
 
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "12345", temperature: 21 },
-      { deviceEUI: "12345", temperature: 42 },
+    response = await sendPayloads(sdk, 'dummy-temp', [
+      { deviceEUI: '12345', temperature: 21 },
+      { deviceEUI: '12345', temperature: 42 },
     ]);
 
     await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-12345")
+      sdk.document.get('device-manager', 'devices', 'DummyTemp-12345'),
     ).resolves.toMatchObject({
       _source: {
-        reference: "12345",
-        model: "DummyTemp",
+        reference: '12345',
+        model: 'DummyTemp',
         measures: {
-          temperature: { type: "temperature", values: { temperature: 42 } },
+          temperature: { type: 'temperature', values: { temperature: 42 } },
         },
         engineId: null,
         assetId: null,
@@ -47,109 +47,98 @@ describe("features/Decoder/PayloadController", () => {
     });
   });
 
-  it("Reject if measuredAt is not unix timestamp", async () => {
+  it('Reject if measuredAt is not unix timestamp', async () => {
     let response;
     let promise;
 
-    promise = sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "12345", temperature: 21, measuredAt: 1671007889 },
+    promise = sendPayloads(sdk, 'dummy-temp', [
+      { deviceEUI: '12345', temperature: 21, measuredAt: 1671007889 },
     ]);
 
     await expect(promise).rejects.toMatchObject({
-      message:
-        'Invalid payload: "measuredAt" should be a timestamp in milliseconds',
+      message: 'Invalid payload: "measuredAt" should be a timestamp in milliseconds',
     });
   });
 
-  it("Reject with error a DummyTemp payload", async () => {
+  it('Reject with error a DummyTemp payload', async () => {
     let response;
     let promise;
 
-    promise = sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: null, temperature: 21 },
-    ]);
+    promise = sendPayloads(sdk, 'dummy-temp', [{ deviceEUI: null, temperature: 21 }]);
 
     await expect(promise).rejects.toMatchObject({
       message: 'Invalid payload: missing "deviceEUI"',
     });
   });
 
-  it("Reject a DummyTemp payload", async () => {
+  it('Reject a DummyTemp payload', async () => {
     let response;
     let promise;
 
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "12345", temperature: 21, invalid: true },
+    response = await sendPayloads(sdk, 'dummy-temp', [
+      { deviceEUI: '12345', temperature: 21, invalid: true },
     ]);
 
     expect(response.result).toMatchObject({ valid: false });
 
-    await expect(
-      sdk.document.exists("device-manager", "devices", "DummyTemp-12345")
-    ).resolves.toBe(false);
-
-    await sdk.collection.refresh("device-manager", "payloads");
-    let exceptedResult = await sdk.document.search(
-      "device-manager",
-      "payloads",
-      {
-        query: {},
-        sort: { "_kuzzle_info.createdAt": "desc" },
-      }
+    await expect(sdk.document.exists('device-manager', 'devices', 'DummyTemp-12345')).resolves.toBe(
+      false,
     );
+
+    await sdk.collection.refresh('device-manager', 'payloads');
+    let exceptedResult = await sdk.document.search('device-manager', 'payloads', {
+      query: {},
+      sort: { '_kuzzle_info.createdAt': 'desc' },
+    });
     expect(exceptedResult.hits).toHaveLength(1);
     let hit = exceptedResult.hits[0]._source;
     expect(hit.payload).toMatchObject({
-      deviceEUI: "12345",
+      deviceEUI: '12345',
       temperature: 21,
       invalid: true,
     });
     expect(hit.valid).toBeFalsy();
-    expect(hit.state).toBe("SKIP");
+    expect(hit.state).toBe('SKIP');
   });
 
-  it("Reject a DummyTemp payload because of validation error", async () => {
+  it('Reject a DummyTemp payload because of validation error', async () => {
     await expect(
-      sendPayloads(sdk, "dummy-temp", [
+      sendPayloads(sdk, 'dummy-temp', [
         {
           temperature: 21,
           location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
           battery: 0.8,
         },
-      ])
+      ]),
     ).rejects.toThrow('Invalid payload: missing "deviceEUI"');
 
-    await expect(
-      sdk.document.exists("device-manager", "devices", "DummyTemp-12345")
-    ).resolves.toBe(false);
-
-    await sdk.collection.refresh("device-manager", "payloads");
-    let exceptedResult = await sdk.document.search(
-      "device-manager",
-      "payloads",
-      {
-        query: {},
-        sort: { "_kuzzle_info.createdAt": "desc" },
-      }
+    await expect(sdk.document.exists('device-manager', 'devices', 'DummyTemp-12345')).resolves.toBe(
+      false,
     );
+
+    await sdk.collection.refresh('device-manager', 'payloads');
+    let exceptedResult = await sdk.document.search('device-manager', 'payloads', {
+      query: {},
+      sort: { '_kuzzle_info.createdAt': 'desc' },
+    });
     expect(exceptedResult.hits).toHaveLength(1);
     let hit = exceptedResult.hits[0]._source;
     expect(hit.payload).toMatchObject({ temperature: 21 });
     expect(hit.valid).toBeFalsy();
-    expect(hit.state).toBe("ERROR");
+    expect(hit.state).toBe('ERROR');
     expect(hit.reason).toBe('Invalid payload: missing "deviceEUI"');
   });
 
-  it("Receive a payload with 3 measures but only 2 are propagated to the asset", async () => {
+  it('Receive a payload with 3 measures but only 2 are propagated to the asset', async () => {
     await sdk.query({
-      controller: "tests",
-      action: "setAssetsHistorizesMeasuresConfig",
+      controller: 'tests',
+      action: 'setAssetsHistorizesMeasuresConfig',
       assetsHistorizesMeasures: true,
     });
 
-    await sendPayloads(sdk, "dummy-temp-position", [
+    await sendPayloads(sdk, 'dummy-temp-position', [
       {
-        deviceEUI: "linked2",
+        deviceEUI: 'linked2',
         temperature: 21,
         location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
         battery: 0.8,
@@ -157,26 +146,26 @@ describe("features/Decoder/PayloadController", () => {
     ]);
 
     await expect(
-      sdk.document.get("device-manager", "devices", "DummyTempPosition-linked2")
+      sdk.document.get('device-manager', 'devices', 'DummyTempPosition-linked2'),
     ).resolves.toMatchObject({
       _source: {
-        reference: "linked2",
-        model: "DummyTempPosition",
+        reference: 'linked2',
+        model: 'DummyTempPosition',
         measures: {
-          temperature: { type: "temperature", values: { temperature: 21 } },
+          temperature: { type: 'temperature', values: { temperature: 21 } },
           position: {
-            type: "position",
+            type: 'position',
             values: { position: { lat: 42.2, lon: 2.42 }, accuracy: 2100 },
           },
-          battery: { type: "battery", values: { battery: 80 } },
+          battery: { type: 'battery', values: { battery: 80 } },
         },
-        engineId: "engine-ayse",
-        assetId: "Container-linked2",
+        engineId: 'engine-ayse',
+        assetId: 'Container-linked2',
       },
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-linked2")
+      sdk.document.get('engine-ayse', 'assets', 'Container-linked2'),
     ).resolves.toMatchObject({
       _source: {
         measures: {
@@ -186,119 +175,113 @@ describe("features/Decoder/PayloadController", () => {
       },
     });
 
-    await sdk.collection.refresh("engine-ayse", "assets-history");
+    await sdk.collection.refresh('engine-ayse', 'assets-history');
 
     const assetHistory = await sdk.query({
-      controller: "document",
-      action: "search",
-      index: "engine-ayse",
-      collection: "assets-history",
-      body: { sort: { "_kuzzle_info.createdAt": "desc" } },
+      controller: 'document',
+      action: 'search',
+      index: 'engine-ayse',
+      collection: 'assets-history',
+      body: { sort: { '_kuzzle_info.createdAt': 'desc' } },
     });
 
     expect(assetHistory.result.hits[0]._source).toMatchObject({
-      id: "Container-linked2",
+      id: 'Container-linked2',
       event: {
-        name: "measure",
-        measure: { names: ["temperatureExt", "position"] },
+        name: 'measure',
+        measure: { names: ['temperatureExt', 'position'] },
       },
     });
 
-    await sdk.collection.refresh("device-manager", "payloads");
-    let exceptedResult = await sdk.document.search(
-      "device-manager",
-      "payloads",
-      {
-        query: {},
-        sort: { "_kuzzle_info.createdAt": "desc" },
-      }
-    );
+    await sdk.collection.refresh('device-manager', 'payloads');
+    let exceptedResult = await sdk.document.search('device-manager', 'payloads', {
+      query: {},
+      sort: { '_kuzzle_info.createdAt': 'desc' },
+    });
     expect(exceptedResult.hits).toHaveLength(1);
     let hit = exceptedResult.hits[0]._source;
     expect(hit.payload).toMatchObject({
-      deviceEUI: "linked2",
+      deviceEUI: 'linked2',
       temperature: 21,
       location: { lat: 42.2, lon: 2.42, accuracy: 2100 },
       battery: 0.8,
     });
     expect(hit.valid).toBeTruthy();
-    expect(hit.state).toBe("VALID");
+    expect(hit.state).toBe('VALID');
 
     await sdk.query({
-      controller: "tests",
-      action: "setAssetsHistorizesMeasuresConfig",
+      controller: 'tests',
+      action: 'setAssetsHistorizesMeasuresConfig',
       assetsHistorizesMeasures: false,
     });
   });
 
-  it("Historize the measures with device and asset context", async () => {
+  it('Historize the measures with device and asset context', async () => {
     let response;
     let promise;
 
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "linked1", temperature: 42.2 },
-    ]);
+    response = await sendPayloads(sdk, 'dummy-temp', [{ deviceEUI: 'linked1', temperature: 42.2 }]);
 
-    await sdk.collection.refresh("engine-ayse", "measures");
+    await sdk.collection.refresh('engine-ayse', 'measures');
 
     response = await sdk.query({
-      controller: "document",
-      action: "search",
-      index: "engine-ayse",
-      collection: "measures",
+      controller: 'document',
+      action: 'search',
+      index: 'engine-ayse',
+      collection: 'measures',
     });
 
     expect(response.result.hits[0]).toMatchObject({
       _source: {
-        type: "temperature",
+        type: 'temperature',
         values: { temperature: 42.2 },
         origin: {
-          _id: "DummyTemp-linked1",
-          measureName: "temperature",
-          deviceModel: "DummyTemp",
-          reference: "linked1",
+          _id: 'DummyTemp-linked1',
+          measureName: 'temperature',
+          deviceModel: 'DummyTemp',
+          reference: 'linked1',
         },
         asset: {
-          _id: "Container-linked1",
-          measureName: "temperatureExt",
+          _id: 'Container-linked1',
+          measureName: 'temperatureExt',
           metadata: { weight: 10, height: 11 },
         },
       },
     });
   });
 
-  it("Decode Device metadata from payload", async () => {
+  it('Decode Device metadata from payload', async () => {
     let response;
     let promise;
 
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "12345", temperature: 21.1, metadata: { color: "RED" } },
+    response = await sendPayloads(sdk, 'dummy-temp', [
+      { deviceEUI: '12345', temperature: 21.1, metadata: { color: 'RED' } },
     ]);
 
     await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-12345")
+      sdk.document.get('device-manager', 'devices', 'DummyTemp-12345'),
     ).resolves.toMatchObject({
       _source: {
-        reference: "12345",
-        model: "DummyTemp",
-        metadata: { color: "RED" },
+        reference: '12345',
+        model: 'DummyTemp',
+        metadata: { color: 'RED' },
       },
     });
   });
 
-  it("Throw an error when decoding unknown measure name", async () => {
+  it('Throw an error when decoding unknown measure name', async () => {
     let response;
     let promise;
 
     response = await sdk.query({
-      controller: "device-manager/devices",
-      action: "create",
-      engineId: "device-manager",
-      body: { model: "DummyTemp", reference: "test" },
+      controller: 'device-manager/devices',
+      action: 'create',
+      engineId: 'device-manager',
+      body: { model: 'DummyTemp', reference: 'test' },
     });
 
-    promise = sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "12345", temperature: 21.1, unknownMeasure: 42 },
+    promise = sendPayloads(sdk, 'dummy-temp', [
+      { deviceEUI: '12345', temperature: 21.1, unknownMeasure: 42 },
     ]);
 
     await expect(promise).rejects.toMatchObject({
@@ -306,47 +289,102 @@ describe("features/Decoder/PayloadController", () => {
     });
 
     await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-test")
+      sdk.document.get('device-manager', 'devices', 'DummyTemp-test'),
     ).resolves.toMatchObject({
       _source: { measures: {} },
     });
   });
 
-  it("Receive a payload from unknown device", async () => {
+  it('Receive a payload from unknown device', async () => {
     let response;
     let promise;
 
     response = await sdk.query({
-      controller: "device-manager/payloads",
-      action: "receiveUnknown",
-      deviceModel: "Abeeway",
-      body: { deviceEUI: "JORA" },
+      controller: 'device-manager/payloads',
+      action: 'receiveUnknown',
+      deviceModel: 'Abeeway',
+      body: { deviceEUI: 'JORA' },
     });
 
-    await sdk.collection.refresh("device-manager", "payloads");
+    await sdk.collection.refresh('device-manager', 'payloads');
 
     await expect(
       sdk.document.search(
-        "device-manager",
-        "payloads",
+        'device-manager',
+        'payloads',
         {
           query: {},
-          sort: { "_kuzzle_info.createdAt": "desc" },
+          sort: { '_kuzzle_info.createdAt': 'desc' },
         },
         {
           size: 1,
-        }
-      )
+        },
+      ),
     ).resolves.toMatchObject({
       hits: {
-        "0": {
+        '0': {
           _source: {
-            deviceModel: "Abeeway",
+            deviceModel: 'Abeeway',
             valid: false,
-            payload: { deviceEUI: "JORA" },
+            payload: { deviceEUI: 'JORA' },
           },
         },
       },
+    });
+  });
+
+  it('Reroute a payload to the corresponding handler', async () => {
+    let response;
+    let promise;
+
+    await sendPayloads(sdk, 'route', [
+      {
+        deviceEUI: 'linked2',
+        deviceModel:'DummyTempPosition',
+        temperature: 45,
+        location: { lat: 12, lon: 12, accuracy: 2100 },
+        battery: 0.1,
+      },
+    ]);
+
+    await expect(
+      sdk.document.get('device-manager', 'devices', 'DummyTempPosition-linked2'),
+    ).resolves.toMatchObject({
+      _source: {
+        reference: 'linked2',
+        model: 'DummyTempPosition',
+        measures: {
+          temperature: { type: 'temperature', values: { temperature: 45 } },
+          position: {
+            type: 'position',
+            values: { position: { lat: 12, lon: 12 }, accuracy: 2100 },
+          },
+          battery: { type: 'battery', values: { battery: 10 } },
+        },
+        engineId: 'engine-ayse',
+        assetId: 'Container-linked2',
+      },
+    });
+  });
+
+    it('Reroute and reject with error a DummyTemp payload', async () => {
+    let response;
+    let promise;
+
+    promise = sendPayloads(sdk, 'route', [{ deviceEUI: null, deviceModel:'DummyTemp', temperature: 21 }]);
+
+    await expect(promise).rejects.toMatchObject({
+      message: 'Invalid payload: missing "deviceEUI"',
+    });
+  });
+    it('Reroute and reject if deviceModel missing', async () => {
+    let response;
+    let promise;
+
+    promise = sendPayloads(sdk, 'route', [{ deviceEUI: 'linked1', temperature: 21 }]);
+
+    await expect(promise).rejects.toMatchObject({
+      message: 'Payload must specify the deviceModel for proper routing',
     });
   });
 });

@@ -1,4 +1,4 @@
-import { ControllerDefinition, KuzzleRequest } from "kuzzle";
+import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
 
 import { DecodersRegister } from "./DecodersRegister";
 import { PayloadService } from "./PayloadService";
@@ -49,6 +49,28 @@ export class PayloadsController {
             },
           ],
         },
+        route: {
+          handler: this.route.bind(this),
+          http: [
+            {
+              openapi: {
+                description: `Receive a payload from a device and reroute it to the corresponding endpoint`,
+                parameters: [
+                  {
+                    in: "body",
+                    name: "payload",
+                    required: true,
+                    schema: {
+                      type: "object",
+                    },
+                  },
+                ],
+              },
+              path: "device-manager/payload/route",
+              verb: "post",
+            },
+          ],
+        },
       },
     };
 
@@ -69,5 +91,23 @@ export class PayloadsController {
     const apiAction = `${request.input.controller}:${request.input.action}`;
 
     await this.payloadService.receiveUnknown(deviceModel, payload, apiAction);
+  }
+
+  async route(request: KuzzleRequest): Promise<{ valid: boolean }> {
+    const payload = request.getBody();
+    const model = payload.deviceModel;
+    if (!model) {
+      throw new BadRequestError(
+        "Payload must specify the deviceModel for proper routing",
+      );
+    }
+    const decoder = this.decodersRegister.decoders.find(
+      (d) => d.deviceModel === model,
+    );
+    if (!decoder) {
+      throw new BadRequestError("The specified device model is unknown");
+    }
+    app.log.debug("Routing payload to decoder for " + decoder.deviceModel);
+    return this.payloadService.receive(request, decoder);
   }
 }
