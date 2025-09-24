@@ -1,3 +1,11 @@
+## [2.10.0-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.1...v2.10.0-dev.1) (2025-09-24)
+
+
+### Features
+
+* **decoders:** moved route to decoder endpoint + add roles + add tests ([3564311](https://github.com/kuzzleio/kuzzle-device-manager/commit/3564311774ec2c91f8967943ffb77e4302156164))
+* **payload controller:** add route endpoint to redirect payloads to corresponding decoders ([7901a95](https://github.com/kuzzleio/kuzzle-device-manager/commit/7901a957568f378a6d3c25e7f2855440bf9351bb))
+
 ## [2.9.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.9.0...v2.9.1) (2025-09-19)
 
 
