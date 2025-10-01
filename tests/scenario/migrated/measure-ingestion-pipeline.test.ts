@@ -126,9 +126,7 @@ describe('features/Measure/IngestionPipeline', () => {
   });
 
   it('Should enrich measure with the origin device metadata', async () => {
-    const metadata = {
-      color: 'blue',
-    };
+    const metadata = { color: 'blue' };
 
     await sdk.query({
       controller: 'device-manager/devices',
@@ -184,6 +182,26 @@ describe('features/Measure/IngestionPipeline', () => {
           },
         },
       ],
+    });
+  });
+
+  it('Should enrich measure with the origin device groups', async () => {
+    await sendPayloads(sdk, 'dummy-temp-position', [
+      { deviceEUI: 'linked2', temperature: 35, location: { lon: 12, lat: 12 } },
+    ]);
+
+    await sdk.collection.refresh('engine-ayse', 'measures');
+
+    const response = await sdk.query({
+      controller: 'document',
+      action: 'search',
+      index: 'engine-ayse',
+      collection: 'measures',
+      body: { query: { term: { 'origin.reference': 'linked2' } } },
+    });
+
+    expect(response.result.hits[0]._source.origin.groups[0]).toMatchObject({
+      path: 'test-parent-asset',
     });
   });
 });
