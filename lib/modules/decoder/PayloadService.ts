@@ -115,7 +115,14 @@ export class PayloadService extends BaseService {
     for (const device of devices) {
       const {
         _id,
-        _source: { reference, model, metadata, linkedMeasures, engineId },
+        _source: {
+          reference,
+          model,
+          metadata,
+          linkedMeasures,
+          engineId,
+          groups,
+        },
       } = device;
       // ? Done here to avoid invoque Measure service only for device metadata change (if no engineId)
       const deviceMetadataChanges = decodedPayload.getMetadata(reference);
@@ -147,6 +154,7 @@ export class PayloadService extends BaseService {
               payloadUuids: [uuid],
               source: {
                 deviceMetadata: metadata,
+                groups,
                 id: _id,
                 metadata: deviceMetadataChanges,
                 model: model,
@@ -177,6 +185,7 @@ export class PayloadService extends BaseService {
               payloadUuids: [uuid],
               source: {
                 deviceMetadata: metadata,
+                groups,
                 id: _id,
                 metadata: deviceMetadataChanges,
                 model: model,
@@ -208,6 +217,7 @@ export class PayloadService extends BaseService {
               payloadUuids: [uuid],
               source: {
                 deviceMetadata: metadata,
+                groups,
                 id: _id,
                 metadata: deviceMetadataChanges,
                 model: model,
@@ -236,7 +246,7 @@ export class PayloadService extends BaseService {
     const apiAction = "device-manager/devices:receiveMeasure";
     const {
       _id,
-      _source: { reference, model, metadata, linkedMeasures, engineId },
+      _source: { reference, model, metadata, linkedMeasures, engineId, groups },
     } = device;
 
     // TODO: do we want update a metadata from formatted payload to ?
@@ -262,6 +272,7 @@ export class PayloadService extends BaseService {
             payloadUuids,
             source: {
               deviceMetadata: metadata,
+              groups,
               id: _id,
               model: model,
               reference: reference,
@@ -292,6 +303,7 @@ export class PayloadService extends BaseService {
             payloadUuids,
             source: {
               deviceMetadata: metadata,
+              groups,
               id: _id,
               model: model,
               reference: reference,
