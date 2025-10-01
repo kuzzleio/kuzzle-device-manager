@@ -18,6 +18,7 @@ import { Decoder } from "./Decoder";
 import { DecodingState } from "./DecodingState";
 import { SkipError } from "./SkipError";
 import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
+import { DeviceMeasureSource } from "../measure/types/MeasureSources";
 
 export class PayloadService extends BaseService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -110,19 +111,14 @@ export class PayloadService extends BaseService {
     const devices = await this.retrieveDevices(
       decoder.deviceModel,
       decodedPayload.references,
-      { refresh },
+      {
+        refresh,
+      },
     );
     for (const device of devices) {
       const {
         _id,
-        _source: {
-          reference,
-          model,
-          metadata,
-          linkedMeasures,
-          engineId,
-          groups,
-        },
+        _source: { reference, linkedMeasures, engineId },
       } = device;
       // ? Done here to avoid invoque Measure service only for device metadata change (if no engineId)
       const deviceMetadataChanges = decodedPayload.getMetadata(reference);
@@ -152,15 +148,10 @@ export class PayloadService extends BaseService {
             {
               measurements,
               payloadUuids: [uuid],
-              source: {
-                deviceMetadata: metadata,
-                groups,
-                id: _id,
-                metadata: deviceMetadataChanges,
-                model: model,
-                reference: reference,
-                type: "device",
-              },
+              source: this.getDeviceMeasureSource(
+                device,
+                deviceMetadataChanges,
+              ),
               target: {
                 assetId: null,
                 indexId: engineId,
@@ -183,15 +174,10 @@ export class PayloadService extends BaseService {
             {
               measurements: assetMeasurements,
               payloadUuids: [uuid],
-              source: {
-                deviceMetadata: metadata,
-                groups,
-                id: _id,
-                metadata: deviceMetadataChanges,
-                model: model,
-                reference: reference,
-                type: "device",
-              },
+              source: this.getDeviceMeasureSource(
+                device,
+                deviceMetadataChanges,
+              ),
               target: {
                 assetId: assetId,
                 indexId: engineId,
@@ -215,15 +201,10 @@ export class PayloadService extends BaseService {
             {
               measurements: unlinkedMeasurements,
               payloadUuids: [uuid],
-              source: {
-                deviceMetadata: metadata,
-                groups,
-                id: _id,
-                metadata: deviceMetadataChanges,
-                model: model,
-                reference: reference,
-                type: "device",
-              },
+              source: this.getDeviceMeasureSource(
+                device,
+                deviceMetadataChanges,
+              ),
               target: {
                 assetId: null,
                 indexId: engineId,
@@ -245,8 +226,7 @@ export class PayloadService extends BaseService {
   ) {
     const apiAction = "device-manager/devices:receiveMeasure";
     const {
-      _id,
-      _source: { reference, model, metadata, linkedMeasures, engineId, groups },
+      _source: { model, linkedMeasures, engineId },
     } = device;
 
     // TODO: do we want update a metadata from formatted payload to ?
@@ -270,14 +250,10 @@ export class PayloadService extends BaseService {
           {
             measurements: assetMeasurements,
             payloadUuids,
-            source: {
-              deviceMetadata: metadata,
-              groups,
-              id: _id,
-              model: model,
-              reference: reference,
-              type: "device",
-            },
+            source: this.getDeviceMeasureSource(
+              device,
+              device._source.metadata,
+            ),
             target: {
               assetId: assetId,
               indexId: engineId,
@@ -301,14 +277,10 @@ export class PayloadService extends BaseService {
           {
             measurements: unlinkedMeasurements,
             payloadUuids,
-            source: {
-              deviceMetadata: metadata,
-              groups,
-              id: _id,
-              model: model,
-              reference: reference,
-              type: "device",
-            },
+            source: this.getDeviceMeasureSource(
+              device,
+              device._source.metadata,
+            ),
             target: {
               assetId: null,
               indexId: engineId,
@@ -398,9 +370,7 @@ export class PayloadService extends BaseService {
         updatedDevices.push(...newDevices);
       } else {
         this.app.log.info(
-          `Skipping new devices "${errors.join(
-            ", ",
-          )}". Auto-provisioning is disabled.`,
+          `Skipping new devices "${errors.join(", ")}". Auto-provisioning is disabled.`,
         );
       }
     }
@@ -485,7 +455,9 @@ export class PayloadService extends BaseService {
     const deleted = await this.sdk.bulk.deleteByQuery(
       this.config.platformIndex,
       "payloads",
-      { query: { bool: { filter } } },
+      {
+        query: { bool: { filter } },
+      },
     );
 
     return deleted;
@@ -497,5 +469,22 @@ export class PayloadService extends BaseService {
     apiAction: string,
   ) {
     await this.savePayload(deviceModel, uuidv4(), false, payload, apiAction);
+  }
+
+  private getDeviceMeasureSource(
+    device: KDocument<DeviceContent>,
+    deviceMetadataChanges: JSONObject,
+  ): DeviceMeasureSource {
+    const { reference, model, metadata, groups } = device._source;
+
+    return {
+      deviceMetadata: metadata,
+      groups,
+      id: device._id,
+      metadata: deviceMetadataChanges,
+      model: model,
+      reference: reference,
+      type: "device",
+    };
   }
 }
