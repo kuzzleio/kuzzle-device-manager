@@ -46,6 +46,11 @@ export interface MeasureOriginDevice extends AbstractMeasureOrigin {
   deviceMetadata?: Metadata;
 
   /**
+   * Origin device groups
+   */
+  groups: Array<{ path: string; date: number }>;
+
+  /**
    * Device ID
    */
   _id: string;

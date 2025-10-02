@@ -25,11 +25,12 @@ export function deviceSourceToOriginDevice(
   payloadUuids: string[],
   deviceMetadata: Metadata,
 ): MeasureOriginDevice {
-  const { id: dataSourceId, model, reference } = source;
+  const { id: dataSourceId, model, reference, groups } = source;
   return {
     _id: dataSourceId,
     deviceMetadata,
     deviceModel: model,
+    groups,
     measureName,
     payloadUuids,
     reference: reference,

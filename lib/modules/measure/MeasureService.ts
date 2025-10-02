@@ -70,8 +70,7 @@ export class MeasureService extends BaseService {
   ) {
     const { id: dataSourceId } = source;
     const { indexId, assetId } = target;
-
-    if (!measurements) {
+    if (!measurements || measurements.length === 0) {
       this.app.log.warn(
         `No measurements provided for "${dataSourceId}" measures ingest`,
       );

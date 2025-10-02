@@ -12,6 +12,10 @@ export interface DeviceMeasureSource extends AbstractMeasureSource {
   deviceMetadata: Metadata;
   model: string;
   lastMeasuredAt?: number;
+  groups: Array<{
+    path: string;
+    date: number;
+  }>;
 }
 
 export interface ApiMeasureSource extends AbstractMeasureSource {

@@ -34,10 +34,7 @@ export const measuresMappings: CollectionMappings = {
         },
         groups: {
           properties: {
-            path: {
-              type: "keyword",
-              fields: { text: { type: "text" } },
-            },
+            path: { type: "keyword", fields: { text: { type: "text" } } },
             date: { type: "date" },
           },
         },
@@ -58,11 +55,13 @@ export const measuresMappings: CollectionMappings = {
             // populated with device models metadata mappings
           },
         },
-
-        apiMetadata: {
-          dynamic: "false",
-          properties: {},
+        groups: {
+          properties: {
+            path: { type: "keyword", fields: { text: { type: "text" } } },
+            date: { type: "date" },
+          },
         },
+        apiMetadata: { dynamic: "false", properties: {} },
 
         payloadUuids: { type: "keyword" },
 
