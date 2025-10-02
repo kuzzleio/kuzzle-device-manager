@@ -1,3 +1,10 @@
+## [3.0.0-next.13](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.12...v3.0.0-next.13) (2025-10-02)
+
+
+### Bug Fixes
+
+* **measures:** add device groups field to origin of measures documents ([#441](https://github.com/kuzzleio/kuzzle-device-manager/issues/441)) ([35aa43d](https://github.com/kuzzleio/kuzzle-device-manager/commit/35aa43dc3b603d4bb7e9c545a9e856d1bec91a71))
+
 ## [3.0.0-next.12](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.11...v3.0.0-next.12) (2025-09-19)
 
 
