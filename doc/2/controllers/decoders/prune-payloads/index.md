@@ -47,8 +47,8 @@ Method: DELETE
 {
   "status": 200,
   "error": null,
-  "controller": "device-manager/devices",
-  "action": "delete",
+  "controller": "device-manager/decoders",
+  "action": "prunePayloads",
   "requestId": "<unique request identifier>",
   "result": {
     "deleted":12
