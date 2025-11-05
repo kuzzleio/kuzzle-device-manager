@@ -107,15 +107,6 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       query: searchQuery,
       sort: params.sort ?? { measuredAt: "desc" },
     };
-
-    /**
-     * ? Prevent error duplicate result on search with sort.
-     * "Unable to retrieve all results from search: the sort combination must identify one item only. Add document "_id" to the sort."
-     */
-    if (exportParams.sort._id === undefined) {
-      exportParams.sort._id = "asc";
-    }
-
     return super.prepareExport(engineId, user, exportParams);
   }
 
@@ -154,14 +145,12 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       model,
       lang = "elasticsearch",
     } = await this.getExport(engineId, exportId);
-
     const result = await this.sdk.document.search<MeasureContent>(
       engineId,
       InternalCollection.MEASURES,
       { query, sort },
-      { lang, size: 200 },
+      { lang, scroll: "20s", size: 200 },
     );
-
     const targetModel =
       this.target === InternalCollection.ASSETS ? "asset" : "device";
     const engine = await this.getEngine(engineId);
