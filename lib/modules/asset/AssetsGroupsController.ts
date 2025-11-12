@@ -204,10 +204,7 @@ export class AssetsGroupsController {
       },
     );
 
-    if (groupsCount.total > 0) {
-      if (groupsCount.total === 1 && groupsCount.hits[0]._id === groupId) {
-        return;
-      }
+    if (groupsCount.hits.filter((hit) => hit._id !== groupId).length > 0) {
       throw new BadRequestError(`A group with name "${name}" already exist`);
     }
   }
