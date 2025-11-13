@@ -1,3 +1,12 @@
+## [2.10.0-beta.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.0-beta.1...v2.10.0-beta.2) (2025-11-13)
+
+
+### Bug Fixes
+
+* **AssetsEvent:** trigger asset:update:before before applying metadata updates ([35af60f](https://github.com/kuzzleio/kuzzle-device-manager/commit/35af60f42f13e5b8991ef914e1c594dfc83bba2f))
+* **exporter:** query more than 10000, avoid sort on _id ([#444](https://github.com/kuzzleio/kuzzle-device-manager/issues/444)) ([91062af](https://github.com/kuzzleio/kuzzle-device-manager/commit/91062af40439c718d1f8f0e0177e1dde6e073f68))
+* **release:** node version in workflow ([670e895](https://github.com/kuzzleio/kuzzle-device-manager/commit/670e89562a4116911c3ba95c921af50eb6d3b4a4))
+
 ## [2.10.0-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.0-dev.1...v2.10.0-dev.2) (2025-11-13)
 
 
