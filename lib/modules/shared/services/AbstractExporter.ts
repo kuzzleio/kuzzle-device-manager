@@ -152,8 +152,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
         for (const hit of result.hits) {
           stream.write(stringify([this.formatHit(columns, hit)]));
         }
-
-        result = result.fetched < 10000 ? await result.next() : null;
+        result = await result.next();
       }
     } catch (error) {
       stream.write(error.message);

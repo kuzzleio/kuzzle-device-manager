@@ -176,16 +176,17 @@ export class AssetsGroupsController {
   async checkGroupName(
     engineId: string,
     name: AssetsGroupsBodyRequest["name"],
-    assetId?: string,
+    groupId?: string,
   ) {
     if (typeof name !== "string") {
       return;
     }
 
-    const groupsCount = await this.sdk.document.count(
+    const groupsCount = await this.sdk.document.search(
       engineId,
       InternalCollection.ASSETS_GROUPS,
       {
+        _source: false,
         query: {
           bool: {
             must: [
@@ -198,19 +199,12 @@ export class AssetsGroupsController {
                 },
               },
             ],
-            must_not: [
-              {
-                terms: {
-                  _id: typeof assetId === "string" ? [assetId] : [],
-                },
-              },
-            ],
           },
         },
       },
     );
 
-    if (groupsCount > 0) {
+    if (groupsCount.hits.filter((hit) => hit._id !== groupId).length > 0) {
       throw new BadRequestError(`A group with name "${name}" already exist`);
     }
   }
@@ -279,7 +273,9 @@ export class AssetsGroupsController {
       if (model !== null) {
         const groupModel = await ask<AskModelGroupGet>(
           "ask:device-manager:model:group:get",
-          { model },
+          {
+            model,
+          },
         );
         for (const metadataName of Object.keys(
           groupModel.group.metadataMappings,

@@ -1,4 +1,7 @@
-import { beforeEachTruncateCollections } from "../../../hooks";
+import {
+  beforeEachLoadFixtures,
+  beforeEachTruncateCollections,
+} from "../../../hooks";
 import { ApiDecoderListRequest, ApiDecoderListResult } from "../../../../index";
 
 import { useSdk, sendPayloads } from "../../../helpers";
@@ -121,6 +124,113 @@ describe("DecodersController", () => {
           ],
         }),
       ]),
+    );
+  });
+  it("Reroute a payload to the corresponding handler", async () => {
+    await beforeEachLoadFixtures(sdk);
+    await sdk.query({
+      controller: "device-manager/decoders",
+      action: "route",
+      body: {
+        deviceEUI: "linked2",
+        deviceModel: "DummyTempPosition",
+        temperature: 45,
+        location: { lat: 12, lon: 12, accuracy: 2100 },
+        battery: 0.1,
+      },
+    });
+
+    await expect(
+      sdk.document.get(
+        "device-manager",
+        "devices",
+        "DummyTempPosition-linked2",
+      ),
+    ).resolves.toMatchObject({
+      _source: {
+        reference: "linked2",
+        model: "DummyTempPosition",
+        measures: {
+          temperature: { type: "temperature", values: { temperature: 45 } },
+          position: {
+            type: "position",
+            values: { position: { lat: 12, lon: 12 }, accuracy: 2100 },
+          },
+          battery: { type: "battery", values: { battery: 10 } },
+        },
+        engineId: "engine-ayse",
+        assetId: "Container-linked2",
+      },
+    });
+  });
+
+  it("Reroute and reject with error a DummyTemp payload", async () => {
+    const promise = sdk.query({
+      controller: "device-manager/decoders",
+      action: "route",
+      body: { deviceEUI: null, deviceModel: "DummyTemp", temperature: 21 },
+    });
+    await expect(promise).rejects.toMatchObject({
+      message: 'Invalid payload: missing "deviceEUI"',
+    });
+  });
+  it("Reroute and reject if deviceModel missing", async () => {
+    const noModelPayload = { deviceEUI: "linked1", temperature: 21 };
+    const promise = sdk.query({
+      controller: "device-manager/decoders",
+      action: "route",
+      body: noModelPayload,
+    });
+
+    await expect(promise).rejects.toMatchObject({
+      message: "Payload must specify the deviceModel for proper routing",
+    });
+    await sdk.collection.refresh("device-manager", "payloads");
+    const payloadReceived = await sdk.query({
+      controller: "document",
+      action: "search",
+      index: "device-manager",
+      collection: "payloads",
+      sort: {
+        "_kuzzle_info.createdAt": "DESC",
+      },
+      size: 1,
+    });
+    expect(payloadReceived.result.hits[0]._source.payload).toMatchObject(
+      noModelPayload,
+    );
+  });
+  it("Reroute and reject if decoder missing", async () => {
+    const noDecoderPayload = {
+      deviceEUI: "linked1",
+      deviceModel: "unknownDecoder",
+      temperature: 21,
+    };
+    const promise = sdk.query({
+      controller: "device-manager/decoders",
+      action: "route",
+      body: noDecoderPayload,
+    });
+
+    await expect(promise).rejects.toMatchObject({
+      message: "The specified device model is unknown",
+    });
+    await sdk.collection.refresh("device-manager", "payloads");
+    const payloadReceived = await sdk.query({
+      controller: "document",
+      action: "search",
+      index: "device-manager",
+      collection: "payloads",
+      sort: {
+        "_kuzzle_info.createdAt": "DESC",
+      },
+      size: 1,
+    });
+    expect(payloadReceived.result.hits[0]._source.deviceModel).toBe(
+      noDecoderPayload.deviceModel,
+    );
+    expect(payloadReceived.result.hits[0]._source.payload).toMatchObject(
+      noDecoderPayload,
     );
   });
 });
