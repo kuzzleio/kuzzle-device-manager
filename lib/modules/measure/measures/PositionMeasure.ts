@@ -38,5 +38,15 @@ export const positionMeasureDefinition: MeasureDefinition = {
         unit: "m",
       },
     },
+    accuracy: {
+      en: {
+        friendlyName: "Accuracy",
+        unit: "m",
+      },
+      fr: {
+        friendlyName: "Précision",
+        unit: "m",
+      },
+    },
   },
 };
