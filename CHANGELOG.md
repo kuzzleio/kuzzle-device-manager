@@ -1,3 +1,11 @@
+## [3.0.0-next.14](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.13...v3.0.0-next.14) (2025-11-21)
+
+
+### Bug Fixes
+
+* **ci:** set runner node-version to 22 ([f4ccead](https://github.com/kuzzleio/kuzzle-device-manager/commit/f4cceadf553f83a19d03e03814ebcca6b9c8e6c6))
+* **plugin exports:** add missing type export InternalCollection ([3624519](https://github.com/kuzzleio/kuzzle-device-manager/commit/3624519a4732ef10eecf7edd8e29ad3d41c3d3d1))
+
 ## [3.0.0-next.13](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.12...v3.0.0-next.13) (2025-10-02)
 
 
