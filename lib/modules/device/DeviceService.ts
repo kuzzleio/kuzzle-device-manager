@@ -465,8 +465,8 @@ export class DeviceService extends DigitalTwinService {
       deviceModel.device.metadataMappings,
     )) {
       engineDevice._source.metadata[metadataName] =
-        metadata?.[metadataName] ||
-        deviceModel.device.defaultMetadata[metadataName] ||
+        metadata?.[metadataName] ??
+        deviceModel.device.defaultMetadata[metadataName] ??
         null;
     }
 

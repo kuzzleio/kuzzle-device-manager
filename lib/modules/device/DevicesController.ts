@@ -375,7 +375,7 @@ export class DevicesController {
           engineId,
           deviceId,
           assetId,
-          measureSlots || [],
+          measureSlots ?? [],
           implicitMeasuresLinking,
           request,
         );
