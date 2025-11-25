@@ -1,3 +1,10 @@
+## [3.0.0-next.15](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.14...v3.0.0-next.15) (2025-11-25)
+
+
+### Bug Fixes
+
+* **deviceService:** fix metadata init to accept 0 ([#448](https://github.com/kuzzleio/kuzzle-device-manager/issues/448)) ([30f8ea0](https://github.com/kuzzleio/kuzzle-device-manager/commit/30f8ea0b3bf5cc55188d021b4ec8d9817e9d5e80))
+
 ## [3.0.0-next.14](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.13...v3.0.0-next.14) (2025-11-21)
 
 
