@@ -108,7 +108,7 @@ export class DeviceService extends DigitalTwinService {
     for (const metadataName of Object.keys(
       deviceModel.device.metadataMappings,
     )) {
-      device._source.metadata[metadataName] ||= null;
+      device._source.metadata[metadataName] ??= null;
     }
     for (const [metadataName, metadataValue] of Object.entries(
       deviceModel.device.defaultMetadata,
