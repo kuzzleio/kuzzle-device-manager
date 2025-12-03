@@ -24,7 +24,7 @@ Method: POST
 
 ```js
 {
-  "controller": "device-manager/assets",
+  "controller": "device-manager/models",
   "action": "writeAsset",
   "body": {
     "engineGroup": "<engine group>",
@@ -164,4 +164,3 @@ Method: POST
 | ------------------------------------------------------------------------------ | ------- | --------------------------------------------------- |
 | [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md)        | **409** | Writing an asset with conflicting metadata mappings |
 | [ MeasuresNamesDuplicatesError ](../../../errors/measures-duplicates/index.md) | **400** | Defining a measure name more than once              |
-
