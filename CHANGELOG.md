@@ -1,3 +1,10 @@
+## [2.10.2-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.1...v2.10.2-dev.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* **doc:** fix misspelling in doc ([#451](https://github.com/kuzzleio/kuzzle-device-manager/issues/451)) ([ad2b7cf](https://github.com/kuzzleio/kuzzle-device-manager/commit/ad2b7cfc213942fe3cc52d3665c27eb2e9553f0b))
+
 ## [2.10.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.0...v2.10.1) (2025-12-03)
 
 
