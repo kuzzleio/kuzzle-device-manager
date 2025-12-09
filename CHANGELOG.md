@@ -1,3 +1,10 @@
+## [2.10.2-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.2-dev.1...v2.10.2-dev.2) (2025-12-09)
+
+
+### Bug Fixes
+
+* **ci:** add SBOM generation and upload for v2.x ([#452](https://github.com/kuzzleio/kuzzle-device-manager/issues/452)) ([8075bd9](https://github.com/kuzzleio/kuzzle-device-manager/commit/8075bd90e81d6e9bbde300364522aa1abf2f4d15))
+
 ## [2.10.2-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.1...v2.10.2-dev.1) (2025-12-04)
 
 
