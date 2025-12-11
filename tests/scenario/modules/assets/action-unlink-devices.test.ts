@@ -64,10 +64,9 @@ describe("features/Device/Controller/UnlinkAssets", () => {
       engineId: "engine-ayse",
     });
 
-    await expect(promise).rejects.toMatchObject({
-      message:
-        "The list of measures to unlink from device Container-unlinked1 is empty",
-    });
+    await expect(promise).rejects.toThrow(
+      "The list of measures to unlink from asset Container-unlinked1 is empty",
+    );
   });
   it("Error when the asset was not linked", async () => {
     const promise = sdk.query<ApiAssetUnlinkDevicesRequest>({
