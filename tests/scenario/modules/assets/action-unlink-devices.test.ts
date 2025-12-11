@@ -53,7 +53,22 @@ describe("features/Device/Controller/UnlinkAssets", () => {
       _source: { linkedMeasures: [] },
     });
   });
+  it("Throw an error if no measure is provided", async () => {
+    const promise = sdk.query<ApiAssetUnlinkDevicesRequest>({
+      controller: "device-manager/assets",
+      action: "unlinkDevices",
+      _id: "Container-unlinked1",
+      body: {
+        linkedMeasures: [],
+      },
+      engineId: "engine-ayse",
+    });
 
+    await expect(promise).rejects.toMatchObject({
+      message:
+        "The list of measures to unlink from device Container-unlinked1 is empty",
+    });
+  });
   it("Error when the asset was not linked", async () => {
     const promise = sdk.query<ApiAssetUnlinkDevicesRequest>({
       controller: "device-manager/assets",

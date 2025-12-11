@@ -56,6 +56,27 @@ describe('features/Device/Controller/UnlinkAssets', () => {
     });
   });
 
+   it('Throw an error if no measure is provided', async () => {
+    let response;
+    let promise;
+
+    response = await sdk.query<ApiDeviceUnlinkAssetsRequest>({
+      controller: 'device-manager/devices',
+      action: 'unlinkAssets',
+      engineId: 'engine-ayse',
+      _id: 'DummyTemp-linked1',
+      body: {
+        linkedMeasures: [
+         
+        ],
+      },
+    });
+
+    await expect(promise).rejects.toMatchObject({
+      message: 'The list of measures to unlink from device DummyTemp-linked1 is empty',
+    });
+  });
+
   it('Error when the device was not linked', async () => {
     let response;
     let promise;
