@@ -399,6 +399,12 @@ export class DevicesController {
       "linkedMeasures",
     ) as ApiDeviceUnlinkAssetsRequest["body"]["linkedMeasures"];
 
+    if (measureToUnlink.length === 0) {
+      throw new BadRequestError(
+        `The list of measures to unlink from device ${deviceId} is empty`,
+      );
+    }
+
     const assets: KDocument<AssetContent>[] = [];
     let device: KDocument<DeviceContent>;
     for (const measure of measureToUnlink) {

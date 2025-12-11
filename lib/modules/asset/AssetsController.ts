@@ -858,8 +858,15 @@ export class AssetsController {
       "linkedMeasures",
     ) as ApiAssetUnlinkDevicesRequest["body"]["linkedMeasures"];
 
+    if (measureToUnlink.length === 0) {
+      throw new BadRequestError(
+        `The list of measures to unlink from asset ${assetId} is empty`,
+      );
+    }
+
     const devices: KDocument<DeviceContent>[] = [];
     let asset: KDocument<AssetContent>;
+
     for (const measure of measureToUnlink) {
       const { deviceId, allMeasures, measureSlots } = measure;
       if (!measureSlots?.length && !allMeasures) {
