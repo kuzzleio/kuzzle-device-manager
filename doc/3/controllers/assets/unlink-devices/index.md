@@ -7,7 +7,13 @@ description: Unlinks measures from an asset
 
 # unlinkDevices
 
-Unlinks measures from an asset.
+Unlinks measures from an asset. This action takes 3 optional parameters. One of them must be present. 
+There are 3 ways to unlink measures:
+        - One can unlink all of the asset measure slots with the flag "allMeasures".
+        - One can unlink all of the slots for specific devices with the array of devices' ids. 
+        - One can specify the asset measure slots to unlink.
+
+It is possible to combine those parameters. 
 
 ## Query Syntax
 
@@ -27,18 +33,9 @@ Method: DELETE
   "engineId": "<engineId>",
   "_id": "<assetId>"
   "body": {
-    "linkedMeasures": [
-      { "deviceId":"<id of the device>"
-        "allMeasures": "<boolean>"                            // optional
-        "measureSlots":[                                      // optional
-            {
-              "asset": "<name of the measure in the asset>",
-              "device": "<name of the measure in the device>"
-            }
-        ]
-    },
-    {...}
-    ]
+    "allMeasures": "<boolean>"                            // optional Indicates if all the measures from the asset must be unlinked
+    "devices":  "<string[]>"                              // optional List of devices' ids to completely unlink from the asset
+    "measureSlots":  "<string[]>"                         // optional List of asset's measures slots to unlink
   },
 }
 ```

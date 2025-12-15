@@ -17,7 +17,11 @@ import {
 } from "kuzzle-sdk";
 import _ from "lodash";
 
-import { AskDeviceAttachEngine, AskDeviceDetachEngine } from "../device";
+import {
+  AskDeviceAttachEngine,
+  AskDeviceDetachEngine,
+  DeviceSerializer,
+} from "../device";
 import { AskModelAssetGet, AssetModelContent } from "../model";
 import {
   AskEngineList,
@@ -36,6 +40,7 @@ import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetSerializer } from "./model/AssetSerializer";
 import {
   ApiAssetMigrateTenantResult,
+  ApiAssetUnlinkDevicesResult,
   ApiAssetUpdateModelLocales,
 } from "./types/AssetApi";
 import { AssetContent } from "./types/AssetContent";
@@ -395,6 +400,66 @@ export class AssetService extends DigitalTwinService {
       collection: InternalCollection.ASSETS,
       engineId,
     });
+  }
+
+  public async unlinkDevices(
+    assetId: string,
+    allMeasures: boolean,
+    deviceIds: string[],
+    measureSlots: string[],
+    request: KuzzleRequest,
+  ): Promise<ApiAssetUnlinkDevicesResult> {
+    const engineId = request.getString("engineId");
+    let asset = await this.get(engineId, assetId, request);
+    const devices = [];
+
+    // CASE ALL MEASURES TO UNLINK
+    if (allMeasures) {
+      const devicesToUnlink = asset._source.linkedMeasures.map(
+        (m) => m.deviceId,
+      );
+      if (devicesToUnlink.length === 0) {
+        throw new BadRequestError(
+          `Asset ${assetId} has no measure to be unlinked`,
+        );
+      }
+      for (const device of devicesToUnlink) {
+        const { asset: updatedAsset, device: updatedDevice } =
+          await this.unlinkAssetDevice(device, assetId, [], true, request);
+        devices.push(DeviceSerializer.serialize(updatedDevice));
+        asset = AssetSerializer.serialize(updatedAsset);
+      }
+      return { asset, devices };
+    }
+
+    // CASE ALL MEASURES FROM SPECIFIC ASSETS TO UNLINK
+    for (const device of deviceIds) {
+      const { asset: updatedAsset, device: updatedDevice } =
+        await this.unlinkAssetDevice(device, assetId, [], true, request);
+      devices.push(DeviceSerializer.serialize(updatedDevice));
+      asset = AssetSerializer.serialize(updatedAsset);
+    }
+
+    // CASE SPECIFIC DEVICE SLOTS
+    // FOR EVERY LINK THAT HAS A SLOT TO UNLINK
+    for (const linkedMeasures of asset._source.linkedMeasures.filter((l) =>
+      l.measureSlots.some((s) => measureSlots.includes(s.asset)),
+    )) {
+      const { asset: updatedAsset, device: updatedDevice } =
+        await this.unlinkAssetDevice(
+          linkedMeasures.deviceId,
+          assetId,
+          linkedMeasures.measureSlots.filter((slot) =>
+            measureSlots.includes(slot.asset),
+          ),
+          false,
+          request,
+        );
+      devices.push(DeviceSerializer.serialize(updatedDevice));
+      asset = AssetSerializer.serialize(updatedAsset);
+    }
+
+    return { asset, devices };
   }
 
   public async migrateTenant(
