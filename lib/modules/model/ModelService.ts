@@ -775,7 +775,9 @@ export class ModelService extends BaseService {
     );
 
     if (result.total === 0) {
-      throw new NotFoundError(`Unknown Asset model "${model}".`);
+      throw new NotFoundError(
+        `Unknown Asset model "${model}" for engineGroup ${engineGroup}.`,
+      );
     }
 
     return result.hits[0];

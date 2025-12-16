@@ -958,16 +958,6 @@ export class DeviceService extends DigitalTwinService {
     }
   }
 
-  private async getEngine(engineId: string): Promise<JSONObject> {
-    const engine = await this.sdk.document.get(
-      this.config.adminIndex,
-      InternalCollection.CONFIG,
-      `engine-device-manager--${engineId}`,
-    );
-
-    return engine._source.engine;
-  }
-
   private getDeviceModel(model: string): Promise<DeviceModelContent> {
     return ask<AskModelDeviceGet>("ask:device-manager:model:device:get", {
       model,

@@ -474,7 +474,6 @@ export class AssetsController {
   async mMeasureIngest(request: KuzzleRequest) {
     const assetId = request.getString("assetId");
     const indexId = request.getString("engineId");
-    const engineGroup = request.getString("engineGroup", "commons");
     const rawMeasurements = request.getBodyArray("measurements");
     const source = request.getBodyObject("dataSource");
     source.type = DATA_SOURCE_METADATA_TYPE.API;
@@ -484,7 +483,7 @@ export class AssetsController {
         "The provided data source does not match the API source format",
       );
     }
-
+    const engine = await this.assetService.getEngine(indexId);
     const measurements = rawMeasurements.map((elt) => {
       return {
         measureName: elt.slotName,
@@ -494,7 +493,7 @@ export class AssetsController {
       };
     }) as DecodedMeasurement<JSONObject>[];
 
-    const target = toApiTarget(indexId, assetId, engineGroup);
+    const target = toApiTarget(indexId, assetId, engine.group);
 
     const errors: MeasureValidationChunks[] = [];
     for (const measure of measurements) {
@@ -502,7 +501,7 @@ export class AssetsController {
         indexId,
         assetId,
         measure.measureName,
-        engineGroup,
+        engine.group,
       );
 
       const validator = getValidator(type);
@@ -538,7 +537,6 @@ export class AssetsController {
     const assetId = request.getString("assetId");
     const indexId = request.getString("engineId");
     const measureName = request.getString("slotName");
-    const engineGroup = request.getString("engineGroup", "commons");
     const source = request.getBodyObject("dataSource");
     source.type = DATA_SOURCE_METADATA_TYPE.API;
 
@@ -547,15 +545,15 @@ export class AssetsController {
         "The provided data source does not match the API source format",
       );
     }
+    const engine = await this.assetService.getEngine(indexId);
 
     const measuredAt = request.getBodyNumber("measuredAt");
     const values = request.getBodyObject("values");
-
     const type = await this.getTypeFromMeasureSlot(
       indexId,
       assetId,
       measureName,
-      engineGroup,
+      engine.group,
     );
 
     if (!type) {
@@ -571,8 +569,7 @@ export class AssetsController {
       values,
     } as DecodedMeasurement<JSONObject>;
 
-    const target = toApiTarget(indexId, assetId, engineGroup);
-
+    const target = toApiTarget(indexId, assetId, engine.group);
     const validator = getValidator(type);
 
     if (validator) {
