@@ -44,9 +44,6 @@ Method: POST
       // ...
     }
   },
-
-  // optional:
-  "engineGroup": "<engine group>"
 }
 ```
 
@@ -57,7 +54,6 @@ Method: POST
 - `engineId`: target engine id
 - `assetId`: target asset id
 - `slotName`: target measure slot name
-- `engineGroup` (optional): target engine group
 
 ## Body properties
 - `dataSource`: the measure source
