@@ -199,7 +199,7 @@ describe("AssetsController:mMeasureIngest", () => {
       const indexId = "engine-ayse";
 
       const query = await axios.post(
-        `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/_mMeasureIngest`,
+        `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/_mIngestMeasure`,
         {
           dataSource: {
             type: "api",
@@ -277,7 +277,7 @@ describe("AssetsController:mMeasureIngest", () => {
 
       const query = await axios
         .post(
-          `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/_mMeasureIngest`,
+          `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/_mIngestMeasure`,
           {
             dataSource: {
               type: "api",
@@ -323,7 +323,7 @@ describe("AssetsController:mMeasureIngest", () => {
 
       const query = await axios
         .post(
-          `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/_mMeasureIngest`,
+          `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/_mIngestMeasure`,
           {
             dataSource: {
               type: "api",
