@@ -26,7 +26,7 @@ Method: POST
 ```js
 {
   "controller": "device-manager/assets",
-  "action": "measureIngest",
+  "action": "ingestMeasure",
   "assetId": "<assetId>",
   "engineId": "<engineId>",
   "slotName": "<slotName>"
@@ -44,9 +44,6 @@ Method: POST
       // ...
     }
   },
-
-  // optional:
-  "engineGroup": "<engine group>"
 }
 ```
 
@@ -57,7 +54,6 @@ Method: POST
 - `engineId`: target engine id
 - `assetId`: target asset id
 - `slotName`: target measure slot name
-- `engineGroup` (optional): target engine group
 
 ## Body properties
 - `dataSource`: the measure source
@@ -78,7 +74,7 @@ Method: POST
   "status": 200,
   "error": null,
   "controller": "device-manager/assets",
-  "action": "measureIngest",
+  "action": "ingestMeasure",
   "requestId": "<unique request identifier>",
   "result": null,
 }

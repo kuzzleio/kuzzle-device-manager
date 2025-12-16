@@ -817,7 +817,7 @@ export class DigitalTwinService extends BaseService {
       model,
     });
   }
-  protected async getEngine(engineId: string): Promise<JSONObject> {
+  public async getEngine(engineId: string): Promise<JSONObject> {
     const engine = await this.sdk.document.get(
       this.config.platformIndex,
       InternalCollection.CONFIG,

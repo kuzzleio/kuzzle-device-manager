@@ -17,7 +17,7 @@ Ingest measures from a data source into an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:assetId/_mMeasureIngest
+URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:assetId/_mIngestMeasure
 Method: POST
 ```
 
@@ -26,7 +26,7 @@ Method: POST
 ```js
 {
   "controller": "device-manager/assets",
-  "action": "_mMeasureIngest",
+  "action": "mIngestMeasure",
   "assetId": "<assetId>",
   "engineId": "<engineId>",
   "body": {
@@ -49,9 +49,6 @@ Method: POST
       // ...
     ]
   },
-
-  // optional:
-  "engineGroup": "<engine group>"
 }
 ```
 
@@ -61,7 +58,6 @@ Method: POST
 
 - `engineId`: target engine id
 - `assetId`: target asset id
-- `engineGroup`: (optional): target engine group
 
 ## Body properties
 
@@ -88,7 +84,7 @@ Method: POST
   "status": 200,
   "error": null,
   "controller": "device-manager/assets",
-  "action": "mMeasureIngest",
+  "action": "mIngestMeasure",
   "requestId": "<unique request identifier>",
   "result": null,
 }
