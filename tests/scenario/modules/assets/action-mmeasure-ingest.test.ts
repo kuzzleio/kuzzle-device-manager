@@ -21,7 +21,7 @@ describe("AssetsController:mMeasureIngest", () => {
         ApiAssetmMeasureIngestResult
       >({
         controller: "device-manager/assets",
-        action: "mMeasureIngest",
+        action: "mIngestMeasure",
         assetId,
         engineId: indexId,
         body: {
@@ -103,7 +103,7 @@ describe("AssetsController:mMeasureIngest", () => {
         ApiAssetmMeasureIngestResult
       >({
         controller: "device-manager/assets",
-        action: "mMeasureIngest",
+        action: "mIngestMeasure",
         assetId,
         engineId: "engine-ayse",
         body: {
@@ -151,7 +151,7 @@ describe("AssetsController:mMeasureIngest", () => {
         ApiAssetmMeasureIngestResult
       >({
         controller: "device-manager/assets",
-        action: "mMeasureIngest",
+        action: "mIngestMeasure",
         assetId,
         engineId: "engine-ayse",
         body: {
