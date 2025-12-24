@@ -19,6 +19,11 @@ export const RolePayloadsAll: KuzzleRole = {
           "*": true,
         },
       },
+      "device-manager/decoders": {
+        actions: {
+          route: true,
+        },
+      },
     },
   },
 };
