@@ -162,29 +162,50 @@ describe("DecodersController", () => {
         battery: 0.1,
       },
     });
-
-    await expect(
-      sdk.document.get(
-        "device-manager",
-        "devices",
-        "DummyTempPosition-linked2",
-      ),
-    ).resolves.toMatchObject({
-      _source: {
-        reference: "linked2",
-        model: "DummyTempPosition",
-        measures: {
-          temperature: { type: "temperature", values: { temperature: 45 } },
-          position: {
-            type: "position",
-            values: { position: { lat: 12, lon: 12 }, accuracy: 2100 },
+    await sdk.collection.refresh("engine-ayse", "measures");
+    const { result: lastMeasure } = await sdk.query({
+      controller: "document",
+      action: "search",
+      body: {
+        query: {
+          term: {
+            "origin._id": "DummyTempPosition-linked2",
           },
-          battery: { type: "battery", values: { battery: 10 } },
         },
-        engineId: "engine-ayse",
-        assetId: "Container-linked2",
+        sort: {
+          measuredAt: "DESC",
+        },
       },
+      size: 3,
+      index: "engine-ayse",
+      collection: "measures",
     });
+    expect(lastMeasure.hits.map((h) => h._source)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "position",
+          values: {
+            position: {
+              lat: 12,
+              lon: 12,
+            },
+            accuracy: 2100,
+          },
+        }),
+        expect.objectContaining({
+          type: "temperature",
+          values: {
+            temperature: 45,
+          },
+        }),
+        expect.objectContaining({
+          type: "battery",
+          values: {
+            battery: 10,
+          },
+        }),
+      ]),
+    );
   });
 
   it("Reroute and reject with error a DummyTemp payload", async () => {
