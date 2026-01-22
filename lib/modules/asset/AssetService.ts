@@ -22,7 +22,11 @@ import {
   AskDeviceDetachEngine,
   DeviceSerializer,
 } from "../device";
-import { AskModelAssetGet, AssetModelContent } from "../model";
+import {
+  AskModelAssetGet,
+  AskModelMeasureGet,
+  AssetModelContent,
+} from "../model";
 import {
   AskEngineList,
   DeviceManagerPlugin,
@@ -766,6 +770,89 @@ export class AssetService extends DigitalTwinService {
     }
 
     return results;
+  }
+
+  public async addMeasureSlot(
+    assetId: string,
+    measureSlot: AssetContent["measureSlots"][0],
+    engineId: string,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetContent>> {
+    const asset = await this.get(engineId, assetId, request);
+    if (
+      asset._source.measureSlots.some((slot) => slot.name === measureSlot.name)
+    ) {
+      throw new BadRequestError(
+        `A measure slot with ${measureSlot.name} as a name already exists for ${assetId}`,
+      );
+    }
+    try {
+      await ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
+        type: measureSlot.type,
+      });
+    } catch {
+      throw new BadRequestError(
+        `There is no measure of type ${measureSlot.type} registered.`,
+      );
+    }
+    asset._source.measureSlots.push(measureSlot);
+    const updatedAsset = await this.updateDocument<AssetContent>(
+      request,
+      asset,
+      {
+        collection: InternalCollection.ASSETS,
+        engineId,
+      },
+    );
+    return updatedAsset;
+  }
+  public async removeMeasureSlot(
+    assetId: string,
+    measureSlotName: string,
+    engineId: string,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetContent>> {
+    const asset = await this.get(engineId, assetId, request);
+    if (
+      !asset._source.measureSlots.some((slot) => slot.name === measureSlotName)
+    ) {
+      throw new BadRequestError(
+        `Asset ${assetId} does not have a measure slot named ${measureSlotName}`,
+      );
+    }
+    const linkedDevice = asset._source.linkedMeasures.find((link) =>
+      link.measureSlots.some((slot) => slot.asset === measureSlotName),
+    );
+    if (linkedDevice) {
+      throw new BadRequestError(
+        `Measure slot ${measureSlotName} can not be removed as it is currently linked to ${linkedDevice.deviceId}`,
+      );
+    }
+    const engine = await this.getEngine(engineId);
+    const assetModel = await this.getAssetModel(
+      engine.group,
+      asset._source.model,
+    );
+    if (!assetModel) {
+      throw new NotFoundError(`Model ${asset._source.model} not found`);
+    }
+    if (assetModel.asset.measures.some((m) => m.name === measureSlotName)) {
+      throw new BadRequestError(
+        `Measure slot ${measureSlotName} can not be removed as it is set in the ${asset._source.model} model`,
+      );
+    }
+    asset._source.measureSlots = asset._source.measureSlots.filter(
+      (slot) => slot.name !== measureSlotName,
+    );
+    const updatedAsset = await this.updateDocument<AssetContent>(
+      request,
+      asset,
+      {
+        collection: InternalCollection.ASSETS,
+        engineId,
+      },
+    );
+    return updatedAsset;
   }
 
   private async refreshModel({

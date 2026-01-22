@@ -344,3 +344,45 @@ export type ApiAssetUnlinkDevicesResult = {
   asset: KDocument<AssetContent>;
   devices: KDocument<DeviceContent>[];
 };
+
+export interface ApiAssetAddMeasureSlotRequest extends AssetsControllerRequest {
+  action: "addMeasureSlot";
+
+  _id: string;
+
+  body: {
+    /**
+     * Measure slot containing the name of the slot and it's type of measurement
+     *
+     * { name: string , type: string}
+     *
+     * @example
+     *
+     *   { name: "externalTemperature", type: "temperature" }
+     */
+    measureSlot: { name: string; type: string };
+  };
+}
+
+export type ApiAssetAddMeasureSlotResult = KDocument<AssetContent>;
+
+export interface ApiAssetRemoveMeasureSlotRequest
+  extends AssetsControllerRequest {
+  action: "removeMeasureSlot";
+
+  _id: string;
+
+  body: {
+    /**
+     * Name of the measure slot to be removed
+     *
+     *
+     * @example
+     *
+     *   measureSlot: "externalTemperature",
+     */
+    measureSlot: string;
+  };
+}
+
+export type ApiAssetRemoveMeasureSlotResult = KDocument<AssetContent>;
