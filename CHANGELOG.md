@@ -1,3 +1,15 @@
+## [3.0.0-next.16](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.15...v3.0.0-next.16) (2026-01-23)
+
+
+### Features
+
+* **decoders:** add the device payload "route" endpoint ([#456](https://github.com/kuzzleio/kuzzle-device-manager/issues/456)) ([9d4c251](https://github.com/kuzzleio/kuzzle-device-manager/commit/9d4c251c0dae7a60d7621bc2ff3c9a4505a33852))
+
+
+### Bug Fixes
+
+* **unlinkAsset:** throw if no measure to unlink is provided ([#453](https://github.com/kuzzleio/kuzzle-device-manager/issues/453)) ([991c21b](https://github.com/kuzzleio/kuzzle-device-manager/commit/991c21bed210b7f9e446dfc7f02229817c41c59b))
+
 ## [3.0.0-next.15](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.14...v3.0.0-next.15) (2025-11-25)
 
 
