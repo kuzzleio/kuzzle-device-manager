@@ -3,10 +3,9 @@ import {
   ApiAssetUnlinkDevicesRequest,
   ApiDeviceLinkAssetsRequest,
   ApiDeviceUnlinkAssetsRequest,
-  AssetHistoryContent,
 } from '../../../index';
 
-import { useSdk, sendPayloads } from '../../helpers';
+import { useSdk } from '../../helpers';
 import { beforeEachTruncateCollections } from '../../hooks/collections';
 import { beforeAllCreateEngines } from '../../hooks/engines';
 import { beforeEachLoadFixtures } from '../../hooks/fixtures';
@@ -104,12 +103,7 @@ describe('features/Asset/History', () => {
       engineId: 'engine-ayse',
       _id: 'DummyTemp-unlinked1',
       body: {
-        linkedMeasures: [
-          {
-            assetId: 'Container-unlinked1',
-            allMeasures: true,
-          },
-        ],
+        assets: ['Container-unlinked1'],
       },
     });
     response = await sdk.query<ApiAssetlinkDevicesRequest>({
@@ -140,12 +134,7 @@ describe('features/Asset/History', () => {
       engineId: 'engine-ayse',
       _id: 'Container-unlinked1',
       body: {
-        linkedMeasures: [
-          {
-            deviceId: 'DummyTemp-unlinked1',
-            allMeasures: true,
-          },
-        ],
+        devices: ['DummyTemp-unlinked1'],
       },
     });
     await sdk.collection.refresh('engine-ayse', 'assets-history');

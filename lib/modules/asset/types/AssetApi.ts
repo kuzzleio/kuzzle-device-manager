@@ -321,26 +321,30 @@ export interface ApiAssetUnlinkDevicesRequest extends AssetsControllerRequest {
   refresh?: string;
 
   body: {
-    linkedMeasures: Array<{
-      deviceId: string;
-      /**
-       * This option allows to not specify the names of all the measures that should
-       * be unlinked from the asset.
-       */
-      allMeasures?: boolean;
-      /**
-       * Names of the linked measures.
-       *
-       * Array<{ asset: string, device: string }>
-       *
-       * @example
-       *
-       * [
-       *   { asset: "externalTemperature", device: "temperature" }
-       * ]
-       */
-      measureSlots?: Array<{ asset: string; device: string }>;
-    }>;
+    /**
+     * This options allows to unlink all the measures of the asset
+     */
+    allMeasures?: boolean;
+    /**
+     * Names of the measure slots of the asset to unlink.
+     *
+     * string[]
+     *
+     * @example
+     *
+     * ['externalTemperature','position']
+     */
+    measureSlots?: string[];
+    /**
+     * Ids of the devices to unlink.
+     *
+     * string[]
+     *
+     * @example
+     *
+     * ['First-asset','Second-asset']
+     */
+    devices?: string[];
   };
 }
 

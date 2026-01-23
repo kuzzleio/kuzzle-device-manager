@@ -34,12 +34,7 @@ describe('features/Device/Controller/UnlinkAssets', () => {
       engineId: 'engine-ayse',
       _id: 'DummyTemp-linked1',
       body: {
-        linkedMeasures: [
-          {
-            assetId: 'Container-linked1',
-            allMeasures: true,
-          },
-        ],
+        assets: ['Container-linked1'],
       },
     });
 
@@ -56,6 +51,88 @@ describe('features/Device/Controller/UnlinkAssets', () => {
     });
   });
 
+   it("Unlink one slot from the device", async () => {
+      await sdk.query<ApiDeviceUnlinkAssetsRequest>({
+        controller: "device-manager/devices",
+        action: "unlinkAssets",
+        engineId: "engine-ayse",
+        _id: "DummyTempPosition-linked2",
+        body: {
+          measureSlots: ["temperature"],
+        },
+      });
+  
+      await expect(
+        sdk.document.get("engine-ayse", "devices", "DummyTempPosition-linked2"),
+      ).resolves.toMatchObject({
+        _source: {
+          linkedMeasures: expect.arrayContaining([
+            {
+              assetId: "Container-linked2",
+              measureSlots: [
+                {
+                  asset: "position",
+                  device: "position",
+                },
+              ],
+            },
+          ]),
+        },
+      });
+  
+      await expect(
+        sdk.document.get("engine-ayse", "assets", "Container-linked2"),
+      ).resolves.toMatchObject({
+        _source: {
+          linkedMeasures: expect.arrayContaining([
+            {
+              deviceId: "DummyTempPosition-linked2",
+              measureSlots: [
+                {
+                  asset: "position",
+                  device: "position",
+                },
+              ],
+            },
+          ]),
+        },
+      });
+    });
+
+
+    it("Unlink all measures from the device", async () => {
+      await sdk.query<ApiDeviceUnlinkAssetsRequest>({
+        controller: "device-manager/devices",
+        action: "unlinkAssets",
+        engineId: "engine-ayse",
+        _id: "DummyTempPosition-linked2",
+        body: {
+          allMeasures: true,
+        },
+      });
+  
+      await expect(
+        sdk.document.get("engine-ayse", "devices", "DummyTempPosition-linked2"),
+      ).resolves.toMatchObject({
+        _source: {
+          linkedMeasures: []
+        },
+      });
+    });
+  it('Throw an error if no measure is provided', async () => {
+    const promise = sdk.query<ApiDeviceUnlinkAssetsRequest>({
+      controller: 'device-manager/devices',
+      action: 'unlinkAssets',
+      engineId: 'engine-ayse',
+      _id: 'DummyTemp-linked1',
+      body: {},
+    });
+
+    await expect(promise).rejects.toThrow(
+      'The list of measures to unlink from device DummyTemp-linked1 is empty',
+    );
+  });
+
   it('Error when the device was not linked', async () => {
     let response;
     let promise;
@@ -65,12 +142,7 @@ describe('features/Device/Controller/UnlinkAssets', () => {
       action: 'unlinkAssets',
       _id: 'DummyTemp-unlinked1',
       body: {
-        linkedMeasures: [
-          {
-            assetId: 'Container-linked1',
-            allMeasures: true,
-          },
-        ],
+        assets: ['Container-linked1'],
       },
       engineId: 'engine-ayse',
     });

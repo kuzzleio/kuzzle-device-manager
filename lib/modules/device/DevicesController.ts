@@ -33,7 +33,6 @@ import {
   ApiDeviceGetLastMeasuredAtResult,
   ApiDeviceMGetLastMeasuredAtResult,
   ApiDeviceMetadataReplaceResult,
-  ApiDeviceUnlinkAssetsRequest,
 } from "./types/DeviceApi";
 import { AssetContent } from "../asset";
 import { DeviceContent } from "./exports";
@@ -395,35 +394,21 @@ export class DevicesController {
     request: KuzzleRequest,
   ): Promise<ApiDeviceUnlinkAssetsResult> {
     const deviceId = request.getId();
-    const measureToUnlink = request.getBodyArray(
-      "linkedMeasures",
-    ) as ApiDeviceUnlinkAssetsRequest["body"]["linkedMeasures"];
-
-    const assets: KDocument<AssetContent>[] = [];
-    let device: KDocument<DeviceContent>;
-    for (const measure of measureToUnlink) {
-      const { assetId, allMeasures, measureSlots } = measure;
-      if (!measureSlots?.length && !allMeasures) {
-        throw new BadRequestError(
-          `You must provide at least one measure name or set "allMeasures" to true.`,
-        );
-      }
-      const { asset, device: updatedDevice } =
-        await this.deviceService.unlinkAssetDevice(
-          deviceId,
-          assetId,
-          measureSlots,
-          allMeasures,
-          request,
-        );
-      assets.push(AssetSerializer.serialize(asset));
-      device = updatedDevice;
+    const allMeasures = request.getBodyBoolean("allMeasures");
+    const assetIds = request.getBodyArray("assets", []);
+    const measureSlots = request.getBodyArray("measureSlots", []);
+    if (!allMeasures && assetIds.length === 0 && measureSlots.length === 0) {
+      throw new BadRequestError(
+        `The list of measures to unlink from device ${deviceId} is empty`,
+      );
     }
-
-    return {
-      assets,
-      device: DeviceSerializer.serialize(device),
-    };
+    return this.deviceService.unlinkAssets(
+      deviceId,
+      allMeasures,
+      assetIds,
+      measureSlots,
+      request,
+    );
   }
 
   async getMeasures(
