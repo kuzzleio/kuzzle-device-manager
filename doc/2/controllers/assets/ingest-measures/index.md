@@ -49,9 +49,6 @@ Method: POST
       // ...
     ]
   },
-
-  // optional:
-  "engineGroup": "<engine group>"
 }
 ```
 
@@ -61,7 +58,6 @@ Method: POST
 
 - `engineId`: target engine id
 - `assetId`: target asset id
-- `engineGroup`: (optional): target engine group
 
 ## Body properties
 

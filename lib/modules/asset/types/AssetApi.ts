@@ -157,13 +157,9 @@ type TypelessApiMeasureSource = Omit<ApiMeasureSource, "type">;
 
 export interface ApiAssetMeasureIngestRequest extends AssetsControllerRequest {
   action: "measureIngest";
-
   assetId: string;
-
   engineId: string;
-  engineGroup?: string;
   slotName: string;
-
   body: {
     dataSource: TypelessApiMeasureSource;
     measuredAt: number;
@@ -176,12 +172,8 @@ type APIDecodedMeasurement = Omit<Measurement, "type"> & { slotName: string };
 
 export interface ApiAssetmMeasureIngestRequest extends AssetsControllerRequest {
   action: "mMeasureIngest";
-
   assetId: string;
-
   engineId: string;
-  engineGroup?: string;
-
   body: {
     dataSource: TypelessApiMeasureSource;
     measurements: APIDecodedMeasurement[];
