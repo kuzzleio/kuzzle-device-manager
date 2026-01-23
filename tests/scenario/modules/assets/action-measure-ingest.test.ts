@@ -21,7 +21,7 @@ describe("AssetsController:measureIngest", () => {
         ApiAssetMeasureIngestResult
       >({
         controller: "device-manager/assets",
-        action: "measureIngest",
+        action: "ingestMeasure",
         assetId,
         engineId: indexId,
         slotName: "magiculeExt",
@@ -82,7 +82,7 @@ describe("AssetsController:measureIngest", () => {
         ApiAssetMeasureIngestResult
       >({
         controller: "device-manager/assets",
-        action: "measureIngest",
+        action: "ingestMeasure",
         assetId,
         engineId: "engine-ayse",
         slotName: "magiculeExt",
@@ -126,7 +126,7 @@ describe("AssetsController:measureIngest", () => {
         ApiAssetMeasureIngestResult
       >({
         controller: "device-manager/assets",
-        action: "measureIngest",
+        action: "ingestMeasure",
         assetId,
         engineId: "engine-ayse",
         slotName: "magiculeExt",
