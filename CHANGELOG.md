@@ -1,3 +1,11 @@
+## [2.10.2-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.2-dev.2...v2.10.2-dev.3) (2026-01-23)
+
+
+### Bug Fixes
+
+* **ci:** add SBOM on prerelease ([7a8b2f1](https://github.com/kuzzleio/kuzzle-device-manager/commit/7a8b2f180e1d21ef646565172ddb54200fed11e6))
+* **ingestMeasure:** infer engine group from engine ([#454](https://github.com/kuzzleio/kuzzle-device-manager/issues/454)) ([905beb2](https://github.com/kuzzleio/kuzzle-device-manager/commit/905beb241d2d12c99f50d954be326e651554bd3a))
+
 ## [2.10.2-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.2-dev.1...v2.10.2-dev.2) (2025-12-09)
 
 
