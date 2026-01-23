@@ -1,3 +1,10 @@
+## [3.0.0-next.17](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.16...v3.0.0-next.17) (2026-01-23)
+
+
+### Bug Fixes
+
+* **measureIngest:** infer engineGroup from engine ([#455](https://github.com/kuzzleio/kuzzle-device-manager/issues/455)) ([1f68e8d](https://github.com/kuzzleio/kuzzle-device-manager/commit/1f68e8d3513b29420c14015d5b51fb0f38aa089d))
+
 ## [3.0.0-next.16](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.15...v3.0.0-next.16) (2026-01-23)
 
 
