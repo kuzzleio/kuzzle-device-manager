@@ -128,6 +128,11 @@ export class DecodersRegister {
   private registerDefaultRole() {
     const role = {
       controllers: {
+        "device-manager/decoders": {
+          actions: {
+            route: true,
+          },
+        },
         "device-manager/payloads": {
           actions: {
             "*": true,
