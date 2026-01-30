@@ -59,7 +59,7 @@ import {
 } from "./types/AssetHistoryContent";
 
 export class AssetService extends DigitalTwinService {
-  private assetHistoryService: AssetHistoryService;
+  readonly assetHistoryService: AssetHistoryService;
 
   constructor(
     plugin: DeviceManagerPlugin,
@@ -539,7 +539,7 @@ export class AssetService extends DigitalTwinService {
       }));
 
       //We want to create the new asset with linked devices and groups empty
-      const assetsContentCopy = _.cloneDeep(assetsContent);
+      const assetsContentCopy = structuredClone(assetsContent);
       for (const asset of assetsContentCopy) {
         asset.body.linkedMeasures = [];
         asset.body.groups = [];

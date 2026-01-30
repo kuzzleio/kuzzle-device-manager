@@ -54,12 +54,12 @@ import { DeviceContent, DeviceSerializer } from "../device";
 
 export class AssetsController {
   public definition: ControllerDefinition;
-  private exporter: DigitalTwinExporter;
-  private measureExporter: MeasureExporter;
+  readonly exporter: DigitalTwinExporter;
+  readonly measureExporter: MeasureExporter;
 
   constructor(
-    private plugin: DeviceManagerPlugin,
-    private assetService: AssetService,
+    readonly plugin: DeviceManagerPlugin,
+    readonly assetService: AssetService,
   ) {
     /* eslint-disable sort-keys */
     this.definition = {
@@ -494,7 +494,7 @@ export class AssetsController {
         );
 
       asset = assetDocument._source;
-    } catch (error) {
+    } catch {
       throw new BadRequestError(
         `Asset "${assetId}" does not exists on index "${indexId}"`,
       );
