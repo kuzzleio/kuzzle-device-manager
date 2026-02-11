@@ -181,6 +181,13 @@ export interface AssetModelContent extends KDocumentContent {
 
   engineGroup: string;
 
+  /**
+   * Optional list of engine IDs (tenant IDs) this model is scoped to.
+   * When set, the model is only available to the specified tenants.
+   * When absent, the model is available to all tenants in the engineGroup.
+   */
+  engines?: string[];
+
   asset: {
     /**
      * Name of the model
