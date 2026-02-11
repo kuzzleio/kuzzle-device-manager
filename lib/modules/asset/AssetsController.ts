@@ -36,6 +36,8 @@ import {
   ApiAssetLinkDevicesResult,
   ApiAssetlinkDevicesRequest,
   ApiAssetUnlinkDevicesResult,
+  ApiAssetAddMeasureSlotResult,
+  ApiAssetRemoveMeasureSlotResult,
 } from "./types/AssetApi";
 import { isSourceApi } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
@@ -52,12 +54,12 @@ import { DeviceContent, DeviceSerializer } from "../device";
 
 export class AssetsController {
   public definition: ControllerDefinition;
-  private exporter: DigitalTwinExporter;
-  private measureExporter: MeasureExporter;
+  readonly exporter: DigitalTwinExporter;
+  readonly measureExporter: MeasureExporter;
 
   constructor(
-    private plugin: DeviceManagerPlugin,
-    private assetService: AssetService,
+    readonly plugin: DeviceManagerPlugin,
+    readonly assetService: AssetService,
   ) {
     /* eslint-disable sort-keys */
     this.definition = {
@@ -233,6 +235,24 @@ export class AssetsController {
           http: [
             {
               path: "device-manager/:engineId/assets/:_id/_unlink/",
+              verb: "delete",
+            },
+          ],
+        },
+        addMeasureSlot: {
+          handler: this.addMeasureSlot.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/measure-slot/",
+              verb: "post",
+            },
+          ],
+        },
+        removeMeasureSlot: {
+          handler: this.removeMeasureSlot.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/assets/:_id/measure-slot/",
               verb: "delete",
             },
           ],
@@ -474,7 +494,7 @@ export class AssetsController {
         );
 
       asset = assetDocument._source;
-    } catch (error) {
+    } catch {
       throw new BadRequestError(
         `Asset "${assetId}" does not exists on index "${indexId}"`,
       );
@@ -864,6 +884,51 @@ export class AssetsController {
       allMeasures,
       deviceIds,
       measureSlots,
+      request,
+    );
+  }
+  /**
+   * Remove a measure slot from an asset
+   */
+  async addMeasureSlot(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetAddMeasureSlotResult> {
+    const assetId = request.getId();
+    const engineId = request.getString("engineId");
+    const measureSlot = request.getBodyObject("measureSlot");
+    const { type, name } = measureSlot;
+    if (typeof type !== "string" || typeof name !== "string") {
+      throw new BadRequestError(
+        `Please provide a valid measure slot to be added`,
+      );
+    }
+
+    return this.assetService.addMeasureSlot(
+      assetId,
+      { name, type },
+      engineId,
+      request,
+    );
+  }
+  /**
+   * Remove a measure slot from an asset
+   */
+  async removeMeasureSlot(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetRemoveMeasureSlotResult> {
+    const assetId = request.getId();
+    const engineId = request.getString("engineId");
+    const measureSlotName = request.getBodyString("measureSlot");
+    if (typeof measureSlotName !== "string") {
+      throw new BadRequestError(
+        `Please provide a valid measure slot name to be removed`,
+      );
+    }
+
+    return this.assetService.removeMeasureSlot(
+      assetId,
+      measureSlotName,
+      engineId,
       request,
     );
   }

@@ -9,7 +9,7 @@ import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 import { JSONObject } from "kuzzle-sdk";
 import _ from "lodash";
 
-import { MeasureDefinition, measuresMappings } from "../measure";
+import { MeasureDefinition, measuresMappings, MeasureModule } from "../measure";
 
 import { groupsMappings, AssetModule, assetsMappings } from "../asset";
 import {
@@ -23,7 +23,6 @@ import {
   devicesPlatformMappings,
   devicesMappings,
 } from "../device";
-import { MeasureModule } from "../measure";
 import {
   AssetModelDefinition,
   DeviceModelDefinition,
@@ -54,8 +53,8 @@ export class DeviceManagerPlugin extends Plugin {
   private measureModule: MeasureModule;
   private modelModule: ModelModule;
 
-  private modelsRegister: ModelsRegister;
-  private decodersRegister: DecodersRegister;
+  readonly modelsRegister: ModelsRegister;
+  readonly decodersRegister: DecodersRegister;
 
   private get sdk() {
     return this.context.accessors.sdk;
@@ -596,8 +595,8 @@ export class DeviceManagerPlugin extends Plugin {
    * Those custom mappings allow to search raw payloads more efficiently.
    */
   private getPayloadsMappings(): JSONObject {
-    const { mappings } = JSON.parse(
-      JSON.stringify(this.config.platformCollections.payloads),
+    const { mappings } = structuredClone(
+      this.config.platformCollections.payloads,
     );
 
     for (const decoder of this.decodersRegister.decoders) {

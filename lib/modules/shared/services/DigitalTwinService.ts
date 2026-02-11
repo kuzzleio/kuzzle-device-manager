@@ -72,7 +72,7 @@ export class DigitalTwinService extends BaseService {
 
   constructor(
     plugin: DeviceManagerPlugin,
-    private targetCollection: InternalCollection,
+    readonly targetCollection: InternalCollection,
   ) {
     super(plugin);
 
@@ -225,7 +225,7 @@ export class DigitalTwinService extends BaseService {
       }
       if (updatedMeasureSlots.length === 0) {
         if (
-          !device._source.linkedMeasures.find(
+          !device._source.linkedMeasures.some(
             (link) => link.assetId === asset._id,
           )
         ) {
