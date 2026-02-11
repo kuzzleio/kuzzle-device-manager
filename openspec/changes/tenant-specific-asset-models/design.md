@@ -7,7 +7,9 @@ Asset models are stored in a centralized platform index with an `engineGroup` fi
 ## Goals / Non-Goals
 
 **Goals:**
-- Allow asset models to be scoped to a specific tenant via an optional `engineId` field
+- Allow asset models to be scoped to one or more specific tenants via an optional `
+- 
+tenants` field
 - Implement a 3-level fallback chain: tenant → tenant group → commons
 - Ensure backward compatibility — existing API calls without `engineId` behave identically
 - Distinct model IDs per scope to avoid collisions
