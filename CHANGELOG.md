@@ -1,3 +1,10 @@
+## [3.0.0-next.18](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.17...v3.0.0-next.18) (2026-02-11)
+
+
+### Features
+
+* **assets:** allow to add or remove measure slots to an asset ([#457](https://github.com/kuzzleio/kuzzle-device-manager/issues/457)) ([cafd09a](https://github.com/kuzzleio/kuzzle-device-manager/commit/cafd09a6b9df8df43bb6e513aacf4441d1096529))
+
 ## [3.0.0-next.17](https://github.com/kuzzleio/kuzzle-device-manager/compare/v3.0.0-next.16...v3.0.0-next.17) (2026-01-23)
 
 
