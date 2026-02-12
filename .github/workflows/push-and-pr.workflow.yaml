@@ -54,6 +54,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
       - name: docker pull
         run: docker compose --profile backend pull
       - name: docker install dependencies
@@ -68,10 +69,9 @@ jobs:
           exitcode="$?"
           [[ "$exitcode" == "0" ]] || docker compose logs kuzzle
           exit "$exitcode"
-      - name: Install dependencies
-        run: npm ci
+
       - name: Run tests
-        run: npm run test:functional
+        run: docker compose run npm run test:functional
 
   release-device-manager:
     name: Release package
