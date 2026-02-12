@@ -571,10 +571,11 @@ export class DevicesController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
     const lang = request.getLangParam();
+    const user = request.getUser() as any;
 
     const link = await this.measureExporter.prepareExport(
       engineId,
-      request.getUser(),
+      user,
       {
         endAt,
         id,
@@ -670,10 +671,11 @@ export class DevicesController {
     const query = request.input.body?.query;
     const sort = request.input.body?.sort;
     const lang = request.getLangParam();
+    const user = request.getUser() as any;
 
     const link = await this.exporter.prepareExport(
       engineId,
-      request.getUser(),
+      user,
       {
         lang,
         query,

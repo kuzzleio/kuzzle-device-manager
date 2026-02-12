@@ -133,7 +133,7 @@ export abstract class BaseService {
       collection,
       engineId,
     });
-    const user = kuzzleRequest.getUser();
+    const user = kuzzleRequest.getUser() as any;
     const refresh = kuzzleRequest.getRefresh();
 
     const [modifiedDocument] = await this.app.trigger<
@@ -172,7 +172,7 @@ export abstract class BaseService {
       collection,
       engineId,
     });
-    const user = kuzzleRequest.getUser();
+    const user = kuzzleRequest.getUser() as any;
     const refresh = kuzzleRequest.getRefresh();
 
     const [modifiedDocument] = await this.app.trigger<
@@ -212,7 +212,7 @@ export abstract class BaseService {
       collection,
       engineId,
     });
-    const user = kuzzleRequest.getUser();
+    const user = kuzzleRequest.getUser() as any;
     const refresh = kuzzleRequest.getRefresh();
 
     const [modifiedDocument] =

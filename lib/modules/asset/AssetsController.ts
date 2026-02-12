@@ -687,10 +687,11 @@ export class AssetsController {
     const sort = request.input.body?.sort;
     const type = request.input.args.type;
     const lang = request.getLangParam();
+    const user = request.getUser() as any;
 
     const link = await this.measureExporter.prepareExport(
       engineId,
-      request.getUser(),
+      user,
       {
         endAt,
         id,
@@ -741,10 +742,11 @@ export class AssetsController {
     const query = request.input.body?.query;
     const sort = request.input.body?.sort;
     const lang = request.getLangParam();
+    const user = request.getUser() as any;
 
     const link = await this.exporter.prepareExport(
       engineId,
-      request.getUser(),
+      user,
       {
         lang,
         query,
@@ -762,8 +764,10 @@ export class AssetsController {
     const engineId = request.getString("engineId");
     const newEngineId = request.getBodyString("newEngineId");
     const includeDevices = request.getBodyBoolean("includeDevices");
-    const { errors, successes } = await this.assetService.migrateTenant(
-      request.getUser(),
+    const user = request.getUser() as any;
+    const { errors, successes } = await this.assetService.migrateTenant
+    (
+      user,
       assetsList,
       engineId,
       newEngineId,
