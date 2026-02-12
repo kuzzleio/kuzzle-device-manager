@@ -30,7 +30,7 @@ services:
       - esdata01:/usr/share/elasticsearch/data
 
   kuzzle:
-    image: kuzzleio/kuzzle-runner:20
+    image: kuzzleio/kuzzle-runner:{NODE_VERSION:-24}-trixie-slim
     restart: unless-stopped
     command: "bash /docker/start-backend.sh"
     profiles: ["backend"]
