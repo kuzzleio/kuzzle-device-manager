@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   redis:
     image: redis:5
@@ -30,7 +28,7 @@ services:
       - esdata01:/usr/share/elasticsearch/data
 
   kuzzle:
-    image: kuzzleio/kuzzle-runner:{NODE_VERSION:-24}-trixie-slim
+    image: kuzzleio/kuzzle-runner:${NODE_VERSION:-24}-trixie-slim
     restart: unless-stopped
     command: "bash /docker/start-backend.sh"
     profiles: ["backend"]
