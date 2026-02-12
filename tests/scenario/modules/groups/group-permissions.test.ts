@@ -31,7 +31,6 @@ import {
 } from "lib/modules/group/types/GroupsApi";
 import { GroupContent } from "lib/modules/group/types/GroupContent";
 
-
 describe("GroupsController", () => {
   const sdk = setupHooks();
   const now = Date.now();

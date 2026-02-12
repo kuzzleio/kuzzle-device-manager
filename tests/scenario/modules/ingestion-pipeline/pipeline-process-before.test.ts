@@ -1,6 +1,5 @@
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
-
 describe("Ingestion Pipeline: process before", () => {
   const sdk = setupHooks();
 

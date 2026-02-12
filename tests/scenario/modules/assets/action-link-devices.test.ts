@@ -10,7 +10,6 @@ import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
 
 import { useSdk, documentGet } from "../../../helpers";
 
-
 describe("AssetController: linkDevices", () => {
   const sdk = useSdk();
 

@@ -48,7 +48,6 @@ import {
 } from "../../../fixtures";
 import { DeviceContent } from "lib/modules/device";
 
-
 describe("GroupsController", () => {
   const sdk = setupHooks();
   const now = Date.now();

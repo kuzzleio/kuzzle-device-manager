@@ -6,7 +6,6 @@ import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
 
 import { useSdk, documentGet } from "../../../helpers";
 
-
 describe("DeviceController: receiveMeasure", () => {
   const sdk = useSdk();
 

@@ -7,7 +7,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupSdK } from "../../../helpers";
 
-
 describe("ModelsController:metadata", () => {
   const sdk = setupSdK();
 
