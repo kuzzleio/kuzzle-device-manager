@@ -4,8 +4,9 @@ import { DigitalTwinContent, Metadata } from "../../shared";
 /**
  * Device document content
  */
-export interface DeviceContent<TMetadata extends Metadata = any>
-  extends DigitalTwinContent<TMetadata> {
+export interface DeviceContent<
+  TMetadata extends Metadata = any,
+> extends DigitalTwinContent<TMetadata> {
   /**
    * Link with attached assets
    */
@@ -45,11 +46,10 @@ export interface DeviceContent<TMetadata extends Metadata = any>
  * Platform index Device document content
  */
 
-interface DeviceProvisioningContentFields
-  extends Pick<
-    DeviceContent,
-    "model" | "reference" | "engineId" | "measureSlots"
-  > {
+interface DeviceProvisioningContentFields extends Pick<
+  DeviceContent,
+  "model" | "reference" | "engineId" | "measureSlots"
+> {
   /**
    * Date of provisioning of the device on the platform
    */

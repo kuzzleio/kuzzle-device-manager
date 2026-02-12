@@ -11,8 +11,7 @@ export type ApiDecoderListResult = {
   decoders: DecoderContent[];
 };
 
-export interface ApiDecoderPrunePayloadsRequest
-  extends DecodersControllerRequest {
+export interface ApiDecoderPrunePayloadsRequest extends DecodersControllerRequest {
   action: "prunePayloads";
 
   _id: string;

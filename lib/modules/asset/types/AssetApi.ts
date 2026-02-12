@@ -51,8 +51,7 @@ export interface ApiAssetUpdateRequest extends AssetsControllerRequest {
 }
 export type ApiAssetUpdateResult = KDocument<AssetContent>;
 
-export interface ApiAssetMetadataReplaceRequest
-  extends AssetsControllerRequest {
+export interface ApiAssetMetadataReplaceRequest extends AssetsControllerRequest {
   action: "replaceMetadata";
 
   _id: string;
@@ -366,8 +365,7 @@ export interface ApiAssetAddMeasureSlotRequest extends AssetsControllerRequest {
 
 export type ApiAssetAddMeasureSlotResult = KDocument<AssetContent>;
 
-export interface ApiAssetRemoveMeasureSlotRequest
-  extends AssetsControllerRequest {
+export interface ApiAssetRemoveMeasureSlotRequest extends AssetsControllerRequest {
   action: "removeMeasureSlot";
 
   _id: string;

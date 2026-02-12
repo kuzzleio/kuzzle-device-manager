@@ -3,8 +3,9 @@ import { DigitalTwinContent, Metadata } from "../../shared";
 /**
  * Asset document content
  */
-export interface AssetContent<TMetadata extends Metadata = any>
-  extends DigitalTwinContent<TMetadata> {
+export interface AssetContent<
+  TMetadata extends Metadata = any,
+> extends DigitalTwinContent<TMetadata> {
   /**
    * Link with attached devices
    */

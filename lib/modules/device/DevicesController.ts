@@ -573,19 +573,15 @@ export class DevicesController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.measureExporter.prepareExport(
-      engineId,
-      user,
-      {
-        endAt,
-        id,
-        lang,
-        query,
-        sort,
-        startAt,
-        type,
-      },
-    );
+    const link = await this.measureExporter.prepareExport(engineId, user, {
+      endAt,
+      id,
+      lang,
+      query,
+      sort,
+      startAt,
+      type,
+    });
 
     return { link };
   }
@@ -673,15 +669,11 @@ export class DevicesController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.exporter.prepareExport(
-      engineId,
-      user,
-      {
-        lang,
-        query,
-        sort,
-      },
-    );
+    const link = await this.exporter.prepareExport(engineId, user, {
+      lang,
+      query,
+      sort,
+    });
 
     return { link };
   }

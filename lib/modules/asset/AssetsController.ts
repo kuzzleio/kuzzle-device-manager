@@ -689,19 +689,15 @@ export class AssetsController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.measureExporter.prepareExport(
-      engineId,
-      user,
-      {
-        endAt,
-        id,
-        lang,
-        query,
-        sort,
-        startAt,
-        type,
-      },
-    );
+    const link = await this.measureExporter.prepareExport(engineId, user, {
+      endAt,
+      id,
+      lang,
+      query,
+      sort,
+      startAt,
+      type,
+    });
 
     return { link };
   }
@@ -744,15 +740,11 @@ export class AssetsController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.exporter.prepareExport(
-      engineId,
-      user,
-      {
-        lang,
-        query,
-        sort,
-      },
-    );
+    const link = await this.exporter.prepareExport(engineId, user, {
+      lang,
+      query,
+      sort,
+    });
 
     return { link };
   }
@@ -765,8 +757,7 @@ export class AssetsController {
     const newEngineId = request.getBodyString("newEngineId");
     const includeDevices = request.getBodyBoolean("includeDevices");
     const user = request.getUser() as any;
-    const { errors, successes } = await this.assetService.migrateTenant
-    (
+    const { errors, successes } = await this.assetService.migrateTenant(
       user,
       assetsList,
       engineId,
