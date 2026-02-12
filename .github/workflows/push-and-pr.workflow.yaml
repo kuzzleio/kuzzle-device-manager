@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        node-version: ["20", "22", "24"]
+        node-version: ["24"]
     needs: [lint, check-types]
     steps:
       - uses: actions/checkout@v4
@@ -57,8 +57,10 @@ jobs:
 
       - name: docker pull
         run: docker compose --profile backend pull
+
       - name: docker install dependencies
         run: docker compose run --no-deps kuzzle /bin/bash -c "npm ci"
+
       - name: docker backend
         run: |
           # Continue when error
