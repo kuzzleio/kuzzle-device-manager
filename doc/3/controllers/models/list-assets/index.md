@@ -26,7 +26,10 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "listAssets",
-  "engineGroup": "<engineGroup>"
+  "engineGroup": "<engineGroup>",
+
+  // optional:
+  "engineId": "<engineId>"
 }
 ```
 
@@ -35,6 +38,7 @@ Method: GET
 ## Arguments
 
 - `engineGroup`: name of the engine group
+- `engineId`: optional. Engine ID (tenant ID) to filter models for. When provided, results include models scoped to that specific tenant, models scoped to the engine group, and commons models (3-level fallback). When absent, only group and commons models are returned.
 
 ---
 

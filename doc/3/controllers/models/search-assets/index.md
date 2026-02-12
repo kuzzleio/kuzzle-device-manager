@@ -38,7 +38,8 @@ Method: POST
 
   // optional:
   "from": "<starting offset>",
-  "size": "<page size>"
+  "size": "<page size>",
+  "engineId": "<engineId>"
 }
 ```
 
@@ -49,6 +50,7 @@ Method: POST
 - `engineGroup`: name of the engine group
 - `from`: paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
 - `size`: set the maximum number of documents returned per result page
+- `engineId`: optional. Engine ID (tenant ID) to filter models for. When provided, results include models scoped to that specific tenant, models scoped to the engine group, and commons models (3-level fallback). When absent, only group and commons models are returned.
 
 ## Body properties
 

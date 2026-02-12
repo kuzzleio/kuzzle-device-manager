@@ -120,6 +120,9 @@ Method: POST
     },
     "measures": [
       // Array of measure definition with type and name
+    ],
+    "engines": [
+      // Optional. Array of engine IDs (tenant IDs) this model is scoped to.
     ]
   }
 }
@@ -137,6 +140,7 @@ Method: POST
 - `metadataGroups`: Groups list with translations for group name
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
+- `engines`: Optional. Array of engine IDs (tenant IDs) this model is scoped to. When set, the model is only available to the specified tenants. When absent, the model is available to all tenants in the engine group.
 
 ---
 

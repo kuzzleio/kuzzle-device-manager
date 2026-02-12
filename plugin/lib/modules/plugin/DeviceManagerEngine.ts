@@ -140,25 +140,75 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
         const results = await this.getEngines();
         const engineGroups = results.map((elt) => elt.engine.group);
-        const groups = [undefined, ...engineGroups];
+        const groups = [undefined, ...new Set(engineGroups)];
 
         for (const group of groups) {
           if (payload.twin) {
-            const twinModels = await this.getModels<TwinModelContent>(
-              this.config.platformIndex,
-              payload.twin.type,
-              group,
-            );
+            if (group === undefined) {
+              // Platform-level check (no group filter)
+              const twinModels = await this.getModels<TwinModelContent>(
+                this.config.platformIndex,
+                payload.twin.type,
+              );
 
-            const conflicts = await this.doesTwinUpdateConflicts(
-              payload.twin.type,
-              twinModels,
-              payload.twin.models,
-              measureModels,
-            );
+              const conflicts = await this.doesTwinUpdateConflicts(
+                payload.twin.type,
+                twinModels,
+                payload.twin.models,
+                measureModels,
+              );
 
-            if (conflicts.length > 0) {
-              return conflicts;
+              if (conflicts.length > 0) {
+                return conflicts;
+              }
+            } else {
+              // Per-engine check: each engine has its own ES index,
+              // so conflicts are only relevant within the same engine's model set
+              const enginesInGroup = results.filter(
+                (e) => e.engine.group === group,
+              );
+
+              for (const engineDoc of enginesInGroup) {
+                const twinModels = await this.getModels<TwinModelContent>(
+                  this.config.platformIndex,
+                  payload.twin.type,
+                  group,
+                  engineDoc.engine.index,
+                );
+
+                // Only check new models that will be applied to this engine
+                const applicableNewModels = payload.twin.models.filter(
+                  (model) => {
+                    const assetModel = model as AssetModelContent;
+                    if (assetModel.engines?.length) {
+                      return assetModel.engines.includes(
+                        engineDoc.engine.index,
+                      );
+                    }
+                    // Group-scoped or commons: applicable to all engines in group
+                    return (
+                      !assetModel.engineGroup ||
+                      assetModel.engineGroup === group ||
+                      assetModel.engineGroup === "commons"
+                    );
+                  },
+                );
+
+                if (applicableNewModels.length === 0) {
+                  continue;
+                }
+
+                const conflicts = await this.doesTwinUpdateConflicts(
+                  payload.twin.type,
+                  twinModels,
+                  applicableNewModels,
+                  measureModels,
+                );
+
+                if (conflicts.length > 0) {
+                  return conflicts;
+                }
+              }
             }
           }
         }
@@ -387,6 +437,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const mappings = await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
       "asset",
       engineGroup,
+      engineId,
     );
     const settings = this.config.engineCollections.assets.settings;
 
@@ -411,6 +462,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
         "asset",
         engineGroup,
+        engineId,
       );
 
     const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
@@ -506,7 +558,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    * @throws If it failed during the measures collection creation
    */
   async createMeasuresCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getMeasuresMappingsFromDB(engineGroup);
+    const mappings = await this.getMeasuresMappingsFromDB(
+      engineGroup,
+      engineId,
+    );
     const settings = this.config.engineCollections.measures.settings;
 
     await this.tryCreateCollection(engineId, InternalCollection.MEASURES, {
@@ -555,11 +610,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    */
   private async getDigitalTwinMappingsFromDB<
     TDigitalTwin extends TwinModelContent,
-  >(digitalTwinType: TwinType, engineGroup?: string) {
+  >(digitalTwinType: TwinType, engineGroup?: string, targetEngineId?: string) {
     const models = await this.getModels<TDigitalTwin>(
       this.config.platformIndex,
       digitalTwinType,
       engineGroup,
+      targetEngineId,
     );
 
     const measureModels = await this.getModels<MeasureModelContent>(
@@ -636,7 +692,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    * @param engineGroup The target engine group
    * @returns The complete ES mappings produced by merging models mappings
    */
-  private async getMeasuresMappingsFromDB(engineGroup: string) {
+  private async getMeasuresMappingsFromDB(
+    engineGroup: string,
+    targetEngineId?: string,
+  ) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.platformIndex,
       "measure",
@@ -645,6 +704,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     const assetsMappings = await this.getDigitalTwinMappingsFromDB(
       "asset",
       engineGroup,
+      targetEngineId,
     );
 
     const deviceMappings = await this.getDigitalTwinMappingsFromDB("device");
@@ -712,18 +772,57 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     engineId: string,
     type: string,
     engineGroup?: string,
+    targetEngineId?: string,
   ): Promise<T[]> {
     const query: JSONObject = {
       and: [{ equals: { type } }],
     };
 
     if (engineGroup) {
-      query.and.push({
-        or: [
-          { equals: { engineGroup } },
-          { equals: { engineGroup: "commons" } },
-        ],
-      });
+      if (targetEngineId) {
+        // Tenant-aware: return models applicable to this specific engine
+        // 3-level: tenant-scoped for this engine + group-scoped (no engines) + commons (no engines)
+        query.and.push({
+          or: [
+            {
+              and: [
+                { equals: { engines: targetEngineId } },
+                {
+                  or: [
+                    { equals: { engineGroup } },
+                    { equals: { engineGroup: "commons" } },
+                  ],
+                },
+              ],
+            },
+            {
+              and: [
+                { not: { exists: "engines" } },
+                { equals: { engineGroup } },
+              ],
+            },
+            {
+              and: [
+                { not: { exists: "engines" } },
+                { equals: { engineGroup: "commons" } },
+              ],
+            },
+          ],
+        });
+      } else {
+        // No target engine: return only group-scoped (no engines) + commons (no engines)
+        query.and.push({
+          and: [
+            { not: { exists: "engines" } },
+            {
+              or: [
+                { equals: { engineGroup } },
+                { equals: { engineGroup: "commons" } },
+              ],
+            },
+          ],
+        });
+      }
     }
 
     const result = await this.sdk.document.search<T>(
