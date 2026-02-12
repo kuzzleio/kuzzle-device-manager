@@ -1,8 +1,6 @@
 import { EditorHintEnum } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
-
 describe("ModelsController:assets", () => {
   const sdk = setupHooks();
 
@@ -15,10 +13,7 @@ describe("ModelsController:assets", () => {
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
         metadataDetails: {
-          company: {
-            readOnly: true,
-            type: EditorHintEnum.BASE,
-          },
+          company: { readOnly: true, type: EditorHintEnum.BASE },
         },
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
@@ -36,10 +31,7 @@ describe("ModelsController:assets", () => {
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
         metadataDetails: {
-          company: {
-            readOnly: true,
-            type: EditorHintEnum.BASE,
-          },
+          company: { readOnly: true, type: EditorHintEnum.BASE },
         },
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
@@ -163,13 +155,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroup: "commons",
-      body: {
-        query: {
-          match: {
-            "asset.model": "Plane",
-          },
-        },
-      },
+      body: { query: { match: { "asset.model": "Plane" } } },
     });
 
     expect(searchAssets.result).toMatchObject({
@@ -183,13 +169,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroup: "air_quality",
-      body: {
-        query: {
-          match: {
-            "asset.model": "Warehouse",
-          },
-        },
-      },
+      body: { query: { match: { "asset.model": "Warehouse" } } },
     });
 
     expect(searchAssets.result).toMatchObject({
@@ -201,13 +181,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroup: "air_quality",
-      body: {
-        query: {
-          match: {
-            "asset.model": "Room",
-          },
-        },
-      },
+      body: { query: { match: { "asset.model": "Room" } } },
     });
 
     expect(searchAssets.result).toMatchObject({
@@ -219,19 +193,10 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroup: "air_quality",
-      body: {
-        query: {
-          match: {
-            "asset.model": "StreetLamp",
-          },
-        },
-      },
+      body: { query: { match: { "asset.model": "StreetLamp" } } },
     });
 
-    expect(searchAssets.result).toMatchObject({
-      total: 0,
-      hits: [],
-    });
+    expect(searchAssets.result).toMatchObject({ total: 0, hits: [] });
   });
 
   it("Error if the model name is not PascalCase", async () => {
@@ -375,9 +340,7 @@ describe("ModelsController:assets", () => {
       _id: "model-asset-AdvancedWarehouse",
       engineGroup: "commons",
       model: "AdvancedWarehouse",
-      body: {
-        tooltipModels: updatedTooltipModels,
-      },
+      body: { tooltipModels: updatedTooltipModels },
     });
 
     const assetModel = await sdk.document.get(

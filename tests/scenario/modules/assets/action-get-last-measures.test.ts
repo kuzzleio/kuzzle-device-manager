@@ -5,8 +5,6 @@ import {
   ApiAssetGetLastMeasuresResult,
 } from "../../../../lib/modules/asset";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:getLastMeasures", () => {
   const sdk = setupHooks();
 
@@ -53,20 +51,12 @@ describe("AssetsController:getLastMeasures", () => {
       position: {
         measuredAt: lastMeasureDate,
         type: "position",
-        values: {
-          accuracy: 2100,
-          position: {
-            lat: 42.2,
-            lon: 2.42,
-          },
-        },
+        values: { accuracy: 2100, position: { lat: 42.2, lon: 2.42 } },
       },
       temperatureExt: {
         measuredAt: lastMeasureDate,
         type: "temperature",
-        values: {
-          temperature: 24.1,
-        },
+        values: { temperature: 24.1 },
       },
     });
   });

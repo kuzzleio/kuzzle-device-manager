@@ -4,8 +4,6 @@ import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
 
-jest.setTimeout(10000);
-
 describe("features/Decoder/DefaultRights", () => {
   const sdk = useSdk();
 
@@ -28,15 +26,15 @@ describe("features/Decoder/DefaultRights", () => {
     let promise;
 
     await expect(
-      sdk.security.getRole("payload_gateway")
+      sdk.security.getRole("payload_gateway"),
     ).resolves.toMatchObject({});
 
     await expect(
-      sdk.security.getProfile("payload_gateway")
+      sdk.security.getProfile("payload_gateway"),
     ).resolves.toMatchObject({});
 
     await expect(
-      sdk.security.getUser("payload_gateway")
+      sdk.security.getUser("payload_gateway"),
     ).resolves.toMatchObject({});
   });
 });

@@ -6,8 +6,6 @@ import {
   ApiDeviceGetMeasuresResult,
 } from "lib/modules/device";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:GetMeasures", () => {
   const sdk = setupHooks();
 
@@ -87,10 +85,7 @@ describe("DevicesController:GetMeasures", () => {
       body: { sort: { "values.temperature": "desc" } },
     });
 
-    expect(result).toMatchObject({
-      total: 6,
-      measures: { length: 2 },
-    });
+    expect(result).toMatchObject({ total: 6, measures: { length: 2 } });
 
     expect(result.measures[0]).toMatchObject({
       _source: {

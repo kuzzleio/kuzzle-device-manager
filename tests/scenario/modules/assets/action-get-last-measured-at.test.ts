@@ -5,8 +5,6 @@ import {
   ApiAssetGetLastMeasuredAtResult,
 } from "../../../../lib/modules/asset";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:getLastMeasuredAt", () => {
   const sdk = setupHooks();
 
@@ -49,9 +47,7 @@ describe("AssetsController:getLastMeasuredAt", () => {
       engineId: "engine-ayse",
     });
 
-    expect(result).toMatchObject({
-      lastMeasuredAt: lastMeasureDate,
-    });
+    expect(result).toMatchObject({ lastMeasuredAt: lastMeasureDate });
   });
 
   it("should return a not found error if there are no measures", async () => {

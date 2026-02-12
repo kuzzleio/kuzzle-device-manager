@@ -55,25 +55,19 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: docker pull
-        run: docker compose --profile backend pull
-
-      - name: docker install dependencies
-        run: docker compose run --no-deps kuzzle /bin/bash -c "npm ci"
-
       - name: docker backend
         run: |
           # Continue when error
           set +e
           export NODE_VERSION=${{ matrix.node-version }}
-          export BACKEND_COMMAND="npm run build && npm run prod";
-          docker compose --profile backend up -d --wait
+          
+          docker compose run --rm --no-deps kuzzle npm install
+          docker compose up -d --wait
+          docker compose exec -T kuzzle npm run test:functional
+
           exitcode="$?"
           [[ "$exitcode" == "0" ]] || docker compose logs kuzzle
           exit "$exitcode"
-
-      - name: Run tests
-        run: docker compose run kuzzle npm run test:functional
 
   release-device-manager:
     name: Release package

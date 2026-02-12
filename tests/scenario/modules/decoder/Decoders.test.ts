@@ -8,8 +8,6 @@ import { ApiDecoderListRequest, ApiDecoderListResult } from "../../../../index";
 import { useSdk, sendPayloads } from "../../../helpers";
 import { deviceEmptyTempId } from "../../../fixtures/devices";
 
-jest.setTimeout(10000);
-
 describe("DecodersController", () => {
   const sdk = useSdk();
 

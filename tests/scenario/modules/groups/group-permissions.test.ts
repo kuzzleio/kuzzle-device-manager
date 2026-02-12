@@ -31,7 +31,6 @@ import {
 } from "lib/modules/group/types/GroupsApi";
 import { GroupContent } from "lib/modules/group/types/GroupContent";
 
-jest.setTimeout(10000);
 
 describe("GroupsController", () => {
   const sdk = setupHooks();

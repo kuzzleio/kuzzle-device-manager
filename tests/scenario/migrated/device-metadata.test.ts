@@ -4,8 +4,6 @@ import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
 
-jest.setTimeout(10000);
-
 describe("features/Device/Metadata", () => {
   const sdk = useSdk();
 
@@ -28,9 +26,7 @@ describe("features/Device/Metadata", () => {
     let promise;
 
     await expect(
-      sdk.collection.getMapping("device-manager", "devices")
-    ).resolves.toMatchObject({
-      properties: {},
-    });
+      sdk.collection.getMapping("device-manager", "devices"),
+    ).resolves.toMatchObject({ properties: {} });
   });
 });

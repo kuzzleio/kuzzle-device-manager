@@ -4,8 +4,6 @@ import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
 
-jest.setTimeout(10000);
-
 describe("features/Measure/Provisionning", () => {
   const sdk = useSdk();
 
@@ -41,7 +39,7 @@ describe("features/Measure/Provisionning", () => {
     ]);
 
     await expect(
-      sdk.document.exists("device-manager", "devices", "DummyTemp-huwels")
+      sdk.document.exists("device-manager", "devices", "DummyTemp-huwels"),
     ).resolves.toBe(true);
   });
 });

@@ -5,8 +5,6 @@ import {
   ApiDeviceGetLastMeasuredAtResult,
 } from "../../../../lib/modules/device";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:getLastMeasuredAt", () => {
   const sdk = setupHooks();
 
@@ -49,9 +47,7 @@ describe("DevicesController:getLastMeasuredAt", () => {
       engineId: "engine-ayse",
     });
 
-    expect(result).toMatchObject({
-      lastMeasuredAt: lastMeasureDate,
-    });
+    expect(result).toMatchObject({ lastMeasuredAt: lastMeasureDate });
   });
 
   it("should return a not found error if there are no measures", async () => {

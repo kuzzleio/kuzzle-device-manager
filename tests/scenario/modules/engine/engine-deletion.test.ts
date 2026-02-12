@@ -3,8 +3,6 @@ import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
 
 import { useSdk } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("Engine deletion", () => {
   const sdk = useSdk();
 

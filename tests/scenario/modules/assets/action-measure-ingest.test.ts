@@ -6,8 +6,6 @@ import {
 import { setupHooks } from "../../../helpers";
 import axios from "axios";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:measureIngest", () => {
   describe("AssetsController:measureIngest:sdk", () => {
     const sdk = setupHooks();
@@ -26,13 +24,9 @@ describe("AssetsController:measureIngest", () => {
         engineId: indexId,
         slotName: "magiculeExt",
         body: {
-          dataSource: {
-            id: "testApi1",
-          },
+          dataSource: { id: "testApi1" },
           measuredAt: 170000000,
-          values: {
-            magicule: 18,
-          },
+          values: { magicule: 18 },
         },
       });
 
@@ -50,26 +44,15 @@ describe("AssetsController:measureIngest", () => {
       const document = await sdk.document.search(
         indexId,
         InternalCollection.MEASURES,
-        {
-          query: {
-            equals: {
-              "origin._id": "testApi1",
-            },
-          },
-        },
+        { query: { equals: { "origin._id": "testApi1" } } },
         { lang: "koncorde" },
       );
 
       expect(document.fetched).toBe(1);
 
       expect(document.hits[0]._source).toMatchObject({
-        asset: {
-          _id: "MagicHouse-debug1",
-          measureName: "magiculeExt",
-        },
-        values: {
-          magicule: 18,
-        },
+        asset: { _id: "MagicHouse-debug1", measureName: "magiculeExt" },
+        values: { magicule: 18 },
       });
     });
 
@@ -87,13 +70,9 @@ describe("AssetsController:measureIngest", () => {
         engineId: "engine-ayse",
         slotName: "magiculeExt",
         body: {
-          dataSource: {
-            id: "testApi2",
-          },
+          dataSource: { id: "testApi2" },
           measuredAt: 170000000,
-          values: {
-            magicule: "99",
-          },
+          values: { magicule: "99" },
         },
       });
 
@@ -104,13 +83,7 @@ describe("AssetsController:measureIngest", () => {
       const total = await sdk.document.count(
         indexId,
         InternalCollection.MEASURES,
-        {
-          query: {
-            equals: {
-              "origin._id": "testApi2",
-            },
-          },
-        },
+        { query: { equals: { "origin._id": "testApi2" } } },
         { lang: "koncorde" },
       );
 
@@ -131,13 +104,9 @@ describe("AssetsController:measureIngest", () => {
         engineId: "engine-ayse",
         slotName: "magiculeExt",
         body: {
-          dataSource: {
-            id: "testApi3",
-          },
+          dataSource: { id: "testApi3" },
           measuredAt: 170000000,
-          values: {
-            magicule: 99,
-          },
+          values: { magicule: 99 },
         },
       });
 
@@ -148,13 +117,7 @@ describe("AssetsController:measureIngest", () => {
       const total = await sdk.document.count(
         indexId,
         InternalCollection.MEASURES,
-        {
-          query: {
-            equals: {
-              "origin._id": "testApi3",
-            },
-          },
-        },
+        { query: { equals: { "origin._id": "testApi3" } } },
         { lang: "koncorde" },
       );
 
@@ -172,13 +135,9 @@ describe("AssetsController:measureIngest", () => {
       const query = await axios.post(
         `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
         {
-          dataSource: {
-            id: "testApi1",
-          },
+          dataSource: { id: "testApi1" },
           measuredAt: 170000000,
-          values: {
-            magicule: 18,
-          },
+          values: { magicule: 18 },
         },
       );
 
@@ -196,26 +155,15 @@ describe("AssetsController:measureIngest", () => {
       const document = await sdk.document.search(
         indexId,
         InternalCollection.MEASURES,
-        {
-          query: {
-            equals: {
-              "origin._id": "testApi1",
-            },
-          },
-        },
+        { query: { equals: { "origin._id": "testApi1" } } },
         { lang: "koncorde" },
       );
 
       expect(document.fetched).toBe(1);
 
       expect(document.hits[0]._source).toMatchObject({
-        asset: {
-          _id: "MagicHouse-debug1",
-          measureName: "magiculeExt",
-        },
-        values: {
-          magicule: 18,
-        },
+        asset: { _id: "MagicHouse-debug1", measureName: "magiculeExt" },
+        values: { magicule: 18 },
       });
     });
 
@@ -227,13 +175,9 @@ describe("AssetsController:measureIngest", () => {
         .post(
           `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
           {
-            dataSource: {
-              id: "testApi2",
-            },
+            dataSource: { id: "testApi2" },
             measuredAt: 170000000,
-            values: {
-              magicule: "99",
-            },
+            values: { magicule: "99" },
           },
         )
         .catch((e) => e.response);
@@ -246,13 +190,7 @@ describe("AssetsController:measureIngest", () => {
       const total = await sdk.document.count(
         indexId,
         InternalCollection.MEASURES,
-        {
-          query: {
-            equals: {
-              "origin._id": "testApi2",
-            },
-          },
-        },
+        { query: { equals: { "origin._id": "testApi2" } } },
         { lang: "koncorde" },
       );
 
@@ -267,13 +205,9 @@ describe("AssetsController:measureIngest", () => {
         .post(
           `http://localhost:7512/_/device-manager/${indexId}/assets/${assetId}/measures/magiculeExt`,
           {
-            dataSource: {
-              id: "testApi3",
-            },
+            dataSource: { id: "testApi3" },
             measuredAt: 170000000,
-            values: {
-              magicule: 99,
-            },
+            values: { magicule: 99 },
           },
         )
         .catch((e) => e.response);
@@ -286,13 +220,7 @@ describe("AssetsController:measureIngest", () => {
       const total = await sdk.document.count(
         indexId,
         InternalCollection.MEASURES,
-        {
-          query: {
-            equals: {
-              "origin._id": "testApi3",
-            },
-          },
-        },
+        { query: { equals: { "origin._id": "testApi3" } } },
         { lang: "koncorde" },
       );
 

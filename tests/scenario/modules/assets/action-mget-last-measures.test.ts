@@ -9,8 +9,6 @@ import {
   ApiAssetMGetLastMeasuresResult,
 } from "../../../../lib/modules/asset";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:mGetLastMeasures", () => {
   const sdk = setupHooks();
 
@@ -71,9 +69,7 @@ describe("AssetsController:mGetLastMeasures", () => {
       controller: "device-manager/assets",
       action: "mGetLastMeasures",
       engineId: "engine-ayse",
-      body: {
-        ids: ["Warehouse-linked", "Container-linked2"],
-      },
+      body: { ids: ["Warehouse-linked", "Container-linked2"] },
     });
 
     expect(result).toMatchObject({
@@ -81,33 +77,19 @@ describe("AssetsController:mGetLastMeasures", () => {
         position: {
           measuredAt: lastMeasureDate,
           type: "position",
-          values: {
-            accuracy: 2000,
-            position: {
-              lat: 42.2,
-              lon: 2.42,
-            },
-          },
+          values: { accuracy: 2000, position: { lat: 42.2, lon: 2.42 } },
         },
       },
       "Container-linked2": {
         position: {
           measuredAt: lastMeasureDate,
           type: "position",
-          values: {
-            accuracy: 2100,
-            position: {
-              lat: 42.2,
-              lon: 2.42,
-            },
-          },
+          values: { accuracy: 2100, position: { lat: 42.2, lon: 2.42 } },
         },
         temperatureExt: {
           measuredAt: lastMeasureDate,
           type: "temperature",
-          values: {
-            temperature: 24.1,
-          },
+          values: { temperature: 24.1 },
         },
       },
     });
@@ -138,9 +120,7 @@ describe("AssetsController:mGetLastMeasures", () => {
       controller: "device-manager/assets",
       action: "mGetLastMeasures",
       engineId: "engine-ayse",
-      body: {
-        ids: ["Container-linked1"],
-      },
+      body: { ids: ["Container-linked1"] },
     });
 
     expect(Object.keys(result)).toEqual(["Container-linked1"]);

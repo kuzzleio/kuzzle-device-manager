@@ -8,7 +8,6 @@ import { sendDummyTempPositionPayloads, setupHooks } from "../../../helpers";
 import fixtures from "../../../fixtures/fixtures";
 
 const assetCount = fixtures["engine-ayse"].assets.length / 2;
-jest.setTimeout(10000);
 
 function getExportedColums(row: string) {
   const parsedRow = csvParse(row)[0];

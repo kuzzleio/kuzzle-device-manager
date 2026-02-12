@@ -9,8 +9,6 @@ import {
   ApiAssetRemoveMeasureSlotRequest,
 } from "lib/modules/asset";
 
-jest.setTimeout(10000);
-
 describe("AssetController: add measure slot", () => {
   const sdk = useSdk();
 
@@ -28,10 +26,7 @@ describe("AssetController: add measure slot", () => {
     sdk.disconnect();
   });
 
-  const newSlot = {
-    name: "temperatureInt2",
-    type: "temperature",
-  };
+  const newSlot = { name: "temperatureInt2", type: "temperature" };
   const unknownSlotName = "unknownSlot";
   const modelSlotName = "temperatureInt";
   it("should remove a measure slot from the asset", async () => {
@@ -41,16 +36,10 @@ describe("AssetController: add measure slot", () => {
         action: "addMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: newSlot,
-        },
+        body: { measureSlot: newSlot },
       }),
     ).resolves.toMatchObject({
-      result: {
-        _source: {
-          measureSlots: expect.arrayContaining([newSlot]),
-        },
-      },
+      result: { _source: { measureSlots: expect.arrayContaining([newSlot]) } },
     });
 
     await expect(
@@ -59,15 +48,11 @@ describe("AssetController: add measure slot", () => {
         action: "removeMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: newSlot.name,
-        },
+        body: { measureSlot: newSlot.name },
       }),
     ).resolves.toMatchObject({
       result: {
-        _source: {
-          measureSlots: expect.not.arrayContaining([newSlot]),
-        },
+        _source: { measureSlots: expect.not.arrayContaining([newSlot]) },
       },
     });
   });
@@ -78,16 +63,10 @@ describe("AssetController: add measure slot", () => {
         action: "addMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: newSlot,
-        },
+        body: { measureSlot: newSlot },
       }),
     ).resolves.toMatchObject({
-      result: {
-        _source: {
-          measureSlots: expect.arrayContaining([newSlot]),
-        },
-      },
+      result: { _source: { measureSlots: expect.arrayContaining([newSlot]) } },
     });
     await sdk.query<ApiAssetlinkDevicesRequest>({
       controller: "device-manager/assets",
@@ -98,12 +77,7 @@ describe("AssetController: add measure slot", () => {
         linkedMeasures: [
           {
             deviceId: "DummyTemp-unlinked1",
-            measureSlots: [
-              {
-                asset: newSlot.name,
-                device: "temperature",
-              },
-            ],
+            measureSlots: [{ asset: newSlot.name, device: "temperature" }],
           },
         ],
       },
@@ -114,9 +88,7 @@ describe("AssetController: add measure slot", () => {
         action: "removeMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: newSlot.name,
-        },
+        body: { measureSlot: newSlot.name },
       }),
     ).rejects.toMatchObject({
       message: `Measure slot ${newSlot.name} can not be removed as it is currently linked to DummyTemp-unlinked1`,
@@ -129,9 +101,7 @@ describe("AssetController: add measure slot", () => {
         action: "removeMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: unknownSlotName,
-        },
+        body: { measureSlot: unknownSlotName },
       }),
     ).rejects.toMatchObject({
       message: `Asset Container-linked1 does not have a measure slot named ${unknownSlotName}`,
@@ -144,9 +114,7 @@ describe("AssetController: add measure slot", () => {
         action: "removeMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: modelSlotName,
-        },
+        body: { measureSlot: modelSlotName },
       }),
     ).rejects.toMatchObject({
       message: `Measure slot ${modelSlotName} can not be removed as it is set in the Container model`,

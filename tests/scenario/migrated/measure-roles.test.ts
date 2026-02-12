@@ -4,8 +4,6 @@ import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
 
-jest.setTimeout(10000);
-
 describe("features/Measure/Roles", () => {
   const sdk = useSdk();
 
@@ -28,7 +26,7 @@ describe("features/Measure/Roles", () => {
     let promise;
 
     await expect(
-      sdk.security.getRole("measures.reader")
+      sdk.security.getRole("measures.reader"),
     ).resolves.toMatchObject({
       controllers: {
         "device-manager/models": { actions: { listMeasures: true } },
@@ -46,7 +44,7 @@ describe("features/Measure/Roles", () => {
             },
           },
         },
-      }
+      },
     );
   });
 });

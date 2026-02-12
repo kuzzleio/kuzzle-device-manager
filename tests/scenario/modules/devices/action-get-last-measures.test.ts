@@ -5,8 +5,6 @@ import {
   ApiDeviceGetLastMeasuresResult,
 } from "../../../../lib/modules/device";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:getLastMeasures", () => {
   const sdk = setupHooks();
 
@@ -53,27 +51,17 @@ describe("DevicesController:getLastMeasures", () => {
       battery: {
         measuredAt: lastMeasureDate,
         type: "battery",
-        values: {
-          battery: 70,
-        },
+        values: { battery: 70 },
       },
       position: {
         measuredAt: lastMeasureDate,
         type: "position",
-        values: {
-          accuracy: 2100,
-          position: {
-            lat: 42.2,
-            lon: 2.42,
-          },
-        },
+        values: { accuracy: 2100, position: { lat: 42.2, lon: 2.42 } },
       },
       temperature: {
         measuredAt: lastMeasureDate,
         type: "temperature",
-        values: {
-          temperature: 24.1,
-        },
+        values: { temperature: 24.1 },
       },
     });
   });

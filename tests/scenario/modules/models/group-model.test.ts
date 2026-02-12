@@ -6,8 +6,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
-
 describe("ModelsController:groups", () => {
   const sdk = setupHooks();
 
@@ -16,16 +14,10 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
-        affinity: {
-          type: ["assets"],
-          models: { assets: [] },
-          strict: false,
-        },
+        affinity: { type: ["assets"], models: { assets: [] }, strict: false },
         engineGroup: "air_quality",
         model: "TruckFleet",
-        metadataMappings: {
-          size: { type: "integer" },
-        },
+        metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
           size: {
             locales: {
@@ -53,9 +45,7 @@ describe("ModelsController:groups", () => {
       engineGroup: "air_quality",
       group: {
         model: "TruckFleet",
-        metadataMappings: {
-          size: { type: "integer" },
-        },
+        metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
           size: {
             locales: {
@@ -79,10 +69,7 @@ describe("ModelsController:groups", () => {
       body: {
         affinity: {
           type: ["assets", "devices"],
-          models: {
-            assets: ["truck"],
-            devices: [],
-          },
+          models: { assets: ["truck"], devices: [] },
           strict: true,
         },
         engineGroup: "air_quality",
@@ -274,10 +261,7 @@ describe("ModelsController:groups", () => {
       body: {
         affinity: {
           type: ["assets", "devices"],
-          models: {
-            assets: ["truck"],
-            devices: [],
-          },
+          models: { assets: ["truck"], devices: [] },
           strict: true,
         },
         engineGroup: "air_quality",
@@ -352,10 +336,7 @@ describe("ModelsController:groups", () => {
       body: {
         affinity: {
           type: ["assets", "devices"],
-          models: {
-            assets: [],
-            devices: [],
-          },
+          models: { assets: [], devices: [] },
           strict: false,
         },
         engineGroup: "air_quality",
@@ -373,13 +354,7 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "searchGroups",
       engineGroup: "air_quality",
-      body: {
-        query: {
-          match: {
-            "group.model": "TruckFleet",
-          },
-        },
-      },
+      body: { query: { match: { "group.model": "TruckFleet" } } },
     });
 
     expect(searchGroups.result).toMatchObject({
@@ -395,10 +370,7 @@ describe("ModelsController:groups", () => {
       body: {
         affinity: {
           type: ["assets", "devices"],
-          models: {
-            assets: [],
-            devices: [],
-          },
+          models: { assets: [], devices: [] },
           strict: false,
         },
         engineGroup: "commons",
@@ -420,17 +392,12 @@ describe("ModelsController:groups", () => {
       body: {
         affinity: {
           type: ["assets", "devices"],
-          models: {
-            assets: ["truck"],
-            devices: [],
-          },
+          models: { assets: ["truck"], devices: [] },
           strict: true,
         },
         engineGroup: "air_quality",
         model: "TruckFleet",
-        metadataMappings: {
-          size: { type: "integer" },
-        },
+        metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
           size: {
             locales: {
@@ -453,17 +420,12 @@ describe("ModelsController:groups", () => {
       body: {
         affinity: {
           type: ["assets", "devices"],
-          models: {
-            assets: ["truck"],
-            devices: [],
-          },
+          models: { assets: ["truck"], devices: [] },
           strict: true,
         },
         engineGroup: "air_quality",
         model: "BadModel",
-        metadataMappings: {
-          size: { type: "keyword" },
-        },
+        metadataMappings: { size: { type: "keyword" } },
         metadataDetails: {
           size: {
             locales: {
@@ -492,17 +454,12 @@ describe("ModelsController:groups", () => {
       body: {
         affinity: {
           type: [],
-          models: {
-            assets: ["truck"],
-            devices: [],
-          },
+          models: { assets: ["truck"], devices: [] },
           strict: true,
         },
         engineGroup: "air_quality",
         model: "BadType",
-        metadataMappings: {
-          size: { type: "integer" },
-        },
+        metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
           size: {
             locales: {
@@ -528,18 +485,10 @@ describe("ModelsController:groups", () => {
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
-        affinity: {
-          type: ["assets"],
-          models: {
-            devices: [],
-          },
-          strict: true,
-        },
+        affinity: { type: ["assets"], models: { devices: [] }, strict: true },
         engineGroup: "air_quality",
         model: "BadModels",
-        metadataMappings: {
-          size: { type: "integer" },
-        },
+        metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
           size: {
             locales: {

@@ -6,8 +6,6 @@ import {
   beforeEachTruncateCollections,
 } from "../../../hooks";
 
-jest.setTimeout(10000);
-
 describe("features/Device/Controller/UnlinkAssets", () => {
   const sdk = useSdk();
 
@@ -31,22 +29,16 @@ describe("features/Device/Controller/UnlinkAssets", () => {
       action: "unlinkDevices",
       engineId: "engine-ayse",
       _id: "Container-linked1",
-      body: {
-        devices: ["DummyTemp-linked1"],
-      },
+      body: { devices: ["DummyTemp-linked1"] },
     });
 
     await expect(
       sdk.document.get("engine-ayse", "devices", "DummyTemp-linked1"),
-    ).resolves.toMatchObject({
-      _source: { linkedMeasures: [] },
-    });
+    ).resolves.toMatchObject({ _source: { linkedMeasures: [] } });
 
     await expect(
       sdk.document.get("engine-ayse", "assets", "Container-linked1"),
-    ).resolves.toMatchObject({
-      _source: { linkedMeasures: [] },
-    });
+    ).resolves.toMatchObject({ _source: { linkedMeasures: [] } });
   });
 
   it("Unlink one slot from the asset", async () => {
@@ -55,9 +47,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
       action: "unlinkDevices",
       engineId: "engine-ayse",
       _id: "Container-linked2",
-      body: {
-        measureSlots: ["temperatureExt"],
-      },
+      body: { measureSlots: ["temperatureExt"] },
     });
 
     await expect(
@@ -67,12 +57,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
         linkedMeasures: expect.arrayContaining([
           {
             assetId: "Container-linked2",
-            measureSlots: [
-              {
-                asset: "position",
-                device: "position",
-              },
-            ],
+            measureSlots: [{ asset: "position", device: "position" }],
           },
         ]),
       },
@@ -85,12 +70,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
         linkedMeasures: expect.arrayContaining([
           {
             deviceId: "DummyTempPosition-linked2",
-            measureSlots: [
-              {
-                asset: "position",
-                device: "position",
-              },
-            ],
+            measureSlots: [{ asset: "position", device: "position" }],
           },
         ]),
       },
@@ -103,18 +83,12 @@ describe("features/Device/Controller/UnlinkAssets", () => {
       action: "unlinkDevices",
       engineId: "engine-ayse",
       _id: "Container-linked2",
-      body: {
-        allMeasures: true,
-      },
+      body: { allMeasures: true },
     });
 
     await expect(
       sdk.document.get("engine-ayse", "assets", "Container-linked2"),
-    ).resolves.toMatchObject({
-      _source: {
-        linkedMeasures: [],
-      },
-    });
+    ).resolves.toMatchObject({ _source: { linkedMeasures: [] } });
   });
   it("Throw an error if no measure is provided", async () => {
     const promise = sdk.query<ApiAssetUnlinkDevicesRequest>({
@@ -134,9 +108,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
       controller: "device-manager/assets",
       action: "unlinkDevices",
       _id: "Container-unlinked1",
-      body: {
-        devices: ["DummyTemp-unlinked1"],
-      },
+      body: { devices: ["DummyTemp-unlinked1"] },
       engineId: "engine-ayse",
     });
 
@@ -157,9 +129,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
 
     await expect(
       sdk.document.get("engine-ayse", "assets", "Container-linked1"),
-    ).resolves.toMatchObject({
-      _source: { linkedMeasures: { length: 0 } },
-    });
+    ).resolves.toMatchObject({ _source: { linkedMeasures: { length: 0 } } });
 
     await sdk.collection.refresh("engine-ayse", "assets-history");
 

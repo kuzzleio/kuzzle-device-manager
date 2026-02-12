@@ -11,8 +11,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
-
 describe("ModelsController:measures", () => {
   const sdk = setupHooks();
 
@@ -112,10 +110,7 @@ describe("ModelsController:measures", () => {
     const listMeasures = await sdk.query<
       ApiModelListMeasuresRequest,
       ApiModelListMeasuresResult
-    >({
-      controller: "device-manager/models",
-      action: "listMeasures",
-    });
+    >({ controller: "device-manager/models", action: "listMeasures" });
 
     expect(listMeasures.result.total).toBe(12);
     expect(listMeasures.result.models).toMatchObject([
@@ -160,9 +155,7 @@ describe("ModelsController:measures", () => {
       action: "writeMeasure",
       body: {
         type: "movement",
-        valuesMappings: {
-          movement: { type: "boolean" },
-        },
+        valuesMappings: { movement: { type: "boolean" } },
       },
     });
 
@@ -171,13 +164,7 @@ describe("ModelsController:measures", () => {
     const searchMeasures = await sdk.query({
       controller: "device-manager/models",
       action: "searchMeasures",
-      body: {
-        query: {
-          match: {
-            "measure.type": "presence",
-          },
-        },
-      },
+      body: { query: { match: { "measure.type": "presence" } } },
     });
 
     expect(searchMeasures.result).toMatchObject({
@@ -207,11 +194,7 @@ describe("ModelsController:measures", () => {
       action: "writeMeasure",
       body: {
         type: "temperature",
-        valuesMappings: {
-          temperature: {
-            type: "integer",
-          },
-        },
+        valuesMappings: { temperature: { type: "integer" } },
       },
     };
 
@@ -223,11 +206,7 @@ describe("ModelsController:measures", () => {
       "model-measure-temperature",
     );
     expect(modelContent._source.measure).toMatchObject({
-      valuesMappings: {
-        temperature: {
-          type: "float",
-        },
-      },
+      valuesMappings: { temperature: { type: "float" } },
     });
   });
 
@@ -277,9 +256,7 @@ describe("ModelsController:measures", () => {
       body: {
         engineGroup: "commons",
         model: "Plane",
-        metadataMappings: {
-          company: { type: "keyword" },
-        },
+        metadataMappings: { company: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
     });
@@ -294,9 +271,7 @@ describe("ModelsController:measures", () => {
       engineGroup: "commons",
       asset: {
         model: "Plane",
-        metadataMappings: {
-          company: { type: "keyword" },
-        },
+        metadataMappings: { company: { type: "keyword" } },
         defaultMetadata: {},
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
@@ -347,9 +322,7 @@ describe("ModelsController:measures", () => {
       body: {
         model: "Zigbee",
         measures: [{ type: "battery", name: "battery" }],
-        metadataMappings: {
-          network: { type: "keyword" },
-        },
+        metadataMappings: { network: { type: "keyword" } },
       },
     });
 
@@ -362,9 +335,7 @@ describe("ModelsController:measures", () => {
       type: "device",
       device: {
         model: "Zigbee",
-        metadataMappings: {
-          network: { type: "keyword" },
-        },
+        metadataMappings: { network: { type: "keyword" } },
         defaultMetadata: {},
         measures: [{ type: "battery", name: "battery" }],
       },
@@ -406,9 +377,7 @@ describe("ModelsController:measures", () => {
       action: "writeMeasure",
       body: {
         type: "presence",
-        valuesMappings: {
-          presence: { type: "boolean" },
-        },
+        valuesMappings: { presence: { type: "boolean" } },
       },
     });
 
@@ -425,9 +394,7 @@ describe("ModelsController:measures", () => {
         type: "measure",
         measure: {
           type: "presence",
-          valuesMappings: {
-            presence: { type: "boolean" },
-          },
+          valuesMappings: { presence: { type: "boolean" } },
         },
       },
     });
@@ -439,12 +406,7 @@ describe("ModelsController:measures", () => {
       action: "writeAsset",
       body: {
         model: "TestHouse",
-        measures: [
-          {
-            name: "Test",
-            type: "Test",
-          },
-        ],
+        measures: [{ name: "Test", type: "Test" }],
         engineGroup: "commons",
       },
     };
@@ -466,19 +428,11 @@ describe("ModelsController:measures", () => {
       action: "writeMeasure",
       body: {
         type: "light",
-        valuesMappings: {
-          light: { type: "float" },
-        },
+        valuesMappings: { light: { type: "float" } },
         valuesDetails: {
           light: {
-            en: {
-              friendlyName: "Light intensity",
-              unit: "lux",
-            },
-            fr: {
-              friendlyName: "Intensité lumineuse",
-              unit: "lux",
-            },
+            en: { friendlyName: "Light intensity", unit: "lux" },
+            fr: { friendlyName: "Intensité lumineuse", unit: "lux" },
           },
         },
       },
@@ -494,19 +448,11 @@ describe("ModelsController:measures", () => {
         type: "measure",
         measure: {
           type: "light",
-          valuesMappings: {
-            light: { type: "float" },
-          },
+          valuesMappings: { light: { type: "float" } },
           valuesDetails: {
             light: {
-              en: {
-                friendlyName: "Light intensity",
-                unit: "lux",
-              },
-              fr: {
-                friendlyName: "Intensité lumineuse",
-                unit: "lux",
-              },
+              en: { friendlyName: "Light intensity", unit: "lux" },
+              fr: { friendlyName: "Intensité lumineuse", unit: "lux" },
             },
           },
         },

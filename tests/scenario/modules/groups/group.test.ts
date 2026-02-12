@@ -48,7 +48,6 @@ import {
 } from "../../../fixtures";
 import { DeviceContent } from "lib/modules/device";
 
-jest.setTimeout(10000);
 
 describe("GroupsController", () => {
   const sdk = setupHooks();

@@ -2,8 +2,6 @@ import { AssetContent, AssetHistoryContent } from "../../../../index";
 
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("DeviceController: receiveMeasure", () => {
   const sdk = setupHooks();
 

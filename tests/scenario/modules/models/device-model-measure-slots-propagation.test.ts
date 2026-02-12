@@ -8,8 +8,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
-
 describe("Device model measure slots propagation", () => {
   const sdk = setupHooks();
 
@@ -39,14 +37,7 @@ describe("Device model measure slots propagation", () => {
     });
 
     expect(result).toMatchObject({
-      _source: {
-        measureSlots: [
-          {
-            name: "battery",
-            type: "battery",
-          },
-        ],
-      },
+      _source: { measureSlots: [{ name: "battery", type: "battery" }] },
     });
 
     await sdk.query<ApiModelWriteDeviceRequest, ApiModelWriteDeviceResult>({
@@ -56,14 +47,8 @@ describe("Device model measure slots propagation", () => {
         model: "Zigbee",
         metadataMappings: { network: { type: "keyword" } },
         measures: [
-          {
-            name: "battery",
-            type: "battery",
-          },
-          {
-            name: "temperature",
-            type: "temperature",
-          },
+          { name: "battery", type: "battery" },
+          { name: "temperature", type: "temperature" },
         ],
       },
     });
@@ -73,14 +58,8 @@ describe("Device model measure slots propagation", () => {
     ).resolves.toMatchObject({
       _source: {
         measureSlots: [
-          {
-            name: "battery",
-            type: "battery",
-          },
-          {
-            name: "temperature",
-            type: "temperature",
-          },
+          { name: "battery", type: "battery" },
+          { name: "temperature", type: "temperature" },
         ],
       },
     });

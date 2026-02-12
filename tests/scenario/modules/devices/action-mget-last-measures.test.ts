@@ -9,8 +9,6 @@ import {
   ApiDeviceMGetLastMeasuresResult,
 } from "../../../../lib/modules/device";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:mGetLastMeasures", () => {
   const sdk = setupHooks();
 
@@ -81,54 +79,34 @@ describe("DevicesController:mGetLastMeasures", () => {
         battery: {
           measuredAt: lastMeasureDate,
           type: "battery",
-          values: {
-            battery: 70,
-          },
+          values: { battery: 70 },
         },
         position: {
           measuredAt: lastMeasureDate,
           type: "position",
-          values: {
-            accuracy: 2000,
-            position: {
-              lat: 42.2,
-              lon: 2.42,
-            },
-          },
+          values: { accuracy: 2000, position: { lat: 42.2, lon: 2.42 } },
         },
         temperature: {
           measuredAt: lastMeasureDate,
           type: "temperature",
-          values: {
-            temperature: 24.1,
-          },
+          values: { temperature: 24.1 },
         },
       },
       "DummyTempPosition-unlinked3": {
         battery: {
           measuredAt: lastMeasureDate,
           type: "battery",
-          values: {
-            battery: 70,
-          },
+          values: { battery: 70 },
         },
         position: {
           measuredAt: lastMeasureDate,
           type: "position",
-          values: {
-            accuracy: 2100,
-            position: {
-              lat: 42.2,
-              lon: 2.42,
-            },
-          },
+          values: { accuracy: 2100, position: { lat: 42.2, lon: 2.42 } },
         },
         temperature: {
           measuredAt: lastMeasureDate,
           type: "temperature",
-          values: {
-            temperature: 24.1,
-          },
+          values: { temperature: 24.1 },
         },
       },
     });
@@ -159,9 +137,7 @@ describe("DevicesController:mGetLastMeasures", () => {
       controller: "device-manager/devices",
       action: "mGetLastMeasures",
       engineId: "engine-ayse",
-      body: {
-        ids: ["DummyTemp-unlinked1"],
-      },
+      body: { ids: ["DummyTemp-unlinked1"] },
     });
 
     expect(Object.keys(result)).toEqual(["DummyTemp-unlinked1"]);

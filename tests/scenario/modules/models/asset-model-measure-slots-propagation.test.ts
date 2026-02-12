@@ -10,8 +10,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("Asset model measure slots propagation", () => {
   const sdk = setupHooks();
 
@@ -43,12 +41,7 @@ describe("Asset model measure slots propagation", () => {
 
     expect(result).toMatchObject({
       _source: {
-        measureSlots: [
-          {
-            name: "temperatureExt",
-            type: "temperature",
-          },
-        ],
+        measureSlots: [{ name: "temperatureExt", type: "temperature" }],
       },
     });
 
@@ -60,14 +53,8 @@ describe("Asset model measure slots propagation", () => {
         model: "Plane",
         metadataMappings: { size: { type: "integer" } },
         measures: [
-          {
-            name: "temperatureExt",
-            type: "temperature",
-          },
-          {
-            name: "temperatureInt",
-            type: "temperature",
-          },
+          { name: "temperatureExt", type: "temperature" },
+          { name: "temperatureInt", type: "temperature" },
         ],
       },
     });
@@ -77,14 +64,8 @@ describe("Asset model measure slots propagation", () => {
     ).resolves.toMatchObject({
       _source: {
         measureSlots: [
-          {
-            name: "temperatureExt",
-            type: "temperature",
-          },
-          {
-            name: "temperatureInt",
-            type: "temperature",
-          },
+          { name: "temperatureExt", type: "temperature" },
+          { name: "temperatureInt", type: "temperature" },
         ],
       },
     });
@@ -118,12 +99,7 @@ describe("Asset model measure slots propagation", () => {
 
     expect(result).toMatchObject({
       _source: {
-        measureSlots: [
-          {
-            name: "temperatureExt",
-            type: "temperature",
-          },
-        ],
+        measureSlots: [{ name: "temperatureExt", type: "temperature" }],
       },
     });
 
@@ -134,14 +110,8 @@ describe("Asset model measure slots propagation", () => {
       model: "Plane",
       body: {
         measures: [
-          {
-            name: "temperatureExt",
-            type: "temperature",
-          },
-          {
-            name: "temperatureInt",
-            type: "temperature",
-          },
+          { name: "temperatureExt", type: "temperature" },
+          { name: "temperatureInt", type: "temperature" },
         ],
       },
     });
@@ -151,14 +121,8 @@ describe("Asset model measure slots propagation", () => {
     ).resolves.toMatchObject({
       _source: {
         measureSlots: [
-          {
-            name: "temperatureExt",
-            type: "temperature",
-          },
-          {
-            name: "temperatureInt",
-            type: "temperature",
-          },
+          { name: "temperatureExt", type: "temperature" },
+          { name: "temperatureInt", type: "temperature" },
         ],
       },
     });

@@ -4,8 +4,6 @@ import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
 
-jest.setTimeout(10000);
-
 describe("features/Decoder/PayloadController", () => {
   const sdk = useSdk();
 

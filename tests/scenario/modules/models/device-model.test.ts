@@ -1,8 +1,6 @@
 import { EditorHintEnum } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
-
 describe("ModelsController:devices", () => {
   const sdk = setupHooks();
 
@@ -15,10 +13,7 @@ describe("ModelsController:devices", () => {
         measures: [{ type: "battery", name: "battery" }],
         metadataMappings: { network: { type: "keyword" } },
         metadataDetails: {
-          network: {
-            readOnly: true,
-            type: EditorHintEnum.BASE,
-          },
+          network: { readOnly: true, type: EditorHintEnum.BASE },
         },
       },
     });
@@ -34,10 +29,7 @@ describe("ModelsController:devices", () => {
         model: "Zigbee",
         metadataMappings: { network: { type: "keyword" } },
         metadataDetails: {
-          network: {
-            readOnly: true,
-            type: EditorHintEnum.BASE,
-          },
+          network: { readOnly: true, type: EditorHintEnum.BASE },
         },
       },
     });
@@ -153,13 +145,7 @@ describe("ModelsController:devices", () => {
     const searchDevices = await sdk.query({
       controller: "device-manager/models",
       action: "searchDevices",
-      body: {
-        query: {
-          match: {
-            "device.model": "Zigbee",
-          },
-        },
-      },
+      body: { query: { match: { "device.model": "Zigbee" } } },
     });
 
     expect(searchDevices.result).toMatchObject({

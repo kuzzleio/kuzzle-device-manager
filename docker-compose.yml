@@ -5,7 +5,7 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 1s
       timeout: 3s
       retries: 30
@@ -18,7 +18,7 @@ services:
     environment:
       - ingest.geoip.downloader.enabled=false
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9200']
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
       interval: 2s
       timeout: 2s
       retries: 10
@@ -30,8 +30,7 @@ services:
   kuzzle:
     image: kuzzleio/kuzzle-runner:${NODE_VERSION:-24}-trixie-slim
     restart: unless-stopped
-    command: "bash /docker/start-backend.sh"
-    profiles: ["backend"]
+    command: "npm run dev"
     depends_on:
       redis:
         condition: service_healthy
@@ -48,23 +47,14 @@ services:
       - "9229:9229"
       - "1883:1883"
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://kuzzle:7512/_healthcheck']
+      test: ["CMD", "curl", "-f", "http://kuzzle:7512/_healthcheck"]
       timeout: 1s
       interval: 2s
       retries: 10
       start_period: 30s
     volumes:
-        - ./docker:/docker:cached
-        - ./index.ts:/var/app/index.ts:cached
-        - ./package.json:/var/app/package.json:cached
-        - ./package-lock.json:/var/app/package-lock.json:cached
-        - ./ergol.config.json:/var/app/ergol.config.json:cached
-        - ./tsconfig.json:/var/app/tsconfig.json:cached
-        - ./lib:/var/app/lib:cached
-        - ./tests:/var/app/tests:cached
-        - ~/.npmrc:/root/.npmrc:cached
-        # Use persistent volume to persist packages install
-        - backendModules:/var/app/node_modules/
+      - ./:/var/app
+      # Use persistent volume to persist packages install
     environment:
       - kuzzle_services__storageEngine__client__node=http://elasticsearch:9200
       - kuzzle_services__storageEngine__commonMapping__dynamic=true
@@ -76,4 +66,3 @@ services:
 
 volumes:
   esdata01:
-  backendModules:

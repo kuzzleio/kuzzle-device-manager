@@ -23,8 +23,6 @@ import {
 } from "../../../fixtures";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 type PartialBody = Omit<ApiAssetCreateRequest, "body"> & {
   body: Partial<ApiAssetCreateRequest["body"]>;
 };
@@ -46,10 +44,7 @@ describe("AssetsController:SCRUD", () => {
 
     const missingModelQuery: PartialBody = {
       ...baseQuery,
-      body: {
-        reference: "A1",
-        metadata: { height: 5 },
-      },
+      body: { reference: "A1", metadata: { height: 5 } },
     };
     await expect(sdk.query(missingModelQuery)).rejects.toThrow(
       /^Missing argument "body.model".$/,
@@ -57,10 +52,7 @@ describe("AssetsController:SCRUD", () => {
 
     const missingReferenceQuery: PartialBody = {
       ...baseQuery,
-      body: {
-        model: "Container",
-        metadata: { height: 5 },
-      },
+      body: { model: "Container", metadata: { height: 5 } },
     };
     await expect(sdk.query(missingReferenceQuery)).rejects.toThrow(
       /^Missing argument "body.reference".$/,
@@ -68,10 +60,7 @@ describe("AssetsController:SCRUD", () => {
 
     const unknownModel: PartialBody = {
       ...baseQuery,
-      body: {
-        model: "truck",
-        reference: "BX98HZ",
-      },
+      body: { model: "truck", reference: "BX98HZ" },
     };
     await expect(sdk.query(unknownModel)).rejects.toThrow(
       'Unknown Asset model "truck" for engineGroup commons.',
@@ -80,13 +69,7 @@ describe("AssetsController:SCRUD", () => {
     const withoutMetadata = await sdk.query<
       ApiAssetCreateRequest,
       ApiAssetCreateResult
-    >({
-      ...baseQuery,
-      body: {
-        model: "Container",
-        reference: "A1",
-      },
-    });
+    >({ ...baseQuery, body: { model: "Container", reference: "A1" } });
     expect(withoutMetadata.status).toBe(200);
     expect(withoutMetadata.result._id).toBe("Container-A1");
     expect(withoutMetadata.result._source).toMatchObject({
@@ -112,20 +95,12 @@ describe("AssetsController:SCRUD", () => {
       body: {
         model: "Container",
         reference: "A2",
-        metadata: {
-          height: 5,
-          person: {
-            company: "ACME",
-          },
-          weight: 10,
-        },
+        metadata: { height: 5, person: { company: "ACME" }, weight: 10 },
       },
     });
     expect(withMetadata._source.metadata).toMatchObject({
       height: 5,
-      person: {
-        company: "ACME",
-      },
+      person: { company: "ACME" },
       trailer: null,
       weight: 10,
     });
@@ -146,9 +121,7 @@ describe("AssetsController:SCRUD", () => {
 
       metadata: {
         height: 5,
-        person: {
-          company: "ACME",
-        },
+        person: { company: "ACME" },
         trailer: null,
         weight: 10,
       },
@@ -187,9 +160,7 @@ describe("AssetsController:SCRUD", () => {
 
     const missingId: Omit<ApiAssetUpdateRequest, "_id"> = {
       ...baseQuery,
-      body: {
-        metadata: { weight: 1250 },
-      },
+      body: { metadata: { weight: 1250 } },
     };
     await expect(sdk.query(missingId)).rejects.toThrow(
       /^Missing argument "_id".$/,
@@ -213,10 +184,7 @@ describe("AssetsController:SCRUD", () => {
     });
     expect(result._source).toMatchObject({
       ...assetAyseLinked1,
-      metadata: {
-        ...assetAyseLinked1.metadata,
-        weight: 1250,
-      },
+      metadata: { ...assetAyseLinked1.metadata, weight: 1250 },
     });
 
     const assetDocument = await sdk.document.get(
@@ -226,10 +194,7 @@ describe("AssetsController:SCRUD", () => {
     );
     expect(assetDocument._source).toMatchObject({
       ...assetAyseLinked1,
-      metadata: {
-        ...assetAyseLinked1.metadata,
-        weight: 1250,
-      },
+      metadata: { ...assetAyseLinked1.metadata, weight: 1250 },
     });
   });
 
@@ -279,21 +244,9 @@ describe("AssetsController:SCRUD", () => {
     });
 
     const hits: ApiAssetSearchResult["hits"] = [
-      {
-        _id: assetAyseLinked1Id,
-        _score: 1,
-        _source: assetAyseLinked1,
-      },
-      {
-        _id: assetAyseLinked2Id,
-        _score: 1,
-        _source: assetAyseLinked2,
-      },
-      {
-        _id: assetAyseUnlinkedId,
-        _score: 1,
-        _source: assetAyseUnlinked,
-      },
+      { _id: assetAyseLinked1Id, _score: 1, _source: assetAyseLinked1 },
+      { _id: assetAyseLinked2Id, _score: 1, _source: assetAyseLinked2 },
+      { _id: assetAyseUnlinkedId, _score: 1, _source: assetAyseUnlinked },
     ];
 
     expect(result).toMatchObject({
@@ -323,9 +276,7 @@ describe("AssetsController:SCRUD", () => {
       InternalCollection.DEVICES,
       deviceAyseLinked1Id,
     );
-    expect(engineDeviceDocument._source).toMatchObject({
-      linkedMeasures: [],
-    });
+    expect(engineDeviceDocument._source).toMatchObject({ linkedMeasures: [] });
   });
 
   it("can upsert asset", async () => {

@@ -4,8 +4,6 @@ import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk } from "../../helpers";
 
-jest.setTimeout(10000);
-
 describe("features/Device/Controller/upsert", () => {
   const sdk = useSdk();
 

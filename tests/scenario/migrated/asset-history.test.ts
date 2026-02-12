@@ -10,8 +10,6 @@ import { beforeEachTruncateCollections } from '../../hooks/collections';
 import { beforeAllCreateEngines } from '../../hooks/engines';
 import { beforeEachLoadFixtures } from '../../hooks/fixtures';
 
-jest.setTimeout(10000);
-
 describe('features/Asset/History', () => {
   const sdk = useSdk();
 

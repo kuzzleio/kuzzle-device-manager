@@ -4,8 +4,6 @@ import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
 import { useSdk, sendPayloads } from "../../helpers";
 
-jest.setTimeout(10000);
-
 describe("features/Device/Roles", () => {
   const sdk = useSdk();
 
@@ -33,7 +31,7 @@ describe("features/Device/Roles", () => {
           "device-manager/devices": { actions: { get: true, search: true } },
           "device-manager/models": { actions: { listDevices: true } },
         },
-      }
+      },
     );
 
     await expect(sdk.security.getRole("devices.admin")).resolves.toMatchObject({
@@ -59,7 +57,7 @@ describe("features/Device/Roles", () => {
     });
 
     await expect(
-      sdk.security.getRole("devices.platform-admin")
+      sdk.security.getRole("devices.platform-admin"),
     ).resolves.toMatchObject({
       controllers: {
         "device-manager/devices": { actions: { "*": true } },

@@ -14,7 +14,6 @@ import {
 import fixtures from "../../../fixtures/fixtures";
 
 const deviceCount = fixtures["engine-ayse"].devices.length / 2;
-jest.setTimeout(10000);
 
 function getExportedColums(row: string) {
   const parsedRow = csvParse(row)[0];

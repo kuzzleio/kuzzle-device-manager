@@ -1,8 +1,6 @@
 import { InternalCollection } from "../../lib/modules/plugin";
 import { setupHooks } from "../helpers";
 
-jest.setTimeout(10000);
-
 describe("Code API", () => {
   const sdk = setupHooks();
 

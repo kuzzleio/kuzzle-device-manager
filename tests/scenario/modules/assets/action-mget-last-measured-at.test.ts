@@ -9,8 +9,6 @@ import {
   ApiAssetMGetLastMeasuredAtResult,
 } from "../../../../lib/modules/asset";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:mGetLastMeasuredAt", () => {
   const sdk = setupHooks();
 
@@ -71,9 +69,7 @@ describe("AssetsController:mGetLastMeasuredAt", () => {
       controller: "device-manager/assets",
       action: "mGetLastMeasuredAt",
       engineId: "engine-ayse",
-      body: {
-        ids: ["Warehouse-linked", "Container-linked2"],
-      },
+      body: { ids: ["Warehouse-linked", "Container-linked2"] },
     });
 
     expect(result).toMatchObject({
@@ -107,9 +103,7 @@ describe("AssetsController:mGetLastMeasuredAt", () => {
       controller: "device-manager/assets",
       action: "mGetLastMeasuredAt",
       engineId: "engine-ayse",
-      body: {
-        ids: ["Container-linked1"],
-      },
+      body: { ids: ["Container-linked1"] },
     });
 
     expect(Object.keys(result)).toEqual(["Container-linked1"]);

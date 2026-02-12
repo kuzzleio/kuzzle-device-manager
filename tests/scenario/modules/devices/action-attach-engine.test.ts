@@ -2,8 +2,6 @@ import { ApiDeviceAttachEngineRequest } from "../../../../index";
 
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:attachEngine", () => {
   const sdk = setupHooks();
 
@@ -18,30 +16,17 @@ describe("DevicesController:attachEngine", () => {
     await expect(
       sdk.document.get("device-manager", "devices", "DummyTemp-detached1"),
     ).resolves.toMatchObject({
-      _source: {
-        engineId: "engine-kuzzle",
-        _kuzzle_info: {
-          updater: "-1",
-        },
-      },
+      _source: { engineId: "engine-kuzzle", _kuzzle_info: { updater: "-1" } },
     });
 
     await expect(
       sdk.document.get("engine-kuzzle", "devices", "DummyTemp-detached1"),
     ).resolves.toMatchObject({
-      _source: {
-        engineId: "engine-kuzzle",
-        _kuzzle_info: {
-          author: "-1",
-        },
-      },
+      _source: { engineId: "engine-kuzzle", _kuzzle_info: { author: "-1" } },
     });
 
     await sendDummyTempPayloads(sdk, [
-      {
-        deviceEUI: "detached1",
-        temperature: 21,
-      },
+      { deviceEUI: "detached1", temperature: 21 },
     ]);
     await sdk.collection.refresh("engine-kuzzle", "measures");
     const count = await sdk.document.count("engine-kuzzle", "measures");
@@ -57,9 +42,7 @@ describe("DevicesController:attachEngine", () => {
         _id: "not-existing-device",
         engineId: "engine-kuzzle",
       }),
-    ).rejects.toMatchObject({
-      id: "services.storage.not_found",
-    });
+    ).rejects.toMatchObject({ id: "services.storage.not_found" });
 
     await expect(
       sdk.query<ApiDeviceAttachEngineRequest>({

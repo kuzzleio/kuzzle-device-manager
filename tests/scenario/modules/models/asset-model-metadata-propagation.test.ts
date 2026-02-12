@@ -12,8 +12,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
-
 describe("Asset model metadata propagation", () => {
   const sdk = setupHooks();
 
@@ -52,10 +50,7 @@ describe("Asset model metadata propagation", () => {
           depth: { type: "integer" },
           width: { type: "integer" },
         },
-        defaultValues: {
-          depth: 80,
-          width: 120,
-        },
+        defaultValues: { depth: 80, width: 120 },
       },
     });
 
@@ -66,10 +61,7 @@ describe("Asset model metadata propagation", () => {
       body: {
         model: "Pallet",
         reference: "unlinked1",
-        metadata: {
-          depth: 82,
-          width: 122,
-        },
+        metadata: { depth: 82, width: 122 },
       },
     });
 
@@ -80,10 +72,7 @@ describe("Asset model metadata propagation", () => {
       body: {
         model: "Pallet",
         reference: "unlinked2",
-        metadata: {
-          depth: 83,
-          width: 123,
-        },
+        metadata: { depth: 83, width: 123 },
       },
     });
 
@@ -98,11 +87,7 @@ describe("Asset model metadata propagation", () => {
           width: { type: "integer" },
           tareWeight: { type: "integer" },
         },
-        defaultValues: {
-          depth: 80,
-          width: 120,
-          tareWeight: 23,
-        },
+        defaultValues: { depth: 80, width: 120, tareWeight: 23 },
       },
     });
 
@@ -115,13 +100,7 @@ describe("Asset model metadata propagation", () => {
       }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
       result: {
-        _source: {
-          metadata: {
-            depth: 82,
-            width: 122,
-            tareWeight: 23,
-          },
-        },
+        _source: { metadata: { depth: 82, width: 122, tareWeight: 23 } },
       },
     });
 
@@ -134,13 +113,7 @@ describe("Asset model metadata propagation", () => {
       }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
       result: {
-        _source: {
-          metadata: {
-            depth: 83,
-            width: 123,
-            tareWeight: 23,
-          },
-        },
+        _source: { metadata: { depth: 83, width: 123, tareWeight: 23 } },
       },
     });
   });
@@ -156,10 +129,7 @@ describe("Asset model metadata propagation", () => {
           depth: { type: "integer" },
           width: { type: "integer" },
         },
-        defaultValues: {
-          depth: 80,
-          width: 120,
-        },
+        defaultValues: { depth: 80, width: 120 },
       },
     });
 
@@ -170,10 +140,7 @@ describe("Asset model metadata propagation", () => {
       body: {
         model: "Pallet",
         reference: "unlinked3",
-        metadata: {
-          depth: 82,
-          width: 122,
-        },
+        metadata: { depth: 82, width: 122 },
       },
     });
 
@@ -184,10 +151,7 @@ describe("Asset model metadata propagation", () => {
       body: {
         model: "Pallet",
         reference: "unlinked4",
-        metadata: {
-          depth: 83,
-          width: 123,
-        },
+        metadata: { depth: 83, width: 123 },
       },
     });
 
@@ -202,10 +166,7 @@ describe("Asset model metadata propagation", () => {
           width: { type: "integer" },
           tareWeight: { type: "integer" },
         },
-        defaultValues: {
-          depth: 80,
-          width: 120,
-        },
+        defaultValues: { depth: 80, width: 120 },
       },
     });
 
@@ -218,13 +179,7 @@ describe("Asset model metadata propagation", () => {
       }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
       result: {
-        _source: {
-          metadata: {
-            depth: 82,
-            width: 122,
-            tareWeight: null,
-          },
-        },
+        _source: { metadata: { depth: 82, width: 122, tareWeight: null } },
       },
     });
 
@@ -237,13 +192,7 @@ describe("Asset model metadata propagation", () => {
       }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
       result: {
-        _source: {
-          metadata: {
-            depth: 83,
-            width: 123,
-            tareWeight: null,
-          },
-        },
+        _source: { metadata: { depth: 83, width: 123, tareWeight: null } },
       },
     });
   });
@@ -260,11 +209,7 @@ describe("Asset model metadata propagation", () => {
           width: { type: "integer" },
           tareWeight: { type: "integer" },
         },
-        defaultValues: {
-          depth: 80,
-          width: 120,
-          tareWeight: 23,
-        },
+        defaultValues: { depth: 80, width: 120, tareWeight: 23 },
       },
     });
 
@@ -275,11 +220,7 @@ describe("Asset model metadata propagation", () => {
       body: {
         model: "Pallet",
         reference: "unlinked5",
-        metadata: {
-          depth: 82,
-          width: 122,
-          tareWeight: 25,
-        },
+        metadata: { depth: 82, width: 122, tareWeight: 25 },
       },
     });
 
@@ -290,11 +231,7 @@ describe("Asset model metadata propagation", () => {
       body: {
         model: "Pallet",
         reference: "unlinked6",
-        metadata: {
-          depth: 83,
-          width: 123,
-          tareWeight: 23,
-        },
+        metadata: { depth: 83, width: 123, tareWeight: 23 },
       },
     });
 
@@ -308,10 +245,7 @@ describe("Asset model metadata propagation", () => {
           depth: { type: "integer" },
           width: { type: "integer" },
         },
-        defaultValues: {
-          depth: 80,
-          width: 120,
-        },
+        defaultValues: { depth: 80, width: 120 },
       },
     });
 
@@ -324,16 +258,7 @@ describe("Asset model metadata propagation", () => {
 
     expect(asset5).toMatchObject<
       PartialDeep<ResponsePayload<ApiAssetGetResult>>
-    >({
-      result: {
-        _source: {
-          metadata: {
-            depth: 82,
-            width: 122,
-          },
-        },
-      },
-    });
+    >({ result: { _source: { metadata: { depth: 82, width: 122 } } } });
 
     expect(asset5).not.toHaveProperty("result._source.metadata.tareWeight");
 
@@ -346,16 +271,7 @@ describe("Asset model metadata propagation", () => {
 
     expect(asset6).toMatchObject<
       PartialDeep<ResponsePayload<ApiAssetGetResult>>
-    >({
-      result: {
-        _source: {
-          metadata: {
-            depth: 83,
-            width: 123,
-          },
-        },
-      },
-    });
+    >({ result: { _source: { metadata: { depth: 83, width: 123 } } } });
 
     expect(asset6).not.toHaveProperty("result._source.metadata.tareWeight");
   });
@@ -371,10 +287,7 @@ describe("Asset model metadata propagation", () => {
           depth: { type: "integer" },
           width: { type: "integer" },
         },
-        defaultValues: {
-          depth: 80,
-          width: 120,
-        },
+        defaultValues: { depth: 80, width: 120 },
       },
     });
 
@@ -385,10 +298,7 @@ describe("Asset model metadata propagation", () => {
       body: {
         model: "Pallet",
         reference: "unlinked7",
-        metadata: {
-          depth: 82,
-          width: 122,
-        },
+        metadata: { depth: 82, width: 122 },
       },
     });
 
@@ -399,10 +309,7 @@ describe("Asset model metadata propagation", () => {
       model: "Pallet",
       body: {
         locales: {
-          en: {
-            friendlyName: "Depth",
-            description: "Depth of the pallet",
-          },
+          en: { friendlyName: "Depth", description: "Depth of the pallet" },
         },
       },
     });
@@ -416,15 +323,6 @@ describe("Asset model metadata propagation", () => {
 
     expect(asset7).toMatchObject<
       PartialDeep<ResponsePayload<ApiAssetGetResult>>
-    >({
-      result: {
-        _source: {
-          metadata: {
-            depth: 82,
-            width: 122,
-          },
-        },
-      },
-    });
+    >({ result: { _source: { metadata: { depth: 82, width: 122 } } } });
   });
 });

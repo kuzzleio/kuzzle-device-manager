@@ -6,8 +6,6 @@ import {
 } from "../../../../index";
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:getMeasures", () => {
   const sdk = setupHooks();
 
@@ -90,9 +88,7 @@ describe("AssetsController:getMeasures", () => {
       action: "getMeasures",
       engineId: "engine-ayse",
       _id: "Container-linked1",
-      body: {
-        sort: { "values.temperature": "desc" },
-      },
+      body: { sort: { "values.temperature": "desc" } },
     });
 
     expect(result.total).toBe(3);
@@ -110,9 +106,7 @@ describe("AssetsController:getMeasures", () => {
       action: "getMeasures",
       engineId: "engine-ayse",
       _id: "Container-linked1",
-      body: {
-        query: { equals: { "values.temperature": 22 } },
-      },
+      body: { query: { equals: { "values.temperature": 22 } } },
       lang: "koncorde",
     });
 

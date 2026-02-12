@@ -13,8 +13,6 @@ import {
 
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("Device SCRUD", () => {
   const sdk = setupHooks();
 
@@ -24,10 +22,7 @@ describe("Device SCRUD", () => {
       controller: "device-manager/devices",
       action: "create",
       engineId: "engine-ayse",
-      body: {
-        model: "DummyTemp",
-        reference: "scrudme",
-      },
+      body: { model: "DummyTemp", reference: "scrudme" },
     });
 
     await sdk.query<ApiDeviceUpdateRequest, ApiDeviceUpdateResult>({
@@ -35,11 +30,7 @@ describe("Device SCRUD", () => {
       action: "update",
       engineId: "engine-ayse",
       _id: "DummyTemp-scrudme",
-      body: {
-        metadata: {
-          color: "RED",
-        },
-      },
+      body: { metadata: { color: "RED" } },
     });
 
     const { result: device } = await sdk.query<
@@ -55,27 +46,13 @@ describe("Device SCRUD", () => {
     expect(device._source).toMatchObject({
       model: "DummyTemp",
       reference: "scrudme",
-      metadata: {
-        color: "RED",
-      },
+      metadata: { color: "RED" },
       measureSlots: [
-        {
-          name: "temperature",
-          type: "temperature",
-        },
-        {
-          name: "accelerationSensor",
-          type: "acceleration",
-        },
-        {
-          name: "battery",
-          type: "battery",
-        },
+        { name: "temperature", type: "temperature" },
+        { name: "accelerationSensor", type: "acceleration" },
+        { name: "battery", type: "battery" },
       ],
-      _kuzzle_info: {
-        author: "-1",
-        updater: "-1",
-      },
+      _kuzzle_info: { author: "-1", updater: "-1" },
     });
     const provisioningDevice = await sdk.document.get(
       "device-manager",
@@ -95,19 +72,13 @@ describe("Device SCRUD", () => {
       action: "search",
       engineId: "engine-ayse",
       lang: "koncorde",
-      body: {
-        query: {
-          equals: { reference: "scrudme" },
-        },
-      },
+      body: { query: { equals: { reference: "scrudme" } } },
     });
 
     expect(result.total).toBe(1);
     expect(result.hits[0]._source).toMatchObject({
       reference: "scrudme",
-      metadata: {
-        color: "RED",
-      },
+      metadata: { color: "RED" },
     });
 
     await sdk.query<ApiDeviceDeleteRequest, ApiDeviceDeleteResult>({
@@ -132,10 +103,7 @@ describe("Device SCRUD", () => {
         controller: "device-manager/devices",
         action: "create",
         engineId: "engine-ayse",
-        body: {
-          model: "NotExisting",
-          reference: "scrudme",
-        },
+        body: { model: "NotExisting", reference: "scrudme" },
       }),
     ).rejects.toThrow('Unknown Device model "NotExisting".');
   });

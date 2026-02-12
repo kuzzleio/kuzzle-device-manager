@@ -9,8 +9,6 @@ import {
   ApiDeviceMGetLastMeasuredAtResult,
 } from "../../../../lib/modules/device";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:mGetLastMeasuredAt", () => {
   const sdk = setupHooks();
 
@@ -107,9 +105,7 @@ describe("DevicesController:mGetLastMeasuredAt", () => {
       controller: "device-manager/devices",
       action: "mGetLastMeasuredAt",
       engineId: "engine-ayse",
-      body: {
-        ids: ["DummyTemp-unlinked1"],
-      },
+      body: { ids: ["DummyTemp-unlinked1"] },
     });
 
     expect(Object.keys(result)).toEqual(["DummyTemp-unlinked1"]);

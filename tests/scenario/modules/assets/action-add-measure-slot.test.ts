@@ -6,8 +6,6 @@ import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
 
 import { useSdk } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("AssetController: add measure slot", () => {
   const sdk = useSdk();
 
@@ -25,14 +23,8 @@ describe("AssetController: add measure slot", () => {
     sdk.disconnect();
   });
 
-  const newSlot = {
-    name: "temperatureInt2",
-    type: "temperature",
-  };
-  const existingSlot = {
-    name: "temperatureInt",
-    type: "temperature",
-  };
+  const newSlot = { name: "temperatureInt2", type: "temperature" };
+  const existingSlot = { name: "temperatureInt", type: "temperature" };
   const wrongMeasureType = {
     name: "wrongMeasure",
     type: "inexistingMeasureType",
@@ -44,16 +36,10 @@ describe("AssetController: add measure slot", () => {
         action: "addMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: newSlot,
-        },
+        body: { measureSlot: newSlot },
       }),
     ).resolves.toMatchObject({
-      result: {
-        _source: {
-          measureSlots: expect.arrayContaining([newSlot]),
-        },
-      },
+      result: { _source: { measureSlots: expect.arrayContaining([newSlot]) } },
     });
   });
   it("should throw an error if the measure type does not exist", async () => {
@@ -63,9 +49,7 @@ describe("AssetController: add measure slot", () => {
         action: "addMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: wrongMeasureType,
-        },
+        body: { measureSlot: wrongMeasureType },
       }),
     ).rejects.toMatchObject({
       message: `There is no measure of type ${wrongMeasureType.type} registered.`,
@@ -78,9 +62,7 @@ describe("AssetController: add measure slot", () => {
         action: "addMeasureSlot",
         engineId: "engine-ayse",
         _id: "Container-linked1",
-        body: {
-          measureSlot: existingSlot,
-        },
+        body: { measureSlot: existingSlot },
       }),
     ).rejects.toMatchObject({
       message: `A measure slot with ${existingSlot.name} as a name already exists for Container-linked1`,

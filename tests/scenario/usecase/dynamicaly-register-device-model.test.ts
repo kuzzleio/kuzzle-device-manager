@@ -11,7 +11,6 @@ import {
 
 import { setupHooks } from "../../helpers";
 const sdk = setupHooks();
-jest.setTimeout(10000);
 
 describe("DeviceScenario: dynamicaly register device model and receive a measure", () => {
   it("register a new device model, create a device from this model and receive a formated measure", async () => {
@@ -31,10 +30,7 @@ describe("DeviceScenario: dynamicaly register device model and receive a measure
       controller: "device-manager/devices",
       action: "create",
       engineId: "engine-ayse",
-      body: {
-        model: "Enginko",
-        reference: "24BA98",
-      },
+      body: { model: "Enginko", reference: "24BA98" },
     });
 
     await sdk.query<
@@ -50,16 +46,12 @@ describe("DeviceScenario: dynamicaly register device model and receive a measure
           {
             measureName: "temperatureInternal",
             type: "temperature",
-            values: {
-              temperature: 28,
-            },
+            values: { temperature: 28 },
           },
           {
             measureName: "temperatureExternal",
             type: "temperature",
-            values: {
-              temperature: 12,
-            },
+            values: { temperature: 12 },
           },
         ],
       },
@@ -77,16 +69,8 @@ describe("DeviceScenario: dynamicaly register device model and receive a measure
     });
 
     expect(result).toMatchObject({
-      temperatureInternal: {
-        values: {
-          temperature: 28,
-        },
-      },
-      temperatureExternal: {
-        values: {
-          temperature: 12,
-        },
-      },
+      temperatureInternal: { values: { temperature: 28 } },
+      temperatureExternal: { values: { temperature: 12 } },
     });
   });
 });

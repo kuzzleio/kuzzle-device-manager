@@ -3,8 +3,6 @@ import { beforeEachTruncateCollections } from "../../../hooks/collections";
 import { beforeAllCreateEngines } from "../../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
 
-jest.setTimeout(20000);
-
 describe("AssetsController:migrateTenant", () => {
   const sdk = useSdk();
 
@@ -50,10 +48,7 @@ describe("AssetsController:migrateTenant", () => {
         controller: "device-manager/assets",
         action: "migrateTenant",
         engineId: "engine-ayse",
-        body: {
-          assetsList: [],
-          newEngineId: "engine-kuzzle",
-        },
+        body: { assetsList: [], newEngineId: "engine-kuzzle" },
       }),
     ).rejects.toThrow("No assets to migrate");
   });
