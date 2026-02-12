@@ -7,12 +7,8 @@ import { useSdk } from "./sdk";
 export function setupHooks(): Kuzzle {
   const sdk = useSdk();
 
-  console.log("sdk", sdk)
-
   beforeAll(async () => {
-    console.log("called connect")
     await sdk.connect();
-    console.log("Connected");
     await beforeAllCreateEngines(sdk);
   });
 
