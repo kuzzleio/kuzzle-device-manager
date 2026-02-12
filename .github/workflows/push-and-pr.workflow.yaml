@@ -73,7 +73,7 @@ jobs:
           exit "$exitcode"
 
       - name: Run tests
-        run: docker compose run npm run test:functional
+        run: docker compose run kuzzle npm run test:functional
 
   release-device-manager:
     name: Release package
