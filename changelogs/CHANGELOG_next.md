@@ -1,3 +1,8 @@
+## 3.0.0-next.21 (2026-02-13)
+
+* Merge branch 'next' of github.com:kuzzleio/kuzzle-device-manager into next ([9ceac57](https://github.com/kuzzleio/kuzzle-device-manager/commit/9ceac57))
+* fix: url of types package ([a548520](https://github.com/kuzzleio/kuzzle-device-manager/commit/a548520))
+
 ## 3.0.0-next.20 (2026-02-13)
 
 * fix: little change to trigger release ([e3094a9](https://github.com/kuzzleio/kuzzle-device-manager/commit/e3094a9))
