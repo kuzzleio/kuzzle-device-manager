@@ -26,7 +26,7 @@ jobs:
 
         run: npm install
       - name: Run lint
-        run: npm run lint
+        run: npm run lint --prefix plugin
 
   check-types:
     name: Check types
@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Run types tests
-        run: npm run test:types
+        run: npm run test:types --prefix plugin
 
   functional-tests:
     name: Functional Tests
