@@ -1,5 +1,5 @@
 import { JSONObject } from "kuzzle-sdk";
-import { Decoder, NamedMeasures } from "../../../modules/decoder";
+import { Decoder, NamedMeasures } from "../../decoder";
 import {
   GroupAffinity,
   LocaleDetails,

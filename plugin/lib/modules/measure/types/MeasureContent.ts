@@ -1,7 +1,7 @@
 import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 
-import { Metadata } from "../../../modules/shared";
-import { AssetMeasureContext } from "../../../modules/asset";
+import { Metadata } from "../../shared";
+import { AssetMeasureContext } from "../../asset";
 
 interface AbstractMeasureOrigin {
   /**

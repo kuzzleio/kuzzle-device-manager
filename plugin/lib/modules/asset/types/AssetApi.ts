@@ -6,7 +6,7 @@ import {
   UpdateByQueryResponse,
 } from "kuzzle-sdk";
 
-import { MeasureContent, Measurement } from "../../../modules/measure";
+import { MeasureContent, Measurement } from "../../measure";
 import {
   ApiDigitalTwinGetLastMeasuredAtRequest,
   ApiDigitalTwinGetLastMeasuredAtResult,

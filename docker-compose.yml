@@ -30,7 +30,7 @@ services:
   kuzzle:
     image: kuzzleio/kuzzle-runner:${NODE_VERSION:-24}-trixie-slim
     restart: unless-stopped
-    command: "npm run dev"
+    command: "npm run dev --prefix plugin"
     depends_on:
       redis:
         condition: service_healthy

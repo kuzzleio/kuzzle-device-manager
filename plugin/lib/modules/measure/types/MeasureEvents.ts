@@ -1,6 +1,6 @@
 import { JSONObject } from "kuzzle-sdk";
 
-import { AssetContent } from "../../../modules/asset";
+import { AssetContent } from "../../asset";
 
 import { DecodedMeasurement, MeasureContent } from "./MeasureContent";
 import { MeasureSource } from "./MeasureSources";

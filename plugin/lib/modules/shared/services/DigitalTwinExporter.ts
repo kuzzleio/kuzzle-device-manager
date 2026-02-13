@@ -8,7 +8,7 @@ import {
   DigitalTwinMeasures,
   EmbeddedMeasure,
   flattenObject,
-} from "../";
+} from "..";
 import { NamedMeasures } from "../../decoder";
 import { MeasureContent, MeasureOriginDevice } from "../../measure";
 import {

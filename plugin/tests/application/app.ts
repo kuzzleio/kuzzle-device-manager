@@ -1,3 +1,5 @@
+/* eslint-disable dot-notation */
+
 import util from "node:util";
 
 import { Backend, KuzzleRequest } from "kuzzle";
@@ -20,9 +22,7 @@ deviceManager.config.engineCollections.devices.mappings.properties["custom"] = {
   type: "keyword",
   fields: { text: { type: "text" } },
 };
-deviceManager.config.engineCollections.groups.mappings.properties[
-  "custom"
-] = {
+deviceManager.config.engineCollections.groups.mappings.properties["custom"] = {
   type: "keyword",
   fields: { text: { type: "text" } },
 };
@@ -48,4 +48,6 @@ app
   .then(() => {
     app.log.info("Application started");
   })
-  .catch(console.error);
+  .catch((error) => {
+    app.log.error(error);
+  });

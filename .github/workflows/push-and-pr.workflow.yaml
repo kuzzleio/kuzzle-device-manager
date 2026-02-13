@@ -65,7 +65,7 @@ jobs:
 
           docker compose run --rm --no-deps kuzzle npm install
           docker compose up -d --wait
-          docker compose exec -T kuzzle npm run test:functional
+          docker compose exec -T kuzzle npm run test:functional --prefix plugin
 
           exitcode="$?"
           [[ "$exitcode" == "0" ]] || docker compose logs kuzzle

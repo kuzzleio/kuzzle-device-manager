@@ -1,13 +1,7 @@
-import {
-  Metadata,
-  AssetContent,
-  AssetModel,
-} from "../../../index";
+/* eslint-disable no-unused-expressions */
+import { Metadata, AssetContent, AssetModel } from "../../../index";
 
-import {  
-  TemperatureMeasurement,
-  PositionMeasurement
-} from "../measures"
+import { TemperatureMeasurement, PositionMeasurement } from "../measures";
 
 const modelName = "Container";
 
@@ -30,7 +24,7 @@ export type ContainerMeasurements = {
   temperatureWeather: TemperatureMeasurement;
 };
 
-export interface ContainerAssetContent extends AssetContent< ContainerMetadata> {
+export interface ContainerAssetContent extends AssetContent<ContainerMetadata> {
   model: typeof modelName;
 }
 
@@ -146,12 +140,12 @@ export const Container: AssetModel = {
     },
     locales: {
       en: {
-        friendlyName: 'Container (translation by model)',
-        description: 'Containerized container',
+        friendlyName: "Container (translation by model)",
+        description: "Containerized container",
       },
       fr: {
-        friendlyName: 'Conteneur (traduit par model)',
-        description: 'Conteneur conteneurisé',
+        friendlyName: "Conteneur (traduit par model)",
+        description: "Conteneur conteneurisé",
       },
     },
   },
@@ -184,14 +178,24 @@ const positionMeasureExample = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const measures = {
   temperatureExt: temperatureMeasureExample,
-  temperatureInt: { ...temperatureMeasureExample, name: "temperatureInt", values: { temperature: 22 } },
+  temperatureInt: {
+    ...temperatureMeasureExample,
+    name: "temperatureInt",
+    values: { temperature: 22 },
+  },
   position: positionMeasureExample,
-  temperatureWeather: { ...temperatureMeasureExample, name: "temperatureWeather", values: { temperature: 15 } },
+  temperatureWeather: {
+    ...temperatureMeasureExample,
+    name: "temperatureWeather",
+    values: { temperature: 15 },
+  },
 };
 
 // This function is never called and only exists to make sure the types are correct
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function neverCalled() {
   const container: ContainerAssetContent = {
     model: "Container",
@@ -206,6 +210,7 @@ function neverCalled() {
 
   // @ts-expect-error
   container.measures.unexistingMeasure;
+
   // @ts-expect-error
   container.measures.temperatureExt.values.notValue;
 }

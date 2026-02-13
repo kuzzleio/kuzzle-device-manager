@@ -1,8 +1,8 @@
 import { User } from "kuzzle";
 import { KDocument } from "kuzzle-sdk";
 
-import { DeviceModelContent } from "../../../modules/model";
-import { Metadata } from "../../../modules/shared";
+import { DeviceModelContent } from "../../model";
+import { Metadata } from "../../shared";
 
 import { DeviceContent } from "./DeviceContent";
 

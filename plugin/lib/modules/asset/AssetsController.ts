@@ -12,7 +12,7 @@ import {
   AskMeasureSourceIngest,
   DecodedMeasurement,
   MeasureExporter,
-} from "../measure/";
+} from "../measure";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { DigitalTwinExporter, EmbeddedMeasure } from "../shared";
 

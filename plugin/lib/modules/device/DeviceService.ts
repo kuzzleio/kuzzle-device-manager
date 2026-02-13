@@ -22,7 +22,7 @@ import {
   AssetContent,
   AssetHistoryEventUnlink,
   AssetSerializer,
-} from "./../asset";
+} from "../asset";
 
 import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
 import { DeviceSerializer } from "./model/DeviceSerializer";

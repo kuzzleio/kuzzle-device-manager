@@ -17,7 +17,7 @@
     "lib/**/*.ts",
     "bin/**/*.ts",
     "tests/application/**/*.ts",
-    "index.ts"
+    "plugin/index.ts"
   ],
   "exclude": [
     "node_modules"
