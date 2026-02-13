@@ -1,3 +1,9 @@
+## 3.0.0-next.22 (2026-02-13)
+
+* fix: add prefix to build command ([da91fee](https://github.com/kuzzleio/kuzzle-device-manager/commit/da91fee))
+* fix: create a workspace for the device manager and one for types ([6ccb890](https://github.com/kuzzleio/kuzzle-device-manager/commit/6ccb890))
+* fix: gitignore and ci cd commands ([c3769c1](https://github.com/kuzzleio/kuzzle-device-manager/commit/c3769c1))
+
 ## 3.0.0-next.21 (2026-02-13)
 
 * Merge branch 'next' of github.com:kuzzleio/kuzzle-device-manager into next ([9ceac57](https://github.com/kuzzleio/kuzzle-device-manager/commit/9ceac57))
