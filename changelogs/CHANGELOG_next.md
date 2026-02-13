@@ -1,3 +1,7 @@
+## 3.0.0-next.20 (2026-02-13)
+
+* fix: little change to trigger release ([e3094a9](https://github.com/kuzzleio/kuzzle-device-manager/commit/e3094a9))
+
 ## 3.0.0-next.19 (2026-02-12)
 
 * chore: linting ([14ba308](https://github.com/kuzzleio/kuzzle-device-manager/commit/14ba308))
