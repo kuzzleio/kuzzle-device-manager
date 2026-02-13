@@ -95,7 +95,7 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
+        run: npm run build --prefix plugin
 
       - name: Release
         env:
