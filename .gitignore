@@ -23,3 +23,7 @@ types/dist/
 
 # Test files
 plugin/*.csv
+*.csv
+
+# Docker
+docker-compose.override.yml

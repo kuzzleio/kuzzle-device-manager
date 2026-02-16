@@ -139,37 +139,16 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(ids).toContain("model-asset-air_quality-engine-ayse-TenantOnly");
   });
 
-  it("List without engineId returns only group + commons (backward compat)", async () => {
-    // Create a tenant-scoped model that should NOT appear
-    await sdk.query({
-      controller: "device-manager/models",
-      action: "writeAsset",
-      body: {
-        engineGroup: "air_quality",
-        model: "HiddenTenant",
-        metadataMappings: {},
-        measures: [],
-        engines: ["engine-ayse"],
-      },
-    });
-
-    await sdk.collection.refresh("device-manager", "models");
-
-    const listResult = await sdk.query({
+  it("List without engineId returns an error (engineId is required)", async () => {
+    const listWithoutEngineId = sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
       engineGroup: "air_quality",
     });
 
-    const ids = listResult.result.models.map((m: { _id: string }) => m._id);
-
-    // Should NOT include tenant-scoped models
-    expect(ids).not.toContain(
-      "model-asset-air_quality-engine-ayse-HiddenTenant",
-    );
-    // Should include group + commons
-    expect(ids).toContain("model-asset-Container");
-    expect(ids).toContain("model-asset-Room");
+    await expect(listWithoutEngineId).rejects.toMatchObject({
+      message: expect.stringContaining("engineId"),
+    });
   });
 
   it("getAsset returns tenant-scoped model over group-scoped when both exist", async () => {

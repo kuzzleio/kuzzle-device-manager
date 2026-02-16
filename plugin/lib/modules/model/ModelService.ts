@@ -61,7 +61,7 @@ export class ModelService extends BaseService {
     onAsk<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
       async ({ engineGroup, model }) => {
-        const assetModel = await this.getAsset(engineGroup, model);
+        const assetModel = await this.getAsset(engineGroup, undefined, model);
 
         return assetModel._source;
       },
@@ -596,16 +596,12 @@ export class ModelService extends BaseService {
     engineGroup: string,
     engineId?: string,
   ): Promise<KDocument<AssetModelContent>[]> {
-    const result = await this.searchAssets(
-      engineGroup,
-      {
-        searchBody: {
-          sort: { "asset.model": "asc" },
-        },
-        size: 5000,
+    const result = await this.searchAssets(engineGroup, engineId, {
+      searchBody: {
+        sort: { "asset.model": "asc" },
       },
-      engineId,
-    );
+      size: 5000,
+    });
 
     return result.hits;
   }
@@ -647,8 +643,8 @@ export class ModelService extends BaseService {
 
   async searchAssets(
     engineGroup: string,
+    engineId: string | undefined,
     searchParams: Partial<SearchParams>,
-    engineId?: string,
   ): Promise<SearchResult<KHit<AssetModelContent>>> {
     const scopeFilter = engineId
       ? {
@@ -658,19 +654,19 @@ export class ModelService extends BaseService {
                 bool: {
                   must: [
                     { term: { engines: engineId } },
-                    { match: { engineGroup } },
+                    { term: { engineGroup } },
                   ],
                 },
               },
               {
                 bool: {
-                  must: [{ match: { engineGroup } }],
+                  must: [{ term: { engineGroup } }],
                   must_not: [{ exists: { field: "engines" } }],
                 },
               },
               {
                 bool: {
-                  must: [{ match: { engineGroup: "commons" } }],
+                  must: [{ term: { engineGroup: "commons" } }],
                   must_not: [{ exists: { field: "engines" } }],
                 },
               },
@@ -682,13 +678,13 @@ export class ModelService extends BaseService {
             should: [
               {
                 bool: {
-                  must: [{ match: { engineGroup } }],
+                  must: [{ term: { engineGroup } }],
                   must_not: [{ exists: { field: "engines" } }],
                 },
               },
               {
                 bool: {
-                  must: [{ match: { engineGroup: "commons" } }],
+                  must: [{ term: { engineGroup: "commons" } }],
                   must_not: [{ exists: { field: "engines" } }],
                 },
               },
@@ -847,64 +843,79 @@ export class ModelService extends BaseService {
 
   async getAsset(
     engineGroup: string,
+    engineId: string | undefined,
     model: string,
-    engineId?: string,
   ): Promise<KDocument<AssetModelContent>> {
-    const scopeFilter = engineId
-      ? {
-          or: [
-            { equals: { engineGroup } },
-            { equals: { engineGroup: "commons" } },
-          ],
-        }
-      : {
-          or: [
-            { equals: { engineGroup } },
-            { equals: { engineGroup: "commons" } },
-          ],
-        };
+    const baseFilter = [
+      { term: { type: "asset" } },
+      { term: { "asset.model": model } },
+    ];
 
-    const query = {
-      and: [
-        scopeFilter,
-        { equals: { type: "asset" } },
-        { equals: { "asset.model": model } },
-      ],
-    };
-
-    const result = await this.sdk.document.search<AssetModelContent>(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      { query },
-      { lang: "koncorde", size: 10 },
-    );
-
-    if (result.total === 0) {
-      throw new NotFoundError(
-        `Unknown Asset model "${model}" for engineGroup ${engineGroup}.`,
-      );
-    }
-
+    // Priority 1: tenant-scoped model for this specific engine
     if (engineId) {
-      // Priority: tenant-scoped > group-scoped > commons
-      const tenantScoped = result.hits.find((hit) =>
-        hit._source.engines?.includes(engineId),
+      const tenantQuery = {
+        bool: {
+          must: [
+            ...baseFilter,
+            { term: { engineGroup } },
+            { term: { engines: engineId } },
+          ],
+        },
+      };
+
+      const tenantResult = await this.sdk.document.search<AssetModelContent>(
+        this.config.platformIndex,
+        InternalCollection.MODELS,
+        { query: tenantQuery },
+        { size: 1 },
       );
-      if (tenantScoped) {
-        return tenantScoped;
+
+      if (tenantResult.total > 0) {
+        return tenantResult.hits[0];
       }
     }
 
-    // Fallback: prefer group-scoped over commons
-    const groupScoped = result.hits.find(
-      (hit) =>
-        hit._source.engineGroup === engineGroup && !hit._source.engines?.length,
+    // Priority 2: group-scoped model (no engines field)
+    const groupQuery = {
+      bool: {
+        must: [...baseFilter, { term: { engineGroup } }],
+        must_not: [{ exists: { field: "engines" } }],
+      },
+    };
+
+    const groupResult = await this.sdk.document.search<AssetModelContent>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      { query: groupQuery },
+      { size: 1 },
     );
-    if (groupScoped) {
-      return groupScoped;
+
+    if (groupResult.total > 0) {
+      return groupResult.hits[0];
     }
 
-    return result.hits[0];
+    // Priority 3: commons model
+    const commonsQuery = {
+      bool: {
+        must: [...baseFilter, { term: { engineGroup: "commons" } }],
+        must_not: [{ exists: { field: "engines" } }],
+      },
+    };
+
+    const commonsResult = await this.sdk.document.search<AssetModelContent>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      { query: commonsQuery },
+      { size: 1 },
+    );
+
+    if (commonsResult.total > 0) {
+      return commonsResult.hits[0];
+    }
+
+    throw new NotFoundError(
+      `Unknown Asset model "${model}" for engineGroup ${engineGroup}.`,
+    );
   }
 
   async getDevice(model: string): Promise<KDocument<DeviceModelContent>> {
@@ -999,7 +1010,7 @@ export class ModelService extends BaseService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
-    const existingAsset = await this.getAsset(engineGroup, model);
+    const existingAsset = await this.getAsset(engineGroup, undefined, model);
 
     // The field must be deleted if an element of the table is to be deleted
     await this.sdk.document.deleteFields(

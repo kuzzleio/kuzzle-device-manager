@@ -81,6 +81,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "listAssets",
       engineGroup: "commons",
+      engineId: "engine-ayse",
     });
 
     expect(listAssets.result.total).toBe(4);
@@ -95,6 +96,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "getAsset",
       engineGroup: "commons",
+      engineId: "engine-ayse",
       model: "Plane",
     });
 
@@ -109,6 +111,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "listAssets",
       engineGroup: "air_quality",
+      engineId: "engine-ayse",
     });
 
     expect(listAssets.result.total).toBe(4);
@@ -155,6 +158,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroup: "commons",
+      engineId: "engine-ayse",
       body: { query: { match: { "asset.model": "Plane" } } },
     });
 
@@ -169,6 +173,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroup: "air_quality",
+      engineId: "engine-ayse",
       body: { query: { match: { "asset.model": "Warehouse" } } },
     });
 
@@ -181,6 +186,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroup: "air_quality",
+      engineId: "engine-ayse",
       body: { query: { match: { "asset.model": "Room" } } },
     });
 
@@ -193,6 +199,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroup: "air_quality",
+      engineId: "engine-ayse",
       body: { query: { match: { "asset.model": "StreetLamp" } } },
     });
 

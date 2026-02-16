@@ -29,6 +29,9 @@ Method: POST
   "body": {
     "engineGroup": "<engine group>",
     "model": "<asset model>",
+    "engines": [
+      // Optional. Array of engine IDs (tenant IDs) this model is scoped to.
+    ],
 
     // Optional
 
@@ -120,9 +123,6 @@ Method: POST
     },
     "measures": [
       // Array of measure definition with type and name
-    ],
-    "engines": [
-      // Optional. Array of engine IDs (tenant IDs) this model is scoped to.
     ]
   }
 }
@@ -134,13 +134,13 @@ Method: POST
 
 - `engineGroup`: Name of the engine group
 - `model`: Asset model name
+- `engines`: Optional. Array of engine IDs (tenant IDs) this model is scoped to. When set, the model is only available to the specified tenants. When absent, the model is available to all tenants in the engine group.
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Translations, metadata group, and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
 - `metadataGroups`: Groups list with translations for group name
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
-- `engines`: Optional. Array of engine IDs (tenant IDs) this model is scoped to. When set, the model is only available to the specified tenants. When absent, the model is available to all tenants in the engine group.
 
 ---
 
