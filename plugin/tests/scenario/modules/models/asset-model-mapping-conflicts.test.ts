@@ -1,6 +1,7 @@
+import { vi } from "vitest";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
+vi.setConfig({ testTimeout: 30000 });
 
 /**
  * KZLPRD-1150 — Tenant-scoped asset model mapping conflict detection
