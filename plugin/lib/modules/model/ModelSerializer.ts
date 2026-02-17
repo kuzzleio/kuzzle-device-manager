@@ -21,6 +21,11 @@ export class ModelSerializer {
     } else if (type === "group") {
       return `model-group-${ModelSerializer.title(type, model)}`;
     } else if (type === "measure") {
+      const measureModel = model as MeasureModelContent;
+      if (measureModel.engines?.length) {
+        const sortedEngines = [...measureModel.engines].sort().join("+");
+        return `model-measure-${sortedEngines}-${ModelSerializer.title(type, model)}`;
+      }
       return `model-measure-${ModelSerializer.title(type, model)}`;
     }
 

@@ -508,6 +508,7 @@ export class ModelService extends BaseService {
     locales?: {
       [valueName: string]: LocaleDetails;
     },
+    engines?: string[],
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
       measure: {
@@ -518,6 +519,10 @@ export class ModelService extends BaseService {
       },
       type: "measure",
     };
+
+    if (engines?.length) {
+      modelContent.engines = engines;
+    }
 
     if (validationSchema) {
       try {
@@ -630,8 +635,10 @@ export class ModelService extends BaseService {
     return result.hits;
   }
 
-  async listMeasures(): Promise<KDocument<MeasureModelContent>[]> {
-    const result = await this.searchMeasures({
+  async listMeasures(
+    engineId?: string,
+  ): Promise<KDocument<MeasureModelContent>[]> {
+    const result = await this.searchMeasures(engineId, {
       searchBody: {
         sort: { "measure.type": "asc" },
       },
@@ -784,13 +791,30 @@ export class ModelService extends BaseService {
   }
 
   async searchMeasures(
+    engineId: string | undefined,
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<MeasureModelContent>>> {
+    const scopeFilter = engineId
+      ? {
+          bool: {
+            should: [
+              { term: { engines: engineId } },
+              { bool: { must_not: [{ exists: { field: "engines" } }] } },
+            ],
+          },
+        }
+      : {
+          bool: {
+            must_not: [{ exists: { field: "engines" } }],
+          },
+        };
+
     const query = {
       bool: {
         must: [
           searchParams.searchBody.query,
           { term: { type: "measure" } },
+          scopeFilter,
         ].filter(Boolean),
       },
     };
@@ -973,26 +997,55 @@ export class ModelService extends BaseService {
     return result.hits[0];
   }
 
-  async getMeasure(type: string): Promise<KDocument<MeasureModelContent>> {
-    const query = {
-      and: [
-        { equals: { type: "measure" } },
-        { equals: { "measure.type": type } },
-      ],
-    };
+  async getMeasure(
+    type: string,
+    engineId?: string,
+  ): Promise<KDocument<MeasureModelContent>> {
+    const baseFilter = [
+      { term: { type: "measure" } },
+      { term: { "measure.type": type } },
+    ];
 
-    const result = await this.sdk.document.search<MeasureModelContent>(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      { query },
-      { lang: "koncorde", size: 1 },
-    );
+    // Priority 1: tenant-scoped measure (if engineId provided)
+    if (engineId) {
+      const tenantResult = await this.sdk.document.search<MeasureModelContent>(
+        this.config.platformIndex,
+        InternalCollection.MODELS,
+        {
+          query: {
+            bool: {
+              must: [...baseFilter, { term: { engines: engineId } }],
+            },
+          },
+        },
+        { lang: "elasticsearch", size: 1 },
+      );
 
-    if (result.total === 0) {
-      throw new NotFoundError(`Unknown Measure type "${type}".`);
+      if (tenantResult.total > 0) {
+        return tenantResult.hits[0];
+      }
     }
 
-    return result.hits[0];
+    // Priority 2: global measure (no engines field)
+    const globalResult = await this.sdk.document.search<MeasureModelContent>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      {
+        query: {
+          bool: {
+            must: baseFilter,
+            must_not: [{ exists: { field: "engines" } }],
+          },
+        },
+      },
+      { lang: "elasticsearch", size: 1 },
+    );
+
+    if (globalResult.total > 0) {
+      return globalResult.hits[0];
+    }
+
+    throw new NotFoundError(`Unknown Measure type "${type}".`);
   }
 
   /**

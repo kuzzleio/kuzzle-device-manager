@@ -26,7 +26,10 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "getMeasure",
-  "type": "<measure type>"
+  "type": "<measure type>",
+
+  // Optional
+  "engineId": "<engine ID>"
 }
 ```
 
@@ -35,6 +38,7 @@ Method: GET
 ## Arguments
 
 - `type`: measure type
+- `engineId`: (optional) engine ID. When provided, tenant-scoped measure models take priority over global ones
 
 ---
 

@@ -26,10 +26,17 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "listMeasures",
+
+  // Optional
+  "engineId": "<engine ID>"
 }
 ```
 
 ---
+
+## Arguments
+
+- `engineId`: (optional) engine ID. When provided, returns both tenant-scoped measure models for this engine and global measure models. When omitted, returns only global measure models
 
 ---
 
