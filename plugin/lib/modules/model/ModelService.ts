@@ -84,8 +84,8 @@ export class ModelService extends BaseService {
     );
     onAsk<AskModelMeasureGet>(
       "ask:device-manager:model:measure:get",
-      async ({ type }) => {
-        const measureModel = await this.getMeasure(type);
+      async ({ type, engineId }) => {
+        const measureModel = await this.getMeasure(type, engineId);
 
         return measureModel._source;
       },

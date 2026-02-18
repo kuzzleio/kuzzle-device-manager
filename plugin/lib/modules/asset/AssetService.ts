@@ -793,6 +793,7 @@ export class AssetService extends DigitalTwinService {
     try {
       await ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
         type: measureSlot.type,
+        engineId,
       });
     } catch {
       throw new BadRequestError(

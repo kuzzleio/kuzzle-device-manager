@@ -24,7 +24,7 @@ export type AskModelDeviceGet = {
 export type AskModelMeasureGet = {
   name: "ask:device-manager:model:measure:get";
 
-  payload: { type: string };
+  payload: { type: string; engineId?: string };
 
   result: MeasureModelContent;
 };
