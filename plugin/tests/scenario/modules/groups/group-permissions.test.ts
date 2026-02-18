@@ -15,7 +15,6 @@ import {
 import { AssetContent } from "../../../../lib/modules/asset/exports";
 import { InternalCollection } from "../../../../lib/modules/plugin";
 import { setupHooks } from "../../../helpers";
-import { loadSecurityDefault } from "../../../hooks/security";
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
@@ -36,7 +35,7 @@ describe("GroupsController", () => {
   const now = Date.now();
 
   beforeAll(async () => {
-    await loadSecurityDefault(sdk);
+    // Security setup handled by vitest globalSetup
     // ? Use user with restricted permissions to tests permissions
     await sdk.auth.login("local", {
       username: "ayse-admin",

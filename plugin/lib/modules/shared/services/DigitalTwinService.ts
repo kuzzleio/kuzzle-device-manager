@@ -183,7 +183,7 @@ export class DigitalTwinService extends BaseService {
       );
 
       const [assetModel, deviceModel] = await Promise.all([
-        this.getAssetModel(engine.group, asset._source.model),
+        this.getAssetModel(engine.group, asset._source.model, engineId),
         this.getDeviceModel(deviceProvisioning._source.model),
       ]);
 
@@ -806,9 +806,11 @@ export class DigitalTwinService extends BaseService {
   protected getAssetModel(
     engineGroup: string,
     model: string,
+    engineId?: string,
   ): Promise<AssetModelContent> {
     return ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
       engineGroup,
+      engineId,
       model,
     });
   }

@@ -60,8 +60,8 @@ export class ModelService extends BaseService {
   registerAskEvents() {
     onAsk<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      async ({ engineGroup, model }) => {
-        const assetModel = await this.getAsset(engineGroup, undefined, model);
+      async ({ engineGroup, engineId, model }) => {
+        const assetModel = await this.getAsset(engineGroup, engineId, model);
 
         return assetModel._source;
       },
@@ -696,7 +696,7 @@ export class ModelService extends BaseService {
       bool: {
         must: [
           searchParams.searchBody.query,
-          { match: { type: "asset" } },
+          { term: { type: "asset" } },
           scopeFilter,
         ],
       },
@@ -723,7 +723,7 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<DeviceModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { match: { type: "device" } }],
+        must: [searchParams.searchBody.query, { term: { type: "device" } }],
       },
     };
 
@@ -751,12 +751,12 @@ export class ModelService extends BaseService {
       bool: {
         must: [
           searchParams.searchBody.query,
-          { match: { type: "group" } },
+          { term: { type: "group" } },
           {
             bool: {
               should: [
-                { match: { engineGroup } },
-                { match: { engineGroup: "commons" } },
+                { term: { engineGroup } },
+                { term: { engineGroup: "commons" } },
               ],
             },
           },
@@ -785,7 +785,7 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<MeasureModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { match: { type: "measure" } }],
+        must: [searchParams.searchBody.query, { term: { type: "measure" } }],
       },
     };
 

@@ -504,6 +504,7 @@ export class AssetsController {
       "ask:device-manager:model:asset:get",
       {
         engineGroup,
+        engineId: indexId,
         model: asset.model,
       },
     );
