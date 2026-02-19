@@ -698,7 +698,7 @@ export class ModelService extends BaseService {
           searchParams.searchBody.query,
           { term: { type: "asset" } },
           scopeFilter,
-        ],
+        ].filter(Boolean),
       },
     };
 
@@ -723,7 +723,7 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<DeviceModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { term: { type: "device" } }],
+        must: [searchParams.searchBody.query, { term: { type: "device" } }].filter(Boolean),
       },
     };
 
@@ -760,7 +760,7 @@ export class ModelService extends BaseService {
               ],
             },
           },
-        ],
+        ].filter(Boolean),
       },
     };
 
@@ -785,7 +785,7 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<MeasureModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { term: { type: "measure" } }],
+        must: [searchParams.searchBody.query, { term: { type: "measure" } }].filter(Boolean),
       },
     };
 
@@ -867,7 +867,7 @@ export class ModelService extends BaseService {
         this.config.platformIndex,
         InternalCollection.MODELS,
         { query: tenantQuery },
-        { size: 1 },
+        { lang: "elasticsearch", size: 1 },
       );
 
       if (tenantResult.total > 0) {
@@ -887,7 +887,7 @@ export class ModelService extends BaseService {
       this.config.platformIndex,
       InternalCollection.MODELS,
       { query: groupQuery },
-      { size: 1 },
+      { lang: "elasticsearch", size: 1 },
     );
 
     if (groupResult.total > 0) {
@@ -906,7 +906,7 @@ export class ModelService extends BaseService {
       this.config.platformIndex,
       InternalCollection.MODELS,
       { query: commonsQuery },
-      { size: 1 },
+      { lang: "elasticsearch", size: 1 },
     );
 
     if (commonsResult.total > 0) {
