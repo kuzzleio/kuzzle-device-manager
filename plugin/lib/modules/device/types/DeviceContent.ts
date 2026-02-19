@@ -32,7 +32,7 @@ export interface DeviceContent<
 
   /**
    */
-  engineId: string;
+  engineId: string | null;
   /**
    * Path's of device's groups
    */
