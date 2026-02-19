@@ -1,5 +1,5 @@
-import { BadRequestError, KuzzleRequest } from "kuzzle";
-import { ask, onAsk } from "kuzzle-plugin-commons";
+import { BadRequestError, KuzzleRequest } from 'kuzzle';
+import { ask, onAsk } from 'kuzzle-plugin-commons';
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -7,37 +7,30 @@ import {
   KDocument,
   KHit,
   SearchResult,
-} from "kuzzle-sdk";
+} from 'kuzzle-sdk';
 
-import { DecodedMeasurement } from "../measure";
-import { DeviceModelContent } from "../model";
-import {
-  AskEngineList,
-  DeviceManagerPlugin,
-  InternalCollection,
-} from "../plugin";
-import { DigitalTwinService, Metadata, SearchParams, lock } from "../shared";
+import { DecodedMeasurement } from '../measure';
+import { DeviceModelContent } from '../model';
+import { AskEngineList, DeviceManagerPlugin, InternalCollection } from '../plugin';
+import { DigitalTwinService, Metadata, SearchParams, lock } from '../shared';
 import {
   AskAssetHistoryAdd,
   AssetContent,
   AssetHistoryEventUnlink,
   AssetSerializer,
-} from "../asset";
+} from '../asset';
 
-import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
-import { DeviceSerializer } from "./model/DeviceSerializer";
-import {
-  DeviceProvisioningContent,
-  DeviceContent,
-} from "./types/DeviceContent";
+import { AskPayloadReceiveFormated } from '../decoder/types/PayloadEvents';
+import { DeviceSerializer } from './model/DeviceSerializer';
+import { DeviceProvisioningContent, DeviceContent } from './types/DeviceContent';
 import {
   AskDeviceAttachEngine,
   AskDeviceDetachEngine,
   AskDeviceRefreshModel,
   EventDeviceUpdateAfter,
   EventDeviceUpdateBefore,
-} from "./types/DeviceEvents";
-import { ApiDeviceUnlinkAssetsResult } from "./exports";
+} from './types/DeviceEvents';
+import { ApiDeviceUnlinkAssetsResult } from './exports';
 
 export class DeviceService extends DigitalTwinService {
   constructor(plugin: DeviceManagerPlugin) {
@@ -47,22 +40,22 @@ export class DeviceService extends DigitalTwinService {
   override registerAskEvents() {
     super.registerAskEvents();
     onAsk<AskDeviceDetachEngine>(
-      "ask:device-manager:device:detach-engine",
+      'ask:device-manager:device:detach-engine',
       async ({ deviceId, user }) => {
-        const request = new KuzzleRequest({ refresh: "false" }, { user });
+        const request = new KuzzleRequest({ refresh: 'false' }, { user });
         await this.detachEngine(deviceId, request);
       },
     );
 
     onAsk<AskDeviceAttachEngine>(
-      "ask:device-manager:device:attach-engine",
+      'ask:device-manager:device:attach-engine',
       async ({ deviceId, engineId, user }) => {
-        const request = new KuzzleRequest({ refresh: "false" }, { user });
+        const request = new KuzzleRequest({ refresh: 'false' }, { user });
         await this.attachEngine(engineId, deviceId, request);
       },
     );
     onAsk<AskDeviceRefreshModel>(
-      "ask:device-manager:device:refresh-model",
+      'ask:device-manager:device:refresh-model',
       this.refreshModel.bind(this),
     );
   }
@@ -88,7 +81,7 @@ export class DeviceService extends DigitalTwinService {
     };
 
     const deviceModel = await this.getDeviceModel(model);
-    const engineId = request.getString("engineId", "");
+    const engineId = request.getString('engineId', '');
 
     device._source.measureSlots = deviceModel.device.measures;
 
@@ -102,20 +95,15 @@ export class DeviceService extends DigitalTwinService {
       collection: InternalCollection.DEVICES,
       index: this.config.platformIndex,
     });
-    if (engineId.trim() !== "" && engineId !== this.config.platformIndex) {
-      device = await this._attachEngine(
-        engineId,
-        device._id,
-        request,
-        metadata,
-      );
+    if (engineId.trim() !== '' && engineId !== this.config.platformIndex) {
+      device = await this._attachEngine(engineId, device._id, request, metadata);
 
       refreshableCollections.push({
         collection: InternalCollection.DEVICES,
         index: engineId,
       });
     }
-    if (request.getRefresh() === "wait_for") {
+    if (request.getRefresh() === 'wait_for') {
       await Promise.all(
         refreshableCollections.map(({ index, collection }) =>
           this.sdk.collection.refresh(index, collection),
@@ -135,7 +123,7 @@ export class DeviceService extends DigitalTwinService {
         {
           _id: device._id,
           _source: {
-            engineId: device._source.engineId,
+            engineId: null,
             lastMeasuredAt: null,
             lastMeasures: [],
             measureSlots: device._source.measureSlots,
@@ -200,7 +188,7 @@ export class DeviceService extends DigitalTwinService {
       }
 
       const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
-        "device-manager:device:update:before",
+        'device-manager:device:update:before',
         { device: device, metadata },
       );
 
@@ -211,13 +199,10 @@ export class DeviceService extends DigitalTwinService {
         updatedPayload.device._source,
       );
 
-      await this.app.trigger<EventDeviceUpdateAfter>(
-        "device-manager:device:update:after",
-        {
-          device: updatedDevice,
-          metadata: updatedPayload.metadata,
-        },
-      );
+      await this.app.trigger<EventDeviceUpdateAfter>('device-manager:device:update:after', {
+        device: updatedDevice,
+        metadata: updatedPayload.metadata,
+      });
 
       return updatedDevice;
     });
@@ -236,35 +221,28 @@ export class DeviceService extends DigitalTwinService {
     const deviceId = DeviceSerializer.id(model, reference);
 
     return lock(`device:${deviceId}`, async () => {
-      const deviceProvisioning = await this.get(
-        this.config.platformIndex,
-        deviceId,
-        request,
-      ).catch(() => null);
+      const deviceProvisioning = await this.get(this.config.platformIndex, deviceId, request).catch(
+        () => null,
+      );
 
       if (!deviceProvisioning) {
         return this._create(deviceId, model, reference, metadata, request);
       }
 
-      if (
-        deviceProvisioning._source.engineId &&
-        deviceProvisioning._source.engineId !== engineId
-      ) {
+      if (deviceProvisioning._source.engineId && deviceProvisioning._source.engineId !== engineId) {
         throw new BadRequestError(
           `Device "${deviceProvisioning._id}" already exists on another engine. Abort`,
         );
       }
 
-      const engineDevice = await this.get(engineId, deviceId, request).catch(
-        () => null,
-      );
+      const engineDevice = await this.get(engineId, deviceId, request).catch(() => null);
 
       if (!engineDevice) {
         await this._attachEngine(engineId, deviceId, request);
       }
 
       const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
-        "device-manager:device:update:before",
+        'device-manager:device:update:before',
         { device: deviceProvisioning, metadata },
       );
 
@@ -281,13 +259,10 @@ export class DeviceService extends DigitalTwinService {
         { source: true },
       );
 
-      await this.app.trigger<EventDeviceUpdateAfter>(
-        "device-manager:device:update:after",
-        {
-          device: updatedDevice,
-          metadata: updatedPayload.metadata,
-        },
-      );
+      await this.app.trigger<EventDeviceUpdateAfter>('device-manager:device:update:after', {
+        device: updatedDevice,
+        metadata: updatedPayload.metadata,
+      });
 
       return updatedDevice;
     });
@@ -303,7 +278,7 @@ export class DeviceService extends DigitalTwinService {
       const device = await this.get(engineId, deviceId, request);
 
       const updatedPayload = await this.app.trigger<EventDeviceUpdateBefore>(
-        "device-manager:device:update:before",
+        'device-manager:device:update:before',
         { device, metadata },
       );
 
@@ -317,35 +292,27 @@ export class DeviceService extends DigitalTwinService {
         { source: true },
       );
 
-      await this.app.trigger<EventDeviceUpdateAfter>(
-        "device-manager:device:update:after",
-        {
-          device: updatedDevice,
-          metadata: updatedPayload.metadata,
-        },
-      );
+      await this.app.trigger<EventDeviceUpdateAfter>('device-manager:device:update:after', {
+        device: updatedDevice,
+        metadata: updatedPayload.metadata,
+      });
 
       return updatedDevice;
     });
   }
 
-  public async delete(
-    engineId: string,
-    deviceId: string,
-    request: KuzzleRequest,
-  ) {
+  public async delete(engineId: string, deviceId: string, request: KuzzleRequest) {
     return lock<void>(`device:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId, request);
 
       const promises = [];
 
       if (device._source.linkedMeasures?.length) {
-        const { successes: assets } =
-          await this.sdk.document.mGet<AssetContent>(
-            engineId,
-            InternalCollection.ASSETS,
-            device._source.linkedMeasures.map((link) => link.assetId),
-          );
+        const { successes: assets } = await this.sdk.document.mGet<AssetContent>(
+          engineId,
+          InternalCollection.ASSETS,
+          device._source.linkedMeasures.map((link) => link.assetId),
+        );
 
         for (const asset of assets) {
           const linkedDevices = asset._source.linkedMeasures.filter(
@@ -362,14 +329,14 @@ export class DeviceService extends DigitalTwinService {
                 { collection: InternalCollection.ASSETS, engineId },
               ).then(async (updatedAsset) => {
                 const event: AssetHistoryEventUnlink = {
-                  name: "unlink",
+                  name: 'unlink',
                   unlink: {
                     deviceId,
                   },
                 };
 
                 await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
-                  "ask:device-manager:asset:history:add",
+                  'ask:device-manager:asset:history:add',
                   {
                     engineId,
                     histories: [
@@ -424,23 +391,24 @@ export class DeviceService extends DigitalTwinService {
     measureSlots: string[],
     request: KuzzleRequest,
   ): Promise<ApiDeviceUnlinkAssetsResult> {
-    const engineId = request.getString("engineId");
+    const engineId = request.getString('engineId');
     let device = await this.get(engineId, deviceId, request);
     const assets = [];
 
     // CASE ALL MEASURES TO UNLINK
     if (allMeasures) {
-      const assetsToUnlink = device._source.linkedMeasures.map(
-        (m) => m.assetId,
-      );
+      const assetsToUnlink = device._source.linkedMeasures.map((m) => m.assetId);
       if (assetsToUnlink.length === 0) {
-        throw new BadRequestError(
-          `Device ${deviceId} has no measure to be unlinked`,
-        );
+        throw new BadRequestError(`Device ${deviceId} has no measure to be unlinked`);
       }
       for (const asset of assetsToUnlink) {
-        const { asset: updatedAsset, device: updatedDevice } =
-          await this.unlinkAssetDevice(deviceId, asset, [], true, request);
+        const { asset: updatedAsset, device: updatedDevice } = await this.unlinkAssetDevice(
+          deviceId,
+          asset,
+          [],
+          true,
+          request,
+        );
         assets.push(AssetSerializer.serialize(updatedAsset));
         device = DeviceSerializer.serialize(updatedDevice);
       }
@@ -449,8 +417,13 @@ export class DeviceService extends DigitalTwinService {
 
     // CASE ALL MEASURES FROM SPECIFIC ASSETS TO UNLINK
     for (const asset of assetIds) {
-      const { asset: updatedAsset, device: updatedDevice } =
-        await this.unlinkAssetDevice(deviceId, asset, [], true, request);
+      const { asset: updatedAsset, device: updatedDevice } = await this.unlinkAssetDevice(
+        deviceId,
+        asset,
+        [],
+        true,
+        request,
+      );
       assets.push(AssetSerializer.serialize(updatedAsset));
       device = DeviceSerializer.serialize(updatedDevice);
     }
@@ -460,16 +433,13 @@ export class DeviceService extends DigitalTwinService {
     for (const linkedMeasures of device._source.linkedMeasures.filter((l) =>
       l.measureSlots.some((s) => measureSlots.includes(s.device)),
     )) {
-      const { asset: updatedAsset, device: updatedDevice } =
-        await this.unlinkAssetDevice(
-          deviceId,
-          linkedMeasures.assetId,
-          linkedMeasures.measureSlots.filter((slot) =>
-            measureSlots.includes(slot.device),
-          ),
-          false,
-          request,
-        );
+      const { asset: updatedAsset, device: updatedDevice } = await this.unlinkAssetDevice(
+        deviceId,
+        linkedMeasures.assetId,
+        linkedMeasures.measureSlots.filter((slot) => measureSlots.includes(slot.device)),
+        false,
+        request,
+      );
       assets.push(AssetSerializer.serialize(updatedAsset));
       device = DeviceSerializer.serialize(updatedDevice);
     }
@@ -493,9 +463,7 @@ export class DeviceService extends DigitalTwinService {
     const device = await this.getDeviceProvisioning(deviceId);
 
     if (device._source.engineId) {
-      throw new BadRequestError(
-        `Device "${device._id}" is already attached to an engine.`,
-      );
+      throw new BadRequestError(`Device "${device._id}" is already attached to an engine.`);
     }
 
     await this.checkEngineExists(engineId);
@@ -522,34 +490,20 @@ export class DeviceService extends DigitalTwinService {
     };
     const deviceModel = await this.getDeviceModel(engineDevice._source.model);
     // Initialize metadata
-    for (const metadataName of Object.keys(
-      deviceModel.device.metadataMappings,
-    )) {
+    for (const metadataName of Object.keys(deviceModel.device.metadataMappings)) {
       engineDevice._source.metadata[metadataName] =
-        metadata?.[metadataName] ??
-        deviceModel.device.defaultMetadata[metadataName] ??
-        null;
+        metadata?.[metadataName] ?? deviceModel.device.defaultMetadata[metadataName] ?? null;
     }
 
-    const updatedDevice = await this.createDocument<DeviceContent>(
-      request,
-      engineDevice,
-      {
-        collection: InternalCollection.DEVICES,
-        engineId,
-      },
-    );
+    const updatedDevice = await this.createDocument<DeviceContent>(request, engineDevice, {
+      collection: InternalCollection.DEVICES,
+      engineId,
+    });
 
-    if (request.getRefresh() === "wait_for") {
+    if (request.getRefresh() === 'wait_for') {
       await Promise.all([
-        this.sdk.collection.refresh(
-          this.config.platformIndex,
-          InternalCollection.DEVICES,
-        ),
-        this.sdk.collection.refresh(
-          device._source.engineId,
-          InternalCollection.DEVICES,
-        ),
+        this.sdk.collection.refresh(this.config.platformIndex, InternalCollection.DEVICES),
+        this.sdk.collection.refresh(device._source.engineId, InternalCollection.DEVICES),
       ]);
     }
 
@@ -569,9 +523,7 @@ export class DeviceService extends DigitalTwinService {
     deviceId: string,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
-    return lock(`device:${deviceId}`, async () =>
-      this._attachEngine(engineId, deviceId, request),
-    );
+    return lock(`device:${deviceId}`, async () => this._attachEngine(engineId, deviceId, request));
   }
 
   /**
@@ -622,12 +574,9 @@ export class DeviceService extends DigitalTwinService {
         ),
       ]);
 
-      if (request.getRefresh() === "wait_for") {
+      if (request.getRefresh() === 'wait_for') {
         await Promise.all([
-          this.sdk.collection.refresh(
-            this.config.platformIndex,
-            InternalCollection.DEVICES,
-          ),
+          this.sdk.collection.refresh(this.config.platformIndex, InternalCollection.DEVICES),
           this.sdk.collection.refresh(
             deviceProvisioning._source.engineId,
             InternalCollection.DEVICES,
@@ -661,22 +610,19 @@ export class DeviceService extends DigitalTwinService {
       }
     }
 
-    await ask<AskPayloadReceiveFormated>(
-      "ask:device-manager:payload:receive-formated",
-      {
-        device,
-        measures,
-        payloadUuids,
-      },
-    );
+    await ask<AskPayloadReceiveFormated>('ask:device-manager:payload:receive-formated', {
+      device,
+      measures,
+      payloadUuids,
+    });
   }
 
   private async checkEngineExists(engineId: string) {
     const {
       result: { exists },
     } = await this.sdk.query({
-      action: "exists",
-      controller: "device-manager/engine",
+      action: 'exists',
+      controller: 'device-manager/engine',
       index: engineId,
     });
 
@@ -687,18 +633,12 @@ export class DeviceService extends DigitalTwinService {
 
   private checkAttachedToEngine(device: KDocument<DeviceProvisioningContent>) {
     if (!device._source.engineId) {
-      throw new BadRequestError(
-        `Device "${device._id}" is not attached to an engine.`,
-      );
+      throw new BadRequestError(`Device "${device._id}" is not attached to an engine.`);
     }
   }
 
-  private async refreshModel({
-    deviceModel,
-  }: {
-    deviceModel: DeviceModelContent;
-  }): Promise<void> {
-    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
+  private async refreshModel({ deviceModel }: { deviceModel: DeviceModelContent }): Promise<void> {
+    const engines = await ask<AskEngineList>('ask:device-manager:engine:list', {
       group: null,
     });
 
@@ -707,23 +647,17 @@ export class DeviceService extends DigitalTwinService {
       index: engine.index,
     }));
 
-    const devices = await this.sdk.query<
-      BaseRequest,
-      DocumentSearchResult<DeviceContent>
-    >({
-      action: "search",
+    const devices = await this.sdk.query<BaseRequest, DocumentSearchResult<DeviceContent>>({
+      action: 'search',
       body: { query: { equals: { model: deviceModel.device.model } } },
-      controller: "document",
-      lang: "koncorde",
+      controller: 'document',
+      lang: 'koncorde',
       targets,
     });
 
     const updatedDevicesPerIndex: Record<string, KDocument<DeviceContent>[]> =
       devices.result.hits.reduce(
-        (
-          acc: Record<string, KDocument<DeviceContent>[]>,
-          device: JSONObject,
-        ) => {
+        (acc: Record<string, KDocument<DeviceContent>[]>, device: JSONObject) => {
           device._source.measureSlots = deviceModel.device.measures;
 
           acc[device.index].push(device as KDocument<DeviceContent>);
@@ -731,10 +665,7 @@ export class DeviceService extends DigitalTwinService {
           return acc;
         },
         Object.fromEntries(
-          engines.map((engine) => [
-            engine.index,
-            [] as KDocument<DeviceContent>[],
-          ]),
+          engines.map((engine) => [engine.index, [] as KDocument<DeviceContent>[]]),
         ),
       );
 
@@ -747,7 +678,7 @@ export class DeviceService extends DigitalTwinService {
             _id: device._id,
             body: device._source,
           })),
-          { refresh: "wait_for" },
+          { refresh: 'wait_for' },
         ),
       ),
     );
