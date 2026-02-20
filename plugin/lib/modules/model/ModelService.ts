@@ -49,11 +49,13 @@ import { NamedMeasures } from "../decoder";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
 import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 import { AskDeviceRefreshModel } from "../device";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class ModelService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
-
+    this.logger = logger;
     this.registerAskEvents();
   }
 
@@ -1002,7 +1004,7 @@ export class ModelService extends BaseService {
       throw new NotFoundError(`Unknown Group model "${model}".`);
     }
     if (result.total > 1) {
-      app.log.warn(
+      this.logger.warn(
         "More than 1 group definition have been found for this model",
       );
     }

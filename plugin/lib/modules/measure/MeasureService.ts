@@ -32,11 +32,12 @@ import {
 } from "./types/MeasureTarget";
 import { merge } from "lodash";
 import { DeviceProvisioningContent } from "../device";
-
+import { KuzzleLogger } from "kuzzle-logger";
 export class MeasureService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
-
+    this.logger = logger;
     onAsk<AskMeasureSourceIngest>(
       "device-manager:measures:sourceIngest",
 

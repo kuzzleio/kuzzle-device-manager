@@ -9,10 +9,12 @@ import { DeviceManagerPlugin } from "../plugin";
 
 import { Decoder } from "./Decoder";
 import { DecoderContent } from "./exports";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class DecodersRegister {
   private context: PluginContext;
   private plugin: DeviceManagerPlugin;
+  private logger: KuzzleLogger;
 
   /**
    * Map<deviceModel, Decoder>
@@ -30,6 +32,7 @@ export class DecodersRegister {
   init(plugin: DeviceManagerPlugin, context: PluginContext) {
     this.plugin = plugin;
     this.context = context;
+    this.logger = this.context.logger.child("decoder:register");
   }
 
   get(deviceModel: string): Decoder {
@@ -87,7 +90,7 @@ export class DecodersRegister {
 
   printDecoders() {
     for (const decoder of this.decoders) {
-      this.context.log.info(`Decoder for "${decoder.deviceModel}" registered`);
+      this.logger.info(`Decoder for "${decoder.deviceModel}" registered`);
     }
   }
 

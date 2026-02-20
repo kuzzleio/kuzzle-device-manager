@@ -1,11 +1,5 @@
-import {
-  BadRequestError,
-  KuzzleRequest,
-  NotFoundError,
-  PartialError,
-  User,
-} from "kuzzle";
-import { ask, onAsk } from "kuzzle-plugin-commons";
+import { BadRequestError, KuzzleRequest, NotFoundError, PartialError, User } from 'kuzzle';
+import { ask, onAsk } from 'kuzzle-plugin-commons';
 import {
   BaseRequest,
   DocumentSearchResult,
@@ -14,67 +8,49 @@ import {
   KHit,
   SearchResult,
   mReplaceResponse,
-} from "kuzzle-sdk";
-import _ from "lodash";
+} from 'kuzzle-sdk';
+import _ from 'lodash';
 
-import {
-  AskDeviceAttachEngine,
-  AskDeviceDetachEngine,
-  DeviceSerializer,
-} from "../device";
-import {
-  AskModelAssetGet,
-  AskModelMeasureGet,
-  AssetModelContent,
-} from "../model";
-import {
-  AskEngineList,
-  DeviceManagerPlugin,
-  InternalCollection,
-} from "../plugin";
-import {
-  DigitalTwinService,
-  Metadata,
-  SearchParams,
-  flattenObject,
-  lock,
-} from "../shared";
+import { AskDeviceAttachEngine, AskDeviceDetachEngine, DeviceSerializer } from '../device';
+import { AskModelAssetGet, AskModelMeasureGet, AssetModelContent } from '../model';
+import { AskEngineList, DeviceManagerPlugin, InternalCollection } from '../plugin';
+import { DigitalTwinService, Metadata, SearchParams, flattenObject, lock } from '../shared';
+import { KuzzleLogger } from 'kuzzle-logger';
 
-import { AssetHistoryService } from "./AssetHistoryService";
-import { AssetSerializer } from "./model/AssetSerializer";
+import { AssetHistoryService } from './AssetHistoryService';
+import { AssetSerializer } from './model/AssetSerializer';
 import {
   ApiAssetMigrateTenantResult,
   ApiAssetUnlinkDevicesResult,
   ApiAssetUpdateModelLocales,
-} from "./types/AssetApi";
-import { AssetContent } from "./types/AssetContent";
+} from './types/AssetApi';
+import { AssetContent } from './types/AssetContent';
 import {
   AskAssetRefreshModel,
   EventAssetUpdateAfter,
   EventAssetUpdateBefore,
-} from "./types/AssetEvents";
-import {
-  AssetHistoryContent,
-  AssetHistoryEventMetadata,
-} from "./types/AssetHistoryContent";
+} from './types/AssetEvents';
+import { AssetHistoryContent, AssetHistoryEventMetadata } from './types/AssetHistoryContent';
 
 export class AssetService extends DigitalTwinService {
   readonly assetHistoryService: AssetHistoryService;
-
+  readonly logger: KuzzleLogger;
   constructor(
     plugin: DeviceManagerPlugin,
     assetHistoryService: AssetHistoryService,
+    assetLogger: KuzzleLogger,
   ) {
     super(plugin, InternalCollection.ASSETS);
 
     this.assetHistoryService = assetHistoryService;
+    this.logger = assetLogger;
   }
 
   override registerAskEvents() {
     super.registerAskEvents();
 
     onAsk<AskAssetRefreshModel>(
-      "ask:device-manager:asset:refresh-model",
+      'ask:device-manager:asset:refresh-model',
       this.refreshModel.bind(this),
     );
   }
@@ -103,7 +79,7 @@ export class AssetService extends DigitalTwinService {
       const asset = await this.get(engineId, assetId, request);
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
-        "device-manager:asset:update:before",
+        'device-manager:asset:update:before',
         { asset, metadata },
       );
 
@@ -127,20 +103,17 @@ export class AssetService extends DigitalTwinService {
             metadata: {
               names: Object.keys(flattenObject(updatedPayload.metadata)),
             },
-            name: "metadata",
+            name: 'metadata',
           },
           id: updatedAsset._id,
           timestamp: Date.now(),
         },
       ]);
 
-      await this.app.trigger<EventAssetUpdateAfter>(
-        "device-manager:asset:update:after",
-        {
-          asset: updatedAsset,
-          metadata: updatedPayload.metadata,
-        },
-      );
+      await this.app.trigger<EventAssetUpdateAfter>('device-manager:asset:update:after', {
+        asset: updatedAsset,
+        metadata: updatedPayload.metadata,
+      });
 
       return updatedAsset;
     });
@@ -167,14 +140,11 @@ export class AssetService extends DigitalTwinService {
       }
       // ? If metadata key is unknown on the asset we check that it exists in the assetModel mappings
       if (Object.keys(unknownMetadata).length > 0) {
-        const assetModel = await ask<AskModelAssetGet>(
-          "ask:device-manager:model:asset:get",
-          {
-            engineGroups: [engineId.split("-")[1]],
-            engineId,
-            model: asset._source.model,
-          },
-        );
+        const assetModel = await ask<AskModelAssetGet>('ask:device-manager:model:asset:get', {
+          engineGroups: [engineId.split('-')[1]],
+          engineId,
+          model: asset._source.model,
+        });
         for (const key in unknownMetadata) {
           if (key in assetModel.asset.metadataMappings) {
             asset._source.metadata[key] = unknownMetadata[key];
@@ -182,7 +152,7 @@ export class AssetService extends DigitalTwinService {
         }
       }
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
-        "device-manager:asset:update:before",
+        'device-manager:asset:update:before',
         { asset, metadata },
       );
 
@@ -201,20 +171,17 @@ export class AssetService extends DigitalTwinService {
             metadata: {
               names: Object.keys(flattenObject(updatedPayload.metadata)),
             },
-            name: "metadata",
+            name: 'metadata',
           },
           id: updatedAsset._id,
           timestamp: Date.now(),
         },
       ]);
 
-      await this.app.trigger<EventAssetUpdateAfter>(
-        "device-manager:asset:update:after",
-        {
-          asset: updatedAsset,
-          metadata: updatedPayload.metadata,
-        },
-      );
+      await this.app.trigger<EventAssetUpdateAfter>('device-manager:asset:update:after', {
+        asset: updatedAsset,
+        metadata: updatedPayload.metadata,
+      });
 
       return updatedAsset;
     });
@@ -233,23 +200,14 @@ export class AssetService extends DigitalTwinService {
     const assetId = AssetSerializer.id(model, reference);
 
     return lock(`asset:${engineId}:${assetId}`, async () => {
-      const asset = await this.get(engineId, assetId, request).catch(
-        () => null,
-      );
+      const asset = await this.get(engineId, assetId, request).catch(() => null);
 
       if (!asset) {
-        return this._create(
-          assetId,
-          engineId,
-          model,
-          reference,
-          metadata,
-          request,
-        );
+        return this._create(assetId, engineId, model, reference, metadata, request);
       }
 
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
-        "device-manager:asset:update:before",
+        'device-manager:asset:update:before',
         { asset, metadata },
       );
 
@@ -273,20 +231,17 @@ export class AssetService extends DigitalTwinService {
             metadata: {
               names: Object.keys(flattenObject(updatedPayload.metadata)),
             },
-            name: "metadata",
+            name: 'metadata',
           },
           id: updatedAsset._id,
           timestamp: Date.now(),
         },
       ]);
 
-      await this.app.trigger<EventAssetUpdateAfter>(
-        "device-manager:asset:update:after",
-        {
-          asset: updatedAsset,
-          metadata: updatedPayload.metadata,
-        },
-      );
+      await this.app.trigger<EventAssetUpdateAfter>('device-manager:asset:update:after', {
+        asset: updatedAsset,
+        metadata: updatedPayload.metadata,
+      });
 
       return updatedAsset;
     });
@@ -301,18 +256,17 @@ export class AssetService extends DigitalTwinService {
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     const engine = await this.getEngine(engineId);
-    const assetModel = await ask<AskModelAssetGet>(
-      "ask:device-manager:model:asset:get",
-      { engineGroups: [engine.group], engineId, model },
-    );
+    const assetModel = await ask<AskModelAssetGet>('ask:device-manager:model:asset:get', {
+      engineGroups: [engine.group],
+      engineId,
+      model,
+    });
 
     const assetMetadata = {};
     for (const metadataName of Object.keys(assetModel.asset.metadataMappings)) {
       assetMetadata[metadataName] = null;
     }
-    for (const [metadataName, metadataValue] of Object.entries(
-      assetModel.asset.defaultMetadata,
-    )) {
+    for (const [metadataName, metadataValue] of Object.entries(assetModel.asset.defaultMetadata)) {
       _.set(assetMetadata, metadataName, metadataValue);
     }
 
@@ -343,7 +297,7 @@ export class AssetService extends DigitalTwinService {
           metadata: {
             names: Object.keys(flattenObject(asset._source.metadata)),
           },
-          name: "metadata",
+          name: 'metadata',
         },
         id: asset._id,
         timestamp: Date.now(),
@@ -372,20 +326,14 @@ export class AssetService extends DigitalTwinService {
   /**
    * Delete an asset metadata
    */
-  public async delete(
-    engineId: string,
-    assetId: string,
-    request: KuzzleRequest,
-  ) {
-    const strict = request.getBoolean("strict");
+  public async delete(engineId: string, assetId: string, request: KuzzleRequest) {
+    const strict = request.getBoolean('strict');
 
     return lock<void>(`asset:${engineId}:${assetId}`, async () => {
       const asset = await this.get(engineId, assetId, request);
 
       if (strict && asset._source.linkedMeasures.length !== 0) {
-        throw new BadRequestError(
-          `Asset "${assetId}" is still linked to devices.`,
-        );
+        throw new BadRequestError(`Asset "${assetId}" is still linked to devices.`);
       }
 
       for (const { deviceId } of asset._source.linkedMeasures) {
@@ -417,23 +365,24 @@ export class AssetService extends DigitalTwinService {
     measureSlots: string[],
     request: KuzzleRequest,
   ): Promise<ApiAssetUnlinkDevicesResult> {
-    const engineId = request.getString("engineId");
+    const engineId = request.getString('engineId');
     let asset = await this.get(engineId, assetId, request);
     const devices = [];
 
     // CASE ALL MEASURES TO UNLINK
     if (allMeasures) {
-      const devicesToUnlink = asset._source.linkedMeasures.map(
-        (m) => m.deviceId,
-      );
+      const devicesToUnlink = asset._source.linkedMeasures.map((m) => m.deviceId);
       if (devicesToUnlink.length === 0) {
-        throw new BadRequestError(
-          `Asset ${assetId} has no measure to be unlinked`,
-        );
+        throw new BadRequestError(`Asset ${assetId} has no measure to be unlinked`);
       }
       for (const device of devicesToUnlink) {
-        const { asset: updatedAsset, device: updatedDevice } =
-          await this.unlinkAssetDevice(device, assetId, [], true, request);
+        const { asset: updatedAsset, device: updatedDevice } = await this.unlinkAssetDevice(
+          device,
+          assetId,
+          [],
+          true,
+          request,
+        );
         devices.push(DeviceSerializer.serialize(updatedDevice));
         asset = AssetSerializer.serialize(updatedAsset);
       }
@@ -442,8 +391,13 @@ export class AssetService extends DigitalTwinService {
 
     // CASE ALL MEASURES FROM SPECIFIC ASSETS TO UNLINK
     for (const device of deviceIds) {
-      const { asset: updatedAsset, device: updatedDevice } =
-        await this.unlinkAssetDevice(device, assetId, [], true, request);
+      const { asset: updatedAsset, device: updatedDevice } = await this.unlinkAssetDevice(
+        device,
+        assetId,
+        [],
+        true,
+        request,
+      );
       devices.push(DeviceSerializer.serialize(updatedDevice));
       asset = AssetSerializer.serialize(updatedAsset);
     }
@@ -453,16 +407,13 @@ export class AssetService extends DigitalTwinService {
     for (const linkedMeasures of asset._source.linkedMeasures.filter((l) =>
       l.measureSlots.some((s) => measureSlots.includes(s.asset)),
     )) {
-      const { asset: updatedAsset, device: updatedDevice } =
-        await this.unlinkAssetDevice(
-          linkedMeasures.deviceId,
-          assetId,
-          linkedMeasures.measureSlots.filter((slot) =>
-            measureSlots.includes(slot.asset),
-          ),
-          false,
-          request,
-        );
+      const { asset: updatedAsset, device: updatedDevice } = await this.unlinkAssetDevice(
+        linkedMeasures.deviceId,
+        assetId,
+        linkedMeasures.measureSlots.filter((slot) => measureSlots.includes(slot.asset)),
+        false,
+        request,
+      );
       devices.push(DeviceSerializer.serialize(updatedDevice));
       asset = AssetSerializer.serialize(updatedAsset);
     }
@@ -483,14 +434,12 @@ export class AssetService extends DigitalTwinService {
 
     //Sanity check
     if (assetsList.length === 0) {
-      throw new BadRequestError("No assets to migrate");
+      throw new BadRequestError('No assets to migrate');
     }
 
     await lock(`engine:${engineId}:${newEngineId}`, async () => {
-      if (!user.profileIds.includes("admin")) {
-        throw new BadRequestError(
-          `User ${user._id} is not authorized to migrate assets`,
-        );
+      if (!user.profileIds.includes('admin')) {
+        throw new BadRequestError(`User ${user._id} is not authorized to migrate assets`);
       }
 
       // check if tenant destination is in the same group
@@ -498,9 +447,7 @@ export class AssetService extends DigitalTwinService {
       const newEngine = await this.getEngine(newEngineId);
 
       if (engine.group !== newEngine.group) {
-        throw new BadRequestError(
-          `Engine ${newEngineId} is not in the same group as ${engineId}`,
-        );
+        throw new BadRequestError(`Engine ${newEngineId} is not in the same group as ${engineId}`);
       }
 
       //First of all, as mCreate seems to be buggy, ensure some assets don't
@@ -514,14 +461,10 @@ export class AssetService extends DigitalTwinService {
       errors = [...assetsCheckedIdExisting];
 
       //Get all assets to migrate
-      const assetsCheckedList = assetsList.filter(
-        (id) => !assetsCheckedIdExisting.includes(id),
-      );
+      const assetsCheckedList = assetsList.filter((id) => !assetsCheckedIdExisting.includes(id));
 
       if (assetsCheckedList.length === 0) {
-        throw new BadRequestError(
-          "All assets to migrate already exists in destination tenant.",
-        );
+        throw new BadRequestError('All assets to migrate already exists in destination tenant.');
       }
 
       const assets = await this.sdk.document.mGet<AssetContent>(
@@ -532,7 +475,7 @@ export class AssetService extends DigitalTwinService {
       errors = errors.concat(...assets.errors);
 
       if (assets.successes.length === 0) {
-        this.app.log.error("No assets found to migrate");
+        this.logger.error('No assets found to migrate');
         return { errors, successes };
       }
 
@@ -560,9 +503,7 @@ export class AssetService extends DigitalTwinService {
       //We consider here we will return as success what we have been able
       //to create, and related errors
       const assetsCreatedId = assetsCreated.successes.map((a) => a._id);
-      const assetsNotCreatedId = assetsCreated.errors.map(
-        (a) => a.document._id,
-      );
+      const assetsNotCreatedId = assetsCreated.errors.map((a) => a.document._id);
       successes = [...assetsCreatedId];
       errors = errors.concat(...assetsNotCreatedId);
 
@@ -579,16 +520,17 @@ export class AssetService extends DigitalTwinService {
         for (const link of linkedMeasures) {
           if (includeDevices === true) {
             // detach linked devices from current tenant (it also unkinks asset)
-            await ask<AskDeviceDetachEngine>(
-              "ask:device-manager:device:detach-engine",
-              { deviceId: link.deviceId, user },
-            );
+            await ask<AskDeviceDetachEngine>('ask:device-manager:device:detach-engine', {
+              deviceId: link.deviceId,
+              user,
+            });
 
             // ... and attach to new tenant
-            await ask<AskDeviceAttachEngine>(
-              "ask:device-manager:device:attach-engine",
-              { deviceId: link.deviceId, engineId: newEngineId, user },
-            );
+            await ask<AskDeviceAttachEngine>('ask:device-manager:device:attach-engine', {
+              deviceId: link.deviceId,
+              engineId: newEngineId,
+              user,
+            });
 
             // ... and link this device to the asset in the new tenant
             await this.linkAssetDevice(
@@ -612,11 +554,7 @@ export class AssetService extends DigitalTwinService {
       }
 
       // Finally here, we can delete the successefully migrated assets from the source engine !
-      await this.sdk.document.mDelete(
-        engineId,
-        InternalCollection.ASSETS,
-        assetsCreatedId,
-      );
+      await this.sdk.document.mDelete(engineId, InternalCollection.ASSETS, assetsCreatedId);
 
       //Refresh ES indexes and collections
       const collectionsToRefresh = [
@@ -666,24 +604,19 @@ export class AssetService extends DigitalTwinService {
       { refresh, source: true },
     );
 
-    const histories: AssetHistoryContent[] = replacedAssets.successes.map(
-      (asset) => ({
-        asset: asset._source as AssetContent,
-        event: {
-          metadata: {
-            names: Object.keys(flattenObject(asset._source.metadata)),
-          },
-          name: "metadata",
+    const histories: AssetHistoryContent[] = replacedAssets.successes.map((asset) => ({
+      asset: asset._source as AssetContent,
+      event: {
+        metadata: {
+          names: Object.keys(flattenObject(asset._source.metadata)),
         },
-        id: asset._id,
-        timestamp: Date.now(),
-      }),
-    );
+        name: 'metadata',
+      },
+      id: asset._id,
+      timestamp: Date.now(),
+    }));
 
-    await this.assetHistoryService.add<AssetHistoryEventMetadata>(
-      engineId,
-      histories,
-    );
+    await this.assetHistoryService.add<AssetHistoryEventMetadata>(engineId, histories);
 
     return replacedAssets;
   }
@@ -704,10 +637,7 @@ export class AssetService extends DigitalTwinService {
       {
         query: {
           bool: {
-            must: [
-              { term: { type: "asset" } },
-              { term: { "asset.model": model } },
-            ],
+            must: [{ term: { type: 'asset' } }, { term: { 'asset.model': model } }],
           },
         },
       },
@@ -721,33 +651,29 @@ export class AssetService extends DigitalTwinService {
     const modelDocument = res.hits[0];
     const locales = modelDocument._source.asset.locales;
 
-    const engines = await ask<AskEngineList>(
-      "ask:device-manager:engine:list",
-      {},
-    );
+    const engines = await ask<AskEngineList>('ask:device-manager:engine:list', {});
 
     const results: ApiAssetUpdateModelLocales[] = [];
 
     for (const engine of engines) {
-      const resultUpdateByQuery =
-        await this.sdk.document.updateByQuery<AssetContent>(
-          engine.index,
-          "assets",
-          {
-            bool: {
-              must: [
-                {
-                  term: {
-                    model: model,
-                  },
+      const resultUpdateByQuery = await this.sdk.document.updateByQuery<AssetContent>(
+        engine.index,
+        'assets',
+        {
+          bool: {
+            must: [
+              {
+                term: {
+                  model: model,
                 },
-              ],
-            },
+              },
+            ],
           },
-          {
-            modelLocales: locales,
-          },
-        );
+        },
+        {
+          modelLocales: locales,
+        },
+      );
 
       results.push({
         engineIndex: engine.index,
@@ -761,16 +687,11 @@ export class AssetService extends DigitalTwinService {
     const errorsFiltered = results.filter((re) => re.result.errors.length > 0);
 
     if (errorsFiltered.length === results.length) {
-      throw new BadRequestError("All the assets failed to be updated", {}, 400);
+      throw new BadRequestError('All the assets failed to be updated', {}, 400);
     }
 
     if (errorsFiltered.length < results.length && errorsFiltered.length !== 0) {
-      throw new PartialError(
-        "Some assets failed to be updated",
-        errorsFiltered,
-        {},
-        206,
-      );
+      throw new PartialError('Some assets failed to be updated', errorsFiltered, {}, 206);
     }
 
     return results;
@@ -778,37 +699,29 @@ export class AssetService extends DigitalTwinService {
 
   public async addMeasureSlot(
     assetId: string,
-    measureSlot: AssetContent["measureSlots"][0],
+    measureSlot: AssetContent['measureSlots'][0],
     engineId: string,
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     const asset = await this.get(engineId, assetId, request);
-    if (
-      asset._source.measureSlots.some((slot) => slot.name === measureSlot.name)
-    ) {
+    if (asset._source.measureSlots.some((slot) => slot.name === measureSlot.name)) {
       throw new BadRequestError(
         `A measure slot with ${measureSlot.name} as a name already exists for ${assetId}`,
       );
     }
     try {
-      await ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
+      await ask<AskModelMeasureGet>('ask:device-manager:model:measure:get', {
         type: measureSlot.type,
         engineId,
       });
     } catch {
-      throw new BadRequestError(
-        `There is no measure of type ${measureSlot.type} registered.`,
-      );
+      throw new BadRequestError(`There is no measure of type ${measureSlot.type} registered.`);
     }
     asset._source.measureSlots.push(measureSlot);
-    const updatedAsset = await this.updateDocument<AssetContent>(
-      request,
-      asset,
-      {
-        collection: InternalCollection.ASSETS,
-        engineId,
-      },
-    );
+    const updatedAsset = await this.updateDocument<AssetContent>(request, asset, {
+      collection: InternalCollection.ASSETS,
+      engineId,
+    });
     return updatedAsset;
   }
   public async removeMeasureSlot(
@@ -818,9 +731,7 @@ export class AssetService extends DigitalTwinService {
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
     const asset = await this.get(engineId, assetId, request);
-    if (
-      !asset._source.measureSlots.some((slot) => slot.name === measureSlotName)
-    ) {
+    if (!asset._source.measureSlots.some((slot) => slot.name === measureSlotName)) {
       throw new BadRequestError(
         `Asset ${assetId} does not have a measure slot named ${measureSlotName}`,
       );
@@ -834,11 +745,7 @@ export class AssetService extends DigitalTwinService {
       );
     }
     const engine = await this.getEngine(engineId);
-    const assetModel = await this.getAssetModel(
-      engine.group,
-      asset._source.model,
-      engineId,
-    );
+    const assetModel = await this.getAssetModel(engine.group, asset._source.model, engineId);
     if (!assetModel) {
       throw new NotFoundError(`Model ${asset._source.model} not found`);
     }
@@ -850,27 +757,17 @@ export class AssetService extends DigitalTwinService {
     asset._source.measureSlots = asset._source.measureSlots.filter(
       (slot) => slot.name !== measureSlotName,
     );
-    const updatedAsset = await this.updateDocument<AssetContent>(
-      request,
-      asset,
-      {
-        collection: InternalCollection.ASSETS,
-        engineId,
-      },
-    );
+    const updatedAsset = await this.updateDocument<AssetContent>(request, asset, {
+      collection: InternalCollection.ASSETS,
+      engineId,
+    });
     return updatedAsset;
   }
 
-  private async refreshModel({
-    assetModel,
-  }: {
-    assetModel: AssetModelContent;
-  }): Promise<void> {
+  private async refreshModel({ assetModel }: { assetModel: AssetModelContent }): Promise<void> {
     // For engine group 'commons', fetch all engines
-    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: assetModel.engineGroups?.includes("commons")
-        ? null
-        : assetModel.engineGroups?.[0],
+    const engines = await ask<AskEngineList>('ask:device-manager:engine:list', {
+      group: assetModel.engineGroups?.includes('commons') ? null : assetModel.engineGroups?.[0],
     });
 
     const targets = engines.map((engine) => ({
@@ -881,14 +778,11 @@ export class AssetService extends DigitalTwinService {
     if (targets.length === 0) {
       return;
     }
-    const assets = await this.sdk.query<
-      BaseRequest,
-      DocumentSearchResult<AssetContent>
-    >({
-      action: "search",
+    const assets = await this.sdk.query<BaseRequest, DocumentSearchResult<AssetContent>>({
+      action: 'search',
       body: { query: { equals: { model: assetModel.asset.model } } },
-      controller: "document",
-      lang: "koncorde",
+      controller: 'document',
+      lang: 'koncorde',
       targets,
     });
 
@@ -925,17 +819,14 @@ export class AssetService extends DigitalTwinService {
           return acc;
         },
         Object.fromEntries(
-          engines.map((engine) => [
-            engine.index,
-            [] as KDocument<AssetContent>[],
-          ]),
+          engines.map((engine) => [engine.index, [] as KDocument<AssetContent>[]]),
         ),
       );
 
     await Promise.all(
       Object.entries(updatedAssetsPerIndex).map(([index, updatedAssets]) =>
         this.mReplaceAndHistorize(index, updatedAssets, removedMetadata, {
-          refresh: "wait_for",
+          refresh: 'wait_for',
         }),
       ),
     );

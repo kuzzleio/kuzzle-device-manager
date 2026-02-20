@@ -51,16 +51,19 @@ import {
 import { AskModelAssetGet } from "../model";
 import { AssetContent } from "./exports";
 import { DeviceContent, DeviceSerializer } from "../device";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class AssetsController {
   public definition: ControllerDefinition;
   readonly exporter: DigitalTwinExporter;
   readonly measureExporter: MeasureExporter;
-
+  readonly logger: KuzzleLogger;
   constructor(
     readonly plugin: DeviceManagerPlugin,
     readonly assetService: AssetService,
+    assetlogger: KuzzleLogger,
   ) {
+    this.logger = assetlogger;
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
