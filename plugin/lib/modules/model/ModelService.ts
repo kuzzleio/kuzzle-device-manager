@@ -723,7 +723,10 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<DeviceModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { term: { type: "device" } }].filter(Boolean),
+        must: [
+          searchParams.searchBody.query,
+          { term: { type: "device" } },
+        ].filter(Boolean),
       },
     };
 
@@ -785,7 +788,10 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<MeasureModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { term: { type: "measure" } }].filter(Boolean),
+        must: [
+          searchParams.searchBody.query,
+          { term: { type: "measure" } },
+        ].filter(Boolean),
       },
     };
 
