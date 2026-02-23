@@ -1,3 +1,7 @@
+## 3.0.0-next.23 (2026-02-23)
+
+* feat(devices): can create orphan devices (#460) ([0d913ae](https://github.com/kuzzleio/kuzzle-device-manager/commit/0d913ae)), closes [#460](https://github.com/kuzzleio/kuzzle-device-manager/issues/460)
+
 ## 3.0.0-next.22 (2026-02-13)
 
 * fix: add prefix to build command ([da91fee](https://github.com/kuzzleio/kuzzle-device-manager/commit/da91fee))
