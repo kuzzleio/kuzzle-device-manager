@@ -88,7 +88,7 @@ export class DeviceService extends DigitalTwinService {
     };
 
     const deviceModel = await this.getDeviceModel(model);
-    const engineId = request.getString("engineId");
+    const engineId = request.getString("engineId", "");
 
     device._source.measureSlots = deviceModel.device.measures;
 
@@ -96,14 +96,13 @@ export class DeviceService extends DigitalTwinService {
       index: string;
       collection: string;
     }> = [];
-
     await this._createDeviceProvisioning(device, request);
 
     refreshableCollections.push({
       collection: InternalCollection.DEVICES,
       index: this.config.platformIndex,
     });
-    if (engineId && engineId !== this.config.platformIndex) {
+    if (engineId.trim() !== "" && engineId !== this.config.platformIndex) {
       device = await this._attachEngine(
         engineId,
         device._id,
@@ -136,7 +135,7 @@ export class DeviceService extends DigitalTwinService {
         {
           _id: device._id,
           _source: {
-            engineId: device._source.engineId,
+            engineId: null,
             lastMeasuredAt: null,
             lastMeasures: [],
             measureSlots: device._source.measureSlots,
