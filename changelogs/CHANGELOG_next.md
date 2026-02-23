@@ -1,3 +1,17 @@
+## 3.0.0-next.24 (2026-02-23)
+
+* Merge pull request #458 from kuzzleio/feat/KZLPRD-1150_tenant_specific_asset_model ([4fd7f74](https://github.com/kuzzleio/kuzzle-device-manager/commit/4fd7f74)), closes [#458](https://github.com/kuzzleio/kuzzle-device-manager/issues/458)
+* Update openspec/changes/tenant-specific-asset-models/design.md ([4d542f4](https://github.com/kuzzleio/kuzzle-device-manager/commit/4d542f4))
+* style: fix prettier formatting in ModelService search queries ([351ecfa](https://github.com/kuzzleio/kuzzle-device-manager/commit/351ecfa))
+* fix(models): address remaining PR #458 review feedback (KZLPRD-1150) ([1394ac2](https://github.com/kuzzleio/kuzzle-device-manager/commit/1394ac2)), closes [#458](https://github.com/kuzzleio/kuzzle-device-manager/issues/458)
+* fix(models): filter undefined from ES must arrays and add lang to getAsset queries (KZLPRD-1150) ([f8185d1](https://github.com/kuzzleio/kuzzle-device-manager/commit/f8185d1))
+* fix(tests): replace jest.setTimeout with vitest equivalent (KZLPRD-1150) ([0296f21](https://github.com/kuzzleio/kuzzle-device-manager/commit/0296f21))
+* refactor(models): address PR #458 review feedback (KZLPRD-1150) ([0171cf1](https://github.com/kuzzleio/kuzzle-device-manager/commit/0171cf1)), closes [#458](https://github.com/kuzzleio/kuzzle-device-manager/issues/458)
+* test(models): add tenant-scoped mapping conflict detection tests (KZLPRD-1150) ([620dff2](https://github.com/kuzzleio/kuzzle-device-manager/commit/620dff2))
+* feat(models): add tenant-scoped asset models with 3-level fallback (KZLPRD-1150) ([07be354](https://github.com/kuzzleio/kuzzle-device-manager/commit/07be354))
+* feat(models): engine-aware conflict detection and API docs for tenant-scoped models (KZLPRD-1150) ([80b6f17](https://github.com/kuzzleio/kuzzle-device-manager/commit/80b6f17))
+* docs(KZLPRD-1150): asset model individual tenant-engine granularity ([f720834](https://github.com/kuzzleio/kuzzle-device-manager/commit/f720834))
+
 ## 3.0.0-next.23 (2026-02-23)
 
 * feat(devices): can create orphan devices (#460) ([0d913ae](https://github.com/kuzzleio/kuzzle-device-manager/commit/0d913ae)), closes [#460](https://github.com/kuzzleio/kuzzle-device-manager/issues/460)
