@@ -169,6 +169,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       `ask:device-manager:model:${targetModel}:get`,
       {
         engineGroup: engine.group,
+        engineId,
         model,
       },
     );

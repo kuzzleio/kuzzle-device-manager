@@ -27,7 +27,10 @@ Method: GET
   "controller": "device-manager/models",
   "action": "getAsset",
   "engineGroup": "<engineGroup>",
-  "model": "<asset model>"
+  "model": "<asset model>",
+
+  // optional:
+  "engineId": "<engineId>"
 }
 ```
 
@@ -37,6 +40,7 @@ Method: GET
 
 - `engineGroup`: name of the engine group
 - `model`: asset model
+- `engineId`: optional. Engine ID (tenant ID) to resolve tenant-scoped models. When provided, a tenant-scoped model takes priority over a group-scoped model of the same name. Falls back to group-scoped, then commons.
 
 ---
 

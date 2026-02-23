@@ -5,14 +5,9 @@ import { parse as csvParse } from "csv-parse/sync";
 import { ApiDeviceExportMeasuresRequest } from "../../../../index";
 
 import { sendPayloads, setupHooks } from "../../../helpers";
-import { loadSecurityDefault } from "../../../hooks/security";
 
 describe("DevicesController:exportMeasures", () => {
   const sdk: Kuzzle = setupHooks();
-
-  beforeAll(async () => {
-    await loadSecurityDefault(sdk);
-  });
 
   it("should support elasticsearch and koncorde query", async () => {
     async function testQuery(

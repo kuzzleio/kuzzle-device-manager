@@ -8,7 +8,7 @@ import {
 export type AskModelAssetGet = {
   name: "ask:device-manager:model:asset:get";
 
-  payload: { engineGroup: string; model: string };
+  payload: { engineGroup: string; engineId?: string; model: string };
 
   result: AssetModelContent;
 };

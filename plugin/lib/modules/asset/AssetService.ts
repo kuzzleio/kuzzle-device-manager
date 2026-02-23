@@ -169,7 +169,11 @@ export class AssetService extends DigitalTwinService {
       if (Object.keys(unknownMetadata).length > 0) {
         const assetModel = await ask<AskModelAssetGet>(
           "ask:device-manager:model:asset:get",
-          { engineGroup: engineId.split("-")[1], model: asset._source.model },
+          {
+            engineGroup: engineId.split("-")[1],
+            engineId,
+            model: asset._source.model,
+          },
         );
         for (const key in unknownMetadata) {
           if (key in assetModel.asset.metadataMappings) {
@@ -299,7 +303,7 @@ export class AssetService extends DigitalTwinService {
     const engine = await this.getEngine(engineId);
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      { engineGroup: engine.group, model },
+      { engineGroup: engine.group, engineId, model },
     );
 
     const assetMetadata = {};
@@ -832,6 +836,7 @@ export class AssetService extends DigitalTwinService {
     const assetModel = await this.getAssetModel(
       engine.group,
       asset._source.model,
+      engineId,
     );
     if (!assetModel) {
       throw new NotFoundError(`Model ${asset._source.model} not found`);

@@ -138,8 +138,13 @@ export class ModelsController {
   async getAsset(request: KuzzleRequest): Promise<ApiModelGetAssetResult> {
     const model = request.getString("model");
     const engineGroup = request.getString("engineGroup", "commons");
+    const engineId = request.input.args.engineId as string | undefined;
 
-    const assetModel = await this.modelService.getAsset(engineGroup, model);
+    const assetModel = await this.modelService.getAsset(
+      engineGroup,
+      engineId,
+      model,
+    );
 
     return assetModel;
   }
@@ -177,6 +182,7 @@ export class ModelsController {
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const tooltipModels = request.getBodyObject("tooltipModels", {});
     const locales = request.getBodyObject("locales", {});
+    const engines = request.getBodyArray("engines", []);
 
     const assetModel = await this.modelService.writeAsset(
       engineGroup,
@@ -188,6 +194,7 @@ export class ModelsController {
       measures,
       tooltipModels,
       locales,
+      engines,
     );
 
     return assetModel;
@@ -295,8 +302,9 @@ export class ModelsController {
 
   async listAssets(request: KuzzleRequest): Promise<ApiModelListAssetsResult> {
     const engineGroup = request.getString("engineGroup");
+    const engineId = request.input.args.engineId as string | undefined;
 
-    const models = await this.modelService.listAsset(engineGroup);
+    const models = await this.modelService.listAsset(engineGroup, engineId);
 
     return {
       models,
@@ -335,8 +343,11 @@ export class ModelsController {
   async searchAssets(
     request: KuzzleRequest,
   ): Promise<ApiModelSearchAssetsResult> {
+    const engineId = request.input.args.engineId as string | undefined;
+
     return this.modelService.searchAssets(
       request.getString("engineGroup"),
+      engineId,
       request.getSearchParams(),
     );
   }

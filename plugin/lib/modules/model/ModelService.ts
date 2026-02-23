@@ -60,8 +60,8 @@ export class ModelService extends BaseService {
   registerAskEvents() {
     onAsk<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      async ({ engineGroup, model }) => {
-        const assetModel = await this.getAsset(engineGroup, model);
+      async ({ engineGroup, engineId, model }) => {
+        const assetModel = await this.getAsset(engineGroup, engineId, model);
 
         return assetModel._source;
       },
@@ -311,6 +311,7 @@ export class ModelService extends BaseService {
     measures: NamedMeasures,
     tooltipModels: TooltipModels,
     locales: { [valueName: string]: LocaleDetails },
+    engines?: string[],
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
@@ -336,6 +337,7 @@ export class ModelService extends BaseService {
         tooltipModels,
       },
       engineGroup,
+      ...(engines?.length ? { engines } : {}),
       type: "asset",
     };
 
@@ -592,8 +594,9 @@ export class ModelService extends BaseService {
 
   async listAsset(
     engineGroup: string,
+    engineId?: string,
   ): Promise<KDocument<AssetModelContent>[]> {
-    const result = await this.searchAssets(engineGroup, {
+    const result = await this.searchAssets(engineGroup, engineId, {
       searchBody: {
         sort: { "asset.model": "asc" },
       },
@@ -640,22 +643,62 @@ export class ModelService extends BaseService {
 
   async searchAssets(
     engineGroup: string,
+    engineId: string | undefined,
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<AssetModelContent>>> {
+    const scopeFilter = engineId
+      ? {
+          bool: {
+            should: [
+              {
+                bool: {
+                  must: [
+                    { term: { engines: engineId } },
+                    { term: { engineGroup } },
+                  ],
+                },
+              },
+              {
+                bool: {
+                  must: [{ term: { engineGroup } }],
+                  must_not: [{ exists: { field: "engines" } }],
+                },
+              },
+              {
+                bool: {
+                  must: [{ term: { engineGroup: "commons" } }],
+                  must_not: [{ exists: { field: "engines" } }],
+                },
+              },
+            ],
+          },
+        }
+      : {
+          bool: {
+            should: [
+              {
+                bool: {
+                  must: [{ term: { engineGroup } }],
+                  must_not: [{ exists: { field: "engines" } }],
+                },
+              },
+              {
+                bool: {
+                  must: [{ term: { engineGroup: "commons" } }],
+                  must_not: [{ exists: { field: "engines" } }],
+                },
+              },
+            ],
+          },
+        };
+
     const query = {
       bool: {
         must: [
           searchParams.searchBody.query,
-          { match: { type: "asset" } },
-          {
-            bool: {
-              should: [
-                { match: { engineGroup } },
-                { match: { engineGroup: "commons" } },
-              ],
-            },
-          },
-        ],
+          { term: { type: "asset" } },
+          scopeFilter,
+        ].filter(Boolean),
       },
     };
 
@@ -680,7 +723,10 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<DeviceModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { match: { type: "device" } }],
+        must: [
+          searchParams.searchBody.query,
+          { term: { type: "device" } },
+        ].filter(Boolean),
       },
     };
 
@@ -708,16 +754,16 @@ export class ModelService extends BaseService {
       bool: {
         must: [
           searchParams.searchBody.query,
-          { match: { type: "group" } },
+          { term: { type: "group" } },
           {
             bool: {
               should: [
-                { match: { engineGroup } },
-                { match: { engineGroup: "commons" } },
+                { term: { engineGroup } },
+                { term: { engineGroup: "commons" } },
               ],
             },
           },
-        ],
+        ].filter(Boolean),
       },
     };
 
@@ -742,7 +788,10 @@ export class ModelService extends BaseService {
   ): Promise<SearchResult<KHit<MeasureModelContent>>> {
     const query = {
       bool: {
-        must: [searchParams.searchBody.query, { match: { type: "measure" } }],
+        must: [
+          searchParams.searchBody.query,
+          { term: { type: "measure" } },
+        ].filter(Boolean),
       },
     };
 
@@ -800,35 +849,79 @@ export class ModelService extends BaseService {
 
   async getAsset(
     engineGroup: string,
+    engineId: string | undefined,
     model: string,
   ): Promise<KDocument<AssetModelContent>> {
-    const query = {
-      and: [
-        {
-          or: [
-            { equals: { engineGroup } },
-            { equals: { engineGroup: "commons" } },
+    const baseFilter = [
+      { term: { type: "asset" } },
+      { term: { "asset.model": model } },
+    ];
+
+    // Priority 1: tenant-scoped model for this specific engine
+    if (engineId) {
+      const tenantQuery = {
+        bool: {
+          must: [
+            ...baseFilter,
+            { term: { engineGroup } },
+            { term: { engines: engineId } },
           ],
         },
-        { equals: { type: "asset" } },
-        { equals: { "asset.model": model } },
-      ],
-    };
+      };
 
-    const result = await this.sdk.document.search<AssetModelContent>(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      { query },
-      { lang: "koncorde", size: 1 },
-    );
-
-    if (result.total === 0) {
-      throw new NotFoundError(
-        `Unknown Asset model "${model}" for engineGroup ${engineGroup}.`,
+      const tenantResult = await this.sdk.document.search<AssetModelContent>(
+        this.config.platformIndex,
+        InternalCollection.MODELS,
+        { query: tenantQuery },
+        { lang: "elasticsearch", size: 1 },
       );
+
+      if (tenantResult.total > 0) {
+        return tenantResult.hits[0];
+      }
     }
 
-    return result.hits[0];
+    // Priority 2: group-scoped model (no engines field)
+    const groupQuery = {
+      bool: {
+        must: [...baseFilter, { term: { engineGroup } }],
+        must_not: [{ exists: { field: "engines" } }],
+      },
+    };
+
+    const groupResult = await this.sdk.document.search<AssetModelContent>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      { query: groupQuery },
+      { lang: "elasticsearch", size: 1 },
+    );
+
+    if (groupResult.total > 0) {
+      return groupResult.hits[0];
+    }
+
+    // Priority 3: commons model
+    const commonsQuery = {
+      bool: {
+        must: [...baseFilter, { term: { engineGroup: "commons" } }],
+        must_not: [{ exists: { field: "engines" } }],
+      },
+    };
+
+    const commonsResult = await this.sdk.document.search<AssetModelContent>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      { query: commonsQuery },
+      { lang: "elasticsearch", size: 1 },
+    );
+
+    if (commonsResult.total > 0) {
+      return commonsResult.hits[0];
+    }
+
+    throw new NotFoundError(
+      `Unknown Asset model "${model}" for engineGroup ${engineGroup}.`,
+    );
   }
 
   async getDevice(model: string): Promise<KDocument<DeviceModelContent>> {
@@ -923,7 +1016,7 @@ export class ModelService extends BaseService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
-    const existingAsset = await this.getAsset(engineGroup, model);
+    const existingAsset = await this.getAsset(engineGroup, undefined, model);
 
     // The field must be deleted if an element of the table is to be deleted
     await this.sdk.document.deleteFields(
