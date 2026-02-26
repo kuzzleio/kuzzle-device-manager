@@ -13,7 +13,8 @@ export class ModelSerializer {
       const assetModel = model as AssetModelContent;
       if (assetModel.engineIds?.length) {
         const sortedEngines = [...assetModel.engineIds].sort().join("+");
-        return `model-asset-${assetModel.engineGroup}-${sortedEngines}-${ModelSerializer.title(type, model)}`;
+        const sortedGroups = [...assetModel.engineGroups].sort().join("+");
+        return `model-asset-${sortedGroups}-${sortedEngines}-${ModelSerializer.title(type, model)}`;
       }
       return `model-asset-${ModelSerializer.title(type, model)}`;
     } else if (type === "device") {

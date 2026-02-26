@@ -33,7 +33,7 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: ENGINE_GROUP,
+        engineGroups: [ENGINE_GROUP],
         model: "ConflictBaseline",
         metadataMappings: { testField: { type: "keyword" } },
         measures: [],
@@ -46,7 +46,7 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: ENGINE_GROUP,
+        engineGroups: [ENGINE_GROUP],
         model: "ConflictSameTenant",
         metadataMappings: { testField: { type: "integer" } },
         measures: [],
@@ -71,7 +71,7 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: ENGINE_GROUP,
+        engineGroups: [ENGINE_GROUP],
         model: "CrossTenantA",
         metadataMappings: { crossField: { type: "keyword" } },
         measures: [],
@@ -84,7 +84,7 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: ENGINE_GROUP,
+        engineGroups: [ENGINE_GROUP],
         model: "CrossTenantB",
         metadataMappings: { crossField: { type: "integer" } },
         measures: [],
@@ -108,7 +108,7 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: ENGINE_GROUP,
+        engineGroups: [ENGINE_GROUP],
         model: "TenantBase",
         metadataMappings: { groupConflict: { type: "keyword" } },
         measures: [],
@@ -121,7 +121,7 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: ENGINE_GROUP,
+        engineGroups: [ENGINE_GROUP],
         model: "GroupVsTenant",
         metadataMappings: { groupConflict: { type: "integer" } },
         measures: [],
@@ -143,7 +143,7 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: ENGINE_GROUP,
+        engineGroups: [ENGINE_GROUP],
         model: "GroupBase",
         metadataMappings: { tenantConflict: { type: "keyword" } },
         measures: [],
@@ -155,7 +155,7 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: ENGINE_GROUP,
+        engineGroups: [ENGINE_GROUP],
         model: "TenantVsGroup",
         metadataMappings: { tenantConflict: { type: "integer" } },
         measures: [],

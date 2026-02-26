@@ -181,12 +181,12 @@ export interface TooltipModels {
 export interface AssetModelContent extends KDocumentContent {
   type: "asset";
 
-  engineGroup: string;
+  engineGroups: string[];
 
   /**
    * Optional list of engine IDs (tenant IDs) this model is scoped to.
    * When set, the model is only available to the specified tenants.
-   * When absent, the model is available to all tenants in the engineGroup.
+   * When absent, the model is available to all tenants in the engineGroups.
    */
   engineIds?: string[];
 
@@ -425,7 +425,7 @@ export interface DeviceModelContent extends KDocumentContent {
 export interface GroupModelContent extends KDocumentContent {
   type: "group";
 
-  engineGroup: string;
+  engineGroups: string[];
 
   group: {
     /**

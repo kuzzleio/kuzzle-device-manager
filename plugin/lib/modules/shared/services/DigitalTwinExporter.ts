@@ -97,7 +97,7 @@ export class DigitalTwinExporter extends AbstractExporter {
 
     if (this.target === InternalCollection.ASSETS) {
       const engine = await this.getEngine(engineId);
-      query.and.push({ equals: { engineGroup: engine.group } });
+      query.and.push({ equals: { engineGroups: engine.group } });
     }
 
     let result = await this.sdk.document.search<

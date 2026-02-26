@@ -809,7 +809,7 @@ export class DigitalTwinService extends BaseService {
     engineId?: string,
   ): Promise<AssetModelContent> {
     return ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
-      engineGroup,
+      engineGroups: [engineGroup],
       engineId,
       model,
     });

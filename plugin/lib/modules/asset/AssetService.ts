@@ -170,7 +170,7 @@ export class AssetService extends DigitalTwinService {
         const assetModel = await ask<AskModelAssetGet>(
           "ask:device-manager:model:asset:get",
           {
-            engineGroup: engineId.split("-")[1],
+            engineGroups: [engineId.split("-")[1]],
             engineId,
             model: asset._source.model,
           },
@@ -303,7 +303,7 @@ export class AssetService extends DigitalTwinService {
     const engine = await this.getEngine(engineId);
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      { engineGroup: engine.group, engineId, model },
+      { engineGroups: [engine.group], engineId, model },
     );
 
     const assetMetadata = {};
@@ -868,8 +868,9 @@ export class AssetService extends DigitalTwinService {
   }): Promise<void> {
     // For engine group 'commons', fetch all engines
     const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group:
-        assetModel.engineGroup === "commons" ? null : assetModel.engineGroup,
+      group: assetModel.engineGroups?.includes("commons")
+        ? null
+        : assetModel.engineGroups?.[0],
     });
 
     const targets = engines.map((engine) => ({

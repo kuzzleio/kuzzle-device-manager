@@ -285,7 +285,7 @@ export class MeasureService extends BaseService {
       assetDocument,
       measurements,
       payloadUuids,
-      target.engineGroup,
+      target.engineGroups,
     );
 
     return { asset, measures };
@@ -306,7 +306,7 @@ export class MeasureService extends BaseService {
     asset: KDocument<AssetContent>,
     measures: DecodedMeasurement[],
     payloadUuids: string[],
-    engineGroup?: string,
+    engineGroups?: string[],
   ): Promise<MeasureContent[]> {
     const apiMeasures: MeasureContent[] = [];
 
@@ -315,7 +315,7 @@ export class MeasureService extends BaseService {
       const isInModel = await this.isMeasureNameInModel(
         measure.measureName,
         asset._source.model,
-        engineGroup,
+        engineGroups,
       );
 
       if (isInModel) {
@@ -377,12 +377,12 @@ export class MeasureService extends BaseService {
   private async isMeasureNameInModel(
     measureName: string,
     model: string,
-    engineGroup = "commons",
+    engineGroups: string[] = ["commons"],
   ): Promise<boolean> {
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
       {
-        engineGroup,
+        engineGroups,
         model: model,
       },
     );

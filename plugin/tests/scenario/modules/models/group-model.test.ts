@@ -15,7 +15,7 @@ describe("ModelsController:groups", () => {
       action: "writeGroup",
       body: {
         affinity: { type: ["assets"], models: { assets: [] }, strict: false },
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "TruckFleet",
         metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
@@ -42,7 +42,7 @@ describe("ModelsController:groups", () => {
     );
     expect(groupModel1._source).toMatchObject({
       type: "group",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       group: {
         model: "TruckFleet",
         metadataMappings: { size: { type: "integer" } },
@@ -72,7 +72,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "TruckFleet",
         metadataMappings: {
           sector: { type: "keyword" },
@@ -145,7 +145,7 @@ describe("ModelsController:groups", () => {
     );
     expect(groupModel2._source).toMatchObject({
       type: "group",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       group: {
         model: "TruckFleet",
         metadataMappings: {
@@ -230,7 +230,7 @@ describe("ModelsController:groups", () => {
     const listGroups = await sdk.query<ApiModelListGroupsRequest>({
       controller: "device-manager/models",
       action: "listGroups",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
     });
     expect(listGroups.result).toMatchObject({
       total: 4,
@@ -264,7 +264,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "TruckFleet",
         metadataMappings: {
           sector: { type: "keyword" },
@@ -339,7 +339,7 @@ describe("ModelsController:groups", () => {
           models: { assets: [], devices: [] },
           strict: false,
         },
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "Building",
         metadataMappings: {
           location: { type: "geo_point" },
@@ -353,7 +353,7 @@ describe("ModelsController:groups", () => {
     const searchGroups = await sdk.query<ApiModelSearchGroupsRequest>({
       controller: "device-manager/models",
       action: "searchGroups",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       body: { query: { match: { "group.model": "TruckFleet" } } },
     });
 
@@ -373,7 +373,7 @@ describe("ModelsController:groups", () => {
           models: { assets: [], devices: [] },
           strict: false,
         },
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "flatgroupnape",
         metadataMappings: { size: { type: "integer" } },
         defaultValues: { size: 12 },
@@ -395,7 +395,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "TruckFleet",
         metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
@@ -423,7 +423,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "BadModel",
         metadataMappings: { size: { type: "keyword" } },
         metadataDetails: {
@@ -457,7 +457,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "BadType",
         metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
@@ -486,7 +486,7 @@ describe("ModelsController:groups", () => {
       action: "writeGroup",
       body: {
         affinity: { type: ["assets"], models: { devices: [] }, strict: true },
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "BadModels",
         metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
