@@ -510,4 +510,22 @@ describe("ModelsController:groups", () => {
       "The group affinity must contain an array for every present type",
     );
   });
+
+  it("Should reject group model with multiple engineGroups", async () => {
+    const multiGroup = sdk.query<ApiModelWriteGroupRequest>({
+      controller: "device-manager/models",
+      action: "writeGroup",
+      body: {
+        affinity: { type: ["assets"], models: { assets: [] }, strict: false },
+        engineGroups: ["air_quality", "public_lighting"],
+        model: "MultiGroupReject",
+        metadataMappings: {},
+        metadataDetails: {},
+      },
+    });
+
+    await expect(multiGroup).rejects.toThrow(
+      'Group model "MultiGroupReject" must belong to exactly one engine group.',
+    );
+  });
 });

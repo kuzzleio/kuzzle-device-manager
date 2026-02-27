@@ -16,6 +16,10 @@ export class ModelSerializer {
         const sortedGroups = [...assetModel.engineGroups].sort().join("+");
         return `model-asset-${sortedGroups}-${sortedEngines}-${ModelSerializer.title(type, model)}`;
       }
+      if (assetModel.engineGroups.length > 1) {
+        const sortedGroups = [...assetModel.engineGroups].sort().join("+");
+        return `model-asset-${sortedGroups}-${ModelSerializer.title(type, model)}`;
+      }
       return `model-asset-${ModelSerializer.title(type, model)}`;
     } else if (type === "device") {
       return `model-device-${ModelSerializer.title(type, model)}`;

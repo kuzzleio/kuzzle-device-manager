@@ -325,6 +325,10 @@ export class ModelService extends BaseService {
       );
     }
 
+    const normalizedEngineGroups = engineGroups.includes("commons")
+      ? ["commons"]
+      : engineGroups;
+
     const modelContent: AssetModelContent = {
       asset: {
         defaultMetadata,
@@ -336,7 +340,7 @@ export class ModelService extends BaseService {
         model,
         tooltipModels,
       },
-      engineGroups,
+      engineGroups: normalizedEngineGroups,
       ...(engineIds?.length ? { engineIds } : {}),
       type: "asset",
     };
@@ -457,6 +461,12 @@ export class ModelService extends BaseService {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
     }
+    if (engineGroups.length !== 1) {
+      throw new BadRequestError(
+        `Group model "${model}" must belong to exactly one engine group.`,
+      );
+    }
+
     const groupAffinity = this.checkGroupAffinity(affinity);
     const modelContent: GroupModelContent = {
       engineGroups,
@@ -1127,6 +1137,10 @@ export class ModelService extends BaseService {
     const measuresUpdated =
       measures.length === 0 ? existingAsset._source.asset.measures : measures;
 
+    const normalizedEngineGroups = engineGroups.includes("commons")
+      ? ["commons"]
+      : engineGroups;
+
     const assetModelContent: AssetModelContent = {
       asset: {
         defaultMetadata,
@@ -1138,7 +1152,7 @@ export class ModelService extends BaseService {
         model,
         tooltipModels,
       },
-      engineGroups,
+      engineGroups: normalizedEngineGroups,
       type: "asset",
     };
     const assetModel = {
