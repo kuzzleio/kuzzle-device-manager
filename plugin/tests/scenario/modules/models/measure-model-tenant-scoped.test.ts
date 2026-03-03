@@ -252,4 +252,46 @@ describe("ModelsController:measures:tenant-scoped", () => {
       }),
     ).rejects.toThrow();
   });
+
+  it("should reject a platform device model referencing a tenant-only measure type", async () => {
+    // Create a measure that only exists at tenant scope (no global version)
+    await sdk.query<ApiModelWriteMeasureRequest>({
+      controller: "device-manager/models",
+      action: "writeMeasure",
+      body: {
+        type: "tenantOnlyMeasure",
+        valuesMappings: { tenantOnlyVal: { type: "float" } },
+        engines: ["engine-ayse"],
+      },
+    });
+
+    await sdk.collection.refresh("device-manager", "models");
+
+    // A platform-level device model referencing that tenant-only measure should fail
+    await expect(
+      sdk.query({
+        controller: "device-manager/models",
+        action: "writeDevice",
+        body: {
+          model: "TenantOnlyDevice",
+          measures: [{ type: "tenantOnlyMeasure", name: "tenantOnly" }],
+          metadataMappings: {},
+        },
+      }),
+    ).rejects.toThrow(/Cannot find measure "tenantOnlyMeasure"/);
+
+    // Cleanup
+    await Promise.allSettled([
+      sdk.document.delete(
+        "device-manager",
+        "models",
+        "model-measure-engine-ayse-tenantOnlyMeasure",
+      ),
+      sdk.document.delete(
+        "device-manager",
+        "models",
+        "model-device-TenantOnlyDevice",
+      ),
+    ]);
+  });
 });

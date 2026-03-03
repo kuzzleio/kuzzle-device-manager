@@ -83,6 +83,16 @@ engines: { type: "keyword" }
 
 **Rationale:** `keyword` type naturally supports arrays in ES.
 
+### Decision 7: Scope-aware measure validation in twin conflict checker
+
+`DeviceManagerEngine.doesTwinUpdateConflicts` validates that every measure type referenced by a device or asset model actually exists. Currently it fetches ALL measures (global + tenant-scoped) and checks against that flat list.
+
+With tenant-scoped measures, this must be scoped:
+- **Platform-level twins** (no `engines` field, `group === undefined`): only global measures (no `engines` field) are valid references. A platform device cannot depend on a tenant-only measure.
+- **Per-engine twins**: global measures + tenant-scoped measures for that specific engine are valid.
+
+**Rationale:** Device models are platform-level (no scoping, per Eric's decision). A platform device referencing a tenant-only measure would pass validation but fail at runtime. The conflict checker must enforce scope consistency.
+
 ## Risks / Trade-offs
 
 - **[Multiple queries in getMeasure]** → Sequential priority queries (up to 2) add latency. Mitigation: measure model lookups are infrequent and each query is fast with `size: 1`.

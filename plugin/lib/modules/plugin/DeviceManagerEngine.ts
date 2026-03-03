@@ -151,11 +151,16 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                 payload.twin.type,
               );
 
+              // Platform-level twins can only reference global measures
+              const globalMeasures = measureModels.filter(
+                (m) => !m.engines?.length,
+              );
+
               const conflicts = await this.doesTwinUpdateConflicts(
                 payload.twin.type,
                 twinModels,
                 payload.twin.models,
-                measureModels,
+                globalMeasures,
               );
 
               if (conflicts.length > 0) {
@@ -198,11 +203,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                   continue;
                 }
 
+                // Per-engine: global measures + tenant-scoped for this engine
+                const engineMeasures = measureModels.filter(
+                  (m) =>
+                    !m.engines?.length ||
+                    m.engines.includes(engineDoc.engine.index),
+                );
+
                 const conflicts = await this.doesTwinUpdateConflicts(
                   payload.twin.type,
                   twinModels,
                   applicableNewModels,
-                  measureModels,
+                  engineMeasures,
                 );
 
                 if (conflicts.length > 0) {

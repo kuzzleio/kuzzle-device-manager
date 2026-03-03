@@ -30,20 +30,26 @@
 
 - [ ] 6.1 Update `writeAsset` to validate that each referenced measure type exists at an applicable scope (tenant or global) for the target tenant
 
-## 7. API Documentation
+## 7. Scope-Aware Measure Validation in Conflict Checker
 
-- [ ] 7.1 Update `doc/3/controllers/models/write-measure/index.md` with new `engines` parameter
+- [ ] 7.1 In `DeviceManagerEngine.ts`, filter `measureModels` to global-only when checking platform-level twins (`group === undefined`)
+- [ ] 7.2 For per-engine checks, filter `measureModels` to global + tenant-scoped for that engine
+- [ ] 7.3 Add test: platform device model referencing a tenant-only measure type is rejected
 
-## 8. Functional Tests
+## 8. API Documentation
 
-- [ ] 8.1 Write tests for tenant-scoped measure model write (tenant-scoped, multi-tenant, global backward compat)
-- [ ] 8.2 Write tests for mapping conflict check (tenant vs global conflict, tenant vs other tenant no conflict)
-- [ ] 8.3 Write tests for list with 2-level fallback (tenant, no-scope backward compat)
-- [ ] 8.4 Write tests for getMeasure with tenant priority and fallback
-- [ ] 8.5 Write tests for measure model ID uniqueness across scopes
+- [ ] 8.1 Update `doc/3/controllers/models/write-measure/index.md` with new `engines` parameter
 
-## 9. Verification
+## 9. Functional Tests
 
-- [ ] 9.1 Run `tsc --noEmit` — no type errors
-- [ ] 9.2 Run lint — no lint errors
-- [ ] 9.3 Run full test suite — all tests pass
+- [ ] 9.1 Write tests for tenant-scoped measure model write (tenant-scoped, multi-tenant, global backward compat)
+- [ ] 9.2 Write tests for mapping conflict check (tenant vs global conflict, tenant vs other tenant no conflict)
+- [ ] 9.3 Write tests for list with 2-level fallback (tenant, no-scope backward compat)
+- [ ] 9.4 Write tests for getMeasure with tenant priority and fallback
+- [ ] 9.5 Write tests for measure model ID uniqueness across scopes
+
+## 10. Verification
+
+- [ ] 10.1 Run `tsc --noEmit` — no type errors
+- [ ] 10.2 Run lint — no lint errors
+- [ ] 10.3 Run full test suite — all tests pass
