@@ -137,9 +137,7 @@ export class ModelsController {
 
   async getAsset(request: KuzzleRequest): Promise<ApiModelGetAssetResult> {
     const model = request.getString("model");
-    const engineGroups = (request.input.args.engineGroups as string[]) ?? [
-      "commons",
-    ];
+    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
     const engineId = request.input.args.engineId as string | undefined;
 
     const assetModel = await this.modelService.getAsset(
@@ -306,9 +304,7 @@ export class ModelsController {
   }
 
   async listAssets(request: KuzzleRequest): Promise<ApiModelListAssetsResult> {
-    const engineGroups = (request.input.args.engineGroups as string[]) ?? [
-      "commons",
-    ];
+    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
     const engineId = request.input.args.engineId as string | undefined;
 
     const models = await this.modelService.listAsset(engineGroups, engineId);
@@ -329,9 +325,7 @@ export class ModelsController {
   }
 
   async listGroups(request: KuzzleRequest): Promise<ApiModelListGroupsResult> {
-    const engineGroups = (request.input.args.engineGroups as string[]) ?? [
-      "commons",
-    ];
+    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
     const models = await this.modelService.listGroups(engineGroups);
 
     return {
@@ -359,7 +353,7 @@ export class ModelsController {
     const engineId = request.input.args.engineId as string | undefined;
 
     return this.modelService.searchAssets(
-      (request.input.args.engineGroups as string[]) ?? ["commons"],
+      request.getArray("engineGroups", []) || ["commons"],
       engineId,
       request.getSearchParams(),
     );
@@ -375,7 +369,7 @@ export class ModelsController {
     request: KuzzleRequest,
   ): Promise<ApiModelSearchGroupsResult> {
     return this.modelService.searchGroups(
-      (request.input.args.engineGroups as string[]) ?? ["commons"],
+      request.getArray("engineGroups", []) || ["commons"],
       request.getSearchParams(),
     );
   }
@@ -394,9 +388,7 @@ export class ModelsController {
   async updateAsset(
     request: KuzzleRequest,
   ): Promise<ApiModelUpdateAssetResult> {
-    const engineGroups = (request.input.args.engineGroups as string[]) ?? [
-      "commons",
-    ];
+    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
     const model = request.getString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
