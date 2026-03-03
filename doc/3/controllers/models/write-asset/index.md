@@ -28,7 +28,7 @@ Method: POST
   "action": "writeAsset",
   "body": {
     "engineGroup": "<engine group>",
-    "engines": [
+    "engineIds": [
       // Optional. Array of engine IDs (tenant IDs) this model is scoped to.
     ],
     "model": "<asset model>",
@@ -133,7 +133,7 @@ Method: POST
 ## Body properties
 
 - `engineGroup`: Name of the engine group
-- `engines`: Optional. Array of engine IDs (tenant IDs) this model is scoped to. When set, the model is only available to the specified tenants. When absent, the model is available to all tenants in the engine group.
+- `engineIds`: Optional. Array of engine IDs (tenant IDs) this model is scoped to. When set, the model is only available to the specified tenants. When absent, the model is available to all tenants in the engine group.
 - `model`: Asset model name
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata

@@ -31,11 +31,11 @@ describe("ModelsController:measures:tenant-scoped", () => {
       sdk.document.delete(
         "device-manager",
         "models",
-        "model-measure-tenantTemp",
+        "model-measure-globalTemp",
       ),
     ]);
 
-    // Create all test measures upfront
+    // Create test measures — no two types exist at both global and tenant scope
     // 1. Tenant-scoped measure for engine-ayse
     await sdk.query<ApiModelWriteMeasureRequest>({
       controller: "device-manager/models",
@@ -43,7 +43,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
       body: {
         type: "tenantTemp",
         valuesMappings: { tenantTemp: { type: "float" } },
-        engines: ["engine-ayse"],
+        engineIds: ["engine-ayse"],
       },
     });
 
@@ -54,17 +54,17 @@ describe("ModelsController:measures:tenant-scoped", () => {
       body: {
         type: "multiTenantTemp",
         valuesMappings: { multiTenantTemp: { type: "float" } },
-        engines: ["engine-kuzzle", "engine-ayse"],
+        engineIds: ["engine-kuzzle", "engine-ayse"],
       },
     });
 
-    // 3. Global measure (same type as tenant-scoped, different doc ID)
+    // 3. Global measure (different type — no shadowing)
     await sdk.query<ApiModelWriteMeasureRequest>({
       controller: "device-manager/models",
       action: "writeMeasure",
       body: {
-        type: "tenantTemp",
-        valuesMappings: { tenantTemp: { type: "float" } },
+        type: "globalTemp",
+        valuesMappings: { globalTemp: { type: "float" } },
       },
     });
 
@@ -87,7 +87,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
       sdk.document.delete(
         "device-manager",
         "models",
-        "model-measure-tenantTemp",
+        "model-measure-globalTemp",
       ),
     ]);
   });
@@ -101,7 +101,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
 
     expect(doc._source).toMatchObject({
       type: "measure",
-      engines: ["engine-ayse"],
+      engineIds: ["engine-ayse"],
       measure: {
         type: "tenantTemp",
         valuesMappings: { tenantTemp: { type: "float" } },
@@ -109,7 +109,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
     });
   });
 
-  it("should have created a multi-tenant-scoped measure model with sorted engines in ID", async () => {
+  it("should have created a multi-tenant-scoped measure model with sorted engineIds in ID", async () => {
     const doc = await sdk.document.get<MeasureModelContent>(
       "device-manager",
       "models",
@@ -117,19 +117,19 @@ describe("ModelsController:measures:tenant-scoped", () => {
     );
 
     expect(doc._source).toMatchObject({
-      engines: ["engine-kuzzle", "engine-ayse"],
+      engineIds: ["engine-kuzzle", "engine-ayse"],
     });
   });
 
-  it("should have created a global measure model without engines", async () => {
+  it("should have created a global measure model without engineIds", async () => {
     const doc = await sdk.document.get<MeasureModelContent>(
       "device-manager",
       "models",
-      "model-measure-tenantTemp",
+      "model-measure-globalTemp",
     );
 
-    expect(doc._source.engines).toBeUndefined();
-    expect(doc._source.measure.type).toBe("tenantTemp");
+    expect(doc._source.engineIds).toBeUndefined();
+    expect(doc._source.measure.type).toBe("globalTemp");
   });
 
   it("should list only global measures when no engineId provided", async () => {
@@ -146,7 +146,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
     expect(ids).not.toContain(
       "model-measure-engine-ayse+engine-kuzzle-multiTenantTemp",
     );
-    expect(ids).toContain("model-measure-tenantTemp");
+    expect(ids).toContain("model-measure-globalTemp");
   });
 
   it("should list tenant-scoped + global measures when engineId provided", async () => {
@@ -164,7 +164,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
     expect(ids).toContain(
       "model-measure-engine-ayse+engine-kuzzle-multiTenantTemp",
     );
-    expect(ids).toContain("model-measure-tenantTemp");
+    expect(ids).toContain("model-measure-globalTemp");
   });
 
   it("should not list measures scoped to other tenants", async () => {
@@ -179,10 +179,10 @@ describe("ModelsController:measures:tenant-scoped", () => {
 
     const ids = listResult.result.models.map((m) => m._id);
     expect(ids).not.toContain("model-measure-engine-ayse-tenantTemp");
-    expect(ids).toContain("model-measure-tenantTemp");
+    expect(ids).toContain("model-measure-globalTemp");
   });
 
-  it("should get tenant-scoped measure with priority over global", async () => {
+  it("should get tenant-scoped measure when engineId matches", async () => {
     const result = await sdk.query<ApiModelGetMeasureRequest>({
       controller: "device-manager/models",
       action: "getMeasure",
@@ -193,25 +193,24 @@ describe("ModelsController:measures:tenant-scoped", () => {
     expect(result.result._id).toBe("model-measure-engine-ayse-tenantTemp");
   });
 
-  it("should get global measure when no tenant-scoped override exists", async () => {
-    const result = await sdk.query<ApiModelGetMeasureRequest>({
-      controller: "device-manager/models",
-      action: "getMeasure",
-      type: "tenantTemp",
-      engineId: "engine-other-group",
-    });
-
-    expect(result.result._id).toBe("model-measure-tenantTemp");
-  });
-
   it("should get global measure when no engineId provided", async () => {
     const result = await sdk.query<ApiModelGetMeasureRequest>({
       controller: "device-manager/models",
       action: "getMeasure",
-      type: "tenantTemp",
+      type: "globalTemp",
     });
 
-    expect(result.result._id).toBe("model-measure-tenantTemp");
+    expect(result.result._id).toBe("model-measure-globalTemp");
+  });
+
+  it("should not find tenant-scoped measure without engineId", async () => {
+    await expect(
+      sdk.query<ApiModelGetMeasureRequest>({
+        controller: "device-manager/models",
+        action: "getMeasure",
+        type: "tenantTemp",
+      }),
+    ).rejects.toThrow();
   });
 
   it("should search tenant-scoped + global measures when engineId provided", async () => {
@@ -219,38 +218,96 @@ describe("ModelsController:measures:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "searchMeasures",
       engineId: "engine-ayse",
-      body: { query: { term: { "measure.type": "tenantTemp" } } },
+      body: {
+        query: {
+          bool: {
+            should: [
+              { term: { "measure.type": "tenantTemp" } },
+              { term: { "measure.type": "globalTemp" } },
+            ],
+          },
+        },
+      },
     });
 
-    expect(searchResult.result.total).toBe(2);
     const ids = searchResult.result.hits.map((h: { _id: string }) => h._id);
     expect(ids).toContain("model-measure-engine-ayse-tenantTemp");
-    expect(ids).toContain("model-measure-tenantTemp");
+    expect(ids).toContain("model-measure-globalTemp");
   });
 
   it("should search only global measures when no engineId provided", async () => {
     const searchResult = await sdk.query<ApiModelSearchMeasuresRequest>({
       controller: "device-manager/models",
       action: "searchMeasures",
-      body: { query: { term: { "measure.type": "tenantTemp" } } },
+      body: {
+        query: {
+          bool: {
+            should: [
+              { term: { "measure.type": "tenantTemp" } },
+              { term: { "measure.type": "globalTemp" } },
+            ],
+          },
+        },
+      },
     });
 
     expect(searchResult.result.total).toBe(1);
-    expect(searchResult.result.hits[0]._id).toBe("model-measure-tenantTemp");
+    expect(searchResult.result.hits[0]._id).toBe("model-measure-globalTemp");
   });
 
-  it("should not allow conflicting mappings between tenant-scoped and global measure", async () => {
+  it("should reject creating a tenant-scoped measure when global with same type exists", async () => {
+    await expect(
+      sdk.query<ApiModelWriteMeasureRequest>({
+        controller: "device-manager/models",
+        action: "writeMeasure",
+        body: {
+          type: "globalTemp",
+          valuesMappings: { globalTemp: { type: "float" } },
+          engineIds: ["engine-kuzzle"],
+        },
+      }),
+    ).rejects.toThrow(/already exists as a global measure/);
+  });
+
+  it("should reject creating a global measure when tenant-scoped with same type exists", async () => {
     await expect(
       sdk.query<ApiModelWriteMeasureRequest>({
         controller: "device-manager/models",
         action: "writeMeasure",
         body: {
           type: "tenantTemp",
-          valuesMappings: { tenantTemp: { type: "integer" } },
-          engines: ["engine-kuzzle"],
+          valuesMappings: { tenantTemp: { type: "float" } },
         },
       }),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/already exists as a tenant-scoped measure/);
+  });
+
+  it("should allow two tenant-scoped measures with same type for different tenants", async () => {
+    await sdk.query<ApiModelWriteMeasureRequest>({
+      controller: "device-manager/models",
+      action: "writeMeasure",
+      body: {
+        type: "tenantTemp",
+        valuesMappings: { tenantTemp: { type: "float" } },
+        engineIds: ["engine-other"],
+      },
+    });
+
+    await sdk.collection.refresh("device-manager", "models");
+
+    const doc = await sdk.document.get<MeasureModelContent>(
+      "device-manager",
+      "models",
+      "model-measure-engine-other-tenantTemp",
+    );
+    expect(doc._source.engineIds).toEqual(["engine-other"]);
+
+    // Cleanup
+    await sdk.document.delete(
+      "device-manager",
+      "models",
+      "model-measure-engine-other-tenantTemp",
+    );
   });
 
   it("should reject a platform device model referencing a tenant-only measure type", async () => {
@@ -261,7 +318,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
       body: {
         type: "tenantOnlyMeasure",
         valuesMappings: { tenantOnlyVal: { type: "float" } },
-        engines: ["engine-ayse"],
+        engineIds: ["engine-ayse"],
       },
     });
 

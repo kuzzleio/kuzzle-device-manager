@@ -10,7 +10,7 @@ export const modelsMappings: CollectionMappings = {
   properties: {
     type: { type: "keyword" },
     engineGroup: { type: "keyword" },
-    engines: { type: "keyword" },
+    engineIds: { type: "keyword" },
 
     /**
      * Measure model

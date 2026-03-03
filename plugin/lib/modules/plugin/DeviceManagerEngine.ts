@@ -153,7 +153,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
               // Platform-level twins can only reference global measures
               const globalMeasures = measureModels.filter(
-                (m) => !m.engines?.length,
+                (m) => !m.engineIds?.length,
               );
 
               const conflicts = await this.doesTwinUpdateConflicts(
@@ -185,8 +185,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                 const applicableNewModels = payload.twin.models.filter(
                   (model) => {
                     const assetModel = model as AssetModelContent;
-                    if (assetModel.engines?.length) {
-                      return assetModel.engines.includes(
+                    if (assetModel.engineIds?.length) {
+                      return assetModel.engineIds.includes(
                         engineDoc.engine.index,
                       );
                     }
@@ -206,8 +206,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                 // Per-engine: global measures + tenant-scoped for this engine
                 const engineMeasures = measureModels.filter(
                   (m) =>
-                    !m.engines?.length ||
-                    m.engines.includes(engineDoc.engine.index),
+                    !m.engineIds?.length ||
+                    m.engineIds.includes(engineDoc.engine.index),
                 );
 
                 const conflicts = await this.doesTwinUpdateConflicts(
@@ -793,12 +793,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     if (engineGroup) {
       if (targetEngineId) {
         // Tenant-aware: return models applicable to this specific engine
-        // 3-level: tenant-scoped for this engine + group-scoped (no engines) + commons (no engines)
+        // 3-level: tenant-scoped for this engine + group-scoped (no engineIds) + commons (no engineIds)
         query.and.push({
           or: [
             {
               and: [
-                { equals: { engines: targetEngineId } },
+                { equals: { engineIds: targetEngineId } },
                 {
                   or: [
                     { equals: { engineGroup } },
@@ -809,23 +809,23 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
             },
             {
               and: [
-                { not: { exists: "engines" } },
+                { not: { exists: "engineIds" } },
                 { equals: { engineGroup } },
               ],
             },
             {
               and: [
-                { not: { exists: "engines" } },
+                { not: { exists: "engineIds" } },
                 { equals: { engineGroup: "commons" } },
               ],
             },
           ],
         });
       } else {
-        // No target engine: return only group-scoped (no engines) + commons (no engines)
+        // No target engine: return only group-scoped (no engineIds) + commons (no engineIds)
         query.and.push({
           and: [
-            { not: { exists: "engines" } },
+            { not: { exists: "engineIds" } },
             {
               or: [
                 { equals: { engineGroup } },

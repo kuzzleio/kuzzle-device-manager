@@ -38,7 +38,7 @@ Method: GET
 ## Arguments
 
 - `type`: measure type
-- `engineId`: (optional) engine ID. When provided, tenant-scoped measure models take priority over global ones
+- `engineId`: (optional) engine ID. When provided, returns tenant-scoped measures for that engine in addition to global measures
 
 ---
 

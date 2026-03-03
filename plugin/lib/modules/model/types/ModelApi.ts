@@ -96,7 +96,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
 
   body: {
     type: string;
-    engines?: string[];
+    engineIds?: string[];
     locales?: {
       [valueName: string]: LocaleDetails;
     };
