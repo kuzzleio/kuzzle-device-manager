@@ -9,7 +9,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
         metadataDetails: {
@@ -26,7 +26,7 @@ describe("ModelsController:assets", () => {
     );
     expect(assetModel1._source).toMatchObject({
       type: "asset",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       asset: {
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
@@ -41,7 +41,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Plane",
         metadataMappings: {
           company: { type: "keyword" },
@@ -61,7 +61,7 @@ describe("ModelsController:assets", () => {
     );
     expect(assetModel2._source).toMatchObject({
       type: "asset",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       asset: {
         model: "Plane",
         metadataMappings: {
@@ -80,7 +80,7 @@ describe("ModelsController:assets", () => {
     const listAssets = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       engineId: "engine-ayse",
     });
 
@@ -95,7 +95,7 @@ describe("ModelsController:assets", () => {
     const getAsset = await sdk.query({
       controller: "device-manager/models",
       action: "getAsset",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       engineId: "engine-ayse",
       model: "Plane",
     });
@@ -110,7 +110,7 @@ describe("ModelsController:assets", () => {
     const listAssets = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       engineId: "engine-ayse",
     });
 
@@ -128,7 +128,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -139,7 +139,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Car",
         metadataMappings: {
           company: { type: "keyword" },
@@ -157,7 +157,7 @@ describe("ModelsController:assets", () => {
     const searchAssets = await sdk.query({
       controller: "device-manager/models",
       action: "searchAssets",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       engineId: "engine-ayse",
       body: { query: { match: { "asset.model": "Plane" } } },
     });
@@ -172,7 +172,7 @@ describe("ModelsController:assets", () => {
     let searchAssets = await sdk.query({
       controller: "device-manager/models",
       action: "searchAssets",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       engineId: "engine-ayse",
       body: { query: { match: { "asset.model": "Warehouse" } } },
     });
@@ -185,7 +185,7 @@ describe("ModelsController:assets", () => {
     searchAssets = await sdk.query({
       controller: "device-manager/models",
       action: "searchAssets",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       engineId: "engine-ayse",
       body: { query: { match: { "asset.model": "Room" } } },
     });
@@ -198,7 +198,7 @@ describe("ModelsController:assets", () => {
     searchAssets = await sdk.query({
       controller: "device-manager/models",
       action: "searchAssets",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       engineId: "engine-ayse",
       body: { query: { match: { "asset.model": "StreetLamp" } } },
     });
@@ -211,7 +211,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "plane",
         metadataMappings: { size: { type: "integer" } },
         defaultValues: { name: "Firebird" },
@@ -231,7 +231,7 @@ describe("ModelsController:assets", () => {
     );
     expect(containerModel._source).toMatchObject({
       type: "asset",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       asset: {
         model: "Container",
         metadataMappings: {
@@ -254,7 +254,7 @@ describe("ModelsController:assets", () => {
     );
     expect(wareHouseModel._source).toMatchObject({
       type: "asset",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       asset: {
         model: "Warehouse",
         metadataMappings: { surface: { type: "integer" } },
@@ -265,7 +265,7 @@ describe("ModelsController:assets", () => {
 
   it("Write and Retrieve an Asset model with tooltip models", async () => {
     const assetModelWithTooltip = {
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       model: "AdvancedWarehouse",
       metadataMappings: {
         location: { type: "geo_point" },
@@ -295,10 +295,10 @@ describe("ModelsController:assets", () => {
       "model-asset-AdvancedWarehouse",
     );
     expect(assetModel._source.asset).toHaveProperty("tooltipModels");
-    delete assetModelWithTooltip.engineGroup;
+    delete assetModelWithTooltip.engineGroups;
     expect(assetModel._source).toMatchObject({
       type: "asset",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       asset: assetModelWithTooltip,
     });
   });
@@ -308,7 +308,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "AdvancedWarehouse",
         metadataMappings: {
           location: { type: "geo_point" },
@@ -345,7 +345,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "updateAsset",
       _id: "model-asset-AdvancedWarehouse",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       model: "AdvancedWarehouse",
       body: { tooltipModels: updatedTooltipModels },
     });

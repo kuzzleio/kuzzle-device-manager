@@ -22,7 +22,7 @@ interface ModelsControllerRequest {
 export interface ApiModelGetAssetRequest extends ModelsControllerRequest {
   action: "getAsset";
   model: string;
-  engineGroup: string;
+  engineGroups: string[];
 }
 export type ApiModelGetAssetResult = KDocument<AssetModelContent>;
 
@@ -49,7 +49,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   action: "writeAsset";
 
   body: {
-    engineGroup: string;
+    engineGroups: string[];
     model: string;
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
@@ -81,7 +81,7 @@ export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
 
   body: {
     affinity: GroupAffinity;
-    engineGroup: string;
+    engineGroups: string[];
     model: string;
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
@@ -110,7 +110,7 @@ export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;
 export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
   action: "updateAsset";
 
-  engineGroup: string;
+  engineGroups: string[];
   model: string;
 
   body: {
@@ -156,7 +156,7 @@ export type ApiModelDeleteMeasureResult = void;
 export interface ApiModelListAssetsRequest extends ModelsControllerRequest {
   action: "listAssets";
 
-  engineGroup: string;
+  engineGroups: string[];
 }
 export type ApiModelListAssetsResult = {
   models: KDocument<AssetModelContent>[];
@@ -173,7 +173,7 @@ export type ApiModelListDevicesResult = {
 
 export interface ApiModelListGroupsRequest extends ModelsControllerRequest {
   action: "listGroups";
-  engineGroup: string;
+  engineGroups: string[];
 }
 export type ApiModelListGroupsResult = {
   models: KDocument<GroupModelContent>[];
@@ -192,7 +192,7 @@ export type ApiModelListMeasuresResult = {
 export interface ApiModelSearchAssetsRequest extends ModelsControllerRequest {
   action: "searchAssets";
 
-  engineGroup: string;
+  engineGroups: string[];
   from?: number;
   size?: number;
   scrollTTL?: string;
@@ -215,7 +215,7 @@ export type ApiModelSearchDevicesResult = SearchResult<
 export interface ApiModelSearchGroupsRequest extends ModelsControllerRequest {
   action: "searchGroups";
 
-  engineGroup: string;
+  engineGroups: string[];
   from?: number;
   size?: number;
   scrollTTL?: string;

@@ -18,7 +18,7 @@ describe("Asset model measure slots propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Plane",
         metadataMappings: { size: { type: "integer" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -49,7 +49,7 @@ describe("Asset model measure slots propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Plane",
         metadataMappings: { size: { type: "integer" } },
         measures: [
@@ -76,7 +76,7 @@ describe("Asset model measure slots propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Plane",
         metadataMappings: { size: { type: "integer" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -106,7 +106,7 @@ describe("Asset model measure slots propagation", () => {
     await sdk.query<ApiModelUpdateAssetRequest, ApiModelUpdateAssetResult>({
       controller: "device-manager/models",
       action: "updateAsset",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       model: "Plane",
       body: {
         measures: [

@@ -159,7 +159,7 @@ describe("ModelsController:devices", () => {
       controller: "device-manager/models",
       action: "writeDevice",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "plane",
         metadataMappings: { size: { type: "integer" } },
         defaultValues: { name: "Firebird" },

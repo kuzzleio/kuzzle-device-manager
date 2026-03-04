@@ -62,7 +62,7 @@ export class ModelsRegister {
   /**
    * Registers an asset model.
    *
-   * @param engineGroup - The engine group name.
+   * @param engineGroups - The engine group names.
    * @param model - The name of the asset model, which must be in PascalCase.
    * @param measures - The measures associated with this asset model.
    * @param metadataMappings - The metadata mappings for the model, defaults to an empty object.
@@ -73,7 +73,7 @@ export class ModelsRegister {
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerAsset(
-    engineGroup: string,
+    engineGroups: string[],
     model: string,
     measures: NamedMeasures,
     metadataMappings: MetadataMappings = {},
@@ -110,7 +110,7 @@ export class ModelsRegister {
         model,
         tooltipModels,
       },
-      engineGroup,
+      engineGroups,
       type: "asset",
     });
   }
@@ -167,7 +167,7 @@ export class ModelsRegister {
    * Registers a group model.
    *
    *
-   * @param engineGroup - The engine group name.
+   * @param engineGroups - The engine group names.
    * @param model - The name of the group model, which must be in PascalCase.
    * @param affinity - The type of object accepted and their model affinity.
    * @param metadataMappings - The metadata mappings for the model, defaults to an empty object.
@@ -177,7 +177,7 @@ export class ModelsRegister {
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerGroup(
-    engineGroup: string,
+    engineGroups: string[],
     model: string,
     affinity: GroupAffinity,
     metadataMappings: MetadataMappings = {},
@@ -193,7 +193,7 @@ export class ModelsRegister {
 
     // Construct and push the new group model to the groupModels array
     this.groupModels.push({
-      engineGroup,
+      engineGroups,
       group: {
         affinity,
         defaultMetadata,

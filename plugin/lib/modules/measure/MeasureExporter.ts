@@ -168,7 +168,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
     const modelDocument = await ask<AskModelDeviceGet | AskModelAssetGet>(
       `ask:device-manager:model:${targetModel}:get`,
       {
-        engineGroup: engine.group,
+        engineGroups: [engine.group],
         engineId,
         model,
       },

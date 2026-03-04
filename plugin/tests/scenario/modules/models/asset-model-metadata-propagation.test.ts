@@ -44,7 +44,7 @@ describe("Asset model metadata propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Pallet",
         metadataMappings: {
           depth: { type: "integer" },
@@ -80,7 +80,7 @@ describe("Asset model metadata propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Pallet",
         metadataMappings: {
           depth: { type: "integer" },
@@ -123,7 +123,7 @@ describe("Asset model metadata propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Pallet",
         metadataMappings: {
           depth: { type: "integer" },
@@ -159,7 +159,7 @@ describe("Asset model metadata propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Pallet",
         metadataMappings: {
           depth: { type: "integer" },
@@ -202,7 +202,7 @@ describe("Asset model metadata propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Pallet",
         metadataMappings: {
           depth: { type: "integer" },
@@ -239,7 +239,7 @@ describe("Asset model metadata propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Pallet",
         metadataMappings: {
           depth: { type: "integer" },
@@ -281,7 +281,7 @@ describe("Asset model metadata propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "commons",
+        engineGroups: ["commons"],
         model: "Pallet",
         metadataMappings: {
           depth: { type: "integer" },
@@ -305,7 +305,7 @@ describe("Asset model metadata propagation", () => {
     await sdk.query<ApiModelUpdateAssetRequest>({
       controller: "device-manager/models",
       action: "updateAsset",
-      engineGroup: "commons",
+      engineGroups: ["commons"],
       model: "Pallet",
       body: {
         locales: {

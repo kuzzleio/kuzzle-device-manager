@@ -57,7 +57,7 @@ export function registerModels(deviceManager: DeviceManagerPlugin) {
   for (const [engine, models] of Object.entries(assetsModels)) {
     for (const model of models) {
       deviceManager.models.registerAsset(
-        engine,
+        [engine],
         model.modelName,
         model.definition,
       );
@@ -66,7 +66,7 @@ export function registerModels(deviceManager: DeviceManagerPlugin) {
   for (const [engine, models] of Object.entries(groupModels)) {
     for (const model of models) {
       deviceManager.models.registerGroup(
-        engine,
+        [engine],
         model.modelName,
         model.definition,
       );

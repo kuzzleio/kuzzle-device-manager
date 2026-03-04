@@ -192,9 +192,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                     }
                     // Group-scoped or commons: applicable to all engines in group
                     return (
-                      !assetModel.engineGroup ||
-                      assetModel.engineGroup === group ||
-                      assetModel.engineGroup === "commons"
+                      !assetModel.engineGroups?.length ||
+                      assetModel.engineGroups?.includes(group) ||
+                      assetModel.engineGroups?.includes("commons")
                     );
                   },
                 );
@@ -801,8 +801,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                 { equals: { engineIds: targetEngineId } },
                 {
                   or: [
-                    { equals: { engineGroup } },
-                    { equals: { engineGroup: "commons" } },
+                    { equals: { engineGroups: engineGroup } },
+                    { equals: { engineGroups: "commons" } },
                   ],
                 },
               ],
@@ -810,13 +810,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
             {
               and: [
                 { not: { exists: "engineIds" } },
-                { equals: { engineGroup } },
+                { equals: { engineGroups: engineGroup } },
               ],
             },
             {
               and: [
                 { not: { exists: "engineIds" } },
-                { equals: { engineGroup: "commons" } },
+                { equals: { engineGroups: "commons" } },
               ],
             },
           ],
@@ -828,8 +828,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
             { not: { exists: "engineIds" } },
             {
               or: [
-                { equals: { engineGroup } },
-                { equals: { engineGroup: "commons" } },
+                { equals: { engineGroups: engineGroup } },
+                { equals: { engineGroups: "commons" } },
               ],
             },
           ],

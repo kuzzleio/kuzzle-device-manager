@@ -503,7 +503,7 @@ export class AssetsController {
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
       {
-        engineGroup,
+        engineGroups: [engineGroup],
         engineId: indexId,
         model: asset.model,
       },
@@ -537,7 +537,7 @@ export class AssetsController {
       };
     }) as DecodedMeasurement<JSONObject>[];
 
-    const target = toApiTarget(indexId, assetId, engine.group);
+    const target = toApiTarget(indexId, assetId, [engine.group]);
 
     const errors: MeasureValidationChunks[] = [];
     for (const measure of measurements) {
@@ -613,7 +613,7 @@ export class AssetsController {
       values,
     } as DecodedMeasurement<JSONObject>;
 
-    const target = toApiTarget(indexId, assetId, engine.group);
+    const target = toApiTarget(indexId, assetId, [engine.group]);
 
     const validator = getValidator(type);
 

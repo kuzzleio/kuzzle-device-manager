@@ -60,8 +60,8 @@ export class ModelService extends BaseService {
   registerAskEvents() {
     onAsk<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      async ({ engineGroup, engineId, model }) => {
-        const assetModel = await this.getAsset(engineGroup, engineId, model);
+      async ({ engineGroups, engineId, model }) => {
+        const assetModel = await this.getAsset(engineGroups, engineId, model);
 
         return assetModel._source;
       },
@@ -302,7 +302,7 @@ export class ModelService extends BaseService {
     return { models, strict, type };
   }
   async writeAsset(
-    engineGroup: string,
+    engineGroups: string[],
     model: string,
     metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
@@ -325,6 +325,10 @@ export class ModelService extends BaseService {
       );
     }
 
+    const normalizedEngineGroups = engineGroups.includes("commons")
+      ? ["commons"]
+      : engineGroups;
+
     const modelContent: AssetModelContent = {
       asset: {
         defaultMetadata,
@@ -336,7 +340,7 @@ export class ModelService extends BaseService {
         model,
         tooltipModels,
       },
-      engineGroup,
+      engineGroups: normalizedEngineGroups,
       ...(engineIds?.length ? { engineIds } : {}),
       type: "asset",
     };
@@ -446,7 +450,7 @@ export class ModelService extends BaseService {
   }
 
   async writeGroup(
-    engineGroup: string,
+    engineGroups: string[],
     model: string,
     affinity: JSONObject,
     metadataMappings: MetadataMappings,
@@ -457,9 +461,15 @@ export class ModelService extends BaseService {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
     }
+    if (engineGroups.length !== 1) {
+      throw new BadRequestError(
+        `Group model "${model}" must belong to exactly one engine group.`,
+      );
+    }
+
     const groupAffinity = this.checkGroupAffinity(affinity);
     const modelContent: GroupModelContent = {
-      engineGroup,
+      engineGroups,
       group: {
         affinity: groupAffinity,
         defaultMetadata,
@@ -601,10 +611,10 @@ export class ModelService extends BaseService {
   }
 
   async listAsset(
-    engineGroup: string,
+    engineGroups: string[],
     engineId?: string,
   ): Promise<KDocument<AssetModelContent>[]> {
-    const result = await this.searchAssets(engineGroup, engineId, {
+    const result = await this.searchAssets(engineGroups, engineId, {
       searchBody: {
         sort: { "asset.model": "asc" },
       },
@@ -626,9 +636,9 @@ export class ModelService extends BaseService {
   }
 
   async listGroups(
-    engineGroup: string,
+    engineGroups: string[],
   ): Promise<KDocument<GroupModelContent>[]> {
-    const result = await this.searchGroups(engineGroup, {
+    const result = await this.searchGroups(engineGroups, {
       searchBody: {
         sort: { "group.model": "asc" },
       },
@@ -652,7 +662,7 @@ export class ModelService extends BaseService {
   }
 
   async searchAssets(
-    engineGroup: string,
+    engineGroups: string[],
     engineId: string | undefined,
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<AssetModelContent>>> {
@@ -664,19 +674,19 @@ export class ModelService extends BaseService {
                 bool: {
                   must: [
                     { term: { engineIds: engineId } },
-                    { term: { engineGroup } },
+                    { terms: { engineGroups } },
                   ],
                 },
               },
               {
                 bool: {
-                  must: [{ term: { engineGroup } }],
+                  must: [{ terms: { engineGroups } }],
                   must_not: [{ exists: { field: "engineIds" } }],
                 },
               },
               {
                 bool: {
-                  must: [{ term: { engineGroup: "commons" } }],
+                  must: [{ term: { engineGroups: "commons" } }],
                   must_not: [{ exists: { field: "engineIds" } }],
                 },
               },
@@ -688,13 +698,13 @@ export class ModelService extends BaseService {
             should: [
               {
                 bool: {
-                  must: [{ term: { engineGroup } }],
+                  must: [{ terms: { engineGroups } }],
                   must_not: [{ exists: { field: "engineIds" } }],
                 },
               },
               {
                 bool: {
-                  must: [{ term: { engineGroup: "commons" } }],
+                  must: [{ term: { engineGroups: "commons" } }],
                   must_not: [{ exists: { field: "engineIds" } }],
                 },
               },
@@ -757,7 +767,7 @@ export class ModelService extends BaseService {
   }
 
   async searchGroups(
-    engineGroup: string,
+    engineGroups: string[],
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<GroupModelContent>>> {
     const query = {
@@ -768,8 +778,8 @@ export class ModelService extends BaseService {
           {
             bool: {
               should: [
-                { term: { engineGroup } },
-                { term: { engineGroup: "commons" } },
+                { terms: { engineGroups } },
+                { term: { engineGroups: "commons" } },
               ],
             },
           },
@@ -875,7 +885,7 @@ export class ModelService extends BaseService {
   }
 
   async getAsset(
-    engineGroup: string,
+    engineGroups: string[],
     engineId: string | undefined,
     model: string,
   ): Promise<KDocument<AssetModelContent>> {
@@ -890,7 +900,7 @@ export class ModelService extends BaseService {
         bool: {
           must: [
             ...baseFilter,
-            { term: { engineGroup } },
+            { terms: { engineGroups } },
             { term: { engineIds: engineId } },
           ],
         },
@@ -911,7 +921,7 @@ export class ModelService extends BaseService {
     // Priority 2: group-scoped model (no engineIds field)
     const groupQuery = {
       bool: {
-        must: [...baseFilter, { term: { engineGroup } }],
+        must: [...baseFilter, { terms: { engineGroups } }],
         must_not: [{ exists: { field: "engineIds" } }],
       },
     };
@@ -930,7 +940,7 @@ export class ModelService extends BaseService {
     // Priority 3: commons model
     const commonsQuery = {
       bool: {
-        must: [...baseFilter, { term: { engineGroup: "commons" } }],
+        must: [...baseFilter, { term: { engineGroups: "commons" } }],
         must_not: [{ exists: { field: "engineIds" } }],
       },
     };
@@ -947,7 +957,7 @@ export class ModelService extends BaseService {
     }
 
     throw new NotFoundError(
-      `Unknown Asset model "${model}" for engineGroup ${engineGroup}.`,
+      `Unknown Asset model "${model}" for engineGroups ${engineGroups.join(", ")}.`,
     );
   }
 
@@ -1096,7 +1106,7 @@ export class ModelService extends BaseService {
    * Update an asset model
    */
   async updateAsset(
-    engineGroup: string,
+    engineGroups: string[],
     model: string,
     metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
@@ -1113,7 +1123,7 @@ export class ModelService extends BaseService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
-    const existingAsset = await this.getAsset(engineGroup, undefined, model);
+    const existingAsset = await this.getAsset(engineGroups, undefined, model);
 
     // The field must be deleted if an element of the table is to be deleted
     await this.sdk.document.deleteFields(
@@ -1127,6 +1137,10 @@ export class ModelService extends BaseService {
     const measuresUpdated =
       measures.length === 0 ? existingAsset._source.asset.measures : measures;
 
+    const normalizedEngineGroups = engineGroups.includes("commons")
+      ? ["commons"]
+      : engineGroups;
+
     const assetModelContent: AssetModelContent = {
       asset: {
         defaultMetadata,
@@ -1138,7 +1152,7 @@ export class ModelService extends BaseService {
         model,
         tooltipModels,
       },
-      engineGroup,
+      engineGroups: normalizedEngineGroups,
       type: "asset",
     };
     const assetModel = {

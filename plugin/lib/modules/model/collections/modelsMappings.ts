@@ -9,7 +9,7 @@ export const modelsMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {
     type: { type: "keyword" },
-    engineGroup: { type: "keyword" },
+    engineGroups: { type: "keyword" },
     engineIds: { type: "keyword" },
 
     /**

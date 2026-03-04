@@ -137,11 +137,11 @@ export class ModelsController {
 
   async getAsset(request: KuzzleRequest): Promise<ApiModelGetAssetResult> {
     const model = request.getString("model");
-    const engineGroup = request.getString("engineGroup", "commons");
+    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
     const engineId = request.input.args.engineId as string | undefined;
 
     const assetModel = await this.modelService.getAsset(
-      engineGroup,
+      engineGroups,
       engineId,
       model,
     );
@@ -174,7 +174,7 @@ export class ModelsController {
   }
 
   async writeAsset(request: KuzzleRequest): Promise<ApiModelWriteAssetResult> {
-    const engineGroup = request.getBodyString("engineGroup");
+    const engineGroups = request.getBodyArray("engineGroups") as string[];
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
@@ -186,7 +186,7 @@ export class ModelsController {
     const engineIds = request.getBodyArray("engineIds", []);
 
     const assetModel = await this.modelService.writeAsset(
-      engineGroup,
+      engineGroups,
       model,
       metadataMappings,
       defaultValues,
@@ -224,7 +224,7 @@ export class ModelsController {
   }
 
   async writeGroup(request: KuzzleRequest): Promise<ApiModelWriteGroupResult> {
-    const engineGroup = request.getBodyString("engineGroup");
+    const engineGroups = request.getBodyArray("engineGroups") as string[];
     const model = request.getBodyString("model");
     const affinity = request.getBodyObject("affinity", {
       models: { assets: [], devices: [] },
@@ -237,7 +237,7 @@ export class ModelsController {
     const metadataGroups = request.getBodyObject("metadataGroups", {});
 
     const groupModel = await this.modelService.writeGroup(
-      engineGroup,
+      engineGroups,
       model,
       affinity,
       metadataMappings,
@@ -304,10 +304,10 @@ export class ModelsController {
   }
 
   async listAssets(request: KuzzleRequest): Promise<ApiModelListAssetsResult> {
-    const engineGroup = request.getString("engineGroup");
+    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
     const engineId = request.input.args.engineId as string | undefined;
 
-    const models = await this.modelService.listAsset(engineGroup, engineId);
+    const models = await this.modelService.listAsset(engineGroups, engineId);
 
     return {
       models,
@@ -325,8 +325,8 @@ export class ModelsController {
   }
 
   async listGroups(request: KuzzleRequest): Promise<ApiModelListGroupsResult> {
-    const engineGroup = request.getString("engineGroup");
-    const models = await this.modelService.listGroups(engineGroup);
+    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
+    const models = await this.modelService.listGroups(engineGroups);
 
     return {
       models,
@@ -353,7 +353,7 @@ export class ModelsController {
     const engineId = request.input.args.engineId as string | undefined;
 
     return this.modelService.searchAssets(
-      request.getString("engineGroup"),
+      request.getArray("engineGroups", []) || ["commons"],
       engineId,
       request.getSearchParams(),
     );
@@ -369,7 +369,7 @@ export class ModelsController {
     request: KuzzleRequest,
   ): Promise<ApiModelSearchGroupsResult> {
     return this.modelService.searchGroups(
-      request.getString("engineGroup"),
+      request.getArray("engineGroups", []) || ["commons"],
       request.getSearchParams(),
     );
   }
@@ -388,7 +388,7 @@ export class ModelsController {
   async updateAsset(
     request: KuzzleRequest,
   ): Promise<ApiModelUpdateAssetResult> {
-    const engineGroup = request.getString("engineGroup");
+    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
     const model = request.getString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
@@ -399,7 +399,7 @@ export class ModelsController {
     const locales = request.getBodyObject("locales", {});
 
     const updatedAssetModel = await this.modelService.updateAsset(
-      engineGroup,
+      engineGroups,
       model,
       metadataMappings,
       defaultValues,

@@ -3,11 +3,11 @@ import { ApiMeasureTarget, DeviceMeasureTarget } from "./types/MeasureTarget";
 export function toApiTarget(
   indexId: string,
   assetId: string,
-  engineGroup?: string,
+  engineGroups?: string[],
 ): ApiMeasureTarget {
   return {
     assetId,
-    engineGroup,
+    engineGroups,
     indexId,
     type: "api",
   };

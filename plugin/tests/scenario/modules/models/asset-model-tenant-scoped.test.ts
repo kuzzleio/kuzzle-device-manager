@@ -11,7 +11,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "TenantSensor",
         metadataMappings: { location: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -27,7 +27,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
 
     expect(doc._source).toMatchObject({
       type: "asset",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       engineIds: ["engine-ayse"],
       asset: {
         model: "TenantSensor",
@@ -42,7 +42,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "GroupSensor",
         metadataMappings: { location: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -57,7 +57,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
 
     expect(doc._source).toMatchObject({
       type: "asset",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       asset: { model: "GroupSensor" },
     });
     expect(doc._source).not.toHaveProperty("engineIds");
@@ -69,7 +69,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "DualScope",
         metadataMappings: { version: { type: "keyword" } },
         measures: [],
@@ -81,7 +81,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "DualScope",
         metadataMappings: { version: { type: "keyword" } },
         measures: [],
@@ -112,7 +112,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "TenantOnly",
         metadataMappings: {},
         measures: [],
@@ -125,7 +125,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const listResult = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       engineId: "engine-ayse",
     });
 
@@ -143,7 +143,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const listResult = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
     });
 
     const ids = listResult.result.models.map((m: { _id: string }) => m._id);
@@ -160,7 +160,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "Priority",
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "group" },
@@ -173,7 +173,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "Priority",
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "tenant" },
@@ -187,7 +187,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "getAsset",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       model: "Priority",
       engineId: "engine-ayse",
     });
@@ -204,7 +204,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "FallbackTest",
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "group" },
@@ -217,7 +217,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "getAsset",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       model: "FallbackTest",
       engineId: "engine-ayse",
     });
@@ -233,7 +233,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroup: "air_quality",
+        engineGroups: ["air_quality"],
         model: "SharedTenant",
         metadataMappings: {},
         measures: [],
@@ -247,7 +247,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const listAyse = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       engineId: "engine-ayse",
     });
     const idsAyse = listAyse.result.models.map((m: { _id: string }) => m._id);
@@ -259,7 +259,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const listKuzzle = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroup: "air_quality",
+      engineGroups: ["air_quality"],
       engineId: "engine-kuzzle",
     });
     const idsKuzzle = listKuzzle.result.models.map(
