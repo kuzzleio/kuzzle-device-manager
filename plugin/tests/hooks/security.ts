@@ -5,7 +5,9 @@ import rights from "../fixtures/rights";
 export async function loadSecurityDefault(sdk: Kuzzle) {
   sdk.jwt = null;
 
-  // Clean up orphaned credentials + users to avoid inconsistency (Kuzzle 2.52 bug)
+  // Clean up users + credentials before loadSecurities to prevent
+  // "existing credentials found on non-existing user" errors
+  // when test suites run sequentially against the same Kuzzle instance.
   for (const userId of Object.keys(rights.users)) {
     try {
       await sdk.security.deleteCredentials("local", userId);
