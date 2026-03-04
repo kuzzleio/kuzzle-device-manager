@@ -166,8 +166,9 @@ export class ModelsController {
   }
   async getMeasure(request: KuzzleRequest): Promise<ApiModelGetMeasureResult> {
     const type = request.getString("type");
+    const engineId = request.input.args.engineId as string | undefined;
 
-    const measureModel = await this.modelService.getMeasure(type);
+    const measureModel = await this.modelService.getMeasure(type, engineId);
 
     return measureModel;
   }
@@ -182,7 +183,7 @@ export class ModelsController {
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const tooltipModels = request.getBodyObject("tooltipModels", {});
     const locales = request.getBodyObject("locales", {});
-    const engines = request.getBodyArray("engines", []);
+    const engineIds = request.getBodyArray("engineIds", []);
 
     const assetModel = await this.modelService.writeAsset(
       engineGroup,
@@ -194,7 +195,7 @@ export class ModelsController {
       measures,
       tooltipModels,
       locales,
-      engines,
+      engineIds,
     );
 
     return assetModel;
@@ -256,6 +257,7 @@ export class ModelsController {
     const validationSchema = request.getBodyObject("validationSchema", {});
     const valuesDetails = request.getBodyObject("valuesDetails", {});
     const locales = request.getBodyObject("locales", {});
+    const engineIds = request.getBodyArray("engineIds", []);
 
     const measureModel = await this.modelService.writeMeasure(
       type,
@@ -263,6 +265,7 @@ export class ModelsController {
       validationSchema,
       valuesDetails,
       locales,
+      engineIds,
     );
 
     return measureModel;
@@ -331,8 +334,12 @@ export class ModelsController {
     };
   }
 
-  async listMeasures(): Promise<ApiModelListMeasuresResult> {
-    const models = await this.modelService.listMeasures();
+  async listMeasures(
+    request: KuzzleRequest,
+  ): Promise<ApiModelListMeasuresResult> {
+    const engineId = request.input.args.engineId as string | undefined;
+
+    const models = await this.modelService.listMeasures(engineId);
 
     return {
       models,
@@ -370,7 +377,12 @@ export class ModelsController {
   async searchMeasures(
     request: KuzzleRequest,
   ): Promise<ApiModelSearchMeasuresResult> {
-    return this.modelService.searchMeasures(request.getSearchParams());
+    const engineId = request.input.args.engineId as string | undefined;
+
+    return this.modelService.searchMeasures(
+      engineId,
+      request.getSearchParams(),
+    );
   }
 
   async updateAsset(

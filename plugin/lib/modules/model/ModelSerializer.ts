@@ -11,8 +11,8 @@ export class ModelSerializer {
   static id<T extends ModelContent>(type: string, model: T) {
     if (type === "asset") {
       const assetModel = model as AssetModelContent;
-      if (assetModel.engines?.length) {
-        const sortedEngines = [...assetModel.engines].sort().join("+");
+      if (assetModel.engineIds?.length) {
+        const sortedEngines = [...assetModel.engineIds].sort().join("+");
         return `model-asset-${assetModel.engineGroup}-${sortedEngines}-${ModelSerializer.title(type, model)}`;
       }
       return `model-asset-${ModelSerializer.title(type, model)}`;
@@ -21,6 +21,11 @@ export class ModelSerializer {
     } else if (type === "group") {
       return `model-group-${ModelSerializer.title(type, model)}`;
     } else if (type === "measure") {
+      const measureModel = model as MeasureModelContent;
+      if (measureModel.engineIds?.length) {
+        const sortedEngines = [...measureModel.engineIds].sort().join("+");
+        return `model-measure-${sortedEngines}-${ModelSerializer.title(type, model)}`;
+      }
       return `model-measure-${ModelSerializer.title(type, model)}`;
     }
 

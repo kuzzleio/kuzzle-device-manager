@@ -7,6 +7,8 @@ import { MeasureDefinition } from "../../measure";
 export interface MeasureModelContent extends KDocumentContent {
   type: "measure";
 
+  engineIds?: string[];
+
   measure: MeasureDefinition & {
     type: string;
     locales?: { [valueName: string]: LocaleDetails };
@@ -186,7 +188,7 @@ export interface AssetModelContent extends KDocumentContent {
    * When set, the model is only available to the specified tenants.
    * When absent, the model is available to all tenants in the engineGroup.
    */
-  engines?: string[];
+  engineIds?: string[];
 
   asset: {
     /**

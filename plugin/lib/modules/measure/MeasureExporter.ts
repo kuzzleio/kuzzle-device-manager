@@ -176,6 +176,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
 
     const measureColumns = await this.generateMeasureColumns(
       modelDocument[targetModel].measures,
+      engineId,
     );
     // sometimes we have multiple measures with same type
     // detect them and add them a flag that will be used later
@@ -221,6 +222,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
 
   private async generateMeasureColumns(
     documentMeasures: NamedMeasures,
+    engineId?: string,
   ): Promise<Array<Column & { shouldCheckName: boolean; name: string }>> {
     /**
      * @example
@@ -242,7 +244,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       if (!(type in mappingsByMeasureType)) {
         const { measure } = await ask<AskModelMeasureGet>(
           "ask:device-manager:model:measure:get",
-          { type },
+          { type, engineId },
         );
 
         mappingsByMeasureType[type] = Object.keys(

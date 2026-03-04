@@ -6,7 +6,7 @@ vi.setConfig({ testTimeout: 30000 });
 describe("ModelsController:assets:tenant-scoped", () => {
   const sdk = setupHooks();
 
-  it("Write a tenant-scoped asset model with engines", async () => {
+  it("Write a tenant-scoped asset model with engineIds", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -15,7 +15,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         model: "TenantSensor",
         metadataMappings: { location: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
-        engines: ["engine-ayse"],
+        engineIds: ["engine-ayse"],
       },
     });
 
@@ -28,7 +28,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(doc._source).toMatchObject({
       type: "asset",
       engineGroup: "air_quality",
-      engines: ["engine-ayse"],
+      engineIds: ["engine-ayse"],
       asset: {
         model: "TenantSensor",
         metadataMappings: { location: { type: "keyword" } },
@@ -37,7 +37,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     });
   });
 
-  it("Write without engines still works (backward compat)", async () => {
+  it("Write without engineIds still works (backward compat)", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -60,7 +60,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       engineGroup: "air_quality",
       asset: { model: "GroupSensor" },
     });
-    expect(doc._source).not.toHaveProperty("engines");
+    expect(doc._source).not.toHaveProperty("engineIds");
   });
 
   it("Same model name at tenant and group scope coexist with distinct IDs", async () => {
@@ -85,7 +85,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         model: "DualScope",
         metadataMappings: { version: { type: "keyword" } },
         measures: [],
-        engines: ["engine-ayse"],
+        engineIds: ["engine-ayse"],
       },
     });
 
@@ -102,8 +102,8 @@ describe("ModelsController:assets:tenant-scoped", () => {
 
     expect(groupDoc._id).toBe("model-asset-DualScope");
     expect(tenantDoc._id).toBe("model-asset-air_quality-engine-ayse-DualScope");
-    expect(groupDoc._source).not.toHaveProperty("engines");
-    expect(tenantDoc._source.engines).toEqual(["engine-ayse"]);
+    expect(groupDoc._source).not.toHaveProperty("engineIds");
+    expect(tenantDoc._source.engineIds).toEqual(["engine-ayse"]);
   });
 
   it("List returns tenant + group + commons models", async () => {
@@ -116,7 +116,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         model: "TenantOnly",
         metadataMappings: {},
         measures: [],
-        engines: ["engine-ayse"],
+        engineIds: ["engine-ayse"],
       },
     });
 
@@ -178,7 +178,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "tenant" },
         measures: [],
-        engines: ["engine-ayse"],
+        engineIds: ["engine-ayse"],
       },
     });
 
@@ -192,7 +192,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       engineId: "engine-ayse",
     });
 
-    expect(result.result._source.engines).toEqual(["engine-ayse"]);
+    expect(result.result._source.engineIds).toEqual(["engine-ayse"]);
     expect(result.result._source.asset.defaultMetadata).toMatchObject({
       scope: "tenant",
     });
@@ -222,7 +222,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       engineId: "engine-ayse",
     });
 
-    expect(result.result._source).not.toHaveProperty("engines");
+    expect(result.result._source).not.toHaveProperty("engineIds");
     expect(result.result._source.asset.defaultMetadata).toMatchObject({
       scope: "group",
     });
@@ -237,7 +237,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         model: "SharedTenant",
         metadataMappings: {},
         measures: [],
-        engines: ["engine-ayse", "engine-kuzzle"],
+        engineIds: ["engine-ayse", "engine-kuzzle"],
       },
     });
 

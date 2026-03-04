@@ -31,11 +31,12 @@ Method: POST
     "valuesMappings": {
       // Values mappings
     },
-      // Optional
+
+    // Optional
+    "engineIds": ["<engineId>", "..."],
     "valuesDetails":{
       // Values details and translation
     },
-      // Optional
     "validationSchema": {
       // Valid JSON Schema
     }
@@ -47,8 +48,9 @@ Method: POST
 
 ## Body properties
 
-- `model`: Measure model name
+- `type`: Measure type name
 - `valuesMappings`: Mappings of the measure values in Elasticsearch format
+- `engineIds`: (optional) Array of engine IDs to scope this measure model to specific tenants. When omitted, the measure model is global. A measure type cannot be both global and tenant-scoped — creating a tenant-scoped measure when a global one of the same type exists (or vice versa) will be rejected
 - `valuesDetails`: (optional) Measurement translations and units
 - `validationSchema`: (optional) Measurement validation JSON schema
 

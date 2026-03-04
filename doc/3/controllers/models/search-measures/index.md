@@ -36,6 +36,7 @@ Method: POST
   },
 
   // optional:
+  "engineId": "<engine ID>",
   "from": "<starting offset>",
   "size": "<page size>"
 }
@@ -45,6 +46,7 @@ Method: POST
 
 ## Arguments
 
+- `engineId`: (optional) engine ID. When provided, returns both tenant-scoped measure models for this engine and global measure models. When omitted, returns only global measure models
 - `from`: paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
 - `size`: set the maximum number of documents returned per result page
 

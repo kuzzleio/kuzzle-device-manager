@@ -41,6 +41,7 @@ export type ApiModelGetGroupResult = KDocument<GroupModelContent>;
 export interface ApiModelGetMeasureRequest extends ModelsControllerRequest {
   action: "getMeasure";
   type: string;
+  engineId?: string;
 }
 export type ApiModelGetMeasureResult = KDocument<MeasureModelContent>;
 
@@ -95,6 +96,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
 
   body: {
     type: string;
+    engineIds?: string[];
     locales?: {
       [valueName: string]: LocaleDetails;
     };
@@ -180,6 +182,7 @@ export type ApiModelListGroupsResult = {
 
 export interface ApiModelListMeasuresRequest extends ModelsControllerRequest {
   action: "listMeasures";
+  engineId?: string;
 }
 export type ApiModelListMeasuresResult = {
   models: KDocument<MeasureModelContent>[];
@@ -223,6 +226,7 @@ export type ApiModelSearchGroupsResult = SearchResult<KHit<GroupModelContent>>;
 export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
   action: "searchMeasures";
 
+  engineId?: string;
   from?: number;
   size?: number;
   scrollTTL?: string;

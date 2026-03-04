@@ -84,8 +84,8 @@ export class ModelService extends BaseService {
     );
     onAsk<AskModelMeasureGet>(
       "ask:device-manager:model:measure:get",
-      async ({ type }) => {
-        const measureModel = await this.getMeasure(type);
+      async ({ type, engineId }) => {
+        const measureModel = await this.getMeasure(type, engineId);
 
         return measureModel._source;
       },
@@ -311,7 +311,7 @@ export class ModelService extends BaseService {
     measures: NamedMeasures,
     tooltipModels: TooltipModels,
     locales: { [valueName: string]: LocaleDetails },
-    engines?: string[],
+    engineIds?: string[],
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
@@ -337,7 +337,7 @@ export class ModelService extends BaseService {
         tooltipModels,
       },
       engineGroup,
-      ...(engines?.length ? { engines } : {}),
+      ...(engineIds?.length ? { engineIds } : {}),
       type: "asset",
     };
 
@@ -508,6 +508,7 @@ export class ModelService extends BaseService {
     locales?: {
       [valueName: string]: LocaleDetails;
     },
+    engineIds?: string[],
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
       measure: {
@@ -518,6 +519,13 @@ export class ModelService extends BaseService {
       },
       type: "measure",
     };
+
+    if (engineIds?.length) {
+      modelContent.engineIds = engineIds;
+    }
+
+    // Anti-shadowing: a measure type must be either global or tenant-scoped, not both
+    await this.checkMeasureShadowing(type, engineIds);
 
     if (validationSchema) {
       try {
@@ -630,8 +638,10 @@ export class ModelService extends BaseService {
     return result.hits;
   }
 
-  async listMeasures(): Promise<KDocument<MeasureModelContent>[]> {
-    const result = await this.searchMeasures({
+  async listMeasures(
+    engineId?: string,
+  ): Promise<KDocument<MeasureModelContent>[]> {
+    const result = await this.searchMeasures(engineId, {
       searchBody: {
         sort: { "measure.type": "asc" },
       },
@@ -653,7 +663,7 @@ export class ModelService extends BaseService {
               {
                 bool: {
                   must: [
-                    { term: { engines: engineId } },
+                    { term: { engineIds: engineId } },
                     { term: { engineGroup } },
                   ],
                 },
@@ -661,13 +671,13 @@ export class ModelService extends BaseService {
               {
                 bool: {
                   must: [{ term: { engineGroup } }],
-                  must_not: [{ exists: { field: "engines" } }],
+                  must_not: [{ exists: { field: "engineIds" } }],
                 },
               },
               {
                 bool: {
                   must: [{ term: { engineGroup: "commons" } }],
-                  must_not: [{ exists: { field: "engines" } }],
+                  must_not: [{ exists: { field: "engineIds" } }],
                 },
               },
             ],
@@ -679,13 +689,13 @@ export class ModelService extends BaseService {
               {
                 bool: {
                   must: [{ term: { engineGroup } }],
-                  must_not: [{ exists: { field: "engines" } }],
+                  must_not: [{ exists: { field: "engineIds" } }],
                 },
               },
               {
                 bool: {
                   must: [{ term: { engineGroup: "commons" } }],
-                  must_not: [{ exists: { field: "engines" } }],
+                  must_not: [{ exists: { field: "engineIds" } }],
                 },
               },
             ],
@@ -784,13 +794,30 @@ export class ModelService extends BaseService {
   }
 
   async searchMeasures(
+    engineId: string | undefined,
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<MeasureModelContent>>> {
+    const scopeFilter = engineId
+      ? {
+          bool: {
+            should: [
+              { term: { engineIds: engineId } },
+              { bool: { must_not: [{ exists: { field: "engineIds" } }] } },
+            ],
+          },
+        }
+      : {
+          bool: {
+            must_not: [{ exists: { field: "engineIds" } }],
+          },
+        };
+
     const query = {
       bool: {
         must: [
           searchParams.searchBody.query,
           { term: { type: "measure" } },
+          scopeFilter,
         ].filter(Boolean),
       },
     };
@@ -864,7 +891,7 @@ export class ModelService extends BaseService {
           must: [
             ...baseFilter,
             { term: { engineGroup } },
-            { term: { engines: engineId } },
+            { term: { engineIds: engineId } },
           ],
         },
       };
@@ -881,11 +908,11 @@ export class ModelService extends BaseService {
       }
     }
 
-    // Priority 2: group-scoped model (no engines field)
+    // Priority 2: group-scoped model (no engineIds field)
     const groupQuery = {
       bool: {
         must: [...baseFilter, { term: { engineGroup } }],
-        must_not: [{ exists: { field: "engines" } }],
+        must_not: [{ exists: { field: "engineIds" } }],
       },
     };
 
@@ -904,7 +931,7 @@ export class ModelService extends BaseService {
     const commonsQuery = {
       bool: {
         must: [...baseFilter, { term: { engineGroup: "commons" } }],
-        must_not: [{ exists: { field: "engines" } }],
+        must_not: [{ exists: { field: "engineIds" } }],
       },
     };
 
@@ -973,26 +1000,96 @@ export class ModelService extends BaseService {
     return result.hits[0];
   }
 
-  async getMeasure(type: string): Promise<KDocument<MeasureModelContent>> {
-    const query = {
-      and: [
-        { equals: { type: "measure" } },
-        { equals: { "measure.type": type } },
-      ],
-    };
+  async getMeasure(
+    type: string,
+    engineId?: string,
+  ): Promise<KDocument<MeasureModelContent>> {
+    const baseFilter = [
+      { term: { type: "measure" } },
+      { term: { "measure.type": type } },
+    ];
+
+    const scopeFilter = engineId
+      ? {
+          bool: {
+            should: [
+              { term: { engineIds: engineId } },
+              { bool: { must_not: [{ exists: { field: "engineIds" } }] } },
+            ],
+          },
+        }
+      : {
+          bool: {
+            must_not: [{ exists: { field: "engineIds" } }],
+          },
+        };
 
     const result = await this.sdk.document.search<MeasureModelContent>(
       this.config.platformIndex,
       InternalCollection.MODELS,
-      { query },
-      { lang: "koncorde", size: 1 },
+      {
+        query: {
+          bool: {
+            must: [...baseFilter, scopeFilter],
+          },
+        },
+      },
+      { lang: "elasticsearch", size: 1 },
     );
 
-    if (result.total === 0) {
-      throw new NotFoundError(`Unknown Measure type "${type}".`);
+    if (result.total > 0) {
+      return result.hits[0];
     }
 
-    return result.hits[0];
+    throw new NotFoundError(`Unknown Measure type "${type}".`);
+  }
+
+  /**
+   * Checks that creating/updating a measure model does not shadow an existing
+   * one at a different scope (global vs tenant-scoped).
+   */
+  private async checkMeasureShadowing(
+    type: string,
+    engineIds?: string[],
+  ): Promise<void> {
+    const isNewTenantScoped = engineIds && engineIds.length > 0;
+
+    // Check for existing measures of the same type at the opposite scope
+    const conflictQuery = isNewTenantScoped
+      ? {
+          // New is tenant-scoped → reject if a global measure exists
+          bool: {
+            must: [
+              { term: { type: "measure" } },
+              { term: { "measure.type": type } },
+            ],
+            must_not: [{ exists: { field: "engineIds" } }],
+          },
+        }
+      : {
+          // New is global → reject if any tenant-scoped measure exists
+          bool: {
+            must: [
+              { term: { type: "measure" } },
+              { term: { "measure.type": type } },
+              { exists: { field: "engineIds" } },
+            ],
+          },
+        };
+
+    const result = await this.sdk.document.search<MeasureModelContent>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      { query: conflictQuery },
+      { lang: "elasticsearch", size: 1 },
+    );
+
+    if (result.total > 0) {
+      const scope = isNewTenantScoped ? "global" : "tenant-scoped";
+      throw new BadRequestError(
+        `Measure type "${type}" already exists as a ${scope} measure. A measure type cannot be both global and tenant-scoped.`,
+      );
+    }
   }
 
   /**
@@ -1071,7 +1168,7 @@ export class ModelService extends BaseService {
       { source: true },
     );
 
-    // ? Only update engines and refresh asset models when necessary
+    // ? Only update engineIds and refresh asset models when necessary
     if (Object.keys(metadataMappings).length > 0 || measures.length > 0) {
       await this.sdk.collection.refresh(
         this.config.platformIndex,

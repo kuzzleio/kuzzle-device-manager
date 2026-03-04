@@ -62,7 +62,10 @@ export class DigitalTwinExporter extends AbstractExporter {
     );
 
     const namedMeasures = await this.getNamedMeasures(engineId);
-    const measureColumns = await this.generateMeasureColumns(namedMeasures);
+    const measureColumns = await this.generateMeasureColumns(
+      namedMeasures,
+      engineId,
+    );
 
     const columns: Column[] = [
       { header: "Model", path: "_source.model" },
@@ -135,6 +138,7 @@ export class DigitalTwinExporter extends AbstractExporter {
 
   private async generateMeasureColumns(
     namedMeasures: NamedMeasures,
+    engineId?: string,
   ): Promise<MeasureColumn[]> {
     const columns: MeasureColumn[] = [];
 
@@ -143,7 +147,7 @@ export class DigitalTwinExporter extends AbstractExporter {
       if (!measuresPath.has(name)) {
         const { measure: measureDefinition } = await ask<AskModelMeasureGet>(
           "ask:device-manager:model:measure:get",
-          { type },
+          { type, engineId },
         );
 
         const flattenMeasuresPath = Object.keys(
