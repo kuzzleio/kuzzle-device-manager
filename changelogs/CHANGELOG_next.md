@@ -1,3 +1,33 @@
+## 3.0.0-next.26 (2026-03-04)
+
+* feat(assetModel): add spec artifacts for multi-group asset models (#462) ([e8cff06](https://github.com/kuzzleio/kuzzle-device-manager/commit/e8cff06)), closes [#462](https://github.com/kuzzleio/kuzzle-device-manager/issues/462)
+
+
+### BREAKING CHANGE
+
+* `engineGroup` field renamed to `engineGroups` (string[])
+in model documents, API request/response types, and ask events.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* feat(models): add multi-group asset model behavior
+
+- Normalize engineGroups containing "commons" to ["commons"] in writeAsset/updateAsset
+- Enforce single-group constraint for group models in writeGroup
+- Generate multi-group document IDs: model-asset-{sortedGroups}-{ModelName}
+- Add 7 functional tests for multi-group scenarios
+- Add group model rejection test for multiple engineGroups
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* fix(models): use request.getArray() for engineGroups parameter validation
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* chore: gitignore .claude/ and openspec/ directories
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
 ## 3.0.0-next.25 (2026-03-04)
 
 * feat(measureModel): tenant scoped measure model (#459) ([7659425](https://github.com/kuzzleio/kuzzle-device-manager/commit/7659425)), closes [#459](https://github.com/kuzzleio/kuzzle-device-manager/issues/459)
