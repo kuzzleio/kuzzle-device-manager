@@ -16,6 +16,8 @@ doc/framework
 frontmatter-errors.json
 
 .vscode
+.claude/
+openspec/
 
 # Typescript related files
 dist/

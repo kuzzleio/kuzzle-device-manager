@@ -191,7 +191,7 @@ describe("ModelsController:assets:multi-group", () => {
         model: "MultiGroupTenant",
         metadataMappings: {},
         measures: [],
-        engines: ["engine-ayse"],
+        engineIds: ["engine-ayse"],
       },
     });
 
@@ -204,7 +204,7 @@ describe("ModelsController:assets:multi-group", () => {
     expect(doc._source).toMatchObject({
       type: "asset",
       engineGroups: ["air_quality", "public_lighting"],
-      engines: ["engine-ayse"],
+      engineIds: ["engine-ayse"],
       asset: { model: "MultiGroupTenant" },
     });
   });
