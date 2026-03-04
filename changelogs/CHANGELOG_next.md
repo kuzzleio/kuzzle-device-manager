@@ -1,3 +1,7 @@
+## 3.0.0-next.25 (2026-03-04)
+
+* feat(measureModel): tenant scoped measure model (#459) ([7659425](https://github.com/kuzzleio/kuzzle-device-manager/commit/7659425)), closes [#459](https://github.com/kuzzleio/kuzzle-device-manager/issues/459)
+
 ## 3.0.0-next.24 (2026-02-23)
 
 * Merge pull request #458 from kuzzleio/feat/KZLPRD-1150_tenant_specific_asset_model ([4fd7f74](https://github.com/kuzzleio/kuzzle-device-manager/commit/4fd7f74)), closes [#458](https://github.com/kuzzleio/kuzzle-device-manager/issues/458)
