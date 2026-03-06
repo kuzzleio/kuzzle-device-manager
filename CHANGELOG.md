@@ -1,3 +1,32 @@
+## [2.10.2-dev.3](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.2-dev.2...v2.10.2-dev.3) (2026-01-23)
+
+
+### Bug Fixes
+
+* **ci:** add SBOM on prerelease ([7a8b2f1](https://github.com/kuzzleio/kuzzle-device-manager/commit/7a8b2f180e1d21ef646565172ddb54200fed11e6))
+* **ingestMeasure:** infer engine group from engine ([#454](https://github.com/kuzzleio/kuzzle-device-manager/issues/454)) ([905beb2](https://github.com/kuzzleio/kuzzle-device-manager/commit/905beb241d2d12c99f50d954be326e651554bd3a))
+
+## [2.10.2-dev.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.2-dev.1...v2.10.2-dev.2) (2025-12-09)
+
+
+### Bug Fixes
+
+* **ci:** add SBOM generation and upload for v2.x ([#452](https://github.com/kuzzleio/kuzzle-device-manager/issues/452)) ([8075bd9](https://github.com/kuzzleio/kuzzle-device-manager/commit/8075bd90e81d6e9bbde300364522aa1abf2f4d15))
+
+## [2.10.2-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.1...v2.10.2-dev.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* **doc:** fix misspelling in doc ([#451](https://github.com/kuzzleio/kuzzle-device-manager/issues/451)) ([ad2b7cf](https://github.com/kuzzleio/kuzzle-device-manager/commit/ad2b7cfc213942fe3cc52d3665c27eb2e9553f0b))
+
+## [2.10.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.0...v2.10.1) (2025-12-03)
+
+
+### Bug Fixes
+
+* **deviceService:** fix metadata init to accept 0 ([#449](https://github.com/kuzzleio/kuzzle-device-manager/issues/449)) ([9bc2837](https://github.com/kuzzleio/kuzzle-device-manager/commit/9bc283716a1316fd76a8f24b27ef3e3bd3de514e))
+
 ## [2.10.1-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.0...v2.10.1-beta.1) (2025-11-28)
 
 

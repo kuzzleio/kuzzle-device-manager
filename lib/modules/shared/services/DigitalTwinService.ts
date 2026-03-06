@@ -278,4 +278,13 @@ export class DigitalTwinService extends BaseService {
         };
     }
   }
+  public async getEngine(engineId: string): Promise<JSONObject> {
+    const engine = await this.sdk.document.get(
+      this.config.adminIndex,
+      InternalCollection.CONFIG,
+      `engine-device-manager--${engineId}`,
+    );
+
+    return engine._source.engine;
+  }
 }

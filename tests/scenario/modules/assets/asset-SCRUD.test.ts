@@ -74,7 +74,7 @@ describe("AssetsController:SCRUD", () => {
       },
     };
     await expect(sdk.query(unknownModel)).rejects.toThrow(
-      /^Unknown Asset model "truck".$/,
+      'Unknown Asset model "truck" for engineGroup commons.',
     );
 
     const withoutMetadata = await sdk.query<

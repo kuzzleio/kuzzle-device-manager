@@ -6,11 +6,11 @@ jobs:
   release-branch:
     if: ${{ github.ref_name == 'beta' || github.ref_name == '2-dev' }}
     name: Release to master
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Rebase master branch
         run: |
           git fetch --no-tags origin master:master
