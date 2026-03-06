@@ -3,6 +3,14 @@
 
 ### Bug Fixes
 
+* **ci:** add id-token permission ([c1b07f8](https://github.com/kuzzleio/kuzzle-device-manager/commit/c1b07f85a57d34696c43c7eea47ddbb882b7b862))
+* **ci:** remove prefixes ([77c190f](https://github.com/kuzzleio/kuzzle-device-manager/commit/77c190f3316a6098d180ac6377f0b23d245b7117))
+
+## [2.10.2-beta.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.2-beta.1...v2.10.2-beta.2) (2026-03-06)
+
+
+### Bug Fixes
+
 * **ci:** remove prefixes ([77c190f](https://github.com/kuzzleio/kuzzle-device-manager/commit/77c190f3316a6098d180ac6377f0b23d245b7117))
 
 ## [2.10.2-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.1...v2.10.2-beta.1) (2026-03-06)
