@@ -1,3 +1,10 @@
+## [2.10.2-beta.2](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.2-beta.1...v2.10.2-beta.2) (2026-03-06)
+
+
+### Bug Fixes
+
+* **ci:** remove prefixes ([77c190f](https://github.com/kuzzleio/kuzzle-device-manager/commit/77c190f3316a6098d180ac6377f0b23d245b7117))
+
 ## [2.10.2-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.1...v2.10.2-beta.1) (2026-03-06)
 
 
