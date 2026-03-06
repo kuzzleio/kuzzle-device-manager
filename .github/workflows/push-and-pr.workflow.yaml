@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run lint
-        run: npm run lint --prefix plugin
+        run: npm run lint
 
   check-types:
     name: Check types
@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run types tests
-        run: npm run test:types --prefix plugin
+        run: npm run test:types
 
   functional-tests:
     name: Functional Tests
@@ -69,7 +69,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: npm run test:functional --prefix plugin
+        run: npm run test:functional
 
   release-device-manager:
     name: Release package
@@ -94,7 +94,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build --prefix plugin
+        run: npm run build
 
       - name: Release
         env:
