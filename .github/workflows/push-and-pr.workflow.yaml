@@ -99,6 +99,7 @@ jobs:
 
       - name: Release
         env:
+          NPM_TOKEN: ${{ secrets.SEMANTIC_RELEASE_GHP }}
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_GHP }}
           SEMANTIC_RELEASE_NPM_PUBLISH: "true"
           SEMANTIC_RELEASE_SLACK_WEBHOOK: ${{ secrets.SEMANTIC_RELEASE_SLACK_WEBHOOK }}
