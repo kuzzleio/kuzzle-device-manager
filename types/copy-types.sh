@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -d ../dist ] || npm --prefix ../ run build;
+[ -d ../plugin/dist ] || npm --prefix ../plugin run build;
 [ -d dist ] || mkdir 'dist';
-cd ..
-find dist -name '*.d.ts' -exec cp --parents '{}' ./types \;
+cd ../plugin
+find dist -name '*.d.ts' -exec cp --parents '{}' ../types \;

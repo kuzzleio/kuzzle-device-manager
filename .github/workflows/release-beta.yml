@@ -6,11 +6,11 @@ jobs:
   release-branch:
     if: ${{ endsWith(github.ref_name, '-dev') }}
     name: Release to beta
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Rebase beta branch to dev
         run: |
           git fetch --no-tags origin beta:beta
