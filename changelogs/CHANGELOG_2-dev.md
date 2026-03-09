@@ -1,3 +1,7 @@
+## <small>2.10.2-dev.6 (2026-03-09)</small>
+
+* fix(package): update repository url ([062969b](https://github.com/kuzzleio/kuzzle-device-manager/commit/062969b))
+
 ## <small>2.10.2-dev.5 (2026-03-09)</small>
 
 * fix(package): add directory entry in plugin package.json ([79bf148](https://github.com/kuzzleio/kuzzle-device-manager/commit/79bf148))
