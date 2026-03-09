@@ -10,8 +10,7 @@ export interface ParkingMetadata extends Metadata {
   };
 }
 
-export interface ParkingGroupContent
-  extends AssetsGroupContent<ParkingMetadata> {
+export interface ParkingGroupContent extends AssetsGroupContent<ParkingMetadata> {
   model: typeof modelName;
 }
 

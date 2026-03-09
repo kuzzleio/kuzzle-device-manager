@@ -91,8 +91,8 @@ export type MeasureOrigin =
 export interface MeasureContent<
   TMeasureValues extends JSONObject = any,
   TMetadata extends Metadata = any,
-> extends Measurement<TMeasureValues>,
-    KDocumentContent {
+>
+  extends Measurement<TMeasureValues>, KDocumentContent {
   /**
    * Asset linked to the device when the measure was made
    */

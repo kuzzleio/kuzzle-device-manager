@@ -225,8 +225,7 @@ export type ApiDeviceMGetLastMeasuresResult =
  * Then the export can be download using HTTP Get and the following route:
  *  `/_/device-manager/:engineId/devices/:_id/measures/_export/:exportId`
  */
-export interface ApiDeviceExportMeasuresRequest
-  extends DevicesControllerRequest {
+export interface ApiDeviceExportMeasuresRequest extends DevicesControllerRequest {
   action: "exportMeasures";
 
   _id: string;
