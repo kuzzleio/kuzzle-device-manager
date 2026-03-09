@@ -12,12 +12,6 @@
     "esModuleInterop": true
   },
   "rootDir": "lib/",
-  "include": [
-    "lib/**/*.ts",
-    "tests/application/**/*.ts",
-    "index.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["lib/**/*.ts", "tests/application/**/*.ts", "index.ts"],
+  "exclude": ["node_modules"]
 }

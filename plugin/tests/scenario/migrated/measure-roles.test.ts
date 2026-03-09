@@ -28,7 +28,7 @@ describe("features/Measure/Roles", () => {
     let promise;
 
     await expect(
-      sdk.security.getRole("measures.reader")
+      sdk.security.getRole("measures.reader"),
     ).resolves.toMatchObject({
       controllers: {
         "device-manager/models": { actions: { listMeasures: true } },
@@ -46,7 +46,7 @@ describe("features/Measure/Roles", () => {
             },
           },
         },
-      }
+      },
     );
   });
 });

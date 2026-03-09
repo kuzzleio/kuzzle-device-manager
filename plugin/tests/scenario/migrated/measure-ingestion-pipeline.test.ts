@@ -68,20 +68,20 @@ describe("features/Measure/IngestionPipeline", () => {
       sdk.document.get(
         "device-manager",
         "devices",
-        "DummyTemp-enrich_me_master"
-      )
+        "DummyTemp-enrich_me_master",
+      ),
     ).resolves.toMatchObject({
       _source: { measures: { temperature: { values: { temperature: 42 } } } },
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "devices", "DummyTemp-enrich_me_master")
+      sdk.document.get("engine-ayse", "devices", "DummyTemp-enrich_me_master"),
     ).resolves.toMatchObject({
       _source: { measures: { temperature: { values: { temperature: 42 } } } },
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-unlinked1")
+      sdk.document.get("engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
       _source: {
         measures: { temperatureExt: { values: { temperature: 42 } } },
@@ -130,20 +130,20 @@ describe("features/Measure/IngestionPipeline", () => {
       sdk.document.get(
         "device-manager",
         "devices",
-        "DummyTemp-compute_me_master"
-      )
+        "DummyTemp-compute_me_master",
+      ),
     ).resolves.toMatchObject({
       _source: { measures: { temperature: { values: { temperature: 20 } } } },
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "devices", "DummyTemp-compute_me_master")
+      sdk.document.get("engine-ayse", "devices", "DummyTemp-compute_me_master"),
     ).resolves.toMatchObject({
       _source: { measures: { temperature: { values: { temperature: 20 } } } },
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-unlinked1")
+      sdk.document.get("engine-ayse", "assets", "Container-unlinked1"),
     ).resolves.toMatchObject({
       _source: {
         measures: {
@@ -156,14 +156,18 @@ describe("features/Measure/IngestionPipeline", () => {
 
   it("Should enrich measure with the origin device metadata", async () => {
     const metadata = {
-      color: "blue"
-    }
+      color: "blue",
+    };
 
     await sdk.query({
       controller: "device-manager/devices",
       action: "create",
       engineId: "engine-ayse",
-      body: { model: "DummyTemp", reference: "meta_device", metadata: metadata},
+      body: {
+        model: "DummyTemp",
+        reference: "meta_device",
+        metadata: metadata,
+      },
     });
 
     await sdk.query({
@@ -194,9 +198,21 @@ describe("features/Measure/IngestionPipeline", () => {
 
     expect(response.result).toMatchObject({
       hits: [
-        { _source: { type: "temperature", values: { temperature: 35 }, origin: { deviceMetadata: metadata} } },
-        { _source: { type: "temperature", values: { temperature: 25 }, origin: { deviceMetadata: metadata} } },
+        {
+          _source: {
+            type: "temperature",
+            values: { temperature: 35 },
+            origin: { deviceMetadata: metadata },
+          },
+        },
+        {
+          _source: {
+            type: "temperature",
+            values: { temperature: 25 },
+            origin: { deviceMetadata: metadata },
+          },
+        },
       ],
-    })
-  })
+    });
+  });
 });

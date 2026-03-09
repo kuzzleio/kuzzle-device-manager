@@ -82,7 +82,7 @@ describe("features/Asset/History", () => {
     });
 
     expect(
-      response.result.asset._source.linkedDevices[0].measureNames
+      response.result.asset._source.linkedDevices[0].measureNames,
     ).toMatchObject([
       {
         asset: "temperatureExt",
@@ -133,7 +133,6 @@ describe("features/Asset/History", () => {
   });
 
   it("Historize asset after receiving a new measure and assetsHistorizesMeasures is true", async () => {
-
     let response;
     let promise;
 
@@ -206,7 +205,7 @@ describe("features/Asset/History", () => {
       asset: {
         measures: { temperatureExt: { values: { temperature: 42.2 } } },
         metadata: { weight: 42042 },
-       },
-     });
+      },
+    });
   });
 });

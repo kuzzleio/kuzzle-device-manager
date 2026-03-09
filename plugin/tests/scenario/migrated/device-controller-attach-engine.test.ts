@@ -35,13 +35,13 @@ describe("features/Device/Controller/AttachEngine", () => {
     });
 
     await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-detached1")
+      sdk.document.get("device-manager", "devices", "DummyTemp-detached1"),
     ).resolves.toMatchObject({
       _source: { engineId: "engine-kuzzle", _kuzzle_info: { updater: "-1" } },
     });
 
     await expect(
-      sdk.document.get("engine-kuzzle", "devices", "DummyTemp-detached1")
+      sdk.document.get("engine-kuzzle", "devices", "DummyTemp-detached1"),
     ).resolves.toMatchObject({
       _source: { engineId: "engine-kuzzle", _kuzzle_info: { author: "-1" } },
     });
@@ -52,7 +52,7 @@ describe("features/Device/Controller/AttachEngine", () => {
 
     await sdk.collection.refresh("engine-kuzzle", "measures");
     await expect(sdk.document.count("engine-kuzzle", "measures")).resolves.toBe(
-      2
+      2,
     );
   });
 

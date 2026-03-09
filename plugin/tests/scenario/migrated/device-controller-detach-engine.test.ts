@@ -42,13 +42,13 @@ describe("features/Device/Controller/DetachEngine", () => {
     });
 
     await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-detached1")
+      sdk.document.get("device-manager", "devices", "DummyTemp-detached1"),
     ).resolves.toMatchObject({
       _source: { engineId: null, _kuzzle_info: { updater: "-1" } },
     });
 
     await expect(
-      sdk.document.exists("engine-kuzzle", "devices", "DummyTemp-detached1")
+      sdk.document.exists("engine-kuzzle", "devices", "DummyTemp-detached1"),
     ).resolves.toBe(false);
   });
 
@@ -80,13 +80,13 @@ describe("features/Device/Controller/DetachEngine", () => {
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-linked1")
+      sdk.document.get("engine-ayse", "assets", "Container-linked1"),
     ).resolves.toMatchObject({
       _source: { linkedDevices: [] },
     });
 
     await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-linked1")
+      sdk.document.get("device-manager", "devices", "DummyTemp-linked1"),
     ).resolves.toMatchObject({
       _source: { assetId: null },
     });

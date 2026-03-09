@@ -27,7 +27,10 @@ export type ContainerMeasurements = {
   temperatureWeather: TemperatureMeasurement;
 };
 
-export interface ContainerAssetContent extends AssetContent<ContainerMeasurements, ContainerMetadata> {
+export interface ContainerAssetContent extends AssetContent<
+  ContainerMeasurements,
+  ContainerMetadata
+> {
   model: typeof modelName;
 }
 
@@ -143,12 +146,12 @@ export const Container: AssetModel = {
     },
     locales: {
       en: {
-        friendlyName: 'Container (translation by model)',
-        description: 'Containerized container',
+        friendlyName: "Container (translation by model)",
+        description: "Containerized container",
       },
       fr: {
-        friendlyName: 'Conteneur (traduit par model)',
-        description: 'Conteneur conteneurisé',
+        friendlyName: "Conteneur (traduit par model)",
+        description: "Conteneur conteneurisé",
       },
     },
   },
@@ -183,9 +186,17 @@ const positionMeasureExample = {
 
 const measures = {
   temperatureExt: temperatureMeasureExample,
-  temperatureInt: { ...temperatureMeasureExample, name: "temperatureInt", values: { temperature: 22 } },
+  temperatureInt: {
+    ...temperatureMeasureExample,
+    name: "temperatureInt",
+    values: { temperature: 22 },
+  },
   position: positionMeasureExample,
-  temperatureWeather: { ...temperatureMeasureExample, name: "temperatureWeather", values: { temperature: 15 } },
+  temperatureWeather: {
+    ...temperatureMeasureExample,
+    name: "temperatureWeather",
+    values: { temperature: 15 },
+  },
 };
 
 // This function is never called and only exists to make sure the types are correct

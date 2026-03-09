@@ -33,7 +33,7 @@ describe("features/Device/Roles", () => {
           "device-manager/devices": { actions: { get: true, search: true } },
           "device-manager/models": { actions: { listDevices: true } },
         },
-      }
+      },
     );
 
     await expect(sdk.security.getRole("devices.admin")).resolves.toMatchObject({
@@ -59,7 +59,7 @@ describe("features/Device/Roles", () => {
     });
 
     await expect(
-      sdk.security.getRole("devices.platform-admin")
+      sdk.security.getRole("devices.platform-admin"),
     ).resolves.toMatchObject({
       controllers: {
         "device-manager/devices": { actions: { "*": true } },

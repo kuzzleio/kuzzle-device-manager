@@ -6,7 +6,7 @@ import { useSdk, sendPayloads } from "../../helpers";
 
 jest.setTimeout(10000);
 
-describe("features/Decoder/Roles", () => {
+describe("features/Measure/Provisionning", () => {
   const sdk = useSdk();
 
   beforeAll(async () => {
@@ -23,21 +23,25 @@ describe("features/Decoder/Roles", () => {
     sdk.disconnect();
   });
 
-  it("Find default decoders roles", async () => {
+  it("Create device with auto-provisionning", async () => {
     let response;
     let promise;
 
-    await expect(sdk.security.getRole("decoders.admin")).resolves.toMatchObject(
-      { controllers: { "device-manager/decoders": { actions: { "*": true } } } }
-    );
-  });
-
-  it("Find default payloads roles", async () => {
-    let response;
-    let promise;
-
-    await expect(sdk.security.getRole("payloads.all")).resolves.toMatchObject({
-      controllers: { "device-manager/payloads": { actions: { "*": true } } },
+    response = await sdk.query({
+      controller: "document",
+      action: "update",
+      index: "device-manager",
+      collection: "config",
+      _id: "plugin--device-manager",
+      body: { "device-manager": { provisioningStrategy: "auto" } },
     });
+
+    response = await sendPayloads(sdk, "dummy-temp", [
+      { deviceEUI: "huwels", temperature: 42.2 },
+    ]);
+
+    await expect(
+      sdk.document.exists("device-manager", "devices", "DummyTemp-huwels"),
+    ).resolves.toBe(true);
   });
 });

@@ -6,7 +6,7 @@ import { useSdk, sendPayloads } from "../../helpers";
 
 jest.setTimeout(10000);
 
-describe("features/Measure/Provisionning", () => {
+describe("features/Device/Metadata", () => {
   const sdk = useSdk();
 
   beforeAll(async () => {
@@ -23,25 +23,14 @@ describe("features/Measure/Provisionning", () => {
     sdk.disconnect();
   });
 
-  it("Create device with auto-provisionning", async () => {
+  it("Register custom metadata for devices", async () => {
     let response;
     let promise;
 
-    response = await sdk.query({
-      controller: "document",
-      action: "update",
-      index: "device-manager",
-      collection: "config",
-      _id: "plugin--device-manager",
-      body: { "device-manager": { provisioningStrategy: "auto" } },
-    });
-
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "huwels", temperature: 42.2 },
-    ]);
-
     await expect(
-      sdk.document.exists("device-manager", "devices", "DummyTemp-huwels")
-    ).resolves.toBe(true);
+      sdk.collection.getMapping("device-manager", "devices"),
+    ).resolves.toMatchObject({
+      properties: {},
+    });
   });
 });

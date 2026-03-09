@@ -16,10 +16,16 @@ doc/framework
 frontmatter-errors.json
 
 .vscode
+.claude/
+openspec/
 
 # Typescript related files
 dist/
 types/dist/
 
 # Test files
-/*.csv
+plugin/*.csv
+*.csv
+
+# Docker
+docker-compose.override.yml
