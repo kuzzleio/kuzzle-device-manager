@@ -1,3 +1,7 @@
+# Notice
+
+From now on, see [changelogs](changelogs/) directory
+
 ## [2.10.2-beta.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.10.1...v2.10.2-beta.1) (2026-03-06)
 
 ### Bug Fixes
