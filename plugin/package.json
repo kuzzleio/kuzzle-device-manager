@@ -11,7 +11,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "docker": "docker-compose run kuzzle ",
-    "dev": "NODE_ENV=development ergol tests/application/app.ts -c ergol.config.json",
+    "dev": "tsx watch tests/application/app.ts",
     "prod": "node ./dist/tests/application/app.js",
     "test": "npm run test:functional && npm run test:types",
     "test:functional": "jest --runInBand",
@@ -45,6 +45,7 @@
     "read-pkg": "9.0.1",
     "ts-jest": "29.2.5",
     "ts-node": "10.9.2",
+    "tsx": "^4.21.0",
     "type-fest": "4.33.0",
     "typescript": "5.4.5"
   },
