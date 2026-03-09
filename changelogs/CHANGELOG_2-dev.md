@@ -1,3 +1,7 @@
+## <small>2.10.2-dev.5 (2026-03-09)</small>
+
+* fix(package): add directory entry in plugin package.json ([79bf148](https://github.com/kuzzleio/kuzzle-device-manager/commit/79bf148))
+
 ## <small>2.10.2-dev.4 (2026-03-09)</small>
 
 * fix(ci): add id-token permission ([c1b07f8](https://github.com/kuzzleio/kuzzle-device-manager/commit/c1b07f8))
