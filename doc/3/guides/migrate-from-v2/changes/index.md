@@ -9,18 +9,20 @@ description: List of breaking changes
 # Breaking changes
 
 **Table of Contents**
-- [Settings](#Settings)
+- [Settings](#settings)
   - Platform index
   - Platform collections
 - [Mappings](#mappings)
   - Asset
   - Device
   - Group Model
+  - Models (platform collection)
 - [API](#api)
   - device-manager/assetGroups
   - device-manager/devices
   - device-manager/devices:unlinkAsset
   - device-manager/assets
+  - device-manager/models (scoping changes)
 
 ## Settings
 
@@ -157,6 +159,42 @@ The group model documents in the platform index `models` collection must contain
   }
 }
 ```
+
+### Models (platform collection)
+
+The `models` collection in the platform index has two new fields for scoping:
+
+``` JSON
+{
+  "properties": {
+    "engineGroups": { "type": "keyword" },
+    "engineIds": { "type": "keyword" }
+  }
+}
+```
+
+- `engineGroups` (replaces former `engineGroup`): An array of tenant group names. Determines which tenant groups can access the model. The value `["commons"]` makes the model globally available.
+- `engineIds` (optional): An array of tenant engine IDs. When present, scopes the model to specific tenants within the `engineGroups`.
+
+These fields affect asset and measure model documents. Group models must always have exactly one `engineGroups` entry.
+
+#### Model document ID format
+
+Asset model document IDs now vary based on scope:
+
+| Scope | Format | Example |
+|-------|--------|---------|
+| Single group | `model-asset-{ModelName}` | `model-asset-Room` |
+| Multi-group | `model-asset-{sortedGroups}-{ModelName}` | `model-asset-air_quality+public_lighting-Sensor` |
+| Tenant-scoped | `model-asset-{sortedGroups}-{sortedEngineIds}-{ModelName}` | `model-asset-air_quality-engine-ayse-TenantSensor` |
+
+Measure model document IDs:
+
+| Scope | Format | Example |
+|-------|--------|---------|
+| Global | `model-measure-{type}` | `model-measure-temperature` |
+| Tenant-scoped | `model-measure-{sortedEngineIds}-{type}` | `model-measure-engine-ayse-temperature` |
+
 ## Api
 
 ### device-manager/assetGroups
@@ -210,4 +248,44 @@ The `device-manager/assets` action `migrateTenant` now accepts a new argument `i
 
 The devices are no longer systematically migrated with the asset. 
 
-If set to true, the devices linked to the asset will be unlinked from their potential other assets and migrated to the new tenant. 
+If set to true, the devices linked to the asset will be unlinked from their potential other assets and migrated to the new tenant.
+
+### device-manager/models
+
+#### Scoping parameters renamed
+
+The following parameter changes apply to all asset and group model operations (`writeAsset`, `updateAsset`, `getAsset`, `listAssets`, `searchAssets`, `writeGroup`, `listGroups`, `searchGroups`):
+
+- `engineGroup` (string) has been replaced by `engineGroups` (string array). This enables sharing an asset model across multiple tenant groups.
+- `engineIds` (string array, optional) has been added to `writeAsset` and `updateAsset` body. When provided, the model is scoped to specific tenant engines within the specified groups.
+
+#### Asset model scoping — 3-level fallback
+
+Asset models now support three scoping levels. When resolving a model with `getAsset`, the system follows a priority chain:
+
+1. **Tenant-scoped**: Model matching both the `engineGroups` and the specific `engineId`
+2. **Group-scoped**: Model matching the `engineGroups` but without `engineIds`
+3. **Global (commons)**: Model with `engineGroups: ["commons"]` and no `engineIds`
+
+The same model name can exist at different scopes with distinct document IDs. The most specific scope wins.
+
+`listAssets` and `searchAssets` accept an optional `engineId` parameter. When provided, they return tenant-scoped + group-scoped + commons models. When omitted, they return only group-scoped + commons models.
+
+#### Multi-group asset models
+
+An asset model can now belong to multiple tenant groups (e.g. `engineGroups: ["air_quality", "public_lighting"]`). A model listed with any of its groups will include it in results.
+
+Commons normalization: if `engineGroups` contains `"commons"`, the array is normalized to `["commons"]` (the model becomes global).
+
+Group models are restricted to exactly one group — `writeGroup` rejects `engineGroups` with more than one entry.
+
+#### Tenant-scoped measure models
+
+Measure models now accept optional scoping parameters:
+
+- `writeMeasure` accepts an optional `engineIds` body parameter to scope a measure type to specific tenants.
+- `getMeasure`, `listMeasures`, and `searchMeasures` accept an optional `engineId` query parameter.
+
+When `engineId` is provided, `getMeasure` returns the tenant-scoped measure first, falling back to the global one. When omitted, only global measures are returned (backward compatible).
+
+Anti-shadowing: a measure type cannot exist as both global and tenant-scoped. Attempting to create a tenant-scoped measure when a global one of the same type exists (or vice versa) is rejected.
