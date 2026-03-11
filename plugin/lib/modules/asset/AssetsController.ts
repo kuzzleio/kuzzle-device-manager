@@ -492,7 +492,7 @@ export class AssetsController {
 
       if (Number.isNaN(measuredAt)) {
         throw new BadRequestError(
-          "Invalid value for measuredAt. Expected ISO 8601 string.",
+          "Invalid value for measuredAt. Expected ISO 8601 string or EpochMS number.",
         );
       }
 
@@ -573,7 +573,7 @@ export class AssetsController {
 
     if (Number.isNaN(measuredAt)) {
       throw new BadRequestError(
-        "Invalid value for measuredAt. Expected ISO 8601 string.",
+        "Invalid value for measuredAt. Expected ISO 8601 string or EpochMS number.",
       );
     }
 
