@@ -1,19 +1,15 @@
-import {
-  BadRequestError,
-  Inflector,
-  PluginContext,
-  PluginImplementationError,
-} from "kuzzle";
+import { BadRequestError, Inflector, PluginContext, PluginImplementationError } from 'kuzzle';
 
-import { DeviceManagerPlugin } from "../plugin";
+import { DeviceManagerPlugin } from '../plugin';
 
-import { Decoder } from "./Decoder";
-import { DecoderContent } from "./exports";
+import { Decoder } from './Decoder';
+import { DecoderContent } from './exports';
+import { KuzzleLogger } from 'kuzzle-logger';
 
 export class DecodersRegister {
   private context: PluginContext;
   private plugin: DeviceManagerPlugin;
-
+  private logger: KuzzleLogger;
   /**
    * Map<deviceModel, Decoder>
    */
@@ -30,6 +26,7 @@ export class DecodersRegister {
   init(plugin: DeviceManagerPlugin, context: PluginContext) {
     this.plugin = plugin;
     this.context = context;
+    this.logger = this.context.logger.child('decoders-module:register');
   }
 
   get(deviceModel: string): Decoder {
@@ -60,7 +57,7 @@ export class DecodersRegister {
    */
   register(decoder: Decoder) {
     if (!decoder.deviceModel) {
-      decoder.deviceModel = decoder.constructor.name.replace("Decoder", "");
+      decoder.deviceModel = decoder.constructor.name.replace('Decoder', '');
     }
 
     decoder.action = decoder.action || Inflector.kebabCase(decoder.deviceModel);
@@ -76,18 +73,19 @@ export class DecodersRegister {
         `Decoder for device model "${decoder.deviceModel}" already registered`,
       );
     }
+    decoder.log = this.logger.child(`${decoder.action}`);
 
     this._decoders.set(decoder.deviceModel, decoder);
 
     return {
       action: decoder.action,
-      controller: "device-manager/payloads",
+      controller: 'device-manager/payloads',
     };
   }
 
   printDecoders() {
     for (const decoder of this.decoders) {
-      this.context.log.info(`Decoder for "${decoder.deviceModel}" registered`);
+      this.logger.info(`Decoder for "${decoder.deviceModel}" registered`);
     }
   }
 
@@ -110,7 +108,7 @@ export class DecodersRegister {
   private registerDefaultUser() {
     const gatewayUser = {
       content: {
-        profileIds: ["payload_gateway"],
+        profileIds: ['payload_gateway'],
       },
     };
 
@@ -119,7 +117,7 @@ export class DecodersRegister {
 
   private registerDefaultProfile() {
     const gatewayProfile = {
-      policies: [{ roleId: "payload_gateway" }],
+      policies: [{ roleId: 'payload_gateway' }],
     };
 
     this.plugin.imports.profiles.payload_gateway = gatewayProfile;
@@ -128,14 +126,14 @@ export class DecodersRegister {
   private registerDefaultRole() {
     const role = {
       controllers: {
-        "device-manager/decoders": {
+        'device-manager/decoders': {
           actions: {
             route: true,
           },
         },
-        "device-manager/payloads": {
+        'device-manager/payloads': {
           actions: {
-            "*": true,
+            '*': true,
           },
         },
       },

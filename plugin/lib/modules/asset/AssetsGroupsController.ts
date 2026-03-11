@@ -5,11 +5,11 @@ import {
   KuzzleRequest,
   NameGenerator,
   User,
-} from "kuzzle";
-import { ask } from "kuzzle-plugin-commons";
+} from 'kuzzle';
+import { ask } from 'kuzzle-plugin-commons';
 
-import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { AssetsGroupContent } from "./types/AssetGroupContent";
+import { DeviceManagerPlugin, InternalCollection } from '../plugin';
+import { AssetsGroupContent } from './types/AssetGroupContent';
 import {
   ApiGroupAddAssetsRequest,
   ApiGroupAddAssetsResult,
@@ -21,17 +21,21 @@ import {
   ApiGroupSearchResult,
   ApiGroupUpdateResult,
   AssetsGroupsBodyRequest,
-} from "./types/AssetGroupsApi";
-import { AskModelGroupGet } from "../model";
-import { AssetsGroupsService } from "./AssetsGroupsService";
+} from './types/AssetGroupsApi';
+import { AskModelGroupGet } from '../model';
+import { AssetsGroupsService } from './AssetsGroupsService';
+import { KuzzleLogger } from 'kuzzle-logger';
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
+  readonly logger: KuzzleLogger;
 
   constructor(
     private plugin: DeviceManagerPlugin,
     private assetsGroupsService: AssetsGroupsService,
+    logger: KuzzleLogger,
   ) {
+    this.logger = logger;
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
@@ -39,29 +43,25 @@ export class AssetsGroupsController {
           handler: this.create.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/:_id",
-              verb: "post",
+              path: 'device-manager/:engineId/assetsGroups/:_id',
+              verb: 'post',
             },
           ],
         },
         get: {
           handler: this.get.bind(this),
-          http: [
-            { path: "device-manager/:engineId/assetsGroups/:_id", verb: "get" },
-          ],
+          http: [{ path: 'device-manager/:engineId/assetsGroups/:_id', verb: 'get' }],
         },
         update: {
           handler: this.update.bind(this),
-          http: [
-            { path: "device-manager/:engineId/assetsGroups/:_id", verb: "put" },
-          ],
+          http: [{ path: 'device-manager/:engineId/assetsGroups/:_id', verb: 'put' }],
         },
         delete: {
           handler: this.delete.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/:_id",
-              verb: "delete",
+              path: 'device-manager/:engineId/assetsGroups/:_id',
+              verb: 'delete',
             },
           ],
         },
@@ -69,12 +69,12 @@ export class AssetsGroupsController {
           handler: this.search.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/_search",
-              verb: "get",
+              path: 'device-manager/:engineId/assetsGroups/_search',
+              verb: 'get',
             },
             {
-              path: "device-manager/:engineId/assetsGroups/_search",
-              verb: "post",
+              path: 'device-manager/:engineId/assetsGroups/_search',
+              verb: 'post',
             },
           ],
         },
@@ -82,8 +82,8 @@ export class AssetsGroupsController {
           handler: this.addAsset.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/:_id/addAsset",
-              verb: "post",
+              path: 'device-manager/:engineId/assetsGroups/:_id/addAsset',
+              verb: 'post',
             },
           ],
         },
@@ -91,8 +91,8 @@ export class AssetsGroupsController {
           handler: this.removeAsset.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assetsGroups/:_id/removeAsset",
-              verb: "post",
+              path: 'device-manager/:engineId/assetsGroups/:_id/removeAsset',
+              verb: 'post',
             },
           ],
         },
@@ -114,11 +114,8 @@ export class AssetsGroupsController {
     };
   }
 
-  async checkParent(
-    engineId: string,
-    parent: AssetsGroupsBodyRequest["parent"],
-  ): Promise<void> {
-    if (typeof parent !== "string") {
+  async checkParent(engineId: string, parent: AssetsGroupsBodyRequest['parent']): Promise<void> {
+    if (typeof parent !== 'string') {
       return;
     }
 
@@ -130,15 +127,11 @@ export class AssetsGroupsController {
       );
 
       if (assetGroup._source.parent !== null) {
-        throw new BadRequestError(
-          `Can't create asset group with more than one nesting level`,
-        );
+        throw new BadRequestError(`Can't create asset group with more than one nesting level`);
       }
     } catch (error) {
       if (error.status === 404) {
-        throw new BadRequestError(
-          `The parent group "${parent}" does not exist`,
-        );
+        throw new BadRequestError(`The parent group "${parent}" does not exist`);
       }
       throw error;
     }
@@ -146,10 +139,10 @@ export class AssetsGroupsController {
 
   async checkChildren(
     engineId: string,
-    children: AssetsGroupsBodyRequest["children"],
+    children: AssetsGroupsBodyRequest['children'],
   ): Promise<void> {
     if (!Array.isArray(children)) {
-      throw new BadRequestError("The Children property should be an array");
+      throw new BadRequestError('The Children property should be an array');
     }
 
     if (children.length === 0) {
@@ -157,52 +150,42 @@ export class AssetsGroupsController {
     }
 
     const { result } = await this.sdk.query({
-      action: "mExists",
+      action: 'mExists',
       body: {
         ids: children,
       },
       collection: InternalCollection.ASSETS_GROUPS,
-      controller: "document",
+      controller: 'document',
       index: engineId,
     });
 
     if (Array.isArray(result.errors) && result.errors.length > 0) {
-      throw new BadRequestError(
-        `The children group "${result.errors.join(",")}" does not exist`,
-      );
+      throw new BadRequestError(`The children group "${result.errors.join(',')}" does not exist`);
     }
   }
 
-  async checkGroupName(
-    engineId: string,
-    name: AssetsGroupsBodyRequest["name"],
-    groupId?: string,
-  ) {
-    if (typeof name !== "string") {
+  async checkGroupName(engineId: string, name: AssetsGroupsBodyRequest['name'], groupId?: string) {
+    if (typeof name !== 'string') {
       return;
     }
 
-    const groupsCount = await this.sdk.document.search(
-      engineId,
-      InternalCollection.ASSETS_GROUPS,
-      {
-        _source: false,
-        query: {
-          bool: {
-            must: [
-              {
-                regexp: {
-                  name: {
-                    case_insensitive: true,
-                    value: name,
-                  },
+    const groupsCount = await this.sdk.document.search(engineId, InternalCollection.ASSETS_GROUPS, {
+      _source: false,
+      query: {
+        bool: {
+          must: [
+            {
+              regexp: {
+                name: {
+                  case_insensitive: true,
+                  value: name,
                 },
               },
-            ],
-          },
+            },
+          ],
         },
       },
-    );
+    });
 
     if (groupsCount.hits.filter((hit) => hit._id !== groupId).length > 0) {
       throw new BadRequestError(`A group with name "${name}" already exist`);
@@ -210,42 +193,34 @@ export class AssetsGroupsController {
   }
 
   async create(request: KuzzleRequest): Promise<ApiGroupCreateResult> {
-    const engineId = request.getString("engineId");
-    const name = request.getBodyString("name");
-    const metadata = request.getBodyObject("metadata", {});
+    const engineId = request.getString('engineId');
+    const name = request.getBodyString('name');
+    const metadata = request.getBodyObject('metadata', {});
     const body = request.getBody();
     const model = body.model ?? null;
     const parent = body.parent ?? null;
 
     const _id = request.getId({
-      generator: () => NameGenerator.generateRandomName({ prefix: "group" }),
-      ifMissing: "generate",
+      generator: () => NameGenerator.generateRandomName({ prefix: 'group' }),
+      ifMissing: 'generate',
     });
 
     await this.checkGroupName(engineId, name);
     if (parent !== null) {
       await this.checkParent(engineId, parent);
     }
-    return this.assetsGroupsService.create(
-      _id,
-      engineId,
-      metadata,
-      model,
-      name,
-      parent,
-      request,
-    );
+    return this.assetsGroupsService.create(_id, engineId, metadata, model, name, parent, request);
   }
 
   async get(request: KuzzleRequest): Promise<ApiGroupGetResult> {
-    const engineId = request.getString("engineId");
+    const engineId = request.getString('engineId');
     const _id = request.getId();
 
     return this.assetsGroupsService.get(engineId, _id, request);
   }
 
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
-    const engineId = request.getString("engineId");
+    const engineId = request.getString('engineId');
     const _id = request.getId();
     const body = request.getBody();
     const name = body.name;
@@ -271,15 +246,10 @@ export class AssetsGroupsController {
       const group = await this.get(request);
       const { model, metadata: groupMetadata } = group._source;
       if (model !== null) {
-        const groupModel = await ask<AskModelGroupGet>(
-          "ask:device-manager:model:group:get",
-          {
-            model,
-          },
-        );
-        for (const metadataName of Object.keys(
-          groupModel.group.metadataMappings,
-        )) {
+        const groupModel = await ask<AskModelGroupGet>('ask:device-manager:model:group:get', {
+          model,
+        });
+        for (const metadataName of Object.keys(groupModel.group.metadataMappings)) {
           if (metadata[metadataName] !== undefined) {
             groupMetadata[metadataName] = metadata[metadataName];
           }
@@ -288,47 +258,35 @@ export class AssetsGroupsController {
       }
     }
     updateRequestBody = { ...updateRequestBody, lastUpdate: Date.now() };
-    return this.assetsGroupsService.update(
-      request,
-      _id,
-      engineId,
-      updateRequestBody,
-    );
+    return this.assetsGroupsService.update(request, _id, engineId, updateRequestBody);
   }
 
   async delete(request: KuzzleRequest): Promise<ApiGroupDeleteResult> {
-    const engineId = request.getString("engineId");
+    const engineId = request.getString('engineId');
     const _id = request.getId();
     await this.assetsGroupsService.delete(_id, engineId, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiGroupSearchResult> {
-    const engineId = request.getString("engineId");
+    const engineId = request.getString('engineId');
     const searchParams = request.getSearchParams();
 
     return this.assetsGroupsService.search(engineId, searchParams, request);
   }
 
   async addAsset(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
-    const engineId = request.getString("engineId");
+    const engineId = request.getString('engineId');
     const _id = request.getId();
-    const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
+    const body = request.getBody() as ApiGroupAddAssetsRequest['body'];
     const assetIds = body.assetIds;
     return this.assetsGroupsService.addAsset(engineId, _id, assetIds, request);
   }
 
-  async removeAsset(
-    request: KuzzleRequest,
-  ): Promise<ApiGroupRemoveAssetsResult> {
-    const engineId = request.getString("engineId");
+  async removeAsset(request: KuzzleRequest): Promise<ApiGroupRemoveAssetsResult> {
+    const engineId = request.getString('engineId');
     const _id = request.getId();
-    const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
+    const body = request.getBody() as ApiGroupRemoveAssetsRequest['body'];
 
-    return this.assetsGroupsService.removeAsset(
-      engineId,
-      _id,
-      body.assetIds,
-      request,
-    );
+    return this.assetsGroupsService.removeAsset(engineId, _id, body.assetIds, request);
   }
 }

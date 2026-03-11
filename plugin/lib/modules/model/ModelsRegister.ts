@@ -1,12 +1,8 @@
-import { Inflector, PluginContext, PluginImplementationError } from "kuzzle";
+import { Inflector, PluginContext, PluginImplementationError } from 'kuzzle';
 
-import {
-  DeviceManagerConfiguration,
-  DeviceManagerPlugin,
-  InternalCollection,
-} from "../plugin";
-import { NamedMeasures } from "../decoder";
-import { MeasureDefinition } from "../measure";
+import { DeviceManagerConfiguration, DeviceManagerPlugin, InternalCollection } from '../plugin';
+import { NamedMeasures } from '../decoder';
+import { MeasureDefinition } from '../measure';
 
 import {
   AssetModelContent,
@@ -19,13 +15,14 @@ import {
   MetadataMappings,
   ModelContent,
   TooltipModels,
-} from "./types/ModelContent";
-import { ModelSerializer } from "./ModelSerializer";
-import { JSONObject } from "kuzzle-sdk";
-import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
-import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
-import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
-import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
+} from './types/ModelContent';
+import { ModelSerializer } from './ModelSerializer';
+import { JSONObject } from 'kuzzle-sdk';
+import { addSchemaToCache, getAJVErrors } from '../shared/utils/AJValidator';
+import { SchemaValidationError } from '../shared/errors/SchemaValidationError';
+import { getNamedMeasuresDuplicates } from './MeasuresDuplicates';
+import { MeasuresNamesDuplicatesError } from './MeasuresNamesDuplicatesError';
+import { KuzzleLogger } from 'kuzzle-logger';
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -34,6 +31,7 @@ export class ModelsRegister {
   private deviceModels: DeviceModelContent[] = [];
   private groupModels: GroupModelContent[] = [];
   private measureModels: MeasureModelContent[] = [];
+  private logger: KuzzleLogger;
 
   private get sdk() {
     return this.context.accessors.sdk;
@@ -42,20 +40,18 @@ export class ModelsRegister {
   init(plugin: DeviceManagerPlugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+    this.logger = this.context.logger.child('models-module:register');
   }
 
   async loadModels() {
     await Promise.all([
-      this.load("asset", this.assetModels),
-      this.load("device", this.deviceModels),
-      this.load("group", this.groupModels),
-      this.load("measure", this.measureModels),
+      this.load('asset', this.assetModels),
+      this.load('device', this.deviceModels),
+      this.load('group', this.groupModels),
+      this.load('measure', this.measureModels),
     ]);
 
-    await this.sdk.collection.refresh(
-      this.config.adminIndex,
-      InternalCollection.MODELS,
-    );
+    await this.sdk.collection.refresh(this.config.adminIndex, InternalCollection.MODELS);
   }
 
   /**
@@ -83,16 +79,14 @@ export class ModelsRegister {
     locales: { [valueName: string]: LocaleDetails } = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
-      throw new PluginImplementationError(
-        `Asset model "${model}" must be PascalCase`,
-      );
+      throw new PluginImplementationError(`Asset model "${model}" must be PascalCase`);
     }
 
     const duplicates = getNamedMeasuresDuplicates(measures);
 
     if (duplicates.length > 0) {
       throw new MeasuresNamesDuplicatesError(
-        "Asset model measures contain one or multiple duplicate measure name",
+        'Asset model measures contain one or multiple duplicate measure name',
         duplicates,
       );
     }
@@ -110,7 +104,7 @@ export class ModelsRegister {
         tooltipModels,
       },
       engineGroup,
-      type: "asset",
+      type: 'asset',
     });
   }
 
@@ -134,16 +128,14 @@ export class ModelsRegister {
     metadataGroups: MetadataGroups = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
-      throw new PluginImplementationError(
-        `Device model "${model}" must be PascalCase`,
-      );
+      throw new PluginImplementationError(`Device model "${model}" must be PascalCase`);
     }
 
     const duplicates = getNamedMeasuresDuplicates(measures);
 
     if (duplicates.length > 0) {
       throw new MeasuresNamesDuplicatesError(
-        "Device model measures contain one or multiple duplicate measure name",
+        'Device model measures contain one or multiple duplicate measure name',
         duplicates,
       );
     }
@@ -158,7 +150,7 @@ export class ModelsRegister {
         metadataMappings,
         model,
       },
-      type: "device",
+      type: 'device',
     });
   }
 
@@ -183,9 +175,7 @@ export class ModelsRegister {
     metadataGroups: MetadataGroups = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
-      throw new PluginImplementationError(
-        `Group model "${model}" must be PascalCase`,
-      );
+      throw new PluginImplementationError(`Group model "${model}" must be PascalCase`);
     }
 
     // Construct and push the new group model to the groupModels array
@@ -198,21 +188,17 @@ export class ModelsRegister {
         metadataMappings,
         model,
       },
-      type: "group",
+      type: 'group',
     });
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
-    const { locales, validationSchema, valuesMappings, valuesDetails } =
-      measureDefinition;
+    const { locales, validationSchema, valuesMappings, valuesDetails } = measureDefinition;
     if (validationSchema) {
       try {
         addSchemaToCache(type, validationSchema);
       } catch (error) {
-        throw new SchemaValidationError(
-          "Provided schema is not valid",
-          getAJVErrors(),
-        );
+        throw new SchemaValidationError('Provided schema is not valid', getAJVErrors());
       }
     }
 
@@ -224,7 +210,7 @@ export class ModelsRegister {
         valuesDetails,
         valuesMappings,
       },
-      type: "measure",
+      type: 'measure',
     });
   }
 
@@ -236,9 +222,7 @@ export class ModelsRegister {
       };
     });
 
-    const modelTitles = models.map((model) =>
-      ModelSerializer.title(type, model),
-    );
+    const modelTitles = models.map((model) => ModelSerializer.title(type, model));
 
     await this.sdk.document.mCreateOrReplace(
       this.config.adminIndex,
@@ -247,8 +231,6 @@ export class ModelsRegister {
       { strict: true },
     );
 
-    this.context.log.info(
-      `Successfully load "${type}" models: ${modelTitles.join(", ")}`,
-    );
+    this.logger.info(`Successfully load "${type}" models: ${modelTitles.join(', ')}`);
   }
 }

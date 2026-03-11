@@ -1,25 +1,28 @@
-import { BadRequestError, KuzzleRequest } from "kuzzle";
-import { ask, onAsk } from "kuzzle-plugin-commons";
-import { JSONObject, KDocument } from "kuzzle-sdk";
-import { v4 as uuidv4 } from "uuid";
+import { BadRequestError, KuzzleRequest } from 'kuzzle';
+import { ask, onAsk } from 'kuzzle-plugin-commons';
+import { JSONObject, KDocument } from 'kuzzle-sdk';
+import { v4 as uuidv4 } from 'uuid';
 
-import { DeviceContent, DeviceSerializer } from "../device";
-import { AskMeasureIngest, DecodedMeasurement } from "../measure";
-import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { BaseService } from "../shared";
+import { DeviceContent, DeviceSerializer } from '../device';
+import { AskMeasureIngest, DecodedMeasurement } from '../measure';
+import { DeviceManagerPlugin, InternalCollection } from '../plugin';
+import { BaseService } from '../shared';
 
-import { DecodedPayload } from "./DecodedPayload";
-import { Decoder } from "./Decoder";
-import { DecodingState } from "./DecodingState";
-import { SkipError } from "./SkipError";
-import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
+import { DecodedPayload } from './DecodedPayload';
+import { Decoder } from './Decoder';
+import { DecodingState } from './DecodingState';
+import { SkipError } from './SkipError';
+import { AskPayloadReceiveFormated } from './types/PayloadEvents';
+import { KuzzleLogger } from 'kuzzle-logger';
 
 export class PayloadService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
+    this.logger = logger;
 
     onAsk<AskPayloadReceiveFormated>(
-      "ask:device-manager:payload:receive-formated",
+      'ask:device-manager:payload:receive-formated',
       async (payload) => {
         await this.receiveFormated(payload.device, payload.measures, {
           payloadUuids: payload.payloadUuids,
@@ -34,11 +37,7 @@ export class PayloadService extends BaseService {
    * - register the brut `Payload`
    * - redirect measurements to MeasureService
    */
-  async receive(
-    request: KuzzleRequest,
-    decoder: Decoder,
-    { refresh }: any = {},
-  ) {
+  async receive(request: KuzzleRequest, decoder: Decoder, { refresh }: any = {}) {
     const payload = request.getBody();
     const apiAction = `${request.input.controller}:${request.input.action}`;
 
@@ -53,7 +52,7 @@ export class PayloadService extends BaseService {
       // TODO: Temporary workaround to prevent breaking anything; in the future,
       // consider modifying the return value of the 'validate' function to return an object
       if (!valid) {
-        throw new SkipError("Skip by user defined validation");
+        throw new SkipError('Skip by user defined validation');
       }
     } catch (error) {
       valid = false;
@@ -81,17 +80,15 @@ export class PayloadService extends BaseService {
     decodedPayload = await decoder.decode(decodedPayload, payload, request);
 
     if (decodedPayload.references.length === 0) {
-      throw new BadRequestError("No measurement has been decoded");
+      throw new BadRequestError('No measurement has been decoded');
     }
 
-    const devices = await this.retrieveDevices(
-      decoder.deviceModel,
-      decodedPayload.references,
-      { refresh },
-    );
+    const devices = await this.retrieveDevices(decoder.deviceModel, decodedPayload.references, {
+      refresh,
+    });
 
     for (const device of devices) {
-      await ask<AskMeasureIngest>("device-manager:measures:ingest", {
+      await ask<AskMeasureIngest>('device-manager:measures:ingest', {
         device,
         measurements: decodedPayload.getMeasurements(device._source.reference),
         metadata: decodedPayload.getMetadata(device._source.reference),
@@ -107,17 +104,11 @@ export class PayloadService extends BaseService {
     measurements: DecodedMeasurement[],
     { payloadUuids }: { payloadUuids?: string[] } = {},
   ) {
-    const apiAction = "device-manager/devices:receiveMeasure";
+    const apiAction = 'device-manager/devices:receiveMeasure';
 
     // Payload is already formated thus valid
-    await this.savePayload(
-      device._source.model,
-      payloadUuids[0],
-      true,
-      measurements,
-      apiAction,
-    );
-    await ask<AskMeasureIngest>("device-manager:measures:ingest", {
+    await this.savePayload(device._source.model, payloadUuids[0], true, measurements, apiAction);
+    await ask<AskMeasureIngest>('device-manager:measures:ingest', {
       device,
       measurements,
       metadata: {},
@@ -142,14 +133,12 @@ export class PayloadService extends BaseService {
     try {
       await this.sdk.document.create(
         this.config.adminIndex,
-        "payloads",
+        'payloads',
         { apiAction, deviceModel, payload, reason, state, uuid, valid },
         uuid,
       );
     } catch (error) {
-      this.app.log.error(
-        `Cannot save the payload from "${deviceModel}": ${error}`,
-      );
+      this.logger.error(`Cannot save the payload from "${deviceModel}": ${error}`);
     }
   }
 
@@ -165,20 +154,17 @@ export class PayloadService extends BaseService {
       refresh?: any;
     } = {},
   ) {
-    const { successes: devices, errors } =
-      await this.sdk.document.mGet<DeviceContent>(
-        this.config.adminIndex,
-        InternalCollection.DEVICES,
-        references.map((reference) =>
-          DeviceSerializer.id(deviceModel, reference),
-        ),
-      );
+    const { successes: devices, errors } = await this.sdk.document.mGet<DeviceContent>(
+      this.config.adminIndex,
+      InternalCollection.DEVICES,
+      references.map((reference) => DeviceSerializer.id(deviceModel, reference)),
+    );
 
     // Due to the existence of a "devices" collection in the tenant index and a platform index,
     // we need to fetch the device content from the associated tenant if it exists.
     const updatedDevices = await Promise.all(
       devices.map((device) =>
-        device._source.engineId && device._source.engineId.trim() !== ""
+        device._source.engineId && device._source.engineId.trim() !== ''
           ? this.sdk.document.get<DeviceContent>(
               device._source.engineId,
               InternalCollection.DEVICES,
@@ -193,19 +179,17 @@ export class PayloadService extends BaseService {
       const { _source } = await this.sdk.document.get(
         this.config.adminIndex,
         this.config.adminCollections.config.name,
-        "plugin--device-manager",
+        'plugin--device-manager',
       );
 
-      if (_source["device-manager"].provisioningStrategy === "auto") {
+      if (_source['device-manager'].provisioningStrategy === 'auto') {
         const newDevices = await this.provisionDevices(deviceModel, errors, {
           refresh,
         });
         updatedDevices.push(...newDevices);
       } else {
-        this.app.log.info(
-          `Skipping new devices "${errors.join(
-            ", ",
-          )}". Auto-provisioning is disabled.`,
+        this.logger.info(
+          `Skipping new devices "${errors.join(', ')}". Auto-provisioning is disabled.`,
         );
       }
     }
@@ -220,8 +204,8 @@ export class PayloadService extends BaseService {
   ): Promise<KDocument<DeviceContent>[]> {
     const newDevices = deviceIds.map((deviceId) => {
       // Reference may contains a "-"
-      const [, ...rest] = deviceId.split("-");
-      const reference = rest.join("-");
+      const [, ...rest] = deviceId.split('-');
+      const reference = rest.join('-');
 
       const body: DeviceContent = {
         assetId: null,
@@ -239,18 +223,15 @@ export class PayloadService extends BaseService {
       };
     });
 
-    const { successes, errors } =
-      await this.sdk.document.mCreate<DeviceContent>(
-        this.config.adminIndex,
-        InternalCollection.DEVICES,
-        newDevices,
-        { refresh },
-      );
+    const { successes, errors } = await this.sdk.document.mCreate<DeviceContent>(
+      this.config.adminIndex,
+      InternalCollection.DEVICES,
+      newDevices,
+      { refresh },
+    );
 
     for (const error of errors) {
-      this.app.log.error(
-        `Cannot create device "${error.document._id}": ${error.reason}`,
-      );
+      this.logger.error(`Cannot create device "${error.document._id}": ${error.reason}`);
     }
 
     return successes as KDocument<DeviceContent>[];
@@ -266,7 +247,7 @@ export class PayloadService extends BaseService {
     const date = new Date().setDate(new Date().getDate() - days);
     filter.push({
       range: {
-        "_kuzzle_info.createdAt": {
+        '_kuzzle_info.createdAt': {
           lt: date,
         },
       },
@@ -280,20 +261,14 @@ export class PayloadService extends BaseService {
       filter.push({ term: { deviceModel } });
     }
 
-    const deleted = await this.sdk.bulk.deleteByQuery(
-      this.config.adminIndex,
-      "payloads",
-      { query: { bool: { filter } } },
-    );
+    const deleted = await this.sdk.bulk.deleteByQuery(this.config.adminIndex, 'payloads', {
+      query: { bool: { filter } },
+    });
 
     return deleted;
   }
 
-  public async receiveUnknown(
-    deviceModel: string,
-    payload: JSONObject,
-    apiAction: string,
-  ) {
+  public async receiveUnknown(deviceModel: string, payload: JSONObject, apiAction: string) {
     await this.savePayload(deviceModel, uuidv4(), false, payload, apiAction);
   }
 }

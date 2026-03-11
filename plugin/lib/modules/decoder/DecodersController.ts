@@ -1,43 +1,41 @@
-import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
+import { BadRequestError, ControllerDefinition, KuzzleRequest } from 'kuzzle';
 
-import { DecodersRegister } from "./DecodersRegister";
-import { PayloadService } from "./PayloadService";
-import {
-  ApiDecoderListResult,
-  ApiDecoderPrunePayloadsResult,
-} from "./types/DecoderApi";
+import { DecodersRegister } from './DecodersRegister';
+import { PayloadService } from './PayloadService';
+import { ApiDecoderListResult, ApiDecoderPrunePayloadsResult } from './types/DecoderApi';
+import { KuzzleLogger } from 'kuzzle-logger';
 
 export class DecodersController {
   private payloadService: PayloadService;
   private decodersRegister: DecodersRegister;
-
+  readonly logger: KuzzleLogger;
   public definition: ControllerDefinition;
 
   constructor(
     payloadService: PayloadService,
     decodersRegister: DecodersRegister,
+    logger: KuzzleLogger,
   ) {
     this.payloadService = payloadService;
     this.decodersRegister = decodersRegister;
+    this.logger = logger;
 
     this.definition = {
       actions: {
         list: {
           handler: this.list.bind(this),
-          http: [{ path: "device-manager/decoders", verb: "get" }],
+          http: [{ path: 'device-manager/decoders', verb: 'get' }],
         },
         prunePayloads: {
           handler: this.prunePayloads.bind(this),
-          http: [
-            { path: "device-manager/decoders/_prunePayloads", verb: "delete" },
-          ],
+          http: [{ path: 'device-manager/decoders/_prunePayloads', verb: 'delete' }],
         },
         route: {
           handler: this.route.bind(this),
           http: [
             {
-              path: "device-manager/decoders/route",
-              verb: "post",
+              path: 'device-manager/decoders/route',
+              verb: 'post',
             },
           ],
         },
@@ -57,10 +55,8 @@ export class DecodersController {
   /**
    * Clean payload collection for a time period
    */
-  async prunePayloads(
-    request: KuzzleRequest,
-  ): Promise<ApiDecoderPrunePayloadsResult> {
-    const days = request.getBodyNumber("days");
+  async prunePayloads(request: KuzzleRequest): Promise<ApiDecoderPrunePayloadsResult> {
+    const days = request.getBodyNumber('days');
     const deviceModel = request.input.body.deviceModel;
     const onlyValid = request.input.body.onlyValid ?? true;
 
@@ -73,29 +69,22 @@ export class DecodersController {
 
   async route(request: KuzzleRequest): Promise<{ valid: boolean }> {
     const payload = request.getBody();
-    const model =
-      payload.deviceModel ?? request.getString("deviceModel", "unknownModel");
+    const model = payload.deviceModel ?? request.getString('deviceModel', 'unknownModel');
     const apiAction = `${request.input.controller}:${request.input.action}`;
-    if (model === "unknownModel") {
-      app.log.warn(
-        "Received payload without a device model: routing to receiveUnknown",
-      );
+    if (model === 'unknownModel') {
+      this.logger.warn('Received payload without a device model: routing to receiveUnknown');
       this.payloadService.receiveUnknown(model, payload, apiAction);
-      throw new BadRequestError(
-        "Payload must specify the deviceModel for proper routing",
-      );
+      throw new BadRequestError('Payload must specify the deviceModel for proper routing');
     }
-    const decoder = this.decodersRegister.decoders.find(
-      (d) => d.deviceModel === model,
-    );
+    const decoder = this.decodersRegister.decoders.find((d) => d.deviceModel === model);
     if (!decoder) {
-      app.log.warn(
+      this.logger.warn(
         `Received payload from ${model} model, no associated decoder found: routing to receiveUnknown`,
       );
       this.payloadService.receiveUnknown(model, payload, apiAction);
-      throw new BadRequestError("The specified device model is unknown");
+      throw new BadRequestError('The specified device model is unknown');
     }
-    app.log.debug("Routing payload to decoder for " + decoder.deviceModel);
+    this.logger.debug('Routing payload to decoder for ' + decoder.deviceModel);
     return this.payloadService.receive(request, decoder);
   }
 }

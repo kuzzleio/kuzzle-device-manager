@@ -1,21 +1,20 @@
-import { onAsk } from "kuzzle-plugin-commons";
-import { mCreateRequest } from "kuzzle-sdk";
+import { onAsk } from 'kuzzle-plugin-commons';
+import { mCreateRequest } from 'kuzzle-sdk';
 
-import { DeviceManagerPlugin, InternalCollection } from "../plugin";
-import { BaseService } from "../shared";
+import { DeviceManagerPlugin, InternalCollection } from '../plugin';
+import { BaseService } from '../shared';
 
-import { AskAssetHistoryAdd } from "./types/AssetEvents";
-import {
-  AssetHistoryContent,
-  AssetHistoryEvent,
-} from "./types/AssetHistoryContent";
+import { AskAssetHistoryAdd } from './types/AssetEvents';
+import { AssetHistoryContent, AssetHistoryEvent } from './types/AssetHistoryContent';
+import { KuzzleLogger } from 'kuzzle-logger';
 
 export class AssetHistoryService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, assetLogger: KuzzleLogger) {
     super(plugin);
-
+    this.logger = assetLogger;
     onAsk<AskAssetHistoryAdd<AssetHistoryEvent>>(
-      "ask:device-manager:asset:history:add",
+      'ask:device-manager:asset:history:add',
       async ({ engineId, histories }) => this.add(engineId, histories),
     );
   }
@@ -24,9 +23,7 @@ export class AssetHistoryService extends BaseService {
     engineId: string,
     histories: AssetHistoryContent[],
   ) {
-    const contents: mCreateRequest<
-      AssetHistoryContent<TAssetHistoryEvent, any, any>
-    > = [];
+    const contents: mCreateRequest<AssetHistoryContent<TAssetHistoryEvent, any, any>> = [];
 
     for (const { asset, event, id, timestamp } of histories) {
       contents.push({

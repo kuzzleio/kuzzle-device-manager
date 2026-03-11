@@ -1,9 +1,10 @@
-import { HttpRoute, KuzzleRequest, PreconditionError } from "kuzzle";
-import _ from "lodash";
-import { JSONObject } from "kuzzle-sdk";
+import { HttpRoute, KuzzleRequest, PreconditionError } from 'kuzzle';
+import _ from 'lodash';
+import { JSONObject } from 'kuzzle-sdk';
 
-import { DecodedPayload } from "./DecodedPayload";
-import { DecoderContent } from "./types/DecoderContent";
+import { DecodedPayload } from './DecodedPayload';
+import { DecoderContent } from './types/DecoderContent';
+import { KuzzleLogger } from 'kuzzle-logger';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -30,14 +31,8 @@ export abstract class Decoder {
   /**
    * Internal logger.
    */
-  public log: {
-    debug: (message: any) => void;
-    error: (message: any) => void;
-    info: (message: any) => void;
-    silly: (message: any) => void;
-    verbose: (message: any) => void;
-    warn: (message: any) => void;
-  };
+  public log: KuzzleLogger;
+
   /**
    * Device model name.
    *
@@ -98,17 +93,17 @@ export abstract class Decoder {
             description: `Receive a payload from a ${this.deviceModel} device`,
             parameters: [
               {
-                in: "body",
-                name: "payload",
+                in: 'body',
+                name: 'payload',
                 required: true,
                 schema: {
-                  type: "object",
+                  type: 'object',
                 },
               },
             ],
           },
           path: `device-manager/payload/${this.action}`,
-          verb: "post",
+          verb: 'post',
         },
       ];
     }
@@ -138,10 +133,7 @@ export abstract class Decoder {
    * @return A boolean indicating if the payload is valid
    */
   // eslint-disable-next-line no-unused-vars
-  async validate(
-    payload: JSONObject,
-    request: KuzzleRequest,
-  ): Promise<boolean> | never {
+  async validate(payload: JSONObject, request: KuzzleRequest): Promise<boolean> | never {
     return true;
   }
 
