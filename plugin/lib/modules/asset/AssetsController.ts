@@ -487,7 +487,7 @@ export class AssetsController {
     const measurements = rawMeasurements.map((elt) => {
       const measuredAt =
         typeof elt.measuredAt === "string"
-          ? new Date(elt.measuredAt)
+          ? new Date(elt.measuredAt).getTime()
           : elt.measuredAt;
 
       if (Number.isNaN(measuredAt)) {
