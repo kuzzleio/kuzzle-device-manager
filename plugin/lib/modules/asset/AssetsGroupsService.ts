@@ -1,12 +1,15 @@
-import { JSONObject, KDocument } from 'kuzzle-sdk';
-import { DeviceManagerPlugin, InternalCollection } from '../plugin';
-import { BaseService, SearchParams } from '../shared';
-import { KuzzleRequest } from 'kuzzle';
-import { AssetsGroupContent, AssetsGroupsBody } from './types/AssetGroupContent';
-import { AskModelGroupGet } from '../model';
-import { ask } from 'kuzzle-plugin-commons';
-import { AssetContent } from './types/AssetContent';
-import { KuzzleLogger } from 'kuzzle-logger';
+import { JSONObject, KDocument } from "kuzzle-sdk";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import { BaseService, SearchParams } from "../shared";
+import { KuzzleRequest } from "kuzzle";
+import {
+  AssetsGroupContent,
+  AssetsGroupsBody,
+} from "./types/AssetGroupContent";
+import { AskModelGroupGet } from "../model";
+import { ask } from "kuzzle-plugin-commons";
+import { AssetContent } from "./types/AssetContent";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class AssetsGroupsService extends BaseService {
   readonly logger: KuzzleLogger;
@@ -48,14 +51,20 @@ export class AssetsGroupsService extends BaseService {
     const groupMetadata = {};
 
     if (model !== null) {
-      const groupModel = await ask<AskModelGroupGet>('ask:device-manager:model:group:get', {
-        model,
-      });
-      for (const metadataName of Object.keys(groupModel.group.metadataMappings)) {
+      const groupModel = await ask<AskModelGroupGet>(
+        "ask:device-manager:model:group:get",
+        {
+          model,
+        },
+      );
+      for (const metadataName of Object.keys(
+        groupModel.group.metadataMappings,
+      )) {
         if (metadata[metadataName]) {
           groupMetadata[metadataName] = metadata[metadataName];
         } else if (groupModel.group.defaultMetadata[metadataName]) {
-          groupMetadata[metadataName] = groupModel.group.defaultMetadata[metadataName];
+          groupMetadata[metadataName] =
+            groupModel.group.defaultMetadata[metadataName];
         } else {
           groupMetadata[metadataName] = null;
         }
@@ -85,7 +94,12 @@ export class AssetsGroupsService extends BaseService {
     });
   }
 
-  async update(request: KuzzleRequest, _id: string, engineId: string, updateContent: JSONObject) {
+  async update(
+    request: KuzzleRequest,
+    _id: string,
+    engineId: string,
+    updateContent: JSONObject,
+  ) {
     const updatedGroup = await this.updateDocument<AssetsGroupContent>(
       request,
       {
@@ -102,7 +116,11 @@ export class AssetsGroupsService extends BaseService {
     const { _source: assetGroup } = await this.get(engineId, _id, request);
 
     if (assetGroup.parent !== null) {
-      const { _source: parentGroup } = await this.get(engineId, assetGroup.parent, request);
+      const { _source: parentGroup } = await this.get(
+        engineId,
+        assetGroup.parent,
+        request,
+      );
       await this.update(request, assetGroup.parent, engineId, {
         children: parentGroup.children.filter((children) => children !== _id),
         lastUpdate: Date.now(),
@@ -125,8 +143,8 @@ export class AssetsGroupsService extends BaseService {
     const { hits: assets } = await this.sdk.document.search<AssetContent>(
       engineId,
       InternalCollection.ASSETS,
-      { query: { equals: { 'groups.id': _id } } },
-      { lang: 'koncorde' },
+      { query: { equals: { "groups.id": _id } } },
+      { lang: "koncorde" },
     );
 
     await this.sdk.document.mUpdate(
@@ -135,7 +153,9 @@ export class AssetsGroupsService extends BaseService {
       assets.map((asset) => ({
         _id: asset._id,
         body: {
-          groups: asset._source.groups.filter(({ id: groupId }) => groupId !== _id),
+          groups: asset._source.groups.filter(
+            ({ id: groupId }) => groupId !== _id,
+          ),
         },
       })),
       { strict: true },
@@ -146,13 +166,22 @@ export class AssetsGroupsService extends BaseService {
       engineId,
     });
   }
-  async search(engineId: string, searchParams: SearchParams, request: KuzzleRequest) {
+  async search(
+    engineId: string,
+    searchParams: SearchParams,
+    request: KuzzleRequest,
+  ) {
     return this.searchDocument<AssetsGroupContent>(request, searchParams, {
       collection: InternalCollection.ASSETS_GROUPS,
       engineId,
     });
   }
-  async addAsset(engineId: string, _id: string, assetIds: string[], request: KuzzleRequest) {
+  async addAsset(
+    engineId: string,
+    _id: string,
+    assetIds: string[],
+    request: KuzzleRequest,
+  ) {
     const assetGroup = await this.get(engineId, _id, request);
 
     const assets = [];
@@ -190,17 +219,31 @@ export class AssetsGroupsService extends BaseService {
       lastUpdate: Date.now(),
     });
 
-    const update = await this.sdk.document.mReplace(engineId, InternalCollection.ASSETS, assets, {
-      triggerEvents: true,
-    });
+    const update = await this.sdk.document.mReplace(
+      engineId,
+      InternalCollection.ASSETS,
+      assets,
+      {
+        triggerEvents: true,
+      },
+    );
 
     return {
       ...update,
       assetsGroups: assetsGroupsUpdate,
     };
   }
-  async removeAsset(engineId: string, _id: string, assetIds: string[], request: KuzzleRequest) {
-    const { _source: AssetGroupContent } = await this.get(engineId, _id, request);
+  async removeAsset(
+    engineId: string,
+    _id: string,
+    assetIds: string[],
+    request: KuzzleRequest,
+  ) {
+    const { _source: AssetGroupContent } = await this.get(
+      engineId,
+      _id,
+      request,
+    );
 
     const removedGroups = AssetGroupContent.children;
     removedGroups.push(_id);
@@ -232,9 +275,14 @@ export class AssetsGroupsService extends BaseService {
       lastUpdate: Date.now(),
     });
 
-    const update = await this.sdk.document.mReplace(engineId, InternalCollection.ASSETS, assets, {
-      triggerEvents: true,
-    });
+    const update = await this.sdk.document.mReplace(
+      engineId,
+      InternalCollection.ASSETS,
+      assets,
+      {
+        triggerEvents: true,
+      },
+    );
 
     return {
       ...update,

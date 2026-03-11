@@ -1,7 +1,5 @@
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("Ingestion Pipeline: persist before", () => {
   const sdk = setupHooks();
 

@@ -1,6 +1,6 @@
-import { BadRequestError, JSONObject, KDocument } from 'kuzzle';
-import { ask, onAsk } from 'kuzzle-plugin-commons';
-import _ from 'lodash';
+import { BadRequestError, JSONObject, KDocument } from "kuzzle";
+import { ask, onAsk } from "kuzzle-plugin-commons";
+import _ from "lodash";
 
 import {
   AskAssetHistoryAdd,
@@ -9,12 +9,12 @@ import {
   AssetHistoryEventMeasure,
   AssetHistoryEventMetadata,
   AssetSerializer,
-} from '../asset';
-import { DeviceContent } from '../device';
-import { DeviceManagerPlugin, InternalCollection } from '../plugin';
-import { BaseService, Metadata, keepStack, lock, objectDiff } from '../shared';
+} from "../asset";
+import { DeviceContent } from "../device";
+import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import { BaseService, Metadata, keepStack, lock, objectDiff } from "../shared";
 
-import { DecodedMeasurement, MeasureContent } from './types/MeasureContent';
+import { DecodedMeasurement, MeasureContent } from "./types/MeasureContent";
 import {
   AskMeasureIngest,
   AskMeasureSourceIngest,
@@ -30,13 +30,13 @@ import {
   TenantEventMeasureProcessBefore,
   TenantEventMeasureProcessSourceAfter,
   TenantEventMeasureProcessSourceBefore,
-} from './types/MeasureEvents';
-import { ApiMeasureSource, isSourceApi } from './types/MeasureSources';
-import { apiSourceToOriginApi, toDeviceSource } from './MeasureSourcesBuilder';
-import { AskModelAssetGet } from '../model';
-import { ApiMeasureTarget, isTargetApi } from './types/MeasureTarget';
-import { toDeviceTarget } from './MeasureTargetBuilder';
-import { KuzzleLogger } from 'kuzzle-logger';
+} from "./types/MeasureEvents";
+import { ApiMeasureSource, isSourceApi } from "./types/MeasureSources";
+import { apiSourceToOriginApi, toDeviceSource } from "./MeasureSourcesBuilder";
+import { AskModelAssetGet } from "../model";
+import { ApiMeasureTarget, isTargetApi } from "./types/MeasureTarget";
+import { toDeviceTarget } from "./MeasureTargetBuilder";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class MeasureService extends BaseService {
   readonly logger: KuzzleLogger;
@@ -45,7 +45,7 @@ export class MeasureService extends BaseService {
     this.logger = logger;
 
     onAsk<AskMeasureSourceIngest>(
-      'device-manager:measures:sourceIngest',
+      "device-manager:measures:sourceIngest",
 
       async (payload) => {
         if (!payload) {
@@ -63,18 +63,21 @@ export class MeasureService extends BaseService {
       },
     );
 
-    onAsk<AskMeasureIngest>('device-manager:measures:ingest', async (payload) => {
-      if (!payload) {
-        return;
-      }
+    onAsk<AskMeasureIngest>(
+      "device-manager:measures:ingest",
+      async (payload) => {
+        if (!payload) {
+          return;
+        }
 
-      await this.ingest(
-        payload.device,
-        payload.measurements,
-        payload.metadata,
-        payload.payloadUuids,
-      );
-    });
+        await this.ingest(
+          payload.device,
+          payload.measurements,
+          payload.metadata,
+          payload.payloadUuids,
+        );
+      },
+    );
   }
 
   /**
@@ -97,14 +100,18 @@ export class MeasureService extends BaseService {
     const { indexId, assetId } = target;
 
     if (!measurements) {
-      this.logger.warn(`No measurements provided for "${dataSourceId}" API measures ingest`);
+      this.logger.warn(
+        `No measurements provided for "${dataSourceId}" API measures ingest`,
+      );
       return;
     }
 
     const assetDocument = await this.findAsset(indexId, assetId);
 
     if (!assetDocument) {
-      throw new BadRequestError(`Asset "${assetId}" does not exists on index "${indexId}"`);
+      throw new BadRequestError(
+        `Asset "${assetId}" does not exists on index "${indexId}"`,
+      );
     }
 
     const asset = assetDocument._source;
@@ -125,7 +132,7 @@ export class MeasureService extends BaseService {
      * Useful to enrich measures before they are saved.
      */
     await this.app.trigger<EventMeasureProcessSourceBefore>(
-      'device-manager:measures:process:sourceBefore',
+      "device-manager:measures:process:sourceBefore",
       { asset, measures, source, target },
     );
 
@@ -139,7 +146,7 @@ export class MeasureService extends BaseService {
     const assetStates = this.updateAssetMeasures(assetDocument, measures);
 
     await this.app.trigger<EventMeasurePersistSourceBefore>(
-      'device-manager:measures:persist:sourceBefore',
+      "device-manager:measures:persist:sourceBefore",
       { asset, measures, source, target },
     );
 
@@ -162,7 +169,9 @@ export class MeasureService extends BaseService {
           )
           .then(({ errors }) => {
             if (errors.length !== 0) {
-              throw new BadRequestError(`Cannot save measures: ${errors[0].reason}`);
+              throw new BadRequestError(
+                `Cannot save measures: ${errors[0].reason}`,
+              );
             }
           }),
       );
@@ -189,7 +198,7 @@ export class MeasureService extends BaseService {
      * @todo test this
      */
     await this.app.trigger<EventMeasureProcessSourceAfter>(
-      'device-manager:measures:process:sourceAfter',
+      "device-manager:measures:process:sourceAfter",
       { asset, measures, source, target },
     );
 
@@ -226,22 +235,32 @@ export class MeasureService extends BaseService {
   ) {
     await lock(`measure:ingest:${device._id}`, async () => {
       if (!measurements) {
-        this.logger.warn(`Cannot find measurements for device "${device._source.reference}"`);
+        this.logger.warn(
+          `Cannot find measurements for device "${device._source.reference}"`,
+        );
         return;
       }
 
-      const { engineId, reference, model, assetId, lastMeasuredAt } = device._source;
+      const { engineId, reference, model, assetId, lastMeasuredAt } =
+        device._source;
 
       const asset = assetId ? await this.findAsset(engineId, assetId) : null;
 
       const assetContent = asset?._source;
 
       const originalAssetMetadata: Metadata =
-        asset === null ? {} : JSON.parse(JSON.stringify(asset._source.metadata));
+        asset === null
+          ? {}
+          : JSON.parse(JSON.stringify(asset._source.metadata));
 
       _.merge(device._source.metadata, metadata);
 
-      const measures = this.buildMeasures(device, asset, measurements, payloadUuids);
+      const measures = this.buildMeasures(
+        device,
+        asset,
+        measurements,
+        payloadUuids,
+      );
 
       if (asset) {
         asset._source.measures ||= {};
@@ -255,18 +274,24 @@ export class MeasureService extends BaseService {
         lastMeasuredAt,
       );
 
-      const target = toDeviceTarget(device._source.engineId, device._source.assetId ?? undefined);
+      const target = toDeviceTarget(
+        device._source.engineId,
+        device._source.assetId ?? undefined,
+      );
 
       /**
        * Event before starting to process new measures.
        *
        * Useful to enrich measures before they are saved.
        */
-      await this.app.trigger<EventMeasureProcessBefore>('device-manager:measures:process:before', {
-        asset,
-        device,
-        measures,
-      });
+      await this.app.trigger<EventMeasureProcessBefore>(
+        "device-manager:measures:process:before",
+        {
+          asset,
+          device,
+          measures,
+        },
+      );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessBefore>(
@@ -283,7 +308,7 @@ export class MeasureService extends BaseService {
        * Useful to enrich measures before they are saved.
        */
       await this.app.trigger<EventMeasureProcessSourceBefore>(
-        'device-manager:measures:process:sourceBefore',
+        "device-manager:measures:process:sourceBefore",
         { asset: assetContent, measures, source, target },
       );
 
@@ -301,11 +326,14 @@ export class MeasureService extends BaseService {
         assetStates = await this.updateAssetMeasures(asset, measures);
       }
 
-      await this.app.trigger<EventMeasurePersistBefore>('device-manager:measures:persist:before', {
-        asset,
-        device,
-        measures,
-      });
+      await this.app.trigger<EventMeasurePersistBefore>(
+        "device-manager:measures:persist:before",
+        {
+          asset,
+          device,
+          measures,
+        },
+      );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasurePersistBefore>(
@@ -318,7 +346,7 @@ export class MeasureService extends BaseService {
        * Here are the new persist before triggers using sources
        */
       await this.app.trigger<EventMeasurePersistSourceBefore>(
-        'device-manager:measures:persist:sourceBefore',
+        "device-manager:measures:persist:sourceBefore",
         { asset: assetContent, measures, source, target },
       );
 
@@ -342,7 +370,9 @@ export class MeasureService extends BaseService {
           .catch((error) => {
             throw keepStack(
               error,
-              new BadRequestError(`Cannot update device "${device._id}": ${error.message}`),
+              new BadRequestError(
+                `Cannot update device "${device._id}": ${error.message}`,
+              ),
             );
           }),
       );
@@ -350,7 +380,12 @@ export class MeasureService extends BaseService {
       if (engineId) {
         promises.push(
           this.sdk.document
-            .update<DeviceContent>(engineId, InternalCollection.DEVICES, device._id, device._source)
+            .update<DeviceContent>(
+              engineId,
+              InternalCollection.DEVICES,
+              device._id,
+              device._source,
+            )
             .catch((error) => {
               throw keepStack(
                 error,
@@ -370,13 +405,17 @@ export class MeasureService extends BaseService {
             )
             .then(({ errors }) => {
               if (errors.length !== 0) {
-                throw new BadRequestError(`Cannot save measures: ${errors[0].reason}`);
+                throw new BadRequestError(
+                  `Cannot save measures: ${errors[0].reason}`,
+                );
               }
             }),
         );
 
         if (asset) {
-          promises.push(this.mutexUpdateAsset(engineId, asset._id, asset._source));
+          promises.push(
+            this.mutexUpdateAsset(engineId, asset._id, asset._source),
+          );
           promises.push(
             this.historizeAssetStates(
               assetStates,
@@ -397,11 +436,14 @@ export class MeasureService extends BaseService {
        *
        * @todo test this
        */
-      await this.app.trigger<EventMeasureProcessAfter>('device-manager:measures:process:after', {
-        asset,
-        device,
-        measures,
-      });
+      await this.app.trigger<EventMeasureProcessAfter>(
+        "device-manager:measures:process:after",
+        {
+          asset,
+          device,
+          measures,
+        },
+      );
 
       if (engineId) {
         await this.app.trigger<TenantEventMeasureProcessAfter>(
@@ -420,7 +462,7 @@ export class MeasureService extends BaseService {
        * @todo test this
        */
       await this.app.trigger<EventMeasureProcessSourceAfter>(
-        'device-manager:measures:process:sourceAfter',
+        "device-manager:measures:process:sourceAfter",
         { asset: assetContent, measures, source, target },
       );
 
@@ -433,7 +475,10 @@ export class MeasureService extends BaseService {
     });
   }
 
-  private updateDeviceMeasures(device: KDocument<DeviceContent>, measurements: MeasureContent[]) {
+  private updateDeviceMeasures(
+    device: KDocument<DeviceContent>,
+    measurements: MeasureContent[],
+  ) {
     if (!device._source.measures) {
       device._source.measures = {};
     }
@@ -441,14 +486,17 @@ export class MeasureService extends BaseService {
     let lastMeasuredAt = device._source.lastMeasuredAt ?? 0;
 
     for (const measurement of measurements) {
-      if (measurement.origin.type !== 'device') {
+      if (measurement.origin.type !== "device") {
         continue;
       }
 
       const measureName = measurement.origin.measureName;
       const previousMeasure = device._source.measures[measureName];
 
-      if (previousMeasure && previousMeasure.measuredAt >= measurement.measuredAt) {
+      if (
+        previousMeasure &&
+        previousMeasure.measuredAt >= measurement.measuredAt
+      ) {
         continue;
       }
 
@@ -489,7 +537,7 @@ export class MeasureService extends BaseService {
     let lastMeasuredAt = asset._source.lastMeasuredAt ?? 0;
 
     for (const measurement of measurements) {
-      if (measurement.origin.type === 'computed') {
+      if (measurement.origin.type === "computed") {
         continue;
       }
 
@@ -505,7 +553,10 @@ export class MeasureService extends BaseService {
       }
       const previousMeasure = asset._source.measures[measureName];
 
-      if (previousMeasure && previousMeasure.measuredAt >= measurement.measuredAt) {
+      if (
+        previousMeasure &&
+        previousMeasure.measuredAt >= measurement.measuredAt
+      ) {
         continue;
       }
 
@@ -522,7 +573,10 @@ export class MeasureService extends BaseService {
         values: measurement.values,
       };
 
-      assetStates.set(measurement.measuredAt, JSON.parse(JSON.stringify(asset)));
+      assetStates.set(
+        measurement.measuredAt,
+        JSON.parse(JSON.stringify(asset)),
+      );
     }
 
     asset._source.lastMeasuredAt = lastMeasuredAt;
@@ -558,7 +612,10 @@ export class MeasureService extends BaseService {
       );
 
       if (isInModel) {
-        assetContext = AssetSerializer.measureContext(asset, measure.measureName);
+        assetContext = AssetSerializer.measureContext(
+          asset,
+          measure.measureName,
+        );
       }
 
       const measureSource = apiSourceToOriginApi(source, payloadUuids);
@@ -597,7 +654,10 @@ export class MeasureService extends BaseService {
         );
 
         if (assetMeasureName) {
-          assetContext = AssetSerializer.measureContext(asset, assetMeasureName);
+          assetContext = AssetSerializer.measureContext(
+            asset,
+            assetMeasureName,
+          );
         }
       }
 
@@ -611,7 +671,7 @@ export class MeasureService extends BaseService {
           measureName: measurement.measureName,
           payloadUuids,
           reference: device._source.reference,
-          type: 'device',
+          type: "device",
         },
         type: measurement.type,
         values: measurement.values,
@@ -620,7 +680,9 @@ export class MeasureService extends BaseService {
       measures.push(measureContent);
     }
 
-    return measures.sort((measureA, measureB) => measureA.measuredAt - measureB.measuredAt);
+    return measures.sort(
+      (measureA, measureB) => measureA.measuredAt - measureB.measuredAt,
+    );
   }
 
   /**
@@ -661,18 +723,23 @@ export class MeasureService extends BaseService {
   private async isMeasureNameInModel(
     measureName: string,
     model: string,
-    engineGroup = 'commons',
+    engineGroup = "commons",
   ): Promise<boolean> {
-    const assetModel = await ask<AskModelAssetGet>('ask:device-manager:model:asset:get', {
-      engineGroup,
-      model: model,
-    });
+    const assetModel = await ask<AskModelAssetGet>(
+      "ask:device-manager:model:asset:get",
+      {
+        engineGroup,
+        model: model,
+      },
+    );
 
     if (!assetModel) {
       throw new BadRequestError(`Model "${model}" does not exists`);
     }
 
-    const assetMeasureName = assetModel.asset.measures.find((m) => m.name === measureName);
+    const assetMeasureName = assetModel.asset.measures.find(
+      (m) => m.name === measureName,
+    );
 
     return assetMeasureName?.name ? true : false;
   }
@@ -692,7 +759,9 @@ export class MeasureService extends BaseService {
     measureType: string,
     asset: AssetContent,
   ): string | null {
-    const linkedDevice = asset.linkedDevices.find((link) => link._id === deviceId);
+    const linkedDevice = asset.linkedDevices.find(
+      (link) => link._id === deviceId,
+    );
 
     if (!linkedDevice) {
       throw new BadRequestError(
@@ -700,7 +769,9 @@ export class MeasureService extends BaseService {
       );
     }
 
-    const assetMeasureName = linkedDevice.measureNames.find((m) => m.device === measureType);
+    const assetMeasureName = linkedDevice.measureNames.find(
+      (m) => m.device === measureType,
+    );
 
     return assetMeasureName?.asset ?? null;
   }
@@ -716,11 +787,18 @@ export class MeasureService extends BaseService {
     // ? Use mutex to try to fix update conflict
     return lock(`asset:${engineId}:${assetId}`, async () =>
       this.sdk.document
-        .update<AssetContent>(engineId, InternalCollection.ASSETS, assetId, asset)
+        .update<AssetContent>(
+          engineId,
+          InternalCollection.ASSETS,
+          assetId,
+          asset,
+        )
         .catch((error) => {
           throw keepStack(
             error,
-            new BadRequestError(`Cannot update asset "${assetId}": ${error.message}`),
+            new BadRequestError(
+              `Cannot update asset "${assetId}": ${error.message}`,
+            ),
           );
         }),
     );
@@ -757,7 +835,7 @@ export class MeasureService extends BaseService {
         metadata: {
           names: metadataChanges,
         },
-        name: 'metadata',
+        name: "metadata",
       };
 
       const history: AssetHistoryContent = {
@@ -768,7 +846,7 @@ export class MeasureService extends BaseService {
       };
 
       return ask<AskAssetHistoryAdd<AssetHistoryEventMetadata>>(
-        'ask:device-manager:asset:history:add',
+        "ask:device-manager:asset:history:add",
         {
           engineId,
           histories: [history],
@@ -795,7 +873,7 @@ export class MeasureService extends BaseService {
         measure: {
           names: measureNames,
         },
-        name: 'measure',
+        name: "measure",
       };
 
       // Initialize with the original metadata.
@@ -803,7 +881,10 @@ export class MeasureService extends BaseService {
 
       // If we are at the last recorded state and there are metadata changes,
       // update both the event and asset metadata.
-      if (metadataChanges.length !== 0 && measuredAt === lastTimestampRecorded) {
+      if (
+        metadataChanges.length !== 0 &&
+        measuredAt === lastTimestampRecorded
+      ) {
         (event as unknown as AssetHistoryEventMetadata).metadata = {
           names: metadataChanges,
         };
@@ -819,7 +900,7 @@ export class MeasureService extends BaseService {
     }
 
     return ask<AskAssetHistoryAdd<AssetHistoryEventMeasure>>(
-      'ask:device-manager:asset:history:add',
+      "ask:device-manager:asset:history:add",
       {
         engineId,
         // Reverse order because measuredAt is sorted in ascending order,

@@ -13,8 +13,6 @@ import {
 
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("Device SCRUD", () => {
   const sdk = setupHooks();
 

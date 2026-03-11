@@ -34,8 +34,6 @@ import { InternalCollection } from "../../../../lib/modules/plugin";
 import { setupHooks } from "../../../helpers";
 import { loadSecurityDefault } from "../../../hooks/security";
 
-jest.setTimeout(10000);
-
 describe("AssetsGroupsController", () => {
   const sdk = setupHooks();
   const now = Date.now();

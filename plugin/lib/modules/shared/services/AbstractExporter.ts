@@ -1,6 +1,6 @@
-import { UUID, randomUUID } from 'node:crypto';
-import { PassThrough, Readable } from 'node:stream';
-import { stringify } from 'csv-stringify/sync';
+import { UUID, randomUUID } from "node:crypto";
+import { PassThrough, Readable } from "node:stream";
+import { stringify } from "csv-stringify/sync";
 import {
   JSONObject,
   KDocumentContentGeneric,
@@ -8,11 +8,11 @@ import {
   NotFoundError,
   SearchResult,
   User,
-} from 'kuzzle';
-import { EngineContent } from 'kuzzle-plugin-commons';
-import _ from 'lodash';
+} from "kuzzle";
+import { EngineContent } from "kuzzle-plugin-commons";
+import _ from "lodash";
 
-import { DeviceManagerPlugin, InternalCollection } from '../../plugin';
+import { DeviceManagerPlugin, InternalCollection } from "../../plugin";
 
 export interface ExporterOption {
   /**
@@ -24,7 +24,7 @@ export interface ExporterOption {
 export interface ExportParams {
   query: JSONObject;
   sort?: JSONObject;
-  lang?: 'elasticsearch' | 'koncorde';
+  lang?: "elasticsearch" | "koncorde";
 }
 
 export interface Column {
@@ -61,7 +61,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   }
 
   protected get log() {
-    return this.plugin.context.logger.child('exporter');
+    return this.plugin.context.logger.child("exporter");
   }
 
   protected async getEngine(engineId: string): Promise<EngineContent> {
@@ -76,7 +76,11 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
 
   protected abstract exportRedisKey(engineId: string, exportId: string): string;
 
-  protected abstract getLink(engineId: string, exportId: UUID, params: P): string;
+  protected abstract getLink(
+    engineId: string,
+    exportId: UUID,
+    params: P,
+  ): string;
 
   /**
    * Retrieve a prepared export and write each document as a CSV in the stream
@@ -96,10 +100,10 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     );
 
     let link = this.getLink(engineId, exportId, params);
-    if (user._id !== '-1') {
+    if (user._id !== "-1") {
       const { result } = await this.sdk.as(user).query({
-        action: 'createToken',
-        controller: 'auth',
+        action: "createToken",
+        controller: "auth",
         expiresIn: this.config.expireTime * 1000,
         singleUse: true,
       });
@@ -110,7 +114,10 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     return link;
   }
 
-  protected formatHit(columns: Column[], hit: KHit<KDocumentContentGeneric>): string[] {
+  protected formatHit(
+    columns: Column[],
+    hit: KHit<KDocumentContentGeneric>,
+  ): string[] {
     return columns.map(({ path, isIsoDate }) => {
       const formattedValue = _.get(hit, path, null);
       if (formattedValue !== null && isIsoDate) {
@@ -121,7 +128,9 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   }
 
   async getExport(engineId: string, exportId: string): Promise<P> {
-    const exportParams = await this.sdk.ms.get(this.exportRedisKey(engineId, exportId));
+    const exportParams = await this.sdk.ms.get(
+      this.exportRedisKey(engineId, exportId),
+    );
 
     if (!exportParams) {
       throw new NotFoundError(`Export "${exportId}" not found or expired.`);
@@ -130,7 +139,10 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     return JSON.parse(exportParams);
   }
 
-  async getExportStream(request: SearchResult<KHit<KDocumentContentGeneric>>, columns: Column[]) {
+  async getExportStream(
+    request: SearchResult<KHit<KDocumentContentGeneric>>,
+    columns: Column[],
+  ) {
     const stream = new PassThrough();
 
     let result = request;

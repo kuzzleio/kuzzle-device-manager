@@ -9,8 +9,6 @@ import {
   ApiAssetMGetLastMeasuredAtResult,
 } from "../../../../lib/modules/asset";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:mGetLastMeasuredAt", () => {
   const sdk = setupHooks();
 

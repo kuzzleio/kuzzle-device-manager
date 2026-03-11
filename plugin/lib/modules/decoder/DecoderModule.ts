@@ -1,12 +1,12 @@
-import { DeviceManagerPlugin } from '../plugin';
-import { Module } from '../shared/Module';
+import { DeviceManagerPlugin } from "../plugin";
+import { Module } from "../shared/Module";
 
-import { DecodersController } from './DecodersController';
-import { PayloadsController } from './PayloadsController';
-import { PayloadService } from './PayloadService';
-import { RoleDecodersAdmin } from './roles/RoleDecodersAdmin';
-import { RolePayloadsAll } from './roles/RolePayloadsAll';
-import { KuzzleLogger } from 'kuzzle-logger';
+import { DecodersController } from "./DecodersController";
+import { PayloadsController } from "./PayloadsController";
+import { PayloadService } from "./PayloadService";
+import { RoleDecodersAdmin } from "./roles/RoleDecodersAdmin";
+import { RolePayloadsAll } from "./roles/RolePayloadsAll";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class DecoderModule extends Module {
   private payloadService: PayloadService;
@@ -17,13 +17,13 @@ export class DecoderModule extends Module {
 
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
-    this.decoderLogger = this.plugin.context.logger.child('decoders-module');
-    this.payloadLogger = this.plugin.context.logger.child('payloads-module');
+    this.decoderLogger = this.plugin.context.logger.child("decoders-module");
+    this.payloadLogger = this.plugin.context.logger.child("payloads-module");
   }
   // @todo temporary until registers refactor
   private get decodersRegister() {
     // eslint-disable-next-line dot-notation
-    return this.plugin['decodersRegister'];
+    return this.plugin["decodersRegister"];
   }
 
   public async init(): Promise<void> {
@@ -39,11 +39,15 @@ export class DecoderModule extends Module {
       this.payloadLogger,
     );
 
-    this.plugin.api['device-manager/decoders'] = this.decoderController.definition;
+    this.plugin.api["device-manager/decoders"] =
+      this.decoderController.definition;
 
-    this.plugin.api['device-manager/payloads'] = this.payloadsController.definition;
+    this.plugin.api["device-manager/payloads"] =
+      this.payloadsController.definition;
 
-    this.plugin.imports.roles[RoleDecodersAdmin.name] = RoleDecodersAdmin.definition;
-    this.plugin.imports.roles[RolePayloadsAll.name] = RolePayloadsAll.definition;
+    this.plugin.imports.roles[RoleDecodersAdmin.name] =
+      RoleDecodersAdmin.definition;
+    this.plugin.imports.roles[RolePayloadsAll.name] =
+      RolePayloadsAll.definition;
   }
 }

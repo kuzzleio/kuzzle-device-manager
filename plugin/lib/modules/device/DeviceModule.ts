@@ -1,12 +1,13 @@
-import { Module } from '../shared/Module';
+import { DeviceManagerPlugin } from "../plugin";
+import { Module } from "../shared/Module";
 
-import { DevicesController } from './DevicesController';
-import { DeviceService } from './DeviceService';
-import { RoleDevicesAdmin } from './roles/RoleDevicesAdmin';
-import { RoleDevicesPlatformAdmin } from './roles/RoleDevicesPlatformAdmin';
-import { RoleDevicesReader } from './roles/RoleDevicesReader';
-import * as specificRoles from './roles/specificRoles';
-import { KuzzleLogger } from 'kuzzle-logger';
+import { DevicesController } from "./DevicesController";
+import { DeviceService } from "./DeviceService";
+import { RoleDevicesAdmin } from "./roles/RoleDevicesAdmin";
+import { RoleDevicesPlatformAdmin } from "./roles/RoleDevicesPlatformAdmin";
+import { RoleDevicesReader } from "./roles/RoleDevicesReader";
+import * as specificRoles from "./roles/specificRoles";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class DeviceModule extends Module {
   private deviceService: DeviceService;
@@ -15,22 +16,30 @@ export class DeviceModule extends Module {
 
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
-    this.logger = this.plugin.context.logger.child('devices-module');
+    this.logger = this.plugin.context.logger.child("devices-module");
   }
 
   public async init(): Promise<void> {
     this.deviceService = new DeviceService(this.plugin, this.logger);
-    this.deviceService = new DeviceService(this.plugin);
-    this.deviceController = new DevicesController(this.plugin, this.deviceService, this.logger);
+    this.deviceController = new DevicesController(
+      this.plugin,
+      this.deviceService,
+      this.logger,
+    );
 
-    this.plugin.api['device-manager/devices'] = this.deviceController.definition;
+    this.plugin.api["device-manager/devices"] =
+      this.deviceController.definition;
 
-    this.plugin.imports.roles[RoleDevicesAdmin.name] = RoleDevicesAdmin.definition;
-    this.plugin.imports.roles[RoleDevicesPlatformAdmin.name] = RoleDevicesPlatformAdmin.definition;
-    this.plugin.imports.roles[RoleDevicesReader.name] = RoleDevicesReader.definition;
+    this.plugin.imports.roles[RoleDevicesAdmin.name] =
+      RoleDevicesAdmin.definition;
+    this.plugin.imports.roles[RoleDevicesPlatformAdmin.name] =
+      RoleDevicesPlatformAdmin.definition;
+    this.plugin.imports.roles[RoleDevicesReader.name] =
+      RoleDevicesReader.definition;
     for (const role in specificRoles) {
       if (specificRoles[role].name && specificRoles[role].definition) {
-        this.plugin.imports.roles[specificRoles[role].name] = specificRoles[role].definition;
+        this.plugin.imports.roles[specificRoles[role].name] =
+          specificRoles[role].definition;
       }
     }
   }

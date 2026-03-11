@@ -1,9 +1,9 @@
-import { ControllerDefinition, KuzzleRequest } from 'kuzzle';
+import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 
-import { DecodersRegister } from './DecodersRegister';
-import { PayloadService } from './PayloadService';
-import { ApiPayloadReceiveUnkownResult } from './types/PayloadApi';
-import { KuzzleLogger } from 'kuzzle-logger';
+import { DecodersRegister } from "./DecodersRegister";
+import { PayloadService } from "./PayloadService";
+import { ApiPayloadReceiveUnkownResult } from "./types/PayloadApi";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class PayloadsController {
   private payloadService: PayloadService;
@@ -30,25 +30,25 @@ export class PayloadsController {
                 description: `Receive a payload from a device`,
                 parameters: [
                   {
-                    in: 'path',
-                    name: 'deviceModel',
+                    in: "path",
+                    name: "deviceModel",
                     required: true,
                     schema: {
-                      type: 'string',
+                      type: "string",
                     },
                   },
                   {
-                    in: 'body',
-                    name: 'payload',
+                    in: "body",
+                    name: "payload",
                     required: true,
                     schema: {
-                      type: 'object',
+                      type: "object",
                     },
                   },
                 ],
               },
-              path: 'device-manager/payload/:deviceModel',
-              verb: 'post',
+              path: "device-manager/payload/:deviceModel",
+              verb: "post",
             },
           ],
         },
@@ -57,15 +57,18 @@ export class PayloadsController {
 
     for (const decoder of this.decodersRegister.decoders) {
       this.definition.actions[decoder.action] = {
-        handler: (request: KuzzleRequest) => this.payloadService.receive(request, decoder),
+        handler: (request: KuzzleRequest) =>
+          this.payloadService.receive(request, decoder),
         http: decoder.http,
       };
     }
   }
 
-  async receiveUnknown(request: KuzzleRequest): Promise<ApiPayloadReceiveUnkownResult> {
+  async receiveUnknown(
+    request: KuzzleRequest,
+  ): Promise<ApiPayloadReceiveUnkownResult> {
     const payload = request.getBody();
-    const deviceModel = request.getString('deviceModel', 'unknownModel');
+    const deviceModel = request.getString("deviceModel", "unknownModel");
     const apiAction = `${request.input.controller}:${request.input.action}`;
 
     await this.payloadService.receiveUnknown(deviceModel, payload, apiAction);
