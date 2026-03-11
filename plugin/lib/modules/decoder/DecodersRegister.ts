@@ -33,6 +33,9 @@ export class DecodersRegister {
     this.plugin = plugin;
     this.context = context;
     this.logger = this.context.logger.child("decoders-module:register");
+    for (const [key, decoder] of this._decoders) {
+      decoder.log = this.logger.child(key);
+    }
   }
 
   get(deviceModel: string): Decoder {
@@ -79,10 +82,11 @@ export class DecodersRegister {
         `Decoder for device model "${decoder.deviceModel}" already registered`,
       );
     }
-    decoder.log = this.context.logger.child(`${decoder.action}`);
 
     this._decoders.set(decoder.deviceModel, decoder);
-
+    if (this.logger) {
+      decoder.log = this.logger.child(`${decoder.action}`);
+    }
     return {
       action: decoder.action,
       controller: "device-manager/payloads",
