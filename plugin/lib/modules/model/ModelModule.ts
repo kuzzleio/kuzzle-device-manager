@@ -10,7 +10,7 @@ export class ModelModule extends Module {
   readonly logger: KuzzleLogger;
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
-    this.logger = this.plugin.context.logger.child("models");
+    this.logger = this.plugin.context.logger.child("models-module");
   }
 
   public async init(): Promise<void> {

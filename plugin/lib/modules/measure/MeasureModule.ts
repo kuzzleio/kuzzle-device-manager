@@ -12,7 +12,7 @@ export class MeasureModule extends Module {
 
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
-    this.logger = this.plugin.context.logger.child("measures");
+    this.logger = this.plugin.context.logger.child("measures-module");
   }
 
   public async init(): Promise<void> {

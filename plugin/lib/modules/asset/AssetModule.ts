@@ -16,7 +16,7 @@ export class AssetModule extends Module {
 
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
-    this.logger = this.plugin.context.logger.child("assets");
+    this.logger = this.plugin.context.logger.child("assets-module");
   }
   public async init(): Promise<void> {
     this.assetHistoryService = new AssetHistoryService(

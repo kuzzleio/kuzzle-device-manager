@@ -16,7 +16,7 @@ export class DeviceModule extends Module {
 
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
-    this.logger = this.plugin.context.logger.child("devices");
+    this.logger = this.plugin.context.logger.child("devices-module");
   }
 
   public async init(): Promise<void> {

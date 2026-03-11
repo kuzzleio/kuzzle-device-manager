@@ -17,8 +17,8 @@ export class DecoderModule extends Module {
 
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
-    this.decoderLogger = this.plugin.context.logger.child("decoders");
-    this.payloadLogger = this.plugin.context.logger.child("payloads");
+    this.decoderLogger = this.plugin.context.logger.child("decoders-module");
+    this.payloadLogger = this.plugin.context.logger.child("payloads-module");
   }
 
   // @todo temporary until registers refactor

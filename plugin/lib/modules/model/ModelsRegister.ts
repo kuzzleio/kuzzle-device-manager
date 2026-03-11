@@ -44,7 +44,7 @@ export class ModelsRegister {
   init(plugin: DeviceManagerPlugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
-    this.logger = this.context.logger.child("models:register");
+    this.logger = this.context.logger.child("models-module:register");
   }
 
   async loadModels() {

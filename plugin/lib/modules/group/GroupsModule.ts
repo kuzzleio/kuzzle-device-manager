@@ -13,7 +13,7 @@ export class GroupsModule extends Module {
 
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
-    this.logger = this.plugin.context.logger.child("groups");
+    this.logger = this.plugin.context.logger.child("groups-module");
   }
   public async init(): Promise<void> {
     this.groupsService = new GroupsService(this.plugin, this.logger);

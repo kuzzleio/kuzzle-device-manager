@@ -32,7 +32,7 @@ export class DecodersRegister {
   init(plugin: DeviceManagerPlugin, context: PluginContext) {
     this.plugin = plugin;
     this.context = context;
-    this.logger = this.context.logger.child("decoder:register");
+    this.logger = this.context.logger.child("decoders-module:register");
   }
 
   get(deviceModel: string): Decoder {
@@ -79,6 +79,7 @@ export class DecodersRegister {
         `Decoder for device model "${decoder.deviceModel}" already registered`,
       );
     }
+    decoder.log = this.context.logger.child(`${decoder.action}`);
 
     this._decoders.set(decoder.deviceModel, decoder);
 

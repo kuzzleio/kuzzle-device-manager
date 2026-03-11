@@ -423,9 +423,6 @@ export class DeviceManagerPlugin extends Plugin {
   async init(config: JSONObject, context: PluginContext) {
     this.config = _.merge({}, this.config, config);
     this.context = context;
-    for (const decoder of this.decodersRegister.decoders) {
-      decoder.log = this.context.logger.child(`decoders:${decoder.action}`);
-    }
 
     // Modules creation
     this.assetModule = new AssetModule(this);
