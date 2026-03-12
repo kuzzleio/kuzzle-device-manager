@@ -161,7 +161,7 @@ export interface ApiAssetMeasureIngestRequest extends AssetsControllerRequest {
   slotName: string;
   body: {
     dataSource: TypelessApiMeasureSource;
-    measuredAt: number;
+    measuredAt: number | string;
     values: JSONObject;
   };
 }
