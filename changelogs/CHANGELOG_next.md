@@ -1,3 +1,7 @@
+## 3.0.0-next.27 (2026-03-12)
+
+* feat(logger): add module and decoder scoped logger (#461) ([6f0c6b9](https://github.com/kuzzleio/kuzzle-device-manager/commit/6f0c6b9)), closes [#461](https://github.com/kuzzleio/kuzzle-device-manager/issues/461)
+
 ## 3.0.0-next.26 (2026-03-04)
 
 * feat(assetModel): add spec artifacts for multi-group asset models (#462) ([e8cff06](https://github.com/kuzzleio/kuzzle-device-manager/commit/e8cff06)), closes [#462](https://github.com/kuzzleio/kuzzle-device-manager/issues/462)
