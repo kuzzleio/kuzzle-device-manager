@@ -7,8 +7,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupSdK } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("ModelsController:metadata", () => {
   const sdk = setupSdK();
 

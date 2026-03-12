@@ -54,16 +54,19 @@ import {
   AssetHistoryContent,
   AssetHistoryEventMetadata,
 } from "./types/AssetHistoryContent";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class AssetService extends DigitalTwinService {
+  readonly logger: KuzzleLogger;
   private assetHistoryService: AssetHistoryService;
 
   constructor(
     plugin: DeviceManagerPlugin,
     assetHistoryService: AssetHistoryService,
+    assetLogger: KuzzleLogger,
   ) {
     super(plugin, InternalCollection.ASSETS);
-
+    this.logger = assetLogger;
     this.assetHistoryService = assetHistoryService;
   }
 
@@ -172,7 +175,10 @@ export class AssetService extends DigitalTwinService {
       if (Object.keys(unknownMetadata).length > 0) {
         const assetModel = await ask<AskModelAssetGet>(
           "ask:device-manager:model:asset:get",
-          { engineGroup: engineId.split("-")[1], model: asset._source.model },
+          {
+            engineGroup: engineId.split("-")[1],
+            model: asset._source.model,
+          },
         );
         for (const key in unknownMetadata) {
           if (key in assetModel.asset.metadataMappings) {
@@ -298,7 +304,10 @@ export class AssetService extends DigitalTwinService {
     const engine = await this.getEngine(engineId);
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      { engineGroup: engine.group, model },
+      {
+        engineGroup: engine.group,
+        model,
+      },
     );
 
     const assetMetadata = {};
@@ -395,7 +404,10 @@ export class AssetService extends DigitalTwinService {
       for (const { _id: deviceId } of asset._source.linkedDevices) {
         await ask<AskDeviceUnlinkAsset>(
           "ask:device-manager:device:unlink-asset",
-          { deviceId, user },
+          {
+            deviceId,
+            user,
+          },
         );
       }
 
@@ -477,7 +489,7 @@ export class AssetService extends DigitalTwinService {
       errors = errors.concat(...assets.errors);
 
       if (assets.successes.length === 0) {
-        this.app.log.error("No assets found to migrate");
+        this.logger.error("No assets found to migrate");
         return { errors, successes };
       }
 
@@ -528,13 +540,20 @@ export class AssetService extends DigitalTwinService {
           // detach linked devices from current tenant (it also unkinks asset)
           await ask<AskDeviceDetachEngine>(
             "ask:device-manager:device:detach-engine",
-            { deviceId: device._id, user },
+            {
+              deviceId: device._id,
+              user,
+            },
           );
 
           // ... and attach to new tenant
           await ask<AskDeviceAttachEngine>(
             "ask:device-manager:device:attach-engine",
-            { deviceId: device._id, engineId: newEngineId, user },
+            {
+              deviceId: device._id,
+              engineId: newEngineId,
+              user,
+            },
           );
 
           // ... and link this device to the asset in the new tenant

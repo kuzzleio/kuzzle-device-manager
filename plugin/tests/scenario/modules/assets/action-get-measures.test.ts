@@ -6,8 +6,6 @@ import {
 } from "../../../../index";
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:getMeasures", () => {
   const sdk = setupHooks();
 

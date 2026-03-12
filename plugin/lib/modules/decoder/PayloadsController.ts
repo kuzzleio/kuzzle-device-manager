@@ -3,19 +3,22 @@ import { ControllerDefinition, KuzzleRequest } from "kuzzle";
 import { DecodersRegister } from "./DecodersRegister";
 import { PayloadService } from "./PayloadService";
 import { ApiPayloadReceiveUnkownResult } from "./types/PayloadApi";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class PayloadsController {
   private payloadService: PayloadService;
   private decodersRegister: DecodersRegister;
-
+  readonly logger: KuzzleLogger;
   public definition: ControllerDefinition;
 
   constructor(
     payloadService: PayloadService,
     decodersRegister: DecodersRegister,
+    logger: KuzzleLogger,
   ) {
     this.payloadService = payloadService;
     this.decodersRegister = decodersRegister;
+    this.logger = logger;
 
     this.definition = {
       actions: {

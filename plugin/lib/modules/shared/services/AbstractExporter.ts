@@ -61,7 +61,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   }
 
   protected get log() {
-    return this.plugin.context.log;
+    return this.plugin.context.logger.child("exporter");
   }
 
   protected async getEngine(engineId: string): Promise<EngineContent> {

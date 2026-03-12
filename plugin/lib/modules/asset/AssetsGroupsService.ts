@@ -9,10 +9,13 @@ import {
 import { AskModelGroupGet } from "../model";
 import { ask } from "kuzzle-plugin-commons";
 import { AssetContent } from "./types/AssetContent";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class AssetsGroupsService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
+    this.logger = logger;
   }
 
   async create(
@@ -50,7 +53,9 @@ export class AssetsGroupsService extends BaseService {
     if (model !== null) {
       const groupModel = await ask<AskModelGroupGet>(
         "ask:device-manager:model:group:get",
-        { model },
+        {
+          model,
+        },
       );
       for (const metadataName of Object.keys(
         groupModel.group.metadataMappings,
@@ -218,7 +223,9 @@ export class AssetsGroupsService extends BaseService {
       engineId,
       InternalCollection.ASSETS,
       assets,
-      { triggerEvents: true },
+      {
+        triggerEvents: true,
+      },
     );
 
     return {
@@ -272,7 +279,9 @@ export class AssetsGroupsService extends BaseService {
       engineId,
       InternalCollection.ASSETS,
       assets,
-      { triggerEvents: true },
+      {
+        triggerEvents: true,
+      },
     );
 
     return {

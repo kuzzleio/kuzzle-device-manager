@@ -4,6 +4,7 @@ import { JSONObject } from "kuzzle-sdk";
 
 import { DecodedPayload } from "./DecodedPayload";
 import { DecoderContent } from "./types/DecoderContent";
+import { KuzzleLogger } from "kuzzle-logger";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -30,14 +31,8 @@ export abstract class Decoder {
   /**
    * Internal logger.
    */
-  public log: {
-    debug: (message: any) => void;
-    error: (message: any) => void;
-    info: (message: any) => void;
-    silly: (message: any) => void;
-    verbose: (message: any) => void;
-    warn: (message: any) => void;
-  };
+  public log: KuzzleLogger;
+
   /**
    * Device model name.
    *

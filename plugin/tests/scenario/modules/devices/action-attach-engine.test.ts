@@ -2,8 +2,6 @@ import { ApiDeviceAttachEngineRequest } from "../../../../index";
 
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:attachEngine", () => {
   const sdk = setupHooks();
 

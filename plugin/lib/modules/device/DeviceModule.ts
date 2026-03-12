@@ -1,3 +1,4 @@
+import { DeviceManagerPlugin } from "../plugin";
 import { Module } from "../shared/Module";
 
 import { DevicesController } from "./DevicesController";
@@ -6,15 +7,24 @@ import { RoleDevicesAdmin } from "./roles/RoleDevicesAdmin";
 import { RoleDevicesPlatformAdmin } from "./roles/RoleDevicesPlatformAdmin";
 import { RoleDevicesReader } from "./roles/RoleDevicesReader";
 import * as specificRoles from "./roles/specificRoles";
+import { KuzzleLogger } from "kuzzle-logger";
+
 export class DeviceModule extends Module {
   private deviceService: DeviceService;
   private deviceController: DevicesController;
+  readonly logger: KuzzleLogger;
+
+  constructor(plugin: DeviceManagerPlugin) {
+    super(plugin);
+    this.logger = this.plugin.context.logger.child("devices-module");
+  }
 
   public async init(): Promise<void> {
-    this.deviceService = new DeviceService(this.plugin);
+    this.deviceService = new DeviceService(this.plugin, this.logger);
     this.deviceController = new DevicesController(
       this.plugin,
       this.deviceService,
+      this.logger,
     );
 
     this.plugin.api["device-manager/devices"] =

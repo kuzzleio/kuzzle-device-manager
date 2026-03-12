@@ -9,8 +9,6 @@ import {
   ApiDeviceMGetLastMeasuredAtResult,
 } from "../../../../lib/modules/device";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:mGetLastMeasuredAt", () => {
   const sdk = setupHooks();
 

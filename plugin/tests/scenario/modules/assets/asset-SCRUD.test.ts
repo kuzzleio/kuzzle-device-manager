@@ -23,8 +23,6 @@ import {
 } from "../../../fixtures";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 type PartialBody = Omit<ApiAssetCreateRequest, "body"> & {
   body: Partial<ApiAssetCreateRequest["body"]>;
 };

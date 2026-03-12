@@ -24,14 +24,16 @@ import {
   ApiModelSearchGroupsResult,
   ApiModelWriteGroupResult,
 } from "./types/ModelApi";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class ModelsController {
   private modelService: ModelService;
-
   public definition: ControllerDefinition;
+  readonly logger: KuzzleLogger;
 
-  constructor(modelService: ModelService) {
+  constructor(modelService: ModelService, logger: KuzzleLogger) {
     this.modelService = modelService;
+    this.logger = logger;
 
     this.definition = {
       actions: {

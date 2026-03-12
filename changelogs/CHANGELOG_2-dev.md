@@ -1,3 +1,8 @@
+## 2.11.0-dev.1 (2026-03-12)
+
+* feat(assets): support iso string for field measuredAt (#465) ([5a6fd45](https://github.com/kuzzleio/kuzzle-device-manager/commit/5a6fd45)), closes [#465](https://github.com/kuzzleio/kuzzle-device-manager/issues/465)
+* feat(logger): add module scopped logger (#464) ([eee07e4](https://github.com/kuzzleio/kuzzle-device-manager/commit/eee07e4)), closes [#464](https://github.com/kuzzleio/kuzzle-device-manager/issues/464)
+
 ## <small>2.10.2-dev.6 (2026-03-09)</small>
 
 * fix(package): update repository url ([062969b](https://github.com/kuzzleio/kuzzle-device-manager/commit/062969b))
