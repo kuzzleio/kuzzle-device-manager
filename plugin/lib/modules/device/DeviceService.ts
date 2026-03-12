@@ -38,10 +38,13 @@ import {
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
 import { ApiDeviceUnlinkAssetsResult } from "./exports";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class DeviceService extends DigitalTwinService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin, InternalCollection.DEVICES);
+    this.logger = logger;
   }
 
   override registerAskEvents() {

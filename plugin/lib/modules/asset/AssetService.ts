@@ -39,6 +39,7 @@ import {
   flattenObject,
   lock,
 } from "../shared";
+import { KuzzleLogger } from "kuzzle-logger";
 
 import { AssetHistoryService } from "./AssetHistoryService";
 import { AssetSerializer } from "./model/AssetSerializer";
@@ -60,14 +61,16 @@ import {
 
 export class AssetService extends DigitalTwinService {
   readonly assetHistoryService: AssetHistoryService;
-
+  readonly logger: KuzzleLogger;
   constructor(
     plugin: DeviceManagerPlugin,
     assetHistoryService: AssetHistoryService,
+    assetLogger: KuzzleLogger,
   ) {
     super(plugin, InternalCollection.ASSETS);
 
     this.assetHistoryService = assetHistoryService;
+    this.logger = assetLogger;
   }
 
   override registerAskEvents() {
@@ -303,7 +306,11 @@ export class AssetService extends DigitalTwinService {
     const engine = await this.getEngine(engineId);
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      { engineGroups: [engine.group], engineId, model },
+      {
+        engineGroups: [engine.group],
+        engineId,
+        model,
+      },
     );
 
     const assetMetadata = {};
@@ -532,7 +539,7 @@ export class AssetService extends DigitalTwinService {
       errors = errors.concat(...assets.errors);
 
       if (assets.successes.length === 0) {
-        this.app.log.error("No assets found to migrate");
+        this.logger.error("No assets found to migrate");
         return { errors, successes };
       }
 
@@ -581,13 +588,20 @@ export class AssetService extends DigitalTwinService {
             // detach linked devices from current tenant (it also unkinks asset)
             await ask<AskDeviceDetachEngine>(
               "ask:device-manager:device:detach-engine",
-              { deviceId: link.deviceId, user },
+              {
+                deviceId: link.deviceId,
+                user,
+              },
             );
 
             // ... and attach to new tenant
             await ask<AskDeviceAttachEngine>(
               "ask:device-manager:device:attach-engine",
-              { deviceId: link.deviceId, engineId: newEngineId, user },
+              {
+                deviceId: link.deviceId,
+                engineId: newEngineId,
+                user,
+              },
             );
 
             // ... and link this device to the asset in the new tenant

@@ -19,11 +19,13 @@ import { DecodingState } from "./DecodingState";
 import { SkipError } from "./SkipError";
 import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
 import { DeviceMeasureSource } from "../measure/types/MeasureSources";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class PayloadService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
-
+    this.logger = logger;
     onAsk<AskPayloadReceiveFormated>(
       "ask:device-manager:payload:receive-formated",
       async (payload) => {
@@ -85,7 +87,7 @@ export class PayloadService extends BaseService {
     let decodedPayload = new DecodedPayload<any>(decoder);
     decodedPayload = await decoder.decode(decodedPayload, payload, request);
     if (decodedPayload.references.length === 0) {
-      this.app.log.debug(
+      this.logger.debug(
         `No change detected in measurements or metadata for device model "${decoder.deviceModel}", skipping ingestion`,
       );
 
@@ -94,7 +96,7 @@ export class PayloadService extends BaseService {
 
     let ingestMeasurements = true;
     if (!decodedPayload.hasMeasurements()) {
-      this.app.log.debug(
+      this.logger.debug(
         `No change detected in measurements for device model "${decoder.deviceModel}", skipping measure ingestion`,
       );
       ingestMeasurements = false;
@@ -102,7 +104,7 @@ export class PayloadService extends BaseService {
 
     let changeMetadata = true;
     if (!decodedPayload.hasMetadata()) {
-      this.app.log.debug(
+      this.logger.debug(
         `No change detected in metadata for device model "${decoder.deviceModel}", skipping metadata ingestion`,
       );
       changeMetadata = false;
@@ -314,7 +316,7 @@ export class PayloadService extends BaseService {
         uuid,
       );
     } catch (error) {
-      this.app.log.error(
+      this.logger.error(
         `Cannot save the payload from "${deviceModel}": ${error}`,
       );
     }
@@ -369,7 +371,7 @@ export class PayloadService extends BaseService {
         });
         updatedDevices.push(...newDevices);
       } else {
-        this.app.log.info(
+        this.logger.info(
           `Skipping new devices "${errors.join(", ")}". Auto-provisioning is disabled.`,
         );
       }
@@ -420,7 +422,7 @@ export class PayloadService extends BaseService {
       );
 
     for (const error of errors) {
-      this.app.log.error(
+      this.logger.error(
         `Cannot create device "${error.document._id}": ${error.reason}`,
       );
     }

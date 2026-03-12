@@ -13,10 +13,13 @@ import {
   GroupContent,
 } from "./exports";
 import { DeviceContent } from "../device";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class GroupsService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
+    this.logger = logger;
   }
 
   async create(

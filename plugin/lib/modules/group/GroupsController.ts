@@ -34,14 +34,17 @@ import {
 import { GroupContent } from "./types/GroupContent";
 import { GroupsService } from "./GroupsService";
 import { Metadata } from "../shared";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class GroupsController {
   definition: ControllerDefinition;
-
+  readonly logger: KuzzleLogger;
   constructor(
     private plugin: DeviceManagerPlugin,
     private groupsService: GroupsService,
+    logger: KuzzleLogger,
   ) {
+    this.logger = logger;
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
