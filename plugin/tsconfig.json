@@ -9,9 +9,10 @@
     "baseUrl": ".",
     "resolveJsonModule": true,
     "outDir": "dist/",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "rootDir": "lib/",
-  "include": ["lib/**/*.ts", "tests/application/**/*.ts", "index.ts"],
+  "include": ["lib/**/*.ts", "tests/application/**/*.ts", "plugin/index.ts"],
   "exclude": ["node_modules"]
 }

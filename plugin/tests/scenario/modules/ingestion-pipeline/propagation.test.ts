@@ -1,8 +1,6 @@
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 import { MeasureContent } from "../../../../lib/modules/measure";
 
-jest.setTimeout(10000);
-
 describe("Ingestion Pipeline: propagation", () => {
   const sdk = setupHooks();
 

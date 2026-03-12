@@ -26,6 +26,7 @@ import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
 import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
@@ -34,6 +35,7 @@ export class ModelsRegister {
   private deviceModels: DeviceModelContent[] = [];
   private groupModels: GroupModelContent[] = [];
   private measureModels: MeasureModelContent[] = [];
+  private logger: KuzzleLogger;
 
   private get sdk() {
     return this.context.accessors.sdk;
@@ -42,6 +44,7 @@ export class ModelsRegister {
   init(plugin: DeviceManagerPlugin) {
     this.config = plugin.config as any;
     this.context = plugin.context;
+    this.logger = this.context.logger.child("models-module:register");
   }
 
   async loadModels() {
@@ -247,7 +250,7 @@ export class ModelsRegister {
       { strict: true },
     );
 
-    this.context.log.info(
+    this.logger.info(
       `Successfully load "${type}" models: ${modelTitles.join(", ")}`,
     );
   }

@@ -15,7 +15,7 @@
     "dev": "tsx watch tests/application/app.ts",
     "prod": "node ./dist/tests/application/app.js",
     "test": "npm run test:functional && npm run test:types",
-    "test:functional": "jest --runInBand",
+    "test:functional": "vitest run --fileParallelism false",
     "test:types": "tsc --noEmit",
     "lint": "eslint ./lib ./tests --ext .ts",
     "lint:fix": "eslint ./lib ./tests --ext .ts --fix",
@@ -39,19 +39,20 @@
     "axios": "1.7.9",
     "csv-parse": "5.6.0",
     "eslint-plugin-jest": "28.11.0",
-    "eslint-plugin-kuzzle": "0.0.13",
+    "eslint-plugin-kuzzle": "0.0.15",
     "jest": "29.7.0",
-    "kuzzle": "2.40.0",
-    "kuzzle-sdk": "7.15.0",
+    "kuzzle": "2.50.0",
+    "kuzzle-sdk": "7.17.1",
     "read-pkg": "9.0.1",
     "ts-jest": "29.2.5",
     "ts-node": "10.9.2",
     "tsx": "^4.21.0",
     "type-fest": "4.33.0",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "vitest": "3.2.4"
   },
   "peerDependencies": {
-    "kuzzle": ">=2.33.0"
+    "kuzzle": ">=2.50.0"
   },
   "files": [
     "dist/",

@@ -44,16 +44,20 @@ import {
 } from "../measure/MeasureValidationError";
 import { AskModelAssetGet } from "../model";
 import { AssetContent } from "./exports";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class AssetsController {
   public definition: ControllerDefinition;
   private exporter: DigitalTwinExporter;
   private measureExporter: MeasureExporter;
+  readonly logger: KuzzleLogger;
 
   constructor(
     private plugin: DeviceManagerPlugin,
     private assetService: AssetService,
+    assetlogger: KuzzleLogger,
   ) {
+    this.logger = assetlogger;
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {

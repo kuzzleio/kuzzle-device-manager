@@ -7,8 +7,6 @@ import {
   setupHooks,
 } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("Ingestion Pipeline: process before", () => {
   const sdk = setupHooks();
 

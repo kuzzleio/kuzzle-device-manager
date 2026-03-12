@@ -2,9 +2,7 @@ import { beforeEachTruncateCollections } from "../../hooks/collections";
 import { beforeAllCreateEngines } from "../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../hooks/fixtures";
 
-import { useSdk, sendPayloads } from "../../helpers";
-
-jest.setTimeout(10000);
+import { useSdk } from "../../helpers";
 
 describe("features/Asset/Roles", () => {
   const sdk = useSdk();

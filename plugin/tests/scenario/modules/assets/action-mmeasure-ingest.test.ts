@@ -6,8 +6,6 @@ import {
 import { setupHooks } from "../../../helpers";
 import axios from "axios";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:mMeasureIngest", () => {
   describe("AssetsController:mMeasureIngest:sdk", () => {
     const sdk = setupHooks();

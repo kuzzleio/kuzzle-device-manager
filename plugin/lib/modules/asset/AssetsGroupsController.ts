@@ -24,14 +24,18 @@ import {
 } from "./types/AssetGroupsApi";
 import { AskModelGroupGet } from "../model";
 import { AssetsGroupsService } from "./AssetsGroupsService";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class AssetsGroupsController {
   definition: ControllerDefinition;
+  readonly logger: KuzzleLogger;
 
   constructor(
     private plugin: DeviceManagerPlugin,
     private assetsGroupsService: AssetsGroupsService,
+    logger: KuzzleLogger,
   ) {
+    this.logger = logger;
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {

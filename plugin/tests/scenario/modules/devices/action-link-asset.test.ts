@@ -6,8 +6,6 @@ import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
 
 import { useSdk, documentGet } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("DeviceController: receiveMeasure", () => {
   const sdk = useSdk();
 

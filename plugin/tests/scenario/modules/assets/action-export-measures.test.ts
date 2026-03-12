@@ -6,8 +6,6 @@ import { ApiAssetExportMeasuresRequest } from "../../../../index";
 
 import { sendPayloads, setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("AssetsController:exportMeasures", () => {
   const sdk = setupHooks();
 

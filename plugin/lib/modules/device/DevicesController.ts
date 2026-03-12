@@ -33,16 +33,20 @@ import {
   ApiDeviceMGetLastMeasuredAtResult,
   ApiDeviceMetadataReplaceResult,
 } from "./types/DeviceApi";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class DevicesController {
   public definition: ControllerDefinition;
   private exporter: DigitalTwinExporter;
   private measureExporter: MeasureExporter;
+  readonly logger: KuzzleLogger;
 
   constructor(
     private plugin: DeviceManagerPlugin,
     private deviceService: DeviceService,
+    logger: KuzzleLogger,
   ) {
+    this.logger = logger;
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {

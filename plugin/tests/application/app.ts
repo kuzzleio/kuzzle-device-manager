@@ -12,20 +12,31 @@ const app = new Backend("kuzzle");
 const deviceManager = new DeviceManagerPlugin();
 
 //? Add custom mapping properties
-deviceManager.config.engineCollections.asset.mappings.properties["custom"] = {
-  type: "keyword",
-  fields: { text: { type: "text" } },
-};
-deviceManager.config.engineCollections.device.mappings.properties["custom"] = {
-  type: "keyword",
-  fields: { text: { type: "text" } },
-};
-deviceManager.config.engineCollections.assetGroups.mappings.properties[
-  "custom"
-] = {
-  type: "keyword",
-  fields: { text: { type: "text" } },
-};
+if (deviceManager.config.engineCollections.asset.mappings.properties) {
+  (
+    deviceManager.config.engineCollections.asset.mappings.properties as any
+  ).custom = {
+    type: "keyword",
+    fields: { text: { type: "text" } },
+  };
+}
+if (deviceManager.config.engineCollections.device.mappings.properties) {
+  (
+    deviceManager.config.engineCollections.device.mappings.properties as any
+  ).custom = {
+    type: "keyword",
+    fields: { text: { type: "text" } },
+  };
+}
+if (deviceManager.config.engineCollections.assetGroups.mappings.properties) {
+  (
+    deviceManager.config.engineCollections.assetGroups.mappings
+      .properties as any
+  ).custom = {
+    type: "keyword",
+    fields: { text: { type: "text" } },
+  };
+}
 
 registerModels(deviceManager);
 registerTestPipes(app);
@@ -41,9 +52,6 @@ util.inspect.defaultOptions = {
   depth: 10,
 };
 // @ts-ignore
-app.config.content.plugins["kuzzle-plugin-logger"].services.stdout.level =
-  "debug";
-// @ts-ignore
 app.config.content.limits.documentsWriteCount = 5000;
 
 app
@@ -51,4 +59,4 @@ app
   .then(() => {
     app.log.info("Application started");
   })
-  .catch(console.error);
+  .catch(app.log.error);

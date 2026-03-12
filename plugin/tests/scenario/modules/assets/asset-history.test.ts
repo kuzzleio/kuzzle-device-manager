@@ -2,8 +2,6 @@ import { AssetContent, AssetHistoryContent } from "../../../../index";
 
 import { sendDummyTempPayloads, setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("DeviceController: receiveMeasure", () => {
   const sdk = setupHooks();
   it("should save asset history when measure is received and assetsHistorizesMeasures is true", async () => {

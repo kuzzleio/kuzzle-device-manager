@@ -6,8 +6,6 @@ import {
 
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(10000);
-
 describe("DeviceController: receiveMeasure", () => {
   const sdk = setupHooks();
 

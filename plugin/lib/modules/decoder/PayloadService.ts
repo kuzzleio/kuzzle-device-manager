@@ -13,10 +13,13 @@ import { Decoder } from "./Decoder";
 import { DecodingState } from "./DecodingState";
 import { SkipError } from "./SkipError";
 import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class PayloadService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
+    this.logger = logger;
 
     onAsk<AskPayloadReceiveFormated>(
       "ask:device-manager:payload:receive-formated",
@@ -87,7 +90,9 @@ export class PayloadService extends BaseService {
     const devices = await this.retrieveDevices(
       decoder.deviceModel,
       decodedPayload.references,
-      { refresh },
+      {
+        refresh,
+      },
     );
 
     for (const device of devices) {
@@ -147,7 +152,7 @@ export class PayloadService extends BaseService {
         uuid,
       );
     } catch (error) {
-      this.app.log.error(
+      this.logger.error(
         `Cannot save the payload from "${deviceModel}": ${error}`,
       );
     }
@@ -202,10 +207,8 @@ export class PayloadService extends BaseService {
         });
         updatedDevices.push(...newDevices);
       } else {
-        this.app.log.info(
-          `Skipping new devices "${errors.join(
-            ", ",
-          )}". Auto-provisioning is disabled.`,
+        this.logger.info(
+          `Skipping new devices "${errors.join(", ")}". Auto-provisioning is disabled.`,
         );
       }
     }
@@ -248,7 +251,7 @@ export class PayloadService extends BaseService {
       );
 
     for (const error of errors) {
-      this.app.log.error(
+      this.logger.error(
         `Cannot create device "${error.document._id}": ${error.reason}`,
       );
     }
@@ -283,7 +286,9 @@ export class PayloadService extends BaseService {
     const deleted = await this.sdk.bulk.deleteByQuery(
       this.config.adminIndex,
       "payloads",
-      { query: { bool: { filter } } },
+      {
+        query: { bool: { filter } },
+      },
     );
 
     return deleted;

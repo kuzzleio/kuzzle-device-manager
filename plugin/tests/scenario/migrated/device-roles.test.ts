@@ -1,12 +1,10 @@
-import { beforeEachTruncateCollections } from "../../hooks/collections";
-import { beforeAllCreateEngines } from "../../hooks/engines";
-import { beforeEachLoadFixtures } from "../../hooks/fixtures";
+import { beforeEachTruncateCollections } from '../../hooks/collections';
+import { beforeAllCreateEngines } from '../../hooks/engines';
+import { beforeEachLoadFixtures } from '../../hooks/fixtures';
 
-import { useSdk, sendPayloads } from "../../helpers";
+import { useSdk, sendPayloads } from '../../helpers';
 
-jest.setTimeout(10000);
-
-describe("features/Device/Roles", () => {
+describe('features/Device/Roles', () => {
   const sdk = useSdk();
 
   beforeAll(async () => {
@@ -23,22 +21,20 @@ describe("features/Device/Roles", () => {
     sdk.disconnect();
   });
 
-  it("Find default devices roles", async () => {
+  it('Find default devices roles', async () => {
     let response;
     let promise;
 
-    await expect(sdk.security.getRole("devices.reader")).resolves.toMatchObject(
-      {
-        controllers: {
-          "device-manager/devices": { actions: { get: true, search: true } },
-          "device-manager/models": { actions: { listDevices: true } },
-        },
-      },
-    );
-
-    await expect(sdk.security.getRole("devices.admin")).resolves.toMatchObject({
+    await expect(sdk.security.getRole('devices.reader')).resolves.toMatchObject({
       controllers: {
-        "device-manager/devices": {
+        'device-manager/devices': { actions: { get: true, search: true } },
+        'device-manager/models': { actions: { listDevices: true } },
+      },
+    });
+
+    await expect(sdk.security.getRole('devices.admin')).resolves.toMatchObject({
+      controllers: {
+        'device-manager/devices': {
           actions: {
             attachEngine: true,
             create: true,
@@ -52,18 +48,16 @@ describe("features/Device/Roles", () => {
             exportMeasures: true,
           },
         },
-        "device-manager/models": {
+        'device-manager/models': {
           actions: { listDevices: true, writeDevice: true, deleteDevice: true },
         },
       },
     });
 
-    await expect(
-      sdk.security.getRole("devices.platform-admin"),
-    ).resolves.toMatchObject({
+    await expect(sdk.security.getRole('devices.platform-admin')).resolves.toMatchObject({
       controllers: {
-        "device-manager/devices": { actions: { "*": true } },
-        "device-manager/models": {
+        'device-manager/devices': { actions: { '*': true } },
+        'device-manager/models': {
           actions: { listDevices: true, writeDevice: true, deleteDevice: true },
         },
       },

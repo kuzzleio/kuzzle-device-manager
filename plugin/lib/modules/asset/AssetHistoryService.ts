@@ -9,11 +9,13 @@ import {
   AssetHistoryContent,
   AssetHistoryEvent,
 } from "./types/AssetHistoryContent";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class AssetHistoryService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, assetLogger: KuzzleLogger) {
     super(plugin);
-
+    this.logger = assetLogger;
     onAsk<AskAssetHistoryAdd<AssetHistoryEvent>>(
       "ask:device-manager:asset:history:add",
       async ({ engineId, histories }) => this.add(engineId, histories),
