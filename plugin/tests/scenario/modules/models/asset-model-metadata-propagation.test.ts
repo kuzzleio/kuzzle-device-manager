@@ -12,8 +12,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
-
 describe("Asset model metadata propagation", () => {
   const sdk = setupHooks();
 

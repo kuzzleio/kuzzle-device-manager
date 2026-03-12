@@ -36,10 +36,13 @@ import { apiSourceToOriginApi, toDeviceSource } from "./MeasureSourcesBuilder";
 import { AskModelAssetGet } from "../model";
 import { ApiMeasureTarget, isTargetApi } from "./types/MeasureTarget";
 import { toDeviceTarget } from "./MeasureTargetBuilder";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class MeasureService extends BaseService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
+    this.logger = logger;
 
     onAsk<AskMeasureSourceIngest>(
       "device-manager:measures:sourceIngest",
@@ -97,7 +100,7 @@ export class MeasureService extends BaseService {
     const { indexId, assetId } = target;
 
     if (!measurements) {
-      this.app.log.warn(
+      this.logger.warn(
         `No measurements provided for "${dataSourceId}" API measures ingest`,
       );
       return;
@@ -232,7 +235,7 @@ export class MeasureService extends BaseService {
   ) {
     await lock(`measure:ingest:${device._id}`, async () => {
       if (!measurements) {
-        this.app.log.warn(
+        this.logger.warn(
           `Cannot find measurements for device "${device._source.reference}"`,
         );
         return;
@@ -283,7 +286,11 @@ export class MeasureService extends BaseService {
        */
       await this.app.trigger<EventMeasureProcessBefore>(
         "device-manager:measures:process:before",
-        { asset, device, measures },
+        {
+          asset,
+          device,
+          measures,
+        },
       );
 
       if (engineId) {
@@ -698,7 +705,7 @@ export class MeasureService extends BaseService {
 
       return asset;
     } catch (error) {
-      this.app.log.error(`[${engineId}] Cannot find asset "${assetId}".`);
+      this.logger.error(`[${engineId}] Cannot find asset "${assetId}".`);
 
       return null;
     }

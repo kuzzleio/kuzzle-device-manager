@@ -6,8 +6,6 @@ import {
   ApiDeviceGetMeasuresResult,
 } from "lib/modules/device";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:GetMeasures", () => {
   const sdk = setupHooks();
 

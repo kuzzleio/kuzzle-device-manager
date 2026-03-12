@@ -7,8 +7,6 @@ import { ApiDeviceExportMeasuresRequest } from "../../../../index";
 import { sendPayloads, setupHooks } from "../../../helpers";
 import { loadSecurityDefault } from "../../../hooks/security";
 
-jest.setTimeout(10000);
-
 describe("DevicesController:exportMeasures", () => {
   const sdk: Kuzzle = setupHooks();
 

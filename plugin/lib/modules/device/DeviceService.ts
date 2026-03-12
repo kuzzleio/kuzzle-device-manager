@@ -31,12 +31,15 @@ import {
   EventDeviceUpdateBefore,
 } from "./types/DeviceEvents";
 import _ from "lodash";
+import { KuzzleLogger } from "kuzzle-logger";
 
 type MeasureName = { asset: string; device: string; type: string };
 
 export class DeviceService extends DigitalTwinService {
-  constructor(plugin: DeviceManagerPlugin) {
+  readonly logger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin, InternalCollection.DEVICES);
+    this.logger = logger;
   }
 
   override registerAskEvents() {

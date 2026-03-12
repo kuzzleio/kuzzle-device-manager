@@ -3,8 +3,6 @@ import { beforeEachTruncateCollections } from "../../../hooks/collections";
 import { beforeAllCreateEngines } from "../../../hooks/engines";
 import { beforeEachLoadFixtures } from "../../../hooks/fixtures";
 
-jest.setTimeout(20000);
-
 describe("AssetsController:migrateTenant", () => {
   const sdk = useSdk();
 

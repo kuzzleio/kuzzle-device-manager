@@ -241,7 +241,6 @@ export class DeviceManagerPlugin extends Plugin {
        */
       registerDevice: (model: string, definition: DeviceModelDefinition) => {
         this.decodersRegister.register(definition.decoder);
-        definition.decoder.log = this.context?.log;
 
         this.modelsRegister.registerDevice(
           model,
@@ -432,10 +431,6 @@ export class DeviceManagerPlugin extends Plugin {
   async init(config: JSONObject, context: PluginContext) {
     this.config = _.merge({}, this.config, config);
     this.context = context;
-
-    for (const decoder of this.decodersRegister.decoders) {
-      decoder.log = this.context.log;
-    }
 
     // Modules creation
     this.assetModule = new AssetModule(this);

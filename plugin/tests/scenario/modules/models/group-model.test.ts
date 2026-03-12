@@ -6,8 +6,6 @@ import {
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
-jest.setTimeout(20000);
-
 describe("ModelsController:groups", () => {
   const sdk = setupHooks();
 

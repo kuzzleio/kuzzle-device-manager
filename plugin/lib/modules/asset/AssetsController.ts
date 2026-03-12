@@ -44,16 +44,20 @@ import {
 } from "../measure/MeasureValidationError";
 import { AskModelAssetGet } from "../model";
 import { AssetContent } from "./exports";
+import { KuzzleLogger } from "kuzzle-logger";
 
 export class AssetsController {
   public definition: ControllerDefinition;
   private exporter: DigitalTwinExporter;
   private measureExporter: MeasureExporter;
+  readonly logger: KuzzleLogger;
 
   constructor(
     private plugin: DeviceManagerPlugin,
     private assetService: AssetService,
+    assetlogger: KuzzleLogger,
   ) {
+    this.logger = assetlogger;
     /* eslint-disable sort-keys */
     this.definition = {
       actions: {
@@ -485,9 +489,20 @@ export class AssetsController {
     }
     const engine = await this.assetService.getEngine(indexId);
     const measurements = rawMeasurements.map((elt) => {
+      const measuredAt =
+        typeof elt.measuredAt === "string"
+          ? new Date(elt.measuredAt).getTime()
+          : elt.measuredAt;
+
+      if (Number.isNaN(measuredAt)) {
+        throw new BadRequestError(
+          "Invalid value for measuredAt. Expected ISO 8601 string or EpochMS number.",
+        );
+      }
+
       return {
         measureName: elt.slotName,
-        measuredAt: elt.measuredAt,
+        measuredAt,
         type: elt.type,
         values: elt.values,
       };
@@ -547,7 +562,25 @@ export class AssetsController {
     }
     const engine = await this.assetService.getEngine(indexId);
 
-    const measuredAt = request.getBodyNumber("measuredAt");
+    let measuredAt: number = 0;
+
+    try {
+      const dateAsString = request.getBodyString("measuredAt");
+      measuredAt = new Date(dateAsString).getTime();
+    } catch (error) {
+      if (!(error instanceof BadRequestError)) {
+        throw error;
+      }
+
+      measuredAt = request.getBodyNumber("measuredAt");
+    }
+
+    if (Number.isNaN(measuredAt)) {
+      throw new BadRequestError(
+        "Invalid value for measuredAt. Expected ISO 8601 string or EpochMS number.",
+      );
+    }
+
     const values = request.getBodyObject("values");
     const type = await this.getTypeFromMeasureSlot(
       indexId,

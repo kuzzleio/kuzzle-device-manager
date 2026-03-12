@@ -10,6 +10,8 @@ import { RoleAssetsGroupsAdmin } from "./roles/RoleAssetsGroupsAdmin";
 import { RoleAssetsGroupsReader } from "./roles/RoleAssetsGroupsReader";
 import * as specificRoles from "./roles/specificRoles";
 import { AssetsGroupsService } from "./AssetsGroupsService";
+import { KuzzleLogger } from "kuzzle-logger";
+import { DeviceManagerPlugin } from "../plugin";
 
 export class AssetModule extends Module {
   private assetService: AssetService;
@@ -17,15 +19,39 @@ export class AssetModule extends Module {
   private assetController: AssetsController;
   private assetGroupsController: AssetsGroupsController;
   private assetsGroupsService: AssetsGroupsService;
+  private logger: KuzzleLogger;
+  private assetsGroupsLogger: KuzzleLogger;
+  constructor(plugin: DeviceManagerPlugin) {
+    super(plugin);
+    this.logger = this.plugin.context.logger.child("assets-module");
+    this.assetsGroupsLogger = this.plugin.context.logger.child(
+      "assetsGroups-module",
+    );
+  }
 
   public async init(): Promise<void> {
-    this.assetHistoryService = new AssetHistoryService(this.plugin);
-    this.assetService = new AssetService(this.plugin, this.assetHistoryService);
-    this.assetController = new AssetsController(this.plugin, this.assetService);
-    this.assetsGroupsService = new AssetsGroupsService(this.plugin);
+    this.assetHistoryService = new AssetHistoryService(
+      this.plugin,
+      this.logger,
+    );
+    this.assetService = new AssetService(
+      this.plugin,
+      this.assetHistoryService,
+      this.logger,
+    );
+    this.assetController = new AssetsController(
+      this.plugin,
+      this.assetService,
+      this.logger,
+    );
+    this.assetsGroupsService = new AssetsGroupsService(
+      this.plugin,
+      this.assetsGroupsLogger,
+    );
     this.assetGroupsController = new AssetsGroupsController(
       this.plugin,
       this.assetsGroupsService,
+      this.assetsGroupsLogger,
     );
 
     this.plugin.api["device-manager/assetsGroup"] =
