@@ -1,3 +1,12 @@
+## 2.11.0 (2026-03-12)
+
+* Merge branch '2-dev' into beta ([1c923ea](https://github.com/kuzzleio/kuzzle-device-manager/commit/1c923ea))
+* Merge branch 'beta' ([dc04df0](https://github.com/kuzzleio/kuzzle-device-manager/commit/dc04df0))
+* chore(release): 2.11.0-beta.1 [skip ci] ([6a608e4](https://github.com/kuzzleio/kuzzle-device-manager/commit/6a608e4))
+* chore(release): 2.11.0-dev.1 [skip ci] ([b5e420e](https://github.com/kuzzleio/kuzzle-device-manager/commit/b5e420e))
+* feat(assets): support iso string for field measuredAt (#465) ([5a6fd45](https://github.com/kuzzleio/kuzzle-device-manager/commit/5a6fd45)), closes [#465](https://github.com/kuzzleio/kuzzle-device-manager/issues/465)
+* feat(logger): add module scopped logger (#464) ([eee07e4](https://github.com/kuzzleio/kuzzle-device-manager/commit/eee07e4)), closes [#464](https://github.com/kuzzleio/kuzzle-device-manager/issues/464)
+
 ## <small>2.10.2 (2026-03-09)</small>
 
 * Merge branch '2-dev' into beta ([1b10ca1](https://github.com/kuzzleio/kuzzle-device-manager/commit/1b10ca1))
