@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 jobs:
   release-branch:
-    if: ${{ github.ref_name == 'beta' || github.ref_name == '2-dev' }}
+    if: ${{ github.ref_name == '2-beta' || github.ref_name == '2-dev' }}
     name: Release to master
     runs-on: ubuntu-24.04
     permissions:
