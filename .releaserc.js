@@ -1,9 +1,9 @@
 module.exports = {
-  extends: ['semantic-release-config-kuzzle'],
+  extends: ["semantic-release-config-kuzzle"],
   branches: [
-    { name: 'master' },
-    { name: 'beta', prerelease: true },
-    { name: '2-dev', prerelease: 'dev' },
-    { name: 'next', prerelease: true },
+    { name: "2-stable" },
+    { name: "2-beta", prerelease: true },
+    { name: "2-dev", prerelease: "dev" },
+    { name: "3-dev", prerelease: true },
   ],
 };
