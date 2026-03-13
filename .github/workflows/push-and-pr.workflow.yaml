@@ -121,5 +121,5 @@ jobs:
           repo: documentation
           github_token: ${{ secrets.ACCESS_TOKEN_CI }}
           workflow_file_name: child_repo.workflow.yml
-          ref: ${{ github.ref_name == '2-stable' && '2-stable' || '2-dev' }}
+          ref: ${{ github.ref_name == '2-stable' && 'master' || 'develop' }}
           client_payload: '{"repo_name":"${{ steps.extract-refs.outputs.repo }}","branch":"${{ github.ref_name }}","version":"${{ steps.extract-refs.outputs.major-version }}"}'
