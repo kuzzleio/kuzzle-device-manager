@@ -28,7 +28,7 @@ jobs:
       - run: npm install
       - name: Create SBOM with CycloneDX
         run: npx @cyclonedx/cyclonedx-npm -o bom.xml --of=XML
-      
+
       - name: Get the current project version from package.json
         id: get-version
         run: |
@@ -39,7 +39,7 @@ jobs:
         with:
           serverhostname: ${{ secrets.DEPENDENCYTRACK_HOSTNAME }}
           apikey: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
-          projectname: 'Kuzzle Device Manager plugin'
-          projectversion: '${{ steps.get-version.outputs.version }}'
+          projectname: "Kuzzle Device Manager plugin"
+          projectversion: "${{ steps.get-version.outputs.version }}"
           bomfilename: "./bom.xml"
           autocreate: true
