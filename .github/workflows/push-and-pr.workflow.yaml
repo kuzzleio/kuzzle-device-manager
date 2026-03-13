@@ -3,10 +3,9 @@ name: Push and PR
 on:
   push:
     branches:
-      - master
-      - beta
-      - next
-      - "[0-9]+-dev"
+      - '[0-9]+-dev'
+      - '[0-9]+-beta'
+      - '[0-9]+-stable'
   pull_request:
 
 jobs:
@@ -15,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        node-version: ["20", "22", "24"]
+        node-version: ['20', '22', '24']
     steps:
       - uses: actions/checkout@v4
 
@@ -33,7 +32,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        node-version: ["20", "22", "24"]
+        node-version: ['20', '22', '24']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,7 +48,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        node-version: ["24"]
+        node-version: ['24']
     needs: [lint, check-types]
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +73,7 @@ jobs:
   release-device-manager:
     name: Release package
     runs-on: ubuntu-24.04
-    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/next' || github.ref == 'refs/heads/2-dev') }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/2-stable' || github.ref == 'refs/heads/2-beta' || github.ref == 'refs/heads/3-dev' || github.ref == 'refs/heads/2-dev') }}
     needs: [functional-tests]
     permissions:
       contents: write
@@ -88,8 +87,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          registry-url: "https://registry.npmjs.org"
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm install
@@ -100,7 +99,7 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_GHP }}
-          SEMANTIC_RELEASE_NPM_PUBLISH: "true"
+          SEMANTIC_RELEASE_NPM_PUBLISH: 'true'
           SEMANTIC_RELEASE_SLACK_WEBHOOK: ${{ secrets.SEMANTIC_RELEASE_SLACK_WEBHOOK }}
         run: npx semantic-release
 
@@ -127,5 +126,5 @@ jobs:
           repo: documentation
           github_token: ${{ secrets.ACCESS_TOKEN_CI }}
           workflow_file_name: child_repo.workflow.yml
-          ref: ${{ github.ref_name == 'master' && 'master' || 'develop' }}
+          ref: ${{ github.ref_name == '2-stable' && '2-stable' || '2-dev' }}
           client_payload: '{"repo_name":"${{ steps.extract-refs.outputs.repo }}","branch":"${{ github.ref_name }}","version":"${{ steps.extract-refs.outputs.major-version }}"}'
