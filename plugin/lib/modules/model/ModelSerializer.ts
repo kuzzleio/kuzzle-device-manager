@@ -24,12 +24,28 @@ export class ModelSerializer {
     } else if (type === "device") {
       return `model-device-${ModelSerializer.title(type, model)}`;
     } else if (type === "group") {
+      const groupModel = model as GroupModelContent;
+      if (groupModel.engineGroups.length > 1) {
+        const sortedGroups = [...groupModel.engineGroups].sort().join("+");
+        return `model-group-${sortedGroups}-${ModelSerializer.title(type, model)}`;
+      }
       return `model-group-${ModelSerializer.title(type, model)}`;
     } else if (type === "measure") {
       const measureModel = model as MeasureModelContent;
       if (measureModel.engineIds?.length) {
         const sortedEngines = [...measureModel.engineIds].sort().join("+");
+        if (measureModel.engineGroups?.length) {
+          const sortedGroups = [...measureModel.engineGroups].sort().join("+");
+          return `model-measure-${sortedGroups}-${sortedEngines}-${ModelSerializer.title(type, model)}`;
+        }
         return `model-measure-${sortedEngines}-${ModelSerializer.title(type, model)}`;
+      }
+      if (
+        measureModel.engineGroups?.length &&
+        measureModel.engineGroups.length > 1
+      ) {
+        const sortedGroups = [...measureModel.engineGroups].sort().join("+");
+        return `model-measure-${sortedGroups}-${ModelSerializer.title(type, model)}`;
       }
       return `model-measure-${ModelSerializer.title(type, model)}`;
     }

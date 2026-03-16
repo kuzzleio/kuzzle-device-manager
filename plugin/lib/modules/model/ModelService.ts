@@ -329,6 +329,74 @@ export class ModelService extends BaseService {
       ? ["commons"]
       : engineGroups;
 
+    // Anti-shadowing: reject if a model with the same name exists at a different scope level
+    const isGlobal =
+      normalizedEngineGroups.includes("commons") &&
+      (!engineIds || engineIds.length === 0);
+    const isTenantScoped = engineIds && engineIds.length > 0;
+    const isGroupScoped = !isGlobal && !isTenantScoped;
+
+    await this.sdk.collection.refresh(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+    );
+    const existing = await this.sdk.document.search(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      {
+        query: {
+          bool: {
+            must: [
+              { term: { type: "asset" } },
+              { term: { "asset.model": model } },
+            ],
+          },
+        },
+      },
+      { size: 10 },
+    );
+    for (const hit of existing.hits) {
+      const doc = hit._source as AssetModelContent;
+      const docIsGlobal =
+        doc.engineGroups?.includes("commons") &&
+        (!doc.engineIds || doc.engineIds.length === 0);
+      const docIsTenantScoped = doc.engineIds && doc.engineIds.length > 0;
+      const docIsGroupScoped = !docIsGlobal && !docIsTenantScoped;
+
+      // Same scope level: allow overwrite
+      if (isGlobal && docIsGlobal) {
+        continue;
+      }
+      if (isTenantScoped && docIsTenantScoped) {
+        continue;
+      }
+      if (isGroupScoped && docIsGroupScoped) {
+        continue;
+      }
+
+      // Different scope levels: reject
+      if (docIsGlobal) {
+        throw new BadRequestError(
+          `Asset model "${model}" already exists as a global (commons) model. A model cannot exist at multiple scopes.`,
+        );
+      }
+      if (isGlobal) {
+        throw new BadRequestError(
+          `Asset model "${model}" already exists at a non-global scope. A model cannot exist at multiple scopes.`,
+        );
+      }
+      if (isTenantScoped && docIsGroupScoped) {
+        throw new BadRequestError(
+          `Asset model "${model}" already exists at group scope. A model cannot be both group-scoped and tenant-scoped.`,
+        );
+      }
+      if (isGroupScoped && docIsTenantScoped) {
+        throw new BadRequestError(
+          `Asset model "${model}" already exists at tenant scope. A model cannot be both group-scoped and tenant-scoped.`,
+        );
+      }
+    }
+
     const modelContent: AssetModelContent = {
       asset: {
         defaultMetadata,
@@ -461,10 +529,8 @@ export class ModelService extends BaseService {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
     }
-    if (engineGroups.length !== 1) {
-      throw new BadRequestError(
-        `Group model "${model}" must belong to exactly one engine group.`,
-      );
+    if (engineGroups.includes("commons")) {
+      engineGroups = ["commons"];
     }
 
     const groupAffinity = this.checkGroupAffinity(affinity);
@@ -1107,6 +1173,7 @@ export class ModelService extends BaseService {
    */
   async updateAsset(
     engineGroups: string[],
+    engineId: string | undefined,
     model: string,
     metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
@@ -1123,14 +1190,20 @@ export class ModelService extends BaseService {
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
-    const existingAsset = await this.getAsset(engineGroups, undefined, model);
+    const existingAsset = await this.getAsset(engineGroups, engineId, model);
 
     // The field must be deleted if an element of the table is to be deleted
     await this.sdk.document.deleteFields(
       this.config.platformIndex,
       InternalCollection.MODELS,
       existingAsset._id,
-      ["asset.tooltipModels"],
+      [
+        "asset.tooltipModels",
+        "asset.metadataMappings",
+        "asset.defaultMetadata",
+        "asset.metadataDetails",
+        "asset.metadataGroups",
+      ],
       { source: true },
     );
 
@@ -1153,6 +1226,7 @@ export class ModelService extends BaseService {
         tooltipModels,
       },
       engineGroups: normalizedEngineGroups,
+      engineIds: existingAsset._source.engineIds,
       type: "asset",
     };
     const assetModel = {

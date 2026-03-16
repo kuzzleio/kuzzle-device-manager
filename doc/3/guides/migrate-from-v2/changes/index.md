@@ -176,7 +176,7 @@ The `models` collection in the platform index has two new fields for scoping:
 - `engineGroups` (replaces former `engineGroup`): An array of tenant group names. Determines which tenant groups can access the model. The value `["commons"]` makes the model globally available.
 - `engineIds` (optional): An array of tenant engine IDs. When present, scopes the model to specific tenants within the `engineGroups`.
 
-These fields affect asset and measure model documents. Group models must always have exactly one `engineGroups` entry.
+These fields affect asset, measure, and group model documents. All three model types support multi-group scoping via `engineGroups`.
 
 #### Model document ID format
 
@@ -193,7 +193,16 @@ Measure model document IDs:
 | Scope | Format | Example |
 |-------|--------|---------|
 | Global | `model-measure-{type}` | `model-measure-temperature` |
-| Tenant-scoped | `model-measure-{sortedEngineIds}-{type}` | `model-measure-engine-ayse-temperature` |
+| Multi-group | `model-measure-{sortedGroups}-{type}` | `model-measure-air_quality+public_lighting-temperature` |
+| Tenant-scoped | `model-measure-{sortedGroups}-{sortedEngineIds}-{type}` | `model-measure-air_quality-engine-ayse-temperature` |
+| Tenant-scoped (no groups) | `model-measure-{sortedEngineIds}-{type}` | `model-measure-engine-ayse-temperature` |
+
+Group model document IDs:
+
+| Scope | Format | Example |
+|-------|--------|---------|
+| Single group | `model-group-{ModelName}` | `model-group-TruckFleet` |
+| Multi-group | `model-group-{sortedGroups}-{ModelName}` | `model-group-air_quality+public_lighting-TruckFleet` |
 
 ## Api
 
@@ -267,25 +276,23 @@ Asset models now support three scoping levels. When resolving a model with `getA
 2. **Group-scoped**: Model matching the `engineGroups` but without `engineIds`
 3. **Global (commons)**: Model with `engineGroups: ["commons"]` and no `engineIds`
 
-The same model name can exist at different scopes with distinct document IDs. The most specific scope wins.
+Anti-shadowing enforcement: a model name (for assets) or measure type (for measures) cannot exist at different scope levels simultaneously. For example, creating a tenant-scoped model when a global model with the same name already exists is rejected. This prevents accidental shadowing of global models by local ones.
 
 `listAssets` and `searchAssets` accept an optional `engineId` parameter. When provided, they return tenant-scoped + group-scoped + commons models. When omitted, they return only group-scoped + commons models.
 
-#### Multi-group asset models
+#### Multi-group models
 
-An asset model can now belong to multiple tenant groups (e.g. `engineGroups: ["air_quality", "public_lighting"]`). A model listed with any of its groups will include it in results.
+Asset, group, and measure models can belong to multiple tenant groups (e.g. `engineGroups: ["air_quality", "public_lighting"]`). A model listed with any of its groups will include it in results.
 
-Commons normalization: if `engineGroups` contains `"commons"`, the array is normalized to `["commons"]` (the model becomes global).
+Commons normalization applies to all model types: if `engineGroups` contains `"commons"`, the array is normalized to `["commons"]` (the model becomes global).
 
-Group models are restricted to exactly one group — `writeGroup` rejects `engineGroups` with more than one entry.
+#### Measure model scoping
 
-#### Tenant-scoped measure models
+Measure models now accept the same scoping parameters as asset models:
 
-Measure models now accept optional scoping parameters:
-
-- `writeMeasure` accepts an optional `engineIds` body parameter to scope a measure type to specific tenants.
+- `writeMeasure` accepts optional `engineGroups` (string array) and `engineIds` (string array) body parameters.
 - `getMeasure`, `listMeasures`, and `searchMeasures` accept an optional `engineId` query parameter.
 
 When `engineId` is provided, `getMeasure` returns the tenant-scoped measure first, falling back to the global one. When omitted, only global measures are returned (backward compatible).
 
-Anti-shadowing: a measure type cannot exist as both global and tenant-scoped. Attempting to create a tenant-scoped measure when a global one of the same type exists (or vice versa) is rejected.
+Anti-shadowing applies to measures as well: a measure type cannot exist at different scope levels (global vs group-scoped vs tenant-scoped).

@@ -7,6 +7,7 @@ import { MeasureDefinition } from "../../measure";
 export interface MeasureModelContent extends KDocumentContent {
   type: "measure";
 
+  engineGroups?: string[];
   engineIds?: string[];
 
   measure: MeasureDefinition & {
