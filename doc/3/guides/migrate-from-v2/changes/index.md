@@ -266,7 +266,8 @@ If set to true, the devices linked to the asset will be unlinked from their pote
 The following parameter changes apply to all asset and group model operations (`writeAsset`, `updateAsset`, `getAsset`, `listAssets`, `searchAssets`, `writeGroup`, `listGroups`, `searchGroups`):
 
 - `engineGroup` (string) has been replaced by `engineGroups` (string array). This enables sharing an asset model across multiple tenant groups.
-- `engineIds` (string array, optional) has been added to `writeAsset` and `updateAsset` body. When provided, the model is scoped to specific tenant engines within the specified groups.
+- `engineIds` (string array, optional) has been added to the `writeAsset` body. When provided, the model is scoped to specific tenant engines within the specified groups.
+- `updateAsset` accepts an optional `engineId` (singular string) query parameter, used to locate the correct tenant-scoped model for updating. The model's `engineIds` are immutable — they are preserved from the original document and cannot be changed via `updateAsset`.
 
 #### Asset model scoping — 3-level fallback
 
@@ -290,7 +291,7 @@ Commons normalization applies to all model types: if `engineGroups` contains `"c
 
 Measure models now accept the same scoping parameters as asset models:
 
-- `writeMeasure` accepts optional `engineGroups` (string array) and `engineIds` (string array) body parameters.
+- `writeMeasure` accepts an optional `engineIds` (string array) body parameter to scope a measure model to specific tenants.
 - `getMeasure`, `listMeasures`, and `searchMeasures` accept an optional `engineId` query parameter.
 
 When `engineId` is provided, `getMeasure` returns the tenant-scoped measure first, falling back to the global one. When omitted, only global measures are returned (backward compatible).
