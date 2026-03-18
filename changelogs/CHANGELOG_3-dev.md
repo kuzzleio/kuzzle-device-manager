@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.3 (2026-03-18)
+
+* fix(ci): revert ref for documentation deployment ([57f4765](https://github.com/kuzzleio/kuzzle-device-manager/commit/57f4765))
+
 ## 3.0.0-3-dev.2 (2026-03-18)
 
 * fix(ci): fix deployment of documentation ([ba1ec0b](https://github.com/kuzzleio/kuzzle-device-manager/commit/ba1ec0b))
