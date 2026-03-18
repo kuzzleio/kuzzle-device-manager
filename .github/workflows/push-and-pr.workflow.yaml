@@ -107,7 +107,6 @@ jobs:
     needs: [release-device-manager]
     name: Documentation - Deploy
     runs-on: ubuntu-24.04
-    if: ${{github.ref_name == '2-stable' || github.ref_name == '2-beta' || github.ref_name == '3-dev'}}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -127,5 +126,5 @@ jobs:
           repo: documentation
           github_token: ${{ secrets.ACCESS_TOKEN_CI }}
           workflow_file_name: child_repo.workflow.yml
-          ref: ${{ github.ref_name}}
+          ref: ${{ github.ref_name == '2-stable' && 'master' || 'develop' }}
           client_payload: '{"repo_name":"${{ steps.extract-refs.outputs.repo }}","branch":"${{ github.ref_name }}","version":"${{ steps.extract-refs.outputs.major-version }}"}'
