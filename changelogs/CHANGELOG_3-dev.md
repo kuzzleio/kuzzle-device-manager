@@ -1,3 +1,8 @@
+## 3.0.0-3-dev.2 (2026-03-18)
+
+* fix(ci): fix deployment of documentation ([ba1ec0b](https://github.com/kuzzleio/kuzzle-device-manager/commit/ba1ec0b))
+* Feat(assets): 1158 asset model UI management (#466) ([619e7cf](https://github.com/kuzzleio/kuzzle-device-manager/commit/619e7cf)), closes [#466](https://github.com/kuzzleio/kuzzle-device-manager/issues/466)
+
 ## 3.0.0-3-dev.1 (2026-03-13)
 
 * chore: configure next branch ([2c77332](https://github.com/kuzzleio/kuzzle-device-manager/commit/2c77332))
