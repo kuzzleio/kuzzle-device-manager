@@ -511,21 +511,52 @@ describe("ModelsController:groups", () => {
     );
   });
 
-  it("Should reject group model with multiple engineGroups", async () => {
-    const multiGroup = sdk.query<ApiModelWriteGroupRequest>({
+  it("Should accept group model with multiple engineGroups", async () => {
+    await sdk.query<ApiModelWriteGroupRequest>({
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
         affinity: { type: ["assets"], models: { assets: [] }, strict: false },
-        engineGroups: ["air_quality", "public_lighting"],
-        model: "MultiGroupReject",
+        engineGroups: ["air_quality", "asset_tracking"],
+        model: "MultiGroupAccepted",
         metadataMappings: {},
         metadataDetails: {},
       },
     });
 
-    await expect(multiGroup).rejects.toThrow(
-      'Group model "MultiGroupReject" must belong to exactly one engine group.',
+    const groupModel = await sdk.document.get(
+      "device-manager",
+      "models",
+      "model-group-air_quality+asset_tracking-MultiGroupAccepted",
     );
+    expect(groupModel._source).toMatchObject({
+      type: "group",
+      engineGroups: ["air_quality", "asset_tracking"],
+      group: { model: "MultiGroupAccepted" },
+    });
+  });
+
+  it("Should normalize commons for group models", async () => {
+    await sdk.query<ApiModelWriteGroupRequest>({
+      controller: "device-manager/models",
+      action: "writeGroup",
+      body: {
+        affinity: { type: ["assets"], models: { assets: [] }, strict: false },
+        engineGroups: ["commons", "air_quality"],
+        model: "CommonsNormGroup",
+        metadataMappings: {},
+        metadataDetails: {},
+      },
+    });
+
+    const groupModel = await sdk.document.get(
+      "device-manager",
+      "models",
+      "model-group-CommonsNormGroup",
+    );
+    expect(groupModel._source).toMatchObject({
+      type: "group",
+      engineGroups: ["commons"],
+    });
   });
 });

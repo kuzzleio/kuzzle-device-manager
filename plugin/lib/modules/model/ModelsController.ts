@@ -390,6 +390,7 @@ export class ModelsController {
     request: KuzzleRequest,
   ): Promise<ApiModelUpdateAssetResult> {
     const engineGroups = request.getArray("engineGroups", []) || ["commons"];
+    const engineId = request.input.args.engineId as string | undefined;
     const model = request.getString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
@@ -401,6 +402,7 @@ export class ModelsController {
 
     const updatedAssetModel = await this.modelService.updateAsset(
       engineGroups,
+      engineId,
       model,
       metadataMappings,
       defaultValues,

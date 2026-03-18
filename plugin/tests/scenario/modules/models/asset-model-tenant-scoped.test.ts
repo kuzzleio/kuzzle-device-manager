@@ -63,7 +63,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(doc._source).not.toHaveProperty("engineIds");
   });
 
-  it("Same model name at tenant and group scope coexist with distinct IDs", async () => {
+  it("Same model name at tenant and group scope is rejected (anti-shadowing)", async () => {
     // Group-scoped model
     await sdk.query({
       controller: "device-manager/models",
@@ -76,34 +76,22 @@ describe("ModelsController:assets:tenant-scoped", () => {
       },
     });
 
-    // Tenant-scoped model with same name
-    await sdk.query({
-      controller: "device-manager/models",
-      action: "writeAsset",
-      body: {
-        engineGroups: ["air_quality"],
-        model: "DualScope",
-        metadataMappings: { version: { type: "keyword" } },
-        measures: [],
-        engineIds: ["engine-ayse"],
-      },
-    });
+    await sdk.collection.refresh("device-manager", "models");
 
-    const groupDoc = await sdk.document.get(
-      "device-manager",
-      "models",
-      "model-asset-DualScope",
-    );
-    const tenantDoc = await sdk.document.get(
-      "device-manager",
-      "models",
-      "model-asset-air_quality-engine-ayse-DualScope",
-    );
-
-    expect(groupDoc._id).toBe("model-asset-DualScope");
-    expect(tenantDoc._id).toBe("model-asset-air_quality-engine-ayse-DualScope");
-    expect(groupDoc._source).not.toHaveProperty("engineIds");
-    expect(tenantDoc._source.engineIds).toEqual(["engine-ayse"]);
+    // Tenant-scoped model with same name should be rejected
+    await expect(
+      sdk.query({
+        controller: "device-manager/models",
+        action: "writeAsset",
+        body: {
+          engineGroups: ["air_quality"],
+          model: "DualScope",
+          metadataMappings: { version: { type: "keyword" } },
+          measures: [],
+          engineIds: ["engine-ayse"],
+        },
+      }),
+    ).rejects.toThrow(/already exists at group scope/);
   });
 
   it("List returns tenant + group + commons models", async () => {
@@ -154,27 +142,13 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(ids).not.toContain("model-asset-air_quality-engine-ayse-TenantOnly");
   });
 
-  it("getAsset returns tenant-scoped model over group-scoped when both exist", async () => {
-    // Group-scoped model
+  it("getAsset with engineId returns the tenant-scoped model", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
         engineGroups: ["air_quality"],
-        model: "Priority",
-        metadataMappings: { scope: { type: "keyword" } },
-        defaultValues: { scope: "group" },
-        measures: [],
-      },
-    });
-
-    // Tenant-scoped model with same name
-    await sdk.query({
-      controller: "device-manager/models",
-      action: "writeAsset",
-      body: {
-        engineGroups: ["air_quality"],
-        model: "Priority",
+        model: "TenantGetTest",
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "tenant" },
         measures: [],
@@ -188,7 +162,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "getAsset",
       engineGroups: ["air_quality"],
-      model: "Priority",
+      model: "TenantGetTest",
       engineId: "engine-ayse",
     });
 

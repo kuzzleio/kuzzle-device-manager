@@ -50,6 +50,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
 
   body: {
     engineGroups: string[];
+    engineIds?: string[];
     model: string;
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
