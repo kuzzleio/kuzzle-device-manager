@@ -15,6 +15,7 @@ import { groupsMappings, AssetModule, assetsMappings } from "../asset";
 import {
   DecoderModule,
   DecodersRegister,
+  NamedActions,
   NamedMeasures,
   payloadsMappings,
 } from "../decoder";
@@ -246,6 +247,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.defaultMetadata,
           definition.metadataDetails,
           definition.metadataGroups,
+          definition.decoder.actions as NamedActions,
         );
       },
 
@@ -334,6 +336,41 @@ export class DeviceManagerPlugin extends Plugin {
        */
       registerMeasure: (name: string, measureDefinition: MeasureDefinition) => {
         this.modelsRegister.registerMeasure(name, measureDefinition);
+      },
+
+      /**
+       * Register a new action model
+       *
+       * @param name Name of the action type
+       * @param actionDefinition Action definition including argsSchema and locales
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerAction("temperatureSetpoint", {
+       *   argsSchema: {
+       *     type: "object",
+       *     properties: {
+       *       temperature: { type: "number" },
+       *     },
+       *     required: ["temperature"],
+       *   },
+       *   locales: {
+       *     en: { friendlyName: "Set temperature", description: "Set target temperature" },
+       *     fr: { friendlyName: "Régler température", description: "Définir la température cible" },
+       *   },
+       * });
+       * ```
+       */
+      registerAction: (
+        name: string,
+        actionDefinition: {
+          argsSchema?: JSONObject;
+          locales?: {
+            [locale: string]: { friendlyName: string; description: string };
+          };
+        } = {},
+      ) => {
+        this.modelsRegister.registerAction(name, actionDefinition);
       },
     };
   }

@@ -13,6 +13,23 @@ export const modelsMappings: CollectionMappings = {
     engineIds: { type: "keyword" },
 
     /**
+     * Action model
+     */
+    action: {
+      properties: {
+        type: { type: "keyword" },
+        argsSchema: {
+          dynamic: "false",
+          properties: {},
+        },
+        locales: {
+          dynamic: "false",
+          properties: {},
+        },
+      },
+    },
+
+    /**
      * Measure model
      */
     measure: {
@@ -65,6 +82,12 @@ export const modelsMappings: CollectionMappings = {
             name: { type: "keyword" },
           },
         },
+        actions: {
+          properties: {
+            type: { type: "keyword" },
+            name: { type: "keyword" },
+          },
+        },
         tooltipModels: {
           dynamic: "false",
           properties: {},
@@ -99,6 +122,12 @@ export const modelsMappings: CollectionMappings = {
           properties: {},
         },
         measures: {
+          properties: {
+            type: { type: "keyword" },
+            name: { type: "keyword" },
+          },
+        },
+        actions: {
           properties: {
             type: { type: "keyword" },
             name: { type: "keyword" },

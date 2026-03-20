@@ -5,10 +5,11 @@ import {
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
-import { NamedMeasures } from "../decoder";
+import { NamedActions, NamedMeasures } from "../decoder";
 import { MeasureDefinition } from "../measure";
 
 import {
+  ActionModelContent,
   AssetModelContent,
   DeviceModelContent,
   GroupAffinity,
@@ -35,6 +36,7 @@ export class ModelsRegister {
   private deviceModels: DeviceModelContent[] = [];
   private groupModels: GroupModelContent[] = [];
   private measureModels: MeasureModelContent[] = [];
+  private actionModels: ActionModelContent[] = [];
   private logger: KuzzleLogger;
 
   private get sdk() {
@@ -53,6 +55,7 @@ export class ModelsRegister {
       this.load("device", this.deviceModels),
       this.load("group", this.groupModels),
       this.load("measure", this.measureModels),
+      this.load("action", this.actionModels),
     ]);
 
     await this.sdk.collection.refresh(
@@ -136,6 +139,7 @@ export class ModelsRegister {
     defaultMetadata: JSONObject = {},
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
+    actions: NamedActions = [],
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -155,7 +159,7 @@ export class ModelsRegister {
     // Construct and push the new device model to the deviceModels array
     this.deviceModels.push({
       device: {
-        actions: [],
+        actions,
         defaultMetadata,
         measures,
         metadataDetails,
@@ -233,6 +237,23 @@ export class ModelsRegister {
         valuesMappings,
       },
       type: "measure",
+    });
+  }
+
+  registerAction(
+    type: string,
+    actionDefinition: {
+      argsSchema?: JSONObject;
+      locales?: { [locale: string]: LocaleDetails };
+    } = {},
+  ) {
+    this.actionModels.push({
+      action: {
+        argsSchema: actionDefinition.argsSchema,
+        locales: actionDefinition.locales,
+        type,
+      },
+      type: "action",
     });
   }
 
