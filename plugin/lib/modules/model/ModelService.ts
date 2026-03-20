@@ -22,6 +22,7 @@ import { AskAssetRefreshModel } from "../asset";
 import { BaseService, SearchParams, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
 import {
+  ActionModelContent,
   AssetModelContent,
   DeviceModelContent,
   GroupAffinity,
@@ -677,6 +678,151 @@ export class ModelService extends BaseService {
       this.config.platformIndex,
       InternalCollection.MODELS,
       _id,
+    );
+  }
+
+  async writeAction(
+    type: string,
+    argsSchema?: JSONObject,
+    locales?: { [valueName: string]: LocaleDetails },
+    engineIds?: string[],
+  ): Promise<KDocument<ActionModelContent>> {
+    const modelContent: ActionModelContent = {
+      action: {
+        argsSchema,
+        locales,
+        type,
+      },
+      type: "action",
+    };
+
+    if (engineIds?.length) {
+      modelContent.engineIds = engineIds;
+    }
+
+    const actionModel =
+      await this.sdk.document.createOrReplace<ActionModelContent>(
+        this.config.platformIndex,
+        InternalCollection.MODELS,
+        ModelSerializer.id<ActionModelContent>("action", modelContent),
+        modelContent,
+      );
+
+    await this.sdk.collection.refresh(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+    );
+
+    return actionModel;
+  }
+
+  async deleteAction(_id: string) {
+    await this.sdk.document.delete(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      _id,
+    );
+  }
+
+  async getAction(
+    type: string,
+    engineId?: string,
+  ): Promise<KDocument<ActionModelContent>> {
+    const baseFilter = [
+      { term: { type: "action" } },
+      { term: { "action.type": type } },
+    ];
+
+    const scopeFilter = engineId
+      ? {
+          bool: {
+            should: [
+              { term: { engineIds: engineId } },
+              { bool: { must_not: [{ exists: { field: "engineIds" } }] } },
+            ],
+          },
+        }
+      : {
+          bool: {
+            must_not: [{ exists: { field: "engineIds" } }],
+          },
+        };
+
+    const result = await this.sdk.document.search<ActionModelContent>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      {
+        query: {
+          bool: {
+            must: [...baseFilter, scopeFilter],
+          },
+        },
+      },
+      { lang: "elasticsearch", size: 1 },
+    );
+
+    if (result.total > 0) {
+      return result.hits[0];
+    }
+
+    throw new NotFoundError(`Unknown Action type "${type}".`);
+  }
+
+  async listActions(
+    engineId?: string,
+  ): Promise<KDocument<ActionModelContent>[]> {
+    const result = await this.searchActions(engineId, {
+      searchBody: {
+        sort: { "action.type": "asc" },
+      },
+      size: 5000,
+    });
+
+    return result.hits;
+  }
+
+  async searchActions(
+    engineId: string | undefined,
+    searchParams: Partial<SearchParams>,
+  ): Promise<SearchResult<KHit<ActionModelContent>>> {
+    const scopeFilter = engineId
+      ? {
+          bool: {
+            should: [
+              { term: { engineIds: engineId } },
+              { bool: { must_not: [{ exists: { field: "engineIds" } }] } },
+            ],
+          },
+        }
+      : {
+          bool: {
+            must_not: [{ exists: { field: "engineIds" } }],
+          },
+        };
+
+    const query = {
+      bool: {
+        must: [
+          searchParams.searchBody.query,
+          { term: { type: "action" } },
+          scopeFilter,
+        ].filter(Boolean),
+      },
+    };
+
+    return this.sdk.document.search<ActionModelContent>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      {
+        ...searchParams.searchBody,
+        query,
+      },
+      {
+        from: searchParams.from,
+        lang: "elasticsearch",
+        scroll: searchParams.scrollTTL,
+        size: searchParams.size,
+      },
     );
   }
 

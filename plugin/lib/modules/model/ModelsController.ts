@@ -5,19 +5,24 @@ import {
   ApiModelWriteAssetResult,
   ApiModelWriteDeviceResult,
   ApiModelWriteMeasureResult,
+  ApiModelWriteActionResult,
   ApiModelUpdateAssetResult,
   ApiModelDeleteAssetResult,
   ApiModelDeleteDeviceResult,
   ApiModelDeleteMeasureResult,
+  ApiModelDeleteActionResult,
   ApiModelListAssetsResult,
   ApiModelListDevicesResult,
   ApiModelListMeasuresResult,
+  ApiModelListActionsResult,
   ApiModelGetAssetResult,
   ApiModelGetDeviceResult,
   ApiModelGetMeasureResult,
+  ApiModelGetActionResult,
   ApiModelSearchAssetsResult,
   ApiModelSearchDevicesResult,
   ApiModelSearchMeasuresResult,
+  ApiModelSearchActionsResult,
   ApiModelDeleteGroupResult,
   ApiModelGetGroupResult,
   ApiModelListGroupsResult,
@@ -36,6 +41,10 @@ export class ModelsController {
     this.logger = logger;
     this.definition = {
       actions: {
+        deleteAction: {
+          handler: this.deleteAction.bind(this),
+          http: [{ path: "device-manager/models/action/:_id", verb: "delete" }],
+        },
         deleteAsset: {
           handler: this.deleteAsset.bind(this),
           http: [{ path: "device-manager/models/asset/:_id", verb: "delete" }],
@@ -54,6 +63,10 @@ export class ModelsController {
             { path: "device-manager/models/measure/:_id", verb: "delete" },
           ],
         },
+        getAction: {
+          handler: this.getAction.bind(this),
+          http: [{ path: "device-manager/models/action/:type", verb: "get" }],
+        },
         getAsset: {
           handler: this.getAsset.bind(this),
           http: [{ path: "device-manager/models/asset/:model", verb: "get" }],
@@ -70,6 +83,10 @@ export class ModelsController {
           handler: this.getMeasure.bind(this),
           http: [{ path: "device-manager/models/measure/:type", verb: "get" }],
         },
+        listActions: {
+          handler: this.listActions.bind(this),
+          http: [{ path: "device-manager/models/actions", verb: "get" }],
+        },
         listAssets: {
           handler: this.listAssets.bind(this),
           http: [{ path: "device-manager/models/assets", verb: "get" }],
@@ -85,6 +102,12 @@ export class ModelsController {
         listMeasures: {
           handler: this.listMeasures.bind(this),
           http: [{ path: "device-manager/models/measures", verb: "get" }],
+        },
+        searchActions: {
+          handler: this.searchActions.bind(this),
+          http: [
+            { path: "device-manager/models/actions/_search", verb: "post" },
+          ],
         },
         searchAssets: {
           handler: this.searchAssets.bind(this),
@@ -115,6 +138,10 @@ export class ModelsController {
           http: [
             { path: "device-manager/models/assets/:model", verb: "patch" },
           ],
+        },
+        writeAction: {
+          handler: this.writeAction.bind(this),
+          http: [{ path: "device-manager/models/actions", verb: "post" }],
         },
         writeAsset: {
           handler: this.writeAsset.bind(this),
@@ -172,6 +199,53 @@ export class ModelsController {
     const measureModel = await this.modelService.getMeasure(type, engineId);
 
     return measureModel;
+  }
+
+  async getAction(request: KuzzleRequest): Promise<ApiModelGetActionResult> {
+    const type = request.getString("type");
+    const engineId = request.input.args.engineId as string | undefined;
+
+    return this.modelService.getAction(type, engineId);
+  }
+
+  async writeAction(
+    request: KuzzleRequest,
+  ): Promise<ApiModelWriteActionResult> {
+    const type = request.getBodyString("type");
+    const argsSchema = request.getBodyObject("argsSchema", {});
+    const locales = request.getBodyObject("locales", {});
+    const engineIds = request.getBodyArray("engineIds", []);
+
+    return this.modelService.writeAction(type, argsSchema, locales, engineIds);
+  }
+
+  async deleteAction(
+    request: KuzzleRequest,
+  ): Promise<ApiModelDeleteActionResult> {
+    const _id = request.getId();
+
+    await this.modelService.deleteAction(_id);
+  }
+
+  async listActions(
+    request: KuzzleRequest,
+  ): Promise<ApiModelListActionsResult> {
+    const engineId = request.input.args.engineId as string | undefined;
+
+    const models = await this.modelService.listActions(engineId);
+
+    return {
+      models,
+      total: models.length,
+    };
+  }
+
+  async searchActions(
+    request: KuzzleRequest,
+  ): Promise<ApiModelSearchActionsResult> {
+    const engineId = request.input.args.engineId as string | undefined;
+
+    return this.modelService.searchActions(engineId, request.getSearchParams());
   }
 
   async writeAsset(request: KuzzleRequest): Promise<ApiModelWriteAssetResult> {

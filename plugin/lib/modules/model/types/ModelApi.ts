@@ -1,6 +1,7 @@
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import {
+  ActionModelContent,
   AssetModelContent,
   DeviceModelContent,
   GroupAffinity,
@@ -235,4 +236,52 @@ export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
 }
 export type ApiModelSearchMeasuresResult = SearchResult<
   KHit<MeasureModelContent>
+>;
+
+// Action model API types
+
+export interface ApiModelGetActionRequest extends ModelsControllerRequest {
+  action: "getAction";
+  type: string;
+  engineId?: string;
+}
+export type ApiModelGetActionResult = KDocument<ActionModelContent>;
+
+export interface ApiModelWriteActionRequest extends ModelsControllerRequest {
+  action: "writeAction";
+
+  body: {
+    type: string;
+    engineIds?: string[];
+    argsSchema?: JSONObject;
+    locales?: { [locale: string]: LocaleDetails };
+  };
+}
+export type ApiModelWriteActionResult = KDocument<ActionModelContent>;
+
+export interface ApiModelDeleteActionRequest extends ModelsControllerRequest {
+  action: "deleteAction";
+  _id: string;
+}
+export type ApiModelDeleteActionResult = void;
+
+export interface ApiModelListActionsRequest extends ModelsControllerRequest {
+  action: "listActions";
+  engineId?: string;
+}
+export type ApiModelListActionsResult = {
+  models: KDocument<ActionModelContent>[];
+  total: number;
+};
+
+export interface ApiModelSearchActionsRequest extends ModelsControllerRequest {
+  action: "searchActions";
+  engineId?: string;
+  from?: number;
+  size?: number;
+  scrollTTL?: string;
+  body?: JSONObject;
+}
+export type ApiModelSearchActionsResult = SearchResult<
+  KHit<ActionModelContent>
 >;

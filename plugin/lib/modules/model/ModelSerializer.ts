@@ -1,5 +1,6 @@
 import { BadRequestError } from "kuzzle";
 import {
+  ActionModelContent,
   AssetModelContent,
   DeviceModelContent,
   GroupModelContent,
@@ -48,6 +49,24 @@ export class ModelSerializer {
         return `model-measure-${sortedGroups}-${ModelSerializer.title(type, model)}`;
       }
       return `model-measure-${ModelSerializer.title(type, model)}`;
+    } else if (type === "action") {
+      const actionModel = model as ActionModelContent;
+      if (actionModel.engineIds?.length) {
+        const sortedEngines = [...actionModel.engineIds].sort().join("+");
+        if (actionModel.engineGroups?.length) {
+          const sortedGroups = [...actionModel.engineGroups].sort().join("+");
+          return `model-action-${sortedGroups}-${sortedEngines}-${ModelSerializer.title(type, model)}`;
+        }
+        return `model-action-${sortedEngines}-${ModelSerializer.title(type, model)}`;
+      }
+      if (
+        actionModel.engineGroups?.length &&
+        actionModel.engineGroups.length > 1
+      ) {
+        const sortedGroups = [...actionModel.engineGroups].sort().join("+");
+        return `model-action-${sortedGroups}-${ModelSerializer.title(type, model)}`;
+      }
+      return `model-action-${ModelSerializer.title(type, model)}`;
     }
 
     throw new BadRequestError(`Unknown model type "${type}"`);
@@ -62,6 +81,8 @@ export class ModelSerializer {
       return (model as GroupModelContent).group.model;
     } else if (type === "measure") {
       return (model as MeasureModelContent).measure.type;
+    } else if (type === "action") {
+      return (model as ActionModelContent).action.type;
     }
 
     throw new BadRequestError(`Unknown model type "${type}"`);
