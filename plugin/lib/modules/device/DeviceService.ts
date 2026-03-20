@@ -80,8 +80,10 @@ export class DeviceService extends DigitalTwinService {
     let device: KDocument<DeviceContent> = {
       _id: deviceId,
       _source: {
+        actionSlots: [],
         engineId: null,
         groups: [],
+        linkedActions: [],
         linkedMeasures: [],
         measureSlots: [],
         metadata,
@@ -138,6 +140,7 @@ export class DeviceService extends DigitalTwinService {
         {
           _id: device._id,
           _source: {
+            actionSlots: [],
             engineId: null,
             lastMeasuredAt: null,
             lastMeasures: [],
@@ -514,8 +517,10 @@ export class DeviceService extends DigitalTwinService {
     const engineDevice: KDocument<DeviceContent> = {
       _id: device._id,
       _source: {
+        actionSlots: [],
         engineId,
         groups: [],
+        linkedActions: [],
         linkedMeasures: [],
         measureSlots: device._source.measureSlots,
         metadata: {},

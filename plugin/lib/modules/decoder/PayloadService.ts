@@ -398,6 +398,7 @@ export class PayloadService extends BaseService {
       const reference = rest.join("-");
 
       const body: DeviceProvisioningContent = {
+        actionSlots: [],
         engineId: null,
         lastMeasuredAt: 0,
         lastMeasures: [],

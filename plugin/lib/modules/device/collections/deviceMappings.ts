@@ -52,6 +52,23 @@ export const devicesMappings: CollectionMappings = {
         type: { type: "keyword" },
       },
     },
+    linkedActions: {
+      properties: {
+        assetId: { type: "keyword" },
+        actionSlots: {
+          properties: {
+            asset: { type: "keyword" },
+            device: { type: "keyword" },
+          },
+        },
+      },
+    },
+    actionSlots: {
+      properties: {
+        name: { type: "keyword" },
+        type: { type: "keyword" },
+      },
+    },
   },
 };
 
@@ -77,6 +94,12 @@ export const devicesPlatformMappings: CollectionMappings = {
     },
     lastMeasuredAt: { type: "date" },
     measureSlots: {
+      properties: {
+        name: { type: "keyword" },
+        type: { type: "keyword" },
+      },
+    },
+    actionSlots: {
       properties: {
         name: { type: "keyword" },
         type: { type: "keyword" },

@@ -328,7 +328,9 @@ export class AssetService extends DigitalTwinService {
       {
         _id: assetId,
         _source: {
+          actionSlots: [],
           groups: [],
+          linkedActions: [],
           linkedMeasures: [],
           measureSlots: assetModel.asset.measures,
           metadata: { ...assetMetadata, ...metadata },

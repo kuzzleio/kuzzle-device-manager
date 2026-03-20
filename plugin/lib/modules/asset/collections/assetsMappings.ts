@@ -75,5 +75,22 @@ export const assetsMappings: CollectionMappings = {
         type: { type: "keyword" },
       },
     },
+    linkedActions: {
+      properties: {
+        deviceId: { type: "keyword" },
+        actionSlots: {
+          properties: {
+            asset: { type: "keyword" },
+            device: { type: "keyword" },
+          },
+        },
+      },
+    },
+    actionSlots: {
+      properties: {
+        name: { type: "keyword" },
+        type: { type: "keyword" },
+      },
+    },
   },
 };

@@ -20,6 +20,17 @@ export type NamedMeasures = Array<{
 }>;
 
 /**
+ * Array of action slot declarations
+ *
+ * Used to declare which actions a device codec can encode (outbound commands).
+ */
+export type NamedActions = Array<{
+  name: string;
+
+  type: string;
+}>;
+
+/**
  * Base class to implement a decoder for a device model.
  * The device model must be passed to the parent constructor.
  * The abstract "decode" method must be implemented.
@@ -51,6 +62,18 @@ export abstract class Decoder {
    * ];
    */
   public measures: ReadonlyArray<NamedMeasures[0]> = [];
+
+  /**
+   * Declaration of the actions this codec can encode (outbound commands).
+   * Action types should be registered as action models on the plugin.
+   *
+   * @example
+   *
+   * this.actions = [
+   *   { type: 'temperatureSetpoint', name: 'setTemperature' },
+   * ];
+   */
+  public actions: ReadonlyArray<NamedActions[0]> = [];
 
   /**
    * Custom name for the associated API action in the "payload" controller
@@ -157,6 +180,22 @@ export abstract class Decoder {
   ): Promise<DecodedPayload<any>>;
 
   /**
+   * Encode an action request into a device-specific payload.
+   * Override this method in codecs that support outbound commands.
+   *
+   * @param actionName Name of the action slot on the device
+   * @param args Action arguments (validated against the action model's schema)
+   *
+   * @returns Device-specific payload to send
+   */
+  // eslint-disable-next-line no-unused-vars
+  async encode(actionName: string, args: JSONObject): Promise<JSONObject> {
+    throw new PreconditionError(
+      `Encoder not implemented for device model "${this.deviceModel}"`,
+    );
+  }
+
+  /**
    * Checks if the provided properties are present in the payload
    *
    * @param payload Raw payload received in the API action body
@@ -172,11 +211,20 @@ export abstract class Decoder {
     }
   }
 
+  get actionNames(): string[] {
+    return this.actions.map(({ name }) => name);
+  }
+
+  get actionTypes(): string[] {
+    return this.actions.map(({ type }) => type);
+  }
+
   serialize(): DecoderContent {
     return {
       action: this.action,
       deviceModel: this.deviceModel,
       measures: this.measures as NamedMeasures,
+      actions: this.actions as NamedActions,
     };
   }
 }

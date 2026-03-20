@@ -103,6 +103,7 @@ export class ModelsRegister {
     // Construct and push the new asset model to the assetModels array
     this.assetModels.push({
       asset: {
+        actions: [],
         defaultMetadata,
         locales,
         measures,
@@ -154,6 +155,7 @@ export class ModelsRegister {
     // Construct and push the new device model to the deviceModels array
     this.deviceModels.push({
       device: {
+        actions: [],
         defaultMetadata,
         measures,
         metadataDetails,

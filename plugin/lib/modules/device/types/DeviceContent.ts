@@ -31,6 +31,27 @@ export interface DeviceContent<
   }>;
 
   /**
+   * Link with attached assets for action slots (outbound commands)
+   */
+  linkedActions: Array<{
+    /**
+     * Asset ID
+     */
+    assetId: string;
+
+    /**
+     * Names of the linked action slots
+     *
+     * @example
+     *
+     * [
+     *   { asset: "setTemperature", device: "setTemp" }
+     * ]
+     */
+    actionSlots: Array<{ asset: string; device: string }>;
+  }>;
+
+  /**
    */
   engineId: string | null;
   /**
@@ -48,7 +69,7 @@ export interface DeviceContent<
 
 interface DeviceProvisioningContentFields extends Pick<
   DeviceContent,
-  "model" | "reference" | "engineId" | "measureSlots"
+  "model" | "reference" | "engineId" | "measureSlots" | "actionSlots"
 > {
   /**
    * Date of provisioning of the device on the platform

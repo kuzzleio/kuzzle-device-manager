@@ -198,6 +198,8 @@ const measures = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function neverCalled() {
   const container: ContainerAssetContent = {
+    actionSlots: [],
+    linkedActions: [],
     model: "Container",
     linkedMeasures: [],
     groups: [],

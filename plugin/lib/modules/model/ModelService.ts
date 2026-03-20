@@ -401,6 +401,7 @@ export class ModelService extends BaseService {
 
     const modelContent: AssetModelContent = {
       asset: {
+        actions: [],
         defaultMetadata,
         locales,
         measures,
@@ -473,6 +474,7 @@ export class ModelService extends BaseService {
 
     const modelContent: DeviceModelContent = {
       device: {
+        actions: [],
         defaultMetadata,
         measures,
         metadataDetails,
@@ -1218,6 +1220,7 @@ export class ModelService extends BaseService {
 
     const assetModelContent: AssetModelContent = {
       asset: {
+        actions: [],
         defaultMetadata,
         locales,
         measures: measuresUpdated,

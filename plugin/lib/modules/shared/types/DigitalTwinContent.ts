@@ -1,6 +1,6 @@
 import { KDocumentContent } from "kuzzle-sdk";
 
-import { NamedMeasures } from "../../decoder";
+import { NamedActions, NamedMeasures } from "../../decoder";
 import { Metadata } from "./Metadata";
 import { LocaleDetails } from "lib/modules/model";
 
@@ -16,4 +16,6 @@ export interface DigitalTwinContent<
   metadata: TMetadata;
 
   measureSlots: NamedMeasures;
+
+  actionSlots: NamedActions;
 }

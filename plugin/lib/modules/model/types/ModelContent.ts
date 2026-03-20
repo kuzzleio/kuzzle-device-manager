@@ -1,8 +1,24 @@
 import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 
-import { NamedMeasures } from "../../decoder";
+import { NamedActions, NamedMeasures } from "../../decoder";
 
 import { MeasureDefinition } from "../../measure";
+
+export interface ActionModelContent extends KDocumentContent {
+  type: "action";
+
+  engineGroups?: string[];
+  engineIds?: string[];
+
+  action: {
+    type: string;
+    /**
+     * JSON Schema for validating action arguments
+     */
+    argsSchema?: JSONObject;
+    locales?: { [locale: string]: LocaleDetails };
+  };
+}
 
 export interface MeasureModelContent extends KDocumentContent {
   type: "measure";
@@ -278,6 +294,18 @@ export interface AssetModelContent extends KDocumentContent {
      */
     measures: NamedMeasures;
     /**
+     * List of accepted actions for this model (outbound commands)
+     *
+     * Array<{ type: string, name: string }>
+     *
+     * @example
+     *
+     * [
+     *   { type: "temperatureSetpoint", name: "setTemperature" }
+     * ]
+     */
+    actions: NamedActions;
+    /**
      * List of tooltip models for this asset model
      *
      * @example
@@ -420,6 +448,18 @@ export interface DeviceModelContent extends KDocumentContent {
      * ]
      */
     measures: NamedMeasures;
+    /**
+     * List of actions this device codec can encode (outbound commands)
+     *
+     * Array<{ type: string, name: string }>
+     *
+     * @example
+     *
+     * [
+     *   { type: "temperatureSetpoint", name: "setTemp" }
+     * ]
+     */
+    actions: NamedActions;
   };
 }
 
@@ -557,6 +597,7 @@ export interface GroupModelContent extends KDocumentContent {
 }
 export type ModelContent =
   | MeasureModelContent
+  | ActionModelContent
   | AssetModelContent
   | DeviceModelContent
   | GroupModelContent;

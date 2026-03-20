@@ -28,6 +28,28 @@ export interface AssetContent<
      */
     measureSlots: Array<{ asset: string; device: string }>;
   }>;
+
+  /**
+   * Link with attached devices for action slots (outbound commands)
+   */
+  linkedActions: Array<{
+    /**
+     * Device ID
+     */
+    deviceId: string;
+
+    /**
+     * Names of the linked action slots
+     *
+     * @example
+     *
+     * [
+     *   { asset: "setTemperature", device: "setTemp" }
+     * ]
+     */
+    actionSlots: Array<{ asset: string; device: string }>;
+  }>;
+
   /**
    * Path's of asset groups
    */
