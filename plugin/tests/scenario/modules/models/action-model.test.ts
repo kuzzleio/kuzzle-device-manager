@@ -162,11 +162,7 @@ describe("ModelsController:actions", () => {
     });
 
     await expect(
-      sdk.document.get(
-        "device-manager",
-        "models",
-        "model-action-toDelete",
-      ),
+      sdk.document.get("device-manager", "models", "model-action-toDelete"),
     ).rejects.toThrow();
   });
 
