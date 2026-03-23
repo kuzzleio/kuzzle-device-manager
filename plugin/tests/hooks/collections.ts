@@ -16,18 +16,21 @@ export async function beforeEachTruncateCollections(sdk: Kuzzle) {
     truncateCollection(sdk, "device-manager", "devices"),
     truncateCollection(sdk, "device-manager", "payloads"),
 
+    truncateCollection(sdk, "engine-kuzzle", "actions"),
     truncateCollection(sdk, "engine-kuzzle", "assets"),
     truncateCollection(sdk, "engine-kuzzle", "assets-history"),
     truncateCollection(sdk, "engine-kuzzle", "groups"),
     truncateCollection(sdk, "engine-kuzzle", "measures"),
     truncateCollection(sdk, "engine-kuzzle", "devices"),
 
+    truncateCollection(sdk, "engine-ayse", "actions"),
     truncateCollection(sdk, "engine-ayse", "assets"),
     truncateCollection(sdk, "engine-ayse", "assets-history"),
     truncateCollection(sdk, "engine-ayse", "groups"),
     truncateCollection(sdk, "engine-ayse", "measures"),
     truncateCollection(sdk, "engine-ayse", "devices"),
 
+    truncateCollection(sdk, "engine-other-group", "actions"),
     truncateCollection(sdk, "engine-other-group", "assets"),
     truncateCollection(sdk, "engine-other-group", "assets-history"),
     truncateCollection(sdk, "engine-other-group", "groups"),

@@ -381,6 +381,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async onCreate(index: string, group = "commons") {
     const promises = [];
 
+    promises.push(this.createActionsCollection(index));
+
     promises.push(this.createAssetsCollection(index, group));
 
     promises.push(this.createAssetsHistoryCollection(index, group));
@@ -401,6 +403,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   async onUpdate(index: string, group = "commons") {
     const promises = [];
 
+    promises.push(this.createActionsCollection(index));
+
     promises.push(this.createAssetsCollection(index, group));
 
     promises.push(this.createAssetsHistoryCollection(index, group));
@@ -418,6 +422,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
   async onDelete(index: string) {
     const collections = [
+      InternalCollection.ACTIONS,
       InternalCollection.ASSETS,
       InternalCollection.ASSETS_HISTORY,
       InternalCollection.GROUPS,
@@ -582,6 +587,25 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     });
 
     return InternalCollection.MEASURES;
+  }
+
+  /**
+   * Create the actions collection in the engine
+   *
+   * @param engineId The target engine Id
+   *
+   * @throws If it failed during the actions collection creation
+   */
+  async createActionsCollection(engineId: string) {
+    const mappings = this.config.engineCollections.actions.mappings;
+    const settings = this.config.engineCollections.actions.settings;
+
+    await this.tryCreateCollection(engineId, InternalCollection.ACTIONS, {
+      mappings,
+      settings,
+    });
+
+    return InternalCollection.ACTIONS;
   }
 
   /**

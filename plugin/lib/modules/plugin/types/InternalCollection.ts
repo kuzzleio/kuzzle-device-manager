@@ -1,4 +1,5 @@
 export enum InternalCollection {
+  ACTIONS = "actions",
   ASSETS = "assets",
   ASSETS_HISTORY = "assets-history",
   GROUPS = "groups",

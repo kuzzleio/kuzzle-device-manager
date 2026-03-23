@@ -46,6 +46,11 @@ export type DeviceManagerConfiguration = {
   };
 
   engineCollections: {
+    actions: {
+      name: string;
+      mappings: CollectionMappings;
+      settings?: JSONObject;
+    };
     config: {
       name: string;
       mappings: JSONObject;

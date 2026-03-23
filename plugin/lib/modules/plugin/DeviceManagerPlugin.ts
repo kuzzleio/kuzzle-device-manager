@@ -9,6 +9,7 @@ import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 import { JSONObject } from "kuzzle-sdk";
 import _ from "lodash";
 
+import { actionsMappings } from "../action/collections/actionsMappings";
 import { MeasureDefinition, measuresMappings, MeasureModule } from "../measure";
 
 import { groupsMappings, AssetModule, assetsMappings } from "../asset";
@@ -419,6 +420,10 @@ export class DeviceManagerPlugin extends Plugin {
         },
       },
       engineCollections: {
+        actions: {
+          name: InternalCollection.ACTIONS,
+          mappings: actionsMappings,
+        },
         config: {
           name: "config",
           mappings: {
