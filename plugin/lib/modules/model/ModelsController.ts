@@ -305,8 +305,20 @@ export class ModelsController {
   }
 
   async listAssets(request: KuzzleRequest): Promise<ApiModelListAssetsResult> {
-    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
+    const engineGroups = request.getArray("engineGroups", []);
     const engineId = request.input.args.engineId as string | undefined;
+    const user = request.getUser() as { profileIds: string[] };
+    const isAdmin = user.profileIds.includes("admin");
+
+    // Super admin without engineGroups: return all asset models
+    if (isAdmin && engineGroups.length === 0) {
+      const models = await this.modelService.listAllAssets();
+      return { models, total: models.length };
+    }
+
+    if (engineGroups.length === 0) {
+      engineGroups.push("commons");
+    }
 
     const models = await this.modelService.listAsset(engineGroups, engineId);
 

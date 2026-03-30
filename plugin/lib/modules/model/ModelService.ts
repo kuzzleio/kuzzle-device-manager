@@ -678,6 +678,21 @@ export class ModelService extends BaseService {
     );
   }
 
+  /**
+   * List all asset models regardless of engine group scope.
+   * Used for super admin global view.
+   */
+  async listAllAssets(): Promise<KDocument<AssetModelContent>[]> {
+    const result = await this.sdk.document.search(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      { query: { term: { type: "asset" } } },
+      { size: 5000, sort: [{ "asset.model": "asc" }] },
+    );
+
+    return result.hits as unknown as KDocument<AssetModelContent>[];
+  }
+
   async listAsset(
     engineGroups: string[],
     engineId?: string,
