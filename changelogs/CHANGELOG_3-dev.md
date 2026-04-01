@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.4 (2026-04-01)
+
+* fix(models): return all asset models for super admin without engineGroups (KZLPRD-1205) (#469) ([06df747](https://github.com/kuzzleio/kuzzle-device-manager/commit/06df747)), closes [#469](https://github.com/kuzzleio/kuzzle-device-manager/issues/469)
+
 ## 3.0.0-3-dev.3 (2026-03-18)
 
 * fix(ci): revert ref for documentation deployment ([57f4765](https://github.com/kuzzleio/kuzzle-device-manager/commit/57f4765))
