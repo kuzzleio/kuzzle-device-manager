@@ -40,6 +40,9 @@ function getModelConflicts(
 
   for (const model of models) {
     const baseMappings = _.get(model, mappingsPath);
+    if (baseMappings === undefined || baseMappings === null) {
+      continue;
+    }
     const updatedMappings = JSON.parse(JSON.stringify(baseMappings));
 
     _.merge(updatedMappings, _.get(additional, mappingsPath));
