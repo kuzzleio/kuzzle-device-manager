@@ -1,4 +1,10 @@
-import { ControllerDefinition, KuzzleRequest } from "kuzzle";
+import {
+  BadRequestError,
+  ControllerDefinition,
+  ForbiddenError,
+  KuzzleRequest,
+  NotFoundError,
+} from "kuzzle";
 
 import { ModelService } from "./ModelService";
 import {
@@ -305,8 +311,63 @@ export class ModelsController {
   }
 
   async listAssets(request: KuzzleRequest): Promise<ApiModelListAssetsResult> {
-    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
+    const engineGroups = request.getArray("engineGroups", []);
     const engineId = request.input.args.engineId as string | undefined;
+    const user = request.getUser() as { profileIds: string[] };
+    const isAdmin = user.profileIds.includes("admin");
+    const isAnonymous =
+      user.profileIds.includes("anonymous") || user.profileIds.length === 0;
+
+    // Super admin without engineGroups: return all asset models
+    if (isAdmin && engineGroups.length === 0 && !engineId) {
+      const models = await this.modelService.listAllAssets();
+      return { models, total: models.length };
+    }
+
+    // Authenticated non-admin/non-anonymous must provide engineGroups or engineId
+    if (!isAdmin && !isAnonymous && engineGroups.length === 0 && !engineId) {
+      throw new BadRequestError(
+        'Missing argument: "engineGroups" or "engineId" must be provided.',
+      );
+    }
+
+    // Validate engineId and engineGroups for authenticated non-admin users
+    if (!isAdmin && !isAnonymous) {
+      if (engineId) {
+        const engineExists = await this.modelService.engineExists(engineId);
+        if (!engineExists) {
+          throw new NotFoundError(`Engine "${engineId}" not found.`);
+        }
+        const hasAccess = await this.modelService.userHasEngineAccess(
+          request,
+          engineId,
+        );
+        if (!hasAccess) {
+          throw new ForbiddenError(
+            `You do not have access to engine "${engineId}".`,
+          );
+        }
+      }
+
+      if (engineGroups.length > 0) {
+        const invalidGroups =
+          await this.modelService.findInvalidEngineGroups(engineGroups);
+        if (invalidGroups.length > 0) {
+          throw new NotFoundError(
+            `Engine group(s) not found: ${invalidGroups.join(", ")}.`,
+          );
+        }
+      }
+    }
+
+    // Always include commons alongside requested groups
+    if (engineGroups.length > 0 && !engineGroups.includes("commons")) {
+      engineGroups.push("commons");
+    }
+
+    if (engineGroups.length === 0) {
+      engineGroups.push("commons");
+    }
 
     const models = await this.modelService.listAsset(engineGroups, engineId);
 

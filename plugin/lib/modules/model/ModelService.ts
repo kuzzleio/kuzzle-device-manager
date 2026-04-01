@@ -678,6 +678,101 @@ export class ModelService extends BaseService {
     );
   }
 
+  /**
+   * List all asset models regardless of engine group scope.
+   * Used for super admin global view.
+   */
+  async listAllAssets(): Promise<KDocument<AssetModelContent>[]> {
+    const result = await this.sdk.document.search(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      { query: { term: { type: "asset" } } },
+      { size: 5000, sort: [{ "asset.model": "asc" }] },
+    );
+
+    return result.hits as unknown as KDocument<AssetModelContent>[];
+  }
+
+  /**
+   * Check if an engine (tenant) exists by its ID.
+   */
+  async engineExists(engineId: string): Promise<boolean> {
+    try {
+      const result = await this.sdk.document.search(
+        this.config.platformIndex,
+        InternalCollection.CONFIG,
+        {
+          query: {
+            bool: {
+              must: [
+                { term: { type: "engine-device-manager" } },
+                { term: { "engine.index": engineId } },
+              ],
+            },
+          },
+        },
+        { size: 1 },
+      );
+      return result.total > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if the requesting user has access to an engine.
+   */
+  async userHasEngineAccess(
+    request: KuzzleRequest,
+    engineId: string,
+  ): Promise<boolean> {
+    try {
+      const result = await this.sdk.query({
+        controller: "auth",
+        action: "checkRights",
+        body: {
+          controller: "device-manager/assets",
+          action: "get",
+          index: engineId,
+        },
+        jwt: request.context.token?.jwt,
+      });
+      return (result.result as { allowed: boolean }).allowed;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Find engine groups that don't exist.
+   */
+  async findInvalidEngineGroups(engineGroups: string[]): Promise<string[]> {
+    // "commons" is always valid
+    const toCheck = engineGroups.filter((g) => g !== "commons");
+    if (toCheck.length === 0) {
+      return [];
+    }
+
+    const result = await this.sdk.document.search(
+      this.config.platformIndex,
+      InternalCollection.CONFIG,
+      {
+        query: {
+          equals: { type: "engine-device-manager" },
+        },
+      },
+      { lang: "koncorde", size: 5000 },
+    );
+
+    const existingGroups = new Set(
+      result.hits.map(
+        (h) => (h._source as { engine?: { group?: string } }).engine?.group,
+      ),
+    );
+
+    return toCheck.filter((g) => !existingGroups.has(g));
+  }
+
   async listAsset(
     engineGroups: string[],
     engineId?: string,
