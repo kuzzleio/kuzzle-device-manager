@@ -843,10 +843,7 @@ export class ModelService extends BaseService {
             should: [
               {
                 bool: {
-                  must: [
-                    { term: { engineIds: engineId } },
-                    { terms: { engineGroups } },
-                  ],
+                  must: [{ term: { engineIds: engineId } }],
                 },
               },
               {
@@ -1069,11 +1066,7 @@ export class ModelService extends BaseService {
     if (engineId) {
       const tenantQuery = {
         bool: {
-          must: [
-            ...baseFilter,
-            { terms: { engineGroups } },
-            { term: { engineIds: engineId } },
-          ],
+          must: [...baseFilter, { term: { engineIds: engineId } }],
         },
       };
 

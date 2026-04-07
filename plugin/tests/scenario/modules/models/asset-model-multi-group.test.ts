@@ -182,30 +182,19 @@ describe("ModelsController:assets:multi-group", () => {
     expect(resultPL.result._source.asset.model).toBe("SharedModel");
   });
 
-  it("Multi-group model with engines uses full composite ID", async () => {
-    await sdk.query({
-      controller: "device-manager/models",
-      action: "writeAsset",
-      body: {
-        engineGroups: ["air_quality", "public_lighting"],
-        model: "MultiGroupTenant",
-        metadataMappings: {},
-        measures: [],
-        engineIds: ["engine-ayse"],
-      },
-    });
-
-    const doc = await sdk.document.get(
-      "device-manager",
-      "models",
-      "model-asset-air_quality+public_lighting-engine-ayse-MultiGroupTenant",
-    );
-
-    expect(doc._source).toMatchObject({
-      type: "asset",
-      engineGroups: ["air_quality", "public_lighting"],
-      engineIds: ["engine-ayse"],
-      asset: { model: "MultiGroupTenant" },
-    });
+  it("Multi-group and tenant scope are mutually exclusive (KZLPRD-1192)", async () => {
+    await expect(
+      sdk.query({
+        controller: "device-manager/models",
+        action: "writeAsset",
+        body: {
+          engineGroups: ["air_quality", "public_lighting"],
+          model: "MultiGroupTenant",
+          metadataMappings: {},
+          measures: [],
+          engineIds: ["engine-ayse"],
+        },
+      }),
+    ).rejects.toThrow(/mutually exclusive/);
   });
 });

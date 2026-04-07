@@ -27,7 +27,6 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
         engineIds: ["engine-ayse"],
         model: "ShadowTestGlobal",
         metadataMappings: {},
@@ -88,7 +87,6 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
         engineIds: ["engine-ayse"],
         model: "ShadowTestGroupToTenant",
         metadataMappings: {},

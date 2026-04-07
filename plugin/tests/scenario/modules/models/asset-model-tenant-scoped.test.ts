@@ -11,7 +11,6 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
         model: "TenantSensor",
         metadataMappings: { location: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -22,12 +21,11 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const doc = await sdk.document.get(
       "device-manager",
       "models",
-      "model-asset-air_quality-engine-ayse-TenantSensor",
+      "model-asset-engine-ayse-TenantSensor",
     );
 
     expect(doc._source).toMatchObject({
       type: "asset",
-      engineGroups: ["air_quality"],
       engineIds: ["engine-ayse"],
       asset: {
         model: "TenantSensor",
@@ -35,6 +33,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
     });
+    expect(doc._source).not.toHaveProperty("engineGroups");
   });
 
   it("Write without engineIds still works (backward compat)", async () => {
@@ -84,7 +83,6 @@ describe("ModelsController:assets:tenant-scoped", () => {
         controller: "device-manager/models",
         action: "writeAsset",
         body: {
-          engineGroups: ["air_quality"],
           model: "DualScope",
           metadataMappings: { version: { type: "keyword" } },
           measures: [],
@@ -100,7 +98,6 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
         model: "TenantOnly",
         metadataMappings: {},
         measures: [],
@@ -124,7 +121,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(ids).toContain("model-asset-Container");
     expect(ids).toContain("model-asset-Warehouse");
     expect(ids).toContain("model-asset-Room");
-    expect(ids).toContain("model-asset-air_quality-engine-ayse-TenantOnly");
+    expect(ids).toContain("model-asset-engine-ayse-TenantOnly");
   });
 
   it("List without engineId returns only group + commons models (no tenant-scoped)", async () => {
@@ -139,7 +136,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(ids).toContain("model-asset-Room");
     expect(ids).toContain("model-asset-Container");
     // Should NOT include tenant-scoped models
-    expect(ids).not.toContain("model-asset-air_quality-engine-ayse-TenantOnly");
+    expect(ids).not.toContain("model-asset-engine-ayse-TenantOnly");
   });
 
   it("getAsset with engineId returns the tenant-scoped model", async () => {
@@ -147,7 +144,6 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
         model: "TenantGetTest",
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "tenant" },
@@ -207,7 +203,6 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
         model: "SharedTenant",
         metadataMappings: {},
         measures: [],
@@ -226,7 +221,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     });
     const idsAyse = listAyse.result.models.map((m: { _id: string }) => m._id);
     expect(idsAyse).toContain(
-      "model-asset-air_quality-engine-ayse+engine-kuzzle-SharedTenant",
+      "model-asset-engine-ayse+engine-kuzzle-SharedTenant",
     );
 
     // Accessible from engine-kuzzle
@@ -240,7 +235,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       (m: { _id: string }) => m._id,
     );
     expect(idsKuzzle).toContain(
-      "model-asset-air_quality-engine-ayse+engine-kuzzle-SharedTenant",
+      "model-asset-engine-ayse+engine-kuzzle-SharedTenant",
     );
   });
 });
