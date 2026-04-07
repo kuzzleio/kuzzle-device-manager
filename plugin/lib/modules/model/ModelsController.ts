@@ -181,7 +181,7 @@ export class ModelsController {
   }
 
   async writeAsset(request: KuzzleRequest): Promise<ApiModelWriteAssetResult> {
-    const engineGroups = request.getBodyArray("engineGroups") as string[];
+    const engineGroups = request.getBodyArray("engineGroups", []) as string[];
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});

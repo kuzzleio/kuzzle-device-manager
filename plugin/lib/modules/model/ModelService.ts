@@ -318,6 +318,13 @@ export class ModelService extends BaseService {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
     }
+
+    if (engineIds?.length && engineGroups?.length) {
+      throw new BadRequestError(
+        `"engineIds" and "engineGroups" are mutually exclusive on an asset model.`,
+      );
+    }
+
     const duplicates = getNamedMeasuresDuplicates(measures);
 
     if (duplicates.length > 0) {
@@ -410,10 +417,11 @@ export class ModelService extends BaseService {
         model,
         tooltipModels,
       },
-      engineGroups: normalizedEngineGroups,
-      ...(engineIds?.length ? { engineIds } : {}),
+      ...(engineIds?.length
+        ? { engineIds }
+        : { engineGroups: normalizedEngineGroups }),
       type: "asset",
-    };
+    } as AssetModelContent;
 
     this.checkDefaultValues(metadataMappings, defaultMetadata);
 
@@ -1307,10 +1315,9 @@ export class ModelService extends BaseService {
     const measuresUpdated =
       measures.length === 0 ? existingAsset._source.asset.measures : measures;
 
-    const normalizedEngineGroups = engineGroups.includes("commons")
-      ? ["commons"]
-      : engineGroups;
-
+    // Preserve the existing scope: scope (engineGroups / engineIds) is decided
+    // at write time and must not be silently rewritten by an update payload.
+    // This also enforces engineGroups / engineIds mutual exclusivity (KZLPRD-1192).
     const assetModelContent: AssetModelContent = {
       asset: {
         defaultMetadata,
@@ -1322,7 +1329,7 @@ export class ModelService extends BaseService {
         model,
         tooltipModels,
       },
-      engineGroups: normalizedEngineGroups,
+      engineGroups: existingAsset._source.engineGroups,
       engineIds: existingAsset._source.engineIds,
       type: "asset",
     };
