@@ -1,3 +1,10 @@
+## 2.12.0-dev.1 (2026-04-13)
+
+* feat(ci): use github app instead of pat (#472) ([7330eb4](https://github.com/kuzzleio/kuzzle-device-manager/commit/7330eb4)), closes [#472](https://github.com/kuzzleio/kuzzle-device-manager/issues/472)
+* chore(ci): fix documentation deploy job ([824caa8](https://github.com/kuzzleio/kuzzle-device-manager/commit/824caa8))
+* chore(ci): update branch names in workflows ([0f7338c](https://github.com/kuzzleio/kuzzle-device-manager/commit/0f7338c))
+* chore(semantic-release): update config to match new branches ([ee01e83](https://github.com/kuzzleio/kuzzle-device-manager/commit/ee01e83))
+
 ## 2.11.0-dev.1 (2026-03-12)
 
 * feat(assets): support iso string for field measuredAt (#465) ([5a6fd45](https://github.com/kuzzleio/kuzzle-device-manager/commit/5a6fd45)), closes [#465](https://github.com/kuzzleio/kuzzle-device-manager/issues/465)
