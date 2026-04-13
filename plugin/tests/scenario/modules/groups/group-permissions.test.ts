@@ -22,6 +22,8 @@ import {
   ApiGroupCreateResult,
   ApiGroupDeleteRequest,
   ApiGroupGetRequest,
+  ApiGroupMoveRequest,
+  ApiGroupMoveResult,
   ApiGroupRemoveAssetsRequest,
   ApiGroupRemoveAssetsResult,
   ApiGroupSearchRequest,
@@ -122,47 +124,50 @@ describe("GroupsController", () => {
       action: "update",
       _id: groupTestId,
       body: {
-        name: "root group",
-        path: groupTestId,
+        name: "root group updated",
       },
     });
 
     expect(result._id).toEqual(groupTestId);
     expect(result._source).toMatchObject({
-      name: "root group",
-      path: groupTestId,
+      name: "root group updated",
     });
     expect(result._source.lastUpdate).toBeGreaterThanOrEqual(now);
 
-    const { result: resultPathChanged } =
-      await sdk.query<ApiGroupUpdateRequest>({
-        controller: "device-manager/groups",
-        engineId: "engine-ayse",
-        action: "update",
-        _id: groupParentWithAssetId,
-        body: {
-          name: "Parent Group with asset",
-          path: `${groupTestParentId1}.${groupParentWithAssetId}`,
-        },
-      });
-    expect(resultPathChanged._id).toEqual(groupParentWithAssetId);
-    expect(resultPathChanged._source).toMatchObject({
-      path: `${groupTestParentId1}.${groupParentWithAssetId}`,
-    });
-    expect(resultPathChanged._source.lastUpdate).toBeGreaterThanOrEqual(now);
-
-    const { result: resultChildren } = await sdk.query<ApiGroupGetRequest>({
+    const { result: resultUpdated } = await sdk.query<ApiGroupUpdateRequest>({
       controller: "device-manager/groups",
       engineId: "engine-ayse",
-      action: "get",
-      _id: groupChildrenWithAssetId,
+      action: "update",
+      _id: groupParentWithAssetId,
+      body: {
+        name: "Parent Group with asset updated",
+      },
     });
 
-    expect(resultChildren._id).toEqual(groupChildrenWithAssetId);
-    expect(resultChildren._source).toMatchObject({
-      path: `${groupTestParentId1}.${groupParentWithAssetId}.${groupChildrenWithAssetId}`,
+    expect(resultUpdated._id).toEqual(groupParentWithAssetId);
+    expect(resultUpdated._source).toMatchObject({
+      name: "Parent Group with asset updated",
     });
-    expect(resultChildren._source.lastUpdate).toBeGreaterThanOrEqual(now);
+    expect(resultUpdated._source.lastUpdate).toBeGreaterThanOrEqual(now);
+  });
+
+  it("can move a group", async () => {
+    const { result: movedGroup } = await sdk.query<
+      ApiGroupMoveRequest,
+      ApiGroupMoveResult
+    >({
+      controller: "device-manager/groups",
+      engineId: "engine-ayse",
+      action: "moveGroup",
+      _id: groupTestChildrenId1,
+      body: { targetGroupId: groupTestId },
+    });
+
+    expect(movedGroup._id).toBe(groupTestChildrenId1);
+    expect(movedGroup._source.path).toBe(
+      groupTestId + "." + groupTestChildrenId1,
+    );
+    expect(movedGroup._source.lastUpdate).toBeGreaterThanOrEqual(now);
   });
 
   it("can delete a group", async () => {
