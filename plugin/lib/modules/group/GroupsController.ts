@@ -84,7 +84,7 @@ export class GroupsController {
           http: [
             {
               path: "device-manager/:engineId/groups/:_id/_move",
-              verb: "post",
+              verb: "put",
             },
           ],
         },
@@ -356,7 +356,7 @@ export class GroupsController {
       );
     }
 
-    return this.groupsService.update(request, _id, engineId, name, metadata); // ← );  supprimé
+    return this.groupsService.update(request, _id, engineId, name, metadata);
   }
 
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {

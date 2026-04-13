@@ -177,7 +177,8 @@ export class GroupsService extends BaseService {
       { strict: true },
     );
 
-    const { hits: childrenGroups } = await this.sdk.document.search<GroupContent>(
+    const { hits: childrenGroups } =
+      await this.sdk.document.search<GroupContent>(
         engineId,
         InternalCollection.GROUPS,
         {
