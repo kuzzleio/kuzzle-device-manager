@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.6 (2026-04-13)
+
+* feat(ci): use github app instead of pat (#471) ([a49d1cb](https://github.com/kuzzleio/kuzzle-device-manager/commit/a49d1cb)), closes [#471](https://github.com/kuzzleio/kuzzle-device-manager/issues/471)
+
 ## 3.0.0-3-dev.5 (2026-04-08)
 
 * fix(models): make engineGroups and engineIds mutually exclusive on as… (#470) ([fb37176](https://github.com/kuzzleio/kuzzle-device-manager/commit/fb37176)), closes [#470](https://github.com/kuzzleio/kuzzle-device-manager/issues/470)
