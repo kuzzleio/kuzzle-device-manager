@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.8 (2026-04-14)
+
+* fix(model): use sdk.security.checkRights instead of sdk.query in ModelService ([a15afac](https://github.com/kuzzleio/kuzzle-device-manager/commit/a15afac))
+
 ## 3.0.0-3-dev.7 (2026-04-14)
 
 * feat(groups): added endpoint for moveGroup action (#473) ([94513df](https://github.com/kuzzleio/kuzzle-device-manager/commit/94513df)), closes [#473](https://github.com/kuzzleio/kuzzle-device-manager/issues/473)
