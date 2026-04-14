@@ -735,17 +735,15 @@ export class ModelService extends BaseService {
     engineId: string,
   ): Promise<boolean> {
     try {
-      const result = await this.sdk.query({
-        controller: "auth",
-        action: "checkRights",
-        body: {
+      const result = await this.sdk.security.checkRights(
+        request.context.user?._id,
+        {
           controller: "device-manager/assets",
           action: "get",
           index: engineId,
         },
-        jwt: request.context.token?.jwt,
-      });
-      return (result.result as { allowed: boolean }).allowed;
+      );
+      return result;
     } catch {
       return false;
     }
