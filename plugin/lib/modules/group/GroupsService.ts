@@ -208,7 +208,7 @@ export class GroupsService extends BaseService {
   async moveGroup(
     engineId: string,
     _id: string,
-    targetGroupId: string,
+    targetGroupId: string | null,
     request: KuzzleRequest,
   ): Promise<KDocument<GroupContent>> {
     const group = await this.get(engineId, _id, request);
@@ -218,7 +218,7 @@ export class GroupsService extends BaseService {
 
     let newPath: string;
 
-    if (targetGroupId === "__root__") {
+    if (targetGroupId === null) {
       if (!currentPath.includes(".")) {
         throw new BadRequestError(`The group "${_id}" is already at the root`);
       }
@@ -227,6 +227,7 @@ export class GroupsService extends BaseService {
       if (targetGroupId === _id) {
         throw new BadRequestError(`Cannot move a group into itself`);
       }
+
       const targetGroup = await this.get(engineId, targetGroupId, request);
       const targetPath = targetGroup._source.path;
 
@@ -235,11 +236,13 @@ export class GroupsService extends BaseService {
           `Cannot move group "${_id}" into one of its own descendants`,
         );
       }
+
       if (currentParentPath === targetPath) {
         throw new BadRequestError(
           `The group "${_id}" is already a child of "${targetGroupId}"`,
         );
       }
+
       newPath = `${targetPath}.${groupLeafId}`;
     }
 

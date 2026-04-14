@@ -277,7 +277,7 @@ describe("GroupsController", () => {
       engineId: "engine-ayse",
       action: "moveGroup",
       _id: groupTestId,
-      body: { targetGroupId: "__root__" },
+      body: { targetGroupId: null },
     };
     await expect(sdk.query(alreadyAtRootQuery)).rejects.toThrow(
       `The group "${groupTestId}" is already at the root`,
@@ -318,7 +318,7 @@ describe("GroupsController", () => {
       engineId: "engine-ayse",
       action: "moveGroup",
       _id: groupTestChildrenId1,
-      body: { targetGroupId: "__root__" },
+      body: { targetGroupId: null },
     });
 
     expect(movedToRoot._source.path).toBe(groupTestChildrenId1);

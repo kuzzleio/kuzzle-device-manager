@@ -31,7 +31,7 @@ Method: PUT
   "engineId": "<engineId>",
   "_id": "<group id>",
   "body": {
-    "targetGroupId": "<target group id>"  // use "__root__" to move to root
+    "targetGroupId": "<target group id>"  // use null to move to root
   }
 }
 ```
@@ -45,7 +45,7 @@ Method: PUT
 
 ## Body properties
 
-- `targetGroupId`: ID of the destination parent group (required). Use the special value `"__root__"` to move the group to the root level.
+- `targetGroupId`: ID of the destination parent group (required). Use `null` to move the group to the root level.
 
 ---
 
@@ -64,7 +64,7 @@ Method: PUT
       "name": "<group name>",
       "model": "<group model>",
       "path": "<new path>",
-      "metadata": { },
+      "metadata": {},
       "lastUpdate": "<timestamp>"
     }
   }
@@ -75,7 +75,7 @@ Method: PUT
 
 ## Errors
 
-- Returns an error if the group is already at the root and `targetGroupId` is `"__root__"`.
+- Returns an error if the group is already at the root and `targetGroupId` is `null`.
 - Returns an error if `targetGroupId` is the same as `_id` (cannot move a group into itself).
 - Returns an error if `targetGroupId` is a descendant of the group being moved.
 - Returns an error if the group is already a direct child of the target group.

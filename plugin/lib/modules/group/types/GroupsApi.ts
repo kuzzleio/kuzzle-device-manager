@@ -162,7 +162,7 @@ export interface ApiGroupMoveRequest extends GroupControllerRequest {
   action: "moveGroup";
   _id: string;
   body: {
-    targetGroupId: string;
+    targetGroupId: string | null;
   };
 }
 

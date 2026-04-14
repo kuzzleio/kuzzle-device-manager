@@ -20,6 +20,7 @@ import {
   ApiGroupGetResult,
   ApiGroupListItemsResult,
   ApiGroupMCreateResult,
+  ApiGroupMoveRequest,
   ApiGroupMoveResult,
   ApiGroupMUpdateResult,
   ApiGroupMUpsertResult,
@@ -388,11 +389,10 @@ export class GroupsController {
   async moveGroup(request: KuzzleRequest): Promise<ApiGroupMoveResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
-    const targetGroupId = request.getBodyString("targetGroupId");
+    const { targetGroupId } = request.getBody() as ApiGroupMoveRequest["body"];
 
     return this.groupsService.moveGroup(engineId, _id, targetGroupId, request);
   }
-
   async listItems(request: KuzzleRequest): Promise<ApiGroupListItemsResult> {
     const engineId = request.getString("engineId");
     const _id = request.getId();
