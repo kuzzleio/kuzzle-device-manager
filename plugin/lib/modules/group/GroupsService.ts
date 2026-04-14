@@ -81,7 +81,6 @@ export class GroupsService extends BaseService {
     _id: string,
     engineId: string,
     name?: string,
-    path?: string,
     metadata?: Metadata,
   ) {
     let updateRequestBody = {};
@@ -90,19 +89,13 @@ export class GroupsService extends BaseService {
       updateRequestBody = { ...updateRequestBody, name };
     }
 
-    if (path !== undefined) {
-      updateRequestBody = { ...updateRequestBody, path };
-    }
-
     if (metadata !== undefined) {
       const group = await this.get(engineId, _id, request);
       const { model, metadata: groupMetadata } = group._source;
       if (model !== null) {
         const groupModel = await ask<AskModelGroupGet>(
           "ask:device-manager:model:group:get",
-          {
-            model,
-          },
+          { model },
         );
         for (const metadataName of Object.keys(
           groupModel.group.metadataMappings,
@@ -115,125 +108,145 @@ export class GroupsService extends BaseService {
       }
     }
 
+    return this._update(request, _id, engineId, updateRequestBody);
+  }
+
+  private async _updatePath(
+    request: KuzzleRequest,
+    _id: string,
+    engineId: string,
+    newPath: string,
+  ): Promise<KDocument<GroupContent>> {
     const groupToUpdate = await this.sdk.document.get<GroupContent>(
       engineId,
       InternalCollection.GROUPS,
       _id,
     );
-    const updatedGroup = await this._update(
-      request,
-      _id,
+
+    const updatedGroup = await this._update(request, _id, engineId, {
+      path: newPath,
+    });
+
+    const oldPath = groupToUpdate._source.path;
+
+    const { hits: assets } = await this.sdk.document.search<AssetContent>(
       engineId,
-      updateRequestBody,
+      InternalCollection.ASSETS,
+      { query: { prefix: { "groups.path": { value: oldPath } } } },
+      { lang: "koncorde" },
+    );
+    await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.ASSETS,
+      assets.map((asset) => ({
+        _id: asset._id,
+        body: {
+          groups: asset._source.groups.map((grp) => {
+            if (grp.path.includes(oldPath)) {
+              grp.path = grp.path.replace(oldPath, newPath);
+              grp.date = Date.now();
+            }
+            return grp;
+          }),
+        },
+      })),
+      { strict: true },
     );
 
-    if (updatedGroup._source.path !== groupToUpdate._source.path) {
-      const { hits: assets } = await this.sdk.document.search<AssetContent>(
-        engineId,
-        InternalCollection.ASSETS,
-        {
-          query: {
-            prefix: {
-              "groups.path": {
-                value: groupToUpdate._source.path,
-              },
-            },
-          },
+    const { hits: devices } = await this.sdk.document.search<DeviceContent>(
+      engineId,
+      InternalCollection.DEVICES,
+      { query: { prefix: { "groups.path": { value: oldPath } } } },
+      { lang: "koncorde" },
+    );
+    await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.DEVICES,
+      devices.map((device) => ({
+        _id: device._id,
+        body: {
+          groups: device._source.groups.map((grp) => {
+            if (grp.path.includes(oldPath)) {
+              grp.path = grp.path.replace(oldPath, newPath);
+              grp.date = Date.now();
+            }
+            return grp;
+          }),
         },
-        { lang: "koncorde" },
-      );
-      const { hits: devices } = await this.sdk.document.search<DeviceContent>(
-        engineId,
-        InternalCollection.DEVICES,
-        {
-          query: {
-            prefix: {
-              "groups.path": {
-                value: groupToUpdate._source.path,
-              },
-            },
-          },
-        },
-        { lang: "koncorde" },
-      );
-      await this.sdk.document.mUpdate(
-        engineId,
-        InternalCollection.ASSETS,
-        assets.map((asset) => ({
-          _id: asset._id,
-          body: {
-            groups: asset._source.groups.map((grp) => {
-              if (grp.path.includes(groupToUpdate._source.path)) {
-                grp.path = grp.path.replace(
-                  groupToUpdate._source.path,
-                  updatedGroup._source.path,
-                );
-                grp.date = Date.now();
-              }
-              return grp;
-            }),
-          },
-        })),
-        { strict: true },
-      );
-      await this.sdk.document.mUpdate(
-        engineId,
-        InternalCollection.DEVICES,
-        devices.map((device) => ({
-          _id: device._id,
-          body: {
-            groups: device._source.groups.map((grp) => {
-              if (grp.path.includes(groupToUpdate._source.path)) {
-                grp.path = grp.path.replace(
-                  groupToUpdate._source.path,
-                  updatedGroup._source.path,
-                );
-                grp.date = Date.now();
-              }
-              return grp;
-            }),
-          },
-        })),
-        { strict: true },
-      );
-      const { hits: childrenGroups } =
-        await this.sdk.document.search<GroupContent>(
-          engineId,
-          InternalCollection.GROUPS,
-          {
-            query: {
-              and: [
-                {
-                  prefix: {
-                    path: {
-                      value: groupToUpdate._source.path,
-                    },
-                  },
-                },
-                {
-                  not: { equals: { path: groupToUpdate._source.path } },
-                },
-              ],
-            },
-          },
-          { lang: "koncorde" },
-        );
+      })),
+      { strict: true },
+    );
 
-      await this.sdk.document.mUpdate(
+    const { hits: childrenGroups } =
+      await this.sdk.document.search<GroupContent>(
         engineId,
         InternalCollection.GROUPS,
-        childrenGroups.map((grp) => {
-          grp._source.path = grp._source.path.replace(
-            groupToUpdate._source.path,
-            updatedGroup._source.path,
-          );
-          grp._source.lastUpdate = Date.now();
-          return { _id: grp._id, body: grp._source };
-        }),
-        { strict: true },
+        {
+          query: {
+            and: [
+              { prefix: { path: { value: oldPath } } },
+              { not: { equals: { path: oldPath } } },
+            ],
+          },
+        },
+        { lang: "koncorde" },
       );
-    }
+    await this.sdk.document.mUpdate(
+      engineId,
+      InternalCollection.GROUPS,
+      childrenGroups.map((grp) => {
+        grp._source.path = grp._source.path.replace(oldPath, newPath);
+        grp._source.lastUpdate = Date.now();
+        return { _id: grp._id, body: grp._source };
+      }),
+      { strict: true },
+    );
+
     return updatedGroup;
+  }
+
+  async moveGroup(
+    engineId: string,
+    _id: string,
+    targetGroupId: string | null,
+    request: KuzzleRequest,
+  ): Promise<KDocument<GroupContent>> {
+    const group = await this.get(engineId, _id, request);
+    const currentPath = group._source.path;
+    const groupLeafId = currentPath.split(".").pop() as string; //NOSONAR
+    const currentParentPath = currentPath.split(".").slice(0, -1).join(".");
+
+    let newPath: string;
+
+    if (targetGroupId === null) {
+      if (!currentPath.includes(".")) {
+        throw new BadRequestError(`The group "${_id}" is already at the root`);
+      }
+      newPath = groupLeafId;
+    } else {
+      if (targetGroupId === _id) {
+        throw new BadRequestError(`Cannot move a group into itself`);
+      }
+
+      const targetGroup = await this.get(engineId, targetGroupId, request);
+      const targetPath = targetGroup._source.path;
+
+      if (targetPath.startsWith(`${currentPath}.`)) {
+        throw new BadRequestError(
+          `Cannot move group "${_id}" into one of its own descendants`,
+        );
+      }
+
+      if (currentParentPath === targetPath) {
+        throw new BadRequestError(
+          `The group "${_id}" is already a child of "${targetGroupId}"`,
+        );
+      }
+
+      newPath = `${targetPath}.${groupLeafId}`;
+    }
+
+    return this._updatePath(request, _id, engineId, newPath);
   }
 
   async delete(_id: string, engineId: string, request: KuzzleRequest) {
@@ -765,7 +778,6 @@ export class GroupsService extends BaseService {
       metadata: Metadata;
       model: string;
       name: string;
-      path: string;
     }>,
     request: KuzzleRequest,
   ): Promise<ApiGroupMUpdateResult> {
@@ -773,12 +785,12 @@ export class GroupsService extends BaseService {
     const errors: ApiGroupMUpdateResult["errors"] = [];
     await Promise.allSettled(
       groups.map((g) =>
-        this.update(request, g._id, engineId, g.name, g.path, g.metadata)
+        this.update(request, g._id, engineId, g.name, g.metadata)
           .then((u) => successes.push(u))
           .catch((error) => {
             const { _id, ...rest } = g;
-            let reason: string = "";
-            let status: number = 400;
+            let reason = "";
+            let status = 400;
             if (error instanceof KuzzleError) {
               reason = error.message;
               status = error.code;
@@ -791,10 +803,7 @@ export class GroupsService extends BaseService {
           }),
       ),
     );
-    return {
-      errors,
-      successes,
-    };
+    return { errors, successes };
   }
   async mUpsert(
     engineId: string,

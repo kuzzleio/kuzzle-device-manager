@@ -157,3 +157,13 @@ export type ApiGroupMUpsertResult = {
     | ApiGroupMUpdateResult["successes"][0]
   >;
 };
+
+export interface ApiGroupMoveRequest extends GroupControllerRequest {
+  action: "moveGroup";
+  _id: string;
+  body: {
+    targetGroupId: string | null;
+  };
+}
+
+export type ApiGroupMoveResult = KDocument<GroupContent>;
