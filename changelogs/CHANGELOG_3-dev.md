@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.7 (2026-04-14)
+
+* feat(groups): added endpoint for moveGroup action (#473) ([94513df](https://github.com/kuzzleio/kuzzle-device-manager/commit/94513df)), closes [#473](https://github.com/kuzzleio/kuzzle-device-manager/issues/473)
+
 ## 3.0.0-3-dev.6 (2026-04-13)
 
 * feat(ci): use github app instead of pat (#471) ([a49d1cb](https://github.com/kuzzleio/kuzzle-device-manager/commit/a49d1cb)), closes [#471](https://github.com/kuzzleio/kuzzle-device-manager/issues/471)
