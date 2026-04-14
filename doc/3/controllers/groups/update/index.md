@@ -9,9 +9,7 @@ description: Update a group
 
 Updates a group.
 
-This endpoint allows you to update the properties of a group, such as its name, metadata, or ancestry path.  
-If the group's path is changed, all child groups, assets, and devices referencing the old path will be updated accordingly.
-
+This endpoint allows you to update the properties of a group, such as its name or metadata.
 ---
 
 ## Query Syntax
@@ -34,7 +32,6 @@ Method: PUT
   "body": {
     "name": "<new group name>",    // optional
     "metadata": { ... },           // optional
-    "path": "<new group path>"     // optional
   }
 }
 ```
@@ -50,7 +47,6 @@ Method: PUT
 
 - `name`: New name for the group (optional, must be unique)
 - `metadata`: Object containing updated group metadata (optional)
-- `path`: New hierarchical path for the group (optional, must be valid)
 
 ---
 
@@ -69,7 +65,6 @@ Method: PUT
       "name": "<group name>",
       "model": "<group model>",
       "metadata": { ... },
-      "path": "<group path>",
       // other group properties
     }
   }
@@ -81,5 +76,4 @@ Method: PUT
 ## Errors
 
 - Returns an error if the new group name is missing or already exists.
-- Returns an error if the new path is invalid or the parent group does not exist.
 - Returns an error if the group does not exist.

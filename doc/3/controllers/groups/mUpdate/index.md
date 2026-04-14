@@ -36,7 +36,6 @@ Method: POST
       "name": "<group name>",                       // optional
       "model": "<group model>",                     // optional
       "metadata": { ... },                          // optional
-      "path": "<direct parent group path>"          // optional
       }
     ]
 
@@ -56,7 +55,6 @@ Method: POST
     - `name`: Name of the group (optional, must be unique)
     - `model`: Group model name (optional)
     - `metadata`: Object containing group metadata (optional)
-    - `path`: Ancestry path for the group (optional)
 
 ---
 
@@ -98,4 +96,3 @@ Method: POST
 ## Errors
 
 - Returns an error if the group name is missing or already exists.
-- Returns an error if the path is invalid or the parent group does not exist.
