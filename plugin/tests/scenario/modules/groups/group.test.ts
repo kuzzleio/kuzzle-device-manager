@@ -239,7 +239,6 @@ describe("GroupsController", () => {
     await expect(sdk.query(missingIdQuery)).rejects.toThrow(
       /^Missing argument "_id".$/,
     );
-
     const missingBodyQuery: Omit<ApiGroupMoveRequest, "body"> = {
       controller: "device-manager/groups",
       engineId: "engine-ayse",
@@ -249,7 +248,6 @@ describe("GroupsController", () => {
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
       /^The request must specify a body.$/,
     );
-
     const selfMoveQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",
       engineId: "engine-ayse",
@@ -260,7 +258,6 @@ describe("GroupsController", () => {
     await expect(sdk.query(selfMoveQuery)).rejects.toThrow(
       "Cannot move a group into itself",
     );
-
     const descendantMoveQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",
       engineId: "engine-ayse",
@@ -271,7 +268,6 @@ describe("GroupsController", () => {
     await expect(sdk.query(descendantMoveQuery)).rejects.toThrow(
       `Cannot move group "${groupTestParentId1}" into one of its own descendants`,
     );
-
     const alreadyAtRootQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",
       engineId: "engine-ayse",
@@ -282,7 +278,6 @@ describe("GroupsController", () => {
     await expect(sdk.query(alreadyAtRootQuery)).rejects.toThrow(
       `The group "${groupTestId}" is already at the root`,
     );
-
     const alreadyChildQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",
       engineId: "engine-ayse",
@@ -293,6 +288,7 @@ describe("GroupsController", () => {
     await expect(sdk.query(alreadyChildQuery)).rejects.toThrow(
       `The group "${groupTestChildrenId1}" is already a child of "${groupTestParentId1}"`,
     );
+
     const { result: movedGroup } = await sdk.query<
       ApiGroupMoveRequest,
       ApiGroupMoveResult
@@ -303,12 +299,12 @@ describe("GroupsController", () => {
       _id: groupTestChildrenId1,
       body: { targetGroupId: groupTestId },
     });
-
-    expect(movedGroup._id).toBe(groupTestChildrenId1);
-    expect(movedGroup._source.path).toBe(
+    expect(movedGroup.group._id).toBe(groupTestChildrenId1);
+    expect(movedGroup.group._source.path).toBe(
       groupTestId + "." + groupTestChildrenId1,
     );
-    expect(movedGroup._source.lastUpdate).toBeGreaterThanOrEqual(now);
+    expect(movedGroup.group._source.lastUpdate).toBeGreaterThanOrEqual(now);
+    expect(movedGroup.targetGroupId).toBe(groupTestId);
 
     const { result: movedToRoot } = await sdk.query<
       ApiGroupMoveRequest,
@@ -320,9 +316,9 @@ describe("GroupsController", () => {
       _id: groupTestChildrenId1,
       body: { targetGroupId: null },
     });
-
-    expect(movedToRoot._source.path).toBe(groupTestChildrenId1);
-    expect(movedToRoot._source.lastUpdate).toBeGreaterThanOrEqual(now);
+    expect(movedToRoot.group._source.path).toBe(groupTestChildrenId1);
+    expect(movedToRoot.group._source.lastUpdate).toBeGreaterThanOrEqual(now);
+    expect(movedToRoot.targetGroupId).toBeNull();
 
     const { result: movedParent } = await sdk.query<
       ApiGroupMoveRequest,
@@ -334,17 +330,16 @@ describe("GroupsController", () => {
       _id: groupParentWithAssetId,
       body: { targetGroupId: groupTestId },
     });
-
-    expect(movedParent._source.path).toBe(
+    expect(movedParent.group._source.path).toBe(
       groupTestId + "." + groupParentWithAssetId,
     );
+    expect(movedParent.targetGroupId).toBe(groupTestId);
 
     const { _source: assetGrouped } = await sdk.document.get<AssetContent>(
       "engine-ayse",
       InternalCollection.ASSETS,
       "Container-grouped2",
     );
-
     expect(assetGrouped.groups[0].path).toBe(
       groupTestId + "." + groupParentWithAssetId,
     );
@@ -354,7 +349,6 @@ describe("GroupsController", () => {
       InternalCollection.GROUPS,
       groupChildrenWithAssetId,
     );
-
     expect(childrenGroup.path).toBe(
       groupTestId +
         "." +
