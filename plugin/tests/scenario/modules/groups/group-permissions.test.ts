@@ -152,22 +152,22 @@ describe("GroupsController", () => {
   });
 
   it("can move a group", async () => {
-    const { result: movedGroup } = await sdk.query<
-      ApiGroupMoveRequest,
-      ApiGroupMoveResult
-    >({
-      controller: "device-manager/groups",
-      engineId: "engine-ayse",
-      action: "moveGroup",
-      _id: groupTestChildrenId1,
-      body: { targetGroupId: groupTestId },
-    });
-
-    expect(movedGroup._id).toBe(groupTestChildrenId1);
-    expect(movedGroup._source.path).toBe(
-      groupTestId + "." + groupTestChildrenId1,
+    const { result } = await sdk.query<ApiGroupMoveRequest, ApiGroupMoveResult>(
+      {
+        controller: "device-manager/groups",
+        engineId: "engine-ayse",
+        action: "moveGroup",
+        _id: groupTestChildrenId1,
+        body: { targetGroupId: groupTestId },
+      },
     );
-    expect(movedGroup._source.lastUpdate).toBeGreaterThanOrEqual(now);
+
+    expect(result.group._id).toBe(groupTestChildrenId1);
+    expect(result.group._source.path).toBe(
+      `${groupTestId}.${groupTestChildrenId1}`,
+    );
+    expect(result.group._source.lastUpdate).toBeGreaterThanOrEqual(now);
+    expect(result.targetGroupId).toBe(groupTestId);
   });
 
   it("can delete a group", async () => {

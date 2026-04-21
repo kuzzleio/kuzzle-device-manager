@@ -210,10 +210,10 @@ export class GroupsService extends BaseService {
     _id: string,
     targetGroupId: string | null,
     request: KuzzleRequest,
-  ): Promise<KDocument<GroupContent>> {
+  ): Promise<{ group: KDocument<GroupContent>; targetGroupId: string | null }> {
     const group = await this.get(engineId, _id, request);
     const currentPath = group._source.path;
-    const groupLeafId = currentPath.split(".").pop() as string; //NOSONAR
+    const groupLeafId = currentPath.split(".").pop() as string;
     const currentParentPath = currentPath.split(".").slice(0, -1).join(".");
 
     let newPath: string;
@@ -246,7 +246,17 @@ export class GroupsService extends BaseService {
       newPath = `${targetPath}.${groupLeafId}`;
     }
 
-    return this._updatePath(request, _id, engineId, newPath);
+    const updatedGroup = await this._updatePath(
+      request,
+      _id,
+      engineId,
+      newPath,
+    );
+
+    return {
+      group: updatedGroup,
+      targetGroupId,
+    };
   }
 
   async delete(_id: string, engineId: string, request: KuzzleRequest) {

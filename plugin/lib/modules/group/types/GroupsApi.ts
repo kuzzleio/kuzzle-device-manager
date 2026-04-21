@@ -165,5 +165,7 @@ export interface ApiGroupMoveRequest extends GroupControllerRequest {
     targetGroupId: string | null;
   };
 }
-
-export type ApiGroupMoveResult = KDocument<GroupContent>;
+export type ApiGroupMoveResult = {
+  group: KDocument<GroupContent>;
+  targetGroupId: string | null;
+};
