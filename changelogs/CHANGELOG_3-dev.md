@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.9 (2026-04-21)
+
+* feat(groups): add targetgroupid in the return of movegroup (#476) ([c59f8d8](https://github.com/kuzzleio/kuzzle-device-manager/commit/c59f8d8)), closes [#476](https://github.com/kuzzleio/kuzzle-device-manager/issues/476)
+
 ## 3.0.0-3-dev.8 (2026-04-14)
 
 * fix(model): use sdk.security.checkRights instead of sdk.query in ModelService ([a15afac](https://github.com/kuzzleio/kuzzle-device-manager/commit/a15afac))
