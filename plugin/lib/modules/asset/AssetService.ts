@@ -3,8 +3,9 @@ import {
   KuzzleRequest,
   NotFoundError,
   PartialError,
-  User,
 } from "kuzzle";
+
+type BackendUser = ReturnType<KuzzleRequest["getUser"]>;
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
   BaseRequest,
@@ -430,7 +431,7 @@ export class AssetService extends DigitalTwinService {
   }
 
   public async migrateTenant(
-    user: User,
+    user: BackendUser,
     assetsList: string[],
     engineId: string,
     newEngineId: string,

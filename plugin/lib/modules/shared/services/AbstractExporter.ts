@@ -7,8 +7,10 @@ import {
   KHit,
   NotFoundError,
   SearchResult,
-  User,
+  KuzzleRequest,
 } from "kuzzle";
+
+type BackendUser = ReturnType<KuzzleRequest["getUser"]>;
 import { EngineContent } from "kuzzle-plugin-commons";
 import _ from "lodash";
 
@@ -90,7 +92,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
    */
   abstract sendExport(engineId: string, exportId: string): Promise<Readable>;
 
-  async prepareExport(engineId: string, user: User, params: P) {
+  async prepareExport(engineId: string, user: BackendUser, params: P) {
     const exportId = randomUUID();
 
     await this.ms.setex(

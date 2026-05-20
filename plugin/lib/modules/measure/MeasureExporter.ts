@@ -1,4 +1,6 @@
-import { InternalError, JSONObject, KHit, User } from "kuzzle";
+import { InternalError, JSONObject, KHit, KuzzleRequest } from "kuzzle";
+
+type BackendUser = ReturnType<KuzzleRequest["getUser"]>;
 import { ask } from "kuzzle-plugin-commons";
 import _ from "lodash";
 import { UUID } from "node:crypto";
@@ -89,7 +91,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
    */
   async prepareExport(
     engineId: string,
-    user: User,
+    user: BackendUser,
     params: MeasureSearchParams,
   ) {
     const digitalTwin = await this.sdk.document.get<DigitalTwinContent>(

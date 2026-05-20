@@ -1,5 +1,7 @@
-import { User } from "kuzzle";
+import { KuzzleRequest } from "kuzzle";
 import { KDocument } from "kuzzle-sdk";
+
+type BackendUser = ReturnType<KuzzleRequest["getUser"]>;
 
 import { Metadata } from "../../../modules/shared";
 
@@ -28,7 +30,7 @@ export type AskDeviceLinkAsset = {
     engineId: string;
     assetId: string;
     deviceId: string;
-    user: User;
+    user: BackendUser;
     measureNames: ApiDeviceLinkAssetRequest["body"]["measureNames"];
   };
 
@@ -40,7 +42,7 @@ export type AskDeviceUnlinkAsset = {
 
   payload: {
     deviceId: string;
-    user: User;
+    user: BackendUser;
   };
 
   result: void;
@@ -51,7 +53,7 @@ export type AskDeviceDetachEngine = {
 
   payload: {
     deviceId: string;
-    user: User;
+    user: BackendUser;
   };
 
   result: void;
@@ -63,7 +65,7 @@ export type AskDeviceAttachEngine = {
   payload: {
     engineId: string;
     deviceId: string;
-    user: User;
+    user: BackendUser;
   };
 
   result: void;
