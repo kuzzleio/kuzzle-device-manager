@@ -285,15 +285,9 @@ export class GroupsService extends BaseService {
       assets.map((asset) => ({
         _id: asset._id,
         body: {
-          groups: asset._source.groups
-            .filter((grp) => grp.path !== group._source.path)
-            .map((grp) => {
-              if (grp.path.includes(group._source.path)) {
-                grp.path = grp.path.replace(`${group._source.path}.`, "");
-                grp.date = Date.now();
-              }
-              return grp;
-            }),
+          groups: asset._source.groups.filter(
+            (grp) => !grp.path.includes(group._source.path),
+          ),
         },
       })),
       { strict: true },
@@ -319,15 +313,9 @@ export class GroupsService extends BaseService {
       devices.map((device) => ({
         _id: device._id,
         body: {
-          groups: device._source.groups
-            .filter((grp) => grp.path !== group._source.path)
-            .map((grp) => {
-              if (grp.path.includes(group._source.path)) {
-                grp.path = grp.path.replace(`${group._source.path}.`, "");
-                grp.date = Date.now();
-              }
-              return grp;
-            }),
+          groups: device._source.groups.filter(
+            (grp) => !grp.path.includes(group._source.path),
+          ),
         },
       })),
       { strict: true },
@@ -340,7 +328,7 @@ export class GroupsService extends BaseService {
           query: {
             prefix: {
               path: {
-                value: _id,
+                value: group._source.path,
               },
             },
           },
@@ -348,24 +336,14 @@ export class GroupsService extends BaseService {
         { lang: "koncorde" },
       );
 
-    await this.sdk.document.mUpdate(
+    await this.sdk.document.mDelete(
       engineId,
       InternalCollection.GROUPS,
-      childrenGroups.map((grp) => {
-        grp._source.path = grp._source.path.replace(
-          `${group._source.path}.`,
-          "",
-        );
-        grp._source.lastUpdate = Date.now();
-        return { _id: grp._id, body: grp._source };
-      }),
-      { strict: true },
+      [...childrenGroups.map((g) => g._id), _id],
+      { strict: true, triggerEvents: true },
     );
 
-    return this.deleteDocument(request, _id, {
-      collection: InternalCollection.GROUPS,
-      engineId,
-    });
+    return _id;
   }
 
   async search(
