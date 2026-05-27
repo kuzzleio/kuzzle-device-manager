@@ -339,7 +339,7 @@ export class GroupsService extends BaseService {
     await this.sdk.document.mDelete(
       engineId,
       InternalCollection.GROUPS,
-      [...childrenGroups.map((g) => g._id), _id],
+      childrenGroups.map((g) => g._id),
       { strict: true, triggerEvents: true },
     );
 
