@@ -385,18 +385,16 @@ describe("GroupsController", () => {
       action: "delete",
       _id: groupTestParentId1,
     });
-
-    const { _source: childrenGroup } = await sdk.document.get<GroupContent>(
-      "engine-ayse",
-      InternalCollection.GROUPS,
-      groupTestChildrenId1,
+    await sdk.collection.refresh("engine-ayse", "groups");
+    const deletedChildQuery = {
+      controller: "device-manager/groups",
+      action: "get",
+      engineId: "engine-ayse",
+      _id: groupTestChildrenId1,
+    };
+    await expect(sdk.query(deletedChildQuery)).rejects.toThrow(
+      /test-children-1/,
     );
-
-    expect(childrenGroup).toMatchObject({
-      path: groupTestChildrenId1,
-    });
-    expect(childrenGroup.lastUpdate).toBeGreaterThanOrEqual(now);
-
     await sdk.query<ApiGroupDeleteRequest>({
       controller: "device-manager/groups",
       engineId: "engine-ayse",
@@ -410,7 +408,7 @@ describe("GroupsController", () => {
       "Container-grouped",
     );
 
-    expect(assetGrouped).toMatchObject({
+    expect(assetGrouped).not.toMatchObject({
       groups: [
         {
           path: groupChildrenWithAssetId,

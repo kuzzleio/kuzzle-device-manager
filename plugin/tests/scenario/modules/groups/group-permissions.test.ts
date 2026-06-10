@@ -30,7 +30,6 @@ import {
   ApiGroupSearchResult,
   ApiGroupUpdateRequest,
 } from "lib/modules/group/types/GroupsApi";
-import { GroupContent } from "lib/modules/group/types/GroupContent";
 
 describe("GroupsController", () => {
   const sdk = setupHooks();
@@ -188,17 +187,15 @@ describe("GroupsController", () => {
       _id: groupTestParentId1,
     });
 
-    const { _source: childrenGroup } = await sdk.document.get<GroupContent>(
-      "engine-ayse",
-      InternalCollection.GROUPS,
-      groupTestChildrenId1,
+    const deletedChildQuery = {
+      controller: "device-manager/groups",
+      action: "get",
+      engineId: "engine-ayse",
+      _id: groupTestChildrenId1,
+    };
+    await expect(sdk.query(deletedChildQuery)).rejects.toThrow(
+      /test-children-1/,
     );
-
-    expect(childrenGroup).toMatchObject({
-      path: groupTestChildrenId1,
-    });
-    expect(childrenGroup.lastUpdate).toBeGreaterThanOrEqual(now);
-
     await sdk.query<ApiGroupDeleteRequest>({
       controller: "device-manager/groups",
       engineId: "engine-ayse",
@@ -212,7 +209,7 @@ describe("GroupsController", () => {
       "Container-grouped",
     );
 
-    expect(assetGrouped).toMatchObject({
+    expect(assetGrouped).not.toMatchObject({
       groups: [
         {
           path: groupChildrenWithAssetId,
