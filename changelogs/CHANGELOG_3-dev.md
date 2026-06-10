@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.10 (2026-06-10)
+
+* fix(groups): delete children groups on delete (#479) ([a09c8e1](https://github.com/kuzzleio/kuzzle-device-manager/commit/a09c8e1)), closes [#479](https://github.com/kuzzleio/kuzzle-device-manager/issues/479)
+
 ## 3.0.0-3-dev.9 (2026-04-21)
 
 * feat(groups): add targetgroupid in the return of movegroup (#476) ([c59f8d8](https://github.com/kuzzleio/kuzzle-device-manager/commit/c59f8d8)), closes [#476](https://github.com/kuzzleio/kuzzle-device-manager/issues/476)
