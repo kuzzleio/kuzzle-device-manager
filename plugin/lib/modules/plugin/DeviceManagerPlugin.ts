@@ -40,7 +40,7 @@ import { GroupsModule } from "../group/GroupsModule";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
-
+  public provisioningStrategy: string;
   private deviceManagerEngine: DeviceManagerEngine;
   private platformConfigManager: ConfigManager;
   private engineConfigManager: ConfigManager;
@@ -607,23 +607,30 @@ export class DeviceManagerPlugin extends Plugin {
    * Initialize the config document if it does not exists
    */
   private async initializeConfig() {
-    const exists = await this.sdk.document.exists(
-      this.config.platformIndex,
-      this.platformConfigManager.collection,
-      "plugin--device-manager",
-    );
+    let configDoc;
 
-    if (!exists) {
-      await this.sdk.document.create(
+    try {
+      configDoc = await this.sdk.document.get(
         this.config.platformIndex,
         this.platformConfigManager.collection,
-        {
-          "device-manager": { provisioningStrategy: "auto" },
-          type: "device-manager",
-        },
         "plugin--device-manager",
       );
+    } catch {
+      this.context.log.warn(
+        "Plugin device-manager config missing from platform index",
+      );
     }
+    configDoc ??= await this.sdk.document.create(
+      this.config.platformIndex,
+      this.platformConfigManager.collection,
+      {
+        "device-manager": { provisioningStrategy: "auto" },
+        type: "device-manager",
+      },
+      "plugin--device-manager",
+    );
+    this.provisioningStrategy =
+      configDoc._source["device-manager"].provisioningStrategy;
   }
 
   private async pipeCheckEngine(request: KuzzleRequest) {
