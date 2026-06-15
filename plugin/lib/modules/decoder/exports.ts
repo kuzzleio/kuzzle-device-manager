@@ -5,3 +5,4 @@ export * from "./Decoder";
 export * from "./roles/RolePayloadsAll";
 export * from "./roles/RoleDecodersAdmin";
 export * from "./types/Events";
+export * from "./DecoderModule";
