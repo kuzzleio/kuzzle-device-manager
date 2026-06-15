@@ -17,7 +17,8 @@ import { DecodedPayload } from "./DecodedPayload";
 import { Decoder } from "./Decoder";
 import { DecodingState } from "./DecodingState";
 import { SkipError } from "./SkipError";
-import { AskPayloadReceiveFormated } from "./types/PayloadEvents";
+import { AskPayloadReceiveFormated } from "./types/InternalEvents";
+import { EventPayloadDeviceProvisioning } from "./types/Events";
 import { DeviceMeasureSource } from "../measure/types/MeasureSources";
 import { KuzzleLogger } from "kuzzle-logger";
 
@@ -113,6 +114,7 @@ export class PayloadService extends BaseService {
     const devices = await this.retrieveDevices(
       decoder.deviceModel,
       decodedPayload.references,
+      request,
       {
         refresh,
       },
@@ -328,6 +330,7 @@ export class PayloadService extends BaseService {
   private async retrieveDevices(
     deviceModel: string,
     references: string[],
+    request: KuzzleRequest,
     {
       refresh,
     }: {
@@ -357,6 +360,7 @@ export class PayloadService extends BaseService {
           : deviceProvisioning,
       ),
     );
+    // TODO register it in the plugin config on start up to avoid fetching every time we ingest
     // If we have unknown devices, let's check if we should register them
     if (errors.length > 0) {
       const { _source } = await this.sdk.document.get(
@@ -366,9 +370,14 @@ export class PayloadService extends BaseService {
       );
 
       if (_source["device-manager"].provisioningStrategy === "auto") {
-        const newDevices = await this.provisionDevices(deviceModel, errors, {
-          refresh,
-        });
+        const newDevices = await this.provisionDevices(
+          deviceModel,
+          errors,
+          request,
+          {
+            refresh,
+          },
+        );
         updatedDevices.push(...newDevices);
       } else {
         this.logger.info(
@@ -383,6 +392,7 @@ export class PayloadService extends BaseService {
   private async provisionDevices(
     deviceModel: string,
     deviceIds: string[],
+    request: KuzzleRequest,
     { refresh }: { refresh: any },
   ): Promise<KDocument<DeviceContent>[]> {
     const deviceModelContent = await ask<AskModelDeviceGet>(
@@ -406,7 +416,10 @@ export class PayloadService extends BaseService {
         provisionedAt: Date.now(),
         reference,
       };
-
+      this.app.trigger<EventPayloadDeviceProvisioning>(
+        "device-manager:payload:provision-device:before",
+        { device: body, request },
+      );
       return {
         _id: DeviceSerializer.id(deviceModel, reference),
         body,

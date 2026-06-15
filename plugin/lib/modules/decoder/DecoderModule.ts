@@ -9,9 +9,9 @@ import { RolePayloadsAll } from "./roles/RolePayloadsAll";
 import { KuzzleLogger } from "kuzzle-logger";
 
 export class DecoderModule extends Module {
-  private payloadService: PayloadService;
-  private decoderController: DecodersController;
-  private payloadsController: PayloadsController;
+  payloadService: PayloadService;
+  decoderController: DecodersController;
+  payloadsController: PayloadsController;
   readonly decoderLogger: KuzzleLogger;
   readonly payloadLogger: KuzzleLogger;
 

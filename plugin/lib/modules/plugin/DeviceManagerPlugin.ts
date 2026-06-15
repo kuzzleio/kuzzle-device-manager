@@ -49,7 +49,7 @@ export class DeviceManagerPlugin extends Plugin {
   private assetModule: AssetModule;
   private deviceModule: DeviceModule;
   private groupModule: GroupsModule;
-  private decoderModule: DecoderModule;
+  decoderModule: DecoderModule;
   private measureModule: MeasureModule;
   private modelModule: ModelModule;
 
