@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.11 (2026-06-16)
+
+* feat(payload): emit event when provisioning device (#480) ([219e739](https://github.com/kuzzleio/kuzzle-device-manager/commit/219e739)), closes [#480](https://github.com/kuzzleio/kuzzle-device-manager/issues/480)
+
 ## 3.0.0-3-dev.10 (2026-06-10)
 
 * fix(groups): delete children groups on delete (#479) ([a09c8e1](https://github.com/kuzzleio/kuzzle-device-manager/commit/a09c8e1)), closes [#479](https://github.com/kuzzleio/kuzzle-device-manager/issues/479)
