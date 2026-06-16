@@ -24,7 +24,7 @@ import {
   AssetSerializer,
 } from "../asset";
 
-import { AskPayloadReceiveFormated } from "../decoder/types/PayloadEvents";
+import { AskPayloadReceiveFormated } from "../decoder/types/InternalEvents";
 import { DeviceSerializer } from "./model/DeviceSerializer";
 import {
   DeviceProvisioningContent,
