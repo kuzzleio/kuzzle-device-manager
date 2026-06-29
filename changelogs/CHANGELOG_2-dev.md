@@ -1,3 +1,9 @@
+## 2.12.0-dev.3 (2026-06-29)
+
+* fix: merge ok ([a462d1b](https://github.com/kuzzleio/kuzzle-device-manager/commit/a462d1b))
+* chore(ci): update branch names in workflows ([765a3db](https://github.com/kuzzleio/kuzzle-device-manager/commit/765a3db))
+* chore(semantic-release): update config to match new branches ([441c92d](https://github.com/kuzzleio/kuzzle-device-manager/commit/441c92d))
+
 ## 2.12.0-dev.2 (2026-05-20)
 
 * fix(types): fix typing issue ([1b33d05](https://github.com/kuzzleio/kuzzle-device-manager/commit/1b33d05))
