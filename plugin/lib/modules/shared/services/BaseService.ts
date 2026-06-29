@@ -19,8 +19,9 @@ import {
   KHit,
   KuzzleRequest,
   SearchResult,
-  User,
 } from "kuzzle";
+
+type BackendUser = ReturnType<KuzzleRequest["getUser"]>;
 
 import {
   DeviceManagerPlugin,
@@ -54,7 +55,7 @@ export abstract class BaseService {
   }
 
   protected get impersonatedSdk() {
-    return (user: User) => {
+    return (user: BackendUser) => {
       if (user?._id) {
         return this.sdk.as(user, { checkRights: false });
       }
