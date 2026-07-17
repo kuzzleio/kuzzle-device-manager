@@ -397,7 +397,7 @@ export class PayloadService extends BaseService {
       },
     );
 
-    const newDevices = deviceIds.map((deviceId) => {
+    const devicePromises = deviceIds.map(async (deviceId) => {
       // Reference may contains a "-"
       const [, ...rest] = deviceId.split("-");
       const reference = rest.join("-");
@@ -411,7 +411,7 @@ export class PayloadService extends BaseService {
         provisionedAt: Date.now(),
         reference,
       };
-      this.app.trigger<EventPayloadDeviceProvisioning>(
+      await this.app.trigger<EventPayloadDeviceProvisioning>(
         "device-manager:payload:provision-device:before",
         { device: body, request },
       );
@@ -420,6 +420,16 @@ export class PayloadService extends BaseService {
         body,
       };
     });
+    const newDevices = (await Promise.allSettled(devicePromises))
+      .filter((p) => p.status === "fulfilled")
+      .map(
+        (
+          p: PromiseFulfilledResult<{
+            _id: string;
+            body: DeviceProvisioningContent;
+          }>,
+        ) => p.value,
+      );
 
     const { successes, errors } =
       await this.sdk.document.mCreate<DeviceContent>(
