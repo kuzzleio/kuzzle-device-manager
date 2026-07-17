@@ -1,3 +1,8 @@
+## 3.0.0-3-dev.12 (2026-07-17)
+
+* Merge pull request #482 from kuzzleio/fix/await-provision-event ([e365a54](https://github.com/kuzzleio/kuzzle-device-manager/commit/e365a54)), closes [#482](https://github.com/kuzzleio/kuzzle-device-manager/issues/482)
+* fix(payloadService): await provision event trigger ([6273015](https://github.com/kuzzleio/kuzzle-device-manager/commit/6273015))
+
 ## 3.0.0-3-dev.11 (2026-06-16)
 
 * feat(payload): emit event when provisioning device (#480) ([219e739](https://github.com/kuzzleio/kuzzle-device-manager/commit/219e739)), closes [#480](https://github.com/kuzzleio/kuzzle-device-manager/issues/480)
