@@ -72,6 +72,7 @@ export class ModelsRegister {
    * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
    * @param tooltipModels - Optional model list for tooltip, containing labels and tooltip content.
+   * @param icon - Optional icon representing the model.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerAsset(
@@ -84,6 +85,7 @@ export class ModelsRegister {
     metadataGroups: MetadataGroups = {},
     tooltipModels: TooltipModels = {},
     locales: { [valueName: string]: LocaleDetails } = {},
+    icon?: string,
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -104,6 +106,7 @@ export class ModelsRegister {
     this.assetModels.push({
       asset: {
         defaultMetadata,
+        icon,
         locales,
         measures,
         metadataDetails,
@@ -126,6 +129,7 @@ export class ModelsRegister {
    * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
    * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
+   * @param icon - Optional icon representing the model.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerDevice(
@@ -135,6 +139,7 @@ export class ModelsRegister {
     defaultMetadata: JSONObject = {},
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
+    icon?: string,
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -155,6 +160,7 @@ export class ModelsRegister {
     this.deviceModels.push({
       device: {
         defaultMetadata,
+        icon,
         measures,
         metadataDetails,
         metadataGroups,
@@ -176,6 +182,7 @@ export class ModelsRegister {
    * @param defaultMetadata - The default metadata values for the model, defaults to an empty object.
    * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
+   * @param icon - Optional icon representing the model.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerGroup(
@@ -186,6 +193,7 @@ export class ModelsRegister {
     defaultMetadata: JSONObject = {},
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
+    icon?: string,
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -199,6 +207,7 @@ export class ModelsRegister {
       group: {
         affinity,
         defaultMetadata,
+        icon,
         metadataDetails,
         metadataGroups,
         metadataMappings,
@@ -209,7 +218,7 @@ export class ModelsRegister {
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
-    const { locales, validationSchema, valuesMappings, valuesDetails } =
+    const { icon, locales, validationSchema, valuesMappings, valuesDetails } =
       measureDefinition;
     if (validationSchema) {
       try {
@@ -224,6 +233,7 @@ export class ModelsRegister {
 
     this.measureModels.push({
       measure: {
+        icon,
         locales,
         type,
         validationSchema,

@@ -18,6 +18,7 @@ export const modelsMappings: CollectionMappings = {
     measure: {
       properties: {
         type: { type: "keyword" },
+        icon: { type: "text" },
         valuesMappings: {
           dynamic: "false",
           properties: {},
@@ -43,6 +44,7 @@ export const modelsMappings: CollectionMappings = {
     asset: {
       properties: {
         model: { type: "keyword" },
+        icon: { type: "text" },
         metadataMappings: {
           dynamic: "false",
           properties: {},
@@ -82,6 +84,7 @@ export const modelsMappings: CollectionMappings = {
     device: {
       properties: {
         model: { type: "keyword" },
+        icon: { type: "text" },
         metadataMappings: {
           dynamic: "false",
           properties: {},
@@ -113,6 +116,7 @@ export const modelsMappings: CollectionMappings = {
     group: {
       properties: {
         model: { type: "keyword" },
+        icon: { type: "text" },
         affinity: {
           properties: {
             type: {

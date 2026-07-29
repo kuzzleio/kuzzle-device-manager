@@ -314,6 +314,7 @@ export class ModelService extends BaseService {
     tooltipModels: TooltipModels,
     locales: { [valueName: string]: LocaleDetails },
     engineIds?: string[],
+    icon?: string,
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
@@ -409,6 +410,7 @@ export class ModelService extends BaseService {
     const modelContent: AssetModelContent = {
       asset: {
         defaultMetadata,
+        icon,
         locales,
         measures,
         metadataDetails,
@@ -465,6 +467,7 @@ export class ModelService extends BaseService {
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
     measures: NamedMeasures,
+    icon?: string,
   ): Promise<KDocument<DeviceModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Device model "${model}" must be PascalCase.`);
@@ -482,6 +485,7 @@ export class ModelService extends BaseService {
     const modelContent: DeviceModelContent = {
       device: {
         defaultMetadata,
+        icon,
         measures,
         metadataDetails,
         metadataGroups,
@@ -535,6 +539,7 @@ export class ModelService extends BaseService {
     defaultMetadata: JSONObject,
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
+    icon?: string,
   ): Promise<KDocument<GroupModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
@@ -549,6 +554,7 @@ export class ModelService extends BaseService {
       group: {
         affinity: groupAffinity,
         defaultMetadata,
+        icon,
         metadataDetails,
         metadataGroups,
         metadataMappings,
@@ -595,9 +601,11 @@ export class ModelService extends BaseService {
       [valueName: string]: LocaleDetails;
     },
     engineIds?: string[],
+    icon?: string,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
       measure: {
+        icon,
         locales,
         type,
         valuesDetails,
@@ -1278,6 +1286,7 @@ export class ModelService extends BaseService {
     measures: AssetModelContent["asset"]["measures"],
     tooltipModels: TooltipModels,
     locales: { [valueName: string]: LocaleDetails },
+    icon: string | undefined,
     request: KuzzleRequest,
   ): Promise<KDocument<AssetModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
@@ -1312,6 +1321,7 @@ export class ModelService extends BaseService {
     const assetModelContent: AssetModelContent = {
       asset: {
         defaultMetadata,
+        icon: icon ?? existingAsset._source.asset.icon,
         locales,
         measures: measuresUpdated,
         metadataDetails,

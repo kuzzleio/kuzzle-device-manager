@@ -198,6 +198,11 @@ export interface AssetModelContent extends KDocumentContent {
     model: string;
 
     /**
+     * Icon representing the asset model.
+     */
+    icon?: string;
+
+    /**
      * Metadata mappings.
      *
      * @example
@@ -341,6 +346,11 @@ export interface DeviceModelContent extends KDocumentContent {
     model: string;
 
     /**
+     * Icon representing the device model.
+     */
+    icon?: string;
+
+    /**
      * Metadata mappings.
      *
      * @example
@@ -433,6 +443,11 @@ export interface GroupModelContent extends KDocumentContent {
      * Name of the model
      */
     model: string;
+
+    /**
+     * Icon representing the group model.
+     */
+    icon?: string;
 
     /**
      * Group types and model affinities

@@ -68,6 +68,10 @@ export interface MeasureDefinition {
     [valueName: string]: LocaleDetails;
   };
   /**
+   * Icon representing the measure.
+   */
+  icon?: string;
+  /**
    * Mappings for the measurement values in order to index the fields
    */
   valuesMappings: JSONObject;
