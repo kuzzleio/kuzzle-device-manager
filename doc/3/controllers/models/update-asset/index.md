@@ -31,6 +31,7 @@ Method: PUT
 
     // Optional
 
+    "icon": "<icon>", // Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup
     "metadataMappings": {
       // Metadata mappings
     },
@@ -140,6 +141,7 @@ Method: PUT
 
 ## Body properties
 
+- `icon`: Optional. Icon representing the asset model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. This field is not indexed for search.
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Translations, metadata group and editor hint

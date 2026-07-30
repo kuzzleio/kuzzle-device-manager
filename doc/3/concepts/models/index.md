@@ -19,6 +19,7 @@ A sensor model contains the following information:
 
 - `model`: model name
 - `measures`: received measurements
+- `icon`: (optional) Icon representing the device model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. Not indexed for search.
 - `decoder`: (optional) instance of a [Decoder] to normalize the data
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/3/guides/main-concepts/data-storage/#collection-mappings))
 - `defaultMetadata`: (optional) default metadata values
@@ -68,6 +69,7 @@ A measure model contains the following information:
 
 - `model`: model name
 - `measure`: type of the measure
+- `icon`: (optional) Icon representing the measure model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. Not indexed for search.
 - `valuesMappings`: measurements mappings (See [Collection Mappings](https://docs.kuzzle.io/core/3/guides/main-concepts/data-storage/#collection-mappings))
 - `valuesDetails`: (optional) Metadata and translations of measurements. You can use it to keep consistency on translations between your apps
 - `locales`: (optional) Translation for the measure model
@@ -129,6 +131,7 @@ An asset model contains the following information:
 - `model`: model name
 - `engineGroup`: engine group to which the model belongs.
 - `measures`: received measurements
+- `icon`: (optional) Icon representing the asset model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. Not indexed for search.
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/3/guides/main-concepts/data-storage/#collection-mappings))
 - `defaultMetadata`: (optional) default metadata values-
 - `metadataDetails`: (optional) Translations, metadata group and editor hint.
@@ -200,6 +203,7 @@ A group model contains the following information:
     - `assets`: List of asset model names accepted in the group.
     - `devices`: List of device model names accepted in the group.
   - `strict`: Boolean indicating whether the affinities are a strict restriction (`true`) or just a suggestion (`false`). If `strict` is `true`, only the specified types and models can be added to the group.
+- `icon`: (optional) Icon representing the group model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. Not indexed for search.
 - `metadataMappings`: (optional) Metadata mappings for group-specific information (see [Collection Mappings](https://docs.kuzzle.io/core/3/guides/main-concepts/data-storage/#collection-mappings)).
 - `defaultMetadata`: (optional) Default metadata values for the group.
 - `metadataDetails`: (optional) Translations, metadata group, and editor hints for group metadata.
