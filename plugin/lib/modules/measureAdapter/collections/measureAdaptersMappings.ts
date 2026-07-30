@@ -1,8 +1,5 @@
 import { CollectionMappings } from "kuzzle-sdk";
 
-/**
- * Mappings for the "measureAdapters" collection.
- */
 export const measureAdaptersMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {

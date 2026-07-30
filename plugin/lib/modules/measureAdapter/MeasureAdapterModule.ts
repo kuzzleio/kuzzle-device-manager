@@ -18,7 +18,6 @@ export class MeasureAdapterModule extends Module {
     this.logger = this.plugin.context.logger.child("measure-adapters-module");
   }
 
-  // @todo temporary until registers refactor
   private get decodersRegister() {
     // eslint-disable-next-line dot-notation
     return this.plugin["decodersRegister"];

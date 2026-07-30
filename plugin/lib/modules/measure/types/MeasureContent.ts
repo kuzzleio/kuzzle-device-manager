@@ -55,37 +55,11 @@ export interface MeasureOriginDevice extends AbstractMeasureOrigin {
    */
   _id: string;
 
-  /**
-   * Present when this measure was produced by a Measure Adapter, transforming
-   * a raw sensor measure into this named/typed one.
-   *
-   * `measureName` above already reflects the post-adaptation name; this block
-   * preserves what the sensor actually produced along with the adapter used.
-   */
   adapter?: {
-    /**
-     * Measure Adapter document id used
-     */
     _id: string;
-
-    /**
-     * Measure Adapter name
-     */
     name: string;
-
-    /**
-     * Original measure name, pre-adaptation
-     */
     sourceMeasureName: string;
-
-    /**
-     * Original measure type, pre-adaptation
-     */
     sourceType: string;
-
-    /**
-     * Original values object, pre-adaptation
-     */
     sourceValues: JSONObject;
   };
 }
@@ -169,10 +143,6 @@ export type DecodedMeasurement<TMeasureValues extends JSONObject = JSONObject> =
   {
     measureName: string;
 
-    /**
-     * Present when this measurement was produced by a Measure Adapter,
-     * transforming a raw sensor measure into this named/typed one.
-     */
     adaptedFrom?: {
       _id: string;
       name: string;

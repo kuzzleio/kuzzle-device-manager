@@ -235,17 +235,6 @@ export class PayloadService extends BaseService {
     return { valid };
   }
 
-  /**
-   * Apply the device's Measure Adapter (if any) on its freshly decoded
-   * measures, renaming/retyping the ones covered by the adapter's mapping
-   * before they are routed to `MeasureService`.
-   *
-   * This runs strictly before the `device-manager:measures:sourceIngest` ask
-   * and therefore before the `device-manager:measures:process:before/after`
-   * enrichment pipes.
-   *
-   * Measures not covered by the adapter's mapping pass through unchanged.
-   */
   private async applyMeasureAdapter(
     device: KDocument<DeviceContent>,
     decodedPayload: DecodedPayload<any>,

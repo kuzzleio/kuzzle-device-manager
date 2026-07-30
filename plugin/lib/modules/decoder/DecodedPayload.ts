@@ -94,12 +94,6 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
     return this.measurementsByDevice[deviceReference];
   }
 
-  /**
-   * Replace the measurements decoded for a device.
-   *
-   * Used by the ingestion pipeline to apply a Measure Adapter on the
-   * decoder's raw output, before it is routed to `MeasureService`.
-   */
   replaceMeasurements(
     deviceReference: string,
     measurements: DecodedMeasurement[],

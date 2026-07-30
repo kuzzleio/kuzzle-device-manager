@@ -129,14 +129,6 @@ export class MeasureAdapterService extends BaseService {
     });
   }
 
-  /**
-   * Validate that a mapping is applicable:
-   * - `source` must be a registered decoder's device model
-   * - every `sourceMeasureName` must be declared by that decoder
-   * - every `targetType` must be a registered measure type with exactly one
-   *   value field (v1 only supports 1:1 field renaming)
-   * - `targetMeasureName` must be unique within the mapping
-   */
   private async validateMapping(
     engineId: string,
     source: string,

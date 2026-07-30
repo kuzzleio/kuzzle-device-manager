@@ -590,13 +590,6 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return InternalCollection.MEASURES;
   }
 
-  /**
-   * Create the measureAdapters collection in the engine
-   *
-   * @param engineId The target engine Id
-   *
-   * @throws If it failed during the measureAdapters collection creation
-   */
   async createMeasureAdaptersCollection(engineId: string) {
     const settings = this.config.engineCollections.measureAdapters.settings;
 

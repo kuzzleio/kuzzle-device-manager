@@ -41,13 +41,6 @@ export interface DeviceContent<
     date: number;
   }>;
 
-  /**
-   * Measure Adapter applied to this device's decoded measures, transforming
-   * them from their raw/generic name and type into use-case specific ones.
-   *
-   * Requires `engineId` to be set, since the adapter is a tenant-scoped
-   * document.
-   */
   measureAdapterId?: string | null;
 }
 

@@ -675,14 +675,6 @@ export class DeviceService extends DigitalTwinService {
     );
   }
 
-  /**
-   * Assign a Measure Adapter to a device, remapping its `measureSlots` from
-   * the decoder's raw declared measures to the adapter's use-case specific
-   * measure names.
-   *
-   * The device must already be attached to an engine, since the adapter is a
-   * tenant-scoped document living in that engine's index.
-   */
   async setMeasureAdapter(
     engineId: string,
     deviceId: string,
@@ -730,10 +722,6 @@ export class DeviceService extends DigitalTwinService {
     });
   }
 
-  /**
-   * Unassign the Measure Adapter from a device, restoring its `measureSlots`
-   * to the decoder's raw declared measures.
-   */
   async unsetMeasureAdapter(
     engineId: string,
     deviceId: string,
