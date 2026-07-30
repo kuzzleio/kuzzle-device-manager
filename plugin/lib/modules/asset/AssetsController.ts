@@ -375,8 +375,8 @@ export class AssetsController {
       ? request.getDate("startAt")
       : null;
     const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
-    const query = request.input.body?.query;
-    const sort = request.input.body?.sort;
+    const query = (request.input.body as JSONObject)?.query;
+    const sort = (request.input.body as JSONObject)?.sort;
     const type = request.input.args.type;
     const lang = request.getLangParam();
 
@@ -687,8 +687,8 @@ export class AssetsController {
       ? request.getDate("startAt")
       : null;
     const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
-    const query = request.input.body?.query;
-    const sort = request.input.body?.sort;
+    const query = (request.input.body as JSONObject)?.query;
+    const sort = (request.input.body as JSONObject)?.sort;
     const type = request.input.args.type;
     const lang = request.getLangParam();
     const user = request.getUser() as any;
@@ -739,8 +739,8 @@ export class AssetsController {
       }
     }
 
-    const query = request.input.body?.query;
-    const sort = request.input.body?.sort;
+    const query = (request.input.body as JSONObject)?.query;
+    const sort = (request.input.body as JSONObject)?.sort;
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 

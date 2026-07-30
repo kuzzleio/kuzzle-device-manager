@@ -1,4 +1,9 @@
-import { BadRequestError, ControllerDefinition, KuzzleRequest } from "kuzzle";
+import {
+  BadRequestError,
+  ControllerDefinition,
+  JSONObject,
+  KuzzleRequest,
+} from "kuzzle";
 
 import { DecodersRegister } from "./DecodersRegister";
 import { PayloadService } from "./PayloadService";
@@ -63,8 +68,8 @@ export class DecodersController {
     request: KuzzleRequest,
   ): Promise<ApiDecoderPrunePayloadsResult> {
     const days = request.getBodyNumber("days");
-    const deviceModel = request.input.body.deviceModel;
-    const onlyValid = request.input.body.onlyValid ?? true;
+    const deviceModel = (request.input.body as JSONObject).deviceModel;
+    const onlyValid = (request.input.body as JSONObject).onlyValid ?? true;
 
     const deleted = await this.payloadService.prune(days, onlyValid, {
       deviceModel,
