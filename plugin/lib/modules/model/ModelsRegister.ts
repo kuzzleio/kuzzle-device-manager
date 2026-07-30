@@ -14,6 +14,8 @@ import {
   GroupAffinity,
   GroupModelContent,
   LocaleDetails,
+  MeasureAdapterMapping,
+  MeasureAdapterModelContent,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -35,6 +37,7 @@ export class ModelsRegister {
   private deviceModels: DeviceModelContent[] = [];
   private groupModels: GroupModelContent[] = [];
   private measureModels: MeasureModelContent[] = [];
+  private measureAdapterModels: MeasureAdapterModelContent[] = [];
   private logger: KuzzleLogger;
 
   private get sdk() {
@@ -53,6 +56,7 @@ export class ModelsRegister {
       this.load("device", this.deviceModels),
       this.load("group", this.groupModels),
       this.load("measure", this.measureModels),
+      this.load("measureAdapter", this.measureAdapterModels),
     ]);
 
     await this.sdk.collection.refresh(
@@ -231,6 +235,36 @@ export class ModelsRegister {
         valuesMappings,
       },
       type: "measure",
+    });
+  }
+
+  registerMeasureAdapter(
+    name: string,
+    source: string,
+    mapping: MeasureAdapterMapping[],
+    engineIds?: string[],
+  ) {
+    if (!mapping || mapping.length === 0) {
+      throw new PluginImplementationError(
+        `Measure adapter "${name}" must declare at least one mapping entry`,
+      );
+    }
+
+    const targetNames = mapping.map((entry) => entry.targetMeasureName);
+    if (new Set(targetNames).size !== targetNames.length) {
+      throw new PluginImplementationError(
+        `Measure adapter "${name}" has duplicate target measure names in its mapping`,
+      );
+    }
+
+    this.measureAdapterModels.push({
+      ...(engineIds?.length ? { engineIds } : {}),
+      measureAdapter: {
+        mapping,
+        name,
+        source,
+      },
+      type: "measureAdapter",
     });
   }
 

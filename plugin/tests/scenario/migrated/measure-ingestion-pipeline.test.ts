@@ -210,9 +210,8 @@ describe("features/Measure/IngestionPipeline", () => {
   it("Should reject a measure adapter mapping a measure name not declared by the decoder", async () => {
     await expect(
       sdk.query({
-        controller: "device-manager/measureAdapters",
-        action: "create",
-        engineId: "engine-ayse",
+        controller: "device-manager/models",
+        action: "writeMeasureAdapter",
         body: {
           name: "invalid-adapter",
           source: "DummyTemp",
@@ -230,20 +229,9 @@ describe("features/Measure/IngestionPipeline", () => {
 
   it("Should apply a measure adapter on a device's raw measure before enrichment, tracing the original measure in origin.adapter", async () => {
     const adapterResponse = await sdk.query({
-      controller: "device-manager/measureAdapters",
-      action: "create",
-      engineId: "engine-ayse",
-      body: {
-        name: "battery-as-temp",
-        source: "DummyTemp",
-        mapping: [
-          {
-            sourceMeasureName: "battery",
-            targetMeasureName: "temp",
-            targetType: "temperature",
-          },
-        ],
-      },
+      controller: "device-manager/models",
+      action: "getMeasureAdapter",
+      name: "battery-as-temp",
     });
     const measureAdapterId = adapterResponse.result._id;
 

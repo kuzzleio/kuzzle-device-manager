@@ -10,7 +10,7 @@ import {
 } from "kuzzle-sdk";
 
 import { DecodedMeasurement } from "../measure";
-import { DeviceModelContent } from "../model";
+import { AskModelMeasureAdapterGet, DeviceModelContent } from "../model";
 import {
   AskEngineList,
   DeviceManagerPlugin,
@@ -25,7 +25,6 @@ import {
 } from "../asset";
 
 import { AskPayloadReceiveFormated } from "../decoder/types/InternalEvents";
-import { AskMeasureAdapterGet } from "../measureAdapter";
 import { DeviceSerializer } from "./model/DeviceSerializer";
 import {
   DeviceProvisioningContent,
@@ -684,9 +683,9 @@ export class DeviceService extends DigitalTwinService {
     return lock(`device:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId, request);
 
-      const measureAdapter = await ask<AskMeasureAdapterGet>(
-        "ask:device-manager:measureAdapter:get",
-        { engineId, measureAdapterId },
+      const measureAdapter = await ask<AskModelMeasureAdapterGet>(
+        "ask:device-manager:model:measureAdapter:get",
+        { _id: measureAdapterId },
       );
 
       if (measureAdapter.source !== device._source.model) {

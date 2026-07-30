@@ -45,6 +45,20 @@ const groupModels = {
   air_quality: [Parking, AssetRestricted, DeviceRestricted],
 };
 
+export const measureAdapterModels = [
+  {
+    mapping: [
+      {
+        sourceMeasureName: "battery",
+        targetMeasureName: "temp",
+        targetType: "temperature",
+      },
+    ],
+    name: "battery-as-temp",
+    source: "DummyTemp",
+  },
+];
+
 export function registerModels(deviceManager: DeviceManagerPlugin) {
   for (const model of measuresModels) {
     deviceManager.models.registerMeasure(model.modelName, model.definition);
@@ -52,6 +66,14 @@ export function registerModels(deviceManager: DeviceManagerPlugin) {
 
   for (const model of devicesModels) {
     deviceManager.models.registerDevice(model.modelName, model.definition);
+  }
+
+  for (const model of measureAdapterModels) {
+    deviceManager.models.registerMeasureAdapter(
+      model.name,
+      model.source,
+      model.mapping,
+    );
   }
 
   for (const [engine, models] of Object.entries(assetsModels)) {

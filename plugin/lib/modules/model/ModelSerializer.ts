@@ -3,6 +3,7 @@ import {
   AssetModelContent,
   DeviceModelContent,
   GroupModelContent,
+  MeasureAdapterModelContent,
   MeasureModelContent,
   ModelContent,
 } from "./types/ModelContent";
@@ -47,6 +48,15 @@ export class ModelSerializer {
         return `model-measure-${sortedGroups}-${ModelSerializer.title(type, model)}`;
       }
       return `model-measure-${ModelSerializer.title(type, model)}`;
+    } else if (type === "measureAdapter") {
+      const measureAdapterModel = model as MeasureAdapterModelContent;
+      if (measureAdapterModel.engineIds?.length) {
+        const sortedEngines = [...measureAdapterModel.engineIds]
+          .sort()
+          .join("+");
+        return `model-measureAdapter-${sortedEngines}-${ModelSerializer.title(type, model)}`;
+      }
+      return `model-measureAdapter-${ModelSerializer.title(type, model)}`;
     }
 
     throw new BadRequestError(`Unknown model type "${type}"`);
@@ -61,6 +71,8 @@ export class ModelSerializer {
       return (model as GroupModelContent).group.model;
     } else if (type === "measure") {
       return (model as MeasureModelContent).measure.type;
+    } else if (type === "measureAdapter") {
+      return (model as MeasureAdapterModelContent).measureAdapter.name;
     }
 
     throw new BadRequestError(`Unknown model type "${type}"`);

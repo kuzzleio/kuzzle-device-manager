@@ -10,13 +10,11 @@ import {
 } from "../device";
 import { AskMeasureSourceIngest, DecodedMeasurement } from "../measure";
 import {
-  AskMeasureAdapterGet,
-  MeasureAdapterContent,
-  MeasureAdapterMapping,
-} from "../measureAdapter";
-import {
   AskModelDeviceGet,
+  AskModelMeasureAdapterGet,
   AskModelMeasureGet,
+  MeasureAdapterMapping,
+  MeasureAdapterModelContent,
   MeasureModelContent,
 } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
@@ -250,11 +248,11 @@ export class PayloadService extends BaseService {
       return;
     }
 
-    let measureAdapter: MeasureAdapterContent;
+    let measureAdapter: MeasureAdapterModelContent["measureAdapter"];
     try {
-      measureAdapter = await ask<AskMeasureAdapterGet>(
-        "ask:device-manager:measureAdapter:get",
-        { engineId, measureAdapterId },
+      measureAdapter = await ask<AskModelMeasureAdapterGet>(
+        "ask:device-manager:model:measureAdapter:get",
+        { _id: measureAdapterId },
       );
     } catch (error) {
       this.logger.error(

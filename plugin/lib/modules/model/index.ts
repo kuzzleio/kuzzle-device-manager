@@ -6,3 +6,5 @@ export * from "./types/ModelEvents";
 export * from "./ModelModule";
 export * from "./ModelSerializer";
 export * from "./ModelsRegister";
+export * from "./roles/RoleMeasureAdaptersAdmin";
+export * from "./roles/RoleMeasureAdaptersReader";

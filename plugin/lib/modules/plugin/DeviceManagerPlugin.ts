@@ -27,6 +27,7 @@ import {
   AssetModelDefinition,
   DeviceModelDefinition,
   GroupModelDefinition,
+  MeasureAdapterMapping,
   ModelModule,
   modelsMappings,
   ModelsRegister,
@@ -37,10 +38,6 @@ import { DeviceManagerEngine } from "./DeviceManagerEngine";
 import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
 import { GroupsModule } from "../group/GroupsModule";
-import {
-  MeasureAdapterModule,
-  measureAdaptersMappings,
-} from "../measureAdapter";
 
 export class DeviceManagerPlugin extends Plugin {
   public config: DeviceManagerConfiguration;
@@ -53,7 +50,6 @@ export class DeviceManagerPlugin extends Plugin {
   private assetModule: AssetModule;
   private deviceModule: DeviceModule;
   private groupModule: GroupsModule;
-  private measureAdapterModule: MeasureAdapterModule;
   decoderModule: DecoderModule;
   private measureModule: MeasureModule;
   private modelModule: ModelModule;
@@ -340,6 +336,36 @@ export class DeviceManagerPlugin extends Plugin {
       registerMeasure: (name: string, measureDefinition: MeasureDefinition) => {
         this.modelsRegister.registerMeasure(name, measureDefinition);
       },
+
+      /**
+       * Register a measure adapter, mapping a device's raw/generic decoded
+       * measures onto typed, use-case specific measure names.
+       *
+       * @param name Unique name of the adapter
+       * @param source Device model this adapter applies to
+       * @param mapping Field mappings: { sourceMeasureName, targetMeasureName, targetType }
+       * @param engineIds Optional list of engine IDs (tenant IDs) this adapter is scoped to
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerMeasureAdapter("battery-as-temp", "DummyTemp", [
+       *   { sourceMeasureName: "battery", targetMeasureName: "temp", targetType: "temperature" },
+       * ]);
+       * ```
+       */
+      registerMeasureAdapter: (
+        name: string,
+        source: string,
+        mapping: MeasureAdapterMapping[],
+        engineIds?: string[],
+      ) => {
+        this.modelsRegister.registerMeasureAdapter(
+          name,
+          source,
+          mapping,
+          engineIds,
+        );
+      },
     };
   }
 
@@ -413,10 +439,6 @@ export class DeviceManagerPlugin extends Plugin {
           name: InternalCollection.MEASURES,
           mappings: measuresMappings,
         },
-        measureAdapters: {
-          name: InternalCollection.MEASURE_ADAPTERS,
-          mappings: measureAdaptersMappings,
-        },
       },
     };
     /* eslint-enable sort-keys */
@@ -437,7 +459,6 @@ export class DeviceManagerPlugin extends Plugin {
     this.assetModule = new AssetModule(this);
     this.deviceModule = new DeviceModule(this);
     this.groupModule = new GroupsModule(this);
-    this.measureAdapterModule = new MeasureAdapterModule(this);
     this.decoderModule = new DecoderModule(this);
     this.measureModule = new MeasureModule(this);
     this.modelModule = new ModelModule(this);
@@ -445,7 +466,6 @@ export class DeviceManagerPlugin extends Plugin {
     await this.assetModule.init();
     await this.deviceModule.init();
     await this.groupModule.init();
-    await this.measureAdapterModule.init();
     await this.decoderModule.init();
     await this.measureModule.init();
     await this.modelModule.init();

@@ -153,5 +153,22 @@ export const modelsMappings: CollectionMappings = {
         },
       },
     },
+
+    /**
+     * Measure adapter model
+     */
+    measureAdapter: {
+      properties: {
+        name: { type: "keyword" },
+        source: { type: "keyword" },
+        mapping: {
+          properties: {
+            sourceMeasureName: { type: "keyword" },
+            targetMeasureName: { type: "keyword" },
+            targetType: { type: "keyword" },
+          },
+        },
+      },
+    },
   },
 };

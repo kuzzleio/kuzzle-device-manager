@@ -555,8 +555,43 @@ export interface GroupModelContent extends KDocumentContent {
     tooltipModels?: TooltipModels;
   };
 }
+export interface MeasureAdapterMapping {
+  sourceMeasureName: string;
+  targetMeasureName: string;
+  targetType: string;
+}
+
+export interface MeasureAdapterModelContent extends KDocumentContent {
+  type: "measureAdapter";
+
+  /**
+   * Optional list of engine IDs (tenant IDs) this adapter is scoped to.
+   * When absent, the adapter is available to every tenant.
+   */
+  engineIds?: string[];
+
+  measureAdapter: {
+    /**
+     * Unique name identifying this adapter (used to compute its document id).
+     */
+    name: string;
+
+    /**
+     * Device model this adapter applies to.
+     */
+    source: string;
+
+    /**
+     * Field mappings applied on the decoded measures of devices using this
+     * adapter. Measures not covered by the mapping pass through unchanged.
+     */
+    mapping: MeasureAdapterMapping[];
+  };
+}
+
 export type ModelContent =
   | MeasureModelContent
   | AssetModelContent
   | DeviceModelContent
-  | GroupModelContent;
+  | GroupModelContent
+  | MeasureAdapterModelContent;
