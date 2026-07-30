@@ -316,3 +316,25 @@ export type ApiDeviceMGetLastMeasuredAtRequest =
   ApiDigitalTwinMGetLastMeasuredAtRequest<DevicesControllerName>;
 export type ApiDeviceMGetLastMeasuredAtResult =
   ApiDigitalTwinMGetLastMeasuredAtResult;
+
+export interface ApiDeviceSetMeasureAdapterRequest extends DevicesControllerRequest {
+  action: "setMeasureAdapter";
+
+  _id: string;
+
+  refresh?: string;
+
+  body: {
+    measureAdapterId: string;
+  };
+}
+export type ApiDeviceSetMeasureAdapterResult = KDocument<DeviceContent>;
+
+export interface ApiDeviceUnsetMeasureAdapterRequest extends DevicesControllerRequest {
+  action: "unsetMeasureAdapter";
+
+  _id: string;
+
+  refresh?: string;
+}
+export type ApiDeviceUnsetMeasureAdapterResult = KDocument<DeviceContent>;

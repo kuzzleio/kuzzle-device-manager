@@ -18,6 +18,7 @@ import _ from "lodash";
 import { assetsHistoryMappings } from "../asset";
 import { NamedMeasures } from "../decoder";
 import { measuresMappings } from "../measure";
+import { measureAdaptersMappings } from "../measureAdapter";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -391,6 +392,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createMeasuresCollection(index, group));
 
+    promises.push(this.createMeasureAdaptersCollection(index));
+
     const collections = await Promise.all(promises);
 
     return {
@@ -411,6 +414,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     promises.push(this.createMeasuresCollection(index, group));
 
+    promises.push(this.createMeasureAdaptersCollection(index));
+
     const collections = await Promise.all(promises);
 
     return { collections };
@@ -423,6 +428,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       InternalCollection.GROUPS,
       InternalCollection.DEVICES,
       InternalCollection.MEASURES,
+      InternalCollection.MEASURE_ADAPTERS,
     ];
     await Promise.all(
       collections.map(async (collection) => {
@@ -582,6 +588,28 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     });
 
     return InternalCollection.MEASURES;
+  }
+
+  /**
+   * Create the measureAdapters collection in the engine
+   *
+   * @param engineId The target engine Id
+   *
+   * @throws If it failed during the measureAdapters collection creation
+   */
+  async createMeasureAdaptersCollection(engineId: string) {
+    const settings = this.config.engineCollections.measureAdapters.settings;
+
+    await this.tryCreateCollection(
+      engineId,
+      InternalCollection.MEASURE_ADAPTERS,
+      {
+        mappings: measureAdaptersMappings,
+        settings,
+      },
+    );
+
+    return InternalCollection.MEASURE_ADAPTERS;
   }
 
   /**

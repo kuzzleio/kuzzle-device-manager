@@ -24,10 +24,12 @@ export function deviceSourceToOriginDevice(
   measureName: string,
   payloadUuids: string[],
   deviceMetadata: Metadata,
+  adapter?: MeasureOriginDevice["adapter"],
 ): MeasureOriginDevice {
   const { id: dataSourceId, model, reference, groups } = source;
   return {
     _id: dataSourceId,
+    ...(adapter ? { adapter } : {}),
     deviceMetadata,
     deviceModel: model,
     groups,

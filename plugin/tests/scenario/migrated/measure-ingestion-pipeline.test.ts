@@ -206,4 +206,118 @@ describe("features/Measure/IngestionPipeline", () => {
       path: "test-parent-asset",
     });
   });
+
+  it("Should reject a measure adapter mapping a measure name not declared by the decoder", async () => {
+    await expect(
+      sdk.query({
+        controller: "device-manager/measureAdapters",
+        action: "create",
+        engineId: "engine-ayse",
+        body: {
+          name: "invalid-adapter",
+          source: "DummyTemp",
+          mapping: [
+            {
+              sourceMeasureName: "notADeclaredMeasure",
+              targetMeasureName: "temp",
+              targetType: "temperature",
+            },
+          ],
+        },
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("Should apply a measure adapter on a device's raw measure before enrichment, tracing the original measure in origin.adapter", async () => {
+    const adapterResponse = await sdk.query({
+      controller: "device-manager/measureAdapters",
+      action: "create",
+      engineId: "engine-ayse",
+      body: {
+        name: "battery-as-temp",
+        source: "DummyTemp",
+        mapping: [
+          {
+            sourceMeasureName: "battery",
+            targetMeasureName: "temp",
+            targetType: "temperature",
+          },
+        ],
+      },
+    });
+    const measureAdapterId = adapterResponse.result._id;
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "adapter_me_master" },
+    });
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-adapter_me_master",
+      body: { measureAdapterId },
+    });
+
+    const deviceResponse = await sdk.query({
+      controller: "device-manager/devices",
+      action: "get",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-adapter_me_master",
+    });
+
+    expect(deviceResponse.result._source.measureSlots).toEqual(
+      expect.arrayContaining([{ name: "temp", type: "temperature" }]),
+    );
+    expect(deviceResponse.result._source.measureSlots).not.toEqual(
+      expect.arrayContaining([{ name: "battery", type: "battery" }]),
+    );
+
+    await sendPayloads(sdk, "dummy-temp", [
+      { deviceEUI: "adapter_me_master", temperature: 19, battery: 55 },
+    ]);
+
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const response = await sdk.query({
+      controller: "document",
+      action: "search",
+      index: "engine-ayse",
+      collection: "measures",
+      body: {
+        query: {
+          bool: {
+            must: [
+              { term: { "origin.reference": "adapter_me_master" } },
+              { term: { "origin.measureName": "temp" } },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(response.result).toMatchObject({
+      hits: [
+        {
+          _source: {
+            type: "temperature",
+            values: { temperature: 55 },
+            origin: {
+              measureName: "temp",
+              adapter: {
+                _id: measureAdapterId,
+                name: "battery-as-temp",
+                sourceMeasureName: "battery",
+                sourceType: "battery",
+                sourceValues: { battery: 55 },
+              },
+            },
+          },
+        },
+      ],
+    });
+  });
 });

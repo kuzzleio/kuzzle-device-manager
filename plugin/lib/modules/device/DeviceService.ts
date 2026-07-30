@@ -25,6 +25,7 @@ import {
 } from "../asset";
 
 import { AskPayloadReceiveFormated } from "../decoder/types/InternalEvents";
+import { AskMeasureAdapterGet } from "../measureAdapter";
 import { DeviceSerializer } from "./model/DeviceSerializer";
 import {
   DeviceProvisioningContent,
@@ -672,6 +673,89 @@ export class DeviceService extends DigitalTwinService {
         payloadUuids,
       },
     );
+  }
+
+  /**
+   * Assign a Measure Adapter to a device, remapping its `measureSlots` from
+   * the decoder's raw declared measures to the adapter's use-case specific
+   * measure names.
+   *
+   * The device must already be attached to an engine, since the adapter is a
+   * tenant-scoped document living in that engine's index.
+   */
+  async setMeasureAdapter(
+    engineId: string,
+    deviceId: string,
+    measureAdapterId: string,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    return lock(`device:${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId, request);
+
+      const measureAdapter = await ask<AskMeasureAdapterGet>(
+        "ask:device-manager:measureAdapter:get",
+        { engineId, measureAdapterId },
+      );
+
+      if (measureAdapter.source !== device._source.model) {
+        throw new BadRequestError(
+          `Measure adapter "${measureAdapterId}" applies to device model "${measureAdapter.source}", not "${device._source.model}".`,
+        );
+      }
+
+      const deviceModel = await this.getDeviceModel(device._source.model);
+      const adaptedNames = new Set(
+        measureAdapter.mapping.map((entry) => entry.sourceMeasureName),
+      );
+      const passthroughMeasures = deviceModel.device.measures.filter(
+        (measure) => !adaptedNames.has(measure.name),
+      );
+      const adaptedMeasures = measureAdapter.mapping.map((entry) => ({
+        name: entry.targetMeasureName,
+        type: entry.targetType,
+      }));
+
+      return this.updateDocument<DeviceContent>(
+        request,
+        {
+          _id: deviceId,
+          _source: {
+            measureAdapterId,
+            measureSlots: [...passthroughMeasures, ...adaptedMeasures],
+          },
+        },
+        { collection: InternalCollection.DEVICES, engineId },
+        { source: true },
+      );
+    });
+  }
+
+  /**
+   * Unassign the Measure Adapter from a device, restoring its `measureSlots`
+   * to the decoder's raw declared measures.
+   */
+  async unsetMeasureAdapter(
+    engineId: string,
+    deviceId: string,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    return lock(`device:${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId, request);
+      const deviceModel = await this.getDeviceModel(device._source.model);
+
+      return this.updateDocument<DeviceContent>(
+        request,
+        {
+          _id: deviceId,
+          _source: {
+            measureAdapterId: null,
+            measureSlots: deviceModel.device.measures,
+          },
+        },
+        { collection: InternalCollection.DEVICES, engineId },
+        { source: true },
+      );
+    });
   }
 
   private async checkEngineExists(engineId: string) {

@@ -75,5 +75,10 @@ export type DeviceManagerConfiguration = {
       settings?: JSONObject;
       mappings: CollectionMappings;
     };
+    measureAdapters: {
+      name: string;
+      settings?: JSONObject;
+      mappings: CollectionMappings;
+    };
   };
 };

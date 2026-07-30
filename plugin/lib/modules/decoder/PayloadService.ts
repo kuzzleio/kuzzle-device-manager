@@ -9,7 +9,16 @@ import {
   DeviceSerializer,
 } from "../device";
 import { AskMeasureSourceIngest, DecodedMeasurement } from "../measure";
-import { AskModelDeviceGet } from "../model";
+import {
+  AskMeasureAdapterGet,
+  MeasureAdapterContent,
+  MeasureAdapterMapping,
+} from "../measureAdapter";
+import {
+  AskModelDeviceGet,
+  AskModelMeasureGet,
+  MeasureModelContent,
+} from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { BaseService } from "../shared";
 
@@ -146,6 +155,7 @@ export class PayloadService extends BaseService {
       }
 
       if (ingestMeasurements) {
+        await this.applyMeasureAdapter(device, decodedPayload);
         const measurements = decodedPayload.getMeasurements(reference);
         // Handle device not attached to an engine
         if (engineId === null) {
@@ -223,6 +233,103 @@ export class PayloadService extends BaseService {
     }
 
     return { valid };
+  }
+
+  /**
+   * Apply the device's Measure Adapter (if any) on its freshly decoded
+   * measures, renaming/retyping the ones covered by the adapter's mapping
+   * before they are routed to `MeasureService`.
+   *
+   * This runs strictly before the `device-manager:measures:sourceIngest` ask
+   * and therefore before the `device-manager:measures:process:before/after`
+   * enrichment pipes.
+   *
+   * Measures not covered by the adapter's mapping pass through unchanged.
+   */
+  private async applyMeasureAdapter(
+    device: KDocument<DeviceContent>,
+    decodedPayload: DecodedPayload<any>,
+  ) {
+    const { reference, measureAdapterId, engineId } = device._source;
+
+    if (!measureAdapterId || !engineId) {
+      return;
+    }
+
+    const measurements = decodedPayload.getMeasurements(reference);
+    if (!measurements || measurements.length === 0) {
+      return;
+    }
+
+    let measureAdapter: MeasureAdapterContent;
+    try {
+      measureAdapter = await ask<AskMeasureAdapterGet>(
+        "ask:device-manager:measureAdapter:get",
+        { engineId, measureAdapterId },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Cannot apply measure adapter "${measureAdapterId}" on device "${device._id}": ${error.message}`,
+      );
+      return;
+    }
+
+    const mappingByMeasureName = new Map<string, MeasureAdapterMapping>(
+      measureAdapter.mapping.map((entry) => [entry.sourceMeasureName, entry]),
+    );
+
+    const adaptedMeasurements: DecodedMeasurement[] = [];
+    for (const measurement of measurements) {
+      const mappingEntry = mappingByMeasureName.get(measurement.measureName);
+
+      if (!mappingEntry) {
+        adaptedMeasurements.push(measurement);
+        continue;
+      }
+
+      const sourceValueKeys = Object.keys(measurement.values);
+      if (sourceValueKeys.length !== 1) {
+        this.logger.warn(
+          `Measure adapter "${measureAdapterId}" cannot adapt measure "${measurement.measureName}": expected a single value field, got ${sourceValueKeys.length}.`,
+        );
+        adaptedMeasurements.push(measurement);
+        continue;
+      }
+
+      let targetMeasureModel: MeasureModelContent;
+      try {
+        targetMeasureModel = await ask<AskModelMeasureGet>(
+          "ask:device-manager:model:measure:get",
+          { engineId, type: mappingEntry.targetType },
+        );
+      } catch (error) {
+        this.logger.error(
+          `Measure adapter "${measureAdapterId}" targets unknown measure type "${mappingEntry.targetType}": ${error.message}`,
+        );
+        adaptedMeasurements.push(measurement);
+        continue;
+      }
+
+      const targetValueKey = Object.keys(
+        targetMeasureModel.measure.valuesMappings,
+      )[0];
+
+      adaptedMeasurements.push({
+        adaptedFrom: {
+          _id: measureAdapterId,
+          name: measureAdapter.name,
+          sourceMeasureName: measurement.measureName,
+          sourceType: measurement.type,
+          sourceValues: measurement.values,
+        },
+        measureName: mappingEntry.targetMeasureName,
+        measuredAt: measurement.measuredAt,
+        type: mappingEntry.targetType,
+        values: { [targetValueKey]: measurement.values[sourceValueKeys[0]] },
+      });
+    }
+
+    decodedPayload.replaceMeasurements(reference, adaptedMeasurements);
   }
 
   async receiveFormated(

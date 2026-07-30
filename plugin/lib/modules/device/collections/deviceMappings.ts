@@ -52,6 +52,8 @@ export const devicesMappings: CollectionMappings = {
         type: { type: "keyword" },
       },
     },
+
+    measureAdapterId: { type: "keyword" },
   },
 };
 

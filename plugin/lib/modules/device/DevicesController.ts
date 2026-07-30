@@ -33,6 +33,8 @@ import {
   ApiDeviceGetLastMeasuredAtResult,
   ApiDeviceMGetLastMeasuredAtResult,
   ApiDeviceMetadataReplaceResult,
+  ApiDeviceSetMeasureAdapterResult,
+  ApiDeviceUnsetMeasureAdapterResult,
 } from "./types/DeviceApi";
 import { AssetContent } from "../asset";
 import { DeviceContent } from "./exports";
@@ -217,6 +219,24 @@ export class DevicesController {
             {
               path: "device-manager/:engineId/devices/_mGetLastMeasuredAt",
               verb: "post",
+            },
+          ],
+        },
+        setMeasureAdapter: {
+          handler: this.setMeasureAdapter.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/_measureAdapter",
+              verb: "put",
+            },
+          ],
+        },
+        unsetMeasureAdapter: {
+          handler: this.unsetMeasureAdapter.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/_measureAdapter",
+              verb: "delete",
             },
           ],
         },
@@ -703,5 +723,37 @@ export class DevicesController {
     const deviceIds = request.getBodyArray("ids");
 
     return this.deviceService.mGetLastMeasuredAt(engineId, deviceIds);
+  }
+
+  async setMeasureAdapter(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceSetMeasureAdapterResult> {
+    const engineId = request.getString("engineId");
+    const deviceId = request.getId();
+    const measureAdapterId = request.getBodyString("measureAdapterId");
+
+    const device = await this.deviceService.setMeasureAdapter(
+      engineId,
+      deviceId,
+      measureAdapterId,
+      request,
+    );
+
+    return DeviceSerializer.serialize(device);
+  }
+
+  async unsetMeasureAdapter(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceUnsetMeasureAdapterResult> {
+    const engineId = request.getString("engineId");
+    const deviceId = request.getId();
+
+    const device = await this.deviceService.unsetMeasureAdapter(
+      engineId,
+      deviceId,
+      request,
+    );
+
+    return DeviceSerializer.serialize(device);
   }
 }

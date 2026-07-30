@@ -225,6 +225,7 @@ export class MeasureService extends BaseService {
         measure.measureName,
         payloadUuids,
         merge(source.deviceMetadata, source.metadata),
+        measure.adaptedFrom,
       );
 
       deviceMeasures.push({
