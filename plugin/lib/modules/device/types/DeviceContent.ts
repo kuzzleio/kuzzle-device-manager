@@ -49,6 +49,7 @@ export interface DeviceContent<
   measureAdapters: Array<{
     sourceMeasureName: string;
     measureAdapterId: string;
+    targetMeasureName: string;
   }>;
 }
 

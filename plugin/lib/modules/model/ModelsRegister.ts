@@ -329,7 +329,7 @@ export class ModelsRegister {
     );
 
     this.logger.info(
-      `Successfully propagated measure adapters to engine "${engineId}": ${adapters
+      `[DeviceAdapter] Successfully propagated measure adapters to engine "${engineId}": ${adapters
         .map((content) => content.name)
         .join(", ")}`,
     );

@@ -746,7 +746,11 @@ export class DeviceService extends DigitalTwinService {
       const assignments = (device._source.measureAdapters ?? []).filter(
         (assignment) => assignment.sourceMeasureName !== sourceMeasureName,
       );
-      assignments.push({ measureAdapterId, sourceMeasureName });
+      assignments.push({
+        measureAdapterId,
+        sourceMeasureName,
+        targetMeasureName: measureAdapter.targetMeasureName,
+      });
 
       const measureSlots = await this.computeMeasureSlots(
         engineId,

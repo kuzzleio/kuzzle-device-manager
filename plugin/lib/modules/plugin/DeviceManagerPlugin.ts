@@ -628,10 +628,17 @@ export class DeviceManagerPlugin extends Plugin {
         try {
           await this.deviceManagerEngine.updateEngines();
           await this.deviceManagerEngine.updateMeasuresSchema();
-          await this.modelsRegister.propagateMeasureAdapters();
         } catch (error) {
           this.context.log.error(
             `An error occured while updating the engines during startup: ${error}`,
+          );
+        }
+
+        try {
+          await this.modelsRegister.propagateMeasureAdapters();
+        } catch (error) {
+          this.context.log.error(
+            `[DeviceAdapter] An error occured while propagating measure adapters during startup: ${error}`,
           );
         }
       }
