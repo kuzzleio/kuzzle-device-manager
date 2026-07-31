@@ -47,15 +47,12 @@ const groupModels = {
 
 export const measureAdapterModels = [
   {
-    mapping: [
-      {
-        sourceMeasureName: "battery",
-        targetMeasureName: "temp",
-        targetType: "temperature",
-      },
-    ],
     name: "battery-as-temp",
-    source: "DummyTemp",
+    sourceField: "battery",
+    sourceType: "battery",
+    targetField: "temperature",
+    targetMeasureName: "temp",
+    targetType: "temperature",
   },
 ];
 
@@ -71,8 +68,11 @@ export function registerModels(deviceManager: DeviceManagerPlugin) {
   for (const model of measureAdapterModels) {
     deviceManager.models.registerMeasureAdapter(
       model.name,
-      model.source,
-      model.mapping,
+      model.sourceType,
+      model.sourceField,
+      model.targetMeasureName,
+      model.targetType,
+      model.targetField,
     );
   }
 

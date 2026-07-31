@@ -21,14 +21,13 @@ import {
 import { AskAssetRefreshModel } from "../asset";
 import { BaseService, SearchParams, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
+import { MeasureAdapterContent } from "./types/MeasureAdapterContent";
 import {
   AssetModelContent,
   DeviceModelContent,
   GroupAffinity,
   GroupModelContent,
   LocaleDetails,
-  MeasureAdapterMapping,
-  MeasureAdapterModelContent,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -48,7 +47,7 @@ import { SchemaObject } from "ajv";
 import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { MeasureValuesDetails } from "../measure";
-import { NamedMeasures, DecodersRegister } from "../decoder";
+import { NamedMeasures } from "../decoder";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
 import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 import { AskDeviceRefreshModel } from "../device";
@@ -56,11 +55,7 @@ import { KuzzleLogger } from "kuzzle-logger";
 
 export class ModelService extends BaseService {
   readonly logger: KuzzleLogger;
-  constructor(
-    plugin: DeviceManagerPlugin,
-    private decodersRegister: DecodersRegister,
-    logger: KuzzleLogger,
-  ) {
+  constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
     this.logger = logger;
     this.registerAskEvents();
@@ -101,10 +96,10 @@ export class ModelService extends BaseService {
     );
     onAsk<AskModelMeasureAdapterGet>(
       "ask:device-manager:model:measureAdapter:get",
-      async ({ _id }) => {
-        const measureAdapterModel = await this.getMeasureAdapterById(_id);
+      async ({ engineId, _id }) => {
+        const measureAdapterModel = await this.getMeasureAdapter(engineId, _id);
 
-        return measureAdapterModel._source.measureAdapter;
+        return measureAdapterModel._source;
       },
     );
 
@@ -669,92 +664,6 @@ export class ModelService extends BaseService {
     return measureModel;
   }
 
-  async writeMeasureAdapter(
-    name: string,
-    source: string,
-    mapping: MeasureAdapterMapping[],
-    engineIds?: string[],
-  ): Promise<KDocument<MeasureAdapterModelContent>> {
-    if (!mapping || mapping.length === 0) {
-      throw new BadRequestError(
-        `Measure adapter "${name}" must declare at least one mapping entry.`,
-      );
-    }
-
-    let decoder;
-    try {
-      decoder = this.decodersRegister.get(source);
-    } catch {
-      throw new BadRequestError(
-        `No decoder is registered for device model "${source}".`,
-      );
-    }
-
-    const declaredMeasureNames = decoder.measures.map((m) => m.name);
-    const seenTargetNames = new Set<string>();
-
-    for (const entry of mapping) {
-      if (!declaredMeasureNames.includes(entry.sourceMeasureName)) {
-        throw new BadRequestError(
-          `Measure "${entry.sourceMeasureName}" is not declared by the decoder of device model "${source}".`,
-        );
-      }
-
-      if (seenTargetNames.has(entry.targetMeasureName)) {
-        throw new BadRequestError(
-          `Target measure name "${entry.targetMeasureName}" is used more than once in this adapter.`,
-        );
-      }
-      seenTargetNames.add(entry.targetMeasureName);
-
-      const measureModel = await this.getMeasure(entry.targetType).catch(
-        () => null,
-      );
-
-      if (!measureModel) {
-        throw new BadRequestError(
-          `Unknown measure type "${entry.targetType}".`,
-        );
-      }
-
-      const valueKeys = Object.keys(
-        measureModel._source.measure.valuesMappings,
-      );
-      if (valueKeys.length !== 1) {
-        throw new BadRequestError(
-          `Measure type "${entry.targetType}" has ${valueKeys.length} value fields; measure adapters only support single-value measure types in this version.`,
-        );
-      }
-    }
-
-    const modelContent: MeasureAdapterModelContent = {
-      measureAdapter: { mapping, name, source },
-      type: "measureAdapter",
-    };
-
-    if (engineIds?.length) {
-      modelContent.engineIds = engineIds;
-    }
-
-    const measureAdapterModel =
-      await this.sdk.document.createOrReplace<MeasureAdapterModelContent>(
-        this.config.platformIndex,
-        InternalCollection.MODELS,
-        ModelSerializer.id<MeasureAdapterModelContent>(
-          "measureAdapter",
-          modelContent,
-        ),
-        modelContent,
-      );
-
-    await this.sdk.collection.refresh(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-    );
-
-    return measureAdapterModel;
-  }
-
   async deleteAsset(_id: string) {
     await this.sdk.document.delete(
       this.config.platformIndex,
@@ -780,14 +689,6 @@ export class ModelService extends BaseService {
   }
 
   async deleteMeasure(_id: string) {
-    await this.sdk.document.delete(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      _id,
-    );
-  }
-
-  async deleteMeasureAdapter(_id: string) {
     await this.sdk.document.delete(
       this.config.platformIndex,
       InternalCollection.MODELS,
@@ -940,16 +841,25 @@ export class ModelService extends BaseService {
   }
 
   async listMeasureAdapters(
-    engineId?: string,
-  ): Promise<KDocument<MeasureAdapterModelContent>[]> {
-    const result = await this.searchMeasureAdapters(engineId, {
-      searchBody: {
+    engineId: string,
+  ): Promise<KDocument<MeasureAdapterContent>[]> {
+    const result = await this.sdk.document.search<{
+      measureAdapter: MeasureAdapterContent;
+      type: string;
+    }>(
+      engineId,
+      InternalCollection.CONFIG,
+      {
+        query: { term: { type: "measureAdapter" } },
         sort: { "measureAdapter.name": "asc" },
       },
-      size: 5000,
-    });
+      { size: 1000 },
+    );
 
-    return result.hits;
+    return result.hits.map((hit) => ({
+      _id: hit._id,
+      _source: hit._source.measureAdapter,
+    })) as unknown as KDocument<MeasureAdapterContent>[];
   }
 
   async searchAssets(
@@ -1121,51 +1031,6 @@ export class ModelService extends BaseService {
     };
 
     return this.sdk.document.search<MeasureModelContent>(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      {
-        ...searchParams.searchBody,
-        query,
-      },
-      {
-        from: searchParams.from,
-        lang: "elasticsearch",
-        scroll: searchParams.scrollTTL,
-        size: searchParams.size,
-      },
-    );
-  }
-
-  async searchMeasureAdapters(
-    engineId: string | undefined,
-    searchParams: Partial<SearchParams>,
-  ): Promise<SearchResult<KHit<MeasureAdapterModelContent>>> {
-    const scopeFilter = engineId
-      ? {
-          bool: {
-            should: [
-              { term: { engineIds: engineId } },
-              { bool: { must_not: [{ exists: { field: "engineIds" } }] } },
-            ],
-          },
-        }
-      : {
-          bool: {
-            must_not: [{ exists: { field: "engineIds" } }],
-          },
-        };
-
-    const query = {
-      bool: {
-        must: [
-          searchParams.searchBody.query,
-          { term: { type: "measureAdapter" } },
-          scopeFilter,
-        ].filter(Boolean),
-      },
-    };
-
-    return this.sdk.document.search<MeasureAdapterModelContent>(
       this.config.platformIndex,
       InternalCollection.MODELS,
       {
@@ -1384,57 +1249,22 @@ export class ModelService extends BaseService {
   }
 
   async getMeasureAdapter(
-    name: string,
-    engineId?: string,
-  ): Promise<KDocument<MeasureAdapterModelContent>> {
-    const baseFilter = [
-      { term: { type: "measureAdapter" } },
-      { term: { "measureAdapter.name": name } },
-    ];
+    engineId: string,
+    _id: string,
+  ): Promise<KDocument<MeasureAdapterContent>> {
+    const document = await this.sdk.document.get<{
+      measureAdapter: MeasureAdapterContent;
+      type: string;
+    }>(engineId, InternalCollection.CONFIG, _id);
 
-    const scopeFilter = engineId
-      ? {
-          bool: {
-            should: [
-              { term: { engineIds: engineId } },
-              { bool: { must_not: [{ exists: { field: "engineIds" } }] } },
-            ],
-          },
-        }
-      : {
-          bool: {
-            must_not: [{ exists: { field: "engineIds" } }],
-          },
-        };
-
-    const result = await this.sdk.document.search<MeasureAdapterModelContent>(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      {
-        query: {
-          bool: {
-            must: [...baseFilter, scopeFilter],
-          },
-        },
-      },
-      { lang: "elasticsearch", size: 1 },
-    );
-
-    if (result.total > 0) {
-      return result.hits[0];
+    if (document._source.type !== "measureAdapter") {
+      throw new NotFoundError(`Unknown Measure adapter "${_id}".`);
     }
 
-    throw new NotFoundError(`Unknown Measure adapter "${name}".`);
-  }
-
-  async getMeasureAdapterById(
-    _id: string,
-  ): Promise<KDocument<MeasureAdapterModelContent>> {
-    return this.sdk.document.get<MeasureAdapterModelContent>(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      _id,
-    );
+    return {
+      ...document,
+      _source: document._source.measureAdapter,
+    } as unknown as KDocument<MeasureAdapterContent>;
   }
 
   /**

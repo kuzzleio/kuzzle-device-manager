@@ -731,11 +731,13 @@ export class DevicesController {
   ): Promise<ApiDeviceSetMeasureAdapterResult> {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
+    const sourceMeasureName = request.getBodyString("sourceMeasureName");
     const measureAdapterId = request.getBodyString("measureAdapterId");
 
     const device = await this.deviceService.setMeasureAdapter(
       engineId,
       deviceId,
+      sourceMeasureName,
       measureAdapterId,
       request,
     );
@@ -748,10 +750,12 @@ export class DevicesController {
   ): Promise<ApiDeviceUnsetMeasureAdapterResult> {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
+    const sourceMeasureName = request.getBodyString("sourceMeasureName");
 
     const device = await this.deviceService.unsetMeasureAdapter(
       engineId,
       deviceId,
+      sourceMeasureName,
       request,
     );
 

@@ -207,33 +207,43 @@ describe("features/Measure/IngestionPipeline", () => {
     });
   });
 
-  it("Should reject a measure adapter mapping a measure name not declared by the decoder", async () => {
+  it("Should reject assigning a measure adapter to a measure slot with a mismatched type", async () => {
+    const listResponse = await sdk.query({
+      controller: "device-manager/models",
+      action: "listMeasureAdapters",
+      engineId: "engine-ayse",
+    });
+    const measureAdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "battery-as-temp",
+    )._id;
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "invalid_adapter_slot" },
+    });
+
     await expect(
       sdk.query({
-        controller: "device-manager/models",
-        action: "writeMeasureAdapter",
-        body: {
-          name: "invalid-adapter",
-          source: "DummyTemp",
-          mapping: [
-            {
-              sourceMeasureName: "notADeclaredMeasure",
-              targetMeasureName: "temp",
-              targetType: "temperature",
-            },
-          ],
-        },
+        controller: "device-manager/devices",
+        action: "setMeasureAdapter",
+        engineId: "engine-ayse",
+        _id: "DummyTemp-invalid_adapter_slot",
+        body: { measureAdapterId, sourceMeasureName: "temperature" },
       }),
     ).rejects.toThrow();
   });
 
   it("Should apply a measure adapter on a device's raw measure before enrichment, tracing the original measure in origin.adapter", async () => {
-    const adapterResponse = await sdk.query({
+    const listResponse = await sdk.query({
       controller: "device-manager/models",
-      action: "getMeasureAdapter",
-      name: "battery-as-temp",
+      action: "listMeasureAdapters",
+      engineId: "engine-ayse",
     });
-    const measureAdapterId = adapterResponse.result._id;
+    const measureAdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "battery-as-temp",
+    )._id;
 
     await sdk.query({
       controller: "device-manager/devices",
@@ -247,7 +257,7 @@ describe("features/Measure/IngestionPipeline", () => {
       action: "setMeasureAdapter",
       engineId: "engine-ayse",
       _id: "DummyTemp-adapter_me_master",
-      body: { measureAdapterId },
+      body: { measureAdapterId, sourceMeasureName: "battery" },
     });
 
     const deviceResponse = await sdk.query({
@@ -300,7 +310,9 @@ describe("features/Measure/IngestionPipeline", () => {
                 name: "battery-as-temp",
                 sourceMeasureName: "battery",
                 sourceType: "battery",
+                sourceField: "battery",
                 sourceValues: { battery: 55 },
+                targetField: "temperature",
               },
             },
           },

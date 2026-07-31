@@ -60,7 +60,9 @@ export interface MeasureOriginDevice extends AbstractMeasureOrigin {
     name: string;
     sourceMeasureName: string;
     sourceType: string;
+    sourceField: string;
     sourceValues: JSONObject;
+    targetField: string;
   };
 }
 
@@ -148,6 +150,8 @@ export type DecodedMeasurement<TMeasureValues extends JSONObject = JSONObject> =
       name: string;
       sourceMeasureName: string;
       sourceType: string;
+      sourceField: string;
       sourceValues: JSONObject;
+      targetField: string;
     };
   } & Measurement<TMeasureValues>;

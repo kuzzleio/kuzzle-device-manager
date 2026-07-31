@@ -325,6 +325,7 @@ export interface ApiDeviceSetMeasureAdapterRequest extends DevicesControllerRequ
   refresh?: string;
 
   body: {
+    sourceMeasureName: string;
     measureAdapterId: string;
   };
 }
@@ -336,5 +337,9 @@ export interface ApiDeviceUnsetMeasureAdapterRequest extends DevicesControllerRe
   _id: string;
 
   refresh?: string;
+
+  body: {
+    sourceMeasureName: string;
+  };
 }
 export type ApiDeviceUnsetMeasureAdapterResult = KDocument<DeviceContent>;

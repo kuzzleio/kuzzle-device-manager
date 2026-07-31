@@ -12,10 +12,7 @@ import { AskMeasureSourceIngest, DecodedMeasurement } from "../measure";
 import {
   AskModelDeviceGet,
   AskModelMeasureAdapterGet,
-  AskModelMeasureGet,
-  MeasureAdapterMapping,
-  MeasureAdapterModelContent,
-  MeasureModelContent,
+  MeasureAdapterContent,
 } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { BaseService } from "../shared";
@@ -237,9 +234,9 @@ export class PayloadService extends BaseService {
     device: KDocument<DeviceContent>,
     decodedPayload: DecodedPayload<any>,
   ) {
-    const { reference, measureAdapterId, engineId } = device._source;
+    const { reference, measureAdapters, engineId } = device._source;
 
-    if (!measureAdapterId || !engineId) {
+    if (!measureAdapters?.length || !engineId) {
       return;
     }
 
@@ -248,71 +245,71 @@ export class PayloadService extends BaseService {
       return;
     }
 
-    let measureAdapter: MeasureAdapterModelContent["measureAdapter"];
-    try {
-      measureAdapter = await ask<AskModelMeasureAdapterGet>(
-        "ask:device-manager:model:measureAdapter:get",
-        { _id: measureAdapterId },
-      );
-    } catch (error) {
-      this.logger.error(
-        `Cannot apply measure adapter "${measureAdapterId}" on device "${device._id}": ${error.message}`,
-      );
-      return;
-    }
-
-    const mappingByMeasureName = new Map<string, MeasureAdapterMapping>(
-      measureAdapter.mapping.map((entry) => [entry.sourceMeasureName, entry]),
+    const measureAdapterIdByMeasureName = new Map<string, string>(
+      measureAdapters.map((assignment) => [
+        assignment.sourceMeasureName,
+        assignment.measureAdapterId,
+      ]),
     );
 
     const adaptedMeasurements: DecodedMeasurement[] = [];
     for (const measurement of measurements) {
-      const mappingEntry = mappingByMeasureName.get(measurement.measureName);
+      const measureAdapterId = measureAdapterIdByMeasureName.get(
+        measurement.measureName,
+      );
 
-      if (!mappingEntry) {
+      if (!measureAdapterId) {
         adaptedMeasurements.push(measurement);
         continue;
       }
 
-      const sourceValueKeys = Object.keys(measurement.values);
-      if (sourceValueKeys.length !== 1) {
-        this.logger.warn(
-          `Measure adapter "${measureAdapterId}" cannot adapt measure "${measurement.measureName}": expected a single value field, got ${sourceValueKeys.length}.`,
-        );
-        adaptedMeasurements.push(measurement);
-        continue;
-      }
-
-      let targetMeasureModel: MeasureModelContent;
+      let measureAdapter: MeasureAdapterContent;
       try {
-        targetMeasureModel = await ask<AskModelMeasureGet>(
-          "ask:device-manager:model:measure:get",
-          { engineId, type: mappingEntry.targetType },
+        measureAdapter = await ask<AskModelMeasureAdapterGet>(
+          "ask:device-manager:model:measureAdapter:get",
+          { _id: measureAdapterId, engineId },
         );
       } catch (error) {
         this.logger.error(
-          `Measure adapter "${measureAdapterId}" targets unknown measure type "${mappingEntry.targetType}": ${error.message}`,
+          `Cannot apply measure adapter "${measureAdapterId}" on device "${device._id}": ${error.message}`,
         );
         adaptedMeasurements.push(measurement);
         continue;
       }
 
-      const targetValueKey = Object.keys(
-        targetMeasureModel.measure.valuesMappings,
-      )[0];
+      if (measurement.type !== measureAdapter.sourceType) {
+        this.logger.warn(
+          `Measure adapter "${measureAdapterId}" expects source measure type "${measureAdapter.sourceType}", but measure "${measurement.measureName}" is of type "${measurement.type}".`,
+        );
+        adaptedMeasurements.push(measurement);
+        continue;
+      }
+
+      if (!(measureAdapter.sourceField in measurement.values)) {
+        this.logger.warn(
+          `Measure adapter "${measureAdapterId}" expects field "${measureAdapter.sourceField}" in measure "${measurement.measureName}", but it is missing.`,
+        );
+        adaptedMeasurements.push(measurement);
+        continue;
+      }
 
       adaptedMeasurements.push({
         adaptedFrom: {
           _id: measureAdapterId,
           name: measureAdapter.name,
+          sourceField: measureAdapter.sourceField,
           sourceMeasureName: measurement.measureName,
           sourceType: measurement.type,
           sourceValues: measurement.values,
+          targetField: measureAdapter.targetField,
         },
-        measureName: mappingEntry.targetMeasureName,
+        measureName: measureAdapter.targetMeasureName,
         measuredAt: measurement.measuredAt,
-        type: mappingEntry.targetType,
-        values: { [targetValueKey]: measurement.values[sourceValueKeys[0]] },
+        type: measureAdapter.targetType,
+        values: {
+          [measureAdapter.targetField]:
+            measurement.values[measureAdapter.sourceField],
+        },
       });
     }
 

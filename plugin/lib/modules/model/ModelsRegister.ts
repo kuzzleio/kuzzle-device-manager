@@ -1,6 +1,8 @@
 import { Inflector, PluginContext, PluginImplementationError } from "kuzzle";
+import { ask } from "kuzzle-plugin-commons";
 
 import {
+  AskEngineList,
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
@@ -14,8 +16,6 @@ import {
   GroupAffinity,
   GroupModelContent,
   LocaleDetails,
-  MeasureAdapterMapping,
-  MeasureAdapterModelContent,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
@@ -23,13 +23,21 @@ import {
   ModelContent,
   TooltipModels,
 } from "./types/ModelContent";
+import { MeasureAdapterContent } from "./types/MeasureAdapterContent";
 import { ModelSerializer } from "./ModelSerializer";
+import { MeasureAdapterSerializer } from "./MeasureAdapterSerializer";
 import { JSONObject } from "kuzzle-sdk";
 import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
 import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 import { KuzzleLogger } from "kuzzle-logger";
+
+interface RegisteredMeasureAdapter {
+  content: MeasureAdapterContent;
+  engineIds?: string[];
+}
+
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
@@ -37,7 +45,7 @@ export class ModelsRegister {
   private deviceModels: DeviceModelContent[] = [];
   private groupModels: GroupModelContent[] = [];
   private measureModels: MeasureModelContent[] = [];
-  private measureAdapterModels: MeasureAdapterModelContent[] = [];
+  private measureAdapters: RegisteredMeasureAdapter[] = [];
   private logger: KuzzleLogger;
 
   private get sdk() {
@@ -56,7 +64,6 @@ export class ModelsRegister {
       this.load("device", this.deviceModels),
       this.load("group", this.groupModels),
       this.load("measure", this.measureModels),
-      this.load("measureAdapter", this.measureAdapterModels),
     ]);
 
     await this.sdk.collection.refresh(
@@ -238,34 +245,114 @@ export class ModelsRegister {
     });
   }
 
+  /**
+   * Registers a measure adapter, mapping one field of a registered measure
+   * type onto one field of another registered measure type.
+   *
+   * @param name - Unique name identifying this adapter.
+   * @param sourceType - Registered measure type of the input.
+   * @param sourceField - Field key within `sourceType`'s `valuesMappings` to read from.
+   * @param targetMeasureName - Measure slot name to produce.
+   * @param targetType - Registered measure type of the output.
+   * @param targetField - Field key within `targetType`'s `valuesMappings` to write into.
+   * @param engineIds - Optional list of tenant engine ids to restrict this adapter to.
+   *                    Omitted: propagated to every existing and future tenant.
+   */
   registerMeasureAdapter(
     name: string,
-    source: string,
-    mapping: MeasureAdapterMapping[],
+    sourceType: string,
+    sourceField: string,
+    targetMeasureName: string,
+    targetType: string,
+    targetField: string,
     engineIds?: string[],
   ) {
-    if (!mapping || mapping.length === 0) {
-      throw new PluginImplementationError(
-        `Measure adapter "${name}" must declare at least one mapping entry`,
-      );
+    for (const [key, value] of Object.entries({
+      name,
+      sourceField,
+      sourceType,
+      targetField,
+      targetMeasureName,
+      targetType,
+    })) {
+      if (!value) {
+        throw new PluginImplementationError(
+          `Measure adapter registration is missing required field "${key}"`,
+        );
+      }
     }
 
-    const targetNames = mapping.map((entry) => entry.targetMeasureName);
-    if (new Set(targetNames).size !== targetNames.length) {
-      throw new PluginImplementationError(
-        `Measure adapter "${name}" has duplicate target measure names in its mapping`,
-      );
-    }
-
-    this.measureAdapterModels.push({
-      ...(engineIds?.length ? { engineIds } : {}),
-      measureAdapter: {
-        mapping,
+    this.measureAdapters.push({
+      content: {
         name,
-        source,
+        sourceField,
+        sourceType,
+        targetField,
+        targetMeasureName,
+        targetType,
       },
-      type: "measureAdapter",
+      engineIds,
     });
+  }
+
+  /**
+   * Returns the registered measure adapters applicable to the given engine
+   * (i.e. registered without `engineIds`, or with `engineIds` including it).
+   */
+  getMeasureAdaptersForEngine(engineId: string): MeasureAdapterContent[] {
+    return this.measureAdapters
+      .filter(
+        ({ engineIds }) => !engineIds?.length || engineIds.includes(engineId),
+      )
+      .map(({ content }) => content);
+  }
+
+  /**
+   * Writes every registered measure adapter applicable to `engineId` into
+   * that engine's `config` collection.
+   */
+  async writeMeasureAdaptersToEngine(engineId: string) {
+    const adapters = this.getMeasureAdaptersForEngine(engineId);
+
+    if (adapters.length === 0) {
+      return;
+    }
+
+    await this.sdk.document.mCreateOrReplace(
+      engineId,
+      InternalCollection.CONFIG,
+      adapters.map((content) => ({
+        _id: MeasureAdapterSerializer.id(content.name),
+        body: MeasureAdapterSerializer.document(content),
+      })),
+      { strict: true },
+    );
+
+    this.logger.info(
+      `Successfully propagated measure adapters to engine "${engineId}": ${adapters
+        .map((content) => content.name)
+        .join(", ")}`,
+    );
+  }
+
+  /**
+   * Propagates every registered measure adapter into all existing tenant
+   * engines. Adapters registered with explicit `engineIds` are written only
+   * to those engines; the rest are written to every existing engine.
+   */
+  async propagateMeasureAdapters() {
+    if (this.measureAdapters.length === 0) {
+      return;
+    }
+
+    const engines = await ask<AskEngineList>(
+      "ask:device-manager:engine:list",
+      {},
+    );
+
+    await Promise.all(
+      engines.map((engine) => this.writeMeasureAdaptersToEngine(engine.index)),
+    );
   }
 
   private async load(type: string, models: ModelContent[]) {

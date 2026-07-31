@@ -25,6 +25,7 @@ import {
 } from "../asset";
 
 import { AskPayloadReceiveFormated } from "../decoder/types/InternalEvents";
+import { NamedMeasures } from "../decoder";
 import { DeviceSerializer } from "./model/DeviceSerializer";
 import {
   DeviceProvisioningContent,
@@ -83,6 +84,7 @@ export class DeviceService extends DigitalTwinService {
         engineId: null,
         groups: [],
         linkedMeasures: [],
+        measureAdapters: [],
         measureSlots: [],
         metadata,
         model,
@@ -517,6 +519,7 @@ export class DeviceService extends DigitalTwinService {
         engineId,
         groups: [],
         linkedMeasures: [],
+        measureAdapters: [],
         measureSlots: device._source.measureSlots,
         metadata: {},
         model: device._source.model,
@@ -674,9 +677,44 @@ export class DeviceService extends DigitalTwinService {
     );
   }
 
+  /**
+   * Recomputes a device's `measureSlots` given its declared measures and its
+   * current measure adapter assignments (one adapter per source measure name).
+   */
+  private async computeMeasureSlots(
+    engineId: string,
+    deviceMeasures: NamedMeasures,
+    assignments: DeviceContent["measureAdapters"],
+  ): Promise<NamedMeasures> {
+    const adaptersBySourceName = new Map(
+      await Promise.all(
+        assignments.map(async (assignment) => {
+          const measureAdapter = await ask<AskModelMeasureAdapterGet>(
+            "ask:device-manager:model:measureAdapter:get",
+            { _id: assignment.measureAdapterId, engineId },
+          );
+
+          return [assignment.sourceMeasureName, measureAdapter] as const;
+        }),
+      ),
+    );
+
+    return deviceMeasures.map((measure) => {
+      const measureAdapter = adaptersBySourceName.get(measure.name);
+
+      return measureAdapter
+        ? {
+            name: measureAdapter.targetMeasureName,
+            type: measureAdapter.targetType,
+          }
+        : measure;
+    });
+  }
+
   async setMeasureAdapter(
     engineId: string,
     deviceId: string,
+    sourceMeasureName: string,
     measureAdapterId: string,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
@@ -685,34 +723,44 @@ export class DeviceService extends DigitalTwinService {
 
       const measureAdapter = await ask<AskModelMeasureAdapterGet>(
         "ask:device-manager:model:measureAdapter:get",
-        { _id: measureAdapterId },
+        { _id: measureAdapterId, engineId },
       );
 
-      if (measureAdapter.source !== device._source.model) {
+      const deviceModel = await this.getDeviceModel(device._source.model);
+      const declaredMeasure = deviceModel.device.measures.find(
+        (measure) => measure.name === sourceMeasureName,
+      );
+
+      if (!declaredMeasure) {
         throw new BadRequestError(
-          `Measure adapter "${measureAdapterId}" applies to device model "${measureAdapter.source}", not "${device._source.model}".`,
+          `Measure "${sourceMeasureName}" is not declared for device model "${device._source.model}".`,
         );
       }
 
-      const deviceModel = await this.getDeviceModel(device._source.model);
-      const adaptedNames = new Set(
-        measureAdapter.mapping.map((entry) => entry.sourceMeasureName),
+      if (declaredMeasure.type !== measureAdapter.sourceType) {
+        throw new BadRequestError(
+          `Measure adapter "${measureAdapterId}" expects a source measure of type "${measureAdapter.sourceType}", but "${sourceMeasureName}" is of type "${declaredMeasure.type}".`,
+        );
+      }
+
+      const assignments = (device._source.measureAdapters ?? []).filter(
+        (assignment) => assignment.sourceMeasureName !== sourceMeasureName,
       );
-      const passthroughMeasures = deviceModel.device.measures.filter(
-        (measure) => !adaptedNames.has(measure.name),
+      assignments.push({ measureAdapterId, sourceMeasureName });
+
+      const measureSlots = await this.computeMeasureSlots(
+        engineId,
+        deviceModel.device.measures,
+        assignments,
       );
-      const adaptedMeasures = measureAdapter.mapping.map((entry) => ({
-        name: entry.targetMeasureName,
-        type: entry.targetType,
-      }));
 
       return this.updateDocument<DeviceContent>(
         request,
         {
           _id: deviceId,
           _source: {
-            measureAdapterId,
-            measureSlots: [...passthroughMeasures, ...adaptedMeasures],
+            measureAdapters: assignments,
+            measureSlots,
           },
         },
         { collection: InternalCollection.DEVICES, engineId },
@@ -724,19 +772,30 @@ export class DeviceService extends DigitalTwinService {
   async unsetMeasureAdapter(
     engineId: string,
     deviceId: string,
+    sourceMeasureName: string,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId, request);
       const deviceModel = await this.getDeviceModel(device._source.model);
 
+      const assignments = (device._source.measureAdapters ?? []).filter(
+        (assignment) => assignment.sourceMeasureName !== sourceMeasureName,
+      );
+
+      const measureSlots = await this.computeMeasureSlots(
+        engineId,
+        deviceModel.device.measures,
+        assignments,
+      );
+
       return this.updateDocument<DeviceContent>(
         request,
         {
           _id: deviceId,
           _source: {
-            measureAdapterId: null,
-            measureSlots: deviceModel.device.measures,
+            measureAdapters: assignments,
+            measureSlots,
           },
         },
         { collection: InternalCollection.DEVICES, engineId },

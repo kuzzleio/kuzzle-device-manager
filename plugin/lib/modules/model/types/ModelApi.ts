@@ -6,14 +6,13 @@ import {
   GroupAffinity,
   GroupModelContent,
   LocaleDetails,
-  MeasureAdapterMapping,
-  MeasureAdapterModelContent,
   MeasureModelContent,
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
   TooltipModels,
 } from "./ModelContent";
+import { MeasureAdapterContent } from "./MeasureAdapterContent";
 import { SchemaObject } from "ajv";
 import { MeasureValuesDetails } from "../../measure/types/MeasureDefinition";
 
@@ -49,10 +48,10 @@ export type ApiModelGetMeasureResult = KDocument<MeasureModelContent>;
 
 export interface ApiModelGetMeasureAdapterRequest extends ModelsControllerRequest {
   action: "getMeasureAdapter";
-  name: string;
+  engineId: string;
+  _id: string;
 }
-export type ApiModelGetMeasureAdapterResult =
-  KDocument<MeasureAdapterModelContent>;
+export type ApiModelGetMeasureAdapterResult = KDocument<MeasureAdapterContent>;
 
 export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   action: "writeAsset";
@@ -117,19 +116,6 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
 }
 export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;
 
-export interface ApiModelWriteMeasureAdapterRequest extends ModelsControllerRequest {
-  action: "writeMeasureAdapter";
-
-  body: {
-    name: string;
-    source: string;
-    mapping: MeasureAdapterMapping[];
-    engineIds?: string[];
-  };
-}
-export type ApiModelWriteMeasureAdapterResult =
-  KDocument<MeasureAdapterModelContent>;
-
 export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
   action: "updateAsset";
 
@@ -176,13 +162,6 @@ export interface ApiModelDeleteMeasureRequest extends ModelsControllerRequest {
 }
 export type ApiModelDeleteMeasureResult = void;
 
-export interface ApiModelDeleteMeasureAdapterRequest extends ModelsControllerRequest {
-  action: "deleteMeasureAdapter";
-
-  _id: string;
-}
-export type ApiModelDeleteMeasureAdapterResult = void;
-
 export interface ApiModelListAssetsRequest extends ModelsControllerRequest {
   action: "listAssets";
 
@@ -221,10 +200,10 @@ export type ApiModelListMeasuresResult = {
 
 export interface ApiModelListMeasureAdaptersRequest extends ModelsControllerRequest {
   action: "listMeasureAdapters";
-  engineId?: string;
+  engineId: string;
 }
 export type ApiModelListMeasureAdaptersResult = {
-  models: KDocument<MeasureAdapterModelContent>[];
+  models: KDocument<MeasureAdapterContent>[];
   total: number;
 };
 
@@ -273,17 +252,4 @@ export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
 }
 export type ApiModelSearchMeasuresResult = SearchResult<
   KHit<MeasureModelContent>
->;
-
-export interface ApiModelSearchMeasureAdaptersRequest extends ModelsControllerRequest {
-  action: "searchMeasureAdapters";
-
-  engineId?: string;
-  from?: number;
-  size?: number;
-  scrollTTL?: string;
-  body?: JSONObject;
-}
-export type ApiModelSearchMeasureAdaptersResult = SearchResult<
-  KHit<MeasureAdapterModelContent>
 >;

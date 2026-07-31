@@ -41,7 +41,15 @@ export interface DeviceContent<
     date: number;
   }>;
 
-  measureAdapterId?: string | null;
+  /**
+   * Measure adapters assigned to this device's measure slots.
+   *
+   * At most one adapter is assigned per `sourceMeasureName` at a time.
+   */
+  measureAdapters: Array<{
+    sourceMeasureName: string;
+    measureAdapterId: string;
+  }>;
 }
 
 /**

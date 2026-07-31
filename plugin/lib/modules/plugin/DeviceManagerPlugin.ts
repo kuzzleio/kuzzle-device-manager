@@ -27,7 +27,6 @@ import {
   AssetModelDefinition,
   DeviceModelDefinition,
   GroupModelDefinition,
-  MeasureAdapterMapping,
   ModelModule,
   modelsMappings,
   ModelsRegister,
@@ -338,31 +337,46 @@ export class DeviceManagerPlugin extends Plugin {
       },
 
       /**
-       * Register a measure adapter, mapping a device's raw/generic decoded
-       * measures onto typed, use-case specific measure names.
+       * Register a measure adapter, mapping one field of a registered
+       * measure type onto one field of another registered measure type.
        *
        * @param name Unique name of the adapter
-       * @param source Device model this adapter applies to
-       * @param mapping Field mappings: { sourceMeasureName, targetMeasureName, targetType }
-       * @param engineIds Optional list of engine IDs (tenant IDs) this adapter is scoped to
+       * @param sourceType Registered measure type of the input
+       * @param sourceField Field key within `sourceType`'s `valuesMappings` to read from
+       * @param targetMeasureName Measure slot name to produce
+       * @param targetType Registered measure type of the output
+       * @param targetField Field key within `targetType`'s `valuesMappings` to write into
+       * @param engineIds Optional list of engine IDs (tenant IDs) this adapter is
+       *                  scoped to. Omitted: propagated to every existing and future tenant.
        *
        * @example
        * ```
-       * deviceManager.models.registerMeasureAdapter("battery-as-temp", "DummyTemp", [
-       *   { sourceMeasureName: "battery", targetMeasureName: "temp", targetType: "temperature" },
-       * ]);
+       * deviceManager.models.registerMeasureAdapter(
+       *   "analog1-as-humidity",
+       *   "analog",
+       *   "analog1",
+       *   "humidity",
+       *   "humidity",
+       *   "humidity",
+       * );
        * ```
        */
       registerMeasureAdapter: (
         name: string,
-        source: string,
-        mapping: MeasureAdapterMapping[],
+        sourceType: string,
+        sourceField: string,
+        targetMeasureName: string,
+        targetType: string,
+        targetField: string,
         engineIds?: string[],
       ) => {
         this.modelsRegister.registerMeasureAdapter(
           name,
-          source,
-          mapping,
+          sourceType,
+          sourceField,
+          targetMeasureName,
+          targetType,
+          targetField,
           engineIds,
         );
       },
@@ -495,6 +509,16 @@ export class DeviceManagerPlugin extends Plugin {
       mappings: this.config.engineCollections.config.mappings,
       settings: this.config.engineCollections.config.settings,
     });
+    this.engineConfigManager.register("measureAdapter", {
+      properties: {
+        name: { type: "keyword" },
+        sourceField: { type: "keyword" },
+        sourceType: { type: "keyword" },
+        targetField: { type: "keyword" },
+        targetMeasureName: { type: "keyword" },
+        targetType: { type: "keyword" },
+      },
+    });
 
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
@@ -604,6 +628,7 @@ export class DeviceManagerPlugin extends Plugin {
         try {
           await this.deviceManagerEngine.updateEngines();
           await this.deviceManagerEngine.updateMeasuresSchema();
+          await this.modelsRegister.propagateMeasureAdapters();
         } catch (error) {
           this.context.log.error(
             `An error occured while updating the engines during startup: ${error}`,

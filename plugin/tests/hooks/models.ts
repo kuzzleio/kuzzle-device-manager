@@ -3,7 +3,6 @@ import * as assets from "../application/assets";
 import * as devices from "../application/devices";
 import * as measures from "../application/measures";
 import * as groups from "../application/groups";
-import { measureAdapterModels } from "../application/models";
 
 // ? List of embedded measures register directly by plugin
 const embeddedMeasures = [
@@ -27,9 +26,6 @@ const measuresModels = Object.values(measures).map(
 const groupModels = Object.values(groups).map(
   (model) => `model-group-${model.modelName}`,
 );
-const measureAdapterModelIds = measureAdapterModels.map(
-  (model) => `model-measureAdapter-${model.name}`,
-);
 export async function deleteModels(sdk: Kuzzle) {
   // ? Exclude ids of models defined in code to remove all others, instead of use a hard coded list
   // * This avoids forgetting when adding measurements in the tests
@@ -39,7 +35,6 @@ export async function deleteModels(sdk: Kuzzle) {
     ...devicesModels,
     ...measuresModels,
     ...groupModels,
-    ...measureAdapterModelIds,
   ];
 
   await sdk.collection.refresh("device-manager", "models");

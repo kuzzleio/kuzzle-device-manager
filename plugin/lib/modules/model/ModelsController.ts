@@ -29,11 +29,8 @@ import {
   ApiModelListGroupsResult,
   ApiModelSearchGroupsResult,
   ApiModelWriteGroupResult,
-  ApiModelWriteMeasureAdapterResult,
-  ApiModelDeleteMeasureAdapterResult,
   ApiModelGetMeasureAdapterResult,
   ApiModelListMeasureAdaptersResult,
-  ApiModelSearchMeasureAdaptersResult,
 } from "./types/ModelApi";
 import { KuzzleLogger } from "kuzzle-logger";
 
@@ -85,7 +82,7 @@ export class ModelsController {
           handler: this.getMeasureAdapter.bind(this),
           http: [
             {
-              path: "device-manager/models/measureAdapter/:name",
+              path: "device-manager/:engineId/models/measureAdapter/:_id",
               verb: "get",
             },
           ],
@@ -109,7 +106,10 @@ export class ModelsController {
         listMeasureAdapters: {
           handler: this.listMeasureAdapters.bind(this),
           http: [
-            { path: "device-manager/models/measureAdapters", verb: "get" },
+            {
+              path: "device-manager/:engineId/models/measureAdapters",
+              verb: "get",
+            },
           ],
         },
         searchAssets: {
@@ -136,15 +136,6 @@ export class ModelsController {
             { path: "device-manager/models/measures/_search", verb: "post" },
           ],
         },
-        searchMeasureAdapters: {
-          handler: this.searchMeasureAdapters.bind(this),
-          http: [
-            {
-              path: "device-manager/models/measureAdapters/_search",
-              verb: "post",
-            },
-          ],
-        },
         updateAsset: {
           handler: this.updateAsset.bind(this),
           http: [
@@ -166,21 +157,6 @@ export class ModelsController {
         writeMeasure: {
           handler: this.writeMeasure.bind(this),
           http: [{ path: "device-manager/models/measures", verb: "post" }],
-        },
-        writeMeasureAdapter: {
-          handler: this.writeMeasureAdapter.bind(this),
-          http: [
-            { path: "device-manager/models/measureAdapters", verb: "post" },
-          ],
-        },
-        deleteMeasureAdapter: {
-          handler: this.deleteMeasureAdapter.bind(this),
-          http: [
-            {
-              path: "device-manager/models/measureAdapter/:_id",
-              verb: "delete",
-            },
-          ],
         },
       },
     };
@@ -227,12 +203,12 @@ export class ModelsController {
   async getMeasureAdapter(
     request: KuzzleRequest,
   ): Promise<ApiModelGetMeasureAdapterResult> {
-    const name = request.getString("name");
-    const engineId = request.input.args.engineId as string | undefined;
+    const engineId = request.getString("engineId");
+    const _id = request.getString("_id");
 
     const measureAdapterModel = await this.modelService.getMeasureAdapter(
-      name,
       engineId,
+      _id,
     );
 
     return measureAdapterModel;
@@ -336,24 +312,6 @@ export class ModelsController {
     return measureModel;
   }
 
-  async writeMeasureAdapter(
-    request: KuzzleRequest,
-  ): Promise<ApiModelWriteMeasureAdapterResult> {
-    const name = request.getBodyString("name");
-    const source = request.getBodyString("source");
-    const mapping = request.getBodyArray("mapping");
-    const engineIds = request.getBodyArray("engineIds", []) as string[];
-
-    const measureAdapterModel = await this.modelService.writeMeasureAdapter(
-      name,
-      source,
-      mapping,
-      engineIds,
-    );
-
-    return measureAdapterModel;
-  }
-
   async deleteAsset(
     request: KuzzleRequest,
   ): Promise<ApiModelDeleteAssetResult> {
@@ -384,14 +342,6 @@ export class ModelsController {
     const _id = request.getId();
 
     await this.modelService.deleteMeasure(_id);
-  }
-
-  async deleteMeasureAdapter(
-    request: KuzzleRequest,
-  ): Promise<ApiModelDeleteMeasureAdapterResult> {
-    const _id = request.getId();
-
-    await this.modelService.deleteMeasureAdapter(_id);
   }
 
   async listAssets(request: KuzzleRequest): Promise<ApiModelListAssetsResult> {
@@ -496,7 +446,7 @@ export class ModelsController {
   async listMeasureAdapters(
     request: KuzzleRequest,
   ): Promise<ApiModelListMeasureAdaptersResult> {
-    const engineId = request.input.args.engineId as string | undefined;
+    const engineId = request.getString("engineId");
 
     const models = await this.modelService.listMeasureAdapters(engineId);
 
@@ -539,17 +489,6 @@ export class ModelsController {
     const engineId = request.input.args.engineId as string | undefined;
 
     return this.modelService.searchMeasures(
-      engineId,
-      request.getSearchParams(),
-    );
-  }
-
-  async searchMeasureAdapters(
-    request: KuzzleRequest,
-  ): Promise<ApiModelSearchMeasureAdaptersResult> {
-    const engineId = request.input.args.engineId as string | undefined;
-
-    return this.modelService.searchMeasureAdapters(
       engineId,
       request.getSearchParams(),
     );
