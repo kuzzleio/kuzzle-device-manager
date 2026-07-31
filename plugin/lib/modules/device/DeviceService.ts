@@ -10,7 +10,11 @@ import {
 } from "kuzzle-sdk";
 
 import { DecodedMeasurement } from "../measure";
-import { AskModelMeasureAdapterGet, DeviceModelContent } from "../model";
+import {
+  AskModelMeasureAdapterGet,
+  AskModelMeasureGet,
+  DeviceModelContent,
+} from "../model";
 import {
   AskEngineList,
   DeviceManagerPlugin,
@@ -740,6 +744,29 @@ export class DeviceService extends DigitalTwinService {
       if (declaredMeasure.type !== measureAdapter.sourceType) {
         throw new BadRequestError(
           `Measure adapter "${measureAdapterId}" expects a source measure of type "${measureAdapter.sourceType}", but "${sourceMeasureName}" is of type "${declaredMeasure.type}".`,
+        );
+      }
+
+      const [sourceMeasureModel, targetMeasureModel] = await Promise.all([
+        ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
+          engineId,
+          type: measureAdapter.sourceType,
+        }),
+        ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
+          engineId,
+          type: measureAdapter.targetType,
+        }),
+      ]);
+
+      if (sourceMeasureModel.measure.scope !== "device") {
+        throw new BadRequestError(
+          `Measure adapter "${measureAdapterId}" source measure type "${measureAdapter.sourceType}" must have scope "device" (found "${sourceMeasureModel.measure.scope}").`,
+        );
+      }
+
+      if (targetMeasureModel.measure.scope !== "asset") {
+        throw new BadRequestError(
+          `Measure adapter "${measureAdapterId}" target measure type "${measureAdapter.targetType}" must have scope "asset" (found "${targetMeasureModel.measure.scope}").`,
         );
       }
 

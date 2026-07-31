@@ -8,6 +8,7 @@ export type HumidityMeasurement = {
 };
 
 const humidityMeasureDefinition: MeasureDefinition = {
+  scope: "asset",
   valuesMappings: { humidity: { type: "float" } },
   valuesDetails: {
     humidity: {

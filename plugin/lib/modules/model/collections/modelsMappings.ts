@@ -18,6 +18,7 @@ export const modelsMappings: CollectionMappings = {
     measure: {
       properties: {
         type: { type: "keyword" },
+        scope: { type: "keyword" },
         valuesMappings: {
           dynamic: "false",
           properties: {},

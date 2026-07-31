@@ -298,6 +298,7 @@ export class ModelsController {
     const validationSchema = request.getBodyObject("validationSchema", {});
     const valuesDetails = request.getBodyObject("valuesDetails", {});
     const locales = request.getBodyObject("locales", {});
+    const scope = request.getBodyString("scope", "asset") as "asset" | "device";
     const engineIds = request.getBodyArray("engineIds", []);
 
     const measureModel = await this.modelService.writeMeasure(
@@ -306,6 +307,7 @@ export class ModelsController {
       validationSchema,
       valuesDetails,
       locales,
+      scope,
       engineIds,
     );
 

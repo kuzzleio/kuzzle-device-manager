@@ -604,11 +604,13 @@ export class ModelService extends BaseService {
     locales?: {
       [valueName: string]: LocaleDetails;
     },
+    scope?: "asset" | "device",
     engineIds?: string[],
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
       measure: {
         locales,
+        scope: scope ?? "asset",
         type,
         valuesDetails,
         valuesMappings,

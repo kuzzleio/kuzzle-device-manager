@@ -112,6 +112,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
     valuesMappings: JSONObject;
     validationSchema?: SchemaObject;
     valuesDetails?: MeasureValuesDetails;
+    scope?: "asset" | "device";
   };
 }
 export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;

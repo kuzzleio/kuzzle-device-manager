@@ -8,6 +8,7 @@ export type MovementMeasurement = {
 };
 
 const movementMeasureDefinition: MeasureDefinition = {
+  scope: "asset",
   valuesMappings: { movement: { type: "boolean" } },
   valuesDetails: {
     movement: {

@@ -7,6 +7,7 @@ export type MagiculeMeasurement = {
 export const Magicule: MeasureModel = {
   modelName: "magicule",
   definition: {
+    scope: "asset",
     valuesMappings: {
       magicule: { type: "integer" },
     },

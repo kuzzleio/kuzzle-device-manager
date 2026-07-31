@@ -235,6 +235,34 @@ describe("features/Measure/IngestionPipeline", () => {
     ).rejects.toThrow();
   });
 
+  it("Should reject a measure adapter whose source measure is not scope \"device\" or whose target measure is not scope \"asset\"", async () => {
+    const listResponse = await sdk.query({
+      controller: "device-manager/models",
+      action: "listMeasureAdapters",
+      engineId: "engine-ayse",
+    });
+    const measureAdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "temp-as-battery-invalid-scope",
+    )._id;
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "invalid_scope_slot" },
+    });
+
+    await expect(
+      sdk.query({
+        controller: "device-manager/devices",
+        action: "setMeasureAdapter",
+        engineId: "engine-ayse",
+        _id: "DummyTemp-invalid_scope_slot",
+        body: { measureAdapterId, sourceMeasureName: "temperature" },
+      }),
+    ).rejects.toThrow();
+  });
+
   it("Should apply a measure adapter on a device's raw measure before enrichment, tracing the original measure in origin.adapter", async () => {
     const listResponse = await sdk.query({
       controller: "device-manager/models",

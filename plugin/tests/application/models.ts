@@ -54,6 +54,16 @@ export const measureAdapterModels = [
     targetMeasureName: "temp",
     targetType: "temperature",
   },
+  // Intentionally backwards (asset-scope source -> device-scope target), used to test
+  // that setMeasureAdapter rejects adapters violating the device->asset scope direction.
+  {
+    name: "temp-as-battery-invalid-scope",
+    sourceField: "temperature",
+    sourceType: "temperature",
+    targetField: "battery",
+    targetMeasureName: "batteryCopy",
+    targetType: "battery",
+  },
 ];
 
 export function registerModels(deviceManager: DeviceManagerPlugin) {

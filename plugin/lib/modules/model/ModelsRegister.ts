@@ -220,7 +220,7 @@ export class ModelsRegister {
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
-    const { locales, validationSchema, valuesMappings, valuesDetails } =
+    const { locales, validationSchema, valuesMappings, valuesDetails, scope } =
       measureDefinition;
     if (validationSchema) {
       try {
@@ -236,6 +236,7 @@ export class ModelsRegister {
     this.measureModels.push({
       measure: {
         locales,
+        scope: scope ?? "asset",
         type,
         validationSchema,
         valuesDetails,

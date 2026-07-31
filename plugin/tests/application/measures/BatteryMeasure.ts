@@ -8,6 +8,7 @@ export type BatteryMeasurement = {
 };
 
 const batteryMeasureDefinition: MeasureDefinition = {
+  scope: "device",
   valuesMappings: { battery: { type: "integer" } },
 
   valuesDetails: {
