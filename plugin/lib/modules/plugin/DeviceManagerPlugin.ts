@@ -336,47 +336,6 @@ export class DeviceManagerPlugin extends Plugin {
         this.modelsRegister.registerMeasure(name, measureDefinition);
       },
 
-      /**
-       * Register a measure adapter, mapping a registered measure type onto
-       * one field of another registered measure type.
-       *
-       * The exact source field (e.g. a specific channel of a multi-field
-       * measure) is NOT part of the definition — it's chosen per-device when
-       * the adapter is assigned via `setMeasureAdapter`, so the same adapter
-       * can be reused against different channels/devices instead of needing
-       * one near-duplicate adapter per channel.
-       *
-       * @param name Unique name of the adapter
-       * @param sourceType Registered measure type of the input
-       * @param targetMeasureName Default measure slot name to produce (can be
-       *                          overridden per-assignment)
-       * @param targetType Registered measure type of the output
-       * @param targetField Field within `targetType`'s `valuesMappings` to write into.
-       *                    Supports dot-notation to write into a sub-field nested
-       *                    inside a top-level value (e.g. "envQuality.humidity").
-       * @param engineIds Optional list of engine IDs (tenant IDs) this adapter is
-       *                  scoped to. Omitted: propagated to every existing and future tenant.
-       *
-       * @example
-       * ```
-       * deviceManager.models.registerMeasureAdapter(
-       *   "analog-as-humidity",
-       *   "analogValue",
-       *   "humidity",
-       *   "humidity",
-       *   "humidity",
-       * );
-       *
-       * // Nested target field example:
-       * deviceManager.models.registerMeasureAdapter(
-       *   "battery-as-envquality-humidity",
-       *   "battery",
-       *   "humidity",
-       *   "environmentalQuality",
-       *   "envQuality.humidity",
-       * );
-       * ```
-       */
       registerMeasureAdapter: (
         name: string,
         sourceType: string,

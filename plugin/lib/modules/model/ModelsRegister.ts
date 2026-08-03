@@ -246,27 +246,6 @@ export class ModelsRegister {
     });
   }
 
-  /**
-   * Registers a measure adapter, mapping a registered measure type onto one
-   * field of another registered measure type.
-   *
-   * The exact source field (e.g. a specific channel of a multi-field
-   * measure) is NOT part of the definition — it's chosen per-device when the
-   * adapter is assigned via `setMeasureAdapter`, so the same adapter can be
-   * reused against different channels/devices instead of needing one
-   * near-duplicate adapter per channel.
-   *
-   * @param name - Unique name identifying this adapter.
-   * @param sourceType - Registered measure type of the input.
-   * @param targetMeasureName - Default measure slot name to produce (can be
-   *                            overridden per-assignment).
-   * @param targetType - Registered measure type of the output.
-   * @param targetField - Field within `targetType`'s `valuesMappings` to write into.
-   *                      Supports dot-notation to write into a sub-field nested
-   *                      inside a top-level value (e.g. "envQuality.humidity").
-   * @param engineIds - Optional list of tenant engine ids to restrict this adapter to.
-   *                    Omitted: propagated to every existing and future tenant.
-   */
   registerMeasureAdapter(
     name: string,
     sourceType: string,
@@ -301,10 +280,6 @@ export class ModelsRegister {
     });
   }
 
-  /**
-   * Returns the registered measure adapters applicable to the given engine
-   * (i.e. registered without `engineIds`, or with `engineIds` including it).
-   */
   getMeasureAdaptersForEngine(engineId: string): MeasureAdapterContent[] {
     return this.measureAdapters
       .filter(
@@ -313,10 +288,6 @@ export class ModelsRegister {
       .map(({ content }) => content);
   }
 
-  /**
-   * Writes every registered measure adapter applicable to `engineId` into
-   * that engine's `config` collection.
-   */
   async writeMeasureAdaptersToEngine(engineId: string) {
     const adapters = this.getMeasureAdaptersForEngine(engineId);
 
@@ -341,11 +312,6 @@ export class ModelsRegister {
     );
   }
 
-  /**
-   * Propagates every registered measure adapter into all existing tenant
-   * engines. Adapters registered with explicit `engineIds` are written only
-   * to those engines; the rest are written to every existing engine.
-   */
   async propagateMeasureAdapters() {
     if (this.measureAdapters.length === 0) {
       return;

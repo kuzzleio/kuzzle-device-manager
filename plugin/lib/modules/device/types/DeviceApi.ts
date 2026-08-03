@@ -328,11 +328,6 @@ export interface ApiDeviceSetMeasureAdapterRequest extends DevicesControllerRequ
     sourceMeasureName: string;
     measureAdapterId: string;
     sourceField: string;
-    /**
-     * Overrides the adapter's default `targetMeasureName` — required when
-     * assigning the same adapter more than once on the same device (e.g. to
-     * two different slots), since each resulting slot needs a distinct name.
-     */
     targetMeasureName?: string;
   };
 }

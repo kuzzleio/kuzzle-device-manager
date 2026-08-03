@@ -41,18 +41,6 @@ export interface DeviceContent<
     date: number;
   }>;
 
-  /**
-   * Measure adapters assigned to this device's measure slots.
-   *
-   * Several adapters may be assigned to the same `sourceMeasureName` at
-   * once, as long as they don't produce the same `targetMeasureName` — each
-   * one reads its own `sourceField` (chosen at assignment time, not baked
-   * into the adapter definition) from that slot's measurement and produces
-   * its own target measure. `targetMeasureName` defaults to the adapter's
-   * own `targetMeasureName`, but may be overridden per-assignment so the
-   * same adapter can be assigned more than once on the same device (e.g. to
-   * two different slots), each producing a distinctly-named target.
-   */
   measureAdapters: Array<{
     sourceMeasureName: string;
     measureAdapterId: string;

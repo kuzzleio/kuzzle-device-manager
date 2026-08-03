@@ -687,12 +687,6 @@ export class DeviceService extends DigitalTwinService {
     );
   }
 
-  /**
-   * Recomputes a device's `measureSlots` given its declared measures and its
-   * current measure adapter assignments. A source measure with no adapter
-   * assigned keeps its raw slot; a source measure with one or more adapters
-   * assigned yields one target slot per adapter instead of its raw slot.
-   */
   private async computeMeasureSlots(
     engineId: string,
     deviceMeasures: NamedMeasures,

@@ -433,8 +433,6 @@ describe("features/Measure/IngestionPipeline", () => {
       ]),
     );
 
-    // Nested TARGET field: writes into envQuality.humidity, not a flat
-    // literal "envQuality.humidity" key.
     expect(hitsByMeasureName.envQualityFromBattery).toMatchObject({
       type: "environmentalQuality",
       values: { envQuality: { humidity: 42 } },
@@ -447,8 +445,6 @@ describe("features/Measure/IngestionPipeline", () => {
       },
     });
 
-    // Nested SOURCE field: reads from readings.ch1, not a flat literal
-    // "readings.ch1" key.
     expect(hitsByMeasureName.tempFromMultiSensor).toMatchObject({
       type: "temperature",
       values: { temperature: 27.5 },
@@ -614,9 +610,6 @@ describe("features/Measure/IngestionPipeline", () => {
       body: { model: "DummyTemp", reference: "colliding_adapter_master" },
     });
 
-    // "battery-as-temp" and "multisensor-as-temp-conflict" both default to
-    // targetMeasureName "temp" — assigning the second on top of the first
-    // must be rejected, even though they're on different source slots.
     await sdk.query({
       controller: "device-manager/devices",
       action: "setMeasureAdapter",
@@ -643,10 +636,6 @@ describe("features/Measure/IngestionPipeline", () => {
       }),
     ).rejects.toThrow();
 
-    // Providing a distinct targetMeasureName override resolves the
-    // collision — this is what lets the same adapter (or, as here, two
-    // adapters that happen to share a default name) be used more than once
-    // on the same device.
     const deviceResponse = await sdk.query({
       controller: "device-manager/devices",
       action: "setMeasureAdapter",

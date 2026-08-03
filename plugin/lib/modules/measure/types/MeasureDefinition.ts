@@ -80,13 +80,5 @@ export interface MeasureDefinition {
     [valueName: string]: MeasureLocales;
   };
 
-  /**
-   * Whether this measure type is a domain/asset-meaningful value ("asset", e.g.
-   * "temperature", "humidity") or a generic/raw device-level value ("device", e.g.
-   * a raw analog reading) that must go through a measure adapter before it can be
-   * linked to an asset.
-   *
-   * Defaults to "asset" when omitted.
-   */
   scope?: "asset" | "device";
 }

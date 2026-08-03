@@ -57,8 +57,6 @@ export const measureAdapterModels = [
     targetMeasureName: "temp",
     targetType: "temperature",
   },
-  // Intentionally backwards (asset-scope source -> device-scope target), used to test
-  // that setMeasureAdapter rejects adapters violating the device->asset scope direction.
   {
     name: "temp-as-battery-invalid-scope",
     sourceType: "temperature",
@@ -66,8 +64,6 @@ export const measureAdapterModels = [
     targetMeasureName: "batteryCopy",
     targetType: "battery",
   },
-  // Nested target field: writes into a sub-field nested inside a top-level
-  // value ("envQuality.humidity"), not a flat top-level key.
   {
     name: "battery-as-envquality-humidity",
     sourceType: "battery",
@@ -75,9 +71,6 @@ export const measureAdapterModels = [
     targetMeasureName: "envQualityFromBattery",
     targetType: "environmentalQuality",
   },
-  // Generic: sourceField is chosen at assignment time (e.g. "readings.ch1"),
-  // not baked into the definition — this is what lets it be assigned to any
-  // nested field of "multiSensorRaw", on any device.
   {
     name: "multisensor-as-temp",
     sourceType: "multiSensorRaw",
@@ -85,9 +78,6 @@ export const measureAdapterModels = [
     targetMeasureName: "tempFromMultiSensor",
     targetType: "temperature",
   },
-  // Another generic adapter on the same sourceType, producing a different
-  // target — used to test that a slot can have several adapters assigned
-  // simultaneously, each reading its own sourceField.
   {
     name: "multisensor-as-envquality-co2",
     sourceType: "multiSensorRaw",
@@ -95,9 +85,6 @@ export const measureAdapterModels = [
     targetMeasureName: "co2FromMultiSensor",
     targetType: "environmentalQuality",
   },
-  // Deliberately produces the SAME default targetMeasureName as
-  // "battery-as-temp" ("temp"), used to test that assigning two adapters
-  // whose (effective) target names collide is rejected.
   {
     name: "multisensor-as-temp-conflict",
     sourceType: "multiSensorRaw",

@@ -284,11 +284,6 @@ export class PayloadService extends BaseService {
     decodedPayload.replaceMeasurements(reference, adaptedMeasurements);
   }
 
-  /**
-   * Attempts to produce one adapted measurement from a raw measurement using
-   * a single measure adapter assignment. Returns `null` (and logs) if the
-   * adapter can't be found or doesn't match the measurement's type/fields.
-   */
   private async tryAdaptMeasurement(
     device: KDocument<DeviceContent>,
     measurement: DecodedMeasurement,
