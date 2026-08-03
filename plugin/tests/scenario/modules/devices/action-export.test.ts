@@ -26,12 +26,12 @@ function getExportedColums(row: string) {
     accelerationSensorZ: parsedRow[4],
     accelerationSensorAccuracy: parsedRow[5],
     battery: parsedRow[6],
-    position: parsedRow[7],
-    positionAccuracy: parsedRow[8],
-    positionAltitude: parsedRow[9],
-    temperature: parsedRow[10],
-    lastMeasuredAt: parsedRow[11],
-    lastMeasuredAtISO: parsedRow[12],
+    position: parsedRow[9],
+    positionAccuracy: parsedRow[10],
+    positionAltitude: parsedRow[11],
+    temperature: parsedRow[12],
+    lastMeasuredAt: parsedRow[13],
+    lastMeasuredAtISO: parsedRow[14],
   };
 }
 
@@ -93,7 +93,7 @@ describe("DevicesController:exportMeasures", () => {
     const header = csv.shift();
 
     expect(header).toBe(
-      "Model,Reference,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery,position,position.accuracy,position.altitude,temperature,lastMeasuredAt,lastMeasuredAtISO\n",
+      "Model,Reference,accelerationSensor.x,accelerationSensor.y,accelerationSensor.z,accelerationSensor.accuracy,battery,multiSensor.readings.ch1,multiSensor.readings.ch2,position,position.accuracy,position.altitude,temperature,lastMeasuredAt,lastMeasuredAtISO\n",
     );
 
     const rows = csv

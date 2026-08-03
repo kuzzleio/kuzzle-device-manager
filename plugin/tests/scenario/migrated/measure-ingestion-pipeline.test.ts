@@ -230,7 +230,11 @@ describe("features/Measure/IngestionPipeline", () => {
         action: "setMeasureAdapter",
         engineId: "engine-ayse",
         _id: "DummyTemp-invalid_adapter_slot",
-        body: { measureAdapterId, sourceMeasureName: "temperature" },
+        body: {
+          measureAdapterId,
+          sourceMeasureName: "temperature",
+          sourceField: "battery",
+        },
       }),
     ).rejects.toThrow();
   });
@@ -258,7 +262,11 @@ describe("features/Measure/IngestionPipeline", () => {
         action: "setMeasureAdapter",
         engineId: "engine-ayse",
         _id: "DummyTemp-invalid_scope_slot",
-        body: { measureAdapterId, sourceMeasureName: "temperature" },
+        body: {
+          measureAdapterId,
+          sourceMeasureName: "temperature",
+          sourceField: "temperature",
+        },
       }),
     ).rejects.toThrow();
   });
@@ -285,7 +293,11 @@ describe("features/Measure/IngestionPipeline", () => {
       action: "setMeasureAdapter",
       engineId: "engine-ayse",
       _id: "DummyTemp-adapter_me_master",
-      body: { measureAdapterId, sourceMeasureName: "battery" },
+      body: {
+        measureAdapterId,
+        sourceMeasureName: "battery",
+        sourceField: "battery",
+      },
     });
 
     const deviceResponse = await sdk.query({
@@ -346,6 +358,479 @@ describe("features/Measure/IngestionPipeline", () => {
           },
         },
       ],
+    });
+  });
+
+  it("Should apply measure adapters with nested source/target fields (dot-notation)", async () => {
+    const listResponse = await sdk.query({
+      controller: "device-manager/models",
+      action: "listMeasureAdapters",
+      engineId: "engine-ayse",
+    });
+    const nestedTargetAdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "battery-as-envquality-humidity",
+    )._id;
+    const nestedSourceAdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "multisensor-as-temp",
+    )._id;
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "nested_adapter_master" },
+    });
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-nested_adapter_master",
+      body: {
+        measureAdapterId: nestedTargetAdapterId,
+        sourceMeasureName: "battery",
+        sourceField: "battery",
+      },
+    });
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-nested_adapter_master",
+      body: {
+        measureAdapterId: nestedSourceAdapterId,
+        sourceMeasureName: "multiSensor",
+        sourceField: "readings.ch1",
+      },
+    });
+
+    await sendPayloads(sdk, "dummy-temp", [
+      {
+        deviceEUI: "nested_adapter_master",
+        temperature: 19,
+        battery: 42,
+        multiSensor: { ch1: 27.5, ch2: 99 },
+      },
+    ]);
+
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const response = await sdk.query({
+      controller: "document",
+      action: "search",
+      index: "engine-ayse",
+      collection: "measures",
+      body: {
+        query: { term: { "origin.reference": "nested_adapter_master" } },
+      },
+    });
+
+    const hitsByMeasureName = Object.fromEntries(
+      response.result.hits.map((hit) => [
+        hit._source.origin.measureName,
+        hit._source,
+      ]),
+    );
+
+    // Nested TARGET field: writes into envQuality.humidity, not a flat
+    // literal "envQuality.humidity" key.
+    expect(hitsByMeasureName.envQualityFromBattery).toMatchObject({
+      type: "environmentalQuality",
+      values: { envQuality: { humidity: 42 } },
+      origin: {
+        adapter: {
+          name: "battery-as-envquality-humidity",
+          sourceField: "battery",
+          targetField: "envQuality.humidity",
+        },
+      },
+    });
+
+    // Nested SOURCE field: reads from readings.ch1, not a flat literal
+    // "readings.ch1" key.
+    expect(hitsByMeasureName.tempFromMultiSensor).toMatchObject({
+      type: "temperature",
+      values: { temperature: 27.5 },
+      origin: {
+        adapter: {
+          name: "multisensor-as-temp",
+          sourceField: "readings.ch1",
+          targetField: "temperature",
+        },
+      },
+    });
+  });
+
+  it("Should allow several measure adapters on the same source measure slot at once", async () => {
+    const listResponse = await sdk.query({
+      controller: "device-manager/models",
+      action: "listMeasureAdapters",
+      engineId: "engine-ayse",
+    });
+    const ch1AdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "multisensor-as-temp",
+    )._id;
+    const ch2AdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "multisensor-as-envquality-co2",
+    )._id;
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "multi_adapter_master" },
+    });
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-multi_adapter_master",
+      body: {
+        measureAdapterId: ch1AdapterId,
+        sourceMeasureName: "multiSensor",
+        sourceField: "readings.ch1",
+      },
+    });
+
+    let deviceResponse = await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-multi_adapter_master",
+      body: {
+        measureAdapterId: ch2AdapterId,
+        sourceMeasureName: "multiSensor",
+        sourceField: "readings.ch2",
+      },
+    });
+
+    expect(deviceResponse.result._source.measureAdapters).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceMeasureName: "multiSensor",
+          measureAdapterId: ch1AdapterId,
+        }),
+        expect.objectContaining({
+          sourceMeasureName: "multiSensor",
+          measureAdapterId: ch2AdapterId,
+        }),
+      ]),
+    );
+    expect(deviceResponse.result._source.measureSlots).toEqual(
+      expect.arrayContaining([
+        { name: "tempFromMultiSensor", type: "temperature" },
+        { name: "co2FromMultiSensor", type: "environmentalQuality" },
+      ]),
+    );
+    expect(deviceResponse.result._source.measureSlots).not.toEqual(
+      expect.arrayContaining([
+        { name: "multiSensor", type: "multiSensorRaw" },
+      ]),
+    );
+
+    await sendPayloads(sdk, "dummy-temp", [
+      {
+        deviceEUI: "multi_adapter_master",
+        temperature: 19,
+        multiSensor: { ch1: 12.5, ch2: 77 },
+      },
+    ]);
+
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const response = await sdk.query({
+      controller: "document",
+      action: "search",
+      index: "engine-ayse",
+      collection: "measures",
+      body: {
+        query: { term: { "origin.reference": "multi_adapter_master" } },
+      },
+    });
+
+    const hitsByMeasureName = Object.fromEntries(
+      response.result.hits.map((hit) => [
+        hit._source.origin.measureName,
+        hit._source,
+      ]),
+    );
+
+    expect(hitsByMeasureName.tempFromMultiSensor).toMatchObject({
+      type: "temperature",
+      values: { temperature: 12.5 },
+      origin: { adapter: { name: "multisensor-as-temp", sourceField: "readings.ch1" } },
+    });
+    expect(hitsByMeasureName.co2FromMultiSensor).toMatchObject({
+      type: "environmentalQuality",
+      values: { envQuality: { co2: 77 } },
+      origin: { adapter: { name: "multisensor-as-envquality-co2", sourceField: "readings.ch2" } },
+    });
+
+    deviceResponse = await sdk.query({
+      controller: "device-manager/devices",
+      action: "unsetMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-multi_adapter_master",
+      body: { measureAdapterId: ch2AdapterId, sourceMeasureName: "multiSensor" },
+    });
+
+    expect(deviceResponse.result._source.measureAdapters).toEqual([
+      expect.objectContaining({
+        sourceMeasureName: "multiSensor",
+        measureAdapterId: ch1AdapterId,
+      }),
+    ]);
+    expect(deviceResponse.result._source.measureSlots).toEqual(
+      expect.arrayContaining([
+        { name: "tempFromMultiSensor", type: "temperature" },
+      ]),
+    );
+    expect(deviceResponse.result._source.measureSlots).not.toEqual(
+      expect.arrayContaining([
+        { name: "co2FromMultiSensor", type: "environmentalQuality" },
+      ]),
+    );
+  });
+
+  it("Should reject a second measure adapter that would produce a targetMeasureName already used on the device, unless a distinct targetMeasureName override is provided", async () => {
+    const listResponse = await sdk.query({
+      controller: "device-manager/models",
+      action: "listMeasureAdapters",
+      engineId: "engine-ayse",
+    });
+    const batteryAsTempId = listResponse.result.models.find(
+      (model) => model._source.name === "battery-as-temp",
+    )._id;
+    const conflictingAdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "multisensor-as-temp-conflict",
+    )._id;
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "colliding_adapter_master" },
+    });
+
+    // "battery-as-temp" and "multisensor-as-temp-conflict" both default to
+    // targetMeasureName "temp" — assigning the second on top of the first
+    // must be rejected, even though they're on different source slots.
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-colliding_adapter_master",
+      body: {
+        measureAdapterId: batteryAsTempId,
+        sourceMeasureName: "battery",
+        sourceField: "battery",
+      },
+    });
+
+    await expect(
+      sdk.query({
+        controller: "device-manager/devices",
+        action: "setMeasureAdapter",
+        engineId: "engine-ayse",
+        _id: "DummyTemp-colliding_adapter_master",
+        body: {
+          measureAdapterId: conflictingAdapterId,
+          sourceMeasureName: "multiSensor",
+          sourceField: "readings.ch1",
+        },
+      }),
+    ).rejects.toThrow();
+
+    // Providing a distinct targetMeasureName override resolves the
+    // collision — this is what lets the same adapter (or, as here, two
+    // adapters that happen to share a default name) be used more than once
+    // on the same device.
+    const deviceResponse = await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-colliding_adapter_master",
+      body: {
+        measureAdapterId: conflictingAdapterId,
+        sourceMeasureName: "multiSensor",
+        sourceField: "readings.ch1",
+        targetMeasureName: "temp2",
+      },
+    });
+
+    expect(deviceResponse.result._source.measureSlots).toEqual(
+      expect.arrayContaining([
+        { name: "temp", type: "temperature" },
+        { name: "temp2", type: "temperature" },
+      ]),
+    );
+
+    await sendPayloads(sdk, "dummy-temp", [
+      {
+        deviceEUI: "colliding_adapter_master",
+        temperature: 19,
+        battery: 61,
+        multiSensor: { ch1: 33.3, ch2: 1 },
+      },
+    ]);
+
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const response = await sdk.query({
+      controller: "document",
+      action: "search",
+      index: "engine-ayse",
+      collection: "measures",
+      body: {
+        query: { term: { "origin.reference": "colliding_adapter_master" } },
+      },
+    });
+
+    const hitsByMeasureName = Object.fromEntries(
+      response.result.hits.map((hit) => [
+        hit._source.origin.measureName,
+        hit._source,
+      ]),
+    );
+
+    expect(hitsByMeasureName.temp).toMatchObject({
+      values: { temperature: 61 },
+    });
+    expect(hitsByMeasureName.temp2).toMatchObject({
+      values: { temperature: 33.3 },
+    });
+  });
+
+  it("Should reject a sourceField that is not declared in the source measure's valuesMappings", async () => {
+    const listResponse = await sdk.query({
+      controller: "device-manager/models",
+      action: "listMeasureAdapters",
+      engineId: "engine-ayse",
+    });
+    const measureAdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "multisensor-as-temp",
+    )._id;
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "invalid_source_field" },
+    });
+
+    await expect(
+      sdk.query({
+        controller: "device-manager/devices",
+        action: "setMeasureAdapter",
+        engineId: "engine-ayse",
+        _id: "DummyTemp-invalid_source_field",
+        body: {
+          measureAdapterId,
+          sourceMeasureName: "multiSensor",
+          sourceField: "readings.doesNotExist",
+        },
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("Should allow the same measure adapter definition to be reused across different devices with different sourceFields", async () => {
+    const listResponse = await sdk.query({
+      controller: "device-manager/models",
+      action: "listMeasureAdapters",
+      engineId: "engine-ayse",
+    });
+    const measureAdapterId = listResponse.result.models.find(
+      (model) => model._source.name === "multisensor-as-temp",
+    )._id;
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "reuse_device_ch1" },
+    });
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      engineId: "engine-ayse",
+      body: { model: "DummyTemp", reference: "reuse_device_ch2" },
+    });
+
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-reuse_device_ch1",
+      body: {
+        measureAdapterId,
+        sourceMeasureName: "multiSensor",
+        sourceField: "readings.ch1",
+      },
+    });
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "setMeasureAdapter",
+      engineId: "engine-ayse",
+      _id: "DummyTemp-reuse_device_ch2",
+      body: {
+        measureAdapterId,
+        sourceMeasureName: "multiSensor",
+        sourceField: "readings.ch2",
+      },
+    });
+
+    await sendPayloads(sdk, "dummy-temp", [
+      {
+        deviceEUI: "reuse_device_ch1",
+        temperature: 19,
+        multiSensor: { ch1: 44.4, ch2: 5 },
+      },
+      {
+        deviceEUI: "reuse_device_ch2",
+        temperature: 19,
+        multiSensor: { ch1: 5, ch2: 66.6 },
+      },
+    ]);
+
+    await sdk.collection.refresh("engine-ayse", "measures");
+
+    const response = await sdk.query({
+      controller: "document",
+      action: "search",
+      index: "engine-ayse",
+      collection: "measures",
+      body: {
+        query: {
+          bool: {
+            must: [
+              { term: { "origin.measureName": "tempFromMultiSensor" } },
+              {
+                terms: {
+                  "origin.reference": ["reuse_device_ch1", "reuse_device_ch2"],
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    const hitsByReference = Object.fromEntries(
+      response.result.hits.map((hit) => [
+        hit._source.origin.reference,
+        hit._source,
+      ]),
+    );
+
+    expect(hitsByReference.reuse_device_ch1).toMatchObject({
+      values: { temperature: 44.4 },
+      origin: { adapter: { sourceField: "readings.ch1" } },
+    });
+    expect(hitsByReference.reuse_device_ch2).toMatchObject({
+      values: { temperature: 66.6 },
+      origin: { adapter: { sourceField: "readings.ch2" } },
     });
   });
 });

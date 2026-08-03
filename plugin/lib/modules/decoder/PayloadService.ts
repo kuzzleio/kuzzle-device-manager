@@ -2,6 +2,7 @@ import { KuzzleRequest } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
+import { get, has, set } from "lodash";
 
 import {
   DeviceProvisioningContent,
@@ -245,75 +246,103 @@ export class PayloadService extends BaseService {
       return;
     }
 
-    const measureAdapterIdByMeasureName = new Map<string, string>(
-      measureAdapters.map((assignment) => [
-        assignment.sourceMeasureName,
-        assignment.measureAdapterId,
-      ]),
-    );
+    const assignmentsByMeasureName = new Map<
+      string,
+      DeviceContent["measureAdapters"]
+    >();
+    for (const assignment of measureAdapters) {
+      const assignments =
+        assignmentsByMeasureName.get(assignment.sourceMeasureName) ?? [];
+      assignments.push(assignment);
+      assignmentsByMeasureName.set(assignment.sourceMeasureName, assignments);
+    }
 
     const adaptedMeasurements: DecodedMeasurement[] = [];
     for (const measurement of measurements) {
-      const measureAdapterId = measureAdapterIdByMeasureName.get(
-        measurement.measureName,
+      const assignments = assignmentsByMeasureName.get(measurement.measureName);
+
+      if (!assignments?.length) {
+        adaptedMeasurements.push(measurement);
+        continue;
+      }
+
+      const adaptedFromMeasurement = (
+        await Promise.all(
+          assignments.map((assignment) =>
+            this.tryAdaptMeasurement(device, measurement, assignment, engineId),
+          ),
+        )
+      ).filter((adapted): adapted is DecodedMeasurement => adapted !== null);
+
+      adaptedMeasurements.push(
+        ...(adaptedFromMeasurement.length === 0
+          ? [measurement]
+          : adaptedFromMeasurement),
       );
-
-      if (!measureAdapterId) {
-        adaptedMeasurements.push(measurement);
-        continue;
-      }
-
-      let measureAdapter: MeasureAdapterContent;
-      try {
-        measureAdapter = await ask<AskModelMeasureAdapterGet>(
-          "ask:device-manager:model:measureAdapter:get",
-          { _id: measureAdapterId, engineId },
-        );
-      } catch (error) {
-        this.logger.error(
-          `Cannot apply measure adapter "${measureAdapterId}" on device "${device._id}": ${error.message}`,
-        );
-        adaptedMeasurements.push(measurement);
-        continue;
-      }
-
-      if (measurement.type !== measureAdapter.sourceType) {
-        this.logger.warn(
-          `Measure adapter "${measureAdapterId}" expects source measure type "${measureAdapter.sourceType}", but measure "${measurement.measureName}" is of type "${measurement.type}".`,
-        );
-        adaptedMeasurements.push(measurement);
-        continue;
-      }
-
-      if (!(measureAdapter.sourceField in measurement.values)) {
-        this.logger.warn(
-          `Measure adapter "${measureAdapterId}" expects field "${measureAdapter.sourceField}" in measure "${measurement.measureName}", but it is missing.`,
-        );
-        adaptedMeasurements.push(measurement);
-        continue;
-      }
-
-      adaptedMeasurements.push({
-        adaptedFrom: {
-          _id: measureAdapterId,
-          name: measureAdapter.name,
-          sourceField: measureAdapter.sourceField,
-          sourceMeasureName: measurement.measureName,
-          sourceType: measurement.type,
-          sourceValues: measurement.values,
-          targetField: measureAdapter.targetField,
-        },
-        measureName: measureAdapter.targetMeasureName,
-        measuredAt: measurement.measuredAt,
-        type: measureAdapter.targetType,
-        values: {
-          [measureAdapter.targetField]:
-            measurement.values[measureAdapter.sourceField],
-        },
-      });
     }
 
     decodedPayload.replaceMeasurements(reference, adaptedMeasurements);
+  }
+
+  /**
+   * Attempts to produce one adapted measurement from a raw measurement using
+   * a single measure adapter assignment. Returns `null` (and logs) if the
+   * adapter can't be found or doesn't match the measurement's type/fields.
+   */
+  private async tryAdaptMeasurement(
+    device: KDocument<DeviceContent>,
+    measurement: DecodedMeasurement,
+    assignment: DeviceContent["measureAdapters"][number],
+    engineId: string,
+  ): Promise<DecodedMeasurement | null> {
+    const { measureAdapterId, sourceField, targetMeasureName } = assignment;
+
+    let measureAdapter: MeasureAdapterContent;
+    try {
+      measureAdapter = await ask<AskModelMeasureAdapterGet>(
+        "ask:device-manager:model:measureAdapter:get",
+        { _id: measureAdapterId, engineId },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Cannot apply measure adapter "${measureAdapterId}" on device "${device._id}": ${error.message}`,
+      );
+      return null;
+    }
+
+    if (measurement.type !== measureAdapter.sourceType) {
+      this.logger.warn(
+        `Measure adapter "${measureAdapterId}" expects source measure type "${measureAdapter.sourceType}", but measure "${measurement.measureName}" is of type "${measurement.type}".`,
+      );
+      return null;
+    }
+
+    if (!has(measurement.values, sourceField)) {
+      this.logger.warn(
+        `Measure adapter "${measureAdapterId}" expects field "${sourceField}" in measure "${measurement.measureName}", but it is missing.`,
+      );
+      return null;
+    }
+
+    return {
+      adaptedFrom: {
+        _id: measureAdapterId,
+        name: measureAdapter.name,
+        sourceField,
+        sourceMeasureName: measurement.measureName,
+        sourceType: measurement.type,
+        sourceValues: measurement.values,
+        targetField: measureAdapter.targetField,
+      },
+      measureName: targetMeasureName,
+      measuredAt: measurement.measuredAt,
+      type: measureAdapter.targetType,
+      values: set(
+        {},
+        measureAdapter.targetField,
+        get(measurement.values, sourceField),
+      ),
+    };
   }
 
   async receiveFormated(

@@ -6,12 +6,14 @@ import { Decoder, DecodedPayload } from "../../../index";
 import { BatteryMeasurement, TemperatureMeasurement } from "../measures";
 
 import { AccelerationMeasurement } from "../measures/Acceleration";
+import { MultiSensorRawMeasurement } from "../measures/MultiSensorRaw";
 import { isMeasureDated } from "../../helpers/payloads";
 
 export const dummyTempDeviceMeasures = [
   { name: "temperature", type: "temperature" },
   { name: "accelerationSensor", type: "acceleration" },
   { name: "battery", type: "battery" },
+  { name: "multiSensor", type: "multiSensorRaw" },
 ] as const;
 
 export class DummyTempDecoder extends Decoder {
@@ -121,6 +123,23 @@ export class DummyTempDecoder extends Decoder {
         },
       },
     );
+
+    if (payload.multiSensor !== undefined) {
+      decodedPayload.addMeasurement<MultiSensorRawMeasurement>(
+        payload.deviceEUI,
+        "multiSensor",
+        {
+          measuredAt: payload.measuredAt ?? Date.now(),
+          type: "multiSensorRaw",
+          values: {
+            readings: {
+              ch1: payload.multiSensor.ch1,
+              ch2: payload.multiSensor.ch2,
+            },
+          },
+        },
+      );
+    }
 
     if (payload.unknownMeasure) {
       decodedPayload.addMeasurement<TemperatureMeasurement>(

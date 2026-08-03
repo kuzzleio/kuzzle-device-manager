@@ -124,7 +124,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(26);
     expect(csv[0]).toBe(
-      "Measure Id,Measured At,Measured At ISO,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature.temperature,accelerationSensor.acceleration.x,accelerationSensor.acceleration.y,accelerationSensor.acceleration.z,accelerationSensor.accuracy,battery.battery\n",
+      "Measure Id,Measured At,Measured At ISO,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature.temperature,accelerationSensor.acceleration.x,accelerationSensor.acceleration.y,accelerationSensor.acceleration.z,accelerationSensor.accuracy,battery.battery,multiSensor.readings.ch1,multiSensor.readings.ch2\n",
     );
 
     const [
@@ -199,7 +199,7 @@ describe("DevicesController:exportMeasures", () => {
 
     expect(csv).toHaveLength(3);
     expect(csv[0]).toBe(
-      "Measure Id,Measured At,Measured At ISO,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature.temperature,accelerationSensor.acceleration.x,accelerationSensor.acceleration.y,accelerationSensor.acceleration.z,accelerationSensor.accuracy,battery.battery\n",
+      "Measure Id,Measured At,Measured At ISO,Measure Type,Device Id,Device Model,Asset Id,Asset Model,temperature.temperature,accelerationSensor.acceleration.x,accelerationSensor.acceleration.y,accelerationSensor.acceleration.z,accelerationSensor.accuracy,battery.battery,multiSensor.readings.ch1,multiSensor.readings.ch2\n",
     );
   });
 });

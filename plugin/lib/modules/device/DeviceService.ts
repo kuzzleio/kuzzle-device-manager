@@ -20,7 +20,13 @@ import {
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
-import { DigitalTwinService, Metadata, SearchParams, lock } from "../shared";
+import {
+  DigitalTwinService,
+  Metadata,
+  SearchParams,
+  getValuesMappingsLeafPaths,
+  lock,
+} from "../shared";
 import {
   AskAssetHistoryAdd,
   AssetContent,
@@ -683,35 +689,40 @@ export class DeviceService extends DigitalTwinService {
 
   /**
    * Recomputes a device's `measureSlots` given its declared measures and its
-   * current measure adapter assignments (one adapter per source measure name).
+   * current measure adapter assignments. A source measure with no adapter
+   * assigned keeps its raw slot; a source measure with one or more adapters
+   * assigned yields one target slot per adapter instead of its raw slot.
    */
   private async computeMeasureSlots(
     engineId: string,
     deviceMeasures: NamedMeasures,
     assignments: DeviceContent["measureAdapters"],
   ): Promise<NamedMeasures> {
-    const adaptersBySourceName = new Map(
-      await Promise.all(
-        assignments.map(async (assignment) => {
-          const measureAdapter = await ask<AskModelMeasureAdapterGet>(
-            "ask:device-manager:model:measureAdapter:get",
-            { _id: assignment.measureAdapterId, engineId },
-          );
+    const resolvedBySourceName = new Map<
+      string,
+      Array<{ name: string; type: string }>
+    >();
+    await Promise.all(
+      assignments.map(async (assignment) => {
+        const measureAdapter = await ask<AskModelMeasureAdapterGet>(
+          "ask:device-manager:model:measureAdapter:get",
+          { _id: assignment.measureAdapterId, engineId },
+        );
 
-          return [assignment.sourceMeasureName, measureAdapter] as const;
-        }),
-      ),
+        const resolved =
+          resolvedBySourceName.get(assignment.sourceMeasureName) ?? [];
+        resolved.push({
+          name: assignment.targetMeasureName,
+          type: measureAdapter.targetType,
+        });
+        resolvedBySourceName.set(assignment.sourceMeasureName, resolved);
+      }),
     );
 
-    return deviceMeasures.map((measure) => {
-      const measureAdapter = adaptersBySourceName.get(measure.name);
+    return deviceMeasures.flatMap((measure) => {
+      const resolved = resolvedBySourceName.get(measure.name);
 
-      return measureAdapter
-        ? {
-            name: measureAdapter.targetMeasureName,
-            type: measureAdapter.targetType,
-          }
-        : measure;
+      return resolved?.length ? resolved : [measure];
     });
   }
 
@@ -720,6 +731,8 @@ export class DeviceService extends DigitalTwinService {
     deviceId: string,
     sourceMeasureName: string,
     measureAdapterId: string,
+    sourceField: string,
+    targetMeasureNameOverride: string | undefined,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:${deviceId}`, async () => {
@@ -770,14 +783,43 @@ export class DeviceService extends DigitalTwinService {
         );
       }
 
+      const sourceLeafPaths = getValuesMappingsLeafPaths(
+        sourceMeasureModel.measure.valuesMappings,
+      );
+      if (!sourceLeafPaths.includes(sourceField)) {
+        throw new BadRequestError(
+          `Field "${sourceField}" is not declared in measure type "${measureAdapter.sourceType}"'s valuesMappings.`,
+        );
+      }
+
+      const targetMeasureName =
+        targetMeasureNameOverride ?? measureAdapter.targetMeasureName;
+
       const assignments = (device._source.measureAdapters ?? []).filter(
-        (assignment) => assignment.sourceMeasureName !== sourceMeasureName,
+        (assignment) =>
+          !(
+            assignment.sourceMeasureName === sourceMeasureName &&
+            assignment.measureAdapterId === measureAdapterId
+          ),
       );
       assignments.push({
         measureAdapterId,
+        sourceField,
         sourceMeasureName,
-        targetMeasureName: measureAdapter.targetMeasureName,
+        targetMeasureName,
       });
+
+      const collidingAssignment = assignments.find(
+        (assignment, index) =>
+          assignments.findIndex(
+            (other) => other.targetMeasureName === assignment.targetMeasureName,
+          ) !== index,
+      );
+      if (collidingAssignment) {
+        throw new BadRequestError(
+          `Another measure adapter assigned to this device already produces target measure "${collidingAssignment.targetMeasureName}". Provide a different "targetMeasureName" to assign the same adapter more than once on this device.`,
+        );
+      }
 
       const measureSlots = await this.computeMeasureSlots(
         engineId,
@@ -804,6 +846,7 @@ export class DeviceService extends DigitalTwinService {
     engineId: string,
     deviceId: string,
     sourceMeasureName: string,
+    measureAdapterId: string,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:${deviceId}`, async () => {
@@ -811,7 +854,11 @@ export class DeviceService extends DigitalTwinService {
       const deviceModel = await this.getDeviceModel(device._source.model);
 
       const assignments = (device._source.measureAdapters ?? []).filter(
-        (assignment) => assignment.sourceMeasureName !== sourceMeasureName,
+        (assignment) =>
+          !(
+            assignment.sourceMeasureName === sourceMeasureName &&
+            assignment.measureAdapterId === measureAdapterId
+          ),
       );
 
       const measureSlots = await this.computeMeasureSlots(

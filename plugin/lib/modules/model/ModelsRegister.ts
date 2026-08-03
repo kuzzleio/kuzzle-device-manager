@@ -247,22 +247,29 @@ export class ModelsRegister {
   }
 
   /**
-   * Registers a measure adapter, mapping one field of a registered measure
-   * type onto one field of another registered measure type.
+   * Registers a measure adapter, mapping a registered measure type onto one
+   * field of another registered measure type.
+   *
+   * The exact source field (e.g. a specific channel of a multi-field
+   * measure) is NOT part of the definition — it's chosen per-device when the
+   * adapter is assigned via `setMeasureAdapter`, so the same adapter can be
+   * reused against different channels/devices instead of needing one
+   * near-duplicate adapter per channel.
    *
    * @param name - Unique name identifying this adapter.
    * @param sourceType - Registered measure type of the input.
-   * @param sourceField - Field key within `sourceType`'s `valuesMappings` to read from.
-   * @param targetMeasureName - Measure slot name to produce.
+   * @param targetMeasureName - Default measure slot name to produce (can be
+   *                            overridden per-assignment).
    * @param targetType - Registered measure type of the output.
-   * @param targetField - Field key within `targetType`'s `valuesMappings` to write into.
+   * @param targetField - Field within `targetType`'s `valuesMappings` to write into.
+   *                      Supports dot-notation to write into a sub-field nested
+   *                      inside a top-level value (e.g. "envQuality.humidity").
    * @param engineIds - Optional list of tenant engine ids to restrict this adapter to.
    *                    Omitted: propagated to every existing and future tenant.
    */
   registerMeasureAdapter(
     name: string,
     sourceType: string,
-    sourceField: string,
     targetMeasureName: string,
     targetType: string,
     targetField: string,
@@ -270,7 +277,6 @@ export class ModelsRegister {
   ) {
     for (const [key, value] of Object.entries({
       name,
-      sourceField,
       sourceType,
       targetField,
       targetMeasureName,
@@ -286,7 +292,6 @@ export class ModelsRegister {
     this.measureAdapters.push({
       content: {
         name,
-        sourceField,
         sourceType,
         targetField,
         targetMeasureName,
