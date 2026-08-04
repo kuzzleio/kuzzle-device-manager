@@ -269,7 +269,7 @@ export class PayloadService extends BaseService {
       const adaptedFromMeasurement = (
         await Promise.all(
           assignments.map((assignment) =>
-            this.tryAdaptMeasurement(device, measurement, assignment, engineId),
+            this.adaptMeasurement(device, measurement, assignment, engineId),
           ),
         )
       ).filter((adapted): adapted is DecodedMeasurement => adapted !== null);
@@ -284,7 +284,7 @@ export class PayloadService extends BaseService {
     decodedPayload.replaceMeasurements(reference, adaptedMeasurements);
   }
 
-  private async tryAdaptMeasurement(
+  private async adaptMeasurement(
     device: KDocument<DeviceContent>,
     measurement: DecodedMeasurement,
     assignment: DeviceContent["measureAdapters"][number],
