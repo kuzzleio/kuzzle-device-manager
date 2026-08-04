@@ -1,3 +1,8 @@
+## 3.0.0-3-dev.13 (2026-08-04)
+
+* fix(DigitalTwinService): asset is never unlinked when relinked to another asset ([74391a6](https://github.com/kuzzleio/kuzzle-device-manager/commit/74391a6))
+* fix(DigitalTwinService): asset is never unlinked when relinked to another asset ([cf375da](https://github.com/kuzzleio/kuzzle-device-manager/commit/cf375da))
+
 ## 3.0.0-3-dev.12 (2026-07-17)
 
 * Merge pull request #482 from kuzzleio/fix/await-provision-event ([e365a54](https://github.com/kuzzleio/kuzzle-device-manager/commit/e365a54)), closes [#482](https://github.com/kuzzleio/kuzzle-device-manager/issues/482)
