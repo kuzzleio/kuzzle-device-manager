@@ -325,6 +325,48 @@ describe("AssetController: linkDevices", () => {
     });
   });
 
+  it("should throw an error when linking a device already providing this measure to another asset", async () => {
+    await expect(
+      sdk.query<ApiAssetlinkDevicesRequest>({
+        controller: "device-manager/assets",
+        action: "linkDevices",
+        engineId: "engine-ayse",
+        _id: "Container-unlinked1",
+        body: {
+          linkedMeasures: [
+            {
+              deviceId: "DummyTemp-linked1",
+              measureSlots: [
+                {
+                  asset: "temperatureInt",
+                  device: "temperature",
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    ).rejects.toMatchObject({
+      message:
+        'Measure name "temperature" is already provided to another asset by this device.',
+    });
+    await expect(
+      documentGet(sdk, "engine-ayse", "devices", "DummyTemp-linked1"),
+    ).resolves.toMatchObject({
+      linkedMeasures: [
+        {
+          assetId: "Container-linked1",
+          measureSlots: [{ asset: "temperatureExt", device: "temperature" }],
+        },
+      ],
+    });
+    await expect(
+      documentGet(sdk, "engine-ayse", "assets", "Container-unlinked1"),
+    ).resolves.toMatchObject({
+      linkedMeasures: [],
+    });
+  });
+
   it("should throw an error when the device is not attached to an engine", async () => {
     await expect(
       sdk.query<ApiAssetlinkDevicesRequest>({
