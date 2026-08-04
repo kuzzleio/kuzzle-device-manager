@@ -583,7 +583,7 @@ export class DigitalTwinService extends BaseService {
     };
 
     for (const name of requestedMeasureNames) {
-      if (measureAlreadyProvided(name.asset)) {
+      if (measureAlreadyProvided(name.device)) {
         throw new BadRequestError(
           `Measure name "${name.device}" is already provided to another asset by this device.`,
         );
