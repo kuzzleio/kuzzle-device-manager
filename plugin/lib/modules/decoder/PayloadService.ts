@@ -269,7 +269,9 @@ export class PayloadService extends BaseService {
         engineId,
       );
 
-      adaptedMeasurements.push(...(adapted.length === 0 ? [measurement] : adapted));
+      adaptedMeasurements.push(
+        ...(adapted.length === 0 ? [measurement] : adapted),
+      );
     }
 
     decodedPayload.replaceMeasurements(reference, adaptedMeasurements);
@@ -322,7 +324,11 @@ export class PayloadService extends BaseService {
           continue;
         }
 
-        values = set(values, mapping.target, get(measurement.values, mapping.source));
+        values = set(
+          values,
+          mapping.target,
+          get(measurement.values, mapping.source),
+        );
       }
 
       adaptedMeasurements.push({

@@ -238,7 +238,7 @@ describe("features/Measure/IngestionPipeline", () => {
     ).rejects.toThrow();
   });
 
-  it("Should reject a measure adapter whose source measure is not scope \"device\" or whose target measure is not scope \"asset\"", async () => {
+  it('Should reject a measure adapter whose source measure is not scope "device" or whose target measure is not scope "asset"', async () => {
     const listResponse = await sdk.query({
       controller: "device-manager/models",
       action: "listMeasureAdapters",
@@ -306,7 +306,11 @@ describe("features/Measure/IngestionPipeline", () => {
 
     expect(deviceResponse.result._source.measureSlots).toEqual(
       expect.arrayContaining([
-        { name: "battery", type: "battery", measureAdapter: "battery-as-humidity" },
+        {
+          name: "battery",
+          type: "battery",
+          measureAdapter: "battery-as-humidity",
+        },
       ]),
     );
 

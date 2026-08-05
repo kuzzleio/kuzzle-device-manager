@@ -229,8 +229,14 @@ export class ModelsRegister {
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
-    const { icon, locales, validationSchema, valuesMappings, valuesDetails, scope } =
-      measureDefinition;
+    const {
+      icon,
+      locales,
+      validationSchema,
+      valuesMappings,
+      valuesDetails,
+      scope,
+    } = measureDefinition;
     if (validationSchema) {
       try {
         addSchemaToCache(type, validationSchema);
@@ -286,7 +292,8 @@ export class ModelsRegister {
         }
       }
 
-      const targets = targetsByModel.get(mapping.measureModelTarget) ?? new Set();
+      const targets =
+        targetsByModel.get(mapping.measureModelTarget) ?? new Set();
       if (targets.has(mapping.target)) {
         throw new PluginImplementationError(
           `Measure adapter "${name}" has two "fieldMapping" entries targeting the same field "${mapping.target}" on measure model "${mapping.measureModelTarget}"`,

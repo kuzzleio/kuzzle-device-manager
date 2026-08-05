@@ -718,7 +718,9 @@ export class DeviceService extends DigitalTwinService {
 
       const targetModelTypes = [
         ...new Set(
-          measureAdapter.fieldMapping.map((mapping) => mapping.measureModelTarget),
+          measureAdapter.fieldMapping.map(
+            (mapping) => mapping.measureModelTarget,
+          ),
         ),
       ];
 
@@ -742,7 +744,10 @@ export class DeviceService extends DigitalTwinService {
       }
 
       const targetMeasureModelsByType = new Map(
-        targetModelTypes.map((type, index) => [type, targetMeasureModels[index]]),
+        targetModelTypes.map((type, index) => [
+          type,
+          targetMeasureModels[index],
+        ]),
       );
 
       for (const [type, targetMeasureModel] of targetMeasureModelsByType) {
@@ -805,12 +810,11 @@ export class DeviceService extends DigitalTwinService {
       const device = await this.get(engineId, deviceId, request);
 
       const measureSlots = device._source.measureSlots.map((slot) => {
-        if (slot.name !== sourceMeasureName) {
+        if (slot.name !== sourceMeasureName || !slot.measureAdapter) {
           return slot;
         }
 
-        const { measureAdapter, ...rest } = slot;
-        return rest;
+        return { name: slot.name, type: slot.type };
       });
 
       return this.updateDocument<DeviceContent>(

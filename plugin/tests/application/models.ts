@@ -64,7 +64,11 @@ export const measureAdapterModels = [
     name: "temp-as-battery-invalid-scope",
     measureModelSource: "temperature",
     fieldMapping: [
-      { measureModelTarget: "battery", source: "temperature", target: "battery" },
+      {
+        measureModelTarget: "battery",
+        source: "temperature",
+        target: "battery",
+      },
     ],
   },
   {
@@ -84,7 +88,11 @@ export const measureAdapterModels = [
     name: "multisensor-as-humidity-and-co2",
     measureModelSource: "multiSensorRaw",
     fieldMapping: [
-      { measureModelTarget: "humidity", source: "readings.ch1", target: "humidity" },
+      {
+        measureModelTarget: "humidity",
+        source: "readings.ch1",
+        target: "humidity",
+      },
       { measureModelTarget: "co2", source: "readings.ch2", target: "co2" },
     ],
   },
