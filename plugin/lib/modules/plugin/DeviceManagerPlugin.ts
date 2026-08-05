@@ -181,6 +181,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataGroups,
           definition.tooltipModels,
           definition.locales,
+          definition.icon,
         );
       },
 
@@ -247,6 +248,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.defaultMetadata,
           definition.metadataDetails,
           definition.metadataGroups,
+          definition.icon,
         );
       },
 
@@ -315,6 +317,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.defaultMetadata,
           definition.metadataDetails,
           definition.metadataGroups,
+          definition.icon,
         );
       },
 

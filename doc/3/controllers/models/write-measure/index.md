@@ -34,6 +34,7 @@ Method: POST
 
     // Optional
     "engineIds": ["<engineId>", "..."],
+    "icon": "<icon>", // Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup
     "valuesDetails":{
       // Values details and translation
     },
@@ -51,6 +52,7 @@ Method: POST
 - `type`: Measure type name
 - `valuesMappings`: Mappings of the measure values in Elasticsearch format
 - `engineIds`: (optional) Array of engine IDs to scope this measure model to specific tenants. When omitted, the measure model is global. A measure type cannot be both global and tenant-scoped — creating a tenant-scoped measure when a global one of the same type exists (or vice versa) will be rejected
+- `icon`: (optional) Icon representing the measure model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. This field is not indexed for search.
 - `valuesDetails`: (optional) Measurement translations and units
 - `validationSchema`: (optional) Measurement validation JSON schema
 

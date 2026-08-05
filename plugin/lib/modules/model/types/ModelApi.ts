@@ -60,6 +60,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
     engineGroups: string[];
     engineIds?: string[];
     model: string;
+    icon?: string;
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
@@ -76,6 +77,7 @@ export interface ApiModelWriteDeviceRequest extends ModelsControllerRequest {
 
   body: {
     model: string;
+    icon?: string;
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
@@ -92,6 +94,7 @@ export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
     affinity: GroupAffinity;
     engineGroups: string[];
     model: string;
+    icon?: string;
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
@@ -106,6 +109,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
   body: {
     type: string;
     engineIds?: string[];
+    icon?: string;
     locales?: {
       [valueName: string]: LocaleDetails;
     };
@@ -124,6 +128,7 @@ export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
   model: string;
 
   body: {
+    icon?: string;
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
