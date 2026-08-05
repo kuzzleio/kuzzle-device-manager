@@ -1,3 +1,8 @@
+## 3.0.0-3-dev.14 (2026-08-05)
+
+* feat(models): add icon to model definitions (#483) ([7654579](https://github.com/kuzzleio/kuzzle-device-manager/commit/7654579)), closes [#483](https://github.com/kuzzleio/kuzzle-device-manager/issues/483)
+* fix(DigitalTwinService): add tests (#486) ([395c743](https://github.com/kuzzleio/kuzzle-device-manager/commit/395c743)), closes [#486](https://github.com/kuzzleio/kuzzle-device-manager/issues/486)
+
 ## 3.0.0-3-dev.13 (2026-08-04)
 
 * fix(DigitalTwinService): asset is never unlinked when relinked to another asset ([74391a6](https://github.com/kuzzleio/kuzzle-device-manager/commit/74391a6))
