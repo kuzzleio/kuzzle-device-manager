@@ -71,15 +71,10 @@ export const measuresMappings: CollectionMappings = {
 
         _id: { type: "keyword" },
 
-        adapter: {
+        measureAdaption: {
           properties: {
-            _id: { type: "keyword" },
-            name: { type: "keyword", fields: { text: { type: "text" } } },
-            sourceMeasureName: { type: "keyword" },
-            sourceType: { type: "keyword" },
-            sourceField: { type: "keyword" },
-            sourceValues: { dynamic: "false", properties: {} },
-            targetField: { type: "keyword" },
+            adaptor: { type: "keyword", fields: { text: { type: "text" } } },
+            rawMeasure: { dynamic: "false", properties: {} },
           },
         },
       },

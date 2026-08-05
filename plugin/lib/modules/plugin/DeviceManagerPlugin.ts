@@ -27,6 +27,7 @@ import {
   AssetModelDefinition,
   DeviceModelDefinition,
   GroupModelDefinition,
+  MeasureAdapterContent,
   ModelModule,
   modelsMappings,
   ModelsRegister,
@@ -338,18 +339,14 @@ export class DeviceManagerPlugin extends Plugin {
 
       registerMeasureAdapter: (
         name: string,
-        sourceType: string,
-        targetMeasureName: string,
-        targetType: string,
-        targetField: string,
+        measureModelSource: string,
+        fieldMapping: MeasureAdapterContent["fieldMapping"],
         engineIds?: string[],
       ) => {
         this.modelsRegister.registerMeasureAdapter(
           name,
-          sourceType,
-          targetMeasureName,
-          targetType,
-          targetField,
+          measureModelSource,
+          fieldMapping,
           engineIds,
         );
       },
@@ -485,10 +482,14 @@ export class DeviceManagerPlugin extends Plugin {
     this.engineConfigManager.register("measureAdapter", {
       properties: {
         name: { type: "keyword" },
-        sourceType: { type: "keyword" },
-        targetField: { type: "keyword" },
-        targetMeasureName: { type: "keyword" },
-        targetType: { type: "keyword" },
+        measureModelSource: { type: "keyword" },
+        fieldMapping: {
+          properties: {
+            measureModelTarget: { type: "keyword" },
+            source: { type: "keyword" },
+            target: { type: "keyword" },
+          },
+        },
       },
     });
 

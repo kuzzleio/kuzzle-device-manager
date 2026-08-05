@@ -55,14 +55,9 @@ export interface MeasureOriginDevice extends AbstractMeasureOrigin {
    */
   _id: string;
 
-  adapter?: {
-    _id: string;
-    name: string;
-    sourceMeasureName: string;
-    sourceType: string;
-    sourceField: string;
-    sourceValues: JSONObject;
-    targetField: string;
+  measureAdaption?: {
+    adaptor: string;
+    rawMeasure: JSONObject;
   };
 }
 
@@ -146,12 +141,7 @@ export type DecodedMeasurement<TMeasureValues extends JSONObject = JSONObject> =
     measureName: string;
 
     adaptedFrom?: {
-      _id: string;
-      name: string;
-      sourceMeasureName: string;
-      sourceType: string;
-      sourceField: string;
-      sourceValues: JSONObject;
-      targetField: string;
+      adaptor: string;
+      rawMeasure: JSONObject;
     };
   } & Measurement<TMeasureValues>;

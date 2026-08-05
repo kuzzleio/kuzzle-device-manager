@@ -733,17 +733,12 @@ export class DevicesController {
     const deviceId = request.getId();
     const sourceMeasureName = request.getBodyString("sourceMeasureName");
     const measureAdapterId = request.getBodyString("measureAdapterId");
-    const sourceField = request.getBodyString("sourceField");
-    const targetMeasureName = (request.input.body as JSONObject)
-      ?.targetMeasureName as string | undefined;
 
     const device = await this.deviceService.setMeasureAdapter(
       engineId,
       deviceId,
       sourceMeasureName,
       measureAdapterId,
-      sourceField,
-      targetMeasureName,
       request,
     );
 
@@ -756,13 +751,11 @@ export class DevicesController {
     const engineId = request.getString("engineId");
     const deviceId = request.getId();
     const sourceMeasureName = request.getBodyString("sourceMeasureName");
-    const measureAdapterId = request.getBodyString("measureAdapterId");
 
     const device = await this.deviceService.unsetMeasureAdapter(
       engineId,
       deviceId,
       sourceMeasureName,
-      measureAdapterId,
       request,
     );
 

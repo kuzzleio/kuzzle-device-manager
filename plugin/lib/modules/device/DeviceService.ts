@@ -35,7 +35,6 @@ import {
 } from "../asset";
 
 import { AskPayloadReceiveFormated } from "../decoder/types/InternalEvents";
-import { NamedMeasures } from "../decoder";
 import { DeviceSerializer } from "./model/DeviceSerializer";
 import {
   DeviceProvisioningContent,
@@ -94,7 +93,6 @@ export class DeviceService extends DigitalTwinService {
         engineId: null,
         groups: [],
         linkedMeasures: [],
-        measureAdapters: [],
         measureSlots: [],
         metadata,
         model,
@@ -529,7 +527,6 @@ export class DeviceService extends DigitalTwinService {
         engineId,
         groups: [],
         linkedMeasures: [],
-        measureAdapters: [],
         measureSlots: device._source.measureSlots,
         metadata: {},
         model: device._source.model,
@@ -687,46 +684,11 @@ export class DeviceService extends DigitalTwinService {
     );
   }
 
-  private async computeMeasureSlots(
-    engineId: string,
-    deviceMeasures: NamedMeasures,
-    assignments: DeviceContent["measureAdapters"],
-  ): Promise<NamedMeasures> {
-    const resolvedBySourceName = new Map<
-      string,
-      Array<{ name: string; type: string }>
-    >();
-    await Promise.all(
-      assignments.map(async (assignment) => {
-        const measureAdapter = await ask<AskModelMeasureAdapterGet>(
-          "ask:device-manager:model:measureAdapter:get",
-          { _id: assignment.measureAdapterId, engineId },
-        );
-
-        const resolved =
-          resolvedBySourceName.get(assignment.sourceMeasureName) ?? [];
-        resolved.push({
-          name: assignment.targetMeasureName,
-          type: measureAdapter.targetType,
-        });
-        resolvedBySourceName.set(assignment.sourceMeasureName, resolved);
-      }),
-    );
-
-    return deviceMeasures.flatMap((measure) => {
-      const resolved = resolvedBySourceName.get(measure.name);
-
-      return resolved?.length ? resolved : [measure];
-    });
-  }
-
   async setMeasureAdapter(
     engineId: string,
     deviceId: string,
     sourceMeasureName: string,
     measureAdapterId: string,
-    sourceField: string,
-    targetMeasureNameOverride: string | undefined,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:${deviceId}`, async () => {
@@ -748,87 +710,84 @@ export class DeviceService extends DigitalTwinService {
         );
       }
 
-      if (declaredMeasure.type !== measureAdapter.sourceType) {
+      if (declaredMeasure.type !== measureAdapter.measureModelSource) {
         throw new BadRequestError(
-          `Measure adapter "${measureAdapterId}" expects a source measure of type "${measureAdapter.sourceType}", but "${sourceMeasureName}" is of type "${declaredMeasure.type}".`,
+          `Measure adapter "${measureAdapterId}" expects a source measure of type "${measureAdapter.measureModelSource}", but "${sourceMeasureName}" is of type "${declaredMeasure.type}".`,
         );
       }
 
-      const [sourceMeasureModel, targetMeasureModel] = await Promise.all([
+      const targetModelTypes = [
+        ...new Set(
+          measureAdapter.fieldMapping.map((mapping) => mapping.measureModelTarget),
+        ),
+      ];
+
+      const [sourceMeasureModel, ...targetMeasureModels] = await Promise.all([
         ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
           engineId,
-          type: measureAdapter.sourceType,
+          type: measureAdapter.measureModelSource,
         }),
-        ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
-          engineId,
-          type: measureAdapter.targetType,
-        }),
+        ...targetModelTypes.map((type) =>
+          ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
+            engineId,
+            type,
+          }),
+        ),
       ]);
 
       if (sourceMeasureModel.measure.scope !== "device") {
         throw new BadRequestError(
-          `Measure adapter "${measureAdapterId}" source measure type "${measureAdapter.sourceType}" must have scope "device" (found "${sourceMeasureModel.measure.scope}").`,
+          `Measure adapter "${measureAdapterId}" source measure type "${measureAdapter.measureModelSource}" must have scope "device" (found "${sourceMeasureModel.measure.scope}").`,
         );
       }
 
-      if (targetMeasureModel.measure.scope !== "asset") {
-        throw new BadRequestError(
-          `Measure adapter "${measureAdapterId}" target measure type "${measureAdapter.targetType}" must have scope "asset" (found "${targetMeasureModel.measure.scope}").`,
-        );
+      const targetMeasureModelsByType = new Map(
+        targetModelTypes.map((type, index) => [type, targetMeasureModels[index]]),
+      );
+
+      for (const [type, targetMeasureModel] of targetMeasureModelsByType) {
+        if (targetMeasureModel.measure.scope !== "asset") {
+          throw new BadRequestError(
+            `Measure adapter "${measureAdapterId}" target measure type "${type}" must have scope "asset" (found "${targetMeasureModel.measure.scope}").`,
+          );
+        }
       }
 
       const sourceLeafPaths = getValuesMappingsLeafPaths(
         sourceMeasureModel.measure.valuesMappings,
       );
-      if (!sourceLeafPaths.includes(sourceField)) {
-        throw new BadRequestError(
-          `Field "${sourceField}" is not declared in measure type "${measureAdapter.sourceType}"'s valuesMappings.`,
+
+      for (const mapping of measureAdapter.fieldMapping) {
+        if (!sourceLeafPaths.includes(mapping.source)) {
+          throw new BadRequestError(
+            `Field "${mapping.source}" is not declared in measure type "${measureAdapter.measureModelSource}"'s valuesMappings.`,
+          );
+        }
+
+        const targetMeasureModel = targetMeasureModelsByType.get(
+          mapping.measureModelTarget,
         );
+        const targetLeafPaths = getValuesMappingsLeafPaths(
+          targetMeasureModel.measure.valuesMappings,
+        );
+        if (!targetLeafPaths.includes(mapping.target)) {
+          throw new BadRequestError(
+            `Field "${mapping.target}" is not declared in measure type "${mapping.measureModelTarget}"'s valuesMappings.`,
+          );
+        }
       }
 
-      const targetMeasureName =
-        targetMeasureNameOverride ?? measureAdapter.targetMeasureName;
-
-      const assignments = (device._source.measureAdapters ?? []).filter(
-        (assignment) =>
-          !(
-            assignment.sourceMeasureName === sourceMeasureName &&
-            assignment.measureAdapterId === measureAdapterId
-          ),
-      );
-      assignments.push({
-        measureAdapterId,
-        sourceField,
-        sourceMeasureName,
-        targetMeasureName,
-      });
-
-      const collidingAssignment = assignments.find(
-        (assignment, index) =>
-          assignments.findIndex(
-            (other) => other.targetMeasureName === assignment.targetMeasureName,
-          ) !== index,
-      );
-      if (collidingAssignment) {
-        throw new BadRequestError(
-          `Another measure adapter assigned to this device already produces target measure "${collidingAssignment.targetMeasureName}". Provide a different "targetMeasureName" to assign the same adapter more than once on this device.`,
-        );
-      }
-
-      const measureSlots = await this.computeMeasureSlots(
-        engineId,
-        deviceModel.device.measures,
-        assignments,
+      const measureSlots = device._source.measureSlots.map((slot) =>
+        slot.name === sourceMeasureName
+          ? { ...slot, measureAdapter: measureAdapter.name }
+          : slot,
       );
 
       return this.updateDocument<DeviceContent>(
         request,
         {
           _id: deviceId,
-          _source: {
-            measureAdapters: assignments,
-            measureSlots,
-          },
+          _source: { measureSlots },
         },
         { collection: InternalCollection.DEVICES, engineId },
         { source: true },
@@ -840,35 +799,25 @@ export class DeviceService extends DigitalTwinService {
     engineId: string,
     deviceId: string,
     sourceMeasureName: string,
-    measureAdapterId: string,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
     return lock(`device:${deviceId}`, async () => {
       const device = await this.get(engineId, deviceId, request);
-      const deviceModel = await this.getDeviceModel(device._source.model);
 
-      const assignments = (device._source.measureAdapters ?? []).filter(
-        (assignment) =>
-          !(
-            assignment.sourceMeasureName === sourceMeasureName &&
-            assignment.measureAdapterId === measureAdapterId
-          ),
-      );
+      const measureSlots = device._source.measureSlots.map((slot) => {
+        if (slot.name !== sourceMeasureName) {
+          return slot;
+        }
 
-      const measureSlots = await this.computeMeasureSlots(
-        engineId,
-        deviceModel.device.measures,
-        assignments,
-      );
+        const { measureAdapter, ...rest } = slot;
+        return rest;
+      });
 
       return this.updateDocument<DeviceContent>(
         request,
         {
           _id: deviceId,
-          _source: {
-            measureAdapters: assignments,
-            measureSlots,
-          },
+          _source: { measureSlots },
         },
         { collection: InternalCollection.DEVICES, engineId },
         { source: true },
@@ -929,7 +878,19 @@ export class DeviceService extends DigitalTwinService {
           acc: Record<string, KDocument<DeviceContent>[]>,
           device: JSONObject,
         ) => {
-          device._source.measureSlots = deviceModel.device.measures;
+          const previousMeasureSlots = device._source.measureSlots ?? [];
+
+          device._source.measureSlots = deviceModel.device.measures.map(
+            (measure) => {
+              const previousSlot = previousMeasureSlots.find(
+                (slot: JSONObject) => slot.name === measure.name,
+              );
+
+              return previousSlot?.measureAdapter
+                ? { ...measure, measureAdapter: previousSlot.measureAdapter }
+                : measure;
+            },
+          );
 
           acc[device.index].push(device as KDocument<DeviceContent>);
 

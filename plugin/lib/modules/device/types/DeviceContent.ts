@@ -2,11 +2,23 @@ import { JSONObject, KDocumentContent } from "kuzzle-sdk";
 import { DigitalTwinContent, Metadata } from "../../shared";
 
 /**
+ * Device measure slots, augmented with an optional reference to the
+ * measure adapter applied to that slot (by adapter name).
+ */
+export type DeviceMeasureSlots = Array<{
+  name: string;
+  type: string;
+  measureAdapter?: string;
+}>;
+
+/**
  * Device document content
  */
 export interface DeviceContent<
   TMetadata extends Metadata = any,
 > extends DigitalTwinContent<TMetadata> {
+  measureSlots: DeviceMeasureSlots;
+
   /**
    * Link with attached assets
    */
@@ -39,13 +51,6 @@ export interface DeviceContent<
   groups: Array<{
     path: string;
     date: number;
-  }>;
-
-  measureAdapters: Array<{
-    sourceMeasureName: string;
-    measureAdapterId: string;
-    sourceField: string;
-    targetMeasureName: string;
   }>;
 }
 

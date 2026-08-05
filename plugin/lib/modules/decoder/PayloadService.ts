@@ -14,6 +14,7 @@ import {
   AskModelDeviceGet,
   AskModelMeasureAdapterGet,
   MeasureAdapterContent,
+  MeasureAdapterSerializer,
 } from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { BaseService } from "../shared";
@@ -235,9 +236,15 @@ export class PayloadService extends BaseService {
     device: KDocument<DeviceContent>,
     decodedPayload: DecodedPayload<any>,
   ) {
-    const { reference, measureAdapters, engineId } = device._source;
+    const { reference, measureSlots, engineId } = device._source;
 
-    if (!measureAdapters?.length || !engineId) {
+    const adapterNameBySlotName = new Map(
+      (measureSlots ?? [])
+        .filter((slot) => slot.measureAdapter)
+        .map((slot) => [slot.name, slot.measureAdapter]),
+    );
+
+    if (!adapterNameBySlotName.size || !engineId) {
       return;
     }
 
@@ -246,39 +253,23 @@ export class PayloadService extends BaseService {
       return;
     }
 
-    const assignmentsByMeasureName = new Map<
-      string,
-      DeviceContent["measureAdapters"]
-    >();
-    for (const assignment of measureAdapters) {
-      const assignments =
-        assignmentsByMeasureName.get(assignment.sourceMeasureName) ?? [];
-      assignments.push(assignment);
-      assignmentsByMeasureName.set(assignment.sourceMeasureName, assignments);
-    }
-
     const adaptedMeasurements: DecodedMeasurement[] = [];
     for (const measurement of measurements) {
-      const assignments = assignmentsByMeasureName.get(measurement.measureName);
+      const adapterName = adapterNameBySlotName.get(measurement.measureName);
 
-      if (!assignments?.length) {
+      if (!adapterName) {
         adaptedMeasurements.push(measurement);
         continue;
       }
 
-      const adaptedFromMeasurement = (
-        await Promise.all(
-          assignments.map((assignment) =>
-            this.adaptMeasurement(device, measurement, assignment, engineId),
-          ),
-        )
-      ).filter((adapted): adapted is DecodedMeasurement => adapted !== null);
-
-      adaptedMeasurements.push(
-        ...(adaptedFromMeasurement.length === 0
-          ? [measurement]
-          : adaptedFromMeasurement),
+      const adapted = await this.adaptMeasurement(
+        device,
+        measurement,
+        adapterName,
+        engineId,
       );
+
+      adaptedMeasurements.push(...(adapted.length === 0 ? [measurement] : adapted));
     }
 
     decodedPayload.replaceMeasurements(reference, adaptedMeasurements);
@@ -287,57 +278,66 @@ export class PayloadService extends BaseService {
   private async adaptMeasurement(
     device: KDocument<DeviceContent>,
     measurement: DecodedMeasurement,
-    assignment: DeviceContent["measureAdapters"][number],
+    adapterName: string,
     engineId: string,
-  ): Promise<DecodedMeasurement | null> {
-    const { measureAdapterId, sourceField, targetMeasureName } = assignment;
-
+  ): Promise<DecodedMeasurement[]> {
     let measureAdapter: MeasureAdapterContent;
     try {
       measureAdapter = await ask<AskModelMeasureAdapterGet>(
         "ask:device-manager:model:measureAdapter:get",
-        { _id: measureAdapterId, engineId },
+        { _id: MeasureAdapterSerializer.id(adapterName), engineId },
       );
     } catch (error) {
       this.logger.error(
-        `Cannot apply measure adapter "${measureAdapterId}" on device "${device._id}": ${error.message}`,
+        `Cannot apply measure adapter "${adapterName}" on device "${device._id}": ${error.message}`,
       );
-      return null;
+      return [];
     }
 
-    if (measurement.type !== measureAdapter.sourceType) {
+    if (measurement.type !== measureAdapter.measureModelSource) {
       this.logger.warn(
-        `Measure adapter "${measureAdapterId}" expects source measure type "${measureAdapter.sourceType}", but measure "${measurement.measureName}" is of type "${measurement.type}".`,
+        `Measure adapter "${adapterName}" expects source measure type "${measureAdapter.measureModelSource}", but measure "${measurement.measureName}" is of type "${measurement.type}".`,
       );
-      return null;
+      return [];
     }
 
-    if (!has(measurement.values, sourceField)) {
-      this.logger.warn(
-        `Measure adapter "${measureAdapterId}" expects field "${sourceField}" in measure "${measurement.measureName}", but it is missing.`,
-      );
-      return null;
+    const mappingsByTarget = new Map<
+      string,
+      MeasureAdapterContent["fieldMapping"]
+    >();
+    for (const mapping of measureAdapter.fieldMapping) {
+      const mappings = mappingsByTarget.get(mapping.measureModelTarget) ?? [];
+      mappings.push(mapping);
+      mappingsByTarget.set(mapping.measureModelTarget, mappings);
     }
 
-    return {
-      adaptedFrom: {
-        _id: measureAdapterId,
-        name: measureAdapter.name,
-        sourceField,
-        sourceMeasureName: measurement.measureName,
-        sourceType: measurement.type,
-        sourceValues: measurement.values,
-        targetField: measureAdapter.targetField,
-      },
-      measureName: targetMeasureName,
-      measuredAt: measurement.measuredAt,
-      type: measureAdapter.targetType,
-      values: set(
-        {},
-        measureAdapter.targetField,
-        get(measurement.values, sourceField),
-      ),
-    };
+    const adaptedMeasurements: DecodedMeasurement[] = [];
+    for (const [measureModelTarget, mappings] of mappingsByTarget) {
+      let values = {};
+      for (const mapping of mappings) {
+        if (!has(measurement.values, mapping.source)) {
+          this.logger.warn(
+            `Measure adapter "${adapterName}" expects field "${mapping.source}" in measure "${measurement.measureName}", but it is missing.`,
+          );
+          continue;
+        }
+
+        values = set(values, mapping.target, get(measurement.values, mapping.source));
+      }
+
+      adaptedMeasurements.push({
+        adaptedFrom: {
+          adaptor: measureAdapter.name,
+          rawMeasure: measurement.values,
+        },
+        measureName: measureModelTarget,
+        measuredAt: measurement.measuredAt,
+        type: measureModelTarget,
+        values,
+      });
+    }
+
+    return adaptedMeasurements;
   }
 
   async receiveFormated(

@@ -248,33 +248,49 @@ export class ModelsRegister {
 
   registerMeasureAdapter(
     name: string,
-    sourceType: string,
-    targetMeasureName: string,
-    targetType: string,
-    targetField: string,
+    measureModelSource: string,
+    fieldMapping: MeasureAdapterContent["fieldMapping"],
     engineIds?: string[],
   ) {
-    for (const [key, value] of Object.entries({
-      name,
-      sourceType,
-      targetField,
-      targetMeasureName,
-      targetType,
-    })) {
-      if (!value) {
+    if (!name || !measureModelSource) {
+      throw new PluginImplementationError(
+        `Measure adapter registration is missing required field "${
+          name ? "measureModelSource" : "name"
+        }"`,
+      );
+    }
+
+    if (!fieldMapping?.length) {
+      throw new PluginImplementationError(
+        `Measure adapter "${name}" registration must declare at least one "fieldMapping" entry`,
+      );
+    }
+
+    const targetsByModel = new Map<string, Set<string>>();
+    for (const mapping of fieldMapping) {
+      for (const [key, value] of Object.entries(mapping)) {
+        if (!value) {
+          throw new PluginImplementationError(
+            `Measure adapter "${name}" has a "fieldMapping" entry missing required field "${key}"`,
+          );
+        }
+      }
+
+      const targets = targetsByModel.get(mapping.measureModelTarget) ?? new Set();
+      if (targets.has(mapping.target)) {
         throw new PluginImplementationError(
-          `Measure adapter registration is missing required field "${key}"`,
+          `Measure adapter "${name}" has two "fieldMapping" entries targeting the same field "${mapping.target}" on measure model "${mapping.measureModelTarget}"`,
         );
       }
+      targets.add(mapping.target);
+      targetsByModel.set(mapping.measureModelTarget, targets);
     }
 
     this.measureAdapters.push({
       content: {
+        fieldMapping,
+        measureModelSource,
         name,
-        sourceType,
-        targetField,
-        targetMeasureName,
-        targetType,
       },
       engineIds,
     });

@@ -3,11 +3,13 @@ import { KDocumentContent } from "kuzzle-sdk";
 export interface MeasureAdapterContent extends KDocumentContent {
   name: string;
 
-  sourceType: string;
+  measureModelSource: string;
 
-  targetMeasureName: string;
+  fieldMapping: Array<{
+    measureModelTarget: string;
 
-  targetType: string;
+    source: string;
 
-  targetField: string;
+    target: string;
+  }>;
 }

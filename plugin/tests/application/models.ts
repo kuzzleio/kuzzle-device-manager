@@ -51,46 +51,53 @@ const groupModels = {
 
 export const measureAdapterModels = [
   {
-    name: "battery-as-temp",
-    sourceType: "battery",
-    targetField: "temperature",
-    targetMeasureName: "temp",
-    targetType: "temperature",
+    // Target model deliberately distinct from any of DummyTemp's native
+    // measure names/types, so an adapted measure never collides with the
+    // device's own raw "temperature"/"battery"/"multiSensor" measurements.
+    name: "battery-as-humidity",
+    measureModelSource: "battery",
+    fieldMapping: [
+      { measureModelTarget: "humidity", source: "battery", target: "humidity" },
+    ],
   },
   {
     name: "temp-as-battery-invalid-scope",
-    sourceType: "temperature",
-    targetField: "battery",
-    targetMeasureName: "batteryCopy",
-    targetType: "battery",
+    measureModelSource: "temperature",
+    fieldMapping: [
+      { measureModelTarget: "battery", source: "temperature", target: "battery" },
+    ],
   },
   {
     name: "battery-as-envquality-humidity",
-    sourceType: "battery",
-    targetField: "envQuality.humidity",
-    targetMeasureName: "envQualityFromBattery",
-    targetType: "environmentalQuality",
+    measureModelSource: "battery",
+    fieldMapping: [
+      {
+        measureModelTarget: "environmentalQuality",
+        source: "battery",
+        target: "envQuality.humidity",
+      },
+    ],
   },
   {
-    name: "multisensor-as-temp",
-    sourceType: "multiSensorRaw",
-    targetField: "temperature",
-    targetMeasureName: "tempFromMultiSensor",
-    targetType: "temperature",
+    // A single adapter fans out into two distinct target measures
+    // (humidity + co2) from the same source slot.
+    name: "multisensor-as-humidity-and-co2",
+    measureModelSource: "multiSensorRaw",
+    fieldMapping: [
+      { measureModelTarget: "humidity", source: "readings.ch1", target: "humidity" },
+      { measureModelTarget: "co2", source: "readings.ch2", target: "co2" },
+    ],
   },
   {
-    name: "multisensor-as-envquality-co2",
-    sourceType: "multiSensorRaw",
-    targetField: "envQuality.co2",
-    targetMeasureName: "co2FromMultiSensor",
-    targetType: "environmentalQuality",
-  },
-  {
-    name: "multisensor-as-temp-conflict",
-    sourceType: "multiSensorRaw",
-    targetField: "temperature",
-    targetMeasureName: "temp",
-    targetType: "temperature",
+    name: "multisensor-as-temp-invalid-field",
+    measureModelSource: "multiSensorRaw",
+    fieldMapping: [
+      {
+        measureModelTarget: "temperature",
+        source: "readings.doesNotExist",
+        target: "temperature",
+      },
+    ],
   },
 ];
 
@@ -106,10 +113,8 @@ export function registerModels(deviceManager: DeviceManagerPlugin) {
   for (const model of measureAdapterModels) {
     deviceManager.models.registerMeasureAdapter(
       model.name,
-      model.sourceType,
-      model.targetMeasureName,
-      model.targetType,
-      model.targetField,
+      model.measureModelSource,
+      model.fieldMapping,
     );
   }
 
