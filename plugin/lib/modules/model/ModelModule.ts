@@ -3,6 +3,7 @@ import { Module } from "../shared/Module";
 
 import { ModelsController } from "./ModelsController";
 import { ModelService } from "./ModelService";
+import { RoleMeasureAdaptersReader } from "./roles/RoleMeasureAdaptersReader";
 import { KuzzleLogger } from "kuzzle-logger";
 export class ModelModule extends Module {
   private modelService: ModelService;
@@ -18,5 +19,8 @@ export class ModelModule extends Module {
     this.modelController = new ModelsController(this.modelService, this.logger);
 
     this.plugin.api["device-manager/models"] = this.modelController.definition;
+
+    this.plugin.imports.roles[RoleMeasureAdaptersReader.name] =
+      RoleMeasureAdaptersReader.definition;
   }
 }

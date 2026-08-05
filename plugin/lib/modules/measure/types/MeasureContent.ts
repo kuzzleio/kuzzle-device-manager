@@ -54,6 +54,11 @@ export interface MeasureOriginDevice extends AbstractMeasureOrigin {
    * Device ID
    */
   _id: string;
+
+  measureAdaption?: {
+    adaptor: string;
+    rawMeasure: JSONObject;
+  };
 }
 
 export interface MeasureOriginComputed extends AbstractMeasureOrigin {
@@ -134,4 +139,9 @@ export type Measurement<TMeasureValues extends JSONObject = any> = {
 export type DecodedMeasurement<TMeasureValues extends JSONObject = JSONObject> =
   {
     measureName: string;
+
+    adaptedFrom?: {
+      adaptor: string;
+      rawMeasure: JSONObject;
+    };
   } & Measurement<TMeasureValues>;

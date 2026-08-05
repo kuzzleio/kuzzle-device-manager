@@ -205,6 +205,7 @@ describe("ModelsController:devices", () => {
           { name: "temperature", type: "temperature" },
           { name: "accelerationSensor", type: "acceleration" },
           { name: "battery", type: "battery" },
+          { name: "multiSensor", type: "multiSensorRaw" },
         ],
       },
     });

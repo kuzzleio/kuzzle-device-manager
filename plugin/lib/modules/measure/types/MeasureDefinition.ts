@@ -83,4 +83,6 @@ export interface MeasureDefinition {
   valuesDetails?: {
     [valueName: string]: MeasureLocales;
   };
+
+  scope?: "asset" | "device";
 }

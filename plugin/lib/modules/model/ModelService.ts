@@ -21,6 +21,7 @@ import {
 import { AskAssetRefreshModel } from "../asset";
 import { BaseService, SearchParams, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
+import { MeasureAdapterContent } from "./types/MeasureAdapterContent";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -38,6 +39,7 @@ import {
   AskModelAssetGet,
   AskModelDeviceGet,
   AskModelGroupGet,
+  AskModelMeasureAdapterGet,
   AskModelMeasureGet,
 } from "./types/ModelEvents";
 import { MappingsConflictsError } from "./MappingsConflictsError";
@@ -90,6 +92,14 @@ export class ModelService extends BaseService {
         const measureModel = await this.getMeasure(type, engineId);
 
         return measureModel._source;
+      },
+    );
+    onAsk<AskModelMeasureAdapterGet>(
+      "ask:device-manager:model:measureAdapter:get",
+      async ({ engineId, _id }) => {
+        const measureAdapterModel = await this.getMeasureAdapter(engineId, _id);
+
+        return measureAdapterModel._source;
       },
     );
 
@@ -600,6 +610,7 @@ export class ModelService extends BaseService {
     locales?: {
       [valueName: string]: LocaleDetails;
     },
+    scope?: "asset" | "device",
     engineIds?: string[],
     icon?: string,
   ): Promise<KDocument<MeasureModelContent>> {
@@ -607,6 +618,7 @@ export class ModelService extends BaseService {
       measure: {
         icon,
         locales,
+        scope: scope ?? "asset",
         type,
         valuesDetails,
         valuesMappings,
@@ -836,6 +848,28 @@ export class ModelService extends BaseService {
     });
 
     return result.hits;
+  }
+
+  async listMeasureAdapters(
+    engineId: string,
+  ): Promise<KDocument<MeasureAdapterContent>[]> {
+    const result = await this.sdk.document.search<{
+      measureAdapter: MeasureAdapterContent;
+      type: string;
+    }>(
+      engineId,
+      InternalCollection.CONFIG,
+      {
+        query: { term: { type: "measureAdapter" } },
+        sort: { "measureAdapter.name": "asc" },
+      },
+      { size: 1000 },
+    );
+
+    return result.hits.map((hit) => ({
+      _id: hit._id,
+      _source: hit._source.measureAdapter,
+    })) as unknown as KDocument<MeasureAdapterContent>[];
   }
 
   async searchAssets(
@@ -1222,6 +1256,25 @@ export class ModelService extends BaseService {
     }
 
     throw new NotFoundError(`Unknown Measure type "${type}".`);
+  }
+
+  async getMeasureAdapter(
+    engineId: string,
+    _id: string,
+  ): Promise<KDocument<MeasureAdapterContent>> {
+    const document = await this.sdk.document.get<{
+      measureAdapter: MeasureAdapterContent;
+      type: string;
+    }>(engineId, InternalCollection.CONFIG, _id);
+
+    if (document._source.type !== "measureAdapter") {
+      throw new NotFoundError(`Unknown Measure adapter "${_id}".`);
+    }
+
+    return {
+      ...document,
+      _source: document._source.measureAdapter,
+    } as unknown as KDocument<MeasureAdapterContent>;
   }
 
   /**

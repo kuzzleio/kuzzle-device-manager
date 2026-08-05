@@ -2,6 +2,7 @@ import {
   BadRequestError,
   ControllerDefinition,
   HttpStream,
+  JSONObject,
   KDocument,
   KuzzleError,
   KuzzleRequest,
@@ -33,6 +34,8 @@ import {
   ApiDeviceGetLastMeasuredAtResult,
   ApiDeviceMGetLastMeasuredAtResult,
   ApiDeviceMetadataReplaceResult,
+  ApiDeviceSetMeasureAdapterResult,
+  ApiDeviceUnsetMeasureAdapterResult,
 } from "./types/DeviceApi";
 import { AssetContent } from "../asset";
 import { DeviceContent } from "./exports";
@@ -217,6 +220,24 @@ export class DevicesController {
             {
               path: "device-manager/:engineId/devices/_mGetLastMeasuredAt",
               verb: "post",
+            },
+          ],
+        },
+        setMeasureAdapter: {
+          handler: this.setMeasureAdapter.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/_measureAdapter",
+              verb: "put",
+            },
+          ],
+        },
+        unsetMeasureAdapter: {
+          handler: this.unsetMeasureAdapter.bind(this),
+          http: [
+            {
+              path: "device-manager/:engineId/devices/:_id/_measureAdapter",
+              verb: "delete",
             },
           ],
         },
@@ -424,8 +445,8 @@ export class DevicesController {
       ? request.getDate("startAt")
       : null;
     const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
-    const query = request.input.body?.query;
-    const sort = request.input.body?.sort;
+    const query = (request.input.body as JSONObject)?.query;
+    const sort = (request.input.body as JSONObject)?.sort;
     const type = request.input.args.type;
     const lang = request.getLangParam();
 
@@ -569,8 +590,8 @@ export class DevicesController {
       ? request.getDate("startAt")
       : null;
     const endAt = request.input.args.endAt ? request.getDate("endAt") : null;
-    const query = request.input.body?.query;
-    const sort = request.input.body?.sort;
+    const query = (request.input.body as JSONObject)?.query;
+    const sort = (request.input.body as JSONObject)?.sort;
     const type = request.input.args.type;
     const lang = request.getLangParam();
     const user = request.getUser() as any;
@@ -666,8 +687,8 @@ export class DevicesController {
       }
     }
 
-    const query = request.input.body?.query;
-    const sort = request.input.body?.sort;
+    const query = (request.input.body as JSONObject)?.query;
+    const sort = (request.input.body as JSONObject)?.sort;
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
@@ -703,5 +724,41 @@ export class DevicesController {
     const deviceIds = request.getBodyArray("ids");
 
     return this.deviceService.mGetLastMeasuredAt(engineId, deviceIds);
+  }
+
+  async setMeasureAdapter(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceSetMeasureAdapterResult> {
+    const engineId = request.getString("engineId");
+    const deviceId = request.getId();
+    const sourceMeasureName = request.getBodyString("sourceMeasureName");
+    const measureAdapterId = request.getBodyString("measureAdapterId");
+
+    const device = await this.deviceService.setMeasureAdapter(
+      engineId,
+      deviceId,
+      sourceMeasureName,
+      measureAdapterId,
+      request,
+    );
+
+    return DeviceSerializer.serialize(device);
+  }
+
+  async unsetMeasureAdapter(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceUnsetMeasureAdapterResult> {
+    const engineId = request.getString("engineId");
+    const deviceId = request.getId();
+    const sourceMeasureName = request.getBodyString("sourceMeasureName");
+
+    const device = await this.deviceService.unsetMeasureAdapter(
+      engineId,
+      deviceId,
+      sourceMeasureName,
+      request,
+    );
+
+    return DeviceSerializer.serialize(device);
   }
 }

@@ -10,13 +10,23 @@ import {
 } from "kuzzle-sdk";
 
 import { DecodedMeasurement } from "../measure";
-import { DeviceModelContent } from "../model";
+import {
+  AskModelMeasureAdapterGet,
+  AskModelMeasureGet,
+  DeviceModelContent,
+} from "../model";
 import {
   AskEngineList,
   DeviceManagerPlugin,
   InternalCollection,
 } from "../plugin";
-import { DigitalTwinService, Metadata, SearchParams, lock } from "../shared";
+import {
+  DigitalTwinService,
+  Metadata,
+  SearchParams,
+  getValuesMappingsLeafPaths,
+  lock,
+} from "../shared";
 import {
   AskAssetHistoryAdd,
   AssetContent,
@@ -674,6 +684,151 @@ export class DeviceService extends DigitalTwinService {
     );
   }
 
+  async setMeasureAdapter(
+    engineId: string,
+    deviceId: string,
+    sourceMeasureName: string,
+    measureAdapterId: string,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    return lock(`device:${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId, request);
+
+      const measureAdapter = await ask<AskModelMeasureAdapterGet>(
+        "ask:device-manager:model:measureAdapter:get",
+        { _id: measureAdapterId, engineId },
+      );
+
+      const deviceModel = await this.getDeviceModel(device._source.model);
+      const declaredMeasure = deviceModel.device.measures.find(
+        (measure) => measure.name === sourceMeasureName,
+      );
+
+      if (!declaredMeasure) {
+        throw new BadRequestError(
+          `Measure "${sourceMeasureName}" is not declared for device model "${device._source.model}".`,
+        );
+      }
+
+      if (declaredMeasure.type !== measureAdapter.measureModelSource) {
+        throw new BadRequestError(
+          `Measure adapter "${measureAdapterId}" expects a source measure of type "${measureAdapter.measureModelSource}", but "${sourceMeasureName}" is of type "${declaredMeasure.type}".`,
+        );
+      }
+
+      const targetModelTypes = [
+        ...new Set(
+          measureAdapter.fieldMapping.map(
+            (mapping) => mapping.measureModelTarget,
+          ),
+        ),
+      ];
+
+      const [sourceMeasureModel, ...targetMeasureModels] = await Promise.all([
+        ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
+          engineId,
+          type: measureAdapter.measureModelSource,
+        }),
+        ...targetModelTypes.map((type) =>
+          ask<AskModelMeasureGet>("ask:device-manager:model:measure:get", {
+            engineId,
+            type,
+          }),
+        ),
+      ]);
+
+      if (sourceMeasureModel.measure.scope !== "device") {
+        throw new BadRequestError(
+          `Measure adapter "${measureAdapterId}" source measure type "${measureAdapter.measureModelSource}" must have scope "device" (found "${sourceMeasureModel.measure.scope}").`,
+        );
+      }
+
+      const targetMeasureModelsByType = new Map(
+        targetModelTypes.map((type, index) => [
+          type,
+          targetMeasureModels[index],
+        ]),
+      );
+
+      for (const [type, targetMeasureModel] of targetMeasureModelsByType) {
+        if (targetMeasureModel.measure.scope !== "asset") {
+          throw new BadRequestError(
+            `Measure adapter "${measureAdapterId}" target measure type "${type}" must have scope "asset" (found "${targetMeasureModel.measure.scope}").`,
+          );
+        }
+      }
+
+      const sourceLeafPaths = getValuesMappingsLeafPaths(
+        sourceMeasureModel.measure.valuesMappings,
+      );
+
+      for (const mapping of measureAdapter.fieldMapping) {
+        if (!sourceLeafPaths.includes(mapping.source)) {
+          throw new BadRequestError(
+            `Field "${mapping.source}" is not declared in measure type "${measureAdapter.measureModelSource}"'s valuesMappings.`,
+          );
+        }
+
+        const targetMeasureModel = targetMeasureModelsByType.get(
+          mapping.measureModelTarget,
+        );
+        const targetLeafPaths = getValuesMappingsLeafPaths(
+          targetMeasureModel.measure.valuesMappings,
+        );
+        if (!targetLeafPaths.includes(mapping.target)) {
+          throw new BadRequestError(
+            `Field "${mapping.target}" is not declared in measure type "${mapping.measureModelTarget}"'s valuesMappings.`,
+          );
+        }
+      }
+
+      const measureSlots = device._source.measureSlots.map((slot) =>
+        slot.name === sourceMeasureName
+          ? { ...slot, measureAdapter: measureAdapter.name }
+          : slot,
+      );
+
+      return this.updateDocument<DeviceContent>(
+        request,
+        {
+          _id: deviceId,
+          _source: { measureSlots },
+        },
+        { collection: InternalCollection.DEVICES, engineId },
+        { source: true },
+      );
+    });
+  }
+
+  async unsetMeasureAdapter(
+    engineId: string,
+    deviceId: string,
+    sourceMeasureName: string,
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    return lock(`device:${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId, request);
+
+      const measureSlots = device._source.measureSlots.map((slot) => {
+        if (slot.name !== sourceMeasureName || !slot.measureAdapter) {
+          return slot;
+        }
+
+        return { name: slot.name, type: slot.type };
+      });
+
+      return this.updateDocument<DeviceContent>(
+        request,
+        {
+          _id: deviceId,
+          _source: { measureSlots },
+        },
+        { collection: InternalCollection.DEVICES, engineId },
+        { source: true },
+      );
+    });
+  }
+
   private async checkEngineExists(engineId: string) {
     const {
       result: { exists },
@@ -727,7 +882,19 @@ export class DeviceService extends DigitalTwinService {
           acc: Record<string, KDocument<DeviceContent>[]>,
           device: JSONObject,
         ) => {
-          device._source.measureSlots = deviceModel.device.measures;
+          const previousMeasureSlots = device._source.measureSlots ?? [];
+
+          device._source.measureSlots = deviceModel.device.measures.map(
+            (measure) => {
+              const previousSlot = previousMeasureSlots.find(
+                (slot: JSONObject) => slot.name === measure.name,
+              );
+
+              return previousSlot?.measureAdapter
+                ? { ...measure, measureAdapter: previousSlot.measureAdapter }
+                : measure;
+            },
+          );
 
           acc[device.index].push(device as KDocument<DeviceContent>);
 

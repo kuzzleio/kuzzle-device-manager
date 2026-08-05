@@ -2,6 +2,7 @@ import { KuzzleRequest } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
+import { get, has, set } from "lodash";
 
 import {
   DeviceProvisioningContent,
@@ -9,7 +10,12 @@ import {
   DeviceSerializer,
 } from "../device";
 import { AskMeasureSourceIngest, DecodedMeasurement } from "../measure";
-import { AskModelDeviceGet } from "../model";
+import {
+  AskModelDeviceGet,
+  AskModelMeasureAdapterGet,
+  MeasureAdapterContent,
+  MeasureAdapterSerializer,
+} from "../model";
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { BaseService } from "../shared";
 
@@ -146,6 +152,7 @@ export class PayloadService extends BaseService {
       }
 
       if (ingestMeasurements) {
+        await this.applyMeasureAdapter(device, decodedPayload);
         const measurements = decodedPayload.getMeasurements(reference);
         // Handle device not attached to an engine
         if (engineId === null) {
@@ -223,6 +230,120 @@ export class PayloadService extends BaseService {
     }
 
     return { valid };
+  }
+
+  private async applyMeasureAdapter(
+    device: KDocument<DeviceContent>,
+    decodedPayload: DecodedPayload<any>,
+  ) {
+    const { reference, measureSlots, engineId } = device._source;
+
+    const adapterNameBySlotName = new Map(
+      (measureSlots ?? [])
+        .filter((slot) => slot.measureAdapter)
+        .map((slot) => [slot.name, slot.measureAdapter]),
+    );
+
+    if (!adapterNameBySlotName.size || !engineId) {
+      return;
+    }
+
+    const measurements = decodedPayload.getMeasurements(reference);
+    if (!measurements || measurements.length === 0) {
+      return;
+    }
+
+    const adaptedMeasurements: DecodedMeasurement[] = [];
+    for (const measurement of measurements) {
+      const adapterName = adapterNameBySlotName.get(measurement.measureName);
+
+      if (!adapterName) {
+        adaptedMeasurements.push(measurement);
+        continue;
+      }
+
+      const adapted = await this.adaptMeasurement(
+        device,
+        measurement,
+        adapterName,
+        engineId,
+      );
+
+      adaptedMeasurements.push(
+        ...(adapted.length === 0 ? [measurement] : adapted),
+      );
+    }
+
+    decodedPayload.replaceMeasurements(reference, adaptedMeasurements);
+  }
+
+  private async adaptMeasurement(
+    device: KDocument<DeviceContent>,
+    measurement: DecodedMeasurement,
+    adapterName: string,
+    engineId: string,
+  ): Promise<DecodedMeasurement[]> {
+    let measureAdapter: MeasureAdapterContent;
+    try {
+      measureAdapter = await ask<AskModelMeasureAdapterGet>(
+        "ask:device-manager:model:measureAdapter:get",
+        { _id: MeasureAdapterSerializer.id(adapterName), engineId },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Cannot apply measure adapter "${adapterName}" on device "${device._id}": ${error.message}`,
+      );
+      return [];
+    }
+
+    if (measurement.type !== measureAdapter.measureModelSource) {
+      this.logger.warn(
+        `Measure adapter "${adapterName}" expects source measure type "${measureAdapter.measureModelSource}", but measure "${measurement.measureName}" is of type "${measurement.type}".`,
+      );
+      return [];
+    }
+
+    const mappingsByTarget = new Map<
+      string,
+      MeasureAdapterContent["fieldMapping"]
+    >();
+    for (const mapping of measureAdapter.fieldMapping) {
+      const mappings = mappingsByTarget.get(mapping.measureModelTarget) ?? [];
+      mappings.push(mapping);
+      mappingsByTarget.set(mapping.measureModelTarget, mappings);
+    }
+
+    const adaptedMeasurements: DecodedMeasurement[] = [];
+    for (const [measureModelTarget, mappings] of mappingsByTarget) {
+      let values = {};
+      for (const mapping of mappings) {
+        if (!has(measurement.values, mapping.source)) {
+          this.logger.warn(
+            `Measure adapter "${adapterName}" expects field "${mapping.source}" in measure "${measurement.measureName}", but it is missing.`,
+          );
+          continue;
+        }
+
+        values = set(
+          values,
+          mapping.target,
+          get(measurement.values, mapping.source),
+        );
+      }
+
+      adaptedMeasurements.push({
+        adaptedFrom: {
+          adaptor: measureAdapter.name,
+          rawMeasure: measurement.values,
+        },
+        measureName: measureModelTarget,
+        measuredAt: measurement.measuredAt,
+        type: measureModelTarget,
+        values,
+      });
+    }
+
+    return adaptedMeasurements;
   }
 
   async receiveFormated(

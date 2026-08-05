@@ -9,3 +9,5 @@ export * from "./PositionMeasure";
 export * from "./TemperatureMeasure";
 export * from "./HumidityMeasure";
 export * from "./BatteryMeasure";
+export * from "./EnvironmentalQuality";
+export * from "./MultiSensorRaw";

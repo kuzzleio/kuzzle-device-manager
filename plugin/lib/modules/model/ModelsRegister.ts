@@ -1,6 +1,8 @@
 import { Inflector, PluginContext, PluginImplementationError } from "kuzzle";
+import { ask } from "kuzzle-plugin-commons";
 
 import {
+  AskEngineList,
   DeviceManagerConfiguration,
   DeviceManagerPlugin,
   InternalCollection,
@@ -21,13 +23,21 @@ import {
   ModelContent,
   TooltipModels,
 } from "./types/ModelContent";
+import { MeasureAdapterContent } from "./types/MeasureAdapterContent";
 import { ModelSerializer } from "./ModelSerializer";
+import { MeasureAdapterSerializer } from "./MeasureAdapterSerializer";
 import { JSONObject } from "kuzzle-sdk";
 import { addSchemaToCache, getAJVErrors } from "../shared/utils/AJValidator";
 import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
 import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 import { KuzzleLogger } from "kuzzle-logger";
+
+interface RegisteredMeasureAdapter {
+  content: MeasureAdapterContent;
+  engineIds?: string[];
+}
+
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
@@ -35,6 +45,7 @@ export class ModelsRegister {
   private deviceModels: DeviceModelContent[] = [];
   private groupModels: GroupModelContent[] = [];
   private measureModels: MeasureModelContent[] = [];
+  private measureAdapters: RegisteredMeasureAdapter[] = [];
   private logger: KuzzleLogger;
 
   private get sdk() {
@@ -218,8 +229,14 @@ export class ModelsRegister {
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
-    const { icon, locales, validationSchema, valuesMappings, valuesDetails } =
-      measureDefinition;
+    const {
+      icon,
+      locales,
+      validationSchema,
+      valuesMappings,
+      valuesDetails,
+      scope,
+    } = measureDefinition;
     if (validationSchema) {
       try {
         addSchemaToCache(type, validationSchema);
@@ -235,6 +252,7 @@ export class ModelsRegister {
       measure: {
         icon,
         locales,
+        scope: scope ?? "asset",
         type,
         validationSchema,
         valuesDetails,
@@ -242,6 +260,104 @@ export class ModelsRegister {
       },
       type: "measure",
     });
+  }
+
+  registerMeasureAdapter(
+    name: string,
+    measureModelSource: string,
+    fieldMapping: MeasureAdapterContent["fieldMapping"],
+    engineIds?: string[],
+  ) {
+    if (!name || !measureModelSource) {
+      throw new PluginImplementationError(
+        `Measure adapter registration is missing required field "${
+          name ? "measureModelSource" : "name"
+        }"`,
+      );
+    }
+
+    if (!fieldMapping?.length) {
+      throw new PluginImplementationError(
+        `Measure adapter "${name}" registration must declare at least one "fieldMapping" entry`,
+      );
+    }
+
+    const targetsByModel = new Map<string, Set<string>>();
+    for (const mapping of fieldMapping) {
+      for (const [key, value] of Object.entries(mapping)) {
+        if (!value) {
+          throw new PluginImplementationError(
+            `Measure adapter "${name}" has a "fieldMapping" entry missing required field "${key}"`,
+          );
+        }
+      }
+
+      const targets =
+        targetsByModel.get(mapping.measureModelTarget) ?? new Set();
+      if (targets.has(mapping.target)) {
+        throw new PluginImplementationError(
+          `Measure adapter "${name}" has two "fieldMapping" entries targeting the same field "${mapping.target}" on measure model "${mapping.measureModelTarget}"`,
+        );
+      }
+      targets.add(mapping.target);
+      targetsByModel.set(mapping.measureModelTarget, targets);
+    }
+
+    this.measureAdapters.push({
+      content: {
+        fieldMapping,
+        measureModelSource,
+        name,
+      },
+      engineIds,
+    });
+  }
+
+  getMeasureAdaptersForEngine(engineId: string): MeasureAdapterContent[] {
+    return this.measureAdapters
+      .filter(
+        ({ engineIds }) => !engineIds?.length || engineIds.includes(engineId),
+      )
+      .map(({ content }) => content);
+  }
+
+  async writeMeasureAdaptersToEngine(engineId: string) {
+    const adapters = this.getMeasureAdaptersForEngine(engineId);
+
+    if (adapters.length === 0) {
+      return;
+    }
+
+    await this.sdk.document.mCreateOrReplace(
+      engineId,
+      InternalCollection.CONFIG,
+      adapters.map((content) => ({
+        _id: MeasureAdapterSerializer.id(content.name),
+        body: MeasureAdapterSerializer.document(content),
+      })),
+      { strict: true },
+    );
+
+    this.logger.info(
+      `[DeviceAdapter] Successfully propagated measure adapters to engine "${engineId}": ${adapters
+        .map((content) => content.name)
+        .join(", ")}`,
+    );
+  }
+
+  async propagateMeasureAdapters() {
+    if (this.measureAdapters.length === 0) {
+      return;
+    }
+
+    const engines = await ask<AskEngineList>(
+      "ask:device-manager:engine:list",
+      {},
+    );
+
+    await Promise.all(
+      engines.map((engine) => this.writeMeasureAdaptersToEngine(engine.index)),
+    );
   }
 
   private async load(type: string, models: ModelContent[]) {

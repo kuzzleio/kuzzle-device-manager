@@ -94,6 +94,13 @@ export class DecodedPayload<TDecoder extends Decoder = Decoder> {
     return this.measurementsByDevice[deviceReference];
   }
 
+  replaceMeasurements(
+    deviceReference: string,
+    measurements: DecodedMeasurement[],
+  ) {
+    this.measurementsByDevice[deviceReference] = measurements;
+  }
+
   /**
    * Get the metadata for a device
    */

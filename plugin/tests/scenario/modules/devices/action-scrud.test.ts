@@ -51,6 +51,7 @@ describe("Device SCRUD", () => {
         { name: "temperature", type: "temperature" },
         { name: "accelerationSensor", type: "acceleration" },
         { name: "battery", type: "battery" },
+        { name: "multiSensor", type: "multiSensorRaw" },
       ],
       _kuzzle_info: { author: "-1", updater: "-1" },
     });

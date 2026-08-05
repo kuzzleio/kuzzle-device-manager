@@ -123,6 +123,10 @@ describe("DecodersController", () => {
               name: "battery",
               type: "battery",
             },
+            {
+              name: "multiSensor",
+              type: "multiSensorRaw",
+            },
           ],
         }),
       ]),

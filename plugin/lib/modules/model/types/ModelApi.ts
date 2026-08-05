@@ -12,6 +12,7 @@ import {
   MetadataMappings,
   TooltipModels,
 } from "./ModelContent";
+import { MeasureAdapterContent } from "./MeasureAdapterContent";
 import { SchemaObject } from "ajv";
 import { MeasureValuesDetails } from "../../measure/types/MeasureDefinition";
 
@@ -44,6 +45,13 @@ export interface ApiModelGetMeasureRequest extends ModelsControllerRequest {
   engineId?: string;
 }
 export type ApiModelGetMeasureResult = KDocument<MeasureModelContent>;
+
+export interface ApiModelGetMeasureAdapterRequest extends ModelsControllerRequest {
+  action: "getMeasureAdapter";
+  engineId: string;
+  _id: string;
+}
+export type ApiModelGetMeasureAdapterResult = KDocument<MeasureAdapterContent>;
 
 export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   action: "writeAsset";
@@ -108,6 +116,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
     valuesMappings: JSONObject;
     validationSchema?: SchemaObject;
     valuesDetails?: MeasureValuesDetails;
+    scope?: "asset" | "device";
   };
 }
 export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;
@@ -192,6 +201,15 @@ export interface ApiModelListMeasuresRequest extends ModelsControllerRequest {
 }
 export type ApiModelListMeasuresResult = {
   models: KDocument<MeasureModelContent>[];
+  total: number;
+};
+
+export interface ApiModelListMeasureAdaptersRequest extends ModelsControllerRequest {
+  action: "listMeasureAdapters";
+  engineId: string;
+}
+export type ApiModelListMeasureAdaptersResult = {
+  models: KDocument<MeasureAdapterContent>[];
   total: number;
 };
 

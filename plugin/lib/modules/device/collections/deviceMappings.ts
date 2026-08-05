@@ -50,6 +50,7 @@ export const devicesMappings: CollectionMappings = {
       properties: {
         name: { type: "keyword" },
         type: { type: "keyword" },
+        measureAdapter: { type: "keyword" },
       },
     },
   },
@@ -80,6 +81,7 @@ export const devicesPlatformMappings: CollectionMappings = {
       properties: {
         name: { type: "keyword" },
         type: { type: "keyword" },
+        measureAdapter: { type: "keyword" },
       },
     },
     provisionedAt: { type: "date" },

@@ -14,6 +14,7 @@ export type AccelerationMeasurement = {
 export const Acceleration: MeasureModel = {
   modelName: "acceleration",
   definition: {
+    scope: "asset",
     valuesMappings: {
       acceleration: {
         properties: {

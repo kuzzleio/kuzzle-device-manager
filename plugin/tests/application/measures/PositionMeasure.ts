@@ -13,6 +13,7 @@ export type PositionMeasurement = {
 };
 
 const positionMeasureDefinition: MeasureDefinition = {
+  scope: "asset",
   valuesMappings: {
     position: { type: "geo_point" },
     accuracy: { type: "float" },

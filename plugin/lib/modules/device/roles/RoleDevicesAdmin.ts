@@ -48,6 +48,8 @@ export const RoleDevicesAdmin: KuzzleRole = {
           update: true,
           getMeasures: true,
           exportMeasures: true,
+          setMeasureAdapter: true,
+          unsetMeasureAdapter: true,
         },
       },
       "device-manager/models": {

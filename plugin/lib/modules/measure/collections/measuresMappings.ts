@@ -70,6 +70,13 @@ export const measuresMappings: CollectionMappings = {
         reference: { type: "keyword" },
 
         _id: { type: "keyword" },
+
+        measureAdaption: {
+          properties: {
+            adaptor: { type: "keyword", fields: { text: { type: "text" } } },
+            rawMeasure: { dynamic: "false", properties: {} },
+          },
+        },
       },
     },
   },

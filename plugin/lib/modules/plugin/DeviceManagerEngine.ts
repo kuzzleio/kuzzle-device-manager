@@ -4,7 +4,6 @@ import {
   InternalError,
   KDocumentContent,
   KDocumentContentGeneric,
-  Plugin,
 } from "kuzzle";
 import {
   AbstractEngine,
@@ -90,8 +89,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     return global.app;
   }
 
+  private readonly devicePlugin: DeviceManagerPlugin;
+
   constructor(
-    plugin: Plugin,
+    plugin: DeviceManagerPlugin,
     platformConfigManager: ConfigManager,
     engineConfigManager: ConfigManager,
   ) {
@@ -104,6 +105,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
 
     this.context = plugin.context;
+    this.devicePlugin = plugin;
 
     onAsk<AskEngineList>("ask:device-manager:engine:list", async ({ group }) =>
       this.list(group),
@@ -393,6 +395,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     const collections = await Promise.all(promises);
 
+    await this.devicePlugin.modelsRegister.writeMeasureAdaptersToEngine(index);
+
     return {
       collections: [this.engineConfigManager.collection, ...collections],
     };
@@ -412,6 +416,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     promises.push(this.createMeasuresCollection(index, group));
 
     const collections = await Promise.all(promises);
+
+    await this.devicePlugin.modelsRegister.writeMeasureAdaptersToEngine(index);
 
     return { collections };
   }

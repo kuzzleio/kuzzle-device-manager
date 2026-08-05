@@ -27,6 +27,7 @@ import {
   AssetModelDefinition,
   DeviceModelDefinition,
   GroupModelDefinition,
+  MeasureAdapterContent,
   ModelModule,
   modelsMappings,
   ModelsRegister,
@@ -338,6 +339,20 @@ export class DeviceManagerPlugin extends Plugin {
       registerMeasure: (name: string, measureDefinition: MeasureDefinition) => {
         this.modelsRegister.registerMeasure(name, measureDefinition);
       },
+
+      registerMeasureAdapter: (
+        name: string,
+        measureModelSource: string,
+        fieldMapping: MeasureAdapterContent["fieldMapping"],
+        engineIds?: string[],
+      ) => {
+        this.modelsRegister.registerMeasureAdapter(
+          name,
+          measureModelSource,
+          fieldMapping,
+          engineIds,
+        );
+      },
     };
   }
 
@@ -467,6 +482,19 @@ export class DeviceManagerPlugin extends Plugin {
       mappings: this.config.engineCollections.config.mappings,
       settings: this.config.engineCollections.config.settings,
     });
+    this.engineConfigManager.register("measureAdapter", {
+      properties: {
+        name: { type: "keyword" },
+        measureModelSource: { type: "keyword" },
+        fieldMapping: {
+          properties: {
+            measureModelTarget: { type: "keyword" },
+            source: { type: "keyword" },
+            target: { type: "keyword" },
+          },
+        },
+      },
+    });
 
     this.deviceManagerEngine = new DeviceManagerEngine(
       this,
@@ -579,6 +607,14 @@ export class DeviceManagerPlugin extends Plugin {
         } catch (error) {
           this.context.log.error(
             `An error occured while updating the engines during startup: ${error}`,
+          );
+        }
+
+        try {
+          await this.modelsRegister.propagateMeasureAdapters();
+        } catch (error) {
+          this.context.log.error(
+            `[DeviceAdapter] An error occured while propagating measure adapters during startup: ${error}`,
           );
         }
       }

@@ -8,6 +8,7 @@ export type TemperatureMeasurement = {
 };
 
 const temperatureMeasureDefinition: MeasureDefinition = {
+  scope: "asset",
   valuesMappings: { temperature: { type: "float" } },
   valuesDetails: {
     temperature: {
