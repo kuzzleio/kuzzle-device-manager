@@ -123,6 +123,11 @@ export type AssetModelDefinition = {
   measures: NamedMeasures;
 
   /**
+   * Icon representing the asset model.
+   */
+  icon?: string;
+
+  /**
    * Metadata mappings definition
    */
   metadataMappings?: MetadataMappings;
@@ -205,6 +210,11 @@ export type DeviceModelDefinition = {
    * Decoder used to decode payloads
    */
   decoder: Decoder;
+
+  /**
+   * Icon representing the device model.
+   */
+  icon?: string;
 
   /**
    * Metadata mappings definition
@@ -301,6 +311,11 @@ export type GroupModelDefinition = {
    * Metadata mappings definition
    */
   affinity: GroupAffinity;
+
+  /**
+   * Icon representing the group model.
+   */
+  icon?: string;
 
   /**
    * Metadata mappings definition

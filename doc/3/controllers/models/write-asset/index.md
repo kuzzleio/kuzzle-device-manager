@@ -35,6 +35,7 @@ Method: POST
 
     // Optional
 
+    "icon": "<icon>", // Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup
     "metadataMappings": {
       // Metadata mappings
     },
@@ -135,6 +136,7 @@ Method: POST
 - `engineGroup`: Name of the engine group
 - `engineIds`: Optional. Array of engine IDs (tenant IDs) this model is scoped to. When set, the model is only available to the specified tenants. When absent, the model is available to all tenants in the engine group.
 - `model`: Asset model name
+- `icon`: Optional. Icon representing the asset model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. This field is not indexed for search.
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Translations, metadata group, and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
