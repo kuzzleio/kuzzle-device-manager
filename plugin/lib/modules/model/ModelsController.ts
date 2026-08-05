@@ -2,6 +2,7 @@ import {
   BadRequestError,
   ControllerDefinition,
   ForbiddenError,
+  JSONObject,
   KuzzleRequest,
   NotFoundError,
 } from "kuzzle";
@@ -225,7 +226,7 @@ export class ModelsController {
     const tooltipModels = request.getBodyObject("tooltipModels", {});
     const locales = request.getBodyObject("locales", {});
     const engineIds = request.getBodyArray("engineIds", []);
-    const icon = request.input.body?.icon as string | undefined;
+    const icon = (request.input.body as JSONObject)?.icon as string | undefined;
 
     const assetModel = await this.modelService.writeAsset(
       engineGroups,
@@ -253,7 +254,7 @@ export class ModelsController {
     const measures = request.getBodyArray("measures");
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
-    const icon = request.input.body?.icon as string | undefined;
+    const icon = (request.input.body as JSONObject)?.icon as string | undefined;
 
     const deviceModel = await this.modelService.writeDevice(
       model,
@@ -280,7 +281,7 @@ export class ModelsController {
     const defaultValues = request.getBodyObject("defaultValues", {});
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
-    const icon = request.input.body?.icon as string | undefined;
+    const icon = (request.input.body as JSONObject)?.icon as string | undefined;
 
     const groupModel = await this.modelService.writeGroup(
       engineGroups,
@@ -306,7 +307,7 @@ export class ModelsController {
     const locales = request.getBodyObject("locales", {});
     const scope = request.getBodyString("scope", "asset") as "asset" | "device";
     const engineIds = request.getBodyArray("engineIds", []);
-    const icon = request.input.body?.icon as string | undefined;
+    const icon = (request.input.body as JSONObject)?.icon as string | undefined;
 
     const measureModel = await this.modelService.writeMeasure(
       type,
@@ -517,7 +518,7 @@ export class ModelsController {
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const tooltipModels = request.getBodyObject("tooltipModels", {});
     const locales = request.getBodyObject("locales", {});
-    const icon = request.input.body?.icon as string | undefined;
+    const icon = (request.input.body as JSONObject)?.icon as string | undefined;
 
     const updatedAssetModel = await this.modelService.updateAsset(
       engineGroups,

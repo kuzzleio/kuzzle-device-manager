@@ -229,7 +229,7 @@ export class ModelsRegister {
   }
 
   registerMeasure(type: string, measureDefinition: MeasureDefinition) {
-    const { locales, validationSchema, valuesMappings, valuesDetails, scope } =
+    const { icon, locales, validationSchema, valuesMappings, valuesDetails, scope } =
       measureDefinition;
     if (validationSchema) {
       try {
