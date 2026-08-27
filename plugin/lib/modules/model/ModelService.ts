@@ -540,6 +540,7 @@ export class ModelService extends BaseService {
     metadataDetails: MetadataDetails,
     metadataGroups: MetadataGroups,
     icon?: string,
+    locales?: { [valueName: string]: LocaleDetails },
   ): Promise<KDocument<GroupModelContent>> {
     if (Inflector.pascalCase(model) !== model) {
       throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
@@ -555,6 +556,7 @@ export class ModelService extends BaseService {
         affinity: groupAffinity,
         defaultMetadata,
         icon,
+        locales,
         metadataDetails,
         metadataGroups,
         metadataMappings,

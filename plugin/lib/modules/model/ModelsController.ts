@@ -246,6 +246,7 @@ export class ModelsController {
     const defaultValues = request.getBodyObject("defaultValues", {});
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
+    const locales = request.getBodyObject("locales", {});
     const icon = request.input.body?.icon as string | undefined;
 
     const groupModel = await this.modelService.writeGroup(
@@ -257,6 +258,7 @@ export class ModelsController {
       metadataDetails,
       metadataGroups,
       icon,
+      locales,
     );
 
     return groupModel;

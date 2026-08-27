@@ -183,6 +183,7 @@ export class ModelsRegister {
    * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
    * @param icon - Optional icon representing the model.
+   * @param locales - Optional translations specific to the model.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerGroup(
@@ -194,6 +195,7 @@ export class ModelsRegister {
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
     icon?: string,
+    locales: { [valueName: string]: LocaleDetails } = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -208,6 +210,7 @@ export class ModelsRegister {
         affinity,
         defaultMetadata,
         icon,
+        locales,
         metadataDetails,
         metadataGroups,
         metadataMappings,

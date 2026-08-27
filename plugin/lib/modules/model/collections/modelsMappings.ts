@@ -155,6 +155,10 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        locales: {
+          dynamic: "false",
+          properties: {},
+        },
       },
     },
   },

@@ -128,6 +128,15 @@ Method: POST
           };
       */
     },
+    "locales": {
+      /*
+        Translations specific to the group model.
+          [locale: string]: {
+            friendlyName: string;
+            description: string;
+          };
+      */
+    },
   }
 }
 ```
@@ -145,6 +154,7 @@ Method: POST
 - `metadataDetails`: Translations, metadata group, and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
 - `metadataGroups`: Groups list with translations for group name
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
+- `locales`: Optional. Translations specific to the group model
 
 ---
 

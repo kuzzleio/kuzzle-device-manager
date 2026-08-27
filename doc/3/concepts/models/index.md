@@ -212,6 +212,7 @@ A group model contains the following information:
   - **Editor hint:** Unlocks functionalities depending on the metadata type you define.
 - `metadataGroups`: (optional) Map of group names to their translations, used to group metadata fields.
 - `tooltipModels`: (optional) Tooltip model list, each containing labels and tooltip content to be shown. You can use it to create templates that display relevant information in dashboards.
+- `locales`: (optional) Translation for group model
 
 You can create new group models on the Kuzzle IoT Platform using either:
 
@@ -293,6 +294,16 @@ await sdk.query({
             metadataPath: "location"
           }
         ]
+      }
+    },
+    locales: {
+      en: {
+        friendlyName: "Parking group translated by model",
+        description: "Group of parking assets and devices"
+      },
+      fr: {
+        friendlyName: "Groupe de parking traduit par modèle",
+        description: "Groupe d'actifs et d'appareils de parking"
       }
     }
   }

@@ -317,6 +317,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataDetails,
           definition.metadataGroups,
           definition.icon,
+          definition.locales,
         );
       },
 
