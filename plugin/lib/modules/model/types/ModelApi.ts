@@ -91,6 +91,7 @@ export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
     defaultValues?: JSONObject;
+    locales?: { [valueName: string]: LocaleDetails };
   };
 }
 export type ApiModelWriteGroupResult = KDocument<GroupModelContent>;

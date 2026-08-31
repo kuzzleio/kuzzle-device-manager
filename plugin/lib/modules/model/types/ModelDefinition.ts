@@ -341,4 +341,9 @@ export type GroupModelDefinition = {
    * Tooltip models
    */
   tooltipModels?: TooltipModels;
+
+  /**
+   * Translations specific to the model
+   */
+  locales?: { [valueName: string]: LocaleDetails };
 };
