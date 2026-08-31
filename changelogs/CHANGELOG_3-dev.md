@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.15 (2026-08-31)
+
+* feat(models): add locales for group models (#487) ([f880659](https://github.com/kuzzleio/kuzzle-device-manager/commit/f880659)), closes [#487](https://github.com/kuzzleio/kuzzle-device-manager/issues/487)
+
 ## 3.0.0-3-dev.14 (2026-08-05)
 
 * feat(models): add icon to model definitions (#483) ([7654579](https://github.com/kuzzleio/kuzzle-device-manager/commit/7654579)), closes [#483](https://github.com/kuzzleio/kuzzle-device-manager/issues/483)
