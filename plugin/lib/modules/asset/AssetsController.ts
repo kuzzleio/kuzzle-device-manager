@@ -48,7 +48,6 @@ import {
   MeasureValidationError,
   MeasureValidationChunks,
 } from "../measure/MeasureValidationError";
-import { AskModelAssetGet } from "../model";
 import { AssetContent } from "./exports";
 import { DeviceContent, DeviceSerializer } from "../device";
 import { KuzzleLogger } from "kuzzle-logger";
@@ -485,7 +484,6 @@ export class AssetsController {
     indexId: string,
     assetId: string,
     measureName: string,
-    engineGroup: string,
   ) {
     let asset: AssetContent;
     try {
@@ -502,19 +500,8 @@ export class AssetsController {
         `Asset "${assetId}" does not exists on index "${indexId}"`,
       );
     }
-
-    const assetModel = await ask<AskModelAssetGet>(
-      "ask:device-manager:model:asset:get",
-      {
-        engineGroups: [engineGroup],
-        engineId: indexId,
-        model: asset.model,
-      },
-    );
-
     return (
-      assetModel.asset.measures.find((elt) => elt.name === measureName)?.type ??
-      null
+      asset.measureSlots.find((elt) => elt.name === measureName)?.type ?? null
     );
   }
 
@@ -548,7 +535,6 @@ export class AssetsController {
         indexId,
         assetId,
         measure.measureName,
-        engine.group,
       );
 
       const validator = getValidator(type);
@@ -600,7 +586,6 @@ export class AssetsController {
       indexId,
       assetId,
       measureName,
-      engine.group,
     );
 
     if (!type) {
