@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.16 (2026-09-14)
+
+* fix(ingestMeasure): check measure slots availability from asset instance instead of asset model (#48 ([2e2fc67](https://github.com/kuzzleio/kuzzle-device-manager/commit/2e2fc67)), closes [#488](https://github.com/kuzzleio/kuzzle-device-manager/issues/488)
+
 ## 3.0.0-3-dev.15 (2026-08-31)
 
 * feat(models): add locales for group models (#487) ([f880659](https://github.com/kuzzleio/kuzzle-device-manager/commit/f880659)), closes [#487](https://github.com/kuzzleio/kuzzle-device-manager/issues/487)
