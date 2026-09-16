@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.17 (2026-09-16)
+
+* fix(ingest): check measure in asset not in model (#489) ([cece65f](https://github.com/kuzzleio/kuzzle-device-manager/commit/cece65f)), closes [#489](https://github.com/kuzzleio/kuzzle-device-manager/issues/489)
+
 ## 3.0.0-3-dev.16 (2026-09-14)
 
 * fix(ingestMeasure): check measure slots availability from asset instance instead of asset model (#48 ([2e2fc67](https://github.com/kuzzleio/kuzzle-device-manager/commit/2e2fc67)), closes [#488](https://github.com/kuzzleio/kuzzle-device-manager/issues/488)
