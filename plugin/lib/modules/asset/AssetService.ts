@@ -932,7 +932,15 @@ export class AssetService extends DigitalTwinService {
             ...assetMetadata,
           };
 
-          asset._source.measureSlots = assetModel.asset.measures;
+          const customMeasureSlots = asset._source.measureSlots.filter(
+            (slot) =>
+              !assetModel.asset.measures.some((m) => m.name === slot.name),
+          );
+
+          asset._source.measureSlots = [
+            ...assetModel.asset.measures,
+            ...customMeasureSlots,
+          ];
 
           acc[asset.index].push(asset as KDocument<AssetContent>);
 

@@ -1,5 +1,5 @@
 import { BadRequestError, JSONObject, KDocument } from "kuzzle";
-import { ask, onAsk } from "kuzzle-plugin-commons";
+import { onAsk } from "kuzzle-plugin-commons";
 import { AssetContent, AssetSerializer } from "../asset";
 
 import { DeviceManagerPlugin, InternalCollection } from "../plugin";
@@ -24,7 +24,6 @@ import {
   apiSourceToOriginApi,
   deviceSourceToOriginDevice,
 } from "./MeasureSourcesBuilder";
-import { AskModelAssetGet } from "../model";
 import {
   isTargetApi,
   isTargetDevice,
@@ -86,7 +85,6 @@ export class MeasureService extends BaseService {
           indexId,
           assetId,
           source,
-          target,
           measurements,
           payloadUuids,
         );
@@ -250,7 +248,7 @@ export class MeasureService extends BaseService {
     let asset = null;
     if (assetId !== null) {
       assetDocument = await this.findAsset(indexId, assetId);
-      asset = { ...assetDocument._source };
+      asset = { ...assetDocument?._source };
     }
 
     const measures = await this.buildDeviceMeasures(
@@ -264,12 +262,11 @@ export class MeasureService extends BaseService {
   }
 
   private async ingestApiMeasures(
-    indexId,
-    assetId,
-    source,
-    target,
-    measurements,
-    payloadUuids,
+    indexId: string,
+    assetId: string,
+    source: ApiMeasureSource,
+    measurements: DecodedMeasurement[],
+    payloadUuids: string[],
   ) {
     const assetDocument = await this.findAsset(indexId, assetId);
 
@@ -286,7 +283,6 @@ export class MeasureService extends BaseService {
       assetDocument,
       measurements,
       payloadUuids,
-      target.engineGroups,
     );
 
     return { asset, measures };
@@ -307,19 +303,16 @@ export class MeasureService extends BaseService {
     asset: KDocument<AssetContent>,
     measures: DecodedMeasurement[],
     payloadUuids: string[],
-    engineGroups?: string[],
   ): Promise<MeasureContent[]> {
     const apiMeasures: MeasureContent[] = [];
 
     for (const measure of measures) {
       let assetContext = null;
-      const isInModel = await this.isMeasureNameInModel(
-        measure.measureName,
-        asset._source.model,
-        engineGroups,
+      const isInAsset = asset._source.measureSlots.some(
+        (slot) => slot.name === measure.measureName,
       );
 
-      if (isInModel) {
+      if (isInAsset) {
         assetContext = AssetSerializer.measureContext(
           asset,
           measure.measureName,
@@ -364,39 +357,6 @@ export class MeasureService extends BaseService {
 
       return null;
     }
-  }
-
-  /**
-   * Check if the asset measure name is associated to the asset model
-   *
-   * @param measureName The measure name to check
-   * @param model The asset model the measureName should belong
-   *
-   * @returns True if the asset measure name belongs to the asset model, false otherwise
-   * @throws If the model does not exists
-   */
-  private async isMeasureNameInModel(
-    measureName: string,
-    model: string,
-    engineGroups: string[] = ["commons"],
-  ): Promise<boolean> {
-    const assetModel = await ask<AskModelAssetGet>(
-      "ask:device-manager:model:asset:get",
-      {
-        engineGroups,
-        model: model,
-      },
-    );
-
-    if (!assetModel) {
-      throw new BadRequestError(`Model "${model}" does not exists`);
-    }
-
-    const assetMeasureName = assetModel.asset.measures.find(
-      (m) => m.name === measureName,
-    );
-
-    return assetMeasureName?.name ? true : false;
   }
 
   /**
