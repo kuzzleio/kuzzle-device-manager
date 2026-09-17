@@ -227,6 +227,41 @@ export class DeviceService extends DigitalTwinService {
   }
 
   /**
+   * Update the display name of a measure slot on a device
+   */
+  public async updateMeasureSlotDisplayName(
+    engineId: string,
+    deviceId: string,
+    measureSlotName: string,
+    displayName: { [locale: string]: string },
+    request: KuzzleRequest,
+  ): Promise<KDocument<DeviceContent>> {
+    return lock(`device:${deviceId}`, async () => {
+      const device = await this.get(engineId, deviceId, request);
+
+      const slot = device._source.measureSlots.find(
+        (s) => s.name === measureSlotName,
+      );
+      if (!slot) {
+        throw new BadRequestError(
+          `Device ${deviceId} does not have a measure slot named ${measureSlotName}`,
+        );
+      }
+      slot.displayName = displayName;
+
+      const updatedDevice = await this.updateDocument<DeviceContent>(
+        request,
+        device,
+        {
+          collection: InternalCollection.DEVICES,
+          engineId,
+        },
+      );
+      return updatedDevice;
+    });
+  }
+
+  /**
    * Update or Create an device metadata
    */
   public async upsert(

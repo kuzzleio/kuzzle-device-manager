@@ -351,15 +351,24 @@ export interface ApiAssetAddMeasureSlotRequest extends AssetsControllerRequest {
 
   body: {
     /**
-     * Measure slot containing the name of the slot and it's type of measurement
+     * Measure slot containing the name of the slot, its type of measurement
+     * and an optional per-locale display name.
      *
-     * { name: string , type: string}
+     * { name: string, type: string, displayName?: { [locale: string]: string } }
      *
      * @example
      *
-     *   { name: "externalTemperature", type: "temperature" }
+     *   {
+     *     name: "externalTemperature",
+     *     type: "temperature",
+     *     displayName: { en: "External temperature", fr: "Température extérieure" }
+     *   }
      */
-    measureSlot: { name: string; type: string };
+    measureSlot: {
+      name: string;
+      type: string;
+      displayName?: { [locale: string]: string };
+    };
   };
 }
 
@@ -384,3 +393,31 @@ export interface ApiAssetRemoveMeasureSlotRequest extends AssetsControllerReques
 }
 
 export type ApiAssetRemoveMeasureSlotResult = KDocument<AssetContent>;
+
+export interface ApiAssetUpdateMeasureSlotDisplayNameRequest extends AssetsControllerRequest {
+  action: "updateMeasureSlotDisplayName";
+
+  _id: string;
+
+  body: {
+    /**
+     * Name of the measure slot to update.
+     *
+     * @example
+     *
+     *   measureSlot: "externalTemperature",
+     */
+    measureSlot: string;
+
+    /**
+     * Per-locale display name for the measure slot.
+     *
+     * @example
+     *
+     *   displayName: { en: "External temperature", fr: "Température extérieure" }
+     */
+    displayName: { [locale: string]: string };
+  };
+}
+export type ApiAssetUpdateMeasureSlotDisplayNameResult =
+  KDocument<AssetContent>;

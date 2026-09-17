@@ -875,6 +875,39 @@ export class AssetService extends DigitalTwinService {
     return updatedAsset;
   }
 
+  /**
+   * Update the display name of a measure slot on an asset
+   */
+  public async updateMeasureSlotDisplayName(
+    assetId: string,
+    measureSlotName: string,
+    displayName: { [locale: string]: string },
+    engineId: string,
+    request: KuzzleRequest,
+  ): Promise<KDocument<AssetContent>> {
+    const asset = await this.get(engineId, assetId, request);
+
+    const slot = asset._source.measureSlots.find(
+      (s) => s.name === measureSlotName,
+    );
+    if (!slot) {
+      throw new BadRequestError(
+        `Asset ${assetId} does not have a measure slot named ${measureSlotName}`,
+      );
+    }
+    slot.displayName = displayName;
+
+    const updatedAsset = await this.updateDocument<AssetContent>(
+      request,
+      asset,
+      {
+        collection: InternalCollection.ASSETS,
+        engineId,
+      },
+    );
+    return updatedAsset;
+  }
+
   private async refreshModel({
     assetModel,
   }: {
