@@ -24,7 +24,7 @@ it("Upsert device", async () => {
     const response = await sdk.query({
       controller: "device-manager/devices",
       action: "upsert",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       _id: "DummyTemp-detached1",
       body: {
         model: "DummyTemp",
@@ -46,7 +46,7 @@ it("Upsert device", async () => {
     await sdk.query({
         controller: "device-manager/devices",
         action: "upsert",
-        engineId: "engine-kuzzle",
+        index: "engine-kuzzle",
         _id: "DummyTemp-detached1",
         body: {
           model: "DummyTemp",
@@ -59,7 +59,7 @@ it("Upsert device", async () => {
     const response = await sdk.query({
         controller: "device-manager/devices",
         action: "upsert",
-        engineId: "engine-kuzzle",
+        index: "engine-kuzzle",
         _id: "DummyTemp-detached1",
         body: {
           model: "DummyTemp",
@@ -91,7 +91,7 @@ it("Upsert device", async () => {
         },
     });
 
-    await expect(promise).rejects.toThrow('Missing argument "engineId"');
+    await expect(promise).rejects.toThrow('Missing argument "index"');
   })
 
   it('Throws if upsert is on another engine id', async () => {
@@ -100,7 +100,7 @@ it("Upsert device", async () => {
         controller: "device-manager/devices",
         action: "upsert",
         _id: "DummyTemp-detached1",
-        engineId: "engine-kuzzle",
+        index: "engine-kuzzle",
         body: {
           model: "DummyTemp",
           reference: "detached1",
@@ -112,7 +112,7 @@ it("Upsert device", async () => {
     promise = sdk.query({
         controller: "device-manager/devices",
         action: "upsert",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-detached1",
         body: {
           model: "DummyTemp",

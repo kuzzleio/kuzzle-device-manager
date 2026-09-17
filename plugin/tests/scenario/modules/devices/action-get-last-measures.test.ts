@@ -44,7 +44,7 @@ describe("DevicesController:getLastMeasures", () => {
       _id: "DummyTempPosition-unlinked3",
       controller: "device-manager/devices",
       action: "getLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     expect(result).toMatchObject({
@@ -71,7 +71,7 @@ describe("DevicesController:getLastMeasures", () => {
       _id: "Imaginary",
       controller: "device-manager/devices",
       action: "getLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     };
     await expect(sdk.query(noMeasures)).rejects.toThrow(
       /^No measure could be found for this digital twin$/,

@@ -20,13 +20,13 @@ describe("Engine deletion", () => {
     sdk.disconnect();
   });
   const platformIndex = "device-manager";
-  const engineId = "engine-ayse";
+  const index = "engine-ayse";
 
   it("Deletes the engine from platform index", async () => {
     const engine = await sdk.document.get(
       platformIndex,
       "config",
-      `engine-device-manager--${engineId}`,
+      `engine-device-manager--${index}`,
     );
 
     expect(engine).toBeTruthy();
@@ -34,13 +34,13 @@ describe("Engine deletion", () => {
     await sdk.query({
       controller: "device-manager/engine",
       action: "delete",
-      index: engineId,
+      index: index,
     });
 
     const promise = sdk.document.get(
       platformIndex,
       "config",
-      `engine-device-manager--${engineId}`,
+      `engine-device-manager--${index}`,
     );
 
     await expect(promise).rejects.toThrow();
@@ -48,19 +48,19 @@ describe("Engine deletion", () => {
   it("Detach devices from engine in the platform index on engine deletion", async () => {
     const devices = await sdk.document.search(platformIndex, "devices", {
       _source: false,
-      query: { bool: { must: { term: { engineId } } } },
+      query: { bool: { must: { term: { index } } } },
     });
     expect(devices.total).toBeGreaterThan(0);
     await sdk.query({
       controller: "device-manager/engine",
       action: "delete",
-      index: engineId,
+      index: index,
     });
     await sdk.collection.refresh(platformIndex, "devices");
 
     const result = await sdk.document.search(platformIndex, "devices", {
       _source: false,
-      query: { bool: { must: { term: { engineId } } } },
+      query: { bool: { must: { term: { index } } } },
     });
     expect(result.total).toBe(0);
   });

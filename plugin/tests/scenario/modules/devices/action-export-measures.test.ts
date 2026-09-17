@@ -17,7 +17,7 @@ describe("DevicesController:exportMeasures", () => {
       const { result } = await sdk.query<ApiDeviceExportMeasuresRequest>({
         controller: "device-manager/devices",
         action: "exportMeasures",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-linked1",
         body: {
           query,
@@ -105,7 +105,7 @@ describe("DevicesController:exportMeasures", () => {
     const { result } = await sdk.query<ApiDeviceExportMeasuresRequest>({
       controller: "device-manager/devices",
       action: "exportMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
       lang: "koncorde",
     });
@@ -180,7 +180,7 @@ describe("DevicesController:exportMeasures", () => {
     const { result } = await sdk.query<ApiDeviceExportMeasuresRequest>({
       controller: "device-manager/devices",
       action: "exportMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
       lang: "koncorde",
     });

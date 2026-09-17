@@ -16,7 +16,7 @@ Retrieves measures from an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures
+URL: http://kuzzle:7512/_/device-manager/:index/assets/:_id/measures
 Method: GET or POST
 ```
 
@@ -26,7 +26,7 @@ Method: GET or POST
 {
   "controller": "device-manager/assets",
   "action": "getMeasures",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<assetId>",
   "body": {
     "query": {
@@ -50,7 +50,7 @@ Method: GET or POST
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 - `_id`: asset id (ISO_8601)
 - `from` (optional): paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
 - `size` (optional): set the maximum number of documents returned per result page

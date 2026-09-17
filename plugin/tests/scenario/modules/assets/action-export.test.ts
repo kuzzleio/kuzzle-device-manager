@@ -68,7 +68,7 @@ describe("AssetsController:exportMeasures", () => {
     >({
       controller: "device-manager/assets",
       action: "export",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     expect(typeof result.link).toBe("string");

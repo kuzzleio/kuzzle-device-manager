@@ -14,7 +14,7 @@ Creates an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets
+URL: http://kuzzle:7512/_/device-manager/:index/assets
 Method: POST
 ```
 
@@ -24,7 +24,7 @@ Method: POST
 {
   "controller": "device-manager/assets",
   "action": "create",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "model": "<asset model>",
     "reference": "<asset reference>",
@@ -39,7 +39,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 
 ## Body properties
 

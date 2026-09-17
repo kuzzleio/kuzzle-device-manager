@@ -20,7 +20,7 @@ export type UpdateLinkResponse = mUpdateResponse & {
 
 interface GroupControllerRequest {
   controller: "device-manager/groups";
-  engineId: string;
+  index: string;
 }
 
 export interface ApiGroupCreateRequest extends GroupControllerRequest {

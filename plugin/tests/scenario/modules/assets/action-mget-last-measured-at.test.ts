@@ -68,7 +68,7 @@ describe("AssetsController:mGetLastMeasuredAt", () => {
     >({
       controller: "device-manager/assets",
       action: "mGetLastMeasuredAt",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { ids: ["Warehouse-linked", "Container-linked2"] },
     });
 
@@ -102,7 +102,7 @@ describe("AssetsController:mGetLastMeasuredAt", () => {
     >({
       controller: "device-manager/assets",
       action: "mGetLastMeasuredAt",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { ids: ["Container-linked1"] },
     });
 

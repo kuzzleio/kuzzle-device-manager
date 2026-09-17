@@ -16,7 +16,7 @@ Searches for devices.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/_search
+URL: http://kuzzle:7512/_/device-manager/:index/devices/_search
 Method: POST
 ```
 
@@ -26,7 +26,7 @@ Method: POST
 {
   "controller": "device-manager/devices",
   "action": "search",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "query": {
       // ...
@@ -47,7 +47,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 - `from`: paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
 - `size`: set the maximum number of documents returned per result page
 - `lang`: specify the query language to use. By default, it's `elasticsearch` but `koncorde` can also be used.

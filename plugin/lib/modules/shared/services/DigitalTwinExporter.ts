@@ -39,32 +39,32 @@ export class DigitalTwinExporter extends AbstractExporter {
     this.exportStreamAugmenters.push(this.addMeasuresToExportStream.bind(this));
   }
 
-  protected exportRedisKey(engineId: string, exportId: string) {
-    return `exports:${engineId}:${this.target}:${exportId}`;
+  protected exportRedisKey(index: string, exportId: string) {
+    return `exports:${index}:${this.target}:${exportId}`;
   }
 
-  protected getLink(engineId: string, exportId: UUID) {
-    return `/_/device-manager/${engineId}/${this.target}/_export/${exportId}`;
+  protected getLink(index: string, exportId: UUID) {
+    return `/_/device-manager/${index}/${this.target}/_export/${exportId}`;
   }
 
-  async sendExport(engineId: string, exportId: string) {
+  async sendExport(index: string, exportId: string) {
     const {
       query,
       sort,
       lang = "elasticsearch",
-    } = await this.getExport(engineId, exportId);
+    } = await this.getExport(index, exportId);
 
     const digitalTwins = await this.sdk.document.search<DigitalTwinContent>(
-      engineId,
+      index,
       this.target,
       { query, sort },
       { lang, size: 200 },
     );
 
-    const namedMeasures = await this.getNamedMeasures(engineId);
+    const namedMeasures = await this.getNamedMeasures(index);
     const measureColumns = await this.generateMeasureColumns(
       namedMeasures,
-      engineId,
+      index,
     );
 
     const columns: Column[] = [
@@ -79,9 +79,9 @@ export class DigitalTwinExporter extends AbstractExporter {
       },
     ];
 
-    const stream = this.getExportStream(digitalTwins, columns, engineId);
+    const stream = this.getExportStream(digitalTwins, columns, index);
 
-    await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
+    await this.sdk.ms.del(this.exportRedisKey(index, exportId));
 
     return stream;
   }
@@ -89,14 +89,14 @@ export class DigitalTwinExporter extends AbstractExporter {
   /**
    * Get the deduplicated Named Measures get from models
    */
-  private async getNamedMeasures(engineId: string): Promise<NamedMeasures> {
+  private async getNamedMeasures(index: string): Promise<NamedMeasures> {
     const type = this.target === InternalCollection.ASSETS ? "asset" : "device";
     const query: JSONObject = {
       and: [{ equals: { type } }],
     };
 
     if (this.target === InternalCollection.ASSETS) {
-      const engine = await this.getEngine(engineId);
+      const engine = await this.getEngine(index);
       query.and.push({ equals: { engineGroups: engine.group } });
     }
 
@@ -138,7 +138,7 @@ export class DigitalTwinExporter extends AbstractExporter {
 
   private async generateMeasureColumns(
     namedMeasures: NamedMeasures,
-    engineId?: string,
+    index?: string,
   ): Promise<MeasureColumn[]> {
     const columns: MeasureColumn[] = [];
 
@@ -147,7 +147,7 @@ export class DigitalTwinExporter extends AbstractExporter {
       if (!measuresPath.has(name)) {
         const { measure: measureDefinition } = await ask<AskModelMeasureGet>(
           "ask:device-manager:model:measure:get",
-          { type, engineId },
+          { type, index },
         );
 
         const flattenMeasuresPath = Object.keys(
@@ -174,7 +174,7 @@ export class DigitalTwinExporter extends AbstractExporter {
   private async addMeasuresToExportStream(
     result: SearchResult<KHit<DigitalTwinContent & DigitalTwinExtraData>>,
     _: Column[],
-    engineId: string,
+    index: string,
   ) {
     const type = this.target === InternalCollection.ASSETS ? "asset" : "device";
 
@@ -186,7 +186,7 @@ export class DigitalTwinExporter extends AbstractExporter {
           `ask:device-manager:${type}:get-last-measures`,
           {
             digitalTwinId: hit._id,
-            engineId,
+            index,
           },
         );
       } catch (e) {

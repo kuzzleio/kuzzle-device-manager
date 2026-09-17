@@ -28,7 +28,7 @@ describe("Device model measure slots propagation", () => {
     >({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Zigbee",
         reference: "MAYA1",

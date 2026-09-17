@@ -10,19 +10,19 @@ describe("DevicesController:attachEngine", () => {
       controller: "device-manager/devices",
       action: "attachEngine",
       _id: "DummyTemp-detached1",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
     });
 
     await expect(
       sdk.document.get("device-manager", "devices", "DummyTemp-detached1"),
     ).resolves.toMatchObject({
-      _source: { engineId: "engine-kuzzle", _kuzzle_info: { updater: "-1" } },
+      _source: { index: "engine-kuzzle", _kuzzle_info: { updater: "-1" } },
     });
 
     await expect(
       sdk.document.get("engine-kuzzle", "devices", "DummyTemp-detached1"),
     ).resolves.toMatchObject({
-      _source: { engineId: "engine-kuzzle", _kuzzle_info: { author: "-1" } },
+      _source: { index: "engine-kuzzle", _kuzzle_info: { author: "-1" } },
     });
 
     await sendDummyTempPayloads(sdk, [
@@ -40,7 +40,7 @@ describe("DevicesController:attachEngine", () => {
         controller: "device-manager/devices",
         action: "attachEngine",
         _id: "not-existing-device",
-        engineId: "engine-kuzzle",
+        index: "engine-kuzzle",
       }),
     ).rejects.toMatchObject({ id: "services.storage.not_found" });
 
@@ -49,7 +49,7 @@ describe("DevicesController:attachEngine", () => {
         controller: "device-manager/devices",
         action: "attachEngine",
         _id: "DummyTemp-detached1",
-        engineId: "engine-kaliop",
+        index: "engine-kaliop",
       }),
     ).rejects.toMatchObject({
       message: 'Engine "engine-kaliop" does not exists.',
@@ -60,7 +60,7 @@ describe("DevicesController:attachEngine", () => {
         controller: "device-manager/devices",
         action: "attachEngine",
         _id: "DummyTemp-linked1",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
       }),
     ).rejects.toMatchObject({
       message: 'Device "DummyTemp-linked1" is already attached to an engine.',

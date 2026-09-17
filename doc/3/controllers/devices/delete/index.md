@@ -14,7 +14,7 @@ Deletes a device.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id
 Method: DELETE
 ```
 
@@ -24,7 +24,7 @@ Method: DELETE
 {
   "controller": "device-manager/devices",
   "action": "delete",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>"
 }
 ```
@@ -33,7 +33,7 @@ Method: DELETE
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 - `_id`: device id
 
 ## Response

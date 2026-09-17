@@ -44,7 +44,7 @@ describe("AssetsController:getLastMeasuredAt", () => {
       _id: "Container-linked2",
       controller: "device-manager/assets",
       action: "getLastMeasuredAt",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     expect(result).toMatchObject({ lastMeasuredAt: lastMeasureDate });
@@ -55,7 +55,7 @@ describe("AssetsController:getLastMeasuredAt", () => {
       _id: "Imaginary",
       controller: "device-manager/assets",
       action: "getLastMeasuredAt",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     };
     await expect(sdk.query(noMeasures)).rejects.toThrow(
       /^No measure could be found for this digital twin$/,

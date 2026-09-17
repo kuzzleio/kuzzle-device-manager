@@ -20,7 +20,7 @@ const deviceAyseLinked1 = {
   reference: "linked1",
   measureSlots: dummyTempDeviceMeasures,
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   assetId: "Container-linked1",
 };
 const deviceAyseLinked1Id = `${deviceAyseLinked1.model}-${deviceAyseLinked1.reference}`;
@@ -30,7 +30,7 @@ const deviceAyseLinked2 = {
   reference: "linked2",
   measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   assetId: "Container-linked2",
 };
 const deviceAyseLinked2Id = `${deviceAyseLinked2.model}-${deviceAyseLinked2.reference}`;
@@ -40,7 +40,7 @@ const deviceAyseUnlinked1 = {
   reference: "unlinked1",
   measureSlots: dummyTempDeviceMeasures,
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   assetId: null,
 };
 const deviceAyseUnlinked1Id = `${deviceAyseUnlinked1.model}-${deviceAyseUnlinked1.reference}`;
@@ -50,7 +50,7 @@ const deviceAyseUnlinked2 = {
   reference: "unlinked2",
   measureSlots: dummyTempDeviceMeasures,
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   assetId: null,
 };
 const deviceAyseUnlinked2Id = `${deviceAyseUnlinked2.model}-${deviceAyseUnlinked2.reference}`;
@@ -60,7 +60,7 @@ const deviceAyseUnlinked3 = {
   reference: "unlinked3",
   measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   assetId: null,
 };
 const deviceAyseUnlinked3Id = `${deviceAyseUnlinked3.model}-${deviceAyseUnlinked3.reference}`;
@@ -70,7 +70,7 @@ const deviceAyseWarehouse = {
   reference: "warehouse",
   measureSlots: dummyTempPositionDeviceMeasures,
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   assetId: "Warehouse-linked",
 };
 const deviceAyseWarehouseId = `${deviceAyseWarehouse.model}-${deviceAyseWarehouse.reference}`;
