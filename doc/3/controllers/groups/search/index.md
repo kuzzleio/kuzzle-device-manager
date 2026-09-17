@@ -19,7 +19,7 @@ You can filter groups by name, model, path, metadata, or any indexed property.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/_search
+URL: http://kuzzle:7512/_/device-manager/:index/groups/_search
 Method: GET or POST
 ```
 
@@ -29,7 +29,7 @@ Method: GET or POST
 {
   "controller": "device-manager/groups",
   "action": "search",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "query": { /* Koncorde query */ }, // optional
     "sort": [ /* sort fields */ ],     // optional
@@ -43,7 +43,7 @@ Method: GET or POST
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 
 ## Body properties
 

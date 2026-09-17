@@ -39,30 +39,30 @@ interface MeasureExportParams extends ExportParams {
 }
 
 export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
-  protected exportRedisKey(engineId: string, exportId: string) {
-    return `exports:measures:${engineId}:${exportId}`;
+  protected exportRedisKey(index: string, exportId: string) {
+    return `exports:measures:${index}:${exportId}`;
   }
 
   protected getLink(
-    engineId: string,
+    index: string,
     exportId: UUID,
     params: MeasureExportParams,
   ) {
-    return `/_/device-manager/${engineId}/${this.target}/${params.id}/measures/_export/${exportId}`;
+    return `/_/device-manager/${index}/${this.target}/${params.id}/measures/_export/${exportId}`;
   }
 
   /**
    * Searches for measures and return them in a standard JSON
    */
   async search(
-    engineId: string,
+    index: string,
     params: MeasureSearchParams,
     options?: MeasuresSearchOptions,
   ) {
     const searchQuery = this.prepareMeasureSearch(params);
 
     const result = await this.sdk.document.search<MeasureContent>(
-      engineId,
+      index,
       InternalCollection.MEASURES,
       {
         query: searchQuery,
@@ -87,13 +87,9 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
    *
    * Never return a rejected promise and write potential error on the stream
    */
-  async prepareExport(
-    engineId: string,
-    user: User,
-    params: MeasureSearchParams,
-  ) {
+  async prepareExport(index: string, user: User, params: MeasureSearchParams) {
     const digitalTwin = await this.sdk.document.get<DigitalTwinContent>(
-      engineId,
+      index,
       this.target,
       params.id,
     );
@@ -116,7 +112,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       exportParams.sort._id = "asc";
     }
 
-    return super.prepareExport(engineId, user, exportParams);
+    return super.prepareExport(index, user, exportParams);
   }
 
   protected formatHit(
@@ -147,16 +143,16 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
    * This method never returns a rejected promise, but write potential error in
    * the stream.
    */
-  async sendExport(engineId: string, exportId: string) {
+  async sendExport(index: string, exportId: string) {
     const {
       query,
       sort,
       model,
       lang = "elasticsearch",
-    } = await this.getExport(engineId, exportId);
+    } = await this.getExport(index, exportId);
 
     const result = await this.sdk.document.search<MeasureContent>(
-      engineId,
+      index,
       InternalCollection.MEASURES,
       { query, sort },
       { lang, size: 200 },
@@ -164,19 +160,19 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
 
     const targetModel =
       this.target === InternalCollection.ASSETS ? "asset" : "device";
-    const engine = await this.getEngine(engineId);
+    const engine = await this.getEngine(index);
     const modelDocument = await ask<AskModelDeviceGet | AskModelAssetGet>(
       `ask:device-manager:model:${targetModel}:get`,
       {
         engineGroups: [engine.group],
-        engineId,
+        index,
         model,
       },
     );
 
     const measureColumns = await this.generateMeasureColumns(
       modelDocument[targetModel].measures,
-      engineId,
+      index,
     );
     // sometimes we have multiple measures with same type
     // detect them and add them a flag that will be used later
@@ -214,15 +210,15 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       ...measureColumns,
     ];
 
-    const stream = this.getExportStream(result, columns, engineId);
-    await this.sdk.ms.del(this.exportRedisKey(engineId, exportId));
+    const stream = this.getExportStream(result, columns, index);
+    await this.sdk.ms.del(this.exportRedisKey(index, exportId));
 
     return stream;
   }
 
   private async generateMeasureColumns(
     documentMeasures: NamedMeasures,
-    engineId?: string,
+    index?: string,
   ): Promise<Array<Column & { shouldCheckName: boolean; name: string }>> {
     /**
      * @example
@@ -244,7 +240,7 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       if (!(type in mappingsByMeasureType)) {
         const { measure } = await ask<AskModelMeasureGet>(
           "ask:device-manager:model:measure:get",
-          { type, engineId },
+          { type, index },
         );
 
         mappingsByMeasureType[type] = Object.keys(

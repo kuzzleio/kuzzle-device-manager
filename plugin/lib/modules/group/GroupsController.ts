@@ -54,28 +54,28 @@ export class GroupsController {
           handler: this.create.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id",
+              path: "device-manager/:index/groups/:_id",
               verb: "post",
             },
           ],
         },
         get: {
           handler: this.get.bind(this),
-          http: [{ path: "device-manager/:engineId/groups/:_id", verb: "get" }],
+          http: [{ path: "device-manager/:index/groups/:_id", verb: "get" }],
         },
         update: {
           handler: this.update.bind(this),
-          http: [{ path: "device-manager/:engineId/groups/:_id", verb: "put" }],
+          http: [{ path: "device-manager/:index/groups/:_id", verb: "put" }],
         },
         upsert: {
           handler: this.upsert.bind(this),
-          http: [{ path: "device-manager/:engineId/groups", verb: "put" }],
+          http: [{ path: "device-manager/:index/groups", verb: "put" }],
         },
         delete: {
           handler: this.delete.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id",
+              path: "device-manager/:index/groups/:_id",
               verb: "delete",
             },
           ],
@@ -84,7 +84,7 @@ export class GroupsController {
           handler: this.moveGroup.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id/_move",
+              path: "device-manager/:index/groups/:_id/_move",
               verb: "put",
             },
           ],
@@ -93,11 +93,11 @@ export class GroupsController {
           handler: this.search.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/_search",
+              path: "device-manager/:index/groups/_search",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/groups/_search",
+              path: "device-manager/:index/groups/_search",
               verb: "post",
             },
           ],
@@ -106,7 +106,7 @@ export class GroupsController {
           handler: this.addAssets.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id/addAssets",
+              path: "device-manager/:index/groups/:_id/addAssets",
               verb: "post",
             },
           ],
@@ -115,7 +115,7 @@ export class GroupsController {
           handler: this.removeAssets.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/removeAssets",
+              path: "device-manager/:index/groups/removeAssets",
               verb: "post",
             },
           ],
@@ -124,7 +124,7 @@ export class GroupsController {
           handler: this.addDevices.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/addDevices",
+              path: "device-manager/:index/groups/addDevices",
               verb: "post",
             },
           ],
@@ -133,7 +133,7 @@ export class GroupsController {
           handler: this.removeDevices.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/removeDevices",
+              path: "device-manager/:index/groups/removeDevices",
               verb: "post",
             },
           ],
@@ -142,7 +142,7 @@ export class GroupsController {
           handler: this.listItems.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/:_id/listItems",
+              path: "device-manager/:index/groups/:_id/listItems",
               verb: "get",
             },
           ],
@@ -151,7 +151,7 @@ export class GroupsController {
           handler: this.mCreate.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/_mCreate",
+              path: "device-manager/:index/groups/_mCreate",
               verb: "post",
             },
           ],
@@ -160,7 +160,7 @@ export class GroupsController {
           handler: this.mUpdate.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/_mUpdate",
+              path: "device-manager/:index/groups/_mUpdate",
               verb: "put",
             },
           ],
@@ -169,7 +169,7 @@ export class GroupsController {
           handler: this.mUpsert.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/groups/_mUpsert",
+              path: "device-manager/:index/groups/_mUpsert",
               verb: "put",
             },
           ],
@@ -194,13 +194,13 @@ export class GroupsController {
 
   /**
    * Check that the path property is valid, and closest parent exists.
-   * @param {string} engineId Engine ID
+   * @param {string} index Engine ID
    * @param {string} path The path of a group
    * @throws {BadRequestError} If the path is not a string or if the path is not valid.
    * @returns {void}
    */
   async checkPath(
-    engineId: string,
+    index: string,
     path: GroupsBodyRequest["path"],
     groupId?: string,
   ) {
@@ -221,7 +221,7 @@ export class GroupsController {
     let parent;
     try {
       parent = await this.sdk.document.get<GroupContent>(
-        engineId,
+        index,
         InternalCollection.GROUPS,
         closestParentId,
       );
@@ -241,7 +241,7 @@ export class GroupsController {
   }
 
   async checkGroupName(
-    engineId: string,
+    index: string,
     name: GroupsBodyRequest["name"],
     assetId?: string,
   ) {
@@ -250,7 +250,7 @@ export class GroupsController {
     }
 
     const groupsCount = await this.sdk.document.count(
-      engineId,
+      index,
       InternalCollection.GROUPS,
       {
         query: {
@@ -283,7 +283,7 @@ export class GroupsController {
   }
 
   async create(request: KuzzleRequest): Promise<ApiGroupCreateResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const name = request.getBodyString("name");
     const metadata = request.getBodyObject("metadata", {});
     const body = request.getBody() as ApiGroupCreateRequest["body"];
@@ -298,16 +298,16 @@ export class GroupsController {
     if (!path.includes(_id)) {
       path += `.${_id}`;
     }
-    await this.checkPath(engineId, path, _id);
+    await this.checkPath(index, path, _id);
 
-    await this.checkGroupName(engineId, name);
+    await this.checkGroupName(index, name);
 
     if (typeof name !== "string") {
       throw new BadRequestError(`A group must have a name`);
     }
     return this.groupsService.create(
       _id,
-      engineId,
+      index,
       metadata,
       model,
       name,
@@ -317,14 +317,14 @@ export class GroupsController {
   }
 
   async get(request: KuzzleRequest): Promise<ApiGroupGetResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const _id = request.getId();
 
-    return this.groupsService.get(engineId, _id, request);
+    return this.groupsService.get(index, _id, request);
   }
 
   async upsert(request: KuzzleRequest): Promise<ApiGroupUpsertResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const _id = request.getId({
       generator: () => NameGenerator.generateRandomName({ prefix: "group" }),
       ifMissing: "generate",
@@ -336,7 +336,7 @@ export class GroupsController {
     const metadata = body.metadata;
 
     if (name !== undefined) {
-      await this.checkGroupName(engineId, name, _id);
+      await this.checkGroupName(index, name, _id);
     }
 
     const group = await this.get(request);
@@ -348,7 +348,7 @@ export class GroupsController {
       }
       return this.groupsService.create(
         _id,
-        engineId,
+        index,
         metadata,
         model,
         name,
@@ -357,50 +357,50 @@ export class GroupsController {
       );
     }
 
-    return this.groupsService.update(request, _id, engineId, name, metadata);
+    return this.groupsService.update(request, _id, index, name, metadata);
   }
 
   async update(request: KuzzleRequest): Promise<ApiGroupUpdateResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const _id = request.getId();
     const body = request.getBody() as GroupsBodyRequest;
     const name = body.name;
     const metadata = body.metadata;
 
     if (name !== undefined) {
-      await this.checkGroupName(engineId, name, _id);
+      await this.checkGroupName(index, name, _id);
     }
 
-    return this.groupsService.update(request, _id, engineId, name, metadata);
+    return this.groupsService.update(request, _id, index, name, metadata);
   }
 
   async delete(request: KuzzleRequest): Promise<ApiGroupDeleteResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const _id = request.getId();
-    await this.groupsService.delete(_id, engineId, request);
+    await this.groupsService.delete(_id, index, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiGroupSearchResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const searchParams = request.getSearchParams();
-    return this.groupsService.search(engineId, searchParams, request);
+    return this.groupsService.search(index, searchParams, request);
   }
 
   async moveGroup(request: KuzzleRequest): Promise<ApiGroupMoveResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const _id = request.getId();
     const { targetGroupId } = request.getBody() as ApiGroupMoveRequest["body"];
 
-    return this.groupsService.moveGroup(engineId, _id, targetGroupId, request);
+    return this.groupsService.moveGroup(index, _id, targetGroupId, request);
   }
   async listItems(request: KuzzleRequest): Promise<ApiGroupListItemsResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const _id = request.getId();
     const includeChildren = request.getBodyBoolean("includeChildren");
     const searchParams = request.getSearchParams();
     const { from, size } = searchParams;
     return this.groupsService.listItems(
-      engineId,
+      index,
       _id,
       includeChildren,
       { from, size },
@@ -409,47 +409,47 @@ export class GroupsController {
   }
 
   async addAssets(request: KuzzleRequest): Promise<ApiGroupAddAssetsResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
     const path = request.getBodyString("path");
     const assetIds = body.assetIds;
-    this.checkPath(engineId, path);
-    return this.groupsService.addAssets(engineId, path, assetIds, request);
+    this.checkPath(index, path);
+    return this.groupsService.addAssets(index, path, assetIds, request);
   }
 
   async removeAssets(
     request: KuzzleRequest,
   ): Promise<ApiGroupRemoveAssetsResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
     const path = request.getBodyString("path");
     const assetIds = body.assetIds;
-    this.checkPath(engineId, path);
-    return this.groupsService.removeAssets(engineId, path, assetIds, request);
+    this.checkPath(index, path);
+    return this.groupsService.removeAssets(index, path, assetIds, request);
   }
 
   async addDevices(request: KuzzleRequest): Promise<ApiGroupAddDevicesResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const body = request.getBody() as ApiGroupAddDevicesRequest["body"];
     const path = request.getBodyString("path");
     const deviceIds = body.deviceIds;
-    this.checkPath(engineId, path);
-    return this.groupsService.addDevices(engineId, path, deviceIds, request);
+    this.checkPath(index, path);
+    return this.groupsService.addDevices(index, path, deviceIds, request);
   }
 
   async removeDevices(
     request: KuzzleRequest,
   ): Promise<ApiGroupRemoveDevicesResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const body = request.getBody() as ApiGroupRemoveDevicesRequest["body"];
     const path = request.getBodyString("path");
     const deviceIds = body.deviceIds;
-    this.checkPath(engineId, path);
-    return this.groupsService.removeDevices(engineId, path, deviceIds, request);
+    this.checkPath(index, path);
+    return this.groupsService.removeDevices(index, path, deviceIds, request);
   }
 
   async mCreate(request: KuzzleRequest): Promise<ApiGroupMCreateResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const groups = request.getBodyArray("groups");
     const errors = [];
     const promises: Array<() => Promise<void>> = [];
@@ -476,9 +476,9 @@ export class GroupsController {
           if (typeof name !== "string") {
             throw new BadRequestError(`A group must have a name`);
           }
-          await this.checkPath(engineId, path, _id);
+          await this.checkPath(index, path, _id);
 
-          await this.checkGroupName(engineId, name);
+          await this.checkGroupName(index, name);
 
           toCreate.push({ _id, metadata, model, name, path });
         } catch (error) {
@@ -499,7 +499,7 @@ export class GroupsController {
     await Promise.allSettled(
       promises.map((f) => new Promise((resolve) => f().then(resolve))),
     );
-    const res = await this.groupsService.mCreate(engineId, toCreate);
+    const res = await this.groupsService.mCreate(index, toCreate);
     return {
       errors: [...res.errors, ...errors],
       successes: res.successes,
@@ -507,7 +507,7 @@ export class GroupsController {
   }
 
   async mUpdate(request: KuzzleRequest): Promise<ApiGroupMUpdateResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const groups = request.getBodyArray("groups");
     const errors = [];
     const promises: Array<() => Promise<void>> = [];
@@ -536,11 +536,11 @@ export class GroupsController {
                 `A group name must be a non-empty string`,
               );
             }
-            await this.checkGroupName(engineId, name, _id);
+            await this.checkGroupName(index, name, _id);
           }
 
           if (path) {
-            await this.checkPath(engineId, path, _id);
+            await this.checkPath(index, path, _id);
           }
           toUpdate.push({ _id, metadata, model, name, path });
         } catch (error) {
@@ -561,11 +561,11 @@ export class GroupsController {
     await Promise.allSettled(
       promises.map((f) => new Promise((resolve) => f().then(resolve))),
     );
-    const res = await this.groupsService.mUpdate(engineId, toUpdate, request);
+    const res = await this.groupsService.mUpdate(index, toUpdate, request);
     return { errors: [...res.errors, ...errors], successes: res.successes };
   }
   async mUpsert(request: KuzzleRequest): Promise<ApiGroupMUpsertResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const groups = request.getBodyArray("groups");
     const errors = [];
     const promises: Array<() => Promise<void>> = [];
@@ -595,14 +595,14 @@ export class GroupsController {
                 `A group name must be a non-empty string`,
               );
             }
-            await this.checkGroupName(engineId, name, _id);
+            await this.checkGroupName(index, name, _id);
           }
 
           if (path) {
             if (!g._id) {
               path += `.${_id}`;
             }
-            await this.checkPath(engineId, path, _id);
+            await this.checkPath(index, path, _id);
           }
           toUpsert.push({ _id, metadata, model, name, path });
         } catch (error) {
@@ -623,7 +623,7 @@ export class GroupsController {
     await Promise.allSettled(
       promises.map((f) => new Promise((resolve) => f().then(resolve))),
     );
-    const res = await this.groupsService.mUpsert(engineId, toUpsert, request);
+    const res = await this.groupsService.mUpsert(index, toUpsert, request);
     return { errors: [...errors, ...res.errors], successes: res.successes };
   }
 }

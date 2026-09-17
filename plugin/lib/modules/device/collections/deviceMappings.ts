@@ -36,7 +36,7 @@ export const devicesMappings: CollectionMappings = {
         },
       },
     },
-    engineId: {
+    index: {
       type: "keyword",
       fields: { text: { type: "text" } },
     },
@@ -71,7 +71,7 @@ export const devicesPlatformMappings: CollectionMappings = {
       type: "keyword",
       fields: { text: { type: "text" } },
     },
-    engineId: {
+    index: {
       type: "keyword",
       fields: { text: { type: "text" } },
     },

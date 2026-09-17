@@ -24,7 +24,7 @@ export class GroupsService extends BaseService {
 
   async create(
     _id: string,
-    engineId: string,
+    index: string,
     metadata: JSONObject,
     model: string,
     name: string,
@@ -65,21 +65,21 @@ export class GroupsService extends BaseService {
     };
     return this.createDocument<GroupContent>(request, group, {
       collection: InternalCollection.GROUPS,
-      engineId,
+      index,
     });
   }
 
-  async get(engineId: string, _id: string, request: KuzzleRequest) {
+  async get(index: string, _id: string, request: KuzzleRequest) {
     return this.getDocument<GroupContent>(request, _id, {
       collection: InternalCollection.GROUPS,
-      engineId,
+      index,
     });
   }
 
   async update(
     request: KuzzleRequest,
     _id: string,
-    engineId: string,
+    index: string,
     name?: string,
     metadata?: Metadata,
   ) {
@@ -90,7 +90,7 @@ export class GroupsService extends BaseService {
     }
 
     if (metadata !== undefined) {
-      const group = await this.get(engineId, _id, request);
+      const group = await this.get(index, _id, request);
       const { model, metadata: groupMetadata } = group._source;
       if (model !== null) {
         const groupModel = await ask<AskModelGroupGet>(
@@ -108,35 +108,35 @@ export class GroupsService extends BaseService {
       }
     }
 
-    return this._update(request, _id, engineId, updateRequestBody);
+    return this._update(request, _id, index, updateRequestBody);
   }
 
   private async _updatePath(
     request: KuzzleRequest,
     _id: string,
-    engineId: string,
+    index: string,
     newPath: string,
   ): Promise<KDocument<GroupContent>> {
     const groupToUpdate = await this.sdk.document.get<GroupContent>(
-      engineId,
+      index,
       InternalCollection.GROUPS,
       _id,
     );
 
-    const updatedGroup = await this._update(request, _id, engineId, {
+    const updatedGroup = await this._update(request, _id, index, {
       path: newPath,
     });
 
     const oldPath = groupToUpdate._source.path;
 
     const { hits: assets } = await this.sdk.document.search<AssetContent>(
-      engineId,
+      index,
       InternalCollection.ASSETS,
       { query: { prefix: { "groups.path": { value: oldPath } } } },
       { lang: "koncorde" },
     );
     await this.sdk.document.mUpdate(
-      engineId,
+      index,
       InternalCollection.ASSETS,
       assets.map((asset) => ({
         _id: asset._id,
@@ -154,13 +154,13 @@ export class GroupsService extends BaseService {
     );
 
     const { hits: devices } = await this.sdk.document.search<DeviceContent>(
-      engineId,
+      index,
       InternalCollection.DEVICES,
       { query: { prefix: { "groups.path": { value: oldPath } } } },
       { lang: "koncorde" },
     );
     await this.sdk.document.mUpdate(
-      engineId,
+      index,
       InternalCollection.DEVICES,
       devices.map((device) => ({
         _id: device._id,
@@ -179,7 +179,7 @@ export class GroupsService extends BaseService {
 
     const { hits: childrenGroups } =
       await this.sdk.document.search<GroupContent>(
-        engineId,
+        index,
         InternalCollection.GROUPS,
         {
           query: {
@@ -192,7 +192,7 @@ export class GroupsService extends BaseService {
         { lang: "koncorde" },
       );
     await this.sdk.document.mUpdate(
-      engineId,
+      index,
       InternalCollection.GROUPS,
       childrenGroups.map((grp) => {
         grp._source.path = grp._source.path.replace(oldPath, newPath);
@@ -206,12 +206,12 @@ export class GroupsService extends BaseService {
   }
 
   async moveGroup(
-    engineId: string,
+    index: string,
     _id: string,
     targetGroupId: string | null,
     request: KuzzleRequest,
   ): Promise<{ group: KDocument<GroupContent>; targetGroupId: string | null }> {
-    const group = await this.get(engineId, _id, request);
+    const group = await this.get(index, _id, request);
     const currentPath = group._source.path;
     const groupLeafId = currentPath.split(".").pop() as string;
     const currentParentPath = currentPath.split(".").slice(0, -1).join(".");
@@ -228,7 +228,7 @@ export class GroupsService extends BaseService {
         throw new BadRequestError(`Cannot move a group into itself`);
       }
 
-      const targetGroup = await this.get(engineId, targetGroupId, request);
+      const targetGroup = await this.get(index, targetGroupId, request);
       const targetPath = targetGroup._source.path;
 
       if (targetPath.startsWith(`${currentPath}.`)) {
@@ -246,12 +246,7 @@ export class GroupsService extends BaseService {
       newPath = `${targetPath}.${groupLeafId}`;
     }
 
-    const updatedGroup = await this._updatePath(
-      request,
-      _id,
-      engineId,
-      newPath,
-    );
+    const updatedGroup = await this._updatePath(request, _id, index, newPath);
 
     return {
       group: updatedGroup,
@@ -259,13 +254,13 @@ export class GroupsService extends BaseService {
     };
   }
 
-  async delete(_id: string, engineId: string, request: KuzzleRequest) {
-    const group = await this.get(engineId, _id, request);
+  async delete(_id: string, index: string, request: KuzzleRequest) {
+    const group = await this.get(index, _id, request);
     if (!group) {
       throw new BadRequestError(`The group with id "${_id}" does not exist`);
     }
     const { hits: assets } = await this.sdk.document.search<AssetContent>(
-      engineId,
+      index,
       InternalCollection.ASSETS,
       {
         query: {
@@ -280,7 +275,7 @@ export class GroupsService extends BaseService {
     );
 
     await this.sdk.document.mUpdate(
-      engineId,
+      index,
       InternalCollection.ASSETS,
       assets.map((asset) => ({
         _id: asset._id,
@@ -293,7 +288,7 @@ export class GroupsService extends BaseService {
       { strict: true },
     );
     const { hits: devices } = await this.sdk.document.search<AssetContent>(
-      engineId,
+      index,
       InternalCollection.DEVICES,
       {
         query: {
@@ -308,7 +303,7 @@ export class GroupsService extends BaseService {
     );
 
     await this.sdk.document.mUpdate(
-      engineId,
+      index,
       InternalCollection.DEVICES,
       devices.map((device) => ({
         _id: device._id,
@@ -322,7 +317,7 @@ export class GroupsService extends BaseService {
     );
     const { hits: childrenGroups } =
       await this.sdk.document.search<GroupContent>(
-        engineId,
+        index,
         InternalCollection.GROUPS,
         {
           query: {
@@ -337,7 +332,7 @@ export class GroupsService extends BaseService {
       );
 
     await this.sdk.document.mDelete(
-      engineId,
+      index,
       InternalCollection.GROUPS,
       childrenGroups.map((g) => g._id),
       { strict: true, triggerEvents: true },
@@ -347,24 +342,24 @@ export class GroupsService extends BaseService {
   }
 
   async search(
-    engineId: string,
+    index: string,
     searchParams: SearchParams,
     request: KuzzleRequest,
   ) {
     return this.searchDocument<GroupContent>(request, searchParams, {
       collection: InternalCollection.GROUPS,
-      engineId,
+      index,
     });
   }
 
   async listItems(
-    engineId: string,
+    index: string,
     _id: string,
     includeChildren: boolean,
     options: { from?: number; size?: number },
     request: KuzzleRequest,
   ) {
-    const group = await this.get(engineId, _id, request);
+    const group = await this.get(index, _id, request);
     if (!group) {
       throw new BadRequestError(`The group with _id "${_id}" does not exist`);
     }
@@ -387,14 +382,14 @@ export class GroupsService extends BaseService {
         };
     const { hits: assetHits, total: assetTotal } =
       await this.sdk.document.search<AssetContent>(
-        engineId,
+        index,
         InternalCollection.ASSETS,
         body,
         options,
       );
     const { hits: deviceHits, total: deviceTotal } =
       await this.sdk.document.search<DeviceContent>(
-        engineId,
+        index,
         InternalCollection.DEVICES,
         body,
         options,
@@ -406,14 +401,14 @@ export class GroupsService extends BaseService {
   }
 
   async addAssets(
-    engineId: string,
+    index: string,
     path: string,
     assetIds: string[],
     request: KuzzleRequest,
   ) {
     const _id = path.split(".").pop();
     const group = await this.sdk.document.get<GroupContent>(
-      engineId,
+      index,
       InternalCollection.GROUPS,
       _id,
     );
@@ -438,7 +433,7 @@ export class GroupsService extends BaseService {
 
     const { successes: assets, errors } =
       await this.sdk.document.mGet<AssetContent>(
-        engineId,
+        index,
         InternalCollection.ASSETS,
         assetIds,
       );
@@ -470,13 +465,13 @@ export class GroupsService extends BaseService {
       return asset;
     });
 
-    const groupUpdate = await this._update(request, _id, engineId, {
+    const groupUpdate = await this._update(request, _id, index, {
       lastUpdate: Date.now(),
     });
 
     const refresh = request.getRefresh();
     const update = await this.sdk.document.mReplace(
-      engineId,
+      index,
       InternalCollection.ASSETS,
       assetsToUpdate.map((asset) => ({ _id: asset._id, body: asset._source })),
       { refresh, triggerEvents: true },
@@ -488,24 +483,20 @@ export class GroupsService extends BaseService {
     };
   }
   async removeAssets(
-    engineId: string,
+    index: string,
     path: string,
     assetIds: string[],
     request: KuzzleRequest,
   ) {
     const _id = path.split(".").pop();
     if (
-      !(await this.sdk.document.exists(
-        engineId,
-        InternalCollection.GROUPS,
-        _id,
-      ))
+      !(await this.sdk.document.exists(index, InternalCollection.GROUPS, _id))
     ) {
       throw new BadRequestError(`The group with path "${path}" does not exist`);
     }
     const { successes: assets, errors } =
       await this.sdk.document.mGet<AssetContent>(
-        engineId,
+        index,
         InternalCollection.ASSETS,
         assetIds,
       );
@@ -521,13 +512,13 @@ export class GroupsService extends BaseService {
       return asset;
     });
 
-    const groupUpdate = await this._update(request, _id, engineId, {
+    const groupUpdate = await this._update(request, _id, index, {
       lastUpdate: Date.now(),
     });
     const refresh = request.getRefresh();
 
     const update = await this.sdk.document.mReplace(
-      engineId,
+      index,
       InternalCollection.ASSETS,
       assetsToUpdate.map((asset) => ({ _id: asset._id, body: asset._source })),
       { refresh, triggerEvents: true },
@@ -539,14 +530,14 @@ export class GroupsService extends BaseService {
     };
   }
   async addDevices(
-    engineId: string,
+    index: string,
     path: string,
     deviceIds: string[],
     request: KuzzleRequest,
   ) {
     const _id = path.split(".").pop();
     const group = await this.sdk.document.get<GroupContent>(
-      engineId,
+      index,
       InternalCollection.GROUPS,
       _id,
     );
@@ -571,7 +562,7 @@ export class GroupsService extends BaseService {
 
     const { successes: devices, errors } =
       await this.sdk.document.mGet<DeviceContent>(
-        engineId,
+        index,
         InternalCollection.DEVICES,
         deviceIds,
       );
@@ -605,14 +596,14 @@ export class GroupsService extends BaseService {
       return device;
     });
 
-    const groupUpdate = await this._update(request, _id, engineId, {
+    const groupUpdate = await this._update(request, _id, index, {
       lastUpdate: Date.now(),
     });
 
     const refresh = request.getRefresh();
 
     const update = await this.sdk.document.mReplace(
-      engineId,
+      index,
       InternalCollection.DEVICES,
       devicesToUpdate.map((device) => ({
         _id: device._id,
@@ -627,24 +618,20 @@ export class GroupsService extends BaseService {
     };
   }
   async removeDevices(
-    engineId: string,
+    index: string,
     path: string,
     deviceIds: string[],
     request: KuzzleRequest,
   ) {
     const _id = path.split(".").pop();
     if (
-      !(await this.sdk.document.exists(
-        engineId,
-        InternalCollection.GROUPS,
-        _id,
-      ))
+      !(await this.sdk.document.exists(index, InternalCollection.GROUPS, _id))
     ) {
       throw new BadRequestError(`The group with path "${path}" does not exist`);
     }
     const { successes: devices, errors } =
       await this.sdk.document.mGet<DeviceContent>(
-        engineId,
+        index,
         InternalCollection.DEVICES,
         deviceIds,
       );
@@ -660,13 +647,13 @@ export class GroupsService extends BaseService {
       return device;
     });
 
-    const groupUpdate = await this._update(request, _id, engineId, {
+    const groupUpdate = await this._update(request, _id, index, {
       lastUpdate: Date.now(),
     });
 
     const refresh = request.getRefresh();
     const update = await this.sdk.document.mReplace(
-      engineId,
+      index,
       InternalCollection.DEVICES,
       devicesToUpdate.map((device) => ({
         _id: device._id,
@@ -682,7 +669,7 @@ export class GroupsService extends BaseService {
   }
 
   async mCreate(
-    engineId: string,
+    index: string,
     groups: Array<{
       _id: string;
       metadata: Metadata;
@@ -749,7 +736,7 @@ export class GroupsService extends BaseService {
       }
     }
     const { successes, errors } = await this.sdk.document.mCreate<GroupContent>(
-      engineId,
+      index,
       InternalCollection.GROUPS,
       toCreate,
     );
@@ -760,7 +747,7 @@ export class GroupsService extends BaseService {
   }
 
   async mUpdate(
-    engineId: string,
+    index: string,
     groups: Array<{
       _id: string;
       metadata: Metadata;
@@ -773,7 +760,7 @@ export class GroupsService extends BaseService {
     const errors: ApiGroupMUpdateResult["errors"] = [];
     await Promise.allSettled(
       groups.map((g) =>
-        this.update(request, g._id, engineId, g.name, g.metadata)
+        this.update(request, g._id, index, g.name, g.metadata)
           .then((u) => successes.push(u))
           .catch((error) => {
             const { _id, ...rest } = g;
@@ -794,7 +781,7 @@ export class GroupsService extends BaseService {
     return { errors, successes };
   }
   async mUpsert(
-    engineId: string,
+    index: string,
     groups: Array<{
       _id: string;
       metadata: Metadata;
@@ -822,7 +809,7 @@ export class GroupsService extends BaseService {
       try {
         await this.getDocument<GroupContent>(request, g._id, {
           collection: InternalCollection.GROUPS,
-          engineId,
+          index,
         });
         toUpdate.push(g);
       } catch {
@@ -833,8 +820,8 @@ export class GroupsService extends BaseService {
         toCreate.push(g);
       }
     }
-    const createdResult = await this.mCreate(engineId, toCreate);
-    const updatedResult = await this.mUpdate(engineId, toUpdate, request);
+    const createdResult = await this.mCreate(index, toCreate);
+    const updatedResult = await this.mUpdate(index, toUpdate, request);
     return {
       errors: [...createdResult.errors, ...updatedResult.errors],
       successes: [...createdResult.successes, ...updatedResult.successes],
@@ -843,7 +830,7 @@ export class GroupsService extends BaseService {
   private async _update(
     request: KuzzleRequest,
     _id: string,
-    engineId: string,
+    index: string,
     updateContent: JSONObject,
   ) {
     return this.updateDocument<GroupContent>(
@@ -852,7 +839,7 @@ export class GroupsService extends BaseService {
         _id,
         _source: { ...updateContent, lastUpdate: Date.now() },
       },
-      { collection: InternalCollection.GROUPS, engineId },
+      { collection: InternalCollection.GROUPS, index },
       { source: true, triggerEvents: true },
     );
   }

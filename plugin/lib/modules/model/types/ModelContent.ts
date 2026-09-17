@@ -8,7 +8,7 @@ export interface MeasureModelContent extends KDocumentContent {
   type: "measure";
 
   engineGroups?: string[];
-  engineIds?: string[];
+  indexes?: string[];
 
   measure: MeasureDefinition & {
     type: string;
@@ -189,7 +189,7 @@ export interface AssetModelContent extends KDocumentContent {
    * When set, the model is only available to the specified tenants.
    * When absent, the model is available to all tenants in the engineGroups.
    */
-  engineIds?: string[];
+  indexes?: string[];
 
   asset: {
     /**

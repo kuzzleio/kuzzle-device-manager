@@ -28,7 +28,7 @@ describe("DevicesController:GetMeasures", () => {
         return await sdk.query<ApiDeviceGetMeasuresRequest>({
           controller: "device-manager/devices",
           action: "getMeasures",
-          engineId: "engine-ayse",
+          index: "engine-ayse",
           _id: "DummyTemp-linked1",
           size: 1,
           body: { query },
@@ -65,7 +65,7 @@ describe("DevicesController:GetMeasures", () => {
     >({
       controller: "device-manager/devices",
       action: "getMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
     });
 
@@ -79,7 +79,7 @@ describe("DevicesController:GetMeasures", () => {
     const { result } = await sdk.query<ApiDeviceGetMeasuresRequest>({
       controller: "device-manager/devices",
       action: "getMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
       size: 2,
       body: { sort: { "values.temperature": "desc" } },
@@ -106,7 +106,7 @@ describe("DevicesController:GetMeasures", () => {
     const { result } = await sdk.query<ApiDeviceGetMeasuresRequest>({
       controller: "device-manager/devices",
       action: "getMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
       body: { query: { equals: { "values.temperature": 40 } } },
       lang: "koncorde",
@@ -124,7 +124,7 @@ describe("DevicesController:GetMeasures", () => {
     const { result } = await sdk.query<ApiDeviceGetMeasuresRequest>({
       controller: "device-manager/devices",
       action: "getMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
       type: "position",
     });

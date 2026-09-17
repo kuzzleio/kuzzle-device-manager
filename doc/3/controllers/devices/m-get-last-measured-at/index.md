@@ -16,7 +16,7 @@ Retrieves the date of the last measure of multiple devices.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/_mGetLastMeasuredAt
+URL: http://kuzzle:7512/_/device-manager/:index/devices/_mGetLastMeasuredAt
 Method: POST
 ```
 
@@ -26,7 +26,7 @@ Method: POST
 {
   "controller": "device-manager/devices",
   "action": "mGetLastMeasuredAt",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "ids": ["<deviceId>", "<anotherDeviceId>"]
   }
@@ -37,7 +37,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 
 ---
 

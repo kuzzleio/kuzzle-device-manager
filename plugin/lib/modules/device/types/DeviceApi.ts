@@ -21,7 +21,7 @@ type DevicesControllerName = "device-manager/devices";
 interface DevicesControllerRequest {
   controller: DevicesControllerName;
 
-  engineId: string;
+  index: string;
 }
 
 export interface ApiDeviceGetRequest extends DevicesControllerRequest {
@@ -250,7 +250,7 @@ export type ApiDeviceMGetLastMeasuresResult =
  * This action can be used only with WebSocket or POST
  *
  * Then the export can be download using HTTP Get and the following route:
- *  `/_/device-manager/:engineId/devices/:_id/measures/_export/:exportId`
+ *  `/_/device-manager/:index/devices/:_id/measures/_export/:exportId`
  */
 export interface ApiDeviceExportMeasuresRequest extends DevicesControllerRequest {
   action: "exportMeasures";

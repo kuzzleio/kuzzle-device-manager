@@ -31,7 +31,7 @@ describe("Asset model measure slots propagation", () => {
     >({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Plane",
         reference: "Technoplane",
@@ -89,7 +89,7 @@ describe("Asset model measure slots propagation", () => {
     >({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Plane",
         reference: "Technoplane",

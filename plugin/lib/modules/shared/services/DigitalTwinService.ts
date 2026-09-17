@@ -86,7 +86,7 @@ export class DigitalTwinService extends BaseService {
     onAsk<AskDigitalTwinLastMeasuresGet>(
       `ask:device-manager:${this.digitalTwinType}:get-last-measures`,
       (payload) => {
-        return this.getLastMeasures(payload.engineId, payload.digitalTwinId);
+        return this.getLastMeasures(payload.index, payload.digitalTwinId);
       },
     );
 
@@ -94,10 +94,10 @@ export class DigitalTwinService extends BaseService {
       this.digitalTwinType === "asset"
         ? `ask:device-manager:asset:link-device`
         : `ask:device-manager:device:link-asset`,
-      async ({ deviceId, engineId, user, assetId, measureSlots }) => {
+      async ({ deviceId, index, user, assetId, measureSlots }) => {
         const request = new KuzzleRequest({ refresh: "false" }, { user });
         await this.linkAssetDevice(
-          engineId,
+          index,
           deviceId,
           assetId,
           measureSlots,
@@ -127,12 +127,12 @@ export class DigitalTwinService extends BaseService {
    * Gets the last measures of a digital twin
    */
   public async getLastMeasures(
-    engineId: string,
+    index: string,
     digitalTwinId: string,
     measureCount = 100,
   ): Promise<MeasureContent[]> {
     const measures = await this.mGetLastMeasures(
-      engineId,
+      index,
       [digitalTwinId],
       measureCount,
     );
@@ -150,7 +150,7 @@ export class DigitalTwinService extends BaseService {
    * Link a device to an asset.
    */
   async linkAssetDevice(
-    engineId: string,
+    index: string,
     deviceId: string,
     assetId: string,
     measureSlots: { asset: string; device: string }[],
@@ -162,28 +162,28 @@ export class DigitalTwinService extends BaseService {
   }> {
     return lock(`device:${deviceId}`, async () => {
       const deviceProvisioning = await this.getDeviceProvisioning(deviceId);
-      const engine = await this.getEngine(engineId);
+      const engine = await this.getEngine(index);
 
       this.checkDeviceAttachedToEngine(deviceProvisioning);
-      if (deviceProvisioning._source.engineId !== engineId) {
+      if (deviceProvisioning._source.index !== index) {
         throw new BadRequestError(
           `Device "${deviceProvisioning._id}" is not attached to the specified engine.`,
         );
       }
       const device = await this.sdk.document.get<DeviceContent>(
-        engineId,
+        index,
         InternalCollection.DEVICES,
         deviceId,
       );
 
       const asset = await this.sdk.document.get<AssetContent>(
-        engineId,
+        index,
         InternalCollection.ASSETS,
         assetId,
       );
 
       const [assetModel, deviceModel] = await Promise.all([
-        this.getAssetModel(engine.group, asset._source.model, engineId),
+        this.getAssetModel(engine.group, asset._source.model, index),
         this.getDeviceModel(deviceProvisioning._source.model),
       ]);
 
@@ -272,16 +272,16 @@ export class DigitalTwinService extends BaseService {
       const [updatedDevice, updatedAsset] = await Promise.all([
         this.updateDocument<DeviceContent>(request, device, {
           collection: InternalCollection.DEVICES,
-          engineId: deviceProvisioning._source.engineId,
+          index: deviceProvisioning._source.index,
         }),
 
-        lock(`asset:${engineId}:${asset._id}`, async () =>
+        lock(`asset:${index}:${asset._id}`, async () =>
           this.updateDocument<AssetContent>(
             request,
             asset,
             {
               collection: InternalCollection.ASSETS,
-              engineId: deviceProvisioning._source.engineId,
+              index: deviceProvisioning._source.index,
             },
             { source: true },
           ),
@@ -297,7 +297,7 @@ export class DigitalTwinService extends BaseService {
       await ask<AskAssetHistoryAdd<AssetHistoryEventLink>>(
         "ask:device-manager:asset:history:add",
         {
-          engineId,
+          index,
           histories: [
             {
               asset: updatedAsset._source,
@@ -316,11 +316,11 @@ export class DigitalTwinService extends BaseService {
             InternalCollection.DEVICES,
           ),
           this.sdk.collection.refresh(
-            deviceProvisioning._source.engineId,
+            deviceProvisioning._source.index,
             InternalCollection.DEVICES,
           ),
           this.sdk.collection.refresh(
-            deviceProvisioning._source.engineId,
+            deviceProvisioning._source.index,
             InternalCollection.ASSETS,
           ),
         ]);
@@ -359,7 +359,7 @@ export class DigitalTwinService extends BaseService {
    * Gets the last measures of multiple digital twins
    */
   public async mGetLastMeasures(
-    engineId: string,
+    index: string,
     digitalTwinIds: string[],
     measureCount = 100,
   ): Promise<Record<string, MeasureContent[]>> {
@@ -371,7 +371,7 @@ export class DigitalTwinService extends BaseService {
       this.getAggregationQueryParameters(digitalTwinIds);
 
     const result = await this.sdk.document.search(
-      engineId,
+      index,
       InternalCollection.MEASURES,
       {
         aggregations: {
@@ -426,7 +426,7 @@ export class DigitalTwinService extends BaseService {
   }
 
   public async getLastMeasuredAt(
-    engineId: string,
+    index: string,
     digitalTwinId: string,
   ): Promise<number> {
     const aggregationParameters = this.getAggregationQueryParameters([
@@ -436,7 +436,7 @@ export class DigitalTwinService extends BaseService {
     const result = await this.sdk.document.search<
       Pick<MeasureContent, "measuredAt">
     >(
-      engineId,
+      index,
       InternalCollection.MEASURES,
       {
         _source: "measuredAt",
@@ -460,7 +460,7 @@ export class DigitalTwinService extends BaseService {
   }
 
   public async mGetLastMeasuredAt(
-    engineId: string,
+    index: string,
     digitalTwinIds: string[],
   ): Promise<ApiDigitalTwinMGetLastMeasuredAtResult> {
     if (digitalTwinIds.length === 0) {
@@ -471,7 +471,7 @@ export class DigitalTwinService extends BaseService {
       this.getAggregationQueryParameters(digitalTwinIds);
 
     const result = await this.sdk.document.search(
-      engineId,
+      index,
       InternalCollection.MEASURES,
       {
         aggregations: {
@@ -676,11 +676,11 @@ export class DigitalTwinService extends BaseService {
     device: KDocument<DeviceContent>;
   }> {
     const deviceProvisioning = await this.getDeviceProvisioning(deviceId);
-    const engineId = deviceProvisioning._source.engineId;
+    const index = deviceProvisioning._source.index;
 
     this.checkDeviceAttachedToEngine(deviceProvisioning);
     const device = await this.sdk.document.get<DeviceContent>(
-      engineId,
+      index,
       InternalCollection.DEVICES,
       deviceId,
     );
@@ -695,7 +695,7 @@ export class DigitalTwinService extends BaseService {
     }
 
     const asset = await this.sdk.document.get<AssetContent>(
-      engineId,
+      index,
       InternalCollection.ASSETS,
       assetId,
     );
@@ -745,18 +745,18 @@ export class DigitalTwinService extends BaseService {
         { _id: deviceId, _source: { linkedMeasures: linkedMeasuresDevices } },
         {
           collection: InternalCollection.DEVICES,
-          engineId,
+          index,
         },
         { source: true },
       ),
 
-      lock(`asset:${engineId}:${asset._id}`, async () =>
+      lock(`asset:${index}:${asset._id}`, async () =>
         this.updateDocument<AssetContent>(
           request,
           { _id: asset._id, _source: { linkedMeasures: linkedMeasuresAssets } },
           {
             collection: InternalCollection.ASSETS,
-            engineId,
+            index,
           },
           { source: true },
         ),
@@ -772,7 +772,7 @@ export class DigitalTwinService extends BaseService {
     await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
       "ask:device-manager:asset:history:add",
       {
-        engineId,
+        index,
         histories: [
           {
             asset: updatedAsset._source,
@@ -790,8 +790,8 @@ export class DigitalTwinService extends BaseService {
           this.config.platformIndex,
           InternalCollection.DEVICES,
         ),
-        this.sdk.collection.refresh(engineId, InternalCollection.DEVICES),
-        this.sdk.collection.refresh(engineId, InternalCollection.ASSETS),
+        this.sdk.collection.refresh(index, InternalCollection.DEVICES),
+        this.sdk.collection.refresh(index, InternalCollection.ASSETS),
       ]);
     }
 
@@ -806,11 +806,11 @@ export class DigitalTwinService extends BaseService {
   protected getAssetModel(
     engineGroup: string,
     model: string,
-    engineId?: string,
+    index?: string,
   ): Promise<AssetModelContent> {
     return ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
       engineGroups: [engineGroup],
-      engineId,
+      index,
       model,
     });
   }
@@ -819,11 +819,11 @@ export class DigitalTwinService extends BaseService {
       model,
     });
   }
-  public async getEngine(engineId: string): Promise<JSONObject> {
+  public async getEngine(index: string): Promise<JSONObject> {
     const engine = await this.sdk.document.get(
       this.config.platformIndex,
       InternalCollection.CONFIG,
-      `engine-device-manager--${engineId}`,
+      `engine-device-manager--${index}`,
     );
 
     return engine._source.engine;
@@ -838,7 +838,7 @@ export class DigitalTwinService extends BaseService {
   protected checkDeviceAttachedToEngine(
     device: KDocument<DeviceProvisioningContent>,
   ) {
-    if (!device._source.engineId) {
+    if (!device._source.index) {
       throw new BadRequestError(
         `Device "${device._id}" is not attached to an engine.`,
       );

@@ -17,7 +17,7 @@ This endpoint allows you to update the properties of a group, such as its name o
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/:_id
+URL: http://kuzzle:7512/_/device-manager/:index/groups/:_id
 Method: PUT
 ```
 
@@ -27,7 +27,7 @@ Method: PUT
 {
   "controller": "device-manager/groups",
   "action": "update",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<groupId>",
   "body": {
     "name": "<new group name>",    // optional
@@ -40,7 +40,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 - `_id`: Group ID (required)
 
 ## Body properties

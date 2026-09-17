@@ -23,7 +23,7 @@ Propagation is governed by a set of rules contained in devices and assets.
 
 Tenant engine propagation occurs when the device is attached to a tenant with the `device-manager/devices:attachEngine` action.
 
-The `engineId` text field of the device contains the index name of the tenant it was attached to.
+The `index` text field of the device contains the index name of the tenant it was attached to.
 
 The measures are then propagated in the `<tenant>/measures` collection as measures (`MeasureContent`).
 

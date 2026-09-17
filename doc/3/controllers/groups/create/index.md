@@ -19,7 +19,7 @@ You must specify a group name, and optionally a model, metadata, and an ancestry
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/:_id
+URL: http://kuzzle:7512/_/device-manager/:index/groups/:_id
 Method: POST
 ```
 
@@ -29,7 +29,7 @@ Method: POST
 {
   "controller": "device-manager/groups",
   "action": "create",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<groupId>", // optional, auto-generated if missing
   "body": {
     "name": "<group name>",
@@ -44,7 +44,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 - `_id`: Group ID (optional, auto-generated if missing)
 
 ## Body properties

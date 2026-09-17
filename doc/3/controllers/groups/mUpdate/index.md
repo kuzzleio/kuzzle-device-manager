@@ -18,7 +18,7 @@ This endpoint allows you to update several groups.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/_mUpdate_
+URL: http://kuzzle:7512/_/device-manager/:index/groups/_mUpdate_
 Method: POST
 ```
 
@@ -28,7 +28,7 @@ Method: POST
 {
   "controller": "device-manager/groups",
   "action": "mUpdate",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "groups":[
       {
@@ -47,7 +47,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 
 ## Body properties
 - `groups`: Array containing the different groups to update.

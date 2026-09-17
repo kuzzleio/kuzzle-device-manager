@@ -18,7 +18,7 @@ This endpoint allows you to retrieve all assets and devices linked to a group, o
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/:_id/listItems
+URL: http://kuzzle:7512/_/device-manager/:index/groups/:_id/listItems
 Method: GET
 ```
 
@@ -28,7 +28,7 @@ Method: GET
 {
   "controller": "device-manager/groups",
   "action": "listItems",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<groupId>",
   "body": {
     "includeChildren": true, // optional, default: false
@@ -42,7 +42,7 @@ Method: GET
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 - `_id`: Group ID (required)
 
 ## Body properties / Query parameters

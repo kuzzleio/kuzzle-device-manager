@@ -16,7 +16,7 @@ Only the `metadata` can be updated.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id
 Method: PUT
 ```
 
@@ -26,7 +26,7 @@ Method: PUT
 {
   "controller": "device-manager/devices",
   "action": "update",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>",
   "body": {
     "metadata": {
@@ -40,7 +40,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Asset ID
 
 ## Body properties

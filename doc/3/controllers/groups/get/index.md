@@ -18,7 +18,7 @@ This endpoint allows you to fetch the details of a group, including its name, mo
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/:_id
+URL: http://kuzzle:7512/_/device-manager/:index/groups/:_id
 Method: GET
 ```
 
@@ -28,7 +28,7 @@ Method: GET
 {
   "controller": "device-manager/groups",
   "action": "get",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<groupId>"
 }
 ```
@@ -37,7 +37,7 @@ Method: GET
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 - `_id`: Group ID (required)
 
 ---

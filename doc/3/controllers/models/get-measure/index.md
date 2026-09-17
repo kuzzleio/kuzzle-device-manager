@@ -29,7 +29,7 @@ Method: GET
   "type": "<measure type>",
 
   // Optional
-  "engineId": "<engine ID>"
+  "index": "<engine ID>"
 }
 ```
 
@@ -38,7 +38,7 @@ Method: GET
 ## Arguments
 
 - `type`: measure type
-- `engineId`: (optional) engine ID. When provided, returns tenant-scoped measures for that engine in addition to global measures
+- `index`: (optional) engine ID. When provided, returns tenant-scoped measures for that engine in addition to global measures
 
 ---
 

@@ -15,7 +15,7 @@ The Upsert operation allows you to create a new device or update an existing one
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices
+URL: http://kuzzle:7512/_/device-manager/:index/devices
 Method: PUT
 ```
 
@@ -25,7 +25,7 @@ Method: PUT
 {
     "controller": "device-manager/devices",
     "action": "upsert",
-    "engineId": "<engineId>",
+    "index": "<index>",
     "reference": "<deviceReference>",
     "model": "<deviceModel>",
     "body": {
@@ -40,7 +40,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `reference` : device reference
 - `model`: device model
 

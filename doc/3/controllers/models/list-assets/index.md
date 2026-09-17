@@ -29,7 +29,7 @@ Method: GET
   "engineGroup": "<engineGroup>",
 
   // optional:
-  "engineId": "<engineId>"
+  "index": "<index>"
 }
 ```
 
@@ -38,7 +38,7 @@ Method: GET
 ## Arguments
 
 - `engineGroup`: name of the engine group
-- `engineId`: optional. Engine ID (tenant ID) to filter models for. When provided, results include models scoped to that specific tenant, models scoped to the engine group, and commons models (3-level fallback). When absent, only group and commons models are returned.
+- `index`: optional. Engine ID (tenant ID) to filter models for. When provided, results include models scoped to that specific tenant, models scoped to the engine group, and commons models (3-level fallback). When absent, only group and commons models are returned.
 
 ---
 
