@@ -73,6 +73,10 @@ export const assetsMappings: CollectionMappings = {
       properties: {
         name: { type: "keyword" },
         type: { type: "keyword" },
+        displayName: {
+          dynamic: "false",
+          properties: {},
+        },
       },
     },
   },
