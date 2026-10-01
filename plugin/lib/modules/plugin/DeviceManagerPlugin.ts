@@ -27,6 +27,7 @@ import {
   AssetModelDefinition,
   DeviceModelDefinition,
   GroupModelDefinition,
+  MetadataReferentialEntry,
   ModelModule,
   modelsMappings,
   ModelsRegister,
@@ -181,6 +182,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.tooltipModels,
           definition.locales,
           definition.icon,
+          definition.metadata,
         );
       },
 
@@ -248,6 +250,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataDetails,
           definition.metadataGroups,
           definition.icon,
+          definition.metadata,
         );
       },
 
@@ -318,6 +321,7 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataGroups,
           definition.icon,
           definition.locales,
+          definition.metadata,
         );
       },
 
@@ -338,6 +342,45 @@ export class DeviceManagerPlugin extends Plugin {
        */
       registerMeasure: (name: string, measureDefinition: MeasureDefinition) => {
         this.modelsRegister.registerMeasure(name, measureDefinition);
+      },
+
+      /**
+       * Register a metadata in the metadata referential.
+       *
+       * Asset, device and group models can then reference it by name with their
+       * `metadata` definition field instead of redefining its mappings.
+       * A model defining inline a metadata that conflicts with the referential is rejected.
+       *
+       * @param name Name of the metadata
+       * @param definition Mappings, default translations, editor hint, default value and icon
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerMetadata("color", {
+       *   mappings: { type: "keyword" },
+       *   locales: {
+       *     en: { friendlyName: "Color", description: "Color of the asset" },
+       *     fr: { friendlyName: "Couleur", description: "Couleur de l'asset" },
+       *   },
+       *   editorHint: {
+       *     type: EditorHintEnum.OPTION_SELECTOR,
+       *     values: ["red", "blue"],
+       *   },
+       *   defaultValue: "red",
+       *   icon: "palette",
+       * });
+       *
+       * deviceManager.models.registerAsset("commons", "Container", {
+       *   measures: [],
+       *   metadata: { color: true },
+       * });
+       * ```
+       */
+      registerMetadata: (
+        name: string,
+        definition: MetadataReferentialEntry,
+      ) => {
+        this.modelsRegister.registerMetadata(name, definition);
       },
     };
   }
@@ -366,6 +409,11 @@ export class DeviceManagerPlugin extends Plugin {
       ignoreStartupErrors: false,
       engine: {
         autoUpdate: true,
+      },
+      models: {
+        metadata: {
+          referentialOnly: false,
+        },
       },
       platformIndex: "device-manager",
       platformCollections: {

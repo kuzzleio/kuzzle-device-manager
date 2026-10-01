@@ -1,13 +1,6 @@
 import { BadRequestError, KuzzleRequest } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
-import {
-  BaseRequest,
-  DocumentSearchResult,
-  JSONObject,
-  KDocument,
-  KHit,
-  SearchResult,
-} from "kuzzle-sdk";
+import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
 import { DecodedMeasurement } from "../measure";
 import { DeviceModelContent } from "../model";
@@ -740,54 +733,44 @@ export class DeviceService extends DigitalTwinService {
       group: null,
     });
 
-    const targets = engines.map((engine) => ({
-      collections: [InternalCollection.DEVICES],
-      index: engine.index,
-    }));
+    // ? Metadata are only added: a device keeps the metadata missing from its model
+    const modelMetadata = {};
 
-    const devices = await this.sdk.query<
-      BaseRequest,
-      DocumentSearchResult<DeviceContent>
-    >({
-      action: "search",
-      body: { query: { equals: { model: deviceModel.device.model } } },
-      controller: "document",
-      lang: "koncorde",
-      targets,
-    });
+    for (const metadataName of Object.keys(
+      deviceModel.device.metadataMappings ?? {},
+    )) {
+      modelMetadata[metadataName] =
+        deviceModel.device.defaultMetadata?.[metadataName] ?? null;
+    }
 
-    const updatedDevicesPerIndex: Record<string, KDocument<DeviceContent>[]> =
-      devices.result.hits.reduce(
-        (
-          acc: Record<string, KDocument<DeviceContent>[]>,
-          device: JSONObject,
-        ) => {
-          device._source.measureSlots = deviceModel.device.measures;
-
-          acc[device.index].push(device as KDocument<DeviceContent>);
-
-          return acc;
-        },
-        Object.fromEntries(
-          engines.map((engine) => [
-            engine.index,
-            [] as KDocument<DeviceContent>[],
-          ]),
-        ),
+    for (const engine of engines) {
+      // ? Scroll by pages matching the write limit, the default search size (10) would miss devices
+      let result = await this.sdk.document.search<DeviceContent>(
+        engine.index,
+        InternalCollection.DEVICES,
+        { query: { equals: { model: deviceModel.device.model } } },
+        { lang: "koncorde", scroll: "10s", size: 200 },
       );
 
-    await Promise.all(
-      Object.entries(updatedDevicesPerIndex).map(([index, updatedDevices]) =>
-        this.sdk.document.mReplace<DeviceContent>(
-          index,
-          InternalCollection.DEVICES,
-          updatedDevices.map((device) => ({
-            _id: device._id,
-            body: device._source,
-          })),
-          { refresh: "wait_for" },
-        ),
-      ),
-    );
+      while (result) {
+        if (result.hits.length > 0) {
+          await this.sdk.document.mReplace<DeviceContent>(
+            engine.index,
+            InternalCollection.DEVICES,
+            result.hits.map((device) => ({
+              _id: device._id,
+              body: {
+                ...device._source,
+                measureSlots: deviceModel.device.measures,
+                metadata: { ...modelMetadata, ...device._source.metadata },
+              },
+            })),
+            { refresh: "wait_for" },
+          );
+        }
+
+        result = await result.next();
+      }
+    }
   }
 }

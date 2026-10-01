@@ -26,6 +26,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         getDevice: true,
         writeDevice: true,
         listMeasures: true,
+        getMetadataReferential: true,
       },
     },
  */
@@ -57,6 +58,7 @@ export const RoleDevicesAdmin: KuzzleRole = {
           getDevice: true,
           writeDevice: true,
           listMeasures: true,
+          getMetadataReferential: true,
         },
       },
     },

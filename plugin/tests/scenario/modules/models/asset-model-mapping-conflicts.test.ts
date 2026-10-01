@@ -167,4 +167,50 @@ describe("ModelsController:assets:mapping-conflicts", () => {
       "New assets mappings are causing conflicts",
     );
   });
+
+  it("should leave the model untouched when an update is rejected (409)", async () => {
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroups: ["commons"],
+        model: "UpdConflictOther",
+        metadataMappings: { updConflictField: { type: "integer" } },
+        measures: [],
+      },
+    });
+    await sdk.query({
+      controller: "device-manager/models",
+      action: "writeAsset",
+      body: {
+        engineGroups: ["commons"],
+        model: "UpdConflictTarget",
+        metadataMappings: { updConflictKept: { type: "keyword" } },
+        defaultValues: { updConflictKept: "kept" },
+        measures: [],
+      },
+    });
+
+    await expect(
+      sdk.query({
+        controller: "device-manager/models",
+        action: "updateAsset",
+        engineGroups: ["commons"],
+        model: "UpdConflictTarget",
+        body: {
+          metadataMappings: { updConflictField: { type: "keyword" } },
+        },
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+
+    const { _source } = await sdk.document.get(
+      "device-manager",
+      "models",
+      "model-asset-UpdConflictTarget",
+    );
+    expect(_source.asset.metadataMappings).toEqual({
+      updConflictKept: { type: "keyword" },
+    });
+    expect(_source.asset.defaultMetadata).toEqual({ updConflictKept: "kept" });
+  });
 });

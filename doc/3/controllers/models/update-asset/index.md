@@ -50,6 +50,18 @@ Method: PUT
               };
             };
             editorHint?: BaseEditorHint | OptionsSelectorDefinition | DatetimeEditorHint;
+            icon?: string;
+          };
+      */
+    },
+    "metadata": {
+      /*
+        Metadata referenced from the metadata referential. Without it, the existing references are kept.
+          [name: string]: true | {
+            locales?: { [locale: string]: { friendlyName: string; description: string } };
+            defaultValue?: any;
+            group?: string;
+            icon?: string;
           };
       */
     },
@@ -146,6 +158,7 @@ Method: PUT
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Translations, metadata group and editor hint
 - `metadataGroups`: Groups list with translations for group name
+- `metadata`: Metadata referenced from the [metadata referential](../../../concepts/models/index.md#metadata-referential)
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `measures`: Array of measure definition. Each item defines `type` and `name` properties for the measure.
 - `locales`: Translations specific to the model.

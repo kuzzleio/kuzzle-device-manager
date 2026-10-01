@@ -19,6 +19,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         getAsset: true,
         writeAsset: true,
         listMeasures: true,
+        getMetadataReferential: true,
       },
     },
  */
@@ -36,6 +37,7 @@ export const RoleGroupsReader: KuzzleRole = {
         actions: {
           listGroups: true,
           getGroup: true,
+          getMetadataReferential: true,
         },
       },
     },
