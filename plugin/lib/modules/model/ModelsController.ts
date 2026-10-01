@@ -29,7 +29,13 @@ import {
   ApiModelListGroupsResult,
   ApiModelSearchGroupsResult,
   ApiModelWriteGroupResult,
+  ApiModelUpdateGroupResult,
+  ApiModelUpdateDeviceResult,
+  ApiModelGetMetadataReferentialResult,
+  ApiModelWriteMetadataResult,
+  ApiModelDeleteMetadataResult,
 } from "./types/ModelApi";
+import { MetadataReferentialEntry } from "./types/ModelContent";
 import { KuzzleLogger } from "kuzzle-logger";
 
 export class ModelsController {
@@ -54,6 +60,12 @@ export class ModelsController {
           handler: this.deleteGroup.bind(this),
           http: [{ path: "device-manager/models/group/:_id", verb: "delete" }],
         },
+        deleteMetadata: {
+          handler: this.deleteMetadata.bind(this),
+          http: [
+            { path: "device-manager/models/metadata/:name", verb: "delete" },
+          ],
+        },
         deleteMeasure: {
           handler: this.deleteMeasure.bind(this),
           http: [
@@ -71,6 +83,10 @@ export class ModelsController {
         getGroup: {
           handler: this.getGroup.bind(this),
           http: [{ path: "device-manager/models/group/:model", verb: "get" }],
+        },
+        getMetadataReferential: {
+          handler: this.getMetadataReferential.bind(this),
+          http: [{ path: "device-manager/models/metadata", verb: "get" }],
         },
         getMeasure: {
           handler: this.getMeasure.bind(this),
@@ -122,6 +138,18 @@ export class ModelsController {
             { path: "device-manager/models/assets/:model", verb: "patch" },
           ],
         },
+        updateDevice: {
+          handler: this.updateDevice.bind(this),
+          http: [
+            { path: "device-manager/models/devices/:model", verb: "patch" },
+          ],
+        },
+        updateGroup: {
+          handler: this.updateGroup.bind(this),
+          http: [
+            { path: "device-manager/models/groups/:model", verb: "patch" },
+          ],
+        },
         writeAsset: {
           handler: this.writeAsset.bind(this),
           http: [{ path: "device-manager/models/assets", verb: "post" }],
@@ -133,6 +161,10 @@ export class ModelsController {
         writeGroup: {
           handler: this.writeGroup.bind(this),
           http: [{ path: "device-manager/models/groups", verb: "post" }],
+        },
+        writeMetadata: {
+          handler: this.writeMetadata.bind(this),
+          http: [{ path: "device-manager/models/metadata/:name", verb: "put" }],
         },
         writeMeasure: {
           handler: this.writeMeasure.bind(this),
@@ -192,6 +224,7 @@ export class ModelsController {
     const locales = request.getBodyObject("locales", {});
     const engineIds = request.getBodyArray("engineIds", []);
     const icon = request.input.body?.icon as string | undefined;
+    const metadata = request.getBodyObject("metadata", {});
 
     const assetModel = await this.modelService.writeAsset(
       engineGroups,
@@ -205,6 +238,7 @@ export class ModelsController {
       locales,
       engineIds,
       icon,
+      metadata,
     );
 
     return assetModel;
@@ -220,6 +254,7 @@ export class ModelsController {
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const icon = request.input.body?.icon as string | undefined;
+    const metadata = request.getBodyObject("metadata", {});
 
     const deviceModel = await this.modelService.writeDevice(
       model,
@@ -229,6 +264,7 @@ export class ModelsController {
       metadataGroups,
       measures,
       icon,
+      metadata,
     );
 
     return deviceModel;
@@ -248,6 +284,7 @@ export class ModelsController {
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const locales = request.getBodyObject("locales", {});
     const icon = request.input.body?.icon as string | undefined;
+    const metadata = request.getBodyObject("metadata", {});
 
     const groupModel = await this.modelService.writeGroup(
       engineGroups,
@@ -259,6 +296,7 @@ export class ModelsController {
       metadataGroups,
       icon,
       locales,
+      metadata,
     );
 
     return groupModel;
@@ -471,6 +509,11 @@ export class ModelsController {
     const tooltipModels = request.getBodyObject("tooltipModels", {});
     const locales = request.getBodyObject("locales", {});
     const icon = request.input.body?.icon as string | undefined;
+    // ? Without metadata in the body, the existing references are kept
+    const metadata =
+      request.input.body?.metadata === undefined
+        ? undefined
+        : request.getBodyObject("metadata");
 
     const updatedAssetModel = await this.modelService.updateAsset(
       engineGroups,
@@ -485,8 +528,85 @@ export class ModelsController {
       locales,
       icon,
       request,
+      metadata,
     );
 
     return updatedAssetModel;
+  }
+
+  async updateDevice(
+    request: KuzzleRequest,
+  ): Promise<ApiModelUpdateDeviceResult> {
+    const model = request.getString("model");
+    const metadata = request.getBodyObject("metadata");
+
+    // ? Device models are additive only: only new metadata references are accepted
+    const forbiddenFields = Object.keys(request.getBody()).filter(
+      (field) => field !== "metadata",
+    );
+
+    if (forbiddenFields.length > 0) {
+      throw new BadRequestError(
+        `Device model "${model}" can only be updated with metadata references, forbidden fields: ${forbiddenFields.join(", ")}`,
+      );
+    }
+
+    return this.modelService.updateDevice(model, metadata);
+  }
+
+  async updateGroup(
+    request: KuzzleRequest,
+  ): Promise<ApiModelUpdateGroupResult> {
+    const requestEngineGroups = request.getArray("engineGroups", []);
+    const engineGroups =
+      requestEngineGroups.length > 0 ? requestEngineGroups : ["commons"];
+    const model = request.getString("model");
+    const affinity =
+      request.input.body?.affinity === undefined
+        ? undefined
+        : request.getBodyObject("affinity");
+    const metadataMappings = request.getBodyObject("metadataMappings", {});
+    const defaultValues = request.getBodyObject("defaultValues", {});
+    const metadataDetails = request.getBodyObject("metadataDetails", {});
+    const metadataGroups = request.getBodyObject("metadataGroups", {});
+    const locales = request.getBodyObject("locales", {});
+    const icon = request.input.body?.icon as string | undefined;
+    // ? Without metadata in the body, the existing references are kept
+    const metadata =
+      request.input.body?.metadata === undefined
+        ? undefined
+        : request.getBodyObject("metadata");
+
+    return this.modelService.updateGroup(engineGroups, model, {
+      affinity,
+      defaultMetadata: defaultValues,
+      icon,
+      locales,
+      metadataDetails,
+      metadataGroups,
+      metadataMappings,
+      metadataReferences: metadata,
+    });
+  }
+
+  async getMetadataReferential(): Promise<ApiModelGetMetadataReferentialResult> {
+    return this.modelService.getMetadataReferential();
+  }
+
+  async writeMetadata(
+    request: KuzzleRequest,
+  ): Promise<ApiModelWriteMetadataResult> {
+    const name = request.getString("name");
+    const definition = request.getBody() as MetadataReferentialEntry;
+
+    return this.modelService.writeMetadata(name, definition);
+  }
+
+  async deleteMetadata(
+    request: KuzzleRequest,
+  ): Promise<ApiModelDeleteMetadataResult> {
+    const name = request.getString("name");
+
+    return this.modelService.deleteMetadata(name);
   }
 }

@@ -13,6 +13,14 @@ export const modelsMappings: CollectionMappings = {
     engineIds: { type: "keyword" },
 
     /**
+     * Metadata referential
+     */
+    metadata: {
+      dynamic: "false",
+      properties: {},
+    },
+
+    /**
      * Measure model
      */
     measure: {
@@ -61,6 +69,10 @@ export const modelsMappings: CollectionMappings = {
           dynamic: "false",
           properties: {},
         },
+        metadataReferences: {
+          dynamic: "false",
+          properties: {},
+        },
         measures: {
           properties: {
             type: { type: "keyword" },
@@ -102,6 +114,10 @@ export const modelsMappings: CollectionMappings = {
           properties: {},
         },
         metadataGroups: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataReferences: {
           dynamic: "false",
           properties: {},
         },
@@ -156,6 +172,10 @@ export const modelsMappings: CollectionMappings = {
           properties: {},
         },
         metadataGroups: {
+          dynamic: "false",
+          properties: {},
+        },
+        metadataReferences: {
           dynamic: "false",
           properties: {},
         },

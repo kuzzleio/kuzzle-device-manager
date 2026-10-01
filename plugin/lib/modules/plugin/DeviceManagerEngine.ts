@@ -800,7 +800,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
               and: [
                 { equals: { engineIds: targetEngineId } },
                 {
+                  // ? Tenant-scoped asset models have no engineGroups (exclusive with engineIds)
                   or: [
+                    { not: { exists: "engineGroups" } },
                     { equals: { engineGroups: engineGroup } },
                     { equals: { engineGroups: "commons" } },
                   ],

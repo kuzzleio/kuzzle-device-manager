@@ -1,10 +1,15 @@
+import _ from "lodash";
 import { JSONObject, KDocument } from "kuzzle-sdk";
-import { DeviceManagerPlugin, InternalCollection } from "../plugin";
+import {
+  AskEngineList,
+  DeviceManagerPlugin,
+  InternalCollection,
+} from "../plugin";
 import { BaseService, Metadata, SearchParams } from "../shared";
 import { BadRequestError, KuzzleError, KuzzleRequest } from "kuzzle";
 
 import { AskModelGroupGet, GroupModelContent } from "../model";
-import { ask } from "kuzzle-plugin-commons";
+import { ask, onAsk } from "kuzzle-plugin-commons";
 import { AssetContent } from "../asset/types/AssetContent";
 import {
   ApiGroupMCreateResult,
@@ -14,12 +19,80 @@ import {
 } from "./exports";
 import { DeviceContent } from "../device";
 import { KuzzleLogger } from "kuzzle-logger";
+import { AskGroupRefreshModel } from "./types/GroupEvents";
 
 export class GroupsService extends BaseService {
   readonly logger: KuzzleLogger;
   constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
     this.logger = logger;
+
+    onAsk<AskGroupRefreshModel>(
+      "ask:device-manager:group:refresh-model",
+      this.refreshModel.bind(this),
+    );
+  }
+
+  /**
+   * Refreshes the metadata of the groups of a model, in every engine of the model scope:
+   * added metadata are set to their default value, removed metadata are deleted.
+   */
+  private async refreshModel({
+    groupModel,
+  }: {
+    groupModel: GroupModelContent;
+  }): Promise<void> {
+    const allEngines = await ask<AskEngineList>(
+      "ask:device-manager:engine:list",
+      {},
+    );
+    const engines = groupModel.engineGroups.includes("commons")
+      ? allEngines
+      : allEngines.filter((engine) =>
+          groupModel.engineGroups.includes(engine.group),
+        );
+
+    const modelMetadata = {};
+
+    for (const metadataName of Object.keys(groupModel.group.metadataMappings)) {
+      modelMetadata[metadataName] =
+        groupModel.group.defaultMetadata[metadataName] ?? null;
+    }
+
+    for (const engine of engines) {
+      // ? Scroll by pages matching the write limit, the default search size (10) would miss groups
+      let result = await this.sdk.document.search<GroupContent>(
+        engine.index,
+        InternalCollection.GROUPS,
+        { query: { equals: { model: groupModel.group.model } } },
+        { lang: "koncorde", scroll: "10s", size: 200 },
+      );
+
+      while (result) {
+        if (result.hits.length > 0) {
+          await this.sdk.document.mReplace<GroupContent>(
+            engine.index,
+            InternalCollection.GROUPS,
+            result.hits.map((group) => ({
+              _id: group._id,
+              body: {
+                ...group._source,
+                metadata: {
+                  ...modelMetadata,
+                  ..._.pick(
+                    group._source.metadata ?? {},
+                    Object.keys(modelMetadata),
+                  ),
+                },
+              },
+            })),
+            { refresh: "wait_for" },
+          );
+        }
+
+        result = await result.next();
+      }
+    }
   }
 
   async create(
