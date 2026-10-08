@@ -14,9 +14,8 @@ import { DeviceManagerPlugin, InternalCollection } from "../plugin";
 import { BaseService } from "../shared";
 
 import { DecodedPayload } from "./DecodedPayload";
-import { Decoder } from "./Decoder";
+import { Decoder, DecoderValidationResult } from "./Decoder";
 import { DecodingState } from "./DecodingState";
-import { SkipError } from "./SkipError";
 import { AskPayloadReceiveFormated } from "./types/InternalEvents";
 import { EventPayloadDeviceProvisioning } from "./types/Events";
 import { DeviceMeasureSource } from "../measure/types/MeasureSources";
@@ -54,37 +53,43 @@ export class PayloadService extends BaseService {
     const apiAction = `${request.input.controller}:${request.input.action}`;
 
     const uuid = request.input.args.uuid || uuidv4();
-    let valid = true;
-    let state = DecodingState.VALID;
-    let errorReason;
-
+    let validation: DecoderValidationResult;
     try {
-      valid = await decoder.validate(payload, request);
-
-      // TODO: Temporary workaround to prevent breaking anything; in the future,
-      // consider modifying the return value of the 'validate' function to return an object
-      if (!valid) {
-        throw new SkipError("Skip by user defined validation");
-      }
+      validation = await decoder.validate(payload, request);
     } catch (error) {
-      valid = false;
-      errorReason = error.message;
-      if (error instanceof SkipError) {
-        state = DecodingState.SKIP;
-        return { valid };
-      }
-      state = DecodingState.ERROR;
-      throw error;
-    } finally {
       await this.savePayload(
         decoder.deviceModel,
         uuid,
-        valid,
+        false,
         payload,
         apiAction,
-        DecodingState[state],
-        errorReason,
+        {
+          reason: error.message,
+          state: DecodingState[DecodingState.ERROR],
+        },
       );
+      throw error;
+    }
+
+    const valid = validation.status === "valid";
+
+    await this.savePayload(
+      decoder.deviceModel,
+      uuid,
+      valid,
+      payload,
+      apiAction,
+      {
+        customData: validation.customData,
+        reason: valid
+          ? validation.reason
+          : (validation.reason ?? "Skip by user defined validation"),
+        state: DecodingState[valid ? DecodingState.VALID : DecodingState.SKIP],
+      },
+    );
+
+    if (!valid) {
+      return { valid };
     }
 
     let decodedPayload = new DecodedPayload<any>(decoder);
@@ -309,14 +314,26 @@ export class PayloadService extends BaseService {
     valid: boolean,
     payload: JSONObject,
     apiAction: string,
-    state?: string,
-    reason?: string,
+    {
+      customData,
+      reason,
+      state,
+    }: { customData?: JSONObject; reason?: string; state?: string } = {},
   ) {
     try {
       await this.sdk.document.create(
         this.config.platformIndex,
         "payloads",
-        { apiAction, deviceModel, payload, reason, state, uuid, valid },
+        {
+          apiAction,
+          customData,
+          deviceModel,
+          payload,
+          reason,
+          state,
+          uuid,
+          valid,
+        },
         uuid,
       );
     } catch (error) {

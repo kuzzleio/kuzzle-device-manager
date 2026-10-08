@@ -11,5 +11,9 @@ export const payloadsMappings = {
     apiAction: { type: "keyword" },
     state: { type: "keyword" },
     reason: { type: "keyword" },
+    customData: {
+      dynamic: "false",
+      properties: {},
+    },
   },
 };

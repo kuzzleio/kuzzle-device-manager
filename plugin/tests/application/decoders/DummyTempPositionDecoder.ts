@@ -28,7 +28,7 @@ export class DummyTempPositionDecoder extends Decoder {
       throw new PreconditionError('Invalid payload: missing "deviceEUI"');
     }
 
-    return true;
+    return { status: "valid" as const };
   }
 
   async decode(

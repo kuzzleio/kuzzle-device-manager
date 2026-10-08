@@ -28,9 +28,32 @@ export type NamedMeasures = Array<{
 }>;
 
 /**
+ * Result of the payload validation made by a decoder.
+ *
+ * Stored alongside the raw payload in the "payloads" collection.
+ */
+export type DecoderValidationResult = {
+  /**
+   * "valid": the payload will be decoded
+   * "invalid": the payload will be skipped (status 200)
+   */
+  status: "valid" | "invalid";
+
+  /**
+   * Why the payload has been rejected
+   */
+  reason?: string;
+
+  /**
+   * Custom data stored with the payload
+   */
+  customData?: JSONObject;
+};
+
+/**
  * Base class to implement a decoder for a device model.
  * The device model must be passed to the parent constructor.
- * The abstract "decode" method must be implemented.
+ * The abstract "validate" and "decode" methods must be implemented.
  */
 export abstract class Decoder {
   private _http?: HttpRoute[];
@@ -129,21 +152,23 @@ export abstract class Decoder {
    * Validate the payload format before processing.
    *
    * If the method:
-   *   - return true: the payload will be processed (status 200)
-   *   - return false: the payload will be skipped (status 200)
+   *   - return status "valid": the payload will be processed (status 200)
+   *   - return status "invalid": the payload will be skipped (status 200)
    *   - throw an error: the payload will be skipped (status 4** or 5**)
+   *
+   * The returned `reason` and `customData` are stored in the "payloads" collection.
    *
    * @param payload Raw payload received in the API action body
    * @param request Original request
    *
-   * @return A boolean indicating if the payload is valid
+   * @return The validation result
    */
   // eslint-disable-next-line no-unused-vars
-  async validate(
+  validate(
     payload: JSONObject,
     request: KuzzleRequest,
-  ): Promise<boolean> | never {
-    return true;
+  ): Promise<DecoderValidationResult> | DecoderValidationResult {
+    return { status: "valid" };
   }
 
   /**
@@ -162,7 +187,7 @@ export abstract class Decoder {
     decodedPayload: DecodedPayload<any>,
     payload: JSONObject,
     request: KuzzleRequest,
-  ): Promise<DecodedPayload<any>>;
+  ): Promise<DecodedPayload<any>> | DecodedPayload<any>;
 
   /**
    * Checks if the provided properties are present in the payload

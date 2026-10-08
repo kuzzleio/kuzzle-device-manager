@@ -80,6 +80,8 @@ describe("features/Decoder/PayloadController", () => {
     });
     expect(hit.valid).toBeFalsy();
     expect(hit.state).toBe("SKIP");
+    expect(hit.reason).toBe("Payload flagged as invalid");
+    expect(hit.customData).toMatchObject({ deviceEUI: "12345" });
   });
 
   it("Reject a DummyTemp payload because of validation error", async () => {
