@@ -17,6 +17,18 @@ export type DeviceManagerConfiguration = {
     autoUpdate: true;
   };
 
+  models: {
+    metadata: {
+      /**
+       * Only accept new metadata referenced from the metadata referential in the models written through the API.
+       *
+       * New inline metadataMappings keys are rejected, the inline metadata already defined
+       * by a model are kept (legacy). Models registered from code are not affected.
+       */
+      referentialOnly: boolean;
+    };
+  };
+
   /**
    * Platform index name
    */

@@ -50,6 +50,18 @@ Method: POST
               };
             };
             editorHint?: BaseEditorHint | OptionsSelectorDefinition | DatetimeEditorHint;
+            icon?: string;
+          };
+      */
+    },
+    "metadata": {
+      /*
+        Metadata referenced from the metadata referential.
+          [name: string]: true | {
+            locales?: { [locale: string]: { friendlyName: string; description: string } };
+            defaultValue?: any;
+            group?: string;
+            icon?: string;
           };
       */
     },
@@ -85,6 +97,7 @@ Method: POST
 - `defaultValues`: Default values for the metadata-
 - `metadataDetails`: Translations, metadata group and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
 - `metadataGroups`: Groups list with translations for group name
+- `metadata`: Metadata referenced from the [metadata referential](../../../concepts/models/index.md#metadata-referential)
 - `measures`: Array of measure definition. Each item define a `type` and `name` properties for the measure.
 
 ---

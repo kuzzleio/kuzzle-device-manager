@@ -6,6 +6,7 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  MetadataReferences,
   TooltipModels,
 } from "./ModelContent";
 
@@ -128,6 +129,18 @@ export type AssetModelDefinition = {
   icon?: string;
 
   /**
+   * Metadata referenced from the metadata referential, by name.
+   * Their mappings, translations, editor hint and default value come from the referential.
+   *
+   * @example
+   * {
+   *   color: true,
+   *   serialNumber: { locales: { en: { friendlyName: "Serial", description: "" } } },
+   * }
+   */
+  metadata?: MetadataReferences;
+
+  /**
    * Metadata mappings definition
    */
   metadataMappings?: MetadataMappings;
@@ -215,6 +228,18 @@ export type DeviceModelDefinition = {
    * Icon representing the device model.
    */
   icon?: string;
+
+  /**
+   * Metadata referenced from the metadata referential, by name.
+   * Their mappings, translations, editor hint and default value come from the referential.
+   *
+   * @example
+   * {
+   *   color: true,
+   *   serialNumber: { locales: { en: { friendlyName: "Serial", description: "" } } },
+   * }
+   */
+  metadata?: MetadataReferences;
 
   /**
    * Metadata mappings definition
@@ -316,6 +341,18 @@ export type GroupModelDefinition = {
    * Icon representing the group model.
    */
   icon?: string;
+
+  /**
+   * Metadata referenced from the metadata referential, by name.
+   * Their mappings, translations, editor hint and default value come from the referential.
+   *
+   * @example
+   * {
+   *   color: true,
+   *   serialNumber: { locales: { en: { friendlyName: "Serial", description: "" } } },
+   * }
+   */
+  metadata?: MetadataReferences;
 
   /**
    * Metadata mappings definition

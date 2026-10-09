@@ -12,7 +12,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       action: "writeAsset",
       body: {
         model: "TenantSensor",
-        metadataMappings: { location: { type: "keyword" } },
+        metadataMappings: { tenantLocation: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
         engineIds: ["engine-ayse"],
       },
@@ -29,7 +29,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       engineIds: ["engine-ayse"],
       asset: {
         model: "TenantSensor",
-        metadataMappings: { location: { type: "keyword" } },
+        metadataMappings: { tenantLocation: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
     });
@@ -43,7 +43,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       body: {
         engineGroups: ["air_quality"],
         model: "GroupSensor",
-        metadataMappings: { location: { type: "keyword" } },
+        metadataMappings: { tenantLocation: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
     });

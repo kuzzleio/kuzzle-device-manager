@@ -10,6 +10,9 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  MetadataReferential,
+  MetadataReferentialEntry,
+  MetadataReferences,
   TooltipModels,
 } from "./ModelContent";
 import { SchemaObject } from "ajv";
@@ -56,6 +59,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
+    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
@@ -73,6 +77,7 @@ export interface ApiModelWriteDeviceRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
+    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     measures: DeviceModelContent["device"]["measures"];
   };
@@ -90,11 +95,45 @@ export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
+    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     locales?: { [valueName: string]: LocaleDetails };
   };
 }
 export type ApiModelWriteGroupResult = KDocument<GroupModelContent>;
+
+export interface ApiModelUpdateDeviceRequest extends ModelsControllerRequest {
+  action: "updateDevice";
+
+  model: string;
+
+  body: {
+    /**
+     * Full set of metadata references: the existing ones and the new ones
+     */
+    metadata: MetadataReferences;
+  };
+}
+export type ApiModelUpdateDeviceResult = KDocument<DeviceModelContent>;
+
+export interface ApiModelUpdateGroupRequest extends ModelsControllerRequest {
+  action: "updateGroup";
+
+  engineGroups?: string[];
+  model: string;
+
+  body: {
+    affinity?: GroupAffinity;
+    icon?: string;
+    metadataDetails?: MetadataDetails;
+    metadataGroups?: MetadataGroups;
+    metadataMappings?: MetadataMappings;
+    metadata?: MetadataReferences;
+    defaultValues?: JSONObject;
+    locales?: { [valueName: string]: LocaleDetails };
+  };
+}
+export type ApiModelUpdateGroupResult = KDocument<GroupModelContent>;
 
 export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
   action: "writeMeasure";
@@ -124,6 +163,7 @@ export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
+    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
@@ -242,3 +282,24 @@ export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
 export type ApiModelSearchMeasuresResult = SearchResult<
   KHit<MeasureModelContent>
 >;
+
+export interface ApiModelGetMetadataReferentialRequest extends ModelsControllerRequest {
+  action: "getMetadataReferential";
+}
+export type ApiModelGetMetadataReferentialResult = MetadataReferential;
+
+export interface ApiModelWriteMetadataRequest extends ModelsControllerRequest {
+  action: "writeMetadata";
+
+  name: string;
+
+  body: MetadataReferentialEntry;
+}
+export type ApiModelWriteMetadataResult = MetadataReferential;
+
+export interface ApiModelDeleteMetadataRequest extends ModelsControllerRequest {
+  action: "deleteMetadata";
+
+  name: string;
+}
+export type ApiModelDeleteMetadataResult = MetadataReferential;

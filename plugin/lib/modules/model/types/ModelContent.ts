@@ -106,11 +106,98 @@ export interface MetadataDetails {
      * Then add a new field in EditorHintEnum to define the type of your hint.
      * Finally add the new editor hint interface with a pipe to take in account the new type.
      */
-    editorHint?:
-      | BaseEditorHint
-      | OptionsSelectorEditorHint
-      | DatetimeEditorHint;
+    editorHint?: EditorHint;
+    /**
+     * Icon representing the metadata.
+     * Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup.
+     */
+    icon?: string;
   };
+}
+
+export type EditorHint =
+  | BaseEditorHint
+  | OptionsSelectorEditorHint
+  | DatetimeEditorHint;
+
+/**
+ * A metadata defined once in the application metadata referential.
+ * Models reference it by name instead of redefining its mappings.
+ */
+export interface MetadataReferentialEntry {
+  /**
+   * Mappings of the metadata
+   *
+   * @example
+   * { type: "keyword" }
+   * { properties: { name: { type: "keyword" } } }
+   */
+  mappings: MetadataProperty | MetadataObject;
+  /**
+   * Default translations of the metadata
+   */
+  locales: {
+    [locale: string]: LocaleDetails;
+  };
+  /**
+   * Default editor hint of the metadata
+   */
+  editorHint?: EditorHint;
+  /**
+   * Default value of the metadata
+   */
+  defaultValue?: unknown;
+  /**
+   * Default icon of the metadata.
+   * Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup.
+   */
+  icon?: string;
+  /**
+   * Set by the plugin: true for a metadata registered from code.
+   * It is written at every startup and cannot be modified or deleted through the API.
+   */
+  managed?: boolean;
+}
+
+export interface MetadataReferential {
+  [name: string]: MetadataReferentialEntry;
+}
+
+export interface MetadataReferentialContent extends KDocumentContent {
+  type: "metadata-referential";
+
+  metadata: MetadataReferential;
+}
+
+/**
+ * Reference from a model to a metadata of the referential.
+ * `true` uses the referential definition as is.
+ */
+export type MetadataReference =
+  | true
+  | {
+      /**
+       * Translations merged, per locale, over the referential ones
+       */
+      locales?: {
+        [locale: string]: Partial<LocaleDetails>;
+      };
+      /**
+       * Default value overriding the referential one
+       */
+      defaultValue?: unknown;
+      /**
+       * Icon overriding the referential one
+       */
+      icon?: string;
+      /**
+       * Metadata group of the model the metadata belongs to
+       */
+      group?: string;
+    };
+
+export interface MetadataReferences {
+  [name: string]: MetadataReference;
 }
 
 export interface MetadataGroupLocale {
@@ -271,6 +358,12 @@ export interface AssetModelContent extends KDocumentContent {
      */
     metadataGroups?: MetadataGroups;
     /**
+     * Metadata referenced from the metadata referential.
+     * Their mappings, details and default values are resolved into
+     * metadataMappings, metadataDetails and defaultMetadata.
+     */
+    metadataReferences?: MetadataReferences;
+    /**
      * List of accepted measures for this model
      *
      * Array<{ type: string, name: string, displayName?: { [locale: string]: string } }>
@@ -423,6 +516,12 @@ export interface DeviceModelContent extends KDocumentContent {
      */
     metadataGroups?: MetadataGroups;
     /**
+     * Metadata referenced from the metadata referential.
+     * Their mappings, details and default values are resolved into
+     * metadataMappings, metadataDetails and defaultMetadata.
+     */
+    metadataReferences?: MetadataReferences;
+    /**
      * List of decoded measures for this model
      *
      * Array<{ type: string, name: string, displayName?: { [locale: string]: string } }>
@@ -529,6 +628,12 @@ export interface GroupModelContent extends KDocumentContent {
      * }
      */
     metadataGroups?: MetadataGroups;
+    /**
+     * Metadata referenced from the metadata referential.
+     * Their mappings, details and default values are resolved into
+     * metadataMappings, metadataDetails and defaultMetadata.
+     */
+    metadataReferences?: MetadataReferences;
     /**
      * List of tooltip models for this asset model
      *

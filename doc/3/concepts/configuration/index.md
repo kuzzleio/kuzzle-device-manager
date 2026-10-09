@@ -30,6 +30,7 @@ The following global options are available:
 | `ignoreStartupErrors` | boolean | `false`          | If `true`, the plugin will not throw an error if the engine is not reachable at startup.           |
 | `engine.autoUpdate`   | boolean | `true`           | If `true`, the plugin will automatically update the engine collections when the plugin is started. |
 | `platformIndex`       | string  | `device-manager` | The index name where the plugin stores its configuration and devices.                              |
+| `models.metadata.referentialOnly` | boolean | `false` | If `true`, the models written through the API can only add metadata referenced from the [metadata referential](../models/index.md#metadata-referential): new inline `metadataMappings` keys are rejected (400), the inline metadata a model already defines are kept. Models registered from code are not affected. |
 
 ### Collections
 
@@ -67,6 +68,11 @@ The following collections are used by the plugin. They're automatically created 
       "ignoreStartupErrors": false,
       "engine": {
         "autoUpdate": true
+      },
+      "models": {
+        "metadata": {
+          "referentialOnly": false
+        }
       },
       "platformIndex": "device-manager",
       "platformCollections": {

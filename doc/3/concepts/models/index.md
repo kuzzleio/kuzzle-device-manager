@@ -13,6 +13,78 @@ Each sensor or asset is an instance of a previously defined model.
 
 Models can be defined upstream through the backend framework but also dynamically using the API.
 
+## Metadata Referential
+
+The metadata referential holds, in a single document, the metadata shared by the models of an application: their mappings, default translations, editor hint, default value and icon.
+
+Instead of redefining a metadata in each model, asset, device and group models reference it by name with their `metadata` field. This prevents models registered by different parts of an application from defining the same metadata with conflicting mappings.
+
+A referential entry contains the following information:
+
+- `mappings`: metadata mappings, either `{ type: "<type>" }` or `{ properties: { ... } }` (See [Collection Mappings](https://docs.kuzzle.io/core/3/guides/main-concepts/data-storage/#collection-mappings))
+- `locales`: default translations of the metadata
+- `editorHint`: (optional) default editor hint
+- `defaultValue`: (optional) default value
+- `icon`: (optional) icon representing the metadata. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup
+
+A model references metadata with a map of metadata names to either `true` (use the referential definition as is) or an object with:
+
+- `locales`: (optional) translations merged, per locale, over the referential ones. A locale can override only its `friendlyName` or its `description`; a locale missing from the referential defaults to the metadata name and an empty description
+- `defaultValue`: (optional) default value overriding the referential one
+- `icon`: (optional) icon overriding the referential one
+- `group`: (optional) metadata group of the model, defined in its `metadataGroups`
+
+When a model is written, its references are resolved into its `metadataMappings`, `metadataDetails` (translations, editor hint, group and icon) and `defaultMetadata`, and kept in `metadataReferences`.
+
+Rules:
+
+- referencing an unknown metadata is rejected
+- a model can still define metadata inline with `metadataMappings` (legacy behaviour), but an inline metadata with the name of a referential entry and different mappings is rejected (409)
+- for a referenced metadata, the referential definition wins: inline details and default values of that name that differ from the resolved ones are rejected by the API (400), and only logged as a warning for models registered from code. Use the reference `locales`, `group`, `defaultValue` and `icon` instead. Sending back the resolved values unchanged is accepted
+- updating a referential entry resolves again every model referencing it, updates the engines mappings and refreshes the digital twins. An update conflicting with existing mappings is rejected (409)
+- a referenced entry cannot be deleted
+- with the [`models.metadata.referentialOnly`](../configuration/index.md) option, the models written through the API can only add referenced metadata, new inline metadata are rejected (400)
+- an entry registered from code is flagged `managed: true` and cannot be modified or deleted through the API (400). An entry that is no longer registered from code loses the flag at the next startup
+
+It is possible to fill the referential using either:
+
+- the framework with the method `deviceManager.models.registerMetadata`, the metadata are written at startup and overwrite the ones with the same name. Registering the same name again is allowed only with an identical definition, so several modules can share a metadata
+- the API through the `device-manager/models:writeMetadata` action
+
+**Example: declaration of a metadata and a model referencing it**
+
+```typescript
+deviceManager.models.registerMetadata("operatingStatus", {
+  mappings: { type: "keyword" },
+  locales: {
+    en: { friendlyName: "Status", description: "Operating status" },
+    fr: { friendlyName: "Statut", description: "Statut de fonctionnement" },
+  },
+  editorHint: {
+    type: EditorHintEnum.OPTION_SELECTOR,
+    values: ["active", "inactive"],
+  },
+  defaultValue: "active",
+  icon: "power-off",
+});
+
+deviceManager.models.registerAsset(["commons"], "Pole", {
+  measures: [{ name: "position", type: "position" }],
+  // Inline metadata, not in the referential
+  metadataMappings: {
+    height: { type: "integer" },
+  },
+  metadata: {
+    operatingStatus: { defaultValue: "inactive", icon: "plug" },
+  },
+});
+```
+
+The API also allows to:
+
+- get the referential `device-manager/models:getMetadataReferential`
+- delete an unreferenced metadata `device-manager/models:deleteMetadata`
+
 ## Sensor Model
 
 A sensor model contains the following information:
@@ -28,6 +100,7 @@ A sensor model contains the following information:
   - Group: metadata can be displayed grouped, you need to define `metadataGroups` to use it.
   - Editor hint: it unlock functionalities depending on the metadata type you define.
 - `metadataGroups`: (optional) Map of group names to their translations. You can use it to group metadata.
+- `metadata`: (optional) metadata referenced from the [metadata referential](#metadata-referential)
 
 It is possible to create new models on the Kuzzle IoT Platform using either:
 
@@ -139,6 +212,7 @@ An asset model contains the following information:
   - Group: metadata can be displayed grouped, you need to define `metadataGroups` to use it.
   - Editor hint: it unlock functionalities depending on the metadata type you define.
 - `metadataGroups`: (optional) Map of group names to their translations. You can use it to group metadata.
+- `metadata`: (optional) metadata referenced from the [metadata referential](#metadata-referential)
 - `tooltipModels`: (optional) Tooltip model list, each containing labels and tooltip content to be shown. You can use it to create templates that displays relevant information in dashboards
 - `locales`: (optional) Translation for asset model
 
@@ -211,6 +285,7 @@ A group model contains the following information:
   - **Group:** Allows metadata to be displayed in groups; define `metadataGroups` to use this feature.
   - **Editor hint:** Unlocks functionalities depending on the metadata type you define.
 - `metadataGroups`: (optional) Map of group names to their translations, used to group metadata fields.
+- `metadata`: (optional) metadata referenced from the [metadata referential](#metadata-referential)
 - `tooltipModels`: (optional) Tooltip model list, each containing labels and tooltip content to be shown. You can use it to create templates that display relevant information in dashboards.
 - `locales`: (optional) Translation for group model
 

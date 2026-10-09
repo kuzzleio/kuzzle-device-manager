@@ -146,7 +146,11 @@ export function getMeasureConflicts(
  * @param basePath Optional path to be added before conflicts paths
  * @returns An array of MappingsConflict
  */
-function findConflicts(sourceObject: any, objectToCompare: any, basePath = "") {
+export function findConflicts(
+  sourceObject: any,
+  objectToCompare: any,
+  basePath = "",
+) {
   if (sourceObject === objectToCompare) {
     return [];
   }

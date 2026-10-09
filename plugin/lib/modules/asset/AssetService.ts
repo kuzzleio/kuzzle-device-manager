@@ -7,8 +7,6 @@ import {
 } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import {
-  BaseRequest,
-  DocumentSearchResult,
   JSONObject,
   KDocument,
   KHit,
@@ -913,31 +911,7 @@ export class AssetService extends DigitalTwinService {
   }: {
     assetModel: AssetModelContent;
   }): Promise<void> {
-    // For engine group 'commons', fetch all engines
-    const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: assetModel.engineGroups?.includes("commons")
-        ? null
-        : assetModel.engineGroups?.[0],
-    });
-
-    const targets = engines.map((engine) => ({
-      collections: [InternalCollection.ASSETS],
-      index: engine.index,
-    }));
-    // Return if no engine found
-    if (targets.length === 0) {
-      return;
-    }
-    const assets = await this.sdk.query<
-      BaseRequest,
-      DocumentSearchResult<AssetContent>
-    >({
-      action: "search",
-      body: { query: { equals: { model: assetModel.asset.model } } },
-      controller: "document",
-      lang: "koncorde",
-      targets,
-    });
+    const engines = await this.getModelEngines(assetModel);
 
     const modelMetadata = {};
 
@@ -946,11 +920,19 @@ export class AssetService extends DigitalTwinService {
       modelMetadata[metadataName] = defaultMetadata ?? null;
     }
 
-    const removedMetadata: string[] = [];
+    for (const engine of engines) {
+      // ? Scroll by pages matching the write limit, the default search size (10) would miss assets
+      let result = await this.sdk.document.search<AssetContent>(
+        engine.index,
+        InternalCollection.ASSETS,
+        { query: { equals: { model: assetModel.asset.model } } },
+        { lang: "koncorde", scroll: "10s", size: 200 },
+      );
 
-    const updatedAssetsPerIndex: Record<string, KDocument<AssetContent>[]> =
-      assets.result.hits.reduce(
-        (acc: Record<string, KDocument<AssetContent>[]>, asset: JSONObject) => {
+      while (result) {
+        const removedMetadata: string[] = [];
+
+        const updatedAssets = result.hits.map((asset) => {
           const assetMetadata = { ...asset._source.metadata };
 
           for (const key of Object.keys(asset._source.metadata)) {
@@ -960,39 +942,61 @@ export class AssetService extends DigitalTwinService {
             }
           }
 
-          asset._source.metadata = {
-            ...modelMetadata,
-            ...assetMetadata,
-          };
-
           const customMeasureSlots = asset._source.measureSlots.filter(
             (slot) =>
               !assetModel.asset.measures.some((m) => m.name === slot.name),
           );
 
-          asset._source.measureSlots = [
-            ...assetModel.asset.measures,
-            ...customMeasureSlots,
-          ];
+          return {
+            _id: asset._id,
+            _source: {
+              ...asset._source,
+              measureSlots: [
+                ...assetModel.asset.measures,
+                ...customMeasureSlots,
+              ],
+              metadata: { ...modelMetadata, ...assetMetadata },
+            },
+          } as KDocument<AssetContent>;
+        });
 
-          acc[asset.index].push(asset as KDocument<AssetContent>);
-
-          return acc;
-        },
-        Object.fromEntries(
-          engines.map((engine) => [
+        if (updatedAssets.length > 0) {
+          await this.mReplaceAndHistorize(
             engine.index,
-            [] as KDocument<AssetContent>[],
-          ]),
-        ),
-      );
+            updatedAssets,
+            removedMetadata,
+            { refresh: "wait_for" },
+          );
+        }
 
-    await Promise.all(
-      Object.entries(updatedAssetsPerIndex).map(([index, updatedAssets]) =>
-        this.mReplaceAndHistorize(index, updatedAssets, removedMetadata, {
-          refresh: "wait_for",
-        }),
-      ),
+        result = await result.next();
+      }
+    }
+  }
+
+  /**
+   * Lists the engines whose assets use the given model:
+   * the model engineIds for a tenant-scoped model, every engine for a commons model,
+   * and the engines of the model engineGroups otherwise.
+   */
+  private async getModelEngines(assetModel: AssetModelContent) {
+    const engines = await ask<AskEngineList>(
+      "ask:device-manager:engine:list",
+      {},
+    );
+
+    if (assetModel.engineIds?.length > 0) {
+      return engines.filter((engine) =>
+        assetModel.engineIds.includes(engine.index),
+      );
+    }
+
+    if (assetModel.engineGroups?.includes("commons")) {
+      return engines;
+    }
+
+    return engines.filter((engine) =>
+      assetModel.engineGroups?.includes(engine.group),
     );
   }
 }
