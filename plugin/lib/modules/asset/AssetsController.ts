@@ -38,6 +38,7 @@ import {
   ApiAssetUnlinkDevicesResult,
   ApiAssetAddMeasureSlotResult,
   ApiAssetRemoveMeasureSlotResult,
+  ApiAssetUpdateMeasureSlotDisplayNameResult,
 } from "./types/AssetApi";
 import { isSourceApi } from "../measure/types/MeasureSources";
 import { getValidator } from "../shared/utils/AJValidator";
@@ -254,6 +255,15 @@ export class AssetsController {
             {
               path: "device-manager/:index/assets/:_id/measure-slot/",
               verb: "delete",
+            },
+          ],
+        },
+        updateMeasureSlotDisplayName: {
+          handler: this.updateMeasureSlotDisplayName.bind(this),
+          http: [
+            {
+              path: "device-manager/:index/assets/:_id/measure-slot/",
+              verb: "patch",
             },
           ],
         },
@@ -875,7 +885,7 @@ export class AssetsController {
     const assetId = request.getId();
     const index = request.getIndex();
     const measureSlot = request.getBodyObject("measureSlot");
-    const { type, name } = measureSlot;
+    const { type, name, displayName } = measureSlot;
     if (typeof type !== "string" || typeof name !== "string") {
       throw new BadRequestError(
         `Please provide a valid measure slot to be added`,
@@ -884,7 +894,7 @@ export class AssetsController {
 
     return this.assetService.addMeasureSlot(
       assetId,
-      { name, type },
+      { displayName, name, type },
       index,
       request,
     );
@@ -907,6 +917,26 @@ export class AssetsController {
     return this.assetService.removeMeasureSlot(
       assetId,
       measureSlotName,
+      index,
+      request,
+    );
+  }
+
+  /**
+   * Update the display name of a measure slot on an asset
+   */
+  async updateMeasureSlotDisplayName(
+    request: KuzzleRequest,
+  ): Promise<ApiAssetUpdateMeasureSlotDisplayNameResult> {
+    const assetId = request.getId();
+    const index = request.getIndex();
+    const measureSlotName = request.getBodyString("measureSlot");
+    const displayName = request.getBodyObject("displayName");
+
+    return this.assetService.updateMeasureSlotDisplayName(
+      assetId,
+      measureSlotName,
+      displayName,
       index,
       request,
     );

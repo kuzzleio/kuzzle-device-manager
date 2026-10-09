@@ -1,3 +1,8 @@
+## 3.0.0-3-dev.18 (2026-09-17)
+
+* Merge pull request #492 from kuzzleio/feat/measure-slots-display-name ([da67071](https://github.com/kuzzleio/kuzzle-device-manager/commit/da67071)), closes [#492](https://github.com/kuzzleio/kuzzle-device-manager/issues/492)
+* feat(slots): add a displayName to measureSlots ([a6d5829](https://github.com/kuzzleio/kuzzle-device-manager/commit/a6d5829))
+
 ## 3.0.0-3-dev.17 (2026-09-16)
 
 * fix(ingest): check measure in asset not in model (#489) ([cece65f](https://github.com/kuzzleio/kuzzle-device-manager/commit/cece65f)), closes [#489](https://github.com/kuzzleio/kuzzle-device-manager/issues/489)

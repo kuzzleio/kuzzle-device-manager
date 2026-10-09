@@ -17,6 +17,14 @@ export type NamedMeasures = Array<{
   name: string;
 
   type: string;
+
+  /**
+   * Per-locale display name for this measure slot, keyed by locale.
+   *
+   * @example
+   * { en: "External temperature", fr: "Température extérieure" }
+   */
+  displayName?: { [locale: string]: string };
 }>;
 
 /**

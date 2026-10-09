@@ -33,6 +33,7 @@ import {
   ApiDeviceGetLastMeasuredAtResult,
   ApiDeviceMGetLastMeasuredAtResult,
   ApiDeviceMetadataReplaceResult,
+  ApiDeviceUpdateMeasureSlotDisplayNameResult,
 } from "./types/DeviceApi";
 import { AssetContent } from "../asset";
 import { DeviceContent } from "./exports";
@@ -213,6 +214,15 @@ export class DevicesController {
             {
               path: "device-manager/:index/devices/_mGetLastMeasuredAt",
               verb: "post",
+            },
+          ],
+        },
+        updateMeasureSlotDisplayName: {
+          handler: this.updateMeasureSlotDisplayName.bind(this),
+          http: [
+            {
+              path: "device-manager/:index/devices/:_id/measure-slot/",
+              verb: "patch",
             },
           ],
         },
@@ -696,5 +706,27 @@ export class DevicesController {
     const deviceIds = request.getBodyArray("ids");
 
     return this.deviceService.mGetLastMeasuredAt(index, deviceIds);
+  }
+
+  /**
+   * Update the display name of a measure slot on a device
+   */
+  async updateMeasureSlotDisplayName(
+    request: KuzzleRequest,
+  ): Promise<ApiDeviceUpdateMeasureSlotDisplayNameResult> {
+    const deviceId = request.getId();
+    const index = request.getIndex();
+    const measureSlotName = request.getBodyString("measureSlot");
+    const displayName = request.getBodyObject("displayName");
+
+    const updatedDevice = await this.deviceService.updateMeasureSlotDisplayName(
+      index,
+      deviceId,
+      measureSlotName,
+      displayName,
+      request,
+    );
+
+    return DeviceSerializer.serialize(updatedDevice);
   }
 }

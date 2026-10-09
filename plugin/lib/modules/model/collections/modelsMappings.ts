@@ -72,6 +72,10 @@ export const modelsMappings: CollectionMappings = {
           properties: {
             type: { type: "keyword" },
             name: { type: "keyword" },
+            displayName: {
+              dynamic: "false",
+              properties: {},
+            },
           },
         },
         tooltipModels: {
@@ -112,6 +116,10 @@ export const modelsMappings: CollectionMappings = {
           properties: {
             type: { type: "keyword" },
             name: { type: "keyword" },
+            displayName: {
+              dynamic: "false",
+              properties: {},
+            },
           },
         },
       },

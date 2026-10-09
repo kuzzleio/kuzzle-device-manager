@@ -46,6 +46,34 @@ export type ApiDeviceUpdateResult = KDocument<DeviceContent>;
 
 export type ApiDeviceMetadataReplaceResult = KDocument<DeviceContent>;
 
+export interface ApiDeviceUpdateMeasureSlotDisplayNameRequest extends DevicesControllerRequest {
+  action: "updateMeasureSlotDisplayName";
+
+  _id: string;
+
+  body: {
+    /**
+     * Name of the measure slot to update.
+     *
+     * @example
+     *
+     *   measureSlot: "externalTemperature",
+     */
+    measureSlot: string;
+
+    /**
+     * Per-locale display name for the measure slot.
+     *
+     * @example
+     *
+     *   displayName: { en: "External temperature", fr: "Température extérieure" }
+     */
+    displayName: { [locale: string]: string };
+  };
+}
+export type ApiDeviceUpdateMeasureSlotDisplayNameResult =
+  KDocument<DeviceContent>;
+
 export interface ApiDeviceUpsertRequest extends DevicesControllerRequest {
   action: "upsert";
 

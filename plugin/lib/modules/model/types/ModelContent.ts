@@ -273,12 +273,16 @@ export interface AssetModelContent extends KDocumentContent {
     /**
      * List of accepted measures for this model
      *
-     * Array<{ type: string, name: string }>
+     * Array<{ type: string, name: string, displayName?: { [locale: string]: string } }>
      *
      * @example
      *
      * [
-     *   { type: "temperature", name: "externalTemperature" }
+     *   {
+     *     type: "temperature",
+     *     name: "externalTemperature",
+     *     displayName: { en: "External temperature", fr: "Température extérieure" }
+     *   }
      * ]
      */
     measures: NamedMeasures;
@@ -421,12 +425,16 @@ export interface DeviceModelContent extends KDocumentContent {
     /**
      * List of decoded measures for this model
      *
-     * Array<{ type: string, name: string }>
+     * Array<{ type: string, name: string, displayName?: { [locale: string]: string } }>
      *
      * @example
      *
      * [
-     *   { type: "temperature", name: "externalTemperature" }
+     *   {
+     *     type: "temperature",
+     *     name: "externalTemperature",
+     *     displayName: { en: "External temperature", fr: "Température extérieure" }
+     *   }
      * ]
      */
     measures: NamedMeasures;
