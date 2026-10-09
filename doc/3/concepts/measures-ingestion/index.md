@@ -108,35 +108,41 @@ export class ElsysErsDecoder extends Decoder {
 
 ### Raw data validation
 
-To ensure that you can extract the measures from an expected format, it is possible to implement the `validate` method.
+To ensure that you can extract the measures from an expected format, every decoder must implement the `validate` method.
 
-This method takes the raw data frame as a parameter and can indicate that:
+This method takes the raw data frame as a parameter and returns an object `{ status, reason?, customData? }` indicating that:
 
-1. the format is respected by returning `true`
-2. this dataframe should be discarded by returning `false`
-3. the format of this frame is incorrect throwing an exception
+1. the format is respected by returning `{ status: "valid" }`
+2. this dataframe should be discarded by returning `{ status: "invalid", reason: "..." }`
+3. the format of this frame is incorrect by throwing an exception
 
-Depending on the result of the `validate` method, the API action will return either a `200` status (Case 1 and 2) or a `4**` status (case 3).
+Depending on the result of the `validate` method, the API action will return either a `200` status (case 1), a `400` status with the returned reason as message (case 2) or a `4**`/`5**` status (case 3).
 
 For each case, a state and a reason is stored inside the payload document:
 
 1. the payload has a VALID state.
-2. the payload is discarded by user validation and has a SKIP state and a dedicated reason (which can be overridden by throwing a SkipError exception).
+2. the payload is discarded by user validation and has a SKIP state and the returned reason (defaults to "Skip by user defined validation").
 3. the payload has an ERROR state and a reason equal to the error message.
+
+The optional `customData` object is stored as-is in the `customData` property of the payload document (it is not indexed).
 
 ```ts
 class AbeewayDecoder extends Decoder {
-  async validate(payload: JSONObject) {
+  async validate(payload: JSONObject): Promise<DecoderValidationResult> {
     if (payload.deviceEUI === undefined) {
       throw new BadRequestError('Invalid payload: missing "deviceEUI"');
     }
 
     // Skip payload without data
     if (payload.type === "ping") {
-      return false;
+      return {
+        status: "invalid",
+        reason: "Ping payload",
+        customData: { deviceEUI: payload.deviceEUI },
+      };
     }
 
-    return true;
+    return { status: "valid" };
   }
 }
 ```
