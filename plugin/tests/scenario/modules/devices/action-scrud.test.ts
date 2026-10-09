@@ -21,14 +21,14 @@ describe("Device SCRUD", () => {
     await sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { model: "DummyTemp", reference: "scrudme" },
     });
 
     await sdk.query<ApiDeviceUpdateRequest, ApiDeviceUpdateResult>({
       controller: "device-manager/devices",
       action: "update",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-scrudme",
       body: { metadata: { color: "RED" } },
     });
@@ -39,7 +39,7 @@ describe("Device SCRUD", () => {
     >({
       controller: "device-manager/devices",
       action: "get",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-scrudme",
     });
 
@@ -70,7 +70,7 @@ describe("Device SCRUD", () => {
     >({
       controller: "device-manager/devices",
       action: "search",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       lang: "koncorde",
       body: { query: { equals: { reference: "scrudme" } } },
     });
@@ -84,7 +84,7 @@ describe("Device SCRUD", () => {
     await sdk.query<ApiDeviceDeleteRequest, ApiDeviceDeleteResult>({
       controller: "device-manager/devices",
       action: "delete",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-scrudme",
     });
 
@@ -102,7 +102,7 @@ describe("Device SCRUD", () => {
       sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
         controller: "device-manager/devices",
         action: "create",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         body: { model: "NotExisting", reference: "scrudme" },
       }),
     ).rejects.toThrow('Unknown Device model "NotExisting".');

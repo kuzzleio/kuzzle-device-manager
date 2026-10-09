@@ -7,7 +7,7 @@ export type AskDigitalTwinLastMeasuresGet = {
     | "ask:device-manager:device:get-last-measures";
 
   payload: {
-    engineId: string;
+    index: string;
     digitalTwinId: string;
   };
 
@@ -18,7 +18,7 @@ export type AskDigitalTwinLink = {
     | "ask:device-manager:device:link-asset"
     | "ask:device-manager:asset:link-device";
   payload: {
-    engineId: string;
+    index: string;
     assetId: string;
     deviceId: string;
     user: User;

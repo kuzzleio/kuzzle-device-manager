@@ -14,7 +14,7 @@ Replace `metadata` of an asset. It will replace only the fields specified in the
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/metadata
+URL: http://kuzzle:7512/_/device-manager/:index/assets/:_id/metadata
 Method: PATCH
 ```
 
@@ -24,7 +24,7 @@ Method: PATCH
 {
   "controller": "device-manager/assets",
   "action": "replaceMetadata",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<assetId>",
   "body": {
     "metadata": {
@@ -36,7 +36,7 @@ Method: PATCH
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Asset ID
 
 ## Body properties

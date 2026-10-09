@@ -83,7 +83,7 @@ describe("ModelsController:listAssets:validation", () => {
     sdk.jwt = null;
   });
 
-  it("admin with invalid engineId should still work (admin bypasses validation)", async () => {
+  it("admin with invalid index should still work (admin bypasses validation)", async () => {
     // Reuse admin JWT from previous test or login fresh
     if (!sdk.jwt) {
       await new Promise((r) => setTimeout(r, 1500)); // Rate limit cooldown
@@ -93,12 +93,12 @@ describe("ModelsController:listAssets:validation", () => {
       });
     }
 
-    // Admin should not get 404 for invalid engineId — validation is skipped
+    // Admin should not get 404 for invalid index — validation is skipped
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
       engineGroups: ["commons"],
-      engineId: "nonexistent-engine",
+      index: "nonexistent-engine",
     });
 
     expect(result.result.total).toBeGreaterThanOrEqual(0);

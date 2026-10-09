@@ -18,7 +18,7 @@ export const deviceDetached1: DeviceContent = {
     },
   ],
   metadata: {},
-  engineId: null,
+  index: null,
   linkedMeasures: [],
   groups: [],
 };
@@ -42,7 +42,7 @@ export const deviceAyseLinked1: DeviceContent = {
     },
   ],
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   linkedMeasures: [
     {
       measureSlots: [
@@ -76,7 +76,7 @@ export const deviceAyseLinked2: DeviceContent = {
     },
   ],
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   linkedMeasures: [
     {
       assetId: "Container-linked2",
@@ -119,7 +119,7 @@ export const deviceAyseUnlinked1: DeviceContent = {
     },
   ],
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   linkedMeasures: [],
   groups: [],
 };
@@ -143,7 +143,7 @@ export const deviceAyseUnlinked2: DeviceContent = {
     },
   ],
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   linkedMeasures: [],
   groups: [],
 };
@@ -167,7 +167,7 @@ export const deviceAyseUnlinked3: DeviceContent = {
     },
   ],
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   linkedMeasures: [],
   groups: [],
 };
@@ -191,7 +191,7 @@ export const deviceAyseWarehouse: DeviceContent = {
     },
   ],
   metadata: {},
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   linkedMeasures: [
     {
       measureSlots: [
@@ -219,7 +219,7 @@ export const deviceEmptyTemp: DeviceContent = {
   metadata: {
     color: "BLUE",
   },
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   linkedMeasures: [],
   groups: [],
 };

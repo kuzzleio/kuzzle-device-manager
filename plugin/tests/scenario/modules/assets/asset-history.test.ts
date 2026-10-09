@@ -9,7 +9,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query({
       controller: "device-manager/assets",
       action: "update",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
       body: {
         metadata: {
@@ -70,7 +70,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: "Container",
         reference: "linked3",

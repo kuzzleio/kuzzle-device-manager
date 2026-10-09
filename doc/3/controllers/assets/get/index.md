@@ -16,7 +16,7 @@ Gets an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id
+URL: http://kuzzle:7512/_/device-manager/:index/assets/:_id
 Method: GET
 ```
 
@@ -26,7 +26,7 @@ Method: GET
 {
   "controller": "device-manager/assets",
   "action": "get",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<assetId>"
 }
 ```
@@ -35,7 +35,7 @@ Method: GET
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 - `_id`: asset id
 
 ---

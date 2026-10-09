@@ -15,7 +15,7 @@ The Upsert operation allows you to create a new asset or update an existing one 
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets
+URL: http://kuzzle:7512/_/device-manager/:index/assets
 Method: PUT
 ```
 
@@ -25,7 +25,7 @@ Method: PUT
 {
     "controller": "device-manager/assets",
     "action": "upsert",
-    "engineId": "<engineId>",
+    "index": "<index>",
     "reference": "<assetReference>",
     "model": "<assetModel>",
     "body": {
@@ -40,7 +40,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `reference` : asset reference
 - `model`: asset model
 

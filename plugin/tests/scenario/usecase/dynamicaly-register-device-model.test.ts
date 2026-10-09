@@ -29,7 +29,7 @@ describe("DeviceScenario: dynamicaly register device model and receive a measure
     await sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { model: "Enginko", reference: "24BA98" },
     });
 
@@ -39,7 +39,7 @@ describe("DeviceScenario: dynamicaly register device model and receive a measure
     >({
       controller: "device-manager/devices",
       action: "receiveMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Enginko-24BA98",
       body: {
         measures: [
@@ -65,7 +65,7 @@ describe("DeviceScenario: dynamicaly register device model and receive a measure
       _id: "Enginko-24BA98",
       controller: "device-manager/devices",
       action: "getLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     expect(result).toMatchObject({

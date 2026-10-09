@@ -27,7 +27,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
         model: "ShadowTestGlobal",
         metadataMappings: {},
         measures: [],
@@ -87,7 +87,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
         model: "ShadowTestGroupToTenant",
         metadataMappings: {},
         measures: [],

@@ -31,10 +31,10 @@ describe("AssetsController:migrateTenant", () => {
       sdk.query({
         controller: "device-manager/assets",
         action: "migrateTenant",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         body: {
           assetsList: ["Container-linked1", "Container-linked2"],
-          newEngineId: "engine-other-group",
+          newIndex: "engine-other-group",
         },
       }),
     ).rejects.toThrow(
@@ -47,8 +47,8 @@ describe("AssetsController:migrateTenant", () => {
       sdk.query({
         controller: "device-manager/assets",
         action: "migrateTenant",
-        engineId: "engine-ayse",
-        body: { assetsList: [], newEngineId: "engine-kuzzle" },
+        index: "engine-ayse",
+        body: { assetsList: [], newIndex: "engine-kuzzle" },
       }),
     ).rejects.toThrow("No assets to migrate");
   });
@@ -57,7 +57,7 @@ describe("AssetsController:migrateTenant", () => {
     await sdk.query({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: { model: "Container", reference: "linked1" },
     });
 
@@ -67,10 +67,10 @@ describe("AssetsController:migrateTenant", () => {
       sdk.query({
         controller: "device-manager/assets",
         action: "migrateTenant",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         body: {
           assetsList: ["Container-linked1"],
-          newEngineId: "engine-kuzzle",
+          newIndex: "engine-kuzzle",
         },
       }),
     ).rejects.toThrow(
@@ -82,7 +82,7 @@ describe("AssetsController:migrateTenant", () => {
     await sdk.query({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: { model: "Container", reference: "linked1" },
     });
 
@@ -91,10 +91,10 @@ describe("AssetsController:migrateTenant", () => {
     const response = await sdk.query({
       controller: "device-manager/assets",
       action: "migrateTenant",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         assetsList: ["Container-linked1", "Container-linked2"],
-        newEngineId: "engine-kuzzle",
+        newIndex: "engine-kuzzle",
       },
     });
 
@@ -103,7 +103,7 @@ describe("AssetsController:migrateTenant", () => {
     const assets = await sdk.query({
       controller: "device-manager/assets",
       action: "search",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: { query: { equals: { model: "Container" } } },
       lang: "koncorde",
     });
@@ -116,10 +116,10 @@ describe("AssetsController:migrateTenant", () => {
     const response = await sdk.query({
       controller: "device-manager/assets",
       action: "migrateTenant",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         assetsList: ["Container-linked1", "Container-linked2"],
-        newEngineId: "engine-kuzzle",
+        newIndex: "engine-kuzzle",
       },
     });
 
@@ -128,7 +128,7 @@ describe("AssetsController:migrateTenant", () => {
     const assets = await sdk.query({
       controller: "device-manager/assets",
       action: "search",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: { query: { equals: { model: "Container" } } },
       lang: "koncorde",
     });
@@ -145,10 +145,10 @@ describe("AssetsController:migrateTenant", () => {
       sdk.query({
         controller: "device-manager/assets",
         action: "migrateTenant",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         body: {
           assetsList: ["Container-linked1", "Container-linked2"],
-          newEngineId: "engine-kuzzle",
+          newIndex: "engine-kuzzle",
         },
       }),
     ).rejects.toThrow("User default-user is not authorized to migrate assets");

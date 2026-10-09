@@ -16,7 +16,7 @@ Retrieves the last measures of a device.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/lastMeasures
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/lastMeasures
 Method: GET or POST
 ```
 
@@ -26,7 +26,7 @@ Method: GET or POST
 {
   "controller": "device-manager/devices",
   "action": "getLastMeasures",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>",
 
   // optional:
@@ -38,7 +38,7 @@ Method: GET or POST
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 - `_id`: device id
 - `measureCount`: set the maximum number of measures returned
 

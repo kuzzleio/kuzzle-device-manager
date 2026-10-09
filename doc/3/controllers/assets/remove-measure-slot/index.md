@@ -15,7 +15,7 @@ It can only remove a measure slot that is not linked to a device and that is not
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measure-slot/
+URL: http://kuzzle:7512/_/device-manager/:index/assets/:_id/measure-slot/
 Method: delete
 ```
 
@@ -25,7 +25,7 @@ Method: delete
 {
   "controller": "device-manager/assets",
   "action": "removeMeasureSlot",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id":"<asset _id>"
   "body": {
     "measureSlot":"string"
@@ -38,7 +38,7 @@ Method: delete
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Asset ID
 
 ## Body properties

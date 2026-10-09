@@ -57,7 +57,7 @@ describe("GroupsController", () => {
   it("can create a group", async () => {
     const missingBodyQuery: Omit<ApiGroupCreateRequest, "body"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "create",
       _id: "root-group",
     };
@@ -67,7 +67,7 @@ describe("GroupsController", () => {
 
     const missingNameQuery = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "create",
       body: {},
     };
@@ -77,7 +77,7 @@ describe("GroupsController", () => {
 
     const badParentIdQuery: ApiGroupCreateRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "create",
       body: {
         name: "Parent not exist",
@@ -90,7 +90,7 @@ describe("GroupsController", () => {
 
     const duplicateGroupName: ApiGroupCreateRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "create",
       body: {
         name: "test group",
@@ -106,7 +106,7 @@ describe("GroupsController", () => {
       ApiGroupCreateResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "create",
       _id: "root-group",
       body: {
@@ -126,7 +126,7 @@ describe("GroupsController", () => {
       ApiGroupCreateResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "create",
       _id: "children-group",
       body: {
@@ -148,7 +148,7 @@ describe("GroupsController", () => {
     >({
       controller: "device-manager/groups",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         name: "group",
         path: undefined,
@@ -161,7 +161,7 @@ describe("GroupsController", () => {
   it("can get a group", async () => {
     const missingIdQuery: Omit<ApiGroupGetRequest, "_id"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "get",
     };
     await expect(sdk.query(missingIdQuery)).rejects.toThrow(
@@ -170,7 +170,7 @@ describe("GroupsController", () => {
 
     const { result } = await sdk.query<ApiGroupGetRequest>({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "get",
       _id: groupTestId,
     });
@@ -182,7 +182,7 @@ describe("GroupsController", () => {
   it("can update a group", async () => {
     const missingIdQuery: Omit<ApiGroupUpdateRequest, "_id"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "update",
       body: groupTestBody,
     };
@@ -191,7 +191,7 @@ describe("GroupsController", () => {
     );
     const missingBodyQuery: Omit<ApiGroupUpdateRequest, "body"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "update",
       _id: groupTestId,
     };
@@ -201,7 +201,7 @@ describe("GroupsController", () => {
 
     const duplicateGroupName: ApiGroupUpdateRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "update",
       _id: groupTestParentId1,
       body: {
@@ -214,7 +214,7 @@ describe("GroupsController", () => {
 
     const { result } = await sdk.query<ApiGroupUpdateRequest>({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "update",
       _id: groupTestId,
       body: {
@@ -232,7 +232,7 @@ describe("GroupsController", () => {
   it("can move a group", async () => {
     const missingIdQuery: Omit<ApiGroupMoveRequest, "_id"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       body: { targetGroupId: groupTestParentId1 },
     };
@@ -241,7 +241,7 @@ describe("GroupsController", () => {
     );
     const missingBodyQuery: Omit<ApiGroupMoveRequest, "body"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       _id: groupTestChildrenId1,
     };
@@ -250,7 +250,7 @@ describe("GroupsController", () => {
     );
     const selfMoveQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       _id: groupTestChildrenId1,
       body: { targetGroupId: groupTestChildrenId1 },
@@ -260,7 +260,7 @@ describe("GroupsController", () => {
     );
     const descendantMoveQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       _id: groupTestParentId1,
       body: { targetGroupId: groupTestChildrenId1 },
@@ -270,7 +270,7 @@ describe("GroupsController", () => {
     );
     const alreadyAtRootQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       _id: groupTestId,
       body: { targetGroupId: null },
@@ -280,7 +280,7 @@ describe("GroupsController", () => {
     );
     const alreadyChildQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       _id: groupTestChildrenId1,
       body: { targetGroupId: groupTestParentId1 },
@@ -294,7 +294,7 @@ describe("GroupsController", () => {
       ApiGroupMoveResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       _id: groupTestChildrenId1,
       body: { targetGroupId: groupTestId },
@@ -311,7 +311,7 @@ describe("GroupsController", () => {
       ApiGroupMoveResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       _id: groupTestChildrenId1,
       body: { targetGroupId: null },
@@ -325,7 +325,7 @@ describe("GroupsController", () => {
       ApiGroupMoveResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "moveGroup",
       _id: groupParentWithAssetId,
       body: { targetGroupId: groupTestId },
@@ -362,7 +362,7 @@ describe("GroupsController", () => {
   it("can delete a group", async () => {
     const missingIdQuery: Omit<ApiGroupDeleteRequest, "_id"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "delete",
     };
     await expect(sdk.query(missingIdQuery)).rejects.toThrow(
@@ -371,7 +371,7 @@ describe("GroupsController", () => {
 
     const { error, status } = await sdk.query<ApiGroupDeleteRequest>({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "delete",
       _id: groupTestId,
     });
@@ -381,7 +381,7 @@ describe("GroupsController", () => {
 
     await sdk.query<ApiGroupDeleteRequest>({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "delete",
       _id: groupTestParentId1,
     });
@@ -389,7 +389,7 @@ describe("GroupsController", () => {
     const deletedChildQuery = {
       controller: "device-manager/groups",
       action: "get",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: groupTestChildrenId1,
     };
     await expect(sdk.query(deletedChildQuery)).rejects.toThrow(
@@ -397,7 +397,7 @@ describe("GroupsController", () => {
     );
     await sdk.query<ApiGroupDeleteRequest>({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "delete",
       _id: groupParentWithAssetId,
     });
@@ -420,7 +420,7 @@ describe("GroupsController", () => {
   it("can search groups", async () => {
     const { result } = await sdk.query<ApiGroupSearchRequest>({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "search",
       body: {
         query: {
@@ -460,7 +460,7 @@ describe("GroupsController", () => {
   it("can add asset to a group", async () => {
     const missingBodyQuery: Omit<ApiGroupAddAssetsRequest, "body"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addAssets",
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
@@ -469,7 +469,7 @@ describe("GroupsController", () => {
 
     const badIdQuery: ApiGroupAddAssetsRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addAssets",
       body: {
         path: "bad-id",
@@ -485,7 +485,7 @@ describe("GroupsController", () => {
       ApiGroupAddAssetsResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addAssets",
       body: {
         path: groupTestId,
@@ -531,7 +531,7 @@ describe("GroupsController", () => {
       ApiGroupAddAssetsResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addAssets",
       body: {
         path: groupTestParentId1,
@@ -586,7 +586,7 @@ describe("GroupsController", () => {
       ApiGroupAddAssetsResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addAssets",
       body: {
         path: groupTestParentId1 + "." + groupTestChildrenId1,
@@ -617,7 +617,7 @@ describe("GroupsController", () => {
 
     const restrictedGroup: ApiGroupAddAssetsRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addAssets",
       body: {
         path: groupTestParentId2,
@@ -630,7 +630,7 @@ describe("GroupsController", () => {
 
     const wrongAssetModel: ApiGroupAddAssetsRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addAssets",
       body: {
         path: groupTestId,
@@ -649,7 +649,7 @@ describe("GroupsController", () => {
       };
     } = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeAssets",
       body: {
         assetIds: ["Container-grouped"],
@@ -661,7 +661,7 @@ describe("GroupsController", () => {
 
     const missingBodyQuery: Omit<ApiGroupRemoveAssetsRequest, "body"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeAssets",
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
@@ -670,7 +670,7 @@ describe("GroupsController", () => {
 
     const badIdQuery: ApiGroupRemoveAssetsRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeAssets",
       body: {
         path: "bad-path",
@@ -686,7 +686,7 @@ describe("GroupsController", () => {
       ApiGroupRemoveAssetsResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeAssets",
       body: {
         path: groupParentWithAssetId + "." + groupChildrenWithAssetId,
@@ -710,7 +710,7 @@ describe("GroupsController", () => {
       ApiGroupRemoveAssetsResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeAssets",
       body: {
         path: groupParentWithAssetId,
@@ -733,7 +733,7 @@ describe("GroupsController", () => {
   it("can add device to a group", async () => {
     const missingBodyQuery: Omit<ApiGroupAddDevicesRequest, "body"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addDevices",
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
@@ -742,7 +742,7 @@ describe("GroupsController", () => {
 
     const badIdQuery: ApiGroupAddDevicesRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addDevices",
       body: {
         path: "bad-id",
@@ -758,7 +758,7 @@ describe("GroupsController", () => {
       ApiGroupAddDevicesResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addDevices",
       body: {
         path: groupParentWithAssetId,
@@ -804,7 +804,7 @@ describe("GroupsController", () => {
       ApiGroupAddDevicesResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addDevices",
       body: {
         path: groupTestParentId1,
@@ -859,7 +859,7 @@ describe("GroupsController", () => {
       ApiGroupAddDevicesResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addDevices",
       body: {
         path: groupTestParentId1 + "." + groupTestChildrenId1,
@@ -893,7 +893,7 @@ describe("GroupsController", () => {
 
     const restrictedGroup: ApiGroupAddDevicesRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addDevices",
       body: {
         path: groupTestId,
@@ -906,7 +906,7 @@ describe("GroupsController", () => {
 
     const wrongDeviceModel: ApiGroupAddDevicesRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "addDevices",
       body: {
         path: groupTestParentId2,
@@ -925,7 +925,7 @@ describe("GroupsController", () => {
       };
     } = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeDevices",
       body: {
         deviceIds: [deviceAyseWarehouseId],
@@ -937,7 +937,7 @@ describe("GroupsController", () => {
 
     const missingBodyQuery: Omit<ApiGroupRemoveDevicesRequest, "body"> = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeDevices",
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
@@ -946,7 +946,7 @@ describe("GroupsController", () => {
 
     const badIdQuery: ApiGroupRemoveDevicesRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeDevices",
       body: {
         path: "bad-path",
@@ -962,7 +962,7 @@ describe("GroupsController", () => {
       ApiGroupRemoveDevicesResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeDevices",
       body: {
         path: groupParentWithAssetId + "." + groupChildrenWithAssetId,
@@ -986,7 +986,7 @@ describe("GroupsController", () => {
       ApiGroupRemoveDevicesResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "removeDevices",
       body: {
         path: groupParentWithAssetId,
@@ -1012,7 +1012,7 @@ describe("GroupsController", () => {
       ApiGroupListItemsResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "listItems",
       _id: groupParentWithAssetId,
       body: {},
@@ -1038,7 +1038,7 @@ describe("GroupsController", () => {
       ApiGroupListItemsResult
     >({
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "listItems",
       _id: groupParentWithAssetId,
       body: { includeChildren: true },
@@ -1069,7 +1069,7 @@ describe("GroupsController", () => {
   it("can create multiple groups at once", async () => {
     const queryWithError: ApiGroupMCreateRequest = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "mCreate",
       body: {
         groups: [
@@ -1138,7 +1138,7 @@ describe("GroupsController", () => {
     };
     const mUpdateQuery = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "mUpdate",
       body: {
         groups: [
@@ -1213,7 +1213,7 @@ describe("GroupsController", () => {
 
     const mUpsertQuery = {
       controller: "device-manager/groups",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "mUpsert",
       body: {
         groups: [

@@ -18,7 +18,7 @@ This endpoint updates the group's path and cascades the changes to all descendan
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/:_id/_move
+URL: http://kuzzle:7512/_/device-manager/:index/groups/:_id/_move
 Method: PUT
 ```
 
@@ -28,7 +28,7 @@ Method: PUT
 {
   "controller": "device-manager/groups",
   "action": "moveGroup",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<group id>",
   "body": {
     "targetGroupId": "<target group id>"  // use null to move to root
@@ -40,7 +40,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 - `_id`: ID of the group to move (required)
 
 ## Body properties

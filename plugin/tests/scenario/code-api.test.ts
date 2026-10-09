@@ -8,7 +8,7 @@ describe("Code API", () => {
     await sdk.query({
       controller: "tests",
       action: "createDigitalTwinFromBackend",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: { reference: "foobar" },
     });
 

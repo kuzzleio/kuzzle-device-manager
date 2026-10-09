@@ -3,7 +3,7 @@ import { DigitalTwinMeasures } from "./DigitalTwinMeasures";
 interface DigitalTwinControllerRequest<ControllerName extends string> {
   controller: ControllerName;
 
-  engineId: string;
+  index: string;
 }
 
 export interface ApiDigitalTwinGetLastMeasuresRequest<

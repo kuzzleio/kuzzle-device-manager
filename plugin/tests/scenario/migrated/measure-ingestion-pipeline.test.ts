@@ -26,7 +26,7 @@ describe("features/Measure/IngestionPipeline", () => {
     let response = await sdk.query({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { model: "DummyTemp", reference: "enrich_me_master" },
     });
 
@@ -34,7 +34,7 @@ describe("features/Measure/IngestionPipeline", () => {
       controller: "device-manager/devices",
       action: "linkAssets",
       _id: "DummyTemp-enrich_me_master",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         linkedMeasures: [
           {
@@ -72,7 +72,7 @@ describe("features/Measure/IngestionPipeline", () => {
     let response = await sdk.query({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { model: "DummyTemp", reference: "compute_me_master" },
     });
 
@@ -80,7 +80,7 @@ describe("features/Measure/IngestionPipeline", () => {
       controller: "device-manager/devices",
       action: "linkAssets",
       _id: "DummyTemp-compute_me_master",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         linkedMeasures: [
           {
@@ -112,7 +112,7 @@ describe("features/Measure/IngestionPipeline", () => {
     const lastMeasuresResponse = await sdk.query({
       controller: "device-manager/assets",
       action: "getLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-unlinked1",
       measureCount: 2,
     });
@@ -129,7 +129,7 @@ describe("features/Measure/IngestionPipeline", () => {
     await sdk.query({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: "DummyTemp",
         reference: "meta_device",
@@ -141,7 +141,7 @@ describe("features/Measure/IngestionPipeline", () => {
       controller: "device-manager/devices",
       action: "linkAssets",
       _id: "DummyTemp-meta_device",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         linkedMeasures: [
           {

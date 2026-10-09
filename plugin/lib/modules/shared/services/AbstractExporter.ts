@@ -37,7 +37,7 @@ export interface Column {
 export type ExportStreamAugmenter = (
   result: SearchResult<KHit<KDocumentContentGeneric>>,
   columns: Column[],
-  engineId: string,
+  index: string,
 ) => Promise<void>;
 
 export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
@@ -72,23 +72,19 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     return this.plugin.context.logger.child("exporter");
   }
 
-  protected async getEngine(engineId: string): Promise<EngineContent> {
+  protected async getEngine(index: string): Promise<EngineContent> {
     const engine = await this.sdk.document.get<{ engine: EngineContent }>(
       this.plugin.config.platformIndex,
       InternalCollection.CONFIG,
-      `engine-device-manager--${engineId}`,
+      `engine-device-manager--${index}`,
     );
 
     return engine._source.engine;
   }
 
-  protected abstract exportRedisKey(engineId: string, exportId: string): string;
+  protected abstract exportRedisKey(index: string, exportId: string): string;
 
-  protected abstract getLink(
-    engineId: string,
-    exportId: UUID,
-    params: P,
-  ): string;
+  protected abstract getLink(index: string, exportId: UUID, params: P): string;
 
   /**
    * Retrieve a prepared export and write each document as a CSV in the stream
@@ -96,18 +92,18 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
    * This method never returns a rejected promise, but write potential error in
    * the stream.
    */
-  abstract sendExport(engineId: string, exportId: string): Promise<Readable>;
+  abstract sendExport(index: string, exportId: string): Promise<Readable>;
 
-  async prepareExport(engineId: string, user: User, params: P) {
+  async prepareExport(index: string, user: User, params: P) {
     const exportId = randomUUID();
 
     await this.ms.setex(
-      this.exportRedisKey(engineId, exportId),
+      this.exportRedisKey(index, exportId),
       JSON.stringify(params),
       this.config.expireTime,
     );
 
-    let link = this.getLink(engineId, exportId, params);
+    let link = this.getLink(index, exportId, params);
     if (user._id !== "-1") {
       const { result } = await this.sdk.as(user).query({
         action: "createToken",
@@ -135,9 +131,9 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     });
   }
 
-  async getExport(engineId: string, exportId: string): Promise<P> {
+  async getExport(index: string, exportId: string): Promise<P> {
     const exportParams = await this.sdk.ms.get(
-      this.exportRedisKey(engineId, exportId),
+      this.exportRedisKey(index, exportId),
     );
 
     if (!exportParams) {
@@ -150,7 +146,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   async getExportStream(
     request: SearchResult<KHit<KDocumentContentGeneric>>,
     columns: Column[],
-    engineId: string,
+    index: string,
   ) {
     const stream = new PassThrough();
 
@@ -159,7 +155,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
       stream.write(stringify([columns.map((column) => column.header)]));
       while (result) {
         for (const augmenter of this.exportStreamAugmenters) {
-          await augmenter(result, columns, engineId);
+          await augmenter(result, columns, index);
         }
 
         for (const hit of result.hits) {

@@ -16,7 +16,7 @@ Retrieves the date of the last measure of multiple assets.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/_mGetLastMeasuredAt
+URL: http://kuzzle:7512/_/device-manager/:index/assets/_mGetLastMeasuredAt
 Method: POST
 ```
 
@@ -26,7 +26,7 @@ Method: POST
 {
   "controller": "device-manager/assets",
   "action": "mGetLastMeasuredAt",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "ids": ["<assetId>", "<anotherAssetId>"]
   }
@@ -37,7 +37,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 
 ---
 

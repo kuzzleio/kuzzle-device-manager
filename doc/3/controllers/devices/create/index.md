@@ -14,7 +14,7 @@ Creates a device.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices
+URL: http://kuzzle:7512/_/device-manager/:index/devices
 Method: POST
 ```
 
@@ -24,7 +24,7 @@ Method: POST
 {
   "controller": "device-manager/devices",
   "action": "create",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "model": "<device model>",
     "reference": "<device reference>",
@@ -39,7 +39,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 
 ## Body properties
 

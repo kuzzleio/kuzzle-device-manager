@@ -31,14 +31,14 @@ describe('features/Asset/History', () => {
     await sdk.query({
       controller: 'device-manager/assets',
       action: 'create',
-      engineId: 'engine-kuzzle',
+      index: 'engine-kuzzle',
       body: { model: 'Container', reference: 'A1', metadata: { height: 5 } },
     });
 
     await sdk.query({
       controller: 'device-manager/assets',
       action: 'update',
-      engineId: 'engine-kuzzle',
+      index: 'engine-kuzzle',
       _id: 'Container-A1',
       body: { metadata: { weight: 1250 } },
     });
@@ -77,7 +77,7 @@ describe('features/Asset/History', () => {
       controller: 'device-manager/devices',
       action: 'linkAssets',
       _id: 'DummyTemp-unlinked1',
-      engineId: 'engine-ayse',
+      index: 'engine-ayse',
       body: {
         linkedMeasures: [
           {
@@ -98,7 +98,7 @@ describe('features/Asset/History', () => {
     response = await sdk.query<ApiDeviceUnlinkAssetsRequest>({
       controller: 'device-manager/devices',
       action: 'unlinkAssets',
-      engineId: 'engine-ayse',
+      index: 'engine-ayse',
       _id: 'DummyTemp-unlinked1',
       body: {
         assets: ['Container-unlinked1'],
@@ -108,7 +108,7 @@ describe('features/Asset/History', () => {
       controller: 'device-manager/assets',
       action: 'linkDevices',
       _id: 'Container-unlinked1',
-      engineId: 'engine-ayse',
+      index: 'engine-ayse',
       body: {
         linkedMeasures: [
           {
@@ -129,7 +129,7 @@ describe('features/Asset/History', () => {
     response = await sdk.query<ApiAssetUnlinkDevicesRequest>({
       controller: 'device-manager/assets',
       action: 'unlinkDevices',
-      engineId: 'engine-ayse',
+      index: 'engine-ayse',
       _id: 'Container-unlinked1',
       body: {
         devices: ['DummyTemp-unlinked1'],

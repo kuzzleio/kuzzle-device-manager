@@ -19,7 +19,7 @@ If the group has child groups, assets, or devices referencing its path, those re
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/:_id
+URL: http://kuzzle:7512/_/device-manager/:index/groups/:_id
 Method: DELETE
 ```
 
@@ -29,7 +29,7 @@ Method: DELETE
 {
   "controller": "device-manager/groups",
   "action": "delete",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<groupId>"
 }
 ```
@@ -38,7 +38,7 @@ Method: DELETE
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 - `_id`: Group ID (required)
 
 ---

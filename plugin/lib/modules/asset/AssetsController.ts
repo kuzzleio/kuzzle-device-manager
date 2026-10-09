@@ -69,38 +69,36 @@ export class AssetsController {
       actions: {
         create: {
           handler: this.create.bind(this),
-          http: [{ path: "device-manager/:engineId/assets", verb: "post" }],
+          http: [{ path: "device-manager/:index/assets", verb: "post" }],
         },
         upsert: {
           handler: this.upsert.bind(this),
-          http: [{ path: "device-manager/:engineId/assets", verb: "put" }],
+          http: [{ path: "device-manager/:index/assets", verb: "put" }],
         },
         delete: {
           handler: this.delete.bind(this),
-          http: [
-            { path: "device-manager/:engineId/assets/:_id", verb: "delete" },
-          ],
+          http: [{ path: "device-manager/:index/assets/:_id", verb: "delete" }],
         },
         get: {
           handler: this.get.bind(this),
-          http: [{ path: "device-manager/:engineId/assets/:_id", verb: "get" }],
+          http: [{ path: "device-manager/:index/assets/:_id", verb: "get" }],
         },
         search: {
           handler: this.search.bind(this),
           http: [
-            { path: "device-manager/:engineId/assets/_search", verb: "post" },
-            { path: "device-manager/:engineId/assets/_search", verb: "get" },
+            { path: "device-manager/:index/assets/_search", verb: "post" },
+            { path: "device-manager/:index/assets/_search", verb: "get" },
           ],
         },
         update: {
           handler: this.update.bind(this),
-          http: [{ path: "device-manager/:engineId/assets/:_id", verb: "put" }],
+          http: [{ path: "device-manager/:index/assets/:_id", verb: "put" }],
         },
         replaceMetadata: {
           handler: this.replaceMetadata.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/metadata",
+              path: "device-manager/:index/assets/:_id/metadata",
               verb: "patch",
             },
           ],
@@ -109,11 +107,11 @@ export class AssetsController {
           handler: this.getMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/measures",
+              path: "device-manager/:index/assets/:_id/measures",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/assets/:_id/measures",
+              path: "device-manager/:index/assets/:_id/measures",
               verb: "post",
             },
           ],
@@ -122,11 +120,11 @@ export class AssetsController {
           handler: this.getLastMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/lastMeasures",
+              path: "device-manager/:index/assets/:_id/lastMeasures",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/assets/:_id/lastMeasures",
+              path: "device-manager/:index/assets/:_id/lastMeasures",
               verb: "post",
             },
           ],
@@ -135,7 +133,7 @@ export class AssetsController {
           handler: this.mGetLastMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/_mGetLastMeasures",
+              path: "device-manager/:index/assets/_mGetLastMeasures",
               verb: "post",
             },
           ],
@@ -144,7 +142,7 @@ export class AssetsController {
           handler: this.mIngestMeasure.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:assetId/_mIngestMeasure",
+              path: "device-manager/:index/assets/:assetId/_mIngestMeasure",
               verb: "post",
             },
           ],
@@ -153,7 +151,7 @@ export class AssetsController {
           handler: this.ingestMeasure.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:assetId/measures/:slotName",
+              path: "device-manager/:index/assets/:assetId/measures/:slotName",
               verb: "post",
             },
           ],
@@ -162,11 +160,11 @@ export class AssetsController {
           handler: this.exportMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/measures/_export/:exportId",
+              path: "device-manager/:index/assets/:_id/measures/_export/:exportId",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/assets/:_id/measures/_export",
+              path: "device-manager/:index/assets/:_id/measures/_export",
               verb: "post",
             },
           ],
@@ -175,11 +173,11 @@ export class AssetsController {
           handler: this.export.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/_export/:exportId",
+              path: "device-manager/:index/assets/_export/:exportId",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/assets/_export",
+              path: "device-manager/:index/assets/_export",
               verb: "post",
             },
           ],
@@ -188,7 +186,7 @@ export class AssetsController {
           handler: this.migrateTenant.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/_migrateTenant",
+              path: "device-manager/:index/assets/_migrateTenant",
               verb: "post",
             },
           ],
@@ -197,11 +195,11 @@ export class AssetsController {
           handler: this.getLastMeasuredAt.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/lastMeasuredAt",
+              path: "device-manager/:index/assets/:_id/lastMeasuredAt",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/assets/:_id/lastMeasuredAt",
+              path: "device-manager/:index/assets/:_id/lastMeasuredAt",
               verb: "post",
             },
           ],
@@ -210,7 +208,7 @@ export class AssetsController {
           handler: this.mGetLastMeasuredAt.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/_mGetLastMeasuredAt",
+              path: "device-manager/:index/assets/_mGetLastMeasuredAt",
               verb: "post",
             },
           ],
@@ -228,7 +226,7 @@ export class AssetsController {
           handler: this.linkDevices.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/_link/",
+              path: "device-manager/:index/assets/:_id/_link/",
               verb: "put",
             },
           ],
@@ -237,7 +235,7 @@ export class AssetsController {
           handler: this.unlinkDevices.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/_unlink/",
+              path: "device-manager/:index/assets/:_id/_unlink/",
               verb: "delete",
             },
           ],
@@ -246,7 +244,7 @@ export class AssetsController {
           handler: this.addMeasureSlot.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/measure-slot/",
+              path: "device-manager/:index/assets/:_id/measure-slot/",
               verb: "post",
             },
           ],
@@ -255,7 +253,7 @@ export class AssetsController {
           handler: this.removeMeasureSlot.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/measure-slot/",
+              path: "device-manager/:index/assets/:_id/measure-slot/",
               verb: "delete",
             },
           ],
@@ -264,7 +262,7 @@ export class AssetsController {
           handler: this.updateMeasureSlotDisplayName.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/assets/:_id/measure-slot/",
+              path: "device-manager/:index/assets/:_id/measure-slot/",
               verb: "patch",
             },
           ],
@@ -285,21 +283,21 @@ export class AssetsController {
 
   async get(request: KuzzleRequest): Promise<ApiAssetGetResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
 
-    const asset = await this.assetService.get(engineId, assetId, request);
+    const asset = await this.assetService.get(index, assetId, request);
 
     return AssetSerializer.serialize(asset);
   }
 
   async upsert(request: KuzzleRequest): Promise<ApiAssetUpsertResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata");
 
     const upsertAsset = await this.assetService.upsert(
-      engineId,
+      index,
       model,
       reference,
       metadata,
@@ -311,11 +309,11 @@ export class AssetsController {
 
   async update(request: KuzzleRequest): Promise<ApiAssetUpdateResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const metadata = request.getBodyObject("metadata");
 
     const updatedAsset = await this.assetService.update(
-      engineId,
+      index,
       assetId,
       metadata,
       request,
@@ -328,11 +326,11 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetMetadataReplaceResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const metadata = request.getBodyObject("metadata");
 
     const updatedAsset = await this.assetService.replaceMetadata(
-      engineId,
+      index,
       assetId,
       metadata,
       request,
@@ -342,13 +340,13 @@ export class AssetsController {
   }
 
   async create(request: KuzzleRequest): Promise<ApiAssetCreateResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata", {});
 
     const asset = await this.assetService.create(
-      engineId,
+      index,
       model,
       reference,
       metadata,
@@ -359,15 +357,15 @@ export class AssetsController {
   }
 
   async delete(request: KuzzleRequest): Promise<ApiAssetDeleteResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const assetId = request.getId();
 
-    await this.assetService.delete(engineId, assetId, request);
+    await this.assetService.delete(index, assetId, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiAssetSearchResult> {
     return this.assetService.search(
-      request.getString("engineId"),
+      request.getIndex(),
       request.getSearchParams(),
       request,
     );
@@ -377,7 +375,7 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetGetMeasuresResult> {
     const id = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const size = request.input.args.size;
     const from = request.input.args.from;
     const startAt = request.input.args.startAt
@@ -390,7 +388,7 @@ export class AssetsController {
     const lang = request.getLangParam();
 
     const { measures, total } = await this.measureExporter.search(
-      engineId,
+      index,
       {
         endAt,
         id,
@@ -413,11 +411,11 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetGetLastMeasuresResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measureCount = request.getNumber("measureCount", 100);
 
     const results = await this.assetService.getLastMeasures(
-      engineId,
+      index,
       assetId,
       measureCount,
     );
@@ -445,12 +443,12 @@ export class AssetsController {
   async mGetLastMeasures(
     request: KuzzleRequest,
   ): Promise<ApiAssetMGetLastMeasuresResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measureCount = request.getNumber("measureCount", 100);
     const assetIds = request.getBodyArray("ids");
 
     const results = await this.assetService.mGetLastMeasures(
-      engineId,
+      index,
       assetIds,
       measureCount,
     );
@@ -517,7 +515,7 @@ export class AssetsController {
 
   async mIngestMeasure(request: KuzzleRequest) {
     const assetId = request.getString("assetId");
-    const indexId = request.getString("engineId");
+    const indexId = request.getIndex();
     const rawMeasurements = request.getBodyArray("measurements");
     const source = request.getBodyObject("dataSource");
     source.type = DATA_SOURCE_METADATA_TYPE.API;
@@ -578,7 +576,7 @@ export class AssetsController {
 
   async ingestMeasure(request: KuzzleRequest) {
     const assetId = request.getString("assetId");
-    const indexId = request.getString("engineId");
+    const indexId = request.getIndex();
     const measureName = request.getString("slotName");
     const source = request.getBodyObject("dataSource");
     source.type = DATA_SOURCE_METADATA_TYPE.API;
@@ -640,7 +638,7 @@ export class AssetsController {
   }
 
   async exportMeasures(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
 
     if (
       request.context.connection.protocol === "http" &&
@@ -649,11 +647,8 @@ export class AssetsController {
       try {
         const exportId = request.getString("exportId");
 
-        const { id } = await this.measureExporter.getExport(engineId, exportId);
-        const stream = await this.measureExporter.sendExport(
-          engineId,
-          exportId,
-        );
+        const { id } = await this.measureExporter.getExport(index, exportId);
+        const stream = await this.measureExporter.sendExport(index, exportId);
 
         request.response.configure({
           headers: {
@@ -688,7 +683,7 @@ export class AssetsController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.measureExporter.prepareExport(engineId, user, {
+    const link = await this.measureExporter.prepareExport(index, user, {
       endAt,
       id,
       lang,
@@ -702,7 +697,7 @@ export class AssetsController {
   }
 
   async export(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
 
     if (
       request.context.connection.protocol === "http" &&
@@ -710,7 +705,7 @@ export class AssetsController {
     ) {
       try {
         const exportId = request.getString("exportId");
-        const stream = await this.exporter.sendExport(engineId, exportId);
+        const stream = await this.exporter.sendExport(index, exportId);
 
         request.response.configure({
           headers: {
@@ -739,7 +734,7 @@ export class AssetsController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.exporter.prepareExport(engineId, user, {
+    const link = await this.exporter.prepareExport(index, user, {
       lang,
       query,
       sort,
@@ -752,15 +747,15 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetMigrateTenantResult> {
     const assetsList = request.getBodyArray("assetsList");
-    const engineId = request.getString("engineId");
-    const newEngineId = request.getBodyString("newEngineId");
+    const index = request.getIndex();
+    const newIndex = request.getBodyString("newIndex");
     const includeDevices = request.getBodyBoolean("includeDevices");
     const user = request.getUser() as any;
     const { errors, successes } = await this.assetService.migrateTenant(
       user,
       assetsList,
-      engineId,
-      newEngineId,
+      index,
+      newIndex,
       includeDevices,
       request,
     );
@@ -772,10 +767,10 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetGetLastMeasuredAtResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
 
     const lastMeasuredAt = await this.assetService.getLastMeasuredAt(
-      engineId,
+      index,
       assetId,
     );
 
@@ -787,10 +782,10 @@ export class AssetsController {
   async mGetLastMeasuredAt(
     request: KuzzleRequest,
   ): Promise<ApiAssetMGetLastMeasuredAtResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const assetIds = request.getBodyArray("ids");
 
-    return this.assetService.mGetLastMeasuredAt(engineId, assetIds);
+    return this.assetService.mGetLastMeasuredAt(index, assetIds);
   }
 
   /**
@@ -820,7 +815,7 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetLinkDevicesResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measuresTolink = request.getBodyArray(
       "linkedMeasures",
       [],
@@ -842,7 +837,7 @@ export class AssetsController {
       }
       const { asset: updatedAsset, device } =
         await this.assetService.linkAssetDevice(
-          engineId,
+          index,
           deviceId,
           assetId,
           measureSlots ?? [],
@@ -888,7 +883,7 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetAddMeasureSlotResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measureSlot = request.getBodyObject("measureSlot");
     const { type, name, displayName } = measureSlot;
     if (typeof type !== "string" || typeof name !== "string") {
@@ -900,7 +895,7 @@ export class AssetsController {
     return this.assetService.addMeasureSlot(
       assetId,
       { displayName, name, type },
-      engineId,
+      index,
       request,
     );
   }
@@ -911,7 +906,7 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetRemoveMeasureSlotResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measureSlotName = request.getBodyString("measureSlot");
     if (typeof measureSlotName !== "string") {
       throw new BadRequestError(
@@ -922,7 +917,7 @@ export class AssetsController {
     return this.assetService.removeMeasureSlot(
       assetId,
       measureSlotName,
-      engineId,
+      index,
       request,
     );
   }
@@ -934,7 +929,7 @@ export class AssetsController {
     request: KuzzleRequest,
   ): Promise<ApiAssetUpdateMeasureSlotDisplayNameResult> {
     const assetId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measureSlotName = request.getBodyString("measureSlot");
     const displayName = request.getBodyObject("displayName");
 
@@ -942,7 +937,7 @@ export class AssetsController {
       assetId,
       measureSlotName,
       displayName,
-      engineId,
+      index,
       request,
     );
   }

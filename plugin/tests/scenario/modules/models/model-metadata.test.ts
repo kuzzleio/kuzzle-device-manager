@@ -161,7 +161,7 @@ describe("ModelsController:metadata", () => {
     await sdk.query({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: { model: "Vehicle", reference: "Car123", metadata: { boo: true } },
     });
 
@@ -199,7 +199,7 @@ describe("ModelsController:metadata", () => {
     await sdk.query({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: { model: "Plane", reference: "Dasha31", metadata: { size: 179 } },
     });
 

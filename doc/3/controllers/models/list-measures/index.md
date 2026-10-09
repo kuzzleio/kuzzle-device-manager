@@ -28,7 +28,7 @@ Method: GET
   "action": "listMeasures",
 
   // Optional
-  "engineId": "<engine ID>"
+  "index": "<engine ID>"
 }
 ```
 
@@ -36,7 +36,7 @@ Method: GET
 
 ## Arguments
 
-- `engineId`: (optional) engine ID. When provided, returns both tenant-scoped measure models for this engine and global measure models. When omitted, returns only global measure models
+- `index`: (optional) engine ID. When provided, returns both tenant-scoped measure models for this engine and global measure models. When omitted, returns only global measure models
 
 ---
 

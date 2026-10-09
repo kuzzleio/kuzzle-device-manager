@@ -14,7 +14,7 @@ Link one or several measure slots of a device with one or several assets.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/_link
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_link
 Method: PUT
 ```
 
@@ -24,7 +24,7 @@ Method: PUT
 {
   "controller": "device-manager/devices",
   "action": "linkAssets",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>"
   "body": {
     "linkedMeasures": [
@@ -47,7 +47,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Device ID
 
 ## Body properties

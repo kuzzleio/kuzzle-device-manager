@@ -21,13 +21,13 @@ export class TestsController extends Controller {
   }
 
   async createDigitalTwinFromBackend(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
+    const index = request.getString("index");
     const reference = request.getBodyString("reference");
 
     await this.app.sdk.query<ApiAssetCreateRequest, ApiAssetCreateResult>({
       controller: "device-manager/assets",
       action: "create",
-      engineId,
+      index,
       body: {
         model: "Container",
         reference,
@@ -37,7 +37,7 @@ export class TestsController extends Controller {
     await this.app.sdk.query<ApiDeviceCreateRequest, ApiDeviceCreateResult>({
       controller: "device-manager/devices",
       action: "create",
-      engineId,
+      index,
       body: {
         model: "DummyTemp",
         reference,

@@ -14,7 +14,7 @@ Detach a device from an engine.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/_detach
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_detach
 Method: DELETE
 ```
 

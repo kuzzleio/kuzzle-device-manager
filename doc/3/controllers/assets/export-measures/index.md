@@ -41,8 +41,8 @@ const fullLink = `http${sdk.protocol.ssl ? 's' : ''}://${sdk.protocol.host}:${sd
 ### HTTP
 
 ```http
-POST: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures/_export
-GET:  http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures/_export/:exportId
+POST: http://kuzzle:7512/_/device-manager/:index/assets/:_id/measures/_export
+GET:  http://kuzzle:7512/_/device-manager/:index/assets/:_id/measures/_export/:exportId
 ```
 
 ### Other protocols
@@ -51,7 +51,7 @@ GET:  http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures/_export
 {
   "controller": "device-manager/assets",
   "action": "exportMeasures",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<assetId>",
   "body": {
     "query": {
@@ -73,7 +73,7 @@ GET:  http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measures/_export
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 - `_id`: asset id
   ISO_8601
 - `startAt`: beginning of time range (ISO 8601)

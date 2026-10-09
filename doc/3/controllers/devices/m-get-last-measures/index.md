@@ -16,7 +16,7 @@ Retrieves the last measures of multiple devices.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/_mGetLastMeasures
+URL: http://kuzzle:7512/_/device-manager/:index/devices/_mGetLastMeasures
 Method: POST
 ```
 
@@ -26,7 +26,7 @@ Method: POST
 {
   "controller": "device-manager/devices",
   "action": "mGetLastMeasures",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "ids": ["<deviceId>", "<anotherDeviceId>"]
   }
@@ -37,7 +37,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 
 ---
 

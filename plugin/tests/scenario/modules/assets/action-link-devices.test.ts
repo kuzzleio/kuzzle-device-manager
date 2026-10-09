@@ -31,7 +31,7 @@ describe("AssetController: linkDevices", () => {
     await sdk.query<ApiAssetlinkDevicesRequest>({
       controller: "device-manager/assets",
       action: "linkDevices",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-unlinked1",
       body: {
         linkedMeasures: [
@@ -83,7 +83,7 @@ describe("AssetController: linkDevices", () => {
     await sdk.query<ApiAssetlinkDevicesRequest>({
       controller: "device-manager/assets",
       action: "linkDevices",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-unlinked1",
       body: {
         linkedMeasures: [
@@ -124,7 +124,7 @@ describe("AssetController: linkDevices", () => {
     await sdk.query<ApiAssetlinkDevicesRequest>({
       controller: "device-manager/assets",
       action: "linkDevices",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
       body: {
         linkedMeasures: [
@@ -145,7 +145,7 @@ describe("AssetController: linkDevices", () => {
     await sdk.query<ApiAssetlinkDevicesRequest>({
       controller: "device-manager/assets",
       action: "linkDevices",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
       body: {
         linkedMeasures: [
@@ -193,7 +193,7 @@ describe("AssetController: linkDevices", () => {
     await sdk.query<ApiAssetlinkDevicesRequest>({
       controller: "device-manager/assets",
       action: "linkDevices",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-unlinked1",
       body: {
         linkedMeasures: [
@@ -251,7 +251,7 @@ describe("AssetController: linkDevices", () => {
     await sdk.query<ApiAssetlinkDevicesRequest>({
       controller: "device-manager/assets",
       action: "linkDevices",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-unlinked1",
       body: {
         linkedMeasures: [
@@ -303,7 +303,7 @@ describe("AssetController: linkDevices", () => {
       sdk.query<ApiAssetlinkDevicesRequest>({
         controller: "device-manager/assets",
         action: "linkDevices",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: {
           linkedMeasures: [
@@ -330,7 +330,7 @@ describe("AssetController: linkDevices", () => {
       sdk.query<ApiAssetlinkDevicesRequest>({
         controller: "device-manager/assets",
         action: "linkDevices",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-unlinked1",
         body: {
           linkedMeasures: [
@@ -372,7 +372,7 @@ describe("AssetController: linkDevices", () => {
       sdk.query<ApiAssetlinkDevicesRequest>({
         controller: "device-manager/assets",
         action: "linkDevices",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-unlinked1",
         body: {
           linkedMeasures: [
@@ -415,7 +415,7 @@ describe("AssetController: linkDevices", () => {
       sdk.query<ApiAssetlinkDevicesRequest>({
         controller: "device-manager/assets",
         action: "linkDevices",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-unlinked1",
         body: {
           linkedMeasures: [
@@ -441,7 +441,7 @@ describe("AssetController: linkDevices", () => {
       sdk.query<ApiAssetlinkDevicesRequest>({
         controller: "device-manager/assets",
         action: "linkDevices",
-        engineId: "engine-kuzzle",
+        index: "engine-kuzzle",
         _id: "Container-unlinked1",
         body: {
           linkedMeasures: [
@@ -468,7 +468,7 @@ describe("AssetController: linkDevices", () => {
       sdk.query<ApiAssetlinkDevicesRequest>({
         controller: "device-manager/assets",
         action: "linkDevices",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-notexisting",
         body: {
           linkedMeasures: [
@@ -495,7 +495,7 @@ describe("AssetController: linkDevices", () => {
       sdk.query<ApiAssetlinkDevicesRequest>({
         controller: "device-manager/assets",
         action: "linkDevices",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-unlinked1",
         body: {
           linkedMeasures: [
@@ -514,7 +514,7 @@ describe("AssetController: linkDevices", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-linked1",
         body: {
           linkedMeasures: [

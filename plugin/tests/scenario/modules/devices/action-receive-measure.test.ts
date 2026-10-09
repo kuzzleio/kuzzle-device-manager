@@ -15,7 +15,7 @@ describe("DeviceController: receiveMeasure", () => {
     >({
       controller: "device-manager/devices",
       action: "receiveMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
       body: {
         payloadUuids: ["foobar-barfoo"],
@@ -82,7 +82,7 @@ describe("DeviceController: receiveMeasure", () => {
       >({
         controller: "device-manager/devices",
         action: "receiveMeasures",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-linked1",
         body: {
           measures: [

@@ -16,7 +16,7 @@ Retrieves measure from a device.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/measures
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/measures
 Method: GET or POST
 ```
 
@@ -26,7 +26,7 @@ Method: GET or POST
 {
   "controller": "device-manager/devices",
   "action": "getMeasures",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>",
   "body": {
     "query": {
@@ -50,7 +50,7 @@ Method: GET or POST
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 - `_id`: device id
   ISO_8601
 - `from`: paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument

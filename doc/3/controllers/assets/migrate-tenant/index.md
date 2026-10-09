@@ -15,7 +15,7 @@ This action allow to migrates a list of assets and their attached devices to ano
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/_migrateTenant
+URL: http://kuzzle:7512/_/device-manager/:index/assets/_migrateTenant
 Method: POST
 ```
 
@@ -25,10 +25,10 @@ Method: POST
 {
   "controller": "device-manager/assets",
   "action": "migrateTenant",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "assetsList": ["<assetId>"],
-    "newEngineId": "<newEngineId>"
+    "newIndex": "<newIndex>"
     "includeDevices": "<boolean>"
   }
 }
@@ -38,12 +38,12 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 
 ## Body properties
 
 - `assetsList`: An array containing a list of asset ids to migrate
-- `newEngineId`: The id of the engine you want to migrate the assets to
+- `newIndex`: The id of the engine you want to migrate the assets to
 - `includeDevices`: Boolean indicating if the devices linked to the asset should be migrated with it.
 
 ---

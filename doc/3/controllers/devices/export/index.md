@@ -29,7 +29,7 @@ The generated export link does not include protocol, host, or port. You must add
 **Prepare export (step 1):**
 
 ```http
-POST: http://kuzzle:7512/_/device-manager/:engineId/devices/_export
+POST: http://kuzzle:7512/_/device-manager/:index/devices/_export
 Body: {
   "query": { /* Koncorde query */ },
   "sort": [ /* sort fields */ ],
@@ -40,7 +40,7 @@ Body: {
 **Download export (step 2):**
 
 ```http
-GET: http://kuzzle:7512/_/device-manager/:engineId/devices/_export/:exportId
+GET: http://kuzzle:7512/_/device-manager/:index/devices/_export/:exportId
 ```
 
 ### Other protocols
@@ -51,7 +51,7 @@ GET: http://kuzzle:7512/_/device-manager/:engineId/devices/_export/:exportId
 {
   "controller": "device-manager/devices",
   "action": "export",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "query": { /* Koncorde query */ },
     "sort": [ /* sort fields */ ],
@@ -66,7 +66,7 @@ GET: http://kuzzle:7512/_/device-manager/:engineId/devices/_export/:exportId
 {
   "controller": "device-manager/devices",
   "action": "export",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "exportId": "<exportId>"
 }
 ```
@@ -75,7 +75,7 @@ GET: http://kuzzle:7512/_/device-manager/:engineId/devices/_export/:exportId
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 - `exportId`: Export identifier (required for GET)
 - `query`: (optional) Search query for filtering devices (Koncorde syntax)
 - `sort`: (optional) Sort fields
@@ -95,7 +95,7 @@ GET: http://kuzzle:7512/_/device-manager/:engineId/devices/_export/:exportId
   "action": "export",
   "requestId": "<unique request identifier>",
   "result": {
-    "link": "/_/device-manager/<engineId>/devices/_export/<exportId>"
+    "link": "/_/device-manager/<index>/devices/_export/<exportId>"
   }
 }
 ```
@@ -116,7 +116,7 @@ GET: http://kuzzle:7512/_/device-manager/:engineId/devices/_export/:exportId
 const { result } = await sdk.query({
   controller: "device-manager/devices",
   action: "export",
-  engineId: "engine-ayse",
+  index: "engine-ayse",
   body: {
     query: { /* ... */ },
     sort: [ /* ... */ ]

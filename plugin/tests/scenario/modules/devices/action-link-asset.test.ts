@@ -27,7 +27,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query<ApiDeviceLinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "linkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-unlinked1",
       body: {
         linkedMeasures: [
@@ -79,7 +79,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query<ApiDeviceLinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "linkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-unlinked2",
       body: {
         linkedMeasures: [
@@ -120,7 +120,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query<ApiDeviceLinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "linkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTempPosition-unlinked3",
       body: {
         linkedMeasures: [
@@ -141,7 +141,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query<ApiDeviceLinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "linkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTempPosition-unlinked3",
       body: {
         linkedMeasures: [
@@ -189,7 +189,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query<ApiDeviceLinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "linkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-unlinked1",
       body: {
         linkedMeasures: [
@@ -209,7 +209,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query<ApiDeviceLinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "linkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTempPosition-unlinked3",
       body: {
         linkedMeasures: [
@@ -258,7 +258,7 @@ describe("DeviceController: receiveMeasure", () => {
     await sdk.query<ApiDeviceLinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "linkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTempPosition-unlinked3",
       body: {
         linkedMeasures: [
@@ -310,7 +310,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-unlinked1",
         body: {
           linkedMeasures: [
@@ -337,7 +337,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-linked1",
         body: {
           linkedMeasures: [
@@ -379,7 +379,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTempPosition-linked2",
         body: {
           linkedMeasures: [
@@ -422,7 +422,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-detached1",
         body: {
           linkedMeasures: [
@@ -448,7 +448,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-kuzzle",
+        index: "engine-kuzzle",
         _id: "DummyTemp-unlinked1",
         body: {
           linkedMeasures: [
@@ -475,7 +475,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-unlinked1",
         body: {
           linkedMeasures: [
@@ -502,7 +502,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTempPosition-unlinked3",
         body: {
           linkedMeasures: [
@@ -521,7 +521,7 @@ describe("DeviceController: receiveMeasure", () => {
       sdk.query<ApiDeviceLinkAssetsRequest>({
         controller: "device-manager/devices",
         action: "linkAssets",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-linked1",
         body: {
           linkedMeasures: [

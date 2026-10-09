@@ -192,7 +192,7 @@ describe("ModelsController:assets:multi-group", () => {
           model: "MultiGroupTenant",
           metadataMappings: {},
           measures: [],
-          engineIds: ["engine-ayse"],
+          indexes: ["engine-ayse"],
         },
       }),
     ).rejects.toThrow(/mutually exclusive/);

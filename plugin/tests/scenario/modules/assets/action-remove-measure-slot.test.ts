@@ -34,7 +34,7 @@ describe("AssetController: add measure slot", () => {
       sdk.query<ApiAssetAddMeasureSlotRequest>({
         controller: "device-manager/assets",
         action: "addMeasureSlot",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: { measureSlot: newSlot },
       }),
@@ -46,7 +46,7 @@ describe("AssetController: add measure slot", () => {
       sdk.query<ApiAssetRemoveMeasureSlotRequest>({
         controller: "device-manager/assets",
         action: "removeMeasureSlot",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: { measureSlot: newSlot.name },
       }),
@@ -61,7 +61,7 @@ describe("AssetController: add measure slot", () => {
       sdk.query<ApiAssetAddMeasureSlotRequest>({
         controller: "device-manager/assets",
         action: "addMeasureSlot",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: { measureSlot: newSlot },
       }),
@@ -71,7 +71,7 @@ describe("AssetController: add measure slot", () => {
     await sdk.query<ApiAssetlinkDevicesRequest>({
       controller: "device-manager/assets",
       action: "linkDevices",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
       body: {
         linkedMeasures: [
@@ -86,7 +86,7 @@ describe("AssetController: add measure slot", () => {
       sdk.query<ApiAssetRemoveMeasureSlotRequest>({
         controller: "device-manager/assets",
         action: "removeMeasureSlot",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: { measureSlot: newSlot.name },
       }),
@@ -99,7 +99,7 @@ describe("AssetController: add measure slot", () => {
       sdk.query<ApiAssetRemoveMeasureSlotRequest>({
         controller: "device-manager/assets",
         action: "removeMeasureSlot",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: { measureSlot: unknownSlotName },
       }),
@@ -112,7 +112,7 @@ describe("AssetController: add measure slot", () => {
       sdk.query<ApiAssetRemoveMeasureSlotRequest>({
         controller: "device-manager/assets",
         action: "removeMeasureSlot",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: { measureSlot: modelSlotName },
       }),

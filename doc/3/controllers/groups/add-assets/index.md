@@ -19,7 +19,7 @@ The assets will be linked to the group and their `groups` property will be updat
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/:_id/addAssets
+URL: http://kuzzle:7512/_/device-manager/:index/groups/:_id/addAssets
 Method: POST
 ```
 
@@ -29,7 +29,7 @@ Method: POST
 {
   "controller": "device-manager/groups",
   "action": "addAssets",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<groupId>",
   "body": {
     "path": "<group path>",
@@ -42,7 +42,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 - `_id`: Group ID (required)
 
 ## Body properties

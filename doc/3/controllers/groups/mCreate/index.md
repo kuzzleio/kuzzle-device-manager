@@ -19,7 +19,7 @@ You must specify for each group a name, and optionally a model, metadata, and an
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/_mCreate
+URL: http://kuzzle:7512/_/device-manager/:index/groups/_mCreate
 Method: POST
 ```
 
@@ -29,7 +29,7 @@ Method: POST
 {
   "controller": "device-manager/groups",
   "action": "mCreate",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "groups":[
       {
@@ -49,7 +49,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 
 ## Body properties
 - `groups`: Array containing the different groups to create.

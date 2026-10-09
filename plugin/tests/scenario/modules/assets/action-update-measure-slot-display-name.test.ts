@@ -34,7 +34,7 @@ describe("AssetController: update measure slot display name", () => {
       sdk.query<ApiAssetUpdateMeasureSlotDisplayNameRequest>({
         controller: "device-manager/assets",
         action: "updateMeasureSlotDisplayName",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: { measureSlot: existingSlotName, displayName },
       }),
@@ -57,7 +57,7 @@ describe("AssetController: update measure slot display name", () => {
       sdk.query<ApiAssetUpdateMeasureSlotDisplayNameRequest>({
         controller: "device-manager/assets",
         action: "updateMeasureSlotDisplayName",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked1",
         body: { measureSlot: unknownSlotName, displayName },
       }),

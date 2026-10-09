@@ -68,7 +68,7 @@ describe("DevicesController:mGetLastMeasures", () => {
     >({
       controller: "device-manager/devices",
       action: "mGetLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         ids: ["DummyTempPosition-warehouse", "DummyTempPosition-unlinked3"],
       },
@@ -136,7 +136,7 @@ describe("DevicesController:mGetLastMeasures", () => {
     >({
       controller: "device-manager/devices",
       action: "mGetLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { ids: ["DummyTemp-unlinked1"] },
     });
 

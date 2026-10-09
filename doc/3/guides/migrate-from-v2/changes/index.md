@@ -168,13 +168,13 @@ The `models` collection in the platform index has two new fields for scoping:
 {
   "properties": {
     "engineGroups": { "type": "keyword" },
-    "engineIds": { "type": "keyword" }
+    "indexes": { "type": "keyword" }
   }
 }
 ```
 
 - `engineGroups` (replaces former `engineGroup`): An array of tenant group names. Determines which tenant groups can access the model. The value `["commons"]` makes the model globally available.
-- `engineIds` (optional): An array of tenant engine IDs. When present, scopes the model to specific tenants within the `engineGroups`.
+- `indexes` (optional): An array of tenant engine IDs. When present, scopes the model to specific tenants within the `engineGroups`.
 
 These fields affect asset, measure, and group model documents. All three model types support multi-group scoping via `engineGroups`.
 
@@ -186,7 +186,7 @@ Asset model document IDs now vary based on scope:
 |-------|--------|---------|
 | Single group | `model-asset-{ModelName}` | `model-asset-Room` |
 | Multi-group | `model-asset-{sortedGroups}-{ModelName}` | `model-asset-air_quality+public_lighting-Sensor` |
-| Tenant-scoped | `model-asset-{sortedGroups}-{sortedEngineIds}-{ModelName}` | `model-asset-air_quality-engine-ayse-TenantSensor` |
+| Tenant-scoped | `model-asset-{sortedGroups}-{sortedIndexes}-{ModelName}` | `model-asset-air_quality-engine-ayse-TenantSensor` |
 
 Measure model document IDs:
 
@@ -194,8 +194,8 @@ Measure model document IDs:
 |-------|--------|---------|
 | Global | `model-measure-{type}` | `model-measure-temperature` |
 | Multi-group | `model-measure-{sortedGroups}-{type}` | `model-measure-air_quality+public_lighting-temperature` |
-| Tenant-scoped | `model-measure-{sortedGroups}-{sortedEngineIds}-{type}` | `model-measure-air_quality-engine-ayse-temperature` |
-| Tenant-scoped (no groups) | `model-measure-{sortedEngineIds}-{type}` | `model-measure-engine-ayse-temperature` |
+| Tenant-scoped | `model-measure-{sortedGroups}-{sortedIndexes}-{type}` | `model-measure-air_quality-engine-ayse-temperature` |
+| Tenant-scoped (no groups) | `model-measure-{sortedIndexes}-{type}` | `model-measure-engine-ayse-temperature` |
 
 Group model document IDs:
 
@@ -224,7 +224,7 @@ The `linkAssets` requires the following arguments:
 
 ##### Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Device ID
 
 ##### Body properties
@@ -240,7 +240,7 @@ The `unlinkAssets` requires the following arguments:
 
 ##### Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Device ID
 
 ##### Body properties
@@ -266,20 +266,20 @@ If set to true, the devices linked to the asset will be unlinked from their pote
 The following parameter changes apply to all asset and group model operations (`writeAsset`, `updateAsset`, `getAsset`, `listAssets`, `searchAssets`, `writeGroup`, `listGroups`, `searchGroups`):
 
 - `engineGroup` (string) has been replaced by `engineGroups` (string array). This enables sharing an asset model across multiple tenant groups.
-- `engineIds` (string array, optional) has been added to the `writeAsset` body. When provided, the model is scoped to specific tenant engines within the specified groups.
-- `updateAsset` accepts an optional `engineId` (singular string) query parameter, used to locate the correct tenant-scoped model for updating. The model's `engineIds` are immutable — they are preserved from the original document and cannot be changed via `updateAsset`.
+- `indexes` (string array, optional) has been added to the `writeAsset` body. When provided, the model is scoped to specific tenant engines within the specified groups.
+- `updateAsset` accepts an optional `index` (singular string) query parameter, used to locate the correct tenant-scoped model for updating. The model's `indexes` are immutable — they are preserved from the original document and cannot be changed via `updateAsset`.
 
 #### Asset model scoping — 3-level fallback
 
 Asset models now support three scoping levels. When resolving a model with `getAsset`, the system follows a priority chain:
 
-1. **Tenant-scoped**: Model matching both the `engineGroups` and the specific `engineId`
-2. **Group-scoped**: Model matching the `engineGroups` but without `engineIds`
-3. **Global (commons)**: Model with `engineGroups: ["commons"]` and no `engineIds`
+1. **Tenant-scoped**: Model matching both the `engineGroups` and the specific `index`
+2. **Group-scoped**: Model matching the `engineGroups` but without `indexes`
+3. **Global (commons)**: Model with `engineGroups: ["commons"]` and no `indexes`
 
 Anti-shadowing enforcement: a model name (for assets) or measure type (for measures) cannot exist at different scope levels simultaneously. For example, creating a tenant-scoped model when a global model with the same name already exists is rejected. This prevents accidental shadowing of global models by local ones.
 
-`listAssets` and `searchAssets` accept an optional `engineId` parameter. When provided, they return tenant-scoped + group-scoped + commons models. When omitted, they return only group-scoped + commons models.
+`listAssets` and `searchAssets` accept an optional `index` parameter. When provided, they return tenant-scoped + group-scoped + commons models. When omitted, they return only group-scoped + commons models.
 
 #### Multi-group models
 
@@ -291,9 +291,9 @@ Commons normalization applies to all model types: if `engineGroups` contains `"c
 
 Measure models now accept the same scoping parameters as asset models:
 
-- `writeMeasure` accepts an optional `engineIds` (string array) body parameter to scope a measure model to specific tenants.
-- `getMeasure`, `listMeasures`, and `searchMeasures` accept an optional `engineId` query parameter.
+- `writeMeasure` accepts an optional `indexes` (string array) body parameter to scope a measure model to specific tenants.
+- `getMeasure`, `listMeasures`, and `searchMeasures` accept an optional `index` query parameter.
 
-When `engineId` is provided, `getMeasure` returns the tenant-scoped measure first, falling back to the global one. When omitted, only global measures are returned (backward compatible).
+When `index` is provided, `getMeasure` returns the tenant-scoped measure first, falling back to the global one. When omitted, only global measures are returned (backward compatible).
 
 Anti-shadowing applies to measures as well: a measure type cannot exist at different scope levels (global vs group-scoped vs tenant-scoped).

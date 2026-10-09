@@ -29,7 +29,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
     response = await sdk.query<ApiDeviceUnlinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "unlinkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
       body: { assets: ["Container-linked1"] },
     });
@@ -47,7 +47,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
     await sdk.query<ApiDeviceUnlinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "unlinkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTempPosition-linked2",
       body: { measureSlots: ["temperature"] },
     });
@@ -83,7 +83,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
     await sdk.query<ApiDeviceUnlinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "unlinkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTempPosition-linked2",
       body: { allMeasures: true },
     });
@@ -96,7 +96,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
     const promise = sdk.query<ApiDeviceUnlinkAssetsRequest>({
       controller: "device-manager/devices",
       action: "unlinkAssets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
       body: {},
     });
@@ -115,7 +115,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
       action: "unlinkAssets",
       _id: "DummyTemp-unlinked1",
       body: { assets: ["Container-linked1"] },
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     await expect(promise).rejects.toMatchObject({
@@ -130,7 +130,7 @@ describe("features/Device/Controller/UnlinkAssets", () => {
     response = await sdk.query({
       controller: "device-manager/devices",
       action: "delete",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
     });
 
