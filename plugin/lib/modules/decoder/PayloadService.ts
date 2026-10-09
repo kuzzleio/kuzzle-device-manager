@@ -1,4 +1,4 @@
-import { KuzzleRequest } from "kuzzle";
+import { BadRequestError, KuzzleRequest } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument } from "kuzzle-sdk";
 import { v4 as uuidv4 } from "uuid";
@@ -72,6 +72,9 @@ export class PayloadService extends BaseService {
     }
 
     const valid = validation.status === "valid";
+    const reason = valid
+      ? validation.reason
+      : (validation.reason ?? "Skip by user defined validation");
 
     await this.savePayload(
       decoder.deviceModel,
@@ -81,15 +84,13 @@ export class PayloadService extends BaseService {
       apiAction,
       {
         customData: validation.customData,
-        reason: valid
-          ? validation.reason
-          : (validation.reason ?? "Skip by user defined validation"),
+        reason,
         state: DecodingState[valid ? DecodingState.VALID : DecodingState.SKIP],
       },
     );
 
     if (!valid) {
-      return { valid };
+      throw new BadRequestError(reason);
     }
 
     let decodedPayload = new DecodedPayload<any>(decoder);

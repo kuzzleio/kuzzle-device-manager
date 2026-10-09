@@ -35,7 +35,7 @@ export type NamedMeasures = Array<{
 export type DecoderValidationResult = {
   /**
    * "valid": the payload will be decoded
-   * "invalid": the payload will be skipped (status 200)
+   * "invalid": the payload will be skipped (status 400)
    */
   status: "valid" | "invalid";
 
@@ -153,7 +153,7 @@ export abstract class Decoder {
    *
    * If the method:
    *   - return status "valid": the payload will be processed (status 200)
-   *   - return status "invalid": the payload will be skipped (status 200)
+   *   - return status "invalid": the payload will be skipped (status 400)
    *   - throw an error: the payload will be skipped (status 4** or 5**)
    *
    * The returned `reason` and `customData` are stored in the "payloads" collection.

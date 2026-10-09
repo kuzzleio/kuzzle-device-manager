@@ -49,14 +49,14 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Reject a DummyTemp payload", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "12345", temperature: 21, invalid: true },
-    ]);
-
-    expect(response.result).toMatchObject({ valid: false });
+    await expect(
+      sendPayloads(sdk, "dummy-temp", [
+        { deviceEUI: "12345", temperature: 21, invalid: true },
+      ])
+    ).rejects.toMatchObject({
+      status: 400,
+      message: "Payload flagged as invalid",
+    });
 
     await expect(
       sdk.document.exists("device-manager", "devices", "DummyTemp-12345")

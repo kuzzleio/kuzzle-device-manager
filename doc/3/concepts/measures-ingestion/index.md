@@ -116,7 +116,7 @@ This method takes the raw data frame as a parameter and returns an object `{ sta
 2. this dataframe should be discarded by returning `{ status: "invalid", reason: "..." }`
 3. the format of this frame is incorrect by throwing an exception
 
-Depending on the result of the `validate` method, the API action will return either a `200` status (Case 1 and 2) or a `4**` status (case 3).
+Depending on the result of the `validate` method, the API action will return either a `200` status (case 1), a `400` status with the returned reason as message (case 2) or a `4**`/`5**` status (case 3).
 
 For each case, a state and a reason is stored inside the payload document:
 
