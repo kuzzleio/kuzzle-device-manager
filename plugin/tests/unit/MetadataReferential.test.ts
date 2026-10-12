@@ -1,207 +1,251 @@
 import {
   checkMetadataReferentialEntry,
+  enrichModelMetadata,
   getAddedInlineMetadata,
-  resolveMetadataReferences,
+  getEntryModelsConflicts,
+  resolveMetadataMappings,
 } from "../../lib/modules/model/MetadataReferential";
-import { AssetModelContent } from "../../lib/modules/model/types/ModelContent";
-import { MetadataReferential } from "../../lib/modules/model/types/ModelContent";
+import { findMappingsConflicts } from "../../lib/modules/model/ModelsConflicts";
+import {
+  AssetModelContent,
+  MetadataReferential,
+} from "../../lib/modules/model/types/ModelContent";
 
-describe("resolveMetadataReferences", () => {
-  const referential: MetadataReferential = {
-    width: {
-      mappings: { type: "float" },
-      locales: { en: { friendlyName: "Width", description: "Width" } },
+const referential: MetadataReferential = {
+  width: {
+    mappings: { type: "float" },
+    locales: { en: { friendlyName: "Width", description: "Width" } },
+    icon: "ruler",
+    defaultValue: 1,
+  },
+};
+
+const context = {
+  createError: (message: string) => new Error(message),
+  model: "Container",
+  modelType: "asset" as const,
+};
+
+function assetModel(metadataMappings: object): AssetModelContent {
+  return {
+    asset: {
+      defaultMetadata: {},
+      measures: [],
+      metadataMappings,
+      model: "Container",
     },
-  };
-  const context = {
-    createError: (message: string) => new Error(message),
-    model: "Container",
-    modelType: "asset" as const,
-  };
+    engineGroups: ["commons"],
+    type: "asset",
+  } as AssetModelContent;
+}
 
-  it("Reports inline default values differing for a referenced metadata", () => {
-    const { fields, ignored, warnings } = resolveMetadataReferences(
+describe("enrichModelMetadata", () => {
+  it("Keeps the marker and enriches the details and default value", () => {
+    const { fields, resolvedMappings, warnings } = enrichModelMetadata(
       referential,
-      { defaultMetadata: { width: 2.33 }, metadataReferences: { width: true } },
+      { metadataMappings: { width: { referential: true } } },
       context,
     );
 
-    expect(fields.defaultMetadata).toEqual({});
+    expect(fields).toEqual({
+      defaultMetadata: { width: 1 },
+      metadataDetails: {
+        width: {
+          icon: "ruler",
+          locales: { en: { friendlyName: "Width", description: "Width" } },
+        },
+      },
+      metadataMappings: { width: { referential: true } },
+    });
+    expect(resolvedMappings).toEqual({ width: { type: "float" } });
     expect(warnings).toEqual([]);
-    expect(ignored).toEqual([
-      expect.stringContaining(
-        'inline default value of the referenced metadata "width"',
-      ),
-    ]);
   });
 
-  it("Reports inline details differing for a referenced metadata", () => {
-    const { ignored, warnings } = resolveMetadataReferences(
+  it("Lets the model details and default value take precedence", () => {
+    const { fields } = enrichModelMetadata(
       referential,
       {
+        defaultMetadata: { width: 2 },
         metadataDetails: {
-          width: { locales: { en: { friendlyName: "W", description: "" } } },
+          width: {
+            group: "size",
+            icon: "arrows",
+            locales: { en: { friendlyName: "Size", description: "" } },
+          },
         },
-        metadataReferences: { width: true },
+        metadataMappings: { width: { referential: true } },
       },
       context,
     );
 
-    expect(warnings).toEqual([]);
-    expect(ignored).toEqual([
-      expect.stringContaining(
-        'inline details of the referenced metadata "width"',
+    expect(fields.defaultMetadata).toEqual({ width: 2 });
+    expect(fields.metadataDetails.width).toEqual({
+      group: "size",
+      icon: "arrows",
+      locales: { en: { friendlyName: "Size", description: "" } },
+    });
+  });
+
+  it("Rejects an unknown or malformed marker", () => {
+    expect(() =>
+      enrichModelMetadata(
+        referential,
+        { metadataMappings: { height: { referential: true } } },
+        context,
       ),
+    ).toThrow('uses the unknown referential metadata "height"');
+
+    expect(() =>
+      enrichModelMetadata(
+        referential,
+        { metadataMappings: { width: { referential: false } as any } },
+        context,
+      ),
+    ).toThrow("must be { referential: true }");
+  });
+
+  it("Rejects an inline metadata differing from the referential", () => {
+    expect(() =>
+      enrichModelMetadata(
+        referential,
+        { metadataMappings: { width: { type: "integer" } } },
+        context,
+      ),
+    ).toThrow("conflict with the metadata referential");
+  });
+
+  it("Warns about an inline metadata identical to the referential", () => {
+    const { warnings } = enrichModelMetadata(
+      referential,
+      { metadataMappings: { width: { type: "float" } } },
+      context,
+    );
+
+    expect(warnings).toHaveLength(1);
+  });
+});
+
+describe("resolveMetadataMappings", () => {
+  it("Replaces the markers by the referential mappings", () => {
+    expect(
+      resolveMetadataMappings(referential, {
+        color: { type: "keyword" },
+        removed: { referential: true },
+        width: { referential: true },
+      }),
+    ).toEqual({ color: { type: "keyword" }, width: { type: "float" } });
+  });
+});
+
+describe("getEntryModelsConflicts", () => {
+  it("Lists the models defining the metadata inline differently", () => {
+    const chunks = getEntryModelsConflicts("width", referential.width, [
+      assetModel({ width: { type: "keyword" } }),
+      assetModel({ width: { type: "float" } }),
+      assetModel({ width: { referential: true } }),
+    ]);
+
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0].conflicts).toEqual([
+      {
+        currentType: "float",
+        newType: "keyword",
+        path: "asset.metadataMappings.width.type",
+      },
+    ]);
+  });
+});
+
+describe("findMappingsConflicts", () => {
+  it("Detects a type change", () => {
+    expect(
+      findMappingsConflicts(
+        { a: { type: "keyword" } },
+        { a: { type: "integer" } },
+      ),
+    ).toEqual([{ currentType: "keyword", newType: "integer", path: "a.type" }]);
+  });
+
+  it("Detects a value becoming an object and the opposite", () => {
+    const object = { properties: { b: { type: "keyword" } } };
+
+    expect(
+      findMappingsConflicts({ a: { type: "keyword" } }, { a: object }),
+    ).toEqual([{ currentType: "keyword", newType: "object", path: "a" }]);
+    expect(
+      findMappingsConflicts({ a: object }, { a: { type: "keyword" } }),
+    ).toEqual([{ currentType: "object", newType: "keyword", path: "a" }]);
+  });
+
+  it("Detects nested conflicts and accepts new properties", () => {
+    expect(
+      findMappingsConflicts(
+        { a: { properties: { b: { type: "keyword" } } } },
+        {
+          a: {
+            properties: { b: { type: "integer" }, c: { type: "keyword" } },
+          },
+          d: { type: "keyword" },
+        },
+      ),
+    ).toEqual([
+      {
+        currentType: "keyword",
+        newType: "integer",
+        path: "a.properties.b.type",
+      },
     ]);
   });
 
-  it("Does not warn about inline values identical to the resolved ones", () => {
-    const first = resolveMetadataReferences(
-      referential,
-      { metadataReferences: { width: { defaultValue: 1 } } },
-      context,
-    );
-    const { ignored, warnings } = resolveMetadataReferences(
-      referential,
-      first.fields,
-      context,
-    );
-
-    expect(warnings).toEqual([]);
-    expect(ignored).toEqual([]);
-  });
-
-  describe("icon", () => {
-    const iconReferential: MetadataReferential = {
-      ...referential,
-      height: {
-        mappings: { type: "float" },
-        locales: {},
-        icon: "ruler-vertical",
-      },
-    };
-
-    it("Resolves the referential icon into the metadata details", () => {
-      const { fields } = resolveMetadataReferences(
-        iconReferential,
-        { metadataReferences: { height: true, width: true } },
-        context,
-      );
-
-      expect(fields.metadataDetails.height.icon).toBe("ruler-vertical");
-      expect(fields.metadataDetails.width).not.toHaveProperty("icon");
-    });
-
-    it("Lets the reference override the referential icon", () => {
-      const { fields } = resolveMetadataReferences(
-        iconReferential,
-        {
-          metadataReferences: {
-            height: { icon: "arrows-up-down" },
-            width: { icon: "arrows-left-right" },
-          },
-        },
-        context,
-      );
-
-      expect(fields.metadataDetails.height.icon).toBe("arrows-up-down");
-      expect(fields.metadataDetails.width.icon).toBe("arrows-left-right");
-    });
-
-    it("Keeps the icon of an inline metadata", () => {
-      const { fields } = resolveMetadataReferences(
-        iconReferential,
-        {
-          metadataMappings: { depth: { type: "float" } },
-          metadataDetails: { depth: { locales: {}, icon: "cube" } },
-        },
-        context,
-      );
-
-      expect(fields.metadataDetails.depth.icon).toBe("cube");
-    });
-
-    it("Does not warn about a resolved icon sent back", () => {
-      const first = resolveMetadataReferences(
-        iconReferential,
-        { metadataReferences: { height: true } },
-        context,
-      );
-      const { ignored, warnings } = resolveMetadataReferences(
-        iconReferential,
-        first.fields,
-        context,
-      );
-
-      expect(warnings).toEqual([]);
-      expect(ignored).toEqual([]);
-    });
-
-    it("Rejects an icon that is not a string", () => {
-      expect(() =>
-        resolveMetadataReferences(
-          iconReferential,
-          { metadataReferences: { height: { icon: 42 as any } } },
-          context,
-        ),
-      ).toThrow(/icon of the reference to metadata "height".*must be a string/);
-
-      expect(() =>
-        checkMetadataReferentialEntry(
-          "height",
-          { mappings: { type: "float" }, locales: {}, icon: 42 as any },
-          (message) => new Error(message),
-        ),
-      ).toThrow('Metadata "height" icon must be a string');
-    });
+  it("Detects an object becoming nested", () => {
+    expect(
+      findMappingsConflicts(
+        { a: { properties: {} } },
+        { a: { type: "nested", properties: {} } },
+      ),
+    ).toEqual([{ currentType: "object", newType: "nested", path: "a.type" }]);
   });
 });
 
 describe("getAddedInlineMetadata", () => {
-  const stored = {
-    type: "asset",
-    engineGroups: ["commons"],
-    asset: {
-      model: "Container",
-      measures: [],
-      metadataMappings: {
-        legacy: { type: "keyword" },
-        width: { type: "float" },
-      },
-      metadataDetails: {},
-      defaultMetadata: {},
-      metadataReferences: { width: true },
-    },
-  } as unknown as AssetModelContent;
-
   it("Lists every inline metadata of a new model", () => {
     expect(
       getAddedInlineMetadata(
-        { legacy: { type: "keyword" }, depth: { type: "float" } },
-        {},
+        { color: { type: "keyword" }, width: { referential: true } },
         null,
       ),
-    ).toEqual(["legacy", "depth"]);
+    ).toEqual(["color"]);
   });
 
-  it("Keeps the inline metadata of the stored model and the referenced ones", () => {
+  it("Keeps the inline metadata of the stored model", () => {
     expect(
       getAddedInlineMetadata(
-        {
-          legacy: { type: "keyword" },
-          width: { type: "float" },
-          depth: { type: "float" },
-        },
-        { width: true },
-        stored,
+        { color: { type: "keyword" }, size: { type: "integer" } },
+        assetModel({ color: { type: "keyword" } }),
       ),
-    ).toEqual(["depth"]);
+    ).toEqual(["size"]);
   });
 
-  it("Does not consider a resolved reference of the stored model as inline", () => {
-    // ? width was resolved from a reference, it cannot come back as an inline metadata
+  it("Does not consider a referential metadata of the stored model as inline", () => {
     expect(
-      getAddedInlineMetadata({ width: { type: "float" } }, {}, stored),
+      getAddedInlineMetadata(
+        { width: { type: "float" } },
+        assetModel({ width: { referential: true } }),
+      ),
     ).toEqual(["width"]);
+  });
+});
+
+describe("checkMetadataReferentialEntry", () => {
+  const createError = (message: string) => new Error(message);
+
+  it("Rejects an icon that is not a string", () => {
+    expect(() =>
+      checkMetadataReferentialEntry(
+        "width",
+        { icon: 42 as any, locales: {}, mappings: { type: "float" } },
+        createError,
+      ),
+    ).toThrow('Metadata "width" icon must be a string');
   });
 });

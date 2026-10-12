@@ -1,7 +1,7 @@
 import { AssetModel } from "../../../index";
 
 /**
- * Asset model referencing the metadata referential
+ * Asset model using the metadata referential
  */
 export const Pole: AssetModel = {
   modelName: "Pole",
@@ -9,15 +9,20 @@ export const Pole: AssetModel = {
     measures: [{ name: "position", type: "position" }],
     metadataMappings: {
       height: { type: "integer" },
+      serialNumber: { referential: true },
+      manufacturer: { referential: true },
+      operatingStatus: { referential: true },
     },
-    metadata: {
-      serialNumber: true,
+    metadataDetails: {
       manufacturer: {
         locales: {
           en: { friendlyName: "Pole maker", description: "Pole maker" },
         },
       },
-      operatingStatus: { defaultValue: "inactive", group: "state" },
+      operatingStatus: { group: "state", locales: {} },
+    },
+    defaultMetadata: {
+      operatingStatus: "inactive",
     },
     metadataGroups: {
       state: {

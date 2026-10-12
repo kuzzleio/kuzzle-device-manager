@@ -12,7 +12,6 @@ import {
   MetadataMappings,
   MetadataReferential,
   MetadataReferentialEntry,
-  MetadataReferences,
   TooltipModels,
 } from "./ModelContent";
 import { SchemaObject } from "ajv";
@@ -26,18 +25,30 @@ export interface ApiModelGetAssetRequest extends ModelsControllerRequest {
   action: "getAsset";
   model: string;
   engineGroups: string[];
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
 }
 export type ApiModelGetAssetResult = KDocument<AssetModelContent>;
 
 export interface ApiModelGetDeviceRequest extends ModelsControllerRequest {
   action: "getDevice";
   model: string;
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
 }
 export type ApiModelGetDeviceResult = KDocument<DeviceModelContent>;
 
 export interface ApiModelGetGroupRequest extends ModelsControllerRequest {
   action: "getGroup";
   model: string;
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
 }
 export type ApiModelGetGroupResult = KDocument<GroupModelContent>;
 
@@ -59,7 +70,6 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
-    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
@@ -77,7 +87,6 @@ export interface ApiModelWriteDeviceRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
-    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     measures: DeviceModelContent["device"]["measures"];
   };
@@ -95,7 +104,6 @@ export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
-    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     locales?: { [valueName: string]: LocaleDetails };
   };
@@ -109,9 +117,18 @@ export interface ApiModelUpdateDeviceRequest extends ModelsControllerRequest {
 
   body: {
     /**
-     * Full set of metadata references: the existing ones and the new ones
+     * Full set of metadata mappings: the existing ones, unchanged, and the new ones,
+     * which must be metadata of the referential (`{ referential: true }`)
      */
-    metadata: MetadataReferences;
+    metadataMappings: MetadataMappings;
+    /**
+     * Replaces the metadata details when present
+     */
+    metadataDetails?: MetadataDetails;
+    /**
+     * Replaces the default values when present
+     */
+    defaultValues?: JSONObject;
   };
 }
 export type ApiModelUpdateDeviceResult = KDocument<DeviceModelContent>;
@@ -128,7 +145,6 @@ export interface ApiModelUpdateGroupRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
-    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     locales?: { [valueName: string]: LocaleDetails };
   };
@@ -163,7 +179,6 @@ export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
     metadataDetails?: MetadataDetails;
     metadataGroups?: MetadataGroups;
     metadataMappings?: MetadataMappings;
-    metadata?: MetadataReferences;
     defaultValues?: JSONObject;
     measures?: AssetModelContent["asset"]["measures"];
     tooltipModels?: TooltipModels;
@@ -204,6 +219,10 @@ export interface ApiModelListAssetsRequest extends ModelsControllerRequest {
   action: "listAssets";
 
   engineGroups: string[];
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
 }
 export type ApiModelListAssetsResult = {
   models: KDocument<AssetModelContent>[];
@@ -212,6 +231,10 @@ export type ApiModelListAssetsResult = {
 
 export interface ApiModelListDevicesRequest extends ModelsControllerRequest {
   action: "listDevices";
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
 }
 export type ApiModelListDevicesResult = {
   models: KDocument<DeviceModelContent>[];
@@ -221,6 +244,10 @@ export type ApiModelListDevicesResult = {
 export interface ApiModelListGroupsRequest extends ModelsControllerRequest {
   action: "listGroups";
   engineGroups: string[];
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
 }
 export type ApiModelListGroupsResult = {
   models: KDocument<GroupModelContent>[];
@@ -240,6 +267,10 @@ export interface ApiModelSearchAssetsRequest extends ModelsControllerRequest {
   action: "searchAssets";
 
   engineGroups: string[];
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
   from?: number;
   size?: number;
   scrollTTL?: string;
@@ -249,6 +280,10 @@ export type ApiModelSearchAssetsResult = SearchResult<KHit<AssetModelContent>>;
 
 export interface ApiModelSearchDevicesRequest extends ModelsControllerRequest {
   action: "searchDevices";
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
 
   from?: number;
   size?: number;
@@ -263,6 +298,10 @@ export interface ApiModelSearchGroupsRequest extends ModelsControllerRequest {
   action: "searchGroups";
 
   engineGroups: string[];
+  /**
+   * Returns the stored model, without resolving its referential metadata
+   */
+  rawModel?: boolean;
   from?: number;
   size?: number;
   scrollTTL?: string;

@@ -18,8 +18,10 @@ describe("ModelsController:updateDevice", () => {
       body: {
         model: "UpdSensor",
         measures: [{ name: "temperature", type: "temperature" }],
-        metadataMappings: { updSensorFloor: { type: "integer" } },
-        metadata: { serialNumber: true },
+        metadataMappings: {
+          updSensorFloor: { type: "integer" },
+          serialNumber: { referential: true },
+        },
       },
     });
 
@@ -51,25 +53,31 @@ describe("ModelsController:updateDevice", () => {
     return result;
   }
 
-  it("should add metadata references and refresh the devices", async () => {
+  const existingMappings = {
+    updSensorFloor: { type: "integer" },
+    serialNumber: { referential: true },
+  };
+
+  it("should add referential metadata and refresh the devices", async () => {
     await writeSensor();
 
     const updated = await updateSensor({
-      metadata: { serialNumber: true, operatingStatus: { icon: "plug" } },
+      metadataMappings: {
+        ...existingMappings,
+        operatingStatus: { referential: true },
+      },
     });
 
     expect(updated._source.device).toMatchObject({
       measures: [{ name: "temperature", type: "temperature" }],
-      metadataReferences: {
-        serialNumber: true,
-        operatingStatus: { icon: "plug" },
-      },
       metadataMappings: {
-        updSensorFloor: { type: "integer" },
-        serialNumber: { type: "keyword" },
-        operatingStatus: { type: "keyword" },
+        ...existingMappings,
+        operatingStatus: { referential: true },
       },
-      metadataDetails: { operatingStatus: { icon: "plug" } },
+      metadataDetails: {
+        serialNumber: { locales: { en: { friendlyName: "Serial number" } } },
+        operatingStatus: { locales: { en: { friendlyName: "Status" } } },
+      },
       defaultMetadata: { operatingStatus: "active" },
     });
 
@@ -87,39 +95,59 @@ describe("ModelsController:updateDevice", () => {
     });
   });
 
-  it("should accept changed overrides of existing references", async () => {
+  it("should accept changed details and keep them when omitted", async () => {
     await writeSensor();
 
     const updated = await updateSensor({
-      metadata: { serialNumber: { icon: "barcode" } },
+      metadataMappings: existingMappings,
+      metadataDetails: { serialNumber: { icon: "barcode", locales: {} } },
     });
 
     expect(updated._source.device.metadataDetails.serialNumber).toMatchObject({
       icon: "barcode",
     });
+
+    const kept = await updateSensor({ metadataMappings: existingMappings });
+
+    expect(kept._source.device.metadataDetails.serialNumber).toMatchObject({
+      icon: "barcode",
+    });
   });
 
-  it("should reject the removal of an existing reference", async () => {
+  it("should reject the removal or modification of an existing metadata", async () => {
     await writeSensor();
-
-    await expect(
-      updateSensor({ metadata: { operatingStatus: true } }),
-    ).rejects.toThrow(/missing references: serialNumber/);
-  });
-
-  it("should reject any other field than metadata", async () => {
-    await writeSensor();
-
-    await expect(
-      updateSensor({ metadata: { serialNumber: true }, measures: [] }),
-    ).rejects.toThrow(/forbidden fields: measures/);
 
     await expect(
       updateSensor({
-        metadata: { serialNumber: true },
-        metadataMappings: { updSensorRoom: { type: "keyword" } },
+        metadataMappings: { updSensorFloor: { type: "integer" } },
       }),
-    ).rejects.toThrow(/forbidden fields: metadataMappings/);
+    ).rejects.toThrow(/cannot be removed or modified: serialNumber/);
+
+    await expect(
+      updateSensor({
+        metadataMappings: {
+          ...existingMappings,
+          updSensorFloor: { type: "keyword" },
+        },
+      }),
+    ).rejects.toThrow(/cannot be removed or modified: updSensorFloor/);
+  });
+
+  it("should reject new inline metadata and other fields", async () => {
+    await writeSensor();
+
+    await expect(
+      updateSensor({
+        metadataMappings: {
+          ...existingMappings,
+          updSensorRoom: { type: "keyword" },
+        },
+      }),
+    ).rejects.toThrow(/must come from the metadata referential.*updSensorRoom/);
+
+    await expect(
+      updateSensor({ metadataMappings: existingMappings, measures: [] }),
+    ).rejects.toThrow(/forbidden fields: measures/);
   });
 
   it("should reject an unknown device model", async () => {
@@ -128,7 +156,7 @@ describe("ModelsController:updateDevice", () => {
         controller: "device-manager/models",
         action: "updateDevice",
         model: "UpdUnknown",
-        body: { metadata: {} },
+        body: { metadataMappings: {} },
       }),
     ).rejects.toMatchObject({ status: 404 });
   });

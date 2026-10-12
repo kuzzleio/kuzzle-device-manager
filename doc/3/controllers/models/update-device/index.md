@@ -7,13 +7,14 @@ description: Adds metadata to a device model
 
 # updateDevice
 
-Adds metadata, referenced from the [metadata referential](../../../concepts/models/index.md#metadata-referential), to an existing device model.
+Adds metadata of the [metadata referential](../../../concepts/models/index.md#metadata-referential) to an existing device model.
 
 Device models are additive only from the API:
 
-- the body contains only `metadata`, the full set of references: the existing ones and the new ones
-- every existing reference must be kept. The overrides of an existing reference (`locales`, `defaultValue`, `group`, `icon`) can change
-- the measures and the inline metadata of the model cannot be changed
+- the body contains only `metadataMappings`, `metadataDetails` and `defaultValues`
+- `metadataMappings` is the full set of metadata: every existing metadata must be kept unchanged, new metadata must come from the referential (`{ "referential": true }`)
+- `metadataDetails` and `defaultValues` replace the existing ones when present, and are kept when omitted. The details and default value of a new metadata are filled from the referential when missing
+- the measures of the model cannot be changed
 
 The engines mappings are updated and the existing devices get the new metadata with their default value.
 
@@ -35,16 +36,17 @@ Method: PATCH
   "model": "<device model>",
 
   "body": {
-    "metadata": {
-      /*
-        Metadata referenced from the metadata referential, existing and new ones.
-          [name: string]: true | {
-            locales?: { [locale: string]: { friendlyName: string; description: string } };
-            defaultValue?: any;
-            group?: string;
-            icon?: string;
-          };
-      */
+    "metadataMappings": {
+      // Existing metadata, unchanged, and new ones: { "<name>": { "referential": true } }
+    },
+
+    // Optional
+
+    "metadataDetails": {
+      // Metadata details, see writeDevice
+    },
+    "defaultValues": {
+      // Metadata default values
     }
   }
 }
@@ -60,7 +62,9 @@ Method: PATCH
 
 ## Body properties
 
-- `metadata`: Full set of metadata references of the model
+- `metadataMappings`: Full set of metadata mappings of the model
+- `metadataDetails`: (optional) Metadata details, kept when omitted
+- `defaultValues`: (optional) Metadata default values, kept when omitted
 
 ---
 
@@ -84,6 +88,6 @@ Method: PATCH
 
 ## Errors
 
-- A [ BadRequestError ](https://docs.kuzzle.io/core/2/api/errors/types/#badrequesterror) (400) is thrown if the body contains another field than `metadata`, if an existing reference is missing, or if a reference is invalid
-- A [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) (409) is thrown if the new metadata conflict with the existing mappings
+- A [ BadRequestError ](https://docs.kuzzle.io/core/2/api/errors/types/#badrequesterror) (400) is thrown if the body contains another field, if an existing metadata is missing or modified, if a new metadata does not come from the referential, or if a referential metadata is unknown
+- A [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) (409) is thrown if the new metadata conflict with the existing models or the engines collections mappings
 - A [ NotFoundError ](https://docs.kuzzle.io/core/2/api/errors/types/#notfounderror) (404) is thrown if the device model does not exist

@@ -114,36 +114,30 @@ describe("ModelsController:updateGroup", () => {
     });
   });
 
-  it("should keep the metadata references when omitted and remove them when sent", async () => {
+  it("should add and remove referential metadata", async () => {
     await writeFleet();
 
-    const referenced = await updateFleet({
-      metadataMappings: { updFleetSize: { type: "integer" } },
-      metadata: { operatingStatus: true },
+    const added = await updateFleet({
+      metadataMappings: {
+        updFleetSize: { type: "integer" },
+        operatingStatus: { referential: true },
+      },
     });
-    expect(referenced._source.group.metadataReferences).toEqual({
-      operatingStatus: true,
+    expect(added._source.group.metadataMappings).toEqual({
+      updFleetSize: { type: "integer" },
+      operatingStatus: { referential: true },
     });
-    expect(referenced._source.group.metadataMappings).toMatchObject({
-      operatingStatus: { type: "keyword" },
+    expect(added._source.group.defaultMetadata).toEqual({
+      operatingStatus: "active",
     });
     await expect(getGroupMetadata("engine-ayse")).resolves.toEqual({
       updFleetSize: 3,
       operatingStatus: "active",
     });
 
-    const kept = await updateFleet({
-      metadataMappings: { updFleetSize: { type: "integer" } },
-    });
-    expect(kept._source.group.metadataReferences).toEqual({
-      operatingStatus: true,
-    });
-
     const removed = await updateFleet({
       metadataMappings: { updFleetSize: { type: "integer" } },
-      metadata: {},
     });
-    expect(removed._source.group.metadataReferences).toEqual({});
     expect(removed._source.group.metadataMappings).toEqual({
       updFleetSize: { type: "integer" },
     });

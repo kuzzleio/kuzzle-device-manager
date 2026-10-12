@@ -64,17 +64,6 @@ Method: POST
           };
       */
     },
-    "metadata": {
-      /*
-        Metadata referenced from the metadata referential.
-          [name: string]: true | {
-            locales?: { [locale: string]: { friendlyName: string; description: string } };
-            defaultValue?: any;
-            group?: string;
-            icon?: string;
-          };
-      */
-    },
     "metadataGroups": {
       /*
         Metadata groups list and details.
@@ -161,11 +150,10 @@ Method: POST
 - `model`: Group model name
 - `affinity`: Specifies accepted types and models for group membership (see above)
 - `icon`: Optional. Icon representing the group model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. This field is not indexed for search.
-- `metadataMappings`: Mappings of the metadata in Elasticsearch format
+- `metadataMappings`: Mappings of the metadata in Elasticsearch format. Use `{ "referential": true }` for a metadata of the [metadata referential](../../../concepts/models/index.md#metadata-referential): its details and default value are filled from the referential when missing
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Translations, metadata group, and editor hint (See [ MetadataDetails ](../../../concepts/metadatadetails/index.md))
 - `metadataGroups`: Groups list with translations for group name
-- `metadata`: Metadata referenced from the [metadata referential](../../../concepts/models/index.md#metadata-referential)
 - `tooltipModels`: Tooltip model list, containing each labels and tooltip content to display
 - `locales`: Optional. Translations specific to the group model
 

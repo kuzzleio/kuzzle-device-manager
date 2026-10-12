@@ -6,7 +6,6 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
-  MetadataReferences,
   TooltipModels,
 } from "./ModelContent";
 
@@ -129,19 +128,8 @@ export type AssetModelDefinition = {
   icon?: string;
 
   /**
-   * Metadata referenced from the metadata referential, by name.
-   * Their mappings, translations, editor hint and default value come from the referential.
-   *
-   * @example
-   * {
-   *   color: true,
-   *   serialNumber: { locales: { en: { friendlyName: "Serial", description: "" } } },
-   * }
-   */
-  metadata?: MetadataReferences;
-
-  /**
-   * Metadata mappings definition
+   * Metadata mappings definition.
+   * Use `{ referential: true }` for a metadata of the metadata referential.
    */
   metadataMappings?: MetadataMappings;
 
@@ -230,19 +218,8 @@ export type DeviceModelDefinition = {
   icon?: string;
 
   /**
-   * Metadata referenced from the metadata referential, by name.
-   * Their mappings, translations, editor hint and default value come from the referential.
-   *
-   * @example
-   * {
-   *   color: true,
-   *   serialNumber: { locales: { en: { friendlyName: "Serial", description: "" } } },
-   * }
-   */
-  metadata?: MetadataReferences;
-
-  /**
-   * Metadata mappings definition
+   * Metadata mappings definition.
+   * Use `{ referential: true }` for a metadata of the metadata referential.
    */
   metadataMappings?: MetadataMappings;
 
@@ -343,19 +320,8 @@ export type GroupModelDefinition = {
   icon?: string;
 
   /**
-   * Metadata referenced from the metadata referential, by name.
-   * Their mappings, translations, editor hint and default value come from the referential.
-   *
-   * @example
-   * {
-   *   color: true,
-   *   serialNumber: { locales: { en: { friendlyName: "Serial", description: "" } } },
-   * }
-   */
-  metadata?: MetadataReferences;
-
-  /**
-   * Metadata mappings definition
+   * Metadata mappings definition.
+   * Use `{ referential: true }` for a metadata of the metadata referential.
    */
   metadataMappings?: MetadataMappings;
 

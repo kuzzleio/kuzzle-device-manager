@@ -9,6 +9,8 @@ description: Lists asset models
 
 Lists asset models.
 
+By default, the metadata of the [metadata referential](../../../concepts/models/index.md#metadata-referential) used by the models are resolved: their `{ "referential": true }` marker in `metadataMappings` is replaced by the referential mappings, and their `metadataDetails` and `defaultMetadata` are merged over the current referential values. Use `rawModel` to get the stored documents as is.
+
 ---
 
 ## Query Syntax
@@ -39,6 +41,7 @@ Method: GET
 
 - `engineGroup`: name of the engine group
 - `engineId`: optional. Engine ID (tenant ID) to filter models for. When provided, results include models scoped to that specific tenant, models scoped to the engine group, and commons models (3-level fallback). When absent, only group and commons models are returned.
+- `rawModel`: optional, `false` by default. If `true`, returns the stored models without resolving their referential metadata
 
 ---
 

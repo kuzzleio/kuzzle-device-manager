@@ -9,6 +9,8 @@ description: Gets an asset model
 
 Gets an asset model.
 
+By default, the metadata of the [metadata referential](../../../concepts/models/index.md#metadata-referential) used by the model are resolved: their `{ "referential": true }` marker in `metadataMappings` is replaced by the referential mappings, and their `metadataDetails` and `defaultMetadata` are merged over the current referential values. Use `rawModel` to get the stored document as is, e.g. to edit the model.
+
 ---
 
 ## Query Syntax
@@ -30,7 +32,8 @@ Method: GET
   "model": "<asset model>",
 
   // optional:
-  "engineId": "<engineId>"
+  "engineId": "<engineId>",
+  "rawModel": false
 }
 ```
 
@@ -41,6 +44,7 @@ Method: GET
 - `engineGroup`: name of the engine group
 - `model`: asset model
 - `engineId`: optional. Engine ID (tenant ID) to resolve tenant-scoped models. When provided, a tenant-scoped model takes priority over a group-scoped model of the same name. Falls back to group-scoped, then commons.
+- `rawModel`: optional, `false` by default. If `true`, returns the stored model without resolving its referential metadata
 
 ---
 

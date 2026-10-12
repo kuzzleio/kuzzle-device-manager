@@ -19,7 +19,7 @@ import {
 } from "../plugin";
 
 import { AskAssetRefreshModel } from "../asset";
-import { BaseService, SearchParams, flattenObject, lock } from "../shared";
+import { BaseService, SearchParams, flattenObject } from "../shared";
 import { ModelSerializer } from "./ModelSerializer";
 import {
   AssetModelContent,
@@ -33,7 +33,6 @@ import {
   MetadataMappings,
   MetadataReferential,
   MetadataReferentialEntry,
-  MetadataReferences,
   ModelContent,
   TooltipModels,
 } from "./types/ModelContent";
@@ -57,22 +56,27 @@ import { AskGroupRefreshModel } from "../group/types/GroupEvents";
 import { KuzzleLogger } from "kuzzle-logger";
 import _ from "lodash";
 import {
+  MetadataEnrichment,
   MetadataModelContent,
   MetadataModelType,
   ModelMetadataFields,
-  getAddedInlineMetadata,
   checkMetadataReferentialEntry,
+  enrichModelMetadata,
   fetchMetadataModels,
   fetchMetadataReferential,
   fetchReferencingModels,
-  reResolveModel,
-  resolveMetadataReferences,
+  getAddedInlineMetadata,
+  getEntryModelsConflicts,
+  isReferentialMapping,
+  resolveModelMetadata,
+  withMetadataReferentialLock,
   saveMetadataReferential,
 } from "./MetadataReferential";
+import { AskEngineMetadataConflict } from "../plugin/DeviceManagerEngine";
 
 /**
  * Fields of a group model update.
- * Affinity, icon and metadata references are kept when omitted.
+ * Affinity and icon are kept when omitted.
  */
 export type GroupModelUpdate = {
   affinity?: JSONObject;
@@ -82,7 +86,16 @@ export type GroupModelUpdate = {
   metadataDetails: MetadataDetails;
   metadataGroups: MetadataGroups;
   metadataMappings: MetadataMappings;
-  metadataReferences?: MetadataReferences;
+};
+
+/**
+ * Fields of a device model update.
+ * Metadata details and default values are kept when omitted.
+ */
+export type DeviceModelUpdate = {
+  defaultMetadata?: JSONObject;
+  metadataDetails?: MetadataDetails;
+  metadataMappings: MetadataMappings;
 };
 
 export class ModelService extends BaseService {
@@ -353,168 +366,166 @@ export class ModelService extends BaseService {
     locales: { [valueName: string]: LocaleDetails },
     engineIds?: string[],
     icon?: string,
-    metadataReferences: MetadataReferences = {},
   ): Promise<KDocument<AssetModelContent>> {
-    if (Inflector.pascalCase(model) !== model) {
-      throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
-    }
-
-    if (engineIds?.length && engineGroups?.length) {
-      throw new BadRequestError(
-        `"engineIds" and "engineGroups" are mutually exclusive on an asset model.`,
-      );
-    }
-
-    const duplicates = getNamedMeasuresDuplicates(measures);
-
-    if (duplicates.length > 0) {
-      throw new MeasuresNamesDuplicatesError(
-        "Asset model measures contain one or multiple duplicate measure name",
-        duplicates,
-      );
-    }
-
-    const normalizedEngineGroups = engineGroups.includes("commons")
-      ? ["commons"]
-      : engineGroups;
-
-    // Anti-shadowing: reject if a model with the same name exists at a different scope level
-    const isGlobal =
-      normalizedEngineGroups.includes("commons") &&
-      (!engineIds || engineIds.length === 0);
-    const isTenantScoped = engineIds && engineIds.length > 0;
-    const isGroupScoped = !isGlobal && !isTenantScoped;
-
-    await this.sdk.collection.refresh(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-    );
-    const existing = await this.sdk.document.search(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      {
-        query: {
-          bool: {
-            must: [
-              { term: { type: "asset" } },
-              { term: { "asset.model": model } },
-            ],
-          },
-        },
-      },
-      { size: 10 },
-    );
-    for (const hit of existing.hits) {
-      const doc = hit._source as AssetModelContent;
-      const docIsGlobal =
-        doc.engineGroups?.includes("commons") &&
-        (!doc.engineIds || doc.engineIds.length === 0);
-      const docIsTenantScoped = doc.engineIds && doc.engineIds.length > 0;
-      const docIsGroupScoped = !docIsGlobal && !docIsTenantScoped;
-
-      // Same scope level: allow overwrite
-      if (isGlobal && docIsGlobal) {
-        continue;
-      }
-      if (isTenantScoped && docIsTenantScoped) {
-        continue;
-      }
-      if (isGroupScoped && docIsGroupScoped) {
-        continue;
+    return withMetadataReferentialLock(async () => {
+      if (Inflector.pascalCase(model) !== model) {
+        throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
       }
 
-      // Different scope levels: reject
-      if (docIsGlobal) {
+      if (engineIds?.length && engineGroups?.length) {
         throw new BadRequestError(
-          `Asset model "${model}" already exists as a global (commons) model. A model cannot exist at multiple scopes.`,
+          `"engineIds" and "engineGroups" are mutually exclusive on an asset model.`,
         );
       }
-      if (isGlobal) {
-        throw new BadRequestError(
-          `Asset model "${model}" already exists at a non-global scope. A model cannot exist at multiple scopes.`,
+
+      const duplicates = getNamedMeasuresDuplicates(measures);
+
+      if (duplicates.length > 0) {
+        throw new MeasuresNamesDuplicatesError(
+          "Asset model measures contain one or multiple duplicate measure name",
+          duplicates,
         );
       }
-      if (isTenantScoped && docIsGroupScoped) {
-        throw new BadRequestError(
-          `Asset model "${model}" already exists at group scope. A model cannot be both group-scoped and tenant-scoped.`,
-        );
-      }
-      if (isGroupScoped && docIsTenantScoped) {
-        throw new BadRequestError(
-          `Asset model "${model}" already exists at tenant scope. A model cannot be both group-scoped and tenant-scoped.`,
-        );
-      }
-    }
 
-    const metadata = await this.resolveMetadata("asset", model, {
-      defaultMetadata,
-      metadataDetails,
-      metadataMappings,
-      metadataReferences,
-    });
+      const normalizedEngineGroups = engineGroups.includes("commons")
+        ? ["commons"]
+        : engineGroups;
 
-    const modelContent: AssetModelContent = {
-      asset: {
-        ...metadata,
-        icon,
-        locales,
-        measures,
-        metadataGroups,
-        model,
-        tooltipModels,
-      },
-      ...(engineIds?.length
-        ? { engineIds }
-        : { engineGroups: normalizedEngineGroups }),
-      type: "asset",
-    } as AssetModelContent;
+      // Anti-shadowing: reject if a model with the same name exists at a different scope level
+      const isGlobal =
+        normalizedEngineGroups.includes("commons") &&
+        (!engineIds || engineIds.length === 0);
+      const isTenantScoped = engineIds && engineIds.length > 0;
+      const isGroupScoped = !isGlobal && !isTenantScoped;
 
-    this.checkReferentialOnly(
-      "asset",
-      model,
-      metadataMappings,
-      metadataReferences,
-      await this.getStoredModel<AssetModelContent>(
-        ModelSerializer.id<AssetModelContent>("asset", modelContent),
-      ),
-    );
-
-    this.checkDefaultValues(
-      metadata.metadataMappings,
-      metadata.defaultMetadata,
-    );
-
-    const conflicts = await ask<AskEngineUpdateConflict>(
-      "ask:device-manager:engine:doesUpdateConflict",
-      { twin: { models: [modelContent], type: "asset" } },
-    );
-
-    if (conflicts.length > 0) {
-      throw new MappingsConflictsError(
-        `New assets mappings are causing conflicts`,
-        conflicts,
-      );
-    }
-
-    const assetModel =
-      await this.sdk.document.createOrReplace<AssetModelContent>(
+      await this.sdk.collection.refresh(
         this.config.platformIndex,
         InternalCollection.MODELS,
-        ModelSerializer.id<AssetModelContent>("asset", modelContent),
-        modelContent,
+      );
+      const existing = await this.sdk.document.search(
+        this.config.platformIndex,
+        InternalCollection.MODELS,
+        {
+          query: {
+            bool: {
+              must: [
+                { term: { type: "asset" } },
+                { term: { "asset.model": model } },
+              ],
+            },
+          },
+        },
+        { size: 10 },
+      );
+      for (const hit of existing.hits) {
+        const doc = hit._source as AssetModelContent;
+        const docIsGlobal =
+          doc.engineGroups?.includes("commons") &&
+          (!doc.engineIds || doc.engineIds.length === 0);
+        const docIsTenantScoped = doc.engineIds && doc.engineIds.length > 0;
+        const docIsGroupScoped = !docIsGlobal && !docIsTenantScoped;
+
+        // Same scope level: allow overwrite
+        if (isGlobal && docIsGlobal) {
+          continue;
+        }
+        if (isTenantScoped && docIsTenantScoped) {
+          continue;
+        }
+        if (isGroupScoped && docIsGroupScoped) {
+          continue;
+        }
+
+        // Different scope levels: reject
+        if (docIsGlobal) {
+          throw new BadRequestError(
+            `Asset model "${model}" already exists as a global (commons) model. A model cannot exist at multiple scopes.`,
+          );
+        }
+        if (isGlobal) {
+          throw new BadRequestError(
+            `Asset model "${model}" already exists at a non-global scope. A model cannot exist at multiple scopes.`,
+          );
+        }
+        if (isTenantScoped && docIsGroupScoped) {
+          throw new BadRequestError(
+            `Asset model "${model}" already exists at group scope. A model cannot be both group-scoped and tenant-scoped.`,
+          );
+        }
+        if (isGroupScoped && docIsTenantScoped) {
+          throw new BadRequestError(
+            `Asset model "${model}" already exists at tenant scope. A model cannot be both group-scoped and tenant-scoped.`,
+          );
+        }
+      }
+
+      const { fields: metadata, resolvedMappings } = await this.resolveMetadata(
+        "asset",
+        model,
+        { defaultMetadata, metadataDetails, metadataMappings },
       );
 
-    await this.sdk.collection.refresh(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-    );
-    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+      const modelContent: AssetModelContent = {
+        asset: {
+          ...metadata,
+          icon,
+          locales,
+          measures,
+          metadataGroups,
+          model,
+          tooltipModels,
+        },
+        ...(engineIds?.length
+          ? { engineIds }
+          : { engineGroups: normalizedEngineGroups }),
+        type: "asset",
+      } as AssetModelContent;
 
-    await ask<AskAssetRefreshModel>("ask:device-manager:asset:refresh-model", {
-      assetModel: assetModel._source,
+      const modelId = ModelSerializer.id<AssetModelContent>(
+        "asset",
+        modelContent,
+      );
+      const stored = await this.getStoredModel<AssetModelContent>(modelId);
+
+      this.checkReferentialOnly("asset", model, metadataMappings, stored);
+
+      this.checkDefaultValues(resolvedMappings, metadata.defaultMetadata);
+
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        { twin: { models: [modelContent], type: "asset" } },
+      );
+
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New assets mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+
+      const assetModel =
+        await this.sdk.document.createOrReplace<AssetModelContent>(
+          this.config.platformIndex,
+          InternalCollection.MODELS,
+          ModelSerializer.id<AssetModelContent>("asset", modelContent),
+          modelContent,
+        );
+
+      await this.sdk.collection.refresh(
+        this.config.platformIndex,
+        InternalCollection.MODELS,
+      );
+      await this.updateEnginesOrRestore(modelId, stored);
+
+      await ask<AskAssetRefreshModel>(
+        "ask:device-manager:asset:refresh-model",
+        {
+          assetModel: assetModel._source,
+        },
+      );
+
+      return assetModel;
     });
-
-    return assetModel;
   }
 
   async writeDevice(
@@ -525,83 +536,83 @@ export class ModelService extends BaseService {
     metadataGroups: MetadataGroups,
     measures: NamedMeasures,
     icon?: string,
-    metadataReferences: MetadataReferences = {},
   ): Promise<KDocument<DeviceModelContent>> {
-    if (Inflector.pascalCase(model) !== model) {
-      throw new BadRequestError(`Device model "${model}" must be PascalCase.`);
-    }
+    return withMetadataReferentialLock(async () => {
+      if (Inflector.pascalCase(model) !== model) {
+        throw new BadRequestError(
+          `Device model "${model}" must be PascalCase.`,
+        );
+      }
 
-    const duplicates = getNamedMeasuresDuplicates(measures);
+      const duplicates = getNamedMeasuresDuplicates(measures);
 
-    if (duplicates.length > 0) {
-      throw new MeasuresNamesDuplicatesError(
-        "Device model measures contain one or multiple duplicate measure name",
-        duplicates,
-      );
-    }
+      if (duplicates.length > 0) {
+        throw new MeasuresNamesDuplicatesError(
+          "Device model measures contain one or multiple duplicate measure name",
+          duplicates,
+        );
+      }
 
-    const metadata = await this.resolveMetadata("device", model, {
-      defaultMetadata,
-      metadataDetails,
-      metadataMappings,
-      metadataReferences,
-    });
+      const { fields: metadata } = await this.resolveMetadata("device", model, {
+        defaultMetadata,
+        metadataDetails,
+        metadataMappings,
+      });
 
-    const modelContent: DeviceModelContent = {
-      device: {
-        ...metadata,
-        icon,
-        measures,
-        metadataGroups,
-        model,
-      },
-      type: "device",
-    };
+      const modelContent: DeviceModelContent = {
+        device: {
+          ...metadata,
+          icon,
+          measures,
+          metadataGroups,
+          model,
+        },
+        type: "device",
+      };
 
-    this.checkReferentialOnly(
-      "device",
-      model,
-      metadataMappings,
-      metadataReferences,
-      await this.getStoredModel<DeviceModelContent>(
-        ModelSerializer.id<DeviceModelContent>("device", modelContent),
-      ),
-    );
-
-    const conflicts = await ask<AskEngineUpdateConflict>(
-      "ask:device-manager:engine:doesUpdateConflict",
-      { twin: { models: [modelContent], type: "device" } },
-    );
-
-    if (conflicts.length > 0) {
-      throw new MappingsConflictsError(
-        `New devices mappings are causing conflicts`,
-        conflicts,
-      );
-    }
-
-    const deviceModel =
-      await this.sdk.document.createOrReplace<DeviceModelContent>(
-        this.config.platformIndex,
-        InternalCollection.MODELS,
-        ModelSerializer.id<DeviceModelContent>("device", modelContent),
+      const modelId = ModelSerializer.id<DeviceModelContent>(
+        "device",
         modelContent,
       );
+      const stored = await this.getStoredModel<DeviceModelContent>(modelId);
 
-    await this.sdk.collection.refresh(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-    );
-    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+      this.checkReferentialOnly("device", model, metadataMappings, stored);
 
-    await ask<AskDeviceRefreshModel>(
-      "ask:device-manager:device:refresh-model",
-      {
-        deviceModel: modelContent,
-      },
-    );
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        { twin: { models: [modelContent], type: "device" } },
+      );
 
-    return deviceModel;
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New devices mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+
+      const deviceModel =
+        await this.sdk.document.createOrReplace<DeviceModelContent>(
+          this.config.platformIndex,
+          InternalCollection.MODELS,
+          ModelSerializer.id<DeviceModelContent>("device", modelContent),
+          modelContent,
+        );
+
+      await this.sdk.collection.refresh(
+        this.config.platformIndex,
+        InternalCollection.MODELS,
+      );
+      await this.updateEnginesOrRestore(modelId, stored);
+
+      await ask<AskDeviceRefreshModel>(
+        "ask:device-manager:device:refresh-model",
+        {
+          deviceModel: modelContent,
+        },
+      );
+
+      return deviceModel;
+    });
   }
 
   async writeGroup(
@@ -614,73 +625,71 @@ export class ModelService extends BaseService {
     metadataGroups: MetadataGroups,
     icon?: string,
     locales?: { [valueName: string]: LocaleDetails },
-    metadataReferences: MetadataReferences = {},
   ): Promise<KDocument<GroupModelContent>> {
-    if (Inflector.pascalCase(model) !== model) {
-      throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
-    }
-    if (engineGroups.includes("commons")) {
-      engineGroups = ["commons"];
-    }
+    return withMetadataReferentialLock(async () => {
+      if (Inflector.pascalCase(model) !== model) {
+        throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
+      }
+      if (engineGroups.includes("commons")) {
+        engineGroups = ["commons"];
+      }
 
-    const groupAffinity = this.checkGroupAffinity(affinity);
-    const metadata = await this.resolveMetadata("group", model, {
-      defaultMetadata,
-      metadataDetails,
-      metadataMappings,
-      metadataReferences,
-    });
+      const groupAffinity = this.checkGroupAffinity(affinity);
+      const { fields: metadata } = await this.resolveMetadata("group", model, {
+        defaultMetadata,
+        metadataDetails,
+        metadataMappings,
+      });
 
-    const modelContent: GroupModelContent = {
-      engineGroups,
-      group: {
-        ...metadata,
-        affinity: groupAffinity,
-        icon,
-        locales,
-        metadataGroups,
-        model,
-      },
-      type: "group",
-    };
+      const modelContent: GroupModelContent = {
+        engineGroups,
+        group: {
+          ...metadata,
+          affinity: groupAffinity,
+          icon,
+          locales,
+          metadataGroups,
+          model,
+        },
+        type: "group",
+      };
 
-    this.checkReferentialOnly(
-      "group",
-      model,
-      metadataMappings,
-      metadataReferences,
-      await this.getStoredModel<GroupModelContent>(
-        ModelSerializer.id<GroupModelContent>("group", modelContent),
-      ),
-    );
-
-    const conflicts = await ask<AskEngineUpdateConflict>(
-      "ask:device-manager:engine:doesUpdateConflict",
-      { groupModels: [modelContent] },
-    );
-
-    if (conflicts.length > 0) {
-      throw new MappingsConflictsError(
-        `New group mappings are causing conflicts`,
-        conflicts,
-      );
-    }
-
-    const groupModel =
-      await this.sdk.document.createOrReplace<GroupModelContent>(
-        this.config.platformIndex,
-        InternalCollection.MODELS,
-        ModelSerializer.id<GroupModelContent>("group", modelContent),
+      const modelId = ModelSerializer.id<GroupModelContent>(
+        "group",
         modelContent,
       );
+      const stored = await this.getStoredModel<GroupModelContent>(modelId);
 
-    await this.sdk.collection.refresh(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-    );
-    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+      this.checkReferentialOnly("group", model, metadataMappings, stored);
 
-    return groupModel;
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        { groupModels: [modelContent] },
+      );
+
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `New group mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+
+      const groupModel =
+        await this.sdk.document.createOrReplace<GroupModelContent>(
+          this.config.platformIndex,
+          InternalCollection.MODELS,
+          ModelSerializer.id<GroupModelContent>("group", modelContent),
+          modelContent,
+        );
+
+      await this.sdk.collection.refresh(
+        this.config.platformIndex,
+        InternalCollection.MODELS,
+      );
+      await this.updateEnginesOrRestore(modelId, stored);
+
+      return groupModel;
+    });
   }
 
   async writeMeasure(
@@ -736,11 +745,17 @@ export class ModelService extends BaseService {
       );
     }
 
+    const modelId = ModelSerializer.id<MeasureModelContent>(
+      "measure",
+      modelContent,
+    );
+    const stored = await this.getStoredModel<MeasureModelContent>(modelId);
+
     const measureModel =
       await this.sdk.document.createOrReplace<MeasureModelContent>(
         this.config.platformIndex,
         InternalCollection.MODELS,
-        ModelSerializer.id<MeasureModelContent>("measure", modelContent),
+        modelId,
         modelContent,
       );
 
@@ -748,7 +763,7 @@ export class ModelService extends BaseService {
       this.config.platformIndex,
       InternalCollection.MODELS,
     );
-    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+    await this.updateEnginesOrRestore(modelId, stored);
 
     return measureModel;
   }
@@ -1379,201 +1394,205 @@ export class ModelService extends BaseService {
     locales: { [valueName: string]: LocaleDetails },
     icon: string | undefined,
     request: KuzzleRequest,
-    metadataReferences?: MetadataReferences,
   ): Promise<KDocument<AssetModelContent>> {
-    if (Inflector.pascalCase(model) !== model) {
-      throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
-    }
+    return withMetadataReferentialLock(async () => {
+      if (Inflector.pascalCase(model) !== model) {
+        throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
+      }
 
-    const existingAsset = await this.getAsset(engineGroups, engineId, model);
+      const existingAsset = await this.getAsset(engineGroups, engineId, model);
 
-    this.checkReferentialOnly(
-      "asset",
-      model,
-      metadataMappings,
-      metadataReferences ??
-        existingAsset._source.asset.metadataReferences ??
-        {},
-      existingAsset._source,
-    );
-
-    // ? Without references in the update, the existing ones are kept
-    const metadata = await this.resolveMetadata("asset", model, {
-      defaultMetadata,
-      metadataDetails,
-      metadataMappings,
-      metadataReferences:
-        metadataReferences ??
-        existingAsset._source.asset.metadataReferences ??
-        {},
-    });
-
-    this.checkDefaultValues(
-      metadata.metadataMappings,
-      metadata.defaultMetadata,
-    );
-
-    const measuresUpdated =
-      measures.length === 0 ? existingAsset._source.asset.measures : measures;
-
-    // Preserve the existing scope: scope (engineGroups / engineIds) is decided
-    // at write time and must not be silently rewritten by an update payload.
-    // This also enforces engineGroups / engineIds mutual exclusivity (KZLPRD-1192).
-    const assetModelContent: AssetModelContent = {
-      asset: {
-        ...metadata,
-        icon: icon ?? existingAsset._source.asset.icon,
-        locales,
-        measures: measuresUpdated,
-        metadataGroups,
+      this.checkReferentialOnly(
+        "asset",
         model,
-        tooltipModels,
-      },
-      engineGroups: existingAsset._source.engineGroups,
-      engineIds: existingAsset._source.engineIds,
-      type: "asset",
-    };
-    const assetModel = {
-      _id: existingAsset._id,
-      _source: assetModelContent,
-    };
-
-    const conflicts = await ask<AskEngineUpdateConflict>(
-      "ask:device-manager:engine:doesUpdateConflict",
-      { twin: { models: [assetModelContent], type: "asset" } },
-    );
-
-    if (conflicts.length > 0) {
-      throw new MappingsConflictsError(
-        `Assets mappings are causing conflicts`,
-        conflicts,
+        metadataMappings,
+        existingAsset._source,
       );
-    }
 
-    // The field must be deleted if an element of the table is to be deleted.
-    // ? Only after the conflicts check, so a rejected update leaves the model untouched
-    await this.sdk.document.deleteFields(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      existingAsset._id,
-      [
-        "asset.tooltipModels",
-        "asset.metadataMappings",
-        "asset.defaultMetadata",
-        "asset.metadataDetails",
-        "asset.metadataGroups",
-        "asset.metadataReferences",
-      ],
-      { source: true },
-    );
+      const { fields: metadata, resolvedMappings } = await this.resolveMetadata(
+        "asset",
+        model,
+        { defaultMetadata, metadataDetails, metadataMappings },
+      );
 
-    const endDocument = await this.updateDocument<AssetModelContent>(
-      request,
-      assetModel,
-      {
-        collection: InternalCollection.MODELS,
-        engineId: this.config.platformIndex,
-      },
-      { source: true },
-    );
+      this.checkDefaultValues(resolvedMappings, metadata.defaultMetadata);
 
-    // ? Only update engineIds and refresh asset models when necessary
-    if (
-      Object.keys(metadata.metadataMappings).length > 0 ||
-      measures.length > 0
-    ) {
-      await this.sdk.collection.refresh(
+      const measuresUpdated =
+        measures.length === 0 ? existingAsset._source.asset.measures : measures;
+
+      // Preserve the existing scope: scope (engineGroups / engineIds) is decided
+      // at write time and must not be silently rewritten by an update payload.
+      // This also enforces engineGroups / engineIds mutual exclusivity (KZLPRD-1192).
+      const assetModelContent: AssetModelContent = {
+        asset: {
+          ...metadata,
+          icon: icon ?? existingAsset._source.asset.icon,
+          locales,
+          measures: measuresUpdated,
+          metadataGroups,
+          model,
+          tooltipModels,
+        },
+        engineGroups: existingAsset._source.engineGroups,
+        engineIds: existingAsset._source.engineIds,
+        type: "asset",
+      };
+      const assetModel = {
+        _id: existingAsset._id,
+        _source: assetModelContent,
+      };
+
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        { twin: { models: [assetModelContent], type: "asset" } },
+      );
+
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `Assets mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+
+      // The field must be deleted if an element of the table is to be deleted.
+      // ? Only after the conflicts check, so a rejected update leaves the model untouched
+      await this.sdk.document.deleteFields(
         this.config.platformIndex,
         InternalCollection.MODELS,
+        existingAsset._id,
+        [
+          "asset.tooltipModels",
+          "asset.metadataMappings",
+          "asset.defaultMetadata",
+          "asset.metadataDetails",
+          "asset.metadataGroups",
+        ],
+        { source: true },
       );
 
-      await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
-      await ask<AskAssetRefreshModel>(
-        "ask:device-manager:asset:refresh-model",
+      const endDocument = await this.updateDocument<AssetModelContent>(
+        request,
+        assetModel,
         {
-          assetModel: endDocument._source,
+          collection: InternalCollection.MODELS,
+          engineId: this.config.platformIndex,
         },
+        { source: true },
       );
-    }
 
-    return endDocument;
+      // ? Only update engineIds and refresh asset models when necessary
+      if (
+        Object.keys(metadata.metadataMappings).length > 0 ||
+        measures.length > 0
+      ) {
+        await this.sdk.collection.refresh(
+          this.config.platformIndex,
+          InternalCollection.MODELS,
+        );
+
+        await this.updateEnginesOrRestore(
+          existingAsset._id,
+          existingAsset._source,
+        );
+        await ask<AskAssetRefreshModel>(
+          "ask:device-manager:asset:refresh-model",
+          {
+            assetModel: endDocument._source,
+          },
+        );
+      }
+
+      return endDocument;
+    });
   }
 
   /**
-   * Adds metadata references to a device model.
+   * Adds metadata of the metadata referential to a device model.
    *
-   * Device models are additive only from the API: every existing reference must be kept,
-   * overrides of existing references (locales, defaultValue, group, icon) can change.
+   * Device models are additive only from the API: every existing metadata must be kept unchanged,
+   * new metadata must come from the referential. Metadata details and default values can change.
    * The engines mappings are updated and the devices get the new metadata with their default value.
    *
-   * @throws BadRequestError if an existing reference is missing
+   * @throws BadRequestError if an existing metadata is missing or changed, or a new one is inline
    * @throws MappingsConflictsError if the new metadata conflict with the existing mappings
    */
   async updateDevice(
     model: string,
-    metadataReferences: MetadataReferences,
+    { defaultMetadata, metadataDetails, metadataMappings }: DeviceModelUpdate,
   ): Promise<KDocument<DeviceModelContent>> {
-    const existingDevice = await this.getDevice(model);
-    const existingReferences =
-      existingDevice._source.device.metadataReferences ?? {};
+    return withMetadataReferentialLock(async () => {
+      const existingDevice = await this.getDevice(model);
+      const existing = existingDevice._source.device;
+      const existingMappings = existing.metadataMappings ?? {};
 
-    const removed = Object.keys(existingReferences).filter(
-      (name) => !(name in metadataReferences),
-    );
-
-    if (removed.length > 0) {
-      throw new BadRequestError(
-        `Device model "${model}" metadata cannot be removed, missing references: ${removed.join(", ")}`,
+      const removed = Object.keys(existingMappings).filter(
+        (name) => !_.isEqual(existingMappings[name], metadataMappings[name]),
       );
-    }
 
-    const { content: deviceModelContent, warnings } = reResolveModel(
-      await this.getMetadataReferential(),
-      {
+      if (removed.length > 0) {
+        throw new BadRequestError(
+          `Device model "${model}" metadata cannot be removed or modified: ${removed.join(", ")}`,
+        );
+      }
+
+      const inline = Object.keys(metadataMappings).filter(
+        (name) =>
+          !(name in existingMappings) &&
+          !isReferentialMapping(metadataMappings[name]),
+      );
+
+      if (inline.length > 0) {
+        throw new BadRequestError(
+          `New metadata of device model "${model}" must come from the metadata referential, inline metadata: ${inline.join(", ")}`,
+        );
+      }
+
+      const { fields: metadata } = await this.resolveMetadata("device", model, {
+        defaultMetadata: defaultMetadata ?? existing.defaultMetadata,
+        metadataDetails: metadataDetails ?? existing.metadataDetails,
+        metadataMappings,
+      });
+
+      const deviceModelContent: DeviceModelContent = {
         ...existingDevice._source,
-        device: {
-          ...existingDevice._source.device,
-          metadataReferences,
-        },
-      },
-      (message) => new BadRequestError(message),
-    );
+        device: { ...existing, ...metadata },
+      };
 
-    for (const warning of warnings) {
-      this.logger.warn(warning);
-    }
-
-    const conflicts = await ask<AskEngineUpdateConflict>(
-      "ask:device-manager:engine:doesUpdateConflict",
-      { twin: { models: [deviceModelContent], type: "device" } },
-    );
-
-    if (conflicts.length > 0) {
-      throw new MappingsConflictsError(
-        `Devices mappings are causing conflicts`,
-        conflicts,
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        { twin: { models: [deviceModelContent], type: "device" } },
       );
-    }
 
-    const deviceModel =
-      await this.sdk.document.createOrReplace<DeviceModelContent>(
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `Devices mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+
+      const deviceModel =
+        await this.sdk.document.createOrReplace<DeviceModelContent>(
+          this.config.platformIndex,
+          InternalCollection.MODELS,
+          existingDevice._id,
+          deviceModelContent,
+        );
+
+      await this.sdk.collection.refresh(
         this.config.platformIndex,
         InternalCollection.MODELS,
+      );
+      await this.updateEnginesOrRestore(
         existingDevice._id,
-        deviceModelContent,
+        existingDevice._source,
+      );
+      await ask<AskDeviceRefreshModel>(
+        "ask:device-manager:device:refresh-model",
+        { deviceModel: deviceModel._source },
       );
 
-    await this.sdk.collection.refresh(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-    );
-    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
-    await ask<AskDeviceRefreshModel>(
-      "ask:device-manager:device:refresh-model",
-      { deviceModel: deviceModel._source },
-    );
-
-    return deviceModel;
+      return deviceModel;
+    });
   }
 
   /**
@@ -1621,7 +1640,7 @@ export class ModelService extends BaseService {
 
   /**
    * Updates a group model, keeping its scope.
-   * Affinity, icon and metadata references are kept when omitted.
+   * Affinity and icon are kept when omitted.
    *
    * The engines mappings are updated and the groups of the model are refreshed.
    *
@@ -1638,111 +1657,124 @@ export class ModelService extends BaseService {
       metadataDetails,
       metadataGroups,
       metadataMappings,
-      metadataReferences,
     }: GroupModelUpdate,
   ): Promise<KDocument<GroupModelContent>> {
-    if (Inflector.pascalCase(model) !== model) {
-      throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
-    }
+    return withMetadataReferentialLock(async () => {
+      if (Inflector.pascalCase(model) !== model) {
+        throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
+      }
 
-    const existingGroup = await this.getScopedGroup(engineGroups, model);
-    const existing = existingGroup._source.group;
+      const existingGroup = await this.getScopedGroup(engineGroups, model);
+      const existing = existingGroup._source.group;
 
-    this.checkReferentialOnly(
-      "group",
-      model,
-      metadataMappings,
-      metadataReferences ?? existing.metadataReferences ?? {},
-      existingGroup._source,
-    );
-
-    // ? Without references in the update, the existing ones are kept
-    const metadata = await this.resolveMetadata("group", model, {
-      defaultMetadata,
-      metadataDetails,
-      metadataMappings,
-      metadataReferences:
-        metadataReferences ?? existing.metadataReferences ?? {},
-    });
-
-    this.checkDefaultValues(
-      metadata.metadataMappings,
-      metadata.defaultMetadata,
-    );
-
-    const groupModelContent: GroupModelContent = {
-      engineGroups: existingGroup._source.engineGroups,
-      group: {
-        ...metadata,
-        affinity:
-          affinity === undefined
-            ? existing.affinity
-            : this.checkGroupAffinity(affinity),
-        icon: icon ?? existing.icon,
-        locales,
-        metadataGroups,
+      this.checkReferentialOnly(
+        "group",
         model,
-      },
-      type: "group",
-    };
-
-    const conflicts = await ask<AskEngineUpdateConflict>(
-      "ask:device-manager:engine:doesUpdateConflict",
-      { groupModels: [groupModelContent] },
-    );
-
-    if (conflicts.length > 0) {
-      throw new MappingsConflictsError(
-        `Group mappings are causing conflicts`,
-        conflicts,
+        metadataMappings,
+        existingGroup._source,
       );
-    }
 
-    const groupModel =
-      await this.sdk.document.createOrReplace<GroupModelContent>(
+      const { fields: metadata, resolvedMappings } = await this.resolveMetadata(
+        "group",
+        model,
+        { defaultMetadata, metadataDetails, metadataMappings },
+      );
+
+      this.checkDefaultValues(resolvedMappings, metadata.defaultMetadata);
+
+      const groupModelContent: GroupModelContent = {
+        engineGroups: existingGroup._source.engineGroups,
+        group: {
+          ...metadata,
+          affinity:
+            affinity === undefined
+              ? existing.affinity
+              : this.checkGroupAffinity(affinity),
+          icon: icon ?? existing.icon,
+          locales,
+          metadataGroups,
+          model,
+        },
+        type: "group",
+      };
+
+      const conflicts = await ask<AskEngineUpdateConflict>(
+        "ask:device-manager:engine:doesUpdateConflict",
+        { groupModels: [groupModelContent] },
+      );
+
+      if (conflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `Group mappings are causing conflicts`,
+          conflicts,
+        );
+      }
+
+      const groupModel =
+        await this.sdk.document.createOrReplace<GroupModelContent>(
+          this.config.platformIndex,
+          InternalCollection.MODELS,
+          existingGroup._id,
+          groupModelContent,
+        );
+
+      await this.sdk.collection.refresh(
         this.config.platformIndex,
         InternalCollection.MODELS,
+      );
+      await this.updateEnginesOrRestore(
         existingGroup._id,
-        groupModelContent,
+        existingGroup._source,
+      );
+      await ask<AskGroupRefreshModel>(
+        "ask:device-manager:group:refresh-model",
+        {
+          groupModel: groupModel._source,
+        },
       );
 
-    await this.sdk.collection.refresh(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-    );
-    await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
-    await ask<AskGroupRefreshModel>("ask:device-manager:group:refresh-model", {
-      groupModel: groupModel._source,
+      return groupModel;
     });
-
-    return groupModel;
   }
 
   /**
-   * Resolves the metadata references of a model written through the API
+   * Validates the metadata of a model written through the API against the metadata referential
+   * and enriches the details and default values of the metadata coming from it
    */
   private async resolveMetadata(
     modelType: MetadataModelType,
     model: string,
     fields: ModelMetadataFields,
-  ): Promise<ModelMetadataFields> {
-    const referential = await this.getMetadataReferential();
+  ): Promise<MetadataEnrichment> {
+    const enrichment = enrichModelMetadata(
+      await this.getMetadataReferential(),
+      fields,
+      {
+        createError: (message) => new BadRequestError(message),
+        model,
+        modelType,
+      },
+    );
 
-    const resolution = resolveMetadataReferences(referential, fields, {
-      createError: (message) => new BadRequestError(message),
-      model,
-      modelType,
-    });
-
-    if (resolution.ignored.length > 0) {
-      throw new BadRequestError(resolution.ignored.join(". "));
-    }
-
-    for (const warning of resolution.warnings) {
+    for (const warning of enrichment.warnings) {
       this.logger.warn(warning);
     }
 
-    return resolution.fields;
+    return enrichment;
+  }
+
+  /**
+   * Resolves the referential metadata of stored models, to be returned by the API
+   */
+  async resolveModels<D extends { _source: MetadataModelContent }>(
+    documents: D[],
+  ): Promise<D[]> {
+    const referential = await this.getMetadataReferential();
+
+    return documents.map((document) => ({
+      ...document,
+      _source: resolveModelMetadata(referential, document._source),
+    }));
   }
 
   async getMetadataReferential(): Promise<MetadataReferential> {
@@ -1750,12 +1782,16 @@ export class ModelService extends BaseService {
   }
 
   /**
-   * Creates or replaces a metadata of the metadata referential.
+   * Creates a metadata of the metadata referential, or updates its details.
    *
-   * Every model referencing the metadata is resolved again, the engines mappings are updated
-   * and the twins of the models are refreshed.
+   * The mappings of a new metadata are merged into the assets, devices and groups collections
+   * of every engine. They cannot be modified afterwards: only the locales, editor hint,
+   * default value and icon of an existing metadata can change. These are copied into the models
+   * using the metadata when they are written, the existing models are not modified.
    *
-   * @throws MappingsConflictsError if the new definition conflicts with a model or the engines mappings
+   * @throws BadRequestError if the mappings of an existing metadata are modified
+   * @throws MappingsConflictsError if the new metadata conflicts with an inline metadata of a model
+   *  or with the actual mappings of an engine collection
    */
   async writeMetadata(
     name: string,
@@ -1767,51 +1803,63 @@ export class ModelService extends BaseService {
       (message) => new BadRequestError(message),
     );
 
-    return lock("device-manager/metadataReferential", async () => {
+    return withMetadataReferentialLock(async () => {
       const stored = await this.getMetadataReferential();
+      const entry: MetadataReferentialEntry = {
+        locales: {},
+        ..._.omit(definition, "managed"),
+      };
 
       this.checkUnmanagedMetadata(stored, name);
 
-      const referential = {
-        ...stored,
-        [name]: { locales: {}, ..._.omit(definition, "managed") },
-      };
+      if (stored[name]) {
+        if (!_.isEqual(stored[name].mappings, entry.mappings)) {
+          throw new BadRequestError(
+            `The mappings of metadata "${name}" cannot be modified, they are already merged into the engines collections`,
+          );
+        }
 
-      // ? Every model is resolved again to detect inline metadata conflicting with the new definition
+        const referential = { ...stored, [name]: entry };
+
+        await saveMetadataReferential(
+          this.sdk,
+          this.config.platformIndex,
+          referential,
+        );
+
+        return referential;
+      }
+
       const models = await fetchMetadataModels(
         this.sdk,
         this.config.platformIndex,
       );
-
-      const updatedModels = [];
-
-      for (const { _id, _source } of models) {
-        const { content } = reResolveModel(
-          referential,
-          _source,
-          (message) => new BadRequestError(message),
-        );
-
-        const isReferencing =
-          _source[_source.type].metadataReferences?.[name] !== undefined;
-
-        if (isReferencing && !_.isEqual(content, _source)) {
-          updatedModels.push({ _id, _source: content, previous: _source });
-        }
-      }
-
-      await this.checkMetadataModelsConflicts(
-        updatedModels.map(({ _source }) => _source),
+      const modelsConflicts = getEntryModelsConflicts(
+        name,
+        entry,
+        models.map(({ _source }) => _source),
       );
 
-      if (updatedModels.length > 0) {
-        await this.sdk.document.mCreateOrReplace(
-          this.config.platformIndex,
-          InternalCollection.MODELS,
-          updatedModels.map(({ _id, _source }) => ({ _id, body: _source })),
-          { strict: true },
+      if (modelsConflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `Metadata "${name}" conflicts with the metadata of models`,
+          modelsConflicts,
         );
       }
+
+      const esConflicts = await ask<AskEngineMetadataConflict>(
+        "ask:device-manager:engine:doesMetadataConflict",
+        { metadataMappings: { [name]: entry.mappings } },
+      );
+
+      if (esConflicts.length > 0) {
+        throw new MappingsConflictsError(
+          `Metadata "${name}" conflicts with the engines collections mappings`,
+          esConflicts,
+        );
+      }
+
+      const referential = { ...stored, [name]: entry };
 
       await saveMetadataReferential(
         this.sdk,
@@ -1819,37 +1867,17 @@ export class ModelService extends BaseService {
         referential,
       );
 
-      if (updatedModels.length === 0) {
-        return referential;
-      }
-
-      await this.sdk.collection.refresh(
-        this.config.platformIndex,
-        InternalCollection.MODELS,
-      );
-      await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
-
-      for (const { _source, previous } of updatedModels) {
-        const mappingsChanged = !_.isEqual(
-          _source[_source.type].metadataMappings,
-          previous[previous.type].metadataMappings,
+      try {
+        await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+      } catch (error) {
+        // ? A metadata rejected by Elasticsearch would make every next engines update fail
+        await saveMetadataReferential(
+          this.sdk,
+          this.config.platformIndex,
+          stored,
         );
 
-        if (!mappingsChanged) {
-          continue;
-        }
-
-        if (_source.type === "asset") {
-          await ask<AskAssetRefreshModel>(
-            "ask:device-manager:asset:refresh-model",
-            { assetModel: _source },
-          );
-        } else if (_source.type === "device") {
-          await ask<AskDeviceRefreshModel>(
-            "ask:device-manager:device:refresh-model",
-            { deviceModel: _source },
-          );
-        }
+        throw error;
       }
 
       return referential;
@@ -1857,12 +1885,13 @@ export class ModelService extends BaseService {
   }
 
   /**
-   * Deletes a metadata of the metadata referential
+   * Deletes a metadata of the metadata referential.
+   * Its mappings stay in the engines collections, Elasticsearch cannot remove them.
    *
-   * @throws BadRequestError if a model still references the metadata
+   * @throws BadRequestError if a model still uses the metadata
    */
   async deleteMetadata(name: string): Promise<MetadataReferential> {
-    return lock("device-manager/metadataReferential", async () => {
+    return withMetadataReferentialLock(async () => {
       const referential = await this.getMetadataReferential();
 
       if (!referential[name]) {
@@ -1876,12 +1905,12 @@ export class ModelService extends BaseService {
       const referencingModels = await fetchReferencingModels(
         this.sdk,
         this.config.platformIndex,
-        [name],
+        name,
       );
 
       if (referencingModels.length > 0) {
         throw new BadRequestError(
-          `Metadata "${name}" is still referenced by the models: ${referencingModels
+          `Metadata "${name}" is still used by the models: ${referencingModels
             .map(({ _id }) => _id)
             .join(", ")}`,
         );
@@ -1909,27 +1938,55 @@ export class ModelService extends BaseService {
     modelType: MetadataModelType,
     model: string,
     metadataMappings: MetadataMappings,
-    metadataReferences: MetadataReferences,
     stored: MetadataModelContent | null,
   ) {
     if (!this.config.models?.metadata?.referentialOnly) {
       return;
     }
 
-    const added = getAddedInlineMetadata(
-      metadataMappings,
-      metadataReferences,
-      stored,
-    );
+    const added = getAddedInlineMetadata(metadataMappings, stored);
 
     if (added.length > 0) {
       throw new BadRequestError(
-        `New metadata of ${modelType} model "${model}" must be referenced from the metadata referential, inline metadata: ${added.join(", ")}`,
+        `New metadata of ${modelType} model "${model}" must come from the metadata referential, inline metadata: ${added.join(", ")}`,
       );
     }
   }
 
-  private async getStoredModel<T extends MetadataModelContent>(
+  /**
+   * Updates the engines collections. If Elasticsearch rejects the new mappings, the model is
+   * restored to its previous version (or deleted if it is new), otherwise every next engines
+   * update would fail on it.
+   */
+  private async updateEnginesOrRestore(
+    _id: string,
+    previous: ModelContent | null,
+  ) {
+    try {
+      await ask<AskEngineUpdateAll>("ask:device-manager:engine:updateAll");
+    } catch (error) {
+      if (previous) {
+        await this.sdk.document.createOrReplace(
+          this.config.platformIndex,
+          InternalCollection.MODELS,
+          _id,
+          _.omit(previous, "_kuzzle_info"),
+          { refresh: "wait_for" },
+        );
+      } else {
+        await this.sdk.document.delete(
+          this.config.platformIndex,
+          InternalCollection.MODELS,
+          _id,
+          { refresh: "wait_for" },
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  private async getStoredModel<T extends ModelContent>(
     _id: string,
   ): Promise<T | null> {
     try {
@@ -1960,61 +2017,6 @@ export class ModelService extends BaseService {
       throw new BadRequestError(
         `Metadata "${name}" is registered from code, it cannot be modified or deleted through the API`,
       );
-    }
-  }
-
-  private async checkMetadataModelsConflicts(
-    models: (AssetModelContent | DeviceModelContent | GroupModelContent)[],
-  ) {
-    const payloads: Array<[string, AskEngineUpdateConflict["payload"]]> = [
-      [
-        "assets",
-        {
-          twin: {
-            models: models.filter(
-              (model): model is AssetModelContent => model.type === "asset",
-            ),
-            type: "asset",
-          },
-        },
-      ],
-      [
-        "devices",
-        {
-          twin: {
-            models: models.filter(
-              (model): model is DeviceModelContent => model.type === "device",
-            ),
-            type: "device",
-          },
-        },
-      ],
-      [
-        "group",
-        {
-          groupModels: models.filter(
-            (model): model is GroupModelContent => model.type === "group",
-          ),
-        },
-      ],
-    ];
-
-    for (const [type, payload] of payloads) {
-      if ((payload.twin?.models ?? payload.groupModels).length === 0) {
-        continue;
-      }
-
-      const conflicts = await ask<AskEngineUpdateConflict>(
-        "ask:device-manager:engine:doesUpdateConflict",
-        payload,
-      );
-
-      if (conflicts.length > 0) {
-        throw new MappingsConflictsError(
-          `New ${type} mappings are causing conflicts`,
-          conflicts,
-        );
-      }
     }
   }
 }

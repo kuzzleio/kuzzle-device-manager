@@ -182,7 +182,6 @@ export class DeviceManagerPlugin extends Plugin {
           definition.tooltipModels,
           definition.locales,
           definition.icon,
-          definition.metadata,
         );
       },
 
@@ -250,7 +249,6 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataDetails,
           definition.metadataGroups,
           definition.icon,
-          definition.metadata,
         );
       },
 
@@ -321,7 +319,6 @@ export class DeviceManagerPlugin extends Plugin {
           definition.metadataGroups,
           definition.icon,
           definition.locales,
-          definition.metadata,
         );
       },
 
@@ -347,8 +344,10 @@ export class DeviceManagerPlugin extends Plugin {
       /**
        * Register a metadata in the metadata referential.
        *
-       * Asset, device and group models can then reference it by name with their
-       * `metadata` definition field instead of redefining its mappings.
+       * Its mappings are merged into the assets, devices and groups collections of every engine,
+       * and cannot be modified afterwards.
+       * Asset, device and group models then use it with `{ referential: true }` in their
+       * metadataMappings instead of redefining its mappings.
        * A model defining inline a metadata that conflicts with the referential is rejected.
        *
        * @param name Name of the metadata
@@ -372,7 +371,7 @@ export class DeviceManagerPlugin extends Plugin {
        *
        * deviceManager.models.registerAsset("commons", "Container", {
        *   measures: [],
-       *   metadata: { color: true },
+       *   metadataMappings: { color: { referential: true } },
        * });
        * ```
        */

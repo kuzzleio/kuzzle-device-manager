@@ -3,9 +3,14 @@ import { JSONObject, KDocument } from "kuzzle-sdk";
 import _ from "lodash";
 
 import { InternalCollection } from "../plugin/types/InternalCollection";
+import { lock } from "../shared/utils/lock";
 
 import { MappingsConflictsError } from "./MappingsConflictsError";
-import { MappingsConflict, findConflicts } from "./ModelsConflicts";
+import {
+  ConflictChunk,
+  MappingsConflict,
+  findMappingsConflicts,
+} from "./ModelsConflicts";
 import {
   AssetModelContent,
   DeviceModelContent,
@@ -13,14 +18,32 @@ import {
   LocaleDetails,
   MetadataDetails,
   MetadataMappings,
-  MetadataReference,
   MetadataReferential,
   MetadataReferentialContent,
   MetadataReferentialEntry,
-  MetadataReferences,
+  ReferentialMetadataMapping,
+  ResolvedMetadataMappings,
 } from "./types/ModelContent";
 
 export const METADATA_REFERENTIAL_ID = "model-metadata-referential";
+
+/**
+ * TTL of the metadata referential lock. Kuzzle locks expire after 5s by default,
+ * less than a model write updating the engines collections.
+ */
+const METADATA_REFERENTIAL_LOCK_TTL = 120_000;
+
+/**
+ * Runs cb holding the metadata referential lock, taken by every write of the referential
+ * and of asset, device and group models, so their conflicts checks see each other writes
+ */
+export async function withMetadataReferentialLock<T>(
+  cb: () => Promise<T>,
+): Promise<T> {
+  return lock("device-manager/metadataReferential", cb, {
+    ttl: METADATA_REFERENTIAL_LOCK_TTL,
+  });
+}
 
 export type MetadataModelContent =
   | AssetModelContent
@@ -36,66 +59,204 @@ export type ModelMetadataFields = {
   metadataMappings: MetadataMappings;
   defaultMetadata: JSONObject;
   metadataDetails: MetadataDetails;
-  metadataReferences: MetadataReferences;
 };
 
 export type MetadataResolutionContext = {
   modelType: MetadataModelType;
   model: string;
   /**
-   * Builds the error thrown on an invalid reference.
+   * Builds the error thrown on an invalid use of the referential.
    * PluginImplementationError when registering from code, BadRequestError from the API.
    */
   createError: (message: string) => Error;
 };
 
-export type MetadataResolution = {
+export type MetadataEnrichment = {
+  /**
+   * Metadata fields to store: referential markers are kept in metadataMappings,
+   * metadataDetails and defaultMetadata are enriched with the referential values
+   */
   fields: ModelMetadataFields;
   /**
-   * Inline metadata identical to a referential entry, which should be referenced instead
+   * Metadata mappings with the referential markers replaced by the referential mappings
+   */
+  resolvedMappings: ResolvedMetadataMappings;
+  /**
+   * Inline metadata identical to a referential entry, which should use the referential instead
    */
   warnings: string[];
-  /**
-   * Inline details or default values of a referenced metadata, which differ from the resolved ones
-   * and are therefore ignored
-   */
-  ignored: string[];
 };
+
+/**
+ * @returns true if the metadata mappings mark a metadata of the referential
+ */
+export function isReferentialMapping(
+  mapping: unknown,
+): mapping is ReferentialMetadataMapping {
+  return (
+    _.isPlainObject(mapping) && (mapping as JSONObject).referential === true
+  );
+}
+
+/**
+ * Lists the metadata of a model coming from the metadata referential
+ */
+export function getReferentialNames(
+  metadataMappings: MetadataMappings = {},
+): string[] {
+  return Object.keys(metadataMappings).filter((name) =>
+    isReferentialMapping(metadataMappings[name]),
+  );
+}
+
+/**
+ * Replaces the referential markers of metadata mappings by the referential mappings.
+ * A marker of a metadata missing from the referential is dropped.
+ */
+export function resolveMetadataMappings(
+  referential: MetadataReferential,
+  metadataMappings: MetadataMappings = {},
+): ResolvedMetadataMappings {
+  const resolved: ResolvedMetadataMappings = {};
+
+  for (const [name, mapping] of Object.entries(metadataMappings)) {
+    if (!isReferentialMapping(mapping)) {
+      resolved[name] = mapping;
+    } else if (referential[name]) {
+      resolved[name] = _.cloneDeep(referential[name].mappings);
+    }
+  }
+
+  return resolved;
+}
+
+/**
+ * @returns The model with the referential markers of its metadata mappings resolved
+ */
+export function resolveModelMappings<T extends MetadataModelContent>(
+  referential: MetadataReferential,
+  content: T,
+): T {
+  const twin = content[content.type];
+
+  return {
+    ...content,
+    [content.type]: {
+      ...twin,
+      metadataMappings: resolveMetadataMappings(
+        referential,
+        twin.metadataMappings,
+      ),
+    },
+  };
+}
 
 function isDefaultOf(key: string, name: string) {
   return key === name || key.startsWith(`${name}.`);
 }
 
-function omitDefaultsOf(defaultMetadata: JSONObject, names: string[]) {
-  return _.omitBy(defaultMetadata, (_value, key) =>
-    names.some((name) => isDefaultOf(key, name)),
-  );
-}
-
 /**
- * Merges, per locale, the reference translations over the referential ones.
+ * Merges, per locale, the model translations over the referential ones.
  * A locale missing from the referential falls back to the metadata name and an empty description.
  */
 function mergeLocales(
   name: string,
-  entryLocales: MetadataReferentialEntry["locales"],
-  referenceLocales: Exclude<MetadataReference, true>["locales"] = {},
+  entryLocales: MetadataReferentialEntry["locales"] = {},
+  modelLocales: MetadataDetails[string]["locales"] = {},
 ): { [locale: string]: LocaleDetails } {
   const locales: { [locale: string]: LocaleDetails } = {};
 
   for (const locale of _.union(
-    Object.keys(entryLocales ?? {}),
-    Object.keys(referenceLocales),
+    Object.keys(entryLocales),
+    Object.keys(modelLocales),
   )) {
     locales[locale] = {
       description: "",
       friendlyName: name,
-      ...entryLocales?.[locale],
-      ...referenceLocales[locale],
+      ...entryLocales[locale],
+      ...modelLocales[locale],
     };
   }
 
   return locales;
+}
+
+/**
+ * Builds the details of a metadata of the referential, the model values taking precedence
+ */
+function enrichDetails(
+  name: string,
+  entry: MetadataReferentialEntry,
+  details: Partial<MetadataDetails[string]> = {},
+): MetadataDetails[string] {
+  return {
+    ...(entry.editorHint ? { editorHint: _.cloneDeep(entry.editorHint) } : {}),
+    ...(entry.icon !== undefined ? { icon: entry.icon } : {}),
+    ...details,
+    locales: mergeLocales(name, entry.locales, details.locales),
+  };
+}
+
+/**
+ * Fills the details and default value of a referential metadata with the referential values,
+ * the model values taking precedence
+ */
+function applyReferentialValues(
+  name: string,
+  entry: MetadataReferentialEntry,
+  metadataDetails: MetadataDetails,
+  defaultMetadata: JSONObject,
+) {
+  metadataDetails[name] = enrichDetails(name, entry, metadataDetails[name]);
+
+  const hasDefault = Object.keys(defaultMetadata).some((key) =>
+    isDefaultOf(key, name),
+  );
+
+  if (!hasDefault && entry.defaultValue !== undefined) {
+    defaultMetadata[name] = _.cloneDeep(entry.defaultValue);
+  }
+}
+
+/**
+ * Resolves the referential metadata of a stored model, to be read:
+ * the markers are replaced by the referential mappings, the details and default values
+ * are merged over the current referential values.
+ * A marker of a metadata missing from the referential is dropped.
+ *
+ * @returns The model with its referential metadata resolved
+ */
+export function resolveModelMetadata<T extends MetadataModelContent>(
+  referential: MetadataReferential,
+  content: T,
+): T {
+  const twin = content[content.type];
+  const metadataDetails: MetadataDetails = { ...twin.metadataDetails };
+  const defaultMetadata: JSONObject = { ...twin.defaultMetadata };
+
+  for (const name of getReferentialNames(twin.metadataMappings)) {
+    if (referential[name]) {
+      applyReferentialValues(
+        name,
+        referential[name],
+        metadataDetails,
+        defaultMetadata,
+      );
+    }
+  }
+
+  return {
+    ...content,
+    [content.type]: {
+      ...twin,
+      defaultMetadata,
+      metadataDetails,
+      metadataMappings: resolveMetadataMappings(
+        referential,
+        twin.metadataMappings,
+      ),
+    },
+  };
 }
 
 /**
@@ -149,49 +310,37 @@ export function checkMetadataReferentialEntry(
 }
 
 /**
- * Checks that an inline metadata does not redefine a referential entry differently
- *
- * @returns true if the inline metadata is identical to the referential entry
- * @throws MappingsConflictsError if the inline mappings differ from the referential ones
+ * Lists the conflicts between an inline metadata and a referential entry of the same name.
+ * Any difference is a conflict: an inline metadata must be identical to the referential one.
  */
-function checkInlineMetadata(
+function getInlineConflicts(
   name: string,
-  inlineMappings: MetadataMappings[string],
+  inlineMappings: unknown,
   entry: MetadataReferentialEntry,
-  context: MetadataResolutionContext,
-) {
+  basePath: string,
+): MappingsConflict[] {
   if (_.isEqual(inlineMappings, entry.mappings)) {
-    return true;
+    return [];
   }
 
-  let conflicts: MappingsConflict[] = findConflicts(
-    entry.mappings,
-    inlineMappings,
-    name,
+  const conflicts = findMappingsConflicts(
+    { [name]: entry.mappings },
+    { [name]: inlineMappings },
+    basePath,
   );
 
   // ? Same leaves but different structure (e.g. additional properties)
   if (conflicts.length === 0) {
-    conflicts = [
+    return [
       {
         currentType: JSON.stringify(entry.mappings),
         newType: JSON.stringify(inlineMappings),
-        path: name,
+        path: `${basePath}.${name}`,
       },
     ];
   }
 
-  throw new MappingsConflictsError(
-    `Metadata "${name}" of ${context.modelType} model "${context.model}" conflicts with the metadata referential`,
-    [
-      {
-        conflicts,
-        modelType: context.modelType,
-        newModel: context.model,
-        sourceModel: "metadata-referential",
-      },
-    ],
-  );
+  return conflicts;
 }
 
 function describeModel(context: MetadataResolutionContext) {
@@ -199,325 +348,149 @@ function describeModel(context: MetadataResolutionContext) {
 }
 
 /**
- * Validates the metadata references of a model against the metadata referential
+ * Validates the metadata mappings of a model against the metadata referential and enriches
+ * the details and default values of the metadata coming from the referential.
  *
- * @throws The error built by createError on an unknown or invalid reference
- */
-function checkMetadataReferences(
-  referential: MetadataReferential,
-  references: MetadataReferences,
-  context: MetadataResolutionContext,
-) {
-  const model = describeModel(context);
-
-  if (!_.isPlainObject(references)) {
-    throw context.createError(
-      `Metadata references of ${model} must be an object`,
-    );
-  }
-
-  for (const [name, reference] of Object.entries(references)) {
-    if (!referential[name]) {
-      throw context.createError(
-        `The ${model} references the unknown metadata "${name}"`,
-      );
-    }
-
-    if (reference === true) {
-      continue;
-    }
-
-    if (!_.isPlainObject(reference)) {
-      throw context.createError(
-        `The reference to metadata "${name}" of ${model} must be true or an object`,
-      );
-    }
-
-    if (reference.icon !== undefined && typeof reference.icon !== "string") {
-      throw context.createError(
-        `The icon of the reference to metadata "${name}" of ${model} must be a string`,
-      );
-    }
-  }
-}
-
-/**
- * Keeps the inline metadata mappings that are not referenced, checking them against the referential
+ * A metadata of the referential is marked `{ referential: true }` in metadataMappings, the marker is kept.
+ * Its details are the referential locales (merged per locale), editorHint and icon, overridden by the
+ * model ones. Its default value is the referential one, unless the model defines one.
  *
+ * An inline metadata with the name of a referential entry must have the same mappings (legacy).
+ *
+ * @throws The error built by createError on an invalid marker or an unknown metadata
  * @throws MappingsConflictsError if an inline metadata conflicts with the referential
  */
-function resolveInlineMappings(
-  referential: MetadataReferential,
-  inlineMappings: MetadataMappings,
-  referencedNames: string[],
-  context: MetadataResolutionContext,
-  warnings: string[],
-): MetadataMappings {
-  const metadataMappings: MetadataMappings = {};
-
-  for (const [name, mappings] of Object.entries(inlineMappings)) {
-    const entry = referential[name];
-
-    if (entry) {
-      checkInlineMetadata(name, mappings, entry, context);
-    }
-
-    // ? An identical inline copy of a referenced metadata is a previously resolved model
-    if (entry && referencedNames.includes(name)) {
-      continue;
-    }
-
-    metadataMappings[name] = mappings;
-
-    if (entry) {
-      warnings.push(
-        `The ${describeModel(context)} defines the metadata "${name}" inline, it should reference it from the metadata referential instead`,
-      );
-    }
-  }
-
-  return metadataMappings;
-}
-
-/**
- * Builds the details of a referenced metadata, the reference values taking precedence
- */
-function resolveReferenceDetails(
-  name: string,
-  entry: MetadataReferentialEntry,
-  reference: Exclude<MetadataReference, true>,
-): MetadataDetails[string] {
-  const icon = reference.icon ?? entry.icon;
-
-  return {
-    locales: mergeLocales(name, entry.locales, reference.locales),
-    ...(entry.editorHint ? { editorHint: _.cloneDeep(entry.editorHint) } : {}),
-    ...(reference.group ? { group: reference.group } : {}),
-    ...(icon !== undefined ? { icon } : {}),
-  };
-}
-
-/**
- * Lists the inline values of a referenced metadata that differ from the resolved ones
- */
-function listIgnoredInlineValues(
-  name: string,
-  fields: Partial<ModelMetadataFields>,
-  resolvedDetails: MetadataDetails[string],
-  defaultValue: unknown,
-  context: MetadataResolutionContext,
-): string[] {
-  const ignored: string[] = [];
-  const model = describeModel(context);
-
-  // ? Identical inline values are a previously resolved model, different ones are lost
-  const inlineDetails = fields.metadataDetails?.[name];
-
-  if (
-    inlineDetails !== undefined &&
-    !_.isEqual(inlineDetails, resolvedDetails)
-  ) {
-    ignored.push(
-      `The inline details of the referenced metadata "${name}" of ${model} differ from the resolved ones, use the reference locales, group and icon instead`,
-    );
-  }
-
-  const resolvedDefaults =
-    defaultValue === undefined ? {} : { [name]: defaultValue };
-  const hasIgnoredDefaults = Object.entries(fields.defaultMetadata ?? {}).some(
-    ([key, value]) =>
-      isDefaultOf(key, name) && !_.isEqual(value, _.get(resolvedDefaults, key)),
-  );
-
-  if (hasIgnoredDefaults) {
-    ignored.push(
-      `The inline default value of the referenced metadata "${name}" of ${model} differs from the resolved one, use the reference defaultValue instead`,
-    );
-  }
-
-  return ignored;
-}
-
-/**
- * Resolves the metadata references of a model against the metadata referential.
- *
- * Referenced metadata are materialized into metadataMappings, metadataDetails and defaultMetadata,
- * so the rest of the plugin (engine mappings, conflicts, twins refresh) keeps working on
- * fully defined models. Inline metadata are kept as is (legacy behaviour).
- *
- * For a referenced metadata, the referential definition always wins: inline details and
- * default values for that name that differ from the resolved ones are reported in `ignored`,
- * use the reference locales, group, defaultValue and icon instead.
- *
- * @throws The error built by createError on an unknown or invalid reference
- * @throws MappingsConflictsError if an inline metadata conflicts with the referential
- */
-export function resolveMetadataReferences(
+export function enrichModelMetadata(
   referential: MetadataReferential,
   fields: Partial<ModelMetadataFields>,
   context: MetadataResolutionContext,
-): MetadataResolution {
-  const references = fields.metadataReferences ?? {};
+): MetadataEnrichment {
+  const model = describeModel(context);
+  const metadataMappings = fields.metadataMappings ?? {};
+  const metadataDetails: MetadataDetails = { ...fields.metadataDetails };
+  const defaultMetadata: JSONObject = { ...fields.defaultMetadata };
   const warnings: string[] = [];
-  const ignored: string[] = [];
+  const conflicts: MappingsConflict[] = [];
 
-  checkMetadataReferences(referential, references, context);
+  if (!_.isPlainObject(metadataMappings)) {
+    throw context.createError(
+      `Metadata mappings of ${model} must be an object`,
+    );
+  }
 
-  const referencedNames = Object.keys(references);
-  const metadataMappings = resolveInlineMappings(
-    referential,
-    fields.metadataMappings ?? {},
-    referencedNames,
-    context,
-    warnings,
-  );
-  const metadataDetails: MetadataDetails = _.omit(
-    fields.metadataDetails ?? {},
-    referencedNames,
-  );
-  const defaultMetadata: JSONObject = omitDefaultsOf(
-    fields.defaultMetadata ?? {},
-    referencedNames,
-  );
-
-  for (const name of referencedNames) {
+  for (const [name, mapping] of Object.entries(metadataMappings)) {
     const entry = referential[name];
-    const rawReference = references[name];
-    const reference: Exclude<MetadataReference, true> =
-      rawReference === true ? {} : rawReference;
 
-    metadataMappings[name] = _.cloneDeep(entry.mappings);
-    metadataDetails[name] = resolveReferenceDetails(name, entry, reference);
+    if (_.isPlainObject(mapping) && "referential" in mapping) {
+      if (!isReferentialMapping(mapping) || Object.keys(mapping).length !== 1) {
+        throw context.createError(
+          `The metadata "${name}" of ${model} must be { referential: true } to use the metadata referential`,
+        );
+      }
 
-    const defaultValue =
-      reference.defaultValue !== undefined
-        ? reference.defaultValue
-        : entry.defaultValue;
+      if (!entry) {
+        throw context.createError(
+          `The ${model} uses the unknown referential metadata "${name}"`,
+        );
+      }
 
-    if (defaultValue !== undefined) {
-      defaultMetadata[name] = _.cloneDeep(defaultValue);
+      applyReferentialValues(name, entry, metadataDetails, defaultMetadata);
+
+      continue;
     }
 
-    ignored.push(
-      ...listIgnoredInlineValues(
+    if (!entry) {
+      continue;
+    }
+
+    conflicts.push(
+      ...getInlineConflicts(
         name,
-        fields,
-        metadataDetails[name],
-        defaultValue,
-        context,
+        mapping,
+        entry,
+        `${context.modelType}.metadataMappings`,
       ),
     );
+
+    warnings.push(
+      `The ${model} defines the metadata "${name}" inline, it should use the metadata referential instead with { referential: true }`,
+    );
+  }
+
+  if (conflicts.length > 0) {
+    throw new MappingsConflictsError(
+      `Metadata of ${model} conflict with the metadata referential`,
+      [
+        {
+          conflicts,
+          modelType: context.modelType,
+          newModel: context.model,
+          sourceModel: "metadata-referential",
+        },
+      ],
+    );
   }
 
   return {
-    fields: {
-      defaultMetadata,
-      metadataDetails,
-      metadataMappings,
-      metadataReferences: references,
-    },
-    ignored,
+    fields: { defaultMetadata, metadataDetails, metadataMappings },
+    resolvedMappings: resolveMetadataMappings(referential, metadataMappings),
     warnings,
   };
 }
 
 /**
- * Returns the metadata fields of a stored model, without the resolved referenced metadata.
- * This is the input to give back to resolveMetadataReferences to resolve the model again.
+ * Lists the conflicts between a referential entry and the inline metadata of the same name of models
  */
-export function getInlineMetadataFields(
-  content: MetadataModelContent,
-): ModelMetadataFields {
-  const twin = content[content.type];
-  const references = twin.metadataReferences ?? {};
-  const referencedNames = Object.keys(references);
+export function getEntryModelsConflicts(
+  name: string,
+  entry: MetadataReferentialEntry,
+  models: MetadataModelContent[],
+): ConflictChunk[] {
+  const chunks: ConflictChunk[] = [];
 
-  return {
-    defaultMetadata: omitDefaultsOf(
-      twin.defaultMetadata ?? {},
-      referencedNames,
-    ),
-    metadataDetails: _.omit(twin.metadataDetails ?? {}, referencedNames),
-    metadataMappings: _.omit(twin.metadataMappings ?? {}, referencedNames),
-    metadataReferences: references,
-  };
+  for (const content of models) {
+    const twin = content[content.type];
+    const mapping = twin.metadataMappings?.[name];
+
+    if (mapping === undefined || isReferentialMapping(mapping)) {
+      continue;
+    }
+
+    const conflicts = getInlineConflicts(
+      name,
+      mapping,
+      entry,
+      `${content.type}.metadataMappings`,
+    );
+
+    if (conflicts.length > 0) {
+      chunks.push({
+        conflicts,
+        modelType: content.type,
+        newModel: "metadata-referential",
+        sourceModel: twin.model,
+      });
+    }
+  }
+
+  return chunks;
 }
 
 /**
- * Lists the inline metadata a model write adds: inline metadataMappings keys that are
- * neither referenced nor already defined inline by the stored model.
+ * Lists the inline metadata a model write adds: metadataMappings keys that neither
+ * use the referential nor are already defined inline by the stored model.
  */
 export function getAddedInlineMetadata(
   metadataMappings: MetadataMappings,
-  metadataReferences: MetadataReferences,
   stored: MetadataModelContent | null,
 ): string[] {
-  const storedInline = stored
-    ? Object.keys(getInlineMetadataFields(stored).metadataMappings)
-    : [];
+  const storedMappings = stored?.[stored.type]?.metadataMappings ?? {};
 
   return Object.keys(metadataMappings).filter(
-    (name) => !(name in metadataReferences) && !storedInline.includes(name),
+    (name) =>
+      !isReferentialMapping(metadataMappings[name]) &&
+      !(name in storedMappings && !isReferentialMapping(storedMappings[name])),
   );
-}
-
-/**
- * Resolves a model registered from code against the metadata referential.
- * Its metadata fields are taken as registered, so inline values ignored for a reference are reported.
- *
- * @returns The model content with resolved metadata fields
- */
-export function resolveModel<T extends MetadataModelContent>(
-  referential: MetadataReferential,
-  content: T,
-  createError: (message: string) => Error,
-): MetadataResolution & { content: T } {
-  return resolveModelFields(
-    referential,
-    content,
-    content[content.type],
-    createError,
-  );
-}
-
-/**
- * Resolves again a stored model against the metadata referential
- *
- * @returns The model content with resolved metadata fields
- */
-export function reResolveModel<T extends MetadataModelContent>(
-  referential: MetadataReferential,
-  content: T,
-  createError: (message: string) => Error,
-): MetadataResolution & { content: T } {
-  return resolveModelFields(
-    referential,
-    content,
-    getInlineMetadataFields(content),
-    createError,
-  );
-}
-
-function resolveModelFields<T extends MetadataModelContent>(
-  referential: MetadataReferential,
-  content: T,
-  fields: Partial<ModelMetadataFields>,
-  createError: (message: string) => Error,
-): MetadataResolution & { content: T } {
-  const twin = content[content.type];
-  const resolution = resolveMetadataReferences(referential, fields, {
-    createError,
-    model: twin.model,
-    modelType: content.type,
-  });
-
-  return {
-    ...resolution,
-    content: {
-      ...content,
-      [content.type]: { ...twin, ...resolution.fields },
-    },
-  };
 }
 
 /**
@@ -596,25 +569,18 @@ export async function fetchMetadataModels(
 }
 
 /**
- * Lists every stored asset, device and group model referencing at least one of the given metadata.
- * Without names, lists every model referencing the metadata referential.
+ * Lists every stored asset, device and group model using the given metadata of the referential.
  *
- * metadataReferences is not indexed, the filtering is done after fetching the models.
+ * metadataMappings is not indexed, the filtering is done after fetching the models.
  */
 export async function fetchReferencingModels(
   sdk: EmbeddedSDK,
   platformIndex: string,
-  names?: string[],
+  name: string,
 ): Promise<KDocument<MetadataModelContent>[]> {
   const models = await fetchMetadataModels(sdk, platformIndex);
 
-  return models.filter(({ _source }) => {
-    const referencedNames = Object.keys(
-      _source[_source.type]?.metadataReferences ?? {},
-    );
-
-    return names
-      ? referencedNames.some((name) => names.includes(name))
-      : referencedNames.length > 0;
-  });
+  return models.filter(({ _source }) =>
+    isReferentialMapping(_source[_source.type]?.metadataMappings?.[name]),
+  );
 }

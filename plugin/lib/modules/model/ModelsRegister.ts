@@ -20,7 +20,6 @@ import {
   MetadataMappings,
   MetadataReferential,
   MetadataReferentialEntry,
-  MetadataReferences,
   ModelContent,
   TooltipModels,
 } from "./types/ModelContent";
@@ -34,12 +33,15 @@ import { KuzzleLogger } from "kuzzle-logger";
 import {
   MetadataModelContent,
   checkMetadataReferentialEntry,
+  enrichModelMetadata,
+  fetchMetadataModels,
   fetchMetadataReferential,
-  fetchReferencingModels,
-  reResolveModel,
-  resolveModel,
+  getEntryModelsConflicts,
   saveMetadataReferential,
 } from "./MetadataReferential";
+import { ask } from "kuzzle-plugin-commons";
+import { AskEngineMetadataConflict } from "../plugin/DeviceManagerEngine";
+import { ConflictChunk } from "./ModelsConflicts";
 import _ from "lodash";
 
 export class ModelsRegister {
@@ -76,19 +78,35 @@ export class ModelsRegister {
       this.config.platformIndex,
       InternalCollection.MODELS,
     );
-
-    await this.resolveStoredModels(referential);
   }
 
   /**
    * Merges the metadata registered from code over the stored metadata referential and saves it.
-   * Metadata added through the API are kept, metadata registered from code win.
+   * Metadata added through the API are kept, the details of metadata registered from code win.
+   *
+   * @throws PluginImplementationError if the mappings of a stored metadata are modified, or if a new
+   *  metadata conflicts with the stored models or the engines collections mappings
    */
   private async loadMetadataReferential(): Promise<MetadataReferential> {
     const stored = await fetchMetadataReferential(
       this.sdk,
       this.config.platformIndex,
     );
+
+    const added = Object.keys(this.metadataReferential).filter(
+      (name) => !stored[name],
+    );
+
+    for (const [name, entry] of Object.entries(this.metadataReferential)) {
+      if (stored[name] && !_.isEqual(stored[name].mappings, entry.mappings)) {
+        throw new PluginImplementationError(
+          `The mappings of metadata "${name}" cannot be modified, they are already merged into the engines collections`,
+        );
+      }
+    }
+
+    await this.checkNewMetadata(added);
+
     // ? Only the metadata still registered from code are managed, the others become editable through the API
     const referential: MetadataReferential = {
       ..._.mapValues(stored, (entry) => _.omit(entry, "managed")),
@@ -114,81 +132,79 @@ export class ModelsRegister {
   }
 
   /**
-   * Resolves the metadata references of models registered from code
+   * Checks the metadata registered from code that are not in the stored referential yet
+   * against the inline metadata of the stored models and the engines collections mappings
+   *
+   * @throws PluginImplementationError on a conflict
+   */
+  private async checkNewMetadata(names: string[]) {
+    if (names.length === 0) {
+      return;
+    }
+
+    const models = (
+      await fetchMetadataModels(this.sdk, this.config.platformIndex)
+    ).map(({ _source }) => _source);
+    const conflicts: ConflictChunk[] = [];
+
+    for (const name of names) {
+      conflicts.push(
+        ...getEntryModelsConflicts(
+          name,
+          this.metadataReferential[name],
+          models,
+        ),
+      );
+    }
+
+    conflicts.push(
+      ...(await ask<AskEngineMetadataConflict>(
+        "ask:device-manager:engine:doesMetadataConflict",
+        {
+          metadataMappings: _.mapValues(
+            _.pick(this.metadataReferential, names),
+            (entry) => entry.mappings,
+          ),
+        },
+      )),
+    );
+
+    if (conflicts.length > 0) {
+      throw new PluginImplementationError(
+        `Metadata registered from code conflict with the existing mappings: ${JSON.stringify(conflicts)}`,
+      );
+    }
+  }
+
+  /**
+   * Validates the metadata of models registered from code against the metadata referential
+   * and enriches the details and default values of the metadata coming from it
    */
   private resolveModels<T extends MetadataModelContent>(
     referential: MetadataReferential,
     models: T[],
   ): T[] {
-    return models.map((model) => {
-      const { content, ignored, warnings } = resolveModel(
-        referential,
-        model,
-        (message) => new PluginImplementationError(message),
-      );
+    return models.map((content) => {
+      const twin = content[content.type];
+      const { fields, warnings } = enrichModelMetadata(referential, twin, {
+        createError: (message) => new PluginImplementationError(message),
+        model: twin.model,
+        modelType: content.type,
+      });
 
       // ? Only logged, rejecting would prevent the application from starting
-      for (const warning of [...ignored, ...warnings]) {
+      for (const warning of warnings) {
         this.logger.warn(warning);
       }
 
-      return content;
+      return { ...content, [content.type]: { ...twin, ...fields } };
     });
   }
 
   /**
-   * Resolves again the stored models (e.g. written through the API) referencing the metadata referential,
-   * so they take in the metadata registered from code.
-   */
-  private async resolveStoredModels(referential: MetadataReferential) {
-    const registeredIds = new Set([
-      ...this.assetModels.map((model) => ModelSerializer.id("asset", model)),
-      ...this.deviceModels.map((model) => ModelSerializer.id("device", model)),
-      ...this.groupModels.map((model) => ModelSerializer.id("group", model)),
-    ]);
-
-    const storedModels = await fetchReferencingModels(
-      this.sdk,
-      this.config.platformIndex,
-    );
-
-    const documents = [];
-
-    for (const { _id, _source } of storedModels) {
-      if (registeredIds.has(_id)) {
-        continue;
-      }
-
-      const { content } = reResolveModel(
-        referential,
-        _source,
-        (message) => new PluginImplementationError(message),
-      );
-
-      if (!_.isEqual(content, _source)) {
-        documents.push({ _id, body: content });
-      }
-    }
-
-    if (documents.length === 0) {
-      return;
-    }
-
-    await this.sdk.document.mCreateOrReplace(
-      this.config.platformIndex,
-      InternalCollection.MODELS,
-      documents,
-      { refresh: "wait_for", strict: true },
-    );
-
-    this.logger.info(
-      `Successfully resolved metadata of ${documents.length} stored models`,
-    );
-  }
-
-  /**
    * Registers a metadata in the metadata referential.
-   * Asset, device and group models can then reference it by name.
+   * Asset, device and group models can then use it with `{ referential: true }` in their metadataMappings.
+   * Its mappings cannot be modified once loaded, they are merged into the engines collections.
    * Registering again an identical definition is allowed, so several modules can share a metadata.
    *
    * @param name - Name of the metadata
@@ -226,7 +242,6 @@ export class ModelsRegister {
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
    * @param tooltipModels - Optional model list for tooltip, containing labels and tooltip content.
    * @param icon - Optional icon representing the model.
-   * @param metadataReferences - Optional metadata referenced from the metadata referential.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerAsset(
@@ -240,7 +255,6 @@ export class ModelsRegister {
     tooltipModels: TooltipModels = {},
     locales: { [valueName: string]: LocaleDetails } = {},
     icon?: string,
-    metadataReferences: MetadataReferences = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -267,7 +281,6 @@ export class ModelsRegister {
         metadataDetails,
         metadataGroups,
         metadataMappings,
-        metadataReferences,
         model,
         tooltipModels,
       },
@@ -286,7 +299,6 @@ export class ModelsRegister {
    * @param metadataDetails - Optional detailed metadata descriptions, localizations and definition.
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
    * @param icon - Optional icon representing the model.
-   * @param metadataReferences - Optional metadata referenced from the metadata referential.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerDevice(
@@ -297,7 +309,6 @@ export class ModelsRegister {
     metadataDetails: MetadataDetails = {},
     metadataGroups: MetadataGroups = {},
     icon?: string,
-    metadataReferences: MetadataReferences = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -323,7 +334,6 @@ export class ModelsRegister {
         metadataDetails,
         metadataGroups,
         metadataMappings,
-        metadataReferences,
         model,
       },
       type: "device",
@@ -343,7 +353,6 @@ export class ModelsRegister {
    * @param metadataGroups - Optional groups for organizing metadata, with localizations.
    * @param icon - Optional icon representing the model.
    * @param locales - Optional translations specific to the model.
-   * @param metadataReferences - Optional metadata referenced from the metadata referential.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
   registerGroup(
@@ -356,7 +365,6 @@ export class ModelsRegister {
     metadataGroups: MetadataGroups = {},
     icon?: string,
     locales: { [valueName: string]: LocaleDetails } = {},
-    metadataReferences: MetadataReferences = {},
   ) {
     if (Inflector.pascalCase(model) !== model) {
       throw new PluginImplementationError(
@@ -375,7 +383,6 @@ export class ModelsRegister {
         metadataDetails,
         metadataGroups,
         metadataMappings,
-        metadataReferences,
         model,
       },
       type: "group",

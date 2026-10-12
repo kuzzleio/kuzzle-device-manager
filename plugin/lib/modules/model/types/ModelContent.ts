@@ -28,7 +28,22 @@ export interface MetadataObject {
   };
 }
 
+/**
+ * Marks, in the metadataMappings of a model, a metadata defined in the metadata referential.
+ * Its mappings are the referential ones, they are already merged into the engines collections.
+ */
+export interface ReferentialMetadataMapping {
+  referential: true;
+}
+
 export interface MetadataMappings {
+  [key: string]: MetadataProperty | MetadataObject | ReferentialMetadataMapping;
+}
+
+/**
+ * Metadata mappings without referential markers, as merged into the engines collections
+ */
+export interface ResolvedMetadataMappings {
   [key: string]: MetadataProperty | MetadataObject;
 }
 
@@ -122,11 +137,13 @@ export type EditorHint =
 
 /**
  * A metadata defined once in the application metadata referential.
- * Models reference it by name instead of redefining its mappings.
+ * Its mappings are merged into the engines collections when it is written,
+ * models use it with `{ referential: true }` in their metadataMappings.
  */
 export interface MetadataReferentialEntry {
   /**
-   * Mappings of the metadata
+   * Mappings of the metadata.
+   * They cannot be modified once written, as they are merged into the engines collections.
    *
    * @example
    * { type: "keyword" }
@@ -134,7 +151,7 @@ export interface MetadataReferentialEntry {
    */
   mappings: MetadataProperty | MetadataObject;
   /**
-   * Default translations of the metadata
+   * Default translations of the metadata, copied into the metadataDetails of a model using it
    */
   locales: {
     [locale: string]: LocaleDetails;
@@ -167,37 +184,6 @@ export interface MetadataReferentialContent extends KDocumentContent {
   type: "metadata-referential";
 
   metadata: MetadataReferential;
-}
-
-/**
- * Reference from a model to a metadata of the referential.
- * `true` uses the referential definition as is.
- */
-export type MetadataReference =
-  | true
-  | {
-      /**
-       * Translations merged, per locale, over the referential ones
-       */
-      locales?: {
-        [locale: string]: Partial<LocaleDetails>;
-      };
-      /**
-       * Default value overriding the referential one
-       */
-      defaultValue?: unknown;
-      /**
-       * Icon overriding the referential one
-       */
-      icon?: string;
-      /**
-       * Metadata group of the model the metadata belongs to
-       */
-      group?: string;
-    };
-
-export interface MetadataReferences {
-  [name: string]: MetadataReference;
 }
 
 export interface MetadataGroupLocale {
@@ -358,12 +344,6 @@ export interface AssetModelContent extends KDocumentContent {
      */
     metadataGroups?: MetadataGroups;
     /**
-     * Metadata referenced from the metadata referential.
-     * Their mappings, details and default values are resolved into
-     * metadataMappings, metadataDetails and defaultMetadata.
-     */
-    metadataReferences?: MetadataReferences;
-    /**
      * List of accepted measures for this model
      *
      * Array<{ type: string, name: string, displayName?: { [locale: string]: string } }>
@@ -516,12 +496,6 @@ export interface DeviceModelContent extends KDocumentContent {
      */
     metadataGroups?: MetadataGroups;
     /**
-     * Metadata referenced from the metadata referential.
-     * Their mappings, details and default values are resolved into
-     * metadataMappings, metadataDetails and defaultMetadata.
-     */
-    metadataReferences?: MetadataReferences;
-    /**
      * List of decoded measures for this model
      *
      * Array<{ type: string, name: string, displayName?: { [locale: string]: string } }>
@@ -628,12 +602,6 @@ export interface GroupModelContent extends KDocumentContent {
      * }
      */
     metadataGroups?: MetadataGroups;
-    /**
-     * Metadata referenced from the metadata referential.
-     * Their mappings, details and default values are resolved into
-     * metadataMappings, metadataDetails and defaultMetadata.
-     */
-    metadataReferences?: MetadataReferences;
     /**
      * List of tooltip models for this asset model
      *

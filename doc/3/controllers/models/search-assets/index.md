@@ -9,6 +9,8 @@ description: Searches for asset models
 
 Searches for asset models.
 
+By default, the metadata of the [metadata referential](../../../concepts/models/index.md#metadata-referential) used by the models are resolved: their `{ "referential": true }` marker in `metadataMappings` is replaced by the referential mappings, and their `metadataDetails` and `defaultMetadata` are merged over the current referential values. Use `rawModel` to get the stored documents as is.
+
 ---
 
 ## Query Syntax
@@ -51,6 +53,7 @@ Method: POST
 - `from`: paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
 - `size`: set the maximum number of documents returned per result page
 - `engineId`: optional. Engine ID (tenant ID) to filter models for. When provided, results include models scoped to that specific tenant, models scoped to the engine group, and commons models (3-level fallback). When absent, only group and commons models are returned.
+- `rawModel`: optional, `false` by default. If `true`, returns the stored models without resolving their referential metadata
 
 ## Body properties
 

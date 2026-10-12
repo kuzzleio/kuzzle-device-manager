@@ -36,6 +36,7 @@ import {
   ApiModelDeleteMetadataResult,
 } from "./types/ModelApi";
 import { MetadataReferentialEntry } from "./types/ModelContent";
+import { MetadataModelContent } from "./MetadataReferential";
 import { KuzzleLogger } from "kuzzle-logger";
 
 export class ModelsController {
@@ -185,7 +186,9 @@ export class ModelsController {
       model,
     );
 
-    return assetModel;
+    const [resolved] = await this.resolveModels(request, [assetModel]);
+
+    return resolved;
   }
 
   async getDevice(request: KuzzleRequest): Promise<ApiModelGetDeviceResult> {
@@ -193,7 +196,9 @@ export class ModelsController {
 
     const deviceModel = await this.modelService.getDevice(model);
 
-    return deviceModel;
+    const [resolved] = await this.resolveModels(request, [deviceModel]);
+
+    return resolved;
   }
 
   async getGroup(request: KuzzleRequest): Promise<ApiModelGetGroupResult> {
@@ -201,7 +206,9 @@ export class ModelsController {
 
     const groupModel = await this.modelService.getGroup(model);
 
-    return groupModel;
+    const [resolved] = await this.resolveModels(request, [groupModel]);
+
+    return resolved;
   }
   async getMeasure(request: KuzzleRequest): Promise<ApiModelGetMeasureResult> {
     const type = request.getString("type");
@@ -224,7 +231,6 @@ export class ModelsController {
     const locales = request.getBodyObject("locales", {});
     const engineIds = request.getBodyArray("engineIds", []);
     const icon = request.input.body?.icon as string | undefined;
-    const metadata = request.getBodyObject("metadata", {});
 
     const assetModel = await this.modelService.writeAsset(
       engineGroups,
@@ -238,7 +244,6 @@ export class ModelsController {
       locales,
       engineIds,
       icon,
-      metadata,
     );
 
     return assetModel;
@@ -254,7 +259,6 @@ export class ModelsController {
     const metadataDetails = request.getBodyObject("metadataDetails", {});
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const icon = request.input.body?.icon as string | undefined;
-    const metadata = request.getBodyObject("metadata", {});
 
     const deviceModel = await this.modelService.writeDevice(
       model,
@@ -264,7 +268,6 @@ export class ModelsController {
       metadataGroups,
       measures,
       icon,
-      metadata,
     );
 
     return deviceModel;
@@ -284,7 +287,6 @@ export class ModelsController {
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const locales = request.getBodyObject("locales", {});
     const icon = request.input.body?.icon as string | undefined;
-    const metadata = request.getBodyObject("metadata", {});
 
     const groupModel = await this.modelService.writeGroup(
       engineGroups,
@@ -296,7 +298,6 @@ export class ModelsController {
       metadataGroups,
       icon,
       locales,
-      metadata,
     );
 
     return groupModel;
@@ -368,7 +369,10 @@ export class ModelsController {
 
     // Super admin without engineGroups: return all asset models
     if (isAdmin && engineGroups.length === 0 && !engineId) {
-      const models = await this.modelService.listAllAssets();
+      const models = await this.resolveModels(
+        request,
+        await this.modelService.listAllAssets(),
+      );
       return { models, total: models.length };
     }
 
@@ -417,7 +421,10 @@ export class ModelsController {
       engineGroups.push("commons");
     }
 
-    const models = await this.modelService.listAsset(engineGroups, engineId);
+    const models = await this.resolveModels(
+      request,
+      await this.modelService.listAsset(engineGroups, engineId),
+    );
 
     return {
       models,
@@ -425,8 +432,13 @@ export class ModelsController {
     };
   }
 
-  async listDevices(): Promise<ApiModelListDevicesResult> {
-    const models = await this.modelService.listDevices();
+  async listDevices(
+    request: KuzzleRequest,
+  ): Promise<ApiModelListDevicesResult> {
+    const models = await this.resolveModels(
+      request,
+      await this.modelService.listDevices(),
+    );
 
     return {
       models,
@@ -436,7 +448,10 @@ export class ModelsController {
 
   async listGroups(request: KuzzleRequest): Promise<ApiModelListGroupsResult> {
     const engineGroups = request.getArray("engineGroups", []) || ["commons"];
-    const models = await this.modelService.listGroups(engineGroups);
+    const models = await this.resolveModels(
+      request,
+      await this.modelService.listGroups(engineGroups),
+    );
 
     return {
       models,
@@ -462,26 +477,37 @@ export class ModelsController {
   ): Promise<ApiModelSearchAssetsResult> {
     const engineId = request.input.args.engineId as string | undefined;
 
-    return this.modelService.searchAssets(
+    const result = await this.modelService.searchAssets(
       request.getArray("engineGroups", []) || ["commons"],
       engineId,
       request.getSearchParams(),
     );
+    result.hits = await this.resolveModels(request, result.hits);
+
+    return result;
   }
 
   async searchDevices(
     request: KuzzleRequest,
   ): Promise<ApiModelSearchDevicesResult> {
-    return this.modelService.searchDevices(request.getSearchParams());
+    const result = await this.modelService.searchDevices(
+      request.getSearchParams(),
+    );
+    result.hits = await this.resolveModels(request, result.hits);
+
+    return result;
   }
 
   async searchGroups(
     request: KuzzleRequest,
   ): Promise<ApiModelSearchGroupsResult> {
-    return this.modelService.searchGroups(
+    const result = await this.modelService.searchGroups(
       request.getArray("engineGroups", []) || ["commons"],
       request.getSearchParams(),
     );
+    result.hits = await this.resolveModels(request, result.hits);
+
+    return result;
   }
 
   async searchMeasures(
@@ -509,11 +535,6 @@ export class ModelsController {
     const tooltipModels = request.getBodyObject("tooltipModels", {});
     const locales = request.getBodyObject("locales", {});
     const icon = request.input.body?.icon as string | undefined;
-    // ? Without metadata in the body, the existing references are kept
-    const metadata =
-      request.input.body?.metadata === undefined
-        ? undefined
-        : request.getBodyObject("metadata");
 
     const updatedAssetModel = await this.modelService.updateAsset(
       engineGroups,
@@ -528,7 +549,6 @@ export class ModelsController {
       locales,
       icon,
       request,
-      metadata,
     );
 
     return updatedAssetModel;
@@ -538,20 +558,35 @@ export class ModelsController {
     request: KuzzleRequest,
   ): Promise<ApiModelUpdateDeviceResult> {
     const model = request.getString("model");
-    const metadata = request.getBodyObject("metadata");
+    const metadataMappings = request.getBodyObject("metadataMappings");
+    const metadataDetails =
+      request.input.body?.metadataDetails === undefined
+        ? undefined
+        : request.getBodyObject("metadataDetails");
+    const defaultValues =
+      request.input.body?.defaultValues === undefined
+        ? undefined
+        : request.getBodyObject("defaultValues");
 
-    // ? Device models are additive only: only new metadata references are accepted
+    // ? Device models are additive only: only their metadata can be updated
     const forbiddenFields = Object.keys(request.getBody()).filter(
-      (field) => field !== "metadata",
+      (field) =>
+        !["metadataMappings", "metadataDetails", "defaultValues"].includes(
+          field,
+        ),
     );
 
     if (forbiddenFields.length > 0) {
       throw new BadRequestError(
-        `Device model "${model}" can only be updated with metadata references, forbidden fields: ${forbiddenFields.join(", ")}`,
+        `Device model "${model}" can only be updated with metadata, forbidden fields: ${forbiddenFields.join(", ")}`,
       );
     }
 
-    return this.modelService.updateDevice(model, metadata);
+    return this.modelService.updateDevice(model, {
+      defaultMetadata: defaultValues,
+      metadataDetails,
+      metadataMappings,
+    });
   }
 
   async updateGroup(
@@ -571,11 +606,6 @@ export class ModelsController {
     const metadataGroups = request.getBodyObject("metadataGroups", {});
     const locales = request.getBodyObject("locales", {});
     const icon = request.input.body?.icon as string | undefined;
-    // ? Without metadata in the body, the existing references are kept
-    const metadata =
-      request.input.body?.metadata === undefined
-        ? undefined
-        : request.getBodyObject("metadata");
 
     return this.modelService.updateGroup(engineGroups, model, {
       affinity,
@@ -585,8 +615,19 @@ export class ModelsController {
       metadataDetails,
       metadataGroups,
       metadataMappings,
-      metadataReferences: metadata,
     });
+  }
+
+  /**
+   * Resolves the referential metadata of models, unless the rawModel flag is set
+   */
+  private async resolveModels<D extends { _source: MetadataModelContent }>(
+    request: KuzzleRequest,
+    documents: D[],
+  ): Promise<D[]> {
+    return request.getBoolean("rawModel")
+      ? documents
+      : this.modelService.resolveModels(documents);
   }
 
   async getMetadataReferential(): Promise<ApiModelGetMetadataReferentialResult> {

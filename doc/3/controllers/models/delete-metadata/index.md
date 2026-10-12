@@ -9,7 +9,9 @@ description: Deletes a metadata of the metadata referential
 
 Deletes a metadata of the metadata referential.
 
-The request is rejected if a model still references the metadata.
+The request is rejected if a model still uses the metadata.
+
+Its mappings stay in the engines collections, Elasticsearch cannot remove them: a metadata with the same name and different mappings cannot be created afterwards.
 
 A metadata registered with `deviceManager.models.registerMetadata` is written again at the next startup.
 
@@ -63,5 +65,5 @@ Returns the updated metadata referential.
 
 ## Errors
 
-- A [ BadRequestError ](https://docs.kuzzle.io/core/2/api/errors/types/#badrequesterror) (400) is thrown if a model still references the metadata, or if the metadata is registered from code (`managed`)
+- A [ BadRequestError ](https://docs.kuzzle.io/core/2/api/errors/types/#badrequesterror) (400) is thrown if a model still uses the metadata, or if the metadata is registered from code (`managed`)
 - A [ NotFoundError ](https://docs.kuzzle.io/core/2/api/errors/types/#notfounderror) (404) is thrown if the metadata does not exist

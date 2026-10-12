@@ -7,11 +7,13 @@ description: Writes a metadata of the metadata referential
 
 # writeMetadata
 
-Creates or replaces a metadata of the metadata referential.
+Creates a metadata of the metadata referential, or updates the details of an existing one.
 
-Every model referencing the metadata is resolved again, the engines mappings are updated and the digital twins of those models are refreshed.
+The mappings of a new metadata are merged into the assets, devices and groups collections of every engine, used by a model or not. They are checked first against the inline metadata of the same name of every model, and against the actual mappings of these collections: mappings of deleted models or removed metadata stay in Elasticsearch.
 
-The request is rejected with a `MappingsConflictsError` (409) if the new mappings conflict with the mappings of a model, including a model defining the same metadata inline.
+If Elasticsearch rejects the mappings when the engines collections are updated (e.g. an unknown type), the request fails and the referential is restored.
+
+The mappings of an existing metadata cannot be modified. Its `locales`, `editorHint`, `defaultValue` and `icon` can: they are copied into a model when it is written, the existing models are not modified.
 
 See [Metadata Referential](../../../concepts/models/index.md#metadata-referential).
 
@@ -70,7 +72,7 @@ Method: PUT
 - `locales`: (optional) default translations
 - `editorHint`: (optional) default editor hint
 - `defaultValue`: (optional) default value
-- `icon`: (optional) default icon, overridable by the models referencing the metadata
+- `icon`: (optional) default icon, overridable by the models using the metadata
 
 ---
 
@@ -96,5 +98,5 @@ Returns the updated metadata referential.
 
 ## Errors
 
-- A [ BadRequestError ](https://docs.kuzzle.io/core/2/api/errors/types/#badrequesterror) (400) is thrown if the definition is invalid, or if the metadata is registered from code (`managed`). A `managed` field in the body is ignored
-- A [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) (409) is thrown if the new mappings conflict with the mappings of a model
+- A [ BadRequestError ](https://docs.kuzzle.io/core/2/api/errors/types/#badrequesterror) (400) is thrown if the definition is invalid, if the mappings of an existing metadata are modified, or if the metadata is registered from code (`managed`). A `managed` field in the body is ignored
+- A [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) (409) is thrown if the mappings of a new metadata conflict with an inline metadata of a model or with the actual mappings of an engine collection

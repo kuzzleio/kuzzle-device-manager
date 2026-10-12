@@ -69,17 +69,6 @@ Method: PATCH
           };
       */
     },
-    "metadata": {
-      /*
-        Metadata referenced from the metadata referential. Without it, the existing references are kept.
-          [name: string]: true | {
-            locales?: { [locale: string]: { friendlyName: string; description: string } };
-            defaultValue?: any;
-            group?: string;
-            icon?: string;
-          };
-      */
-    },
     "metadataGroups": {
       /*
         Metadata groups list and details.
@@ -120,11 +109,10 @@ Method: PATCH
 
 - `affinity`: Asset and device types and models accepted in the groups. Kept when omitted
 - `icon`: Icon representing the group model. Kept when omitted
-- `metadataMappings`: Mappings of the metadata in Elasticsearch format
+- `metadataMappings`: Mappings of the metadata in Elasticsearch format. Use `{ "referential": true }` for a metadata of the [metadata referential](../../../concepts/models/index.md#metadata-referential): its details and default value are filled from the referential when missing
 - `defaultValues`: Default values for the metadata
 - `metadataDetails`: Translations, metadata group and editor hint
 - `metadataGroups`: Groups list with translations for group name
-- `metadata`: Metadata referenced from the [metadata referential](../../../concepts/models/index.md#metadata-referential). Kept when omitted, send it to remove references
 - `locales`: Translations specific to the model
 
 ---
