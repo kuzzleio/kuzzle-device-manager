@@ -1,3 +1,8 @@
+## 3.0.0-3-dev.19 (2026-10-12)
+
+* feat(decoders): add a more detailed validation result for decoder (#494) ([7875e37](https://github.com/kuzzleio/kuzzle-device-manager/commit/7875e37)), closes [#494](https://github.com/kuzzleio/kuzzle-device-manager/issues/494)
+* docs: remove the v1 and v2 documentation (#491) ([07112af](https://github.com/kuzzleio/kuzzle-device-manager/commit/07112af)), closes [#491](https://github.com/kuzzleio/kuzzle-device-manager/issues/491)
+
 ## 3.0.0-3-dev.18 (2026-09-17)
 
 * Merge pull request #492 from kuzzleio/feat/measure-slots-display-name ([da67071](https://github.com/kuzzleio/kuzzle-device-manager/commit/da67071)), closes [#492](https://github.com/kuzzleio/kuzzle-device-manager/issues/492)
