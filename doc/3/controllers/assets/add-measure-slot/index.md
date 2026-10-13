@@ -14,7 +14,7 @@ Adds a measure slot to an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:_id/measure-slot/
+URL: http://kuzzle:7512/_/device-manager/:index/assets/:_id/measure-slot/
 Method: POST
 ```
 
@@ -24,7 +24,7 @@ Method: POST
 {
   "controller": "device-manager/assets",
   "action": "addMeasureSlot",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id":"<asset _id>"
   "body": {
     "measureSlot":{
@@ -40,7 +40,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Asset ID
 
 ## Body properties

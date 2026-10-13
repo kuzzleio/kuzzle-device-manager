@@ -130,18 +130,18 @@ export class PayloadService extends BaseService {
     for (const device of devices) {
       const {
         _id,
-        _source: { reference, linkedMeasures, engineId },
+        _source: { reference, linkedMeasures, index },
       } = device;
-      // ? Done here to avoid invoque Measure service only for device metadata change (if no engineId)
+      // ? Done here to avoid invoque Measure service only for device metadata change (if no index)
       const deviceMetadataChanges = decodedPayload.getMetadata(reference);
       if (
         changeMetadata &&
         deviceMetadataChanges !== null &&
         Object.values(deviceMetadataChanges).length > 0
       ) {
-        if (engineId !== null) {
+        if (index !== null) {
           await this.sdk.document.update<DeviceContent>(
-            engineId,
+            index,
             InternalCollection.DEVICES,
             _id,
             {
@@ -154,7 +154,7 @@ export class PayloadService extends BaseService {
       if (ingestMeasurements) {
         const measurements = decodedPayload.getMeasurements(reference);
         // Handle device not attached to an engine
-        if (engineId === null) {
+        if (index === null) {
           await ask<AskMeasureSourceIngest>(
             "device-manager:measures:sourceIngest",
             {
@@ -166,7 +166,7 @@ export class PayloadService extends BaseService {
               ),
               target: {
                 assetId: null,
-                indexId: engineId,
+                indexId: index,
                 type: "device",
               },
             },
@@ -192,7 +192,7 @@ export class PayloadService extends BaseService {
               ),
               target: {
                 assetId: assetId,
-                indexId: engineId,
+                indexId: index,
                 type: "device",
               },
             },
@@ -219,7 +219,7 @@ export class PayloadService extends BaseService {
               ),
               target: {
                 assetId: null,
-                indexId: engineId,
+                indexId: index,
                 type: "device",
               },
             },
@@ -238,7 +238,7 @@ export class PayloadService extends BaseService {
   ) {
     const apiAction = "device-manager/devices:receiveMeasure";
     const {
-      _source: { model, linkedMeasures, engineId },
+      _source: { model, linkedMeasures, index },
     } = device;
 
     // TODO: do we want update a metadata from formatted payload to ?
@@ -251,7 +251,7 @@ export class PayloadService extends BaseService {
       apiAction,
     );
 
-    if (engineId !== null) {
+    if (index !== null) {
       for (const link of linkedMeasures) {
         const assetId = link.assetId;
         const assetMeasurements = measurements.filter((m) =>
@@ -268,7 +268,7 @@ export class PayloadService extends BaseService {
             ),
             target: {
               assetId: assetId,
-              indexId: engineId,
+              indexId: index,
               type: "device",
             },
           },
@@ -295,7 +295,7 @@ export class PayloadService extends BaseService {
             ),
             target: {
               assetId: null,
-              indexId: engineId,
+              indexId: index,
               type: "device",
             },
           },
@@ -370,10 +370,10 @@ export class PayloadService extends BaseService {
     // we need to fetch the device content from the associated tenant if it exists.
     const updatedDevices = await Promise.all(
       provisioningDevices.map((deviceProvisioning) =>
-        deviceProvisioning._source.engineId &&
-        deviceProvisioning._source.engineId.trim() !== ""
+        deviceProvisioning._source.index &&
+        deviceProvisioning._source.index.trim() !== ""
           ? this.sdk.document.get<DeviceContent>(
-              deviceProvisioning._source.engineId,
+              deviceProvisioning._source.index,
               InternalCollection.DEVICES,
               deviceProvisioning._id,
             )
@@ -421,7 +421,7 @@ export class PayloadService extends BaseService {
       const reference = rest.join("-");
 
       const body: DeviceProvisioningContent = {
-        engineId: null,
+        index: null,
         lastMeasuredAt: 0,
         lastMeasures: [],
         measureSlots: deviceModelContent.device.measures,

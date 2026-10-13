@@ -33,7 +33,7 @@ describe("AssetsController:SCRUD", () => {
   it("can create asset", async () => {
     const baseQuery = {
       controller: "device-manager/assets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "create",
     } satisfies Partial<ApiAssetCreateRequest>;
 
@@ -91,7 +91,7 @@ describe("AssetsController:SCRUD", () => {
     >({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Container",
         reference: "A2",
@@ -134,7 +134,7 @@ describe("AssetsController:SCRUD", () => {
   it("can get asset", async () => {
     const baseQuery = {
       controller: "device-manager/assets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "get",
     } satisfies Partial<ApiAssetGetRequest>;
 
@@ -154,7 +154,7 @@ describe("AssetsController:SCRUD", () => {
   it("can update asset metadata", async () => {
     const baseQuery = {
       controller: "device-manager/assets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "update",
     } satisfies Partial<ApiAssetUpdateRequest>;
 
@@ -201,7 +201,7 @@ describe("AssetsController:SCRUD", () => {
   it("can delete assets", async () => {
     const baseQuery = {
       controller: "device-manager/assets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "delete",
     } satisfies Partial<ApiAssetDeleteRequest>;
 
@@ -212,7 +212,7 @@ describe("AssetsController:SCRUD", () => {
 
     const { error, status } = await sdk.query<ApiAssetDeleteRequest>({
       controller: "device-manager/assets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "delete",
       _id: assetAyseLinked1Id,
     });
@@ -227,7 +227,7 @@ describe("AssetsController:SCRUD", () => {
       ApiAssetSearchResult
     >({
       controller: "device-manager/assets",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       action: "search",
       body: {
         query: {
@@ -260,7 +260,7 @@ describe("AssetsController:SCRUD", () => {
     await sdk.query({
       controller: "device-manager/assets",
       action: "delete",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: assetAyseLinked1Id,
     });
 
@@ -286,7 +286,7 @@ describe("AssetsController:SCRUD", () => {
     >({
       controller: "device-manager/assets",
       action: "upsert",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Container",
         reference: "upsert",
@@ -313,7 +313,7 @@ describe("AssetsController:SCRUD", () => {
     >({
       controller: "device-manager/assets",
       action: "upsert",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: assetAyseLinked1.model,
         reference: assetAyseLinked1.reference,

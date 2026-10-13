@@ -16,7 +16,7 @@ This action allows to receive measures without using a Decoder but it must be on
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/measures
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/measures
 Method: PUT
 ```
 
@@ -26,7 +26,7 @@ Method: PUT
 {
   "controller": "device-manager/devices",
   "action": "receiveMeasures",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>",
   "body": {
     "measures": [
@@ -50,7 +50,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Device ID
 
 ## Body properties

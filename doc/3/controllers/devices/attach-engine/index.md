@@ -14,7 +14,7 @@ Attach a device to a tenant engine.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/_attach
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/_attach
 Method: PUT
 ```
 
@@ -24,7 +24,7 @@ Method: PUT
 {
   "controller": "device-manager/devices",
   "action": "attachEngine",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>",
 }
 ```
@@ -33,7 +33,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Device ID
 
 ---

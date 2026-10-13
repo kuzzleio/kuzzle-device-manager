@@ -544,6 +544,7 @@ export class DeviceManagerPlugin extends Plugin {
             ),
           );
         });
+      await this.migrateModelIndexes();
       await this.modelsRegister.loadModels();
 
       await this.deviceManagerEngine
@@ -637,21 +638,59 @@ export class DeviceManagerPlugin extends Plugin {
       configDoc._source["device-manager"].provisioningStrategy;
   }
 
-  private async pipeCheckEngine(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
+  /**
+   * Moves the tenant scope of the models written before the rename from the
+   * former `engineIds` field to `indexes`. Idempotent: once a document carries
+   * `indexes` and no `engineIds`, it is left alone. Models are few, so the
+   * whole set fits in one search.
+   */
+  private async migrateModelIndexes(): Promise<void> {
+    const { hits } = await this.sdk.document.search<JSONObject>(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      { query: { exists: { field: "engineIds" } } },
+      { lang: "elasticsearch", size: 1000 },
+    );
 
-    if (engineId !== this.config.platformIndex) {
+    if (hits.length === 0) {
+      return;
+    }
+
+    const documents = hits.map(({ _id, _source }) => {
+      const { engineIds, ...body } = _source;
+      delete body._kuzzle_info;
+      body.indexes ??= engineIds;
+
+      return { _id, body };
+    });
+
+    await this.sdk.document.mReplace(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      documents,
+      { refresh: "wait_for" },
+    );
+
+    this.context.log.info(
+      `[device-manager] Migrated the tenant scope of ${documents.length} model(s) from "engineIds" to "indexes"`,
+    );
+  }
+
+  private async pipeCheckEngine(request: KuzzleRequest) {
+    const index = request.getIndex();
+
+    if (index !== this.config.platformIndex) {
       const {
         result: { exists },
       } = await this.sdk.query({
         action: "exists",
         controller: "device-manager/engine",
-        index: engineId,
+        index: index,
       });
 
       if (!exists) {
         throw new BadRequestError(
-          `Tenant "${engineId}" does not have a device-manager engine`,
+          `Tenant "${index}" does not have a device-manager engine`,
         );
       }
     }

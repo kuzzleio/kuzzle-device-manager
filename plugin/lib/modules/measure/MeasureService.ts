@@ -336,24 +336,24 @@ export class MeasureService extends BaseService {
   /**
    * Find an asset by its ID and its engine ID.
    *
-   * @param engineId The target index ID
+   * @param index The target index ID
    * @param assetId the target asset ID
    * @returns The asset or null if not found
    */
   private async findAsset(
-    engineId: string,
+    index: string,
     assetId: string,
   ): Promise<KDocument<AssetContent> | null> {
     try {
       const asset = await this.sdk.document.get<AssetContent>(
-        engineId,
+        index,
         InternalCollection.ASSETS,
         assetId,
       );
 
       return asset;
     } catch (error) {
-      this.app.log.error(`[${engineId}] Cannot find asset "${assetId}".`);
+      this.app.log.error(`[${index}] Cannot find asset "${assetId}".`);
 
       return null;
     }

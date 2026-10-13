@@ -71,7 +71,7 @@ describe("DevicesController:exportMeasures", () => {
     >({
       controller: "device-manager/devices",
       action: "export",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     expect(typeof result.link).toBe("string");

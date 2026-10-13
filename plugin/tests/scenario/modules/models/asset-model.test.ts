@@ -81,7 +81,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "listAssets",
       engineGroups: ["commons"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     expect(listAssets.result.total).toBe(4);
@@ -96,7 +96,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "getAsset",
       engineGroups: ["commons"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       model: "Plane",
     });
 
@@ -111,7 +111,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "listAssets",
       engineGroups: ["air_quality"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     expect(listAssets.result.total).toBe(4);
@@ -158,7 +158,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroups: ["commons"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { query: { match: { "asset.model": "Plane" } } },
     });
 
@@ -173,7 +173,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroups: ["air_quality"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { query: { match: { "asset.model": "Warehouse" } } },
     });
 
@@ -186,7 +186,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroups: ["air_quality"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { query: { match: { "asset.model": "Room" } } },
     });
 
@@ -199,7 +199,7 @@ describe("ModelsController:assets", () => {
       controller: "device-manager/models",
       action: "searchAssets",
       engineGroups: ["air_quality"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { query: { match: { "asset.model": "StreetLamp" } } },
     });
 

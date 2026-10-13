@@ -29,20 +29,20 @@ describe("features/Device/Controller/DetachEngine", () => {
       controller: "device-manager/devices",
       action: "attachEngine",
       _id: "DummyTemp-detached1",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
     });
 
     response = await sdk.query({
       controller: "device-manager/devices",
       action: "detachEngine",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       _id: "DummyTemp-detached1",
     });
 
     await expect(
       sdk.document.get("device-manager", "devices", "DummyTemp-detached1")
     ).resolves.toMatchObject({
-      _source: { engineId: null, _kuzzle_info: { updater: "-1" } },
+      _source: { index: null, _kuzzle_info: { updater: "-1" } },
     });
 
     await expect(
@@ -57,7 +57,7 @@ describe("features/Device/Controller/DetachEngine", () => {
     promise = sdk.query({
       controller: "device-manager/devices",
       action: "detachEngine",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-detached1",
     });
 
@@ -73,7 +73,7 @@ describe("features/Device/Controller/DetachEngine", () => {
     response = await sdk.query({
       controller: "device-manager/devices",
       action: "detachEngine",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "DummyTemp-linked1",
     });
 

@@ -6,7 +6,7 @@ vi.setConfig({ testTimeout: 30000 });
 describe("ModelsController:assets:tenant-scoped", () => {
   const sdk = setupHooks();
 
-  it("Write a tenant-scoped asset model with engineIds", async () => {
+  it("Write a tenant-scoped asset model with indexes", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -14,7 +14,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         model: "TenantSensor",
         metadataMappings: { location: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
       },
     });
 
@@ -26,7 +26,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
 
     expect(doc._source).toMatchObject({
       type: "asset",
-      engineIds: ["engine-ayse"],
+      indexes: ["engine-ayse"],
       asset: {
         model: "TenantSensor",
         metadataMappings: { location: { type: "keyword" } },
@@ -36,7 +36,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(doc._source).not.toHaveProperty("engineGroups");
   });
 
-  it("Write without engineIds still works (backward compat)", async () => {
+  it("Write without indexes still works (backward compat)", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -59,7 +59,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       engineGroups: ["air_quality"],
       asset: { model: "GroupSensor" },
     });
-    expect(doc._source).not.toHaveProperty("engineIds");
+    expect(doc._source).not.toHaveProperty("indexes");
   });
 
   it("Same model name at tenant and group scope is rejected (anti-shadowing)", async () => {
@@ -86,7 +86,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
           model: "DualScope",
           metadataMappings: { version: { type: "keyword" } },
           measures: [],
-          engineIds: ["engine-ayse"],
+          indexes: ["engine-ayse"],
         },
       }),
     ).rejects.toThrow(/already exists at group scope/);
@@ -101,7 +101,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         model: "TenantOnly",
         metadataMappings: {},
         measures: [],
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
       },
     });
 
@@ -111,7 +111,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "listAssets",
       engineGroups: ["air_quality"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     const ids = listResult.result.models.map((m: { _id: string }) => m._id);
@@ -124,7 +124,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(ids).toContain("model-asset-engine-ayse-TenantOnly");
   });
 
-  it("List without engineId returns only group + commons models (no tenant-scoped)", async () => {
+  it("List without index returns only group + commons models (no tenant-scoped)", async () => {
     const listResult = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
@@ -139,7 +139,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     expect(ids).not.toContain("model-asset-engine-ayse-TenantOnly");
   });
 
-  it("getAsset with engineId returns the tenant-scoped model", async () => {
+  it("getAsset with index returns the tenant-scoped model", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
@@ -148,7 +148,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "tenant" },
         measures: [],
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
       },
     });
 
@@ -159,10 +159,10 @@ describe("ModelsController:assets:tenant-scoped", () => {
       action: "getAsset",
       engineGroups: ["air_quality"],
       model: "TenantGetTest",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
-    expect(result.result._source.engineIds).toEqual(["engine-ayse"]);
+    expect(result.result._source.indexes).toEqual(["engine-ayse"]);
     expect(result.result._source.asset.defaultMetadata).toMatchObject({
       scope: "tenant",
     });
@@ -189,10 +189,10 @@ describe("ModelsController:assets:tenant-scoped", () => {
       action: "getAsset",
       engineGroups: ["air_quality"],
       model: "FallbackTest",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
-    expect(result.result._source).not.toHaveProperty("engineIds");
+    expect(result.result._source).not.toHaveProperty("indexes");
     expect(result.result._source.asset.defaultMetadata).toMatchObject({
       scope: "group",
     });
@@ -206,7 +206,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         model: "SharedTenant",
         metadataMappings: {},
         measures: [],
-        engineIds: ["engine-ayse", "engine-kuzzle"],
+        indexes: ["engine-ayse", "engine-kuzzle"],
       },
     });
 
@@ -217,7 +217,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "listAssets",
       engineGroups: ["air_quality"],
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
     const idsAyse = listAyse.result.models.map((m: { _id: string }) => m._id);
     expect(idsAyse).toContain(
@@ -229,7 +229,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "listAssets",
       engineGroups: ["air_quality"],
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
     });
     const idsKuzzle = listKuzzle.result.models.map(
       (m: { _id: string }) => m._id,

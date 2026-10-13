@@ -3,7 +3,7 @@ import { setupHooks } from "../../../helpers";
 describe("ModelsController:writeAsset:exclusiveEngineScope (KZLPRD-1192)", () => {
   const sdk = setupHooks();
 
-  it("should reject writeAsset when both engineIds and engineGroups are provided", async () => {
+  it("should reject writeAsset when both indexes and engineGroups are provided", async () => {
     let error: { status?: number; message?: string } | undefined;
     try {
       await sdk.query({
@@ -11,7 +11,7 @@ describe("ModelsController:writeAsset:exclusiveEngineScope (KZLPRD-1192)", () =>
         action: "writeAsset",
         body: {
           engineGroups: ["commons"],
-          engineIds: ["engine-ayse"],
+          indexes: ["engine-ayse"],
           model: "ExclusiveScopeRejected",
           metadataMappings: {},
           measures: [],
@@ -25,18 +25,18 @@ describe("ModelsController:writeAsset:exclusiveEngineScope (KZLPRD-1192)", () =>
     expect(error?.message).toMatch(/mutually exclusive/);
   });
 
-  it("should accept tenant-scoped writeAsset (engineIds only)", async () => {
+  it("should accept tenant-scoped writeAsset (indexes only)", async () => {
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
         model: "ExclusiveScopeTenant",
         metadataMappings: {},
         measures: [],
       },
     });
-    expect(result.result._source.engineIds).toEqual(["engine-ayse"]);
+    expect(result.result._source.indexes).toEqual(["engine-ayse"]);
   });
 
   it("should accept group-scoped writeAsset (engineGroups only)", async () => {
@@ -51,6 +51,6 @@ describe("ModelsController:writeAsset:exclusiveEngineScope (KZLPRD-1192)", () =>
       },
     });
     expect(result.result._source.engineGroups).toEqual(["asset_tracking"]);
-    expect(result.result._source.engineIds).toBeUndefined();
+    expect(result.result._source.indexes).toBeUndefined();
   });
 });

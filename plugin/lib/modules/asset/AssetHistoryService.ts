@@ -18,12 +18,12 @@ export class AssetHistoryService extends BaseService {
     this.logger = assetLogger;
     onAsk<AskAssetHistoryAdd<AssetHistoryEvent>>(
       "ask:device-manager:asset:history:add",
-      async ({ engineId, histories }) => this.add(engineId, histories),
+      async ({ index, histories }) => this.add(index, histories),
     );
   }
 
   async add<TAssetHistoryEvent extends AssetHistoryEvent>(
-    engineId: string,
+    index: string,
     histories: AssetHistoryContent[],
   ) {
     const contents: mCreateRequest<
@@ -42,7 +42,7 @@ export class AssetHistoryService extends BaseService {
     }
 
     await this.sdk.document.mCreate<AssetHistoryContent<TAssetHistoryEvent>>(
-      engineId,
+      index,
       InternalCollection.ASSETS_HISTORY,
       contents,
       { strict: true },

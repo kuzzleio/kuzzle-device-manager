@@ -18,7 +18,7 @@ This endpoint allows you to update or create several groups.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/_mUpsert
+URL: http://kuzzle:7512/_/device-manager/:index/groups/_mUpsert
 Method: POST
 ```
 
@@ -28,7 +28,7 @@ Method: POST
 {
   "controller": "device-manager/groups",
   "action": "mUpsert",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "groups":[
       {
@@ -48,7 +48,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 
 ## Body properties
 - `groups`: Array containing the different groups to update.

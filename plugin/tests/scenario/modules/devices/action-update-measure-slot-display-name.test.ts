@@ -17,7 +17,7 @@ describe("DeviceController: update measure slot display name", () => {
       sdk.query<ApiDeviceUpdateMeasureSlotDisplayNameRequest>({
         controller: "device-manager/devices",
         action: "updateMeasureSlotDisplayName",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-unlinked1",
         body: { measureSlot: existingSlotName, displayName },
       }),
@@ -40,7 +40,7 @@ describe("DeviceController: update measure slot display name", () => {
       sdk.query<ApiDeviceUpdateMeasureSlotDisplayNameRequest>({
         controller: "device-manager/devices",
         action: "updateMeasureSlotDisplayName",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "DummyTemp-unlinked1",
         body: { measureSlot: unknownSlotName, displayName },
       }),

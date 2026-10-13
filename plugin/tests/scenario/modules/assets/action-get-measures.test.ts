@@ -31,7 +31,7 @@ describe("AssetsController:getMeasures", () => {
         return await sdk.query<ApiAssetGetMeasuresRequest>({
           controller: "device-manager/assets",
           action: "getMeasures",
-          engineId: "engine-ayse",
+          index: "engine-ayse",
           _id: "Container-linked1",
           size: 1,
           body: { query },
@@ -68,7 +68,7 @@ describe("AssetsController:getMeasures", () => {
     >({
       controller: "device-manager/assets",
       action: "getMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
     });
 
@@ -86,7 +86,7 @@ describe("AssetsController:getMeasures", () => {
     >({
       controller: "device-manager/assets",
       action: "getMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
       body: { sort: { "values.temperature": "desc" } },
     });
@@ -104,7 +104,7 @@ describe("AssetsController:getMeasures", () => {
     >({
       controller: "device-manager/assets",
       action: "getMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
       body: { query: { equals: { "values.temperature": 22 } } },
       lang: "koncorde",
@@ -121,7 +121,7 @@ describe("AssetsController:getMeasures", () => {
     >({
       controller: "device-manager/assets",
       action: "getMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
       type: "position",
     });

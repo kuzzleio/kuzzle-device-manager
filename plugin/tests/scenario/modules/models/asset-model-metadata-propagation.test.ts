@@ -57,7 +57,7 @@ describe("Asset model metadata propagation", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: "Pallet",
         reference: "unlinked1",
@@ -68,7 +68,7 @@ describe("Asset model metadata propagation", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Pallet",
         reference: "unlinked2",
@@ -95,7 +95,7 @@ describe("Asset model metadata propagation", () => {
       sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
         controller: "device-manager/assets",
         action: "get",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Pallet-unlinked1",
       }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
@@ -108,7 +108,7 @@ describe("Asset model metadata propagation", () => {
       sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
         controller: "device-manager/assets",
         action: "get",
-        engineId: "engine-kuzzle",
+        index: "engine-kuzzle",
         _id: "Pallet-unlinked2",
       }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
@@ -136,7 +136,7 @@ describe("Asset model metadata propagation", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: "Pallet",
         reference: "unlinked3",
@@ -147,7 +147,7 @@ describe("Asset model metadata propagation", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Pallet",
         reference: "unlinked4",
@@ -174,7 +174,7 @@ describe("Asset model metadata propagation", () => {
       sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
         controller: "device-manager/assets",
         action: "get",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Pallet-unlinked3",
       }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
@@ -187,7 +187,7 @@ describe("Asset model metadata propagation", () => {
       sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
         controller: "device-manager/assets",
         action: "get",
-        engineId: "engine-kuzzle",
+        index: "engine-kuzzle",
         _id: "Pallet-unlinked4",
       }),
     ).resolves.toMatchObject<PartialDeep<ResponsePayload<ApiAssetGetResult>>>({
@@ -216,7 +216,7 @@ describe("Asset model metadata propagation", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: "Pallet",
         reference: "unlinked5",
@@ -227,7 +227,7 @@ describe("Asset model metadata propagation", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Pallet",
         reference: "unlinked6",
@@ -252,7 +252,7 @@ describe("Asset model metadata propagation", () => {
     const asset5 = await sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
       controller: "device-manager/assets",
       action: "get",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Pallet-unlinked5",
     });
 
@@ -265,7 +265,7 @@ describe("Asset model metadata propagation", () => {
     const asset6 = await sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
       controller: "device-manager/assets",
       action: "get",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       _id: "Pallet-unlinked6",
     });
 
@@ -294,7 +294,7 @@ describe("Asset model metadata propagation", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: "Pallet",
         reference: "unlinked7",
@@ -317,7 +317,7 @@ describe("Asset model metadata propagation", () => {
     const asset7 = await sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
       controller: "device-manager/assets",
       action: "get",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Pallet-unlinked7",
     });
 

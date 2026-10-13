@@ -20,7 +20,7 @@ describe("Ingestion Pipeline: process before", () => {
     const lastMeasuresResponse = await sdk.query({
       controller: "device-manager/assets",
       action: "getLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked1",
     });
 

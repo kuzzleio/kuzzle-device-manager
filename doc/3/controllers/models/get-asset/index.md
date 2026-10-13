@@ -30,7 +30,7 @@ Method: GET
   "model": "<asset model>",
 
   // optional:
-  "engineId": "<engineId>"
+  "index": "<index>"
 }
 ```
 
@@ -40,7 +40,7 @@ Method: GET
 
 - `engineGroup`: name of the engine group
 - `model`: asset model
-- `engineId`: optional. Engine ID (tenant ID) to resolve tenant-scoped models. When provided, a tenant-scoped model takes priority over a group-scoped model of the same name. Falls back to group-scoped, then commons.
+- `index`: optional. Engine ID (tenant ID) to resolve tenant-scoped models. When provided, a tenant-scoped model takes priority over a group-scoped model of the same name. Falls back to group-scoped, then commons.
 
 ---
 

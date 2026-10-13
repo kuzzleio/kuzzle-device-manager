@@ -32,7 +32,7 @@ export interface DeviceContent<
 
   /**
    */
-  engineId: string | null;
+  index: string | null;
   /**
    * Path's of device's groups
    */
@@ -48,7 +48,7 @@ export interface DeviceContent<
 
 interface DeviceProvisioningContentFields extends Pick<
   DeviceContent,
-  "model" | "reference" | "engineId" | "measureSlots"
+  "model" | "reference" | "index" | "measureSlots"
 > {
   /**
    * Date of provisioning of the device on the platform

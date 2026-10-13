@@ -182,7 +182,7 @@ describe("features/Decoder/PayloadController", () => {
       type: "position",
     },
   ],
-  engineId: null,
+  index: null,
   lastMeasures: expect.arrayContaining([
     {
       values: {
@@ -279,7 +279,7 @@ describe("features/Decoder/PayloadController", () => {
     response = await sdk.query({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "device-manager",
+      index: "device-manager",
       body: { model: "DummyTemp", reference: "test" },
     });
 

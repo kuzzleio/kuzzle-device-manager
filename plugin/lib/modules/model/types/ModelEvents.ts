@@ -8,7 +8,7 @@ import {
 export type AskModelAssetGet = {
   name: "ask:device-manager:model:asset:get";
 
-  payload: { engineGroups: string[]; engineId?: string; model: string };
+  payload: { engineGroups: string[]; index?: string; model: string };
 
   result: AssetModelContent;
 };
@@ -24,7 +24,7 @@ export type AskModelDeviceGet = {
 export type AskModelMeasureGet = {
   name: "ask:device-manager:model:measure:get";
 
-  payload: { type: string; engineId?: string };
+  payload: { type: string; index?: string };
 
   result: MeasureModelContent;
 };
