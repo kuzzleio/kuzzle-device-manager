@@ -1,3 +1,8 @@
+## 3.0.0-3-dev.20 (2026-10-14)
+
+* feat(models): rename engineGroups to tenantClasses (#495) ([94e5cf4](https://github.com/kuzzleio/kuzzle-device-manager/commit/94e5cf4)), closes [#495](https://github.com/kuzzleio/kuzzle-device-manager/issues/495)
+* feat(api)!: address the tenant as the request index instead of engineId (#490) ([4b064dd](https://github.com/kuzzleio/kuzzle-device-manager/commit/4b064dd)), closes [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490)
+
 ## 3.0.0-3-dev.19 (2026-10-12)
 
 * feat(decoders): add a more detailed validation result for decoder (#494) ([7875e37](https://github.com/kuzzleio/kuzzle-device-manager/commit/7875e37)), closes [#494](https://github.com/kuzzleio/kuzzle-device-manager/issues/494)
