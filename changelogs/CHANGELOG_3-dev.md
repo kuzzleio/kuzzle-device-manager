@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.21 (2026-10-14)
+
+* feat(metadata): implement the registry of a metadata referential (#493) ([29a77c5](https://github.com/kuzzleio/kuzzle-device-manager/commit/29a77c5)), closes [#493](https://github.com/kuzzleio/kuzzle-device-manager/issues/493)
+
 ## 3.0.0-3-dev.20 (2026-10-14)
 
 * feat(models): rename engineGroups to tenantClasses (#495) ([94e5cf4](https://github.com/kuzzleio/kuzzle-device-manager/commit/94e5cf4)), closes [#495](https://github.com/kuzzleio/kuzzle-device-manager/issues/495)
