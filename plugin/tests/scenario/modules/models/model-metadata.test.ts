@@ -12,7 +12,7 @@ describe("ModelsController:metadata", () => {
 
   it("Write and Retrieve an Asset model with metadata details and groups", async () => {
     const assetModelWithDetailsAndGroups = {
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
       model: "AdvancedPlane",
       metadataMappings: {
         company: { type: "keyword" },
@@ -71,10 +71,10 @@ describe("ModelsController:metadata", () => {
     );
     expect(assetModel._source.asset).toHaveProperty("metadataDetails");
     expect(assetModel._source.asset).toHaveProperty("metadataGroups");
-    delete assetModelWithDetailsAndGroups.engineGroups;
+    delete assetModelWithDetailsAndGroups.tenantClasses;
     expect(assetModel._source).toMatchObject({
       type: "asset",
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
       asset: assetModelWithDetailsAndGroups,
     });
   });
@@ -142,7 +142,7 @@ describe("ModelsController:metadata", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "Vehicle",
         metadataMappings: {
           location: { type: "geo_point" },
@@ -184,7 +184,7 @@ describe("ModelsController:metadata", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "Plane",
         metadataMappings: {
           size: { type: "integer" },
@@ -219,7 +219,7 @@ describe("ModelsController:metadata", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "CompanyAssetInvalid",
         metadataMappings: {
           person: { properties: { company: { type: "keyword" } } },
@@ -240,7 +240,7 @@ describe("ModelsController:metadata", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "Plane",
         metadataMappings: { size: { type: "integer" } },
         defaultValues: { name: "Firebird" },
@@ -264,7 +264,7 @@ describe("ModelsController:metadata", () => {
               type: "keyword",
             },
           },
-          engineGroups: ["commons"],
+          tenantClasses: ["commons"],
         },
       });
     }
@@ -294,7 +294,7 @@ describe("ModelsController:metadata", () => {
             type: "keyword",
           },
         },
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
       },
     };
 

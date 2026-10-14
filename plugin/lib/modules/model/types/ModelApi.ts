@@ -22,7 +22,7 @@ interface ModelsControllerRequest {
 export interface ApiModelGetAssetRequest extends ModelsControllerRequest {
   action: "getAsset";
   model: string;
-  engineGroups: string[];
+  tenantClasses: string[];
 }
 export type ApiModelGetAssetResult = KDocument<AssetModelContent>;
 
@@ -49,7 +49,7 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   action: "writeAsset";
 
   body: {
-    engineGroups: string[];
+    tenantClasses: string[];
     indexes?: string[];
     model: string;
     icon?: string;
@@ -84,7 +84,7 @@ export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
 
   body: {
     affinity: GroupAffinity;
-    engineGroups: string[];
+    tenantClasses: string[];
     model: string;
     icon?: string;
     metadataDetails?: MetadataDetails;
@@ -116,7 +116,7 @@ export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;
 export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
   action: "updateAsset";
 
-  engineGroups: string[];
+  tenantClasses: string[];
   model: string;
 
   body: {
@@ -163,7 +163,7 @@ export type ApiModelDeleteMeasureResult = void;
 export interface ApiModelListAssetsRequest extends ModelsControllerRequest {
   action: "listAssets";
 
-  engineGroups: string[];
+  tenantClasses: string[];
 }
 export type ApiModelListAssetsResult = {
   models: KDocument<AssetModelContent>[];
@@ -180,7 +180,7 @@ export type ApiModelListDevicesResult = {
 
 export interface ApiModelListGroupsRequest extends ModelsControllerRequest {
   action: "listGroups";
-  engineGroups: string[];
+  tenantClasses: string[];
 }
 export type ApiModelListGroupsResult = {
   models: KDocument<GroupModelContent>[];
@@ -199,7 +199,7 @@ export type ApiModelListMeasuresResult = {
 export interface ApiModelSearchAssetsRequest extends ModelsControllerRequest {
   action: "searchAssets";
 
-  engineGroups: string[];
+  tenantClasses: string[];
   from?: number;
   size?: number;
   scrollTTL?: string;
@@ -222,7 +222,7 @@ export type ApiModelSearchDevicesResult = SearchResult<
 export interface ApiModelSearchGroupsRequest extends ModelsControllerRequest {
   action: "searchGroups";
 
-  engineGroups: string[];
+  tenantClasses: string[];
   from?: number;
   size?: number;
   scrollTTL?: string;

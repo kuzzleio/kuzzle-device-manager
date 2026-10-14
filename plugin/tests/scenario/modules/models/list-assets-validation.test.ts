@@ -3,12 +3,12 @@ import { setupHooks } from "../../../helpers";
 describe("ModelsController:listAssets:validation", () => {
   const sdk = setupHooks();
 
-  it("should return all models for admin without engineGroups", async () => {
+  it("should return all models for admin without tenantClasses", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "AdminTestModel",
         metadataMappings: {},
         measures: [],
@@ -41,7 +41,7 @@ describe("ModelsController:listAssets:validation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "CommonsIncludeTest",
         metadataMappings: {},
         measures: [],
@@ -53,7 +53,7 @@ describe("ModelsController:listAssets:validation", () => {
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["asset_tracking"],
+      tenantClasses: ["asset_tracking"],
     });
 
     const modelNames = result.result.models.map(
@@ -62,7 +62,7 @@ describe("ModelsController:listAssets:validation", () => {
     expect(modelNames).toContain("CommonsIncludeTest");
   });
 
-  it("admin with engineGroups should also get commons", async () => {
+  it("admin with tenantClasses should also get commons", async () => {
     await sdk.auth.login("local", {
       username: "test-admin",
       password: "password",
@@ -71,12 +71,12 @@ describe("ModelsController:listAssets:validation", () => {
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["asset_tracking"],
+      tenantClasses: ["asset_tracking"],
     });
 
     const groups = result.result.models.flatMap(
-      (m: { _source: { engineGroups: string[] } }) =>
-        m._source.engineGroups || [],
+      (m: { _source: { tenantClasses: string[] } }) =>
+        m._source.tenantClasses || [],
     );
     expect(groups).toContain("commons");
 
@@ -97,7 +97,7 @@ describe("ModelsController:listAssets:validation", () => {
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
       index: "nonexistent-engine",
     });
 

@@ -295,7 +295,7 @@ export class MeasureService extends BaseService {
    * @param asset The target asset to build the measure for
    * @param measure The decoded raw measures
    * @param payloadUuids The uuid's of the payloads used to create the measure
-   * @param engineGroup engineGroup of model
+   * @param tenantClass tenantClass of model
    * @returns A MeasurementContent builded from parameters
    */
   private async buildApiMeasures(

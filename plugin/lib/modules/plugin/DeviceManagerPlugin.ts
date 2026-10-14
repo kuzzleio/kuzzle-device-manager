@@ -65,7 +65,7 @@ export class DeviceManagerPlugin extends Plugin {
       /**
        * Register an asset model
        *
-       * @param engineGroups Engine group names
+       * @param tenantClasses Tenant class names
        * @param model Name of the asset model. Must follow a naming convention in PascalCase.
        * @param definition Object containing the asset model definition, including:
        *        - measures: Array describing measure names and their types.
@@ -166,12 +166,12 @@ export class DeviceManagerPlugin extends Plugin {
        * ```
        */
       registerAsset: (
-        engineGroups: string[],
+        tenantClasses: string[],
         model: string,
         definition: AssetModelDefinition,
       ) => {
         this.modelsRegister.registerAsset(
-          engineGroups,
+          tenantClasses,
           model,
           definition.measures,
           definition.metadataMappings,
@@ -304,12 +304,12 @@ export class DeviceManagerPlugin extends Plugin {
        * ```
        */
       registerGroup: (
-        engineGroups: string[],
+        tenantClasses: string[],
         model: string,
         definition: GroupModelDefinition,
       ) => {
         this.modelsRegister.registerGroup(
-          engineGroups,
+          tenantClasses,
           model,
           definition.affinity,
           definition.metadataMappings,

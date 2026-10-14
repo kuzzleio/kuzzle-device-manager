@@ -484,7 +484,7 @@ export class AssetsController {
    * @param indexId The asset index
    * @param assetId The target asset ID
    * @param measureName The measureName to get the type from
-   * @param engineGroup The target engine group
+   * @param tenantClass The target tenant class
    * @returns The measure type if used in the asset, null otherwise
    * @throws If the asset does not exists
    */

@@ -143,11 +143,11 @@ export class ModelsController {
 
   async getAsset(request: KuzzleRequest): Promise<ApiModelGetAssetResult> {
     const model = request.getString("model");
-    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
+    const tenantClasses = request.getArray("tenantClasses", []) || ["commons"];
     const index = request.input.args.index as string | undefined;
 
     const assetModel = await this.modelService.getAsset(
-      engineGroups,
+      tenantClasses,
       index,
       model,
     );
@@ -180,7 +180,7 @@ export class ModelsController {
   }
 
   async writeAsset(request: KuzzleRequest): Promise<ApiModelWriteAssetResult> {
-    const engineGroups = request.getBodyArray("engineGroups", []) as string[];
+    const tenantClasses = request.getBodyArray("tenantClasses", []) as string[];
     const model = request.getBodyString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
     const defaultValues = request.getBodyObject("defaultValues", {});
@@ -193,7 +193,7 @@ export class ModelsController {
     const icon = request.input.body?.icon as string | undefined;
 
     const assetModel = await this.modelService.writeAsset(
-      engineGroups,
+      tenantClasses,
       model,
       metadataMappings,
       defaultValues,
@@ -234,7 +234,7 @@ export class ModelsController {
   }
 
   async writeGroup(request: KuzzleRequest): Promise<ApiModelWriteGroupResult> {
-    const engineGroups = request.getBodyArray("engineGroups") as string[];
+    const tenantClasses = request.getBodyArray("tenantClasses") as string[];
     const model = request.getBodyString("model");
     const affinity = request.getBodyObject("affinity", {
       models: { assets: [], devices: [] },
@@ -249,7 +249,7 @@ export class ModelsController {
     const icon = request.input.body?.icon as string | undefined;
 
     const groupModel = await this.modelService.writeGroup(
-      engineGroups,
+      tenantClasses,
       model,
       affinity,
       metadataMappings,
@@ -320,27 +320,27 @@ export class ModelsController {
   }
 
   async listAssets(request: KuzzleRequest): Promise<ApiModelListAssetsResult> {
-    const engineGroups = request.getArray("engineGroups", []);
+    const tenantClasses = request.getArray("tenantClasses", []);
     const index = request.input.args.index as string | undefined;
     const user = request.getUser() as { profileIds: string[] };
     const isAdmin = user.profileIds.includes("admin");
     const isAnonymous =
       user.profileIds.includes("anonymous") || user.profileIds.length === 0;
 
-    // Super admin without engineGroups: return all asset models
-    if (isAdmin && engineGroups.length === 0 && !index) {
+    // Super admin without tenantClasses: return all asset models
+    if (isAdmin && tenantClasses.length === 0 && !index) {
       const models = await this.modelService.listAllAssets();
       return { models, total: models.length };
     }
 
-    // Authenticated non-admin/non-anonymous must provide engineGroups or index
-    if (!isAdmin && !isAnonymous && engineGroups.length === 0 && !index) {
+    // Authenticated non-admin/non-anonymous must provide tenantClasses or index
+    if (!isAdmin && !isAnonymous && tenantClasses.length === 0 && !index) {
       throw new BadRequestError(
-        'Missing argument: "engineGroups" or "index" must be provided.',
+        'Missing argument: "tenantClasses" or "index" must be provided.',
       );
     }
 
-    // Validate index and engineGroups for authenticated non-admin users
+    // Validate index and tenantClasses for authenticated non-admin users
     if (!isAdmin && !isAnonymous) {
       // Whether the user may act on this engine is Kuzzle's call, not ours:
       // the engine is the request `index`, so a profile restricted to its
@@ -352,27 +352,27 @@ export class ModelsController {
         }
       }
 
-      if (engineGroups.length > 0) {
+      if (tenantClasses.length > 0) {
         const invalidGroups =
-          await this.modelService.findInvalidEngineGroups(engineGroups);
+          await this.modelService.findInvalidTenantClasses(tenantClasses);
         if (invalidGroups.length > 0) {
           throw new NotFoundError(
-            `Engine group(s) not found: ${invalidGroups.join(", ")}.`,
+            `Tenant class(s) not found: ${invalidGroups.join(", ")}.`,
           );
         }
       }
     }
 
     // Always include commons alongside requested groups
-    if (engineGroups.length > 0 && !engineGroups.includes("commons")) {
-      engineGroups.push("commons");
+    if (tenantClasses.length > 0 && !tenantClasses.includes("commons")) {
+      tenantClasses.push("commons");
     }
 
-    if (engineGroups.length === 0) {
-      engineGroups.push("commons");
+    if (tenantClasses.length === 0) {
+      tenantClasses.push("commons");
     }
 
-    const models = await this.modelService.listAsset(engineGroups, index);
+    const models = await this.modelService.listAsset(tenantClasses, index);
 
     return {
       models,
@@ -390,8 +390,8 @@ export class ModelsController {
   }
 
   async listGroups(request: KuzzleRequest): Promise<ApiModelListGroupsResult> {
-    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
-    const models = await this.modelService.listGroups(engineGroups);
+    const tenantClasses = request.getArray("tenantClasses", []) || ["commons"];
+    const models = await this.modelService.listGroups(tenantClasses);
 
     return {
       models,
@@ -418,7 +418,7 @@ export class ModelsController {
     const index = request.input.args.index as string | undefined;
 
     return this.modelService.searchAssets(
-      request.getArray("engineGroups", []) || ["commons"],
+      request.getArray("tenantClasses", []) || ["commons"],
       index,
       request.getSearchParams(),
     );
@@ -434,7 +434,7 @@ export class ModelsController {
     request: KuzzleRequest,
   ): Promise<ApiModelSearchGroupsResult> {
     return this.modelService.searchGroups(
-      request.getArray("engineGroups", []) || ["commons"],
+      request.getArray("tenantClasses", []) || ["commons"],
       request.getSearchParams(),
     );
   }
@@ -450,7 +450,7 @@ export class ModelsController {
   async updateAsset(
     request: KuzzleRequest,
   ): Promise<ApiModelUpdateAssetResult> {
-    const engineGroups = request.getArray("engineGroups", []) || ["commons"];
+    const tenantClasses = request.getArray("tenantClasses", []) || ["commons"];
     const index = request.input.args.index as string | undefined;
     const model = request.getString("model");
     const metadataMappings = request.getBodyObject("metadataMappings", {});
@@ -463,7 +463,7 @@ export class ModelsController {
     const icon = request.input.body?.icon as string | undefined;
 
     const updatedAssetModel = await this.modelService.updateAsset(
-      engineGroups,
+      tenantClasses,
       index,
       model,
       metadataMappings,

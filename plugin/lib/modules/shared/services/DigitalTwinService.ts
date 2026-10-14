@@ -799,17 +799,17 @@ export class DigitalTwinService extends BaseService {
   }
   /**
    * Retrieve the model document of an asset
-   * @param {any} engineGroup:string
+   * @param {any} tenantClass:string
    * @param {any} model:string
    * @returns {any}
    */
   protected getAssetModel(
-    engineGroup: string,
+    tenantClass: string,
     model: string,
     index?: string,
   ): Promise<AssetModelContent> {
     return ask<AskModelAssetGet>("ask:device-manager:model:asset:get", {
-      engineGroups: [engineGroup],
+      tenantClasses: [tenantClass],
       index,
       model,
     });

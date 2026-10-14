@@ -26,7 +26,7 @@ Method: POST
 {
   "controller": "device-manager/models",
   "action": "searchAssets",
-  "engineGroup": "<engineGroup>",
+  "tenantClasses": ["<tenant class>"],
   "body": {
     "query": {
       // ...
@@ -47,10 +47,10 @@ Method: POST
 
 ## Arguments
 
-- `engineGroup`: name of the engine group
+- `tenantClasses`: names of the tenant classes
 - `from`: paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
 - `size`: set the maximum number of documents returned per result page
-- `index`: optional. Engine ID (tenant ID) to filter models for. When provided, results include models scoped to that specific tenant, models scoped to the engine group, and commons models (3-level fallback). When absent, only group and commons models are returned.
+- `index`: optional. Engine ID (tenant ID) to filter models for. When provided, results include models scoped to that specific tenant, models scoped to the tenant class, and commons models (3-level fallback). When absent, only class-scoped and commons models are returned.
 
 ## Body properties
 
