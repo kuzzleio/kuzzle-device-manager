@@ -11,7 +11,7 @@ export interface DeviceMeasureTarget extends AbstractMeasureTarget {
 export interface ApiMeasureTarget extends AbstractMeasureTarget {
   type: "api";
   assetId: string;
-  engineGroups?: string[];
+  tenantClasses?: string[];
 }
 
 export function isTarget(target: any): target is AbstractMeasureTarget {
@@ -35,7 +35,7 @@ export function isTargetApi(target: any): target is ApiMeasureTarget {
     return false;
   }
 
-  if (target.engineGroups && !Array.isArray(target.engineGroups)) {
+  if (target.tenantClasses && !Array.isArray(target.tenantClasses)) {
     return false;
   }
 

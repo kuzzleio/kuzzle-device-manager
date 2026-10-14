@@ -728,7 +728,7 @@ export class DeviceService extends DigitalTwinService {
     deviceModel: DeviceModelContent;
   }): Promise<void> {
     const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: null,
+      tenantClass: null,
     });
 
     const targets = engines.map((engine) => ({

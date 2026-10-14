@@ -26,7 +26,7 @@ describe("AssetsController:migrateTenant", () => {
     sdk.disconnect();
   });
 
-  it("should fail if both engine does not belong to same group", async () => {
+  it("should fail if both engine does not belong to the same tenant class", async () => {
     await expect(
       sdk.query({
         controller: "device-manager/assets",
@@ -38,7 +38,7 @@ describe("AssetsController:migrateTenant", () => {
         },
       }),
     ).rejects.toThrow(
-      "Engine engine-other-group is not in the same group as engine-ayse",
+      "Engine engine-other-group is not of the same tenant class as engine-ayse",
     );
   });
 

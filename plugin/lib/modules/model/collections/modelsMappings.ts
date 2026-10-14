@@ -9,7 +9,7 @@ export const modelsMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {
     type: { type: "keyword" },
-    engineGroups: { type: "keyword" },
+    tenantClasses: { type: "keyword" },
     indexes: { type: "keyword" },
     /**
      * @deprecated Former name of `indexes`. Kept in the mapping so the documents

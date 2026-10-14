@@ -15,7 +15,7 @@ describe("ModelsController:groups", () => {
       action: "writeGroup",
       body: {
         affinity: { type: ["assets"], models: { assets: [] }, strict: false },
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "TruckFleet",
         metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
@@ -42,7 +42,7 @@ describe("ModelsController:groups", () => {
     );
     expect(groupModel1._source).toMatchObject({
       type: "group",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       group: {
         model: "TruckFleet",
         metadataMappings: { size: { type: "integer" } },
@@ -72,7 +72,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "TruckFleet",
         metadataMappings: {
           sector: { type: "keyword" },
@@ -145,7 +145,7 @@ describe("ModelsController:groups", () => {
     );
     expect(groupModel2._source).toMatchObject({
       type: "group",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       group: {
         model: "TruckFleet",
         metadataMappings: {
@@ -230,7 +230,7 @@ describe("ModelsController:groups", () => {
     const listGroups = await sdk.query<ApiModelListGroupsRequest>({
       controller: "device-manager/models",
       action: "listGroups",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
     });
     expect(listGroups.result).toMatchObject({
       total: 4,
@@ -264,7 +264,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "TruckFleet",
         metadataMappings: {
           sector: { type: "keyword" },
@@ -339,7 +339,7 @@ describe("ModelsController:groups", () => {
           models: { assets: [], devices: [] },
           strict: false,
         },
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "Building",
         metadataMappings: {
           location: { type: "geo_point" },
@@ -353,7 +353,7 @@ describe("ModelsController:groups", () => {
     const searchGroups = await sdk.query<ApiModelSearchGroupsRequest>({
       controller: "device-manager/models",
       action: "searchGroups",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       body: { query: { match: { "group.model": "TruckFleet" } } },
     });
 
@@ -373,7 +373,7 @@ describe("ModelsController:groups", () => {
           models: { assets: [], devices: [] },
           strict: false,
         },
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "flatgroupnape",
         metadataMappings: { size: { type: "integer" } },
         defaultValues: { size: 12 },
@@ -395,7 +395,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "TruckFleet",
         metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
@@ -423,7 +423,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "BadModel",
         metadataMappings: { size: { type: "keyword" } },
         metadataDetails: {
@@ -457,7 +457,7 @@ describe("ModelsController:groups", () => {
           models: { assets: ["truck"], devices: [] },
           strict: true,
         },
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "BadType",
         metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
@@ -486,7 +486,7 @@ describe("ModelsController:groups", () => {
       action: "writeGroup",
       body: {
         affinity: { type: ["assets"], models: { devices: [] }, strict: true },
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "BadModels",
         metadataMappings: { size: { type: "integer" } },
         metadataDetails: {
@@ -511,13 +511,13 @@ describe("ModelsController:groups", () => {
     );
   });
 
-  it("Should accept group model with multiple engineGroups", async () => {
+  it("Should accept group model with multiple tenantClasses", async () => {
     await sdk.query<ApiModelWriteGroupRequest>({
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
         affinity: { type: ["assets"], models: { assets: [] }, strict: false },
-        engineGroups: ["air_quality", "asset_tracking"],
+        tenantClasses: ["air_quality", "asset_tracking"],
         model: "MultiGroupAccepted",
         metadataMappings: {},
         metadataDetails: {},
@@ -531,7 +531,7 @@ describe("ModelsController:groups", () => {
     );
     expect(groupModel._source).toMatchObject({
       type: "group",
-      engineGroups: ["air_quality", "asset_tracking"],
+      tenantClasses: ["air_quality", "asset_tracking"],
       group: { model: "MultiGroupAccepted" },
     });
   });
@@ -542,7 +542,7 @@ describe("ModelsController:groups", () => {
       action: "writeGroup",
       body: {
         affinity: { type: ["assets"], models: { assets: [] }, strict: false },
-        engineGroups: ["commons", "air_quality"],
+        tenantClasses: ["commons", "air_quality"],
         model: "CommonsNormGroup",
         metadataMappings: {},
         metadataDetails: {},
@@ -556,7 +556,7 @@ describe("ModelsController:groups", () => {
     );
     expect(groupModel._source).toMatchObject({
       type: "group",
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
     });
   });
 });

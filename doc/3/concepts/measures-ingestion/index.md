@@ -305,7 +305,7 @@ Targets an API entity or external systems.
 - **Properties:**
   - `type`: Always "api"
   - `assetId`: Associated asset identifier
-  - `engineGroup`: (optional) Specific engine group targeted
+  - `tenantClasses`: (optional) Tenant classes targeted
   - `indexId`: Index identifier
 
 

@@ -33,7 +33,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
         measures: [{ name: "temperatureExt", type: "temperature" }],
       },
     });
-    expect(doc._source).not.toHaveProperty("engineGroups");
+    expect(doc._source).not.toHaveProperty("tenantClasses");
   });
 
   it("Write without indexes still works (backward compat)", async () => {
@@ -41,7 +41,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "GroupSensor",
         metadataMappings: { location: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -56,7 +56,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
 
     expect(doc._source).toMatchObject({
       type: "asset",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       asset: { model: "GroupSensor" },
     });
     expect(doc._source).not.toHaveProperty("indexes");
@@ -68,7 +68,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "DualScope",
         metadataMappings: { version: { type: "keyword" } },
         measures: [],
@@ -110,7 +110,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const listResult = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       index: "engine-ayse",
     });
 
@@ -128,7 +128,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const listResult = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
     });
 
     const ids = listResult.result.models.map((m: { _id: string }) => m._id);
@@ -157,7 +157,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "getAsset",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       model: "TenantGetTest",
       index: "engine-ayse",
     });
@@ -174,7 +174,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "FallbackTest",
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "group" },
@@ -187,7 +187,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const result = await sdk.query({
       controller: "device-manager/models",
       action: "getAsset",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       model: "FallbackTest",
       index: "engine-ayse",
     });
@@ -216,7 +216,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const listAyse = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       index: "engine-ayse",
     });
     const idsAyse = listAyse.result.models.map((m: { _id: string }) => m._id);
@@ -228,7 +228,7 @@ describe("ModelsController:assets:tenant-scoped", () => {
     const listKuzzle = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       index: "engine-kuzzle",
     });
     const idsKuzzle = listKuzzle.result.models.map(

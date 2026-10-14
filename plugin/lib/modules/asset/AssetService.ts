@@ -173,7 +173,7 @@ export class AssetService extends DigitalTwinService {
         const assetModel = await ask<AskModelAssetGet>(
           "ask:device-manager:model:asset:get",
           {
-            engineGroups: [index.split("-")[1]],
+            tenantClasses: [index.split("-")[1]],
             index,
             model: asset._source.model,
           },
@@ -305,7 +305,7 @@ export class AssetService extends DigitalTwinService {
     const assetModel = await ask<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
       {
-        engineGroups: [engine.group],
+        tenantClasses: [engine.group],
         index,
         model,
       },
@@ -494,13 +494,13 @@ export class AssetService extends DigitalTwinService {
         );
       }
 
-      // check if tenant destination is in the same group
+      // check if tenant destination is of the same tenant class
       const engine = await this.getEngine(index);
       const newEngine = await this.getEngine(newIndex);
 
       if (engine.group !== newEngine.group) {
         throw new BadRequestError(
-          `Engine ${newIndex} is not in the same group as ${index}`,
+          `Engine ${newIndex} is not of the same tenant class as ${index}`,
         );
       }
 
@@ -907,11 +907,11 @@ export class AssetService extends DigitalTwinService {
   }: {
     assetModel: AssetModelContent;
   }): Promise<void> {
-    // For engine group 'commons', fetch all engines
+    // For tenant class 'commons', fetch all engines
     const engines = await ask<AskEngineList>("ask:device-manager:engine:list", {
-      group: assetModel.engineGroups?.includes("commons")
+      tenantClass: assetModel.tenantClasses?.includes("commons")
         ? null
-        : assetModel.engineGroups?.[0],
+        : assetModel.tenantClasses?.[0],
     });
 
     const targets = engines.map((engine) => ({

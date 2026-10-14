@@ -167,16 +167,16 @@ The `models` collection in the platform index has two new fields for scoping:
 ``` JSON
 {
   "properties": {
-    "engineGroups": { "type": "keyword" },
+    "tenantClasses": { "type": "keyword" },
     "indexes": { "type": "keyword" }
   }
 }
 ```
 
-- `engineGroups` (replaces former `engineGroup`): An array of tenant group names. Determines which tenant groups can access the model. The value `["commons"]` makes the model globally available.
-- `indexes` (optional): An array of tenant engine IDs. When present, scopes the model to specific tenants within the `engineGroups`.
+- `tenantClasses` (replaces former `engineGroup`): An array of tenant class names. Determines which tenant classes can access the model. The value `["commons"]` makes the model globally available.
+- `indexes` (optional): An array of tenant engine IDs. When present, scopes the model to specific tenants within the `tenantClasses`.
 
-These fields affect asset, measure, and group model documents. All three model types support multi-group scoping via `engineGroups`.
+These fields affect asset, measure, and group model documents. All three model types support multi-class scoping via `tenantClasses`.
 
 #### Model document ID format
 
@@ -265,7 +265,7 @@ If set to true, the devices linked to the asset will be unlinked from their pote
 
 The following parameter changes apply to all asset and group model operations (`writeAsset`, `updateAsset`, `getAsset`, `listAssets`, `searchAssets`, `writeGroup`, `listGroups`, `searchGroups`):
 
-- `engineGroup` (string) has been replaced by `engineGroups` (string array). This enables sharing an asset model across multiple tenant groups.
+- `engineGroup` (string) has been replaced by `tenantClasses` (string array). This enables sharing an asset model across multiple tenant classes.
 - `indexes` (string array, optional) has been added to the `writeAsset` body. When provided, the model is scoped to specific tenant engines within the specified groups.
 - `updateAsset` accepts an optional `index` (singular string) query parameter, used to locate the correct tenant-scoped model for updating. The model's `indexes` are immutable — they are preserved from the original document and cannot be changed via `updateAsset`.
 
@@ -273,9 +273,9 @@ The following parameter changes apply to all asset and group model operations (`
 
 Asset models now support three scoping levels. When resolving a model with `getAsset`, the system follows a priority chain:
 
-1. **Tenant-scoped**: Model matching both the `engineGroups` and the specific `index`
-2. **Group-scoped**: Model matching the `engineGroups` but without `indexes`
-3. **Global (commons)**: Model with `engineGroups: ["commons"]` and no `indexes`
+1. **Tenant-scoped**: Model matching both the `tenantClasses` and the specific `index`
+2. **Class-scoped**: Model matching the `tenantClasses` but without `indexes`
+3. **Global (commons)**: Model with `tenantClasses: ["commons"]` and no `indexes`
 
 Anti-shadowing enforcement: a model name (for assets) or measure type (for measures) cannot exist at different scope levels simultaneously. For example, creating a tenant-scoped model when a global model with the same name already exists is rejected. This prevents accidental shadowing of global models by local ones.
 
@@ -283,9 +283,9 @@ Anti-shadowing enforcement: a model name (for assets) or measure type (for measu
 
 #### Multi-group models
 
-Asset, group, and measure models can belong to multiple tenant groups (e.g. `engineGroups: ["air_quality", "public_lighting"]`). A model listed with any of its groups will include it in results.
+Asset, group, and measure models can belong to multiple tenant classes (e.g. `tenantClasses: ["air_quality", "public_lighting"]`). A model listed with any of its tenant classes will include it in results.
 
-Commons normalization applies to all model types: if `engineGroups` contains `"commons"`, the array is normalized to `["commons"]` (the model becomes global).
+Commons normalization applies to all model types: if `tenantClasses` contains `"commons"`, the array is normalized to `["commons"]` (the model becomes global).
 
 #### Measure model scoping
 
