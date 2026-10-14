@@ -27,6 +27,7 @@ import {
   AssetModelDefinition,
   DeviceModelDefinition,
   GroupModelDefinition,
+  MetadataReferentialEntry,
   ModelModule,
   modelsMappings,
   ModelsRegister,
@@ -339,6 +340,47 @@ export class DeviceManagerPlugin extends Plugin {
       registerMeasure: (name: string, measureDefinition: MeasureDefinition) => {
         this.modelsRegister.registerMeasure(name, measureDefinition);
       },
+
+      /**
+       * Register a metadata in the metadata referential.
+       *
+       * Its mappings are merged into the assets, devices and groups collections of every engine,
+       * and cannot be modified afterwards.
+       * Asset, device and group models then use it with `{ referential: true }` in their
+       * metadataMappings instead of redefining its mappings.
+       * A model defining inline a metadata that conflicts with the referential is rejected.
+       *
+       * @param name Name of the metadata
+       * @param definition Mappings, default translations, editor hint, default value and icon
+       *
+       * @example
+       * ```
+       * deviceManager.models.registerMetadata("color", {
+       *   mappings: { type: "keyword" },
+       *   locales: {
+       *     en: { friendlyName: "Color", description: "Color of the asset" },
+       *     fr: { friendlyName: "Couleur", description: "Couleur de l'asset" },
+       *   },
+       *   editorHint: {
+       *     type: EditorHintEnum.OPTION_SELECTOR,
+       *     values: ["red", "blue"],
+       *   },
+       *   defaultValue: "red",
+       *   icon: "palette",
+       * });
+       *
+       * deviceManager.models.registerAsset("commons", "Container", {
+       *   measures: [],
+       *   metadataMappings: { color: { referential: true } },
+       * });
+       * ```
+       */
+      registerMetadata: (
+        name: string,
+        definition: MetadataReferentialEntry,
+      ) => {
+        this.modelsRegister.registerMetadata(name, definition);
+      },
     };
   }
 
@@ -366,6 +408,11 @@ export class DeviceManagerPlugin extends Plugin {
       ignoreStartupErrors: false,
       engine: {
         autoUpdate: true,
+      },
+      models: {
+        metadata: {
+          referentialOnly: false,
+        },
       },
       platformIndex: "device-manager",
       platformCollections: {

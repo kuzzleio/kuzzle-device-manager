@@ -20,6 +20,14 @@ export const modelsMappings: CollectionMappings = {
     engineIds: { type: "keyword" },
 
     /**
+     * Metadata referential
+     */
+    metadata: {
+      dynamic: "false",
+      properties: {},
+    },
+
+    /**
      * Measure model
      */
     measure: {

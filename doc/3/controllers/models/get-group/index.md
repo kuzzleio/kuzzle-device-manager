@@ -9,6 +9,8 @@ description: Gets a group model
 
 Gets a group model.
 
+By default, the metadata of the [metadata referential](../../../concepts/models/index.md#metadata-referential) used by the model are resolved: their `{ "referential": true }` marker in `metadataMappings` is replaced by the referential mappings, and their `metadataDetails` and `defaultMetadata` are merged over the current referential values. Use `rawModel` to get the stored document as is, e.g. to edit the model.
+
 ---
 
 ## Query Syntax
@@ -26,7 +28,10 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "getGroup",
-  "model": "<group model>"
+  "model": "<group model>",
+
+  // optional:
+  "rawModel": false
 }
 ```
 
@@ -35,6 +40,7 @@ Method: GET
 ## Arguments
 
 - `model`: group model
+- `rawModel`: optional, `false` by default. If `true`, returns the stored model without resolving its referential metadata
 
 ---
 

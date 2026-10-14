@@ -19,6 +19,7 @@ import { KuzzleRole } from "../../shared/types/KuzzleRole";
         getAsset: true,
         writeAsset: true,
         listMeasures: true,
+        getMetadataReferential: true,
       },
     },
  */
@@ -38,6 +39,7 @@ export const RoleAssetsAdmin: KuzzleRole = {
           getAsset: true,
           writeAsset: true,
           listMeasures: true,
+          getMetadataReferential: true,
         },
       },
       "device-manager/devices": {

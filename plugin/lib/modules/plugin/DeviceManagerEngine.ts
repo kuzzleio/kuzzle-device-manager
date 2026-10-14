@@ -30,10 +30,20 @@ import { DeviceManagerConfiguration } from "./types/DeviceManagerConfiguration";
 import { InternalCollection } from "./types/InternalCollection";
 import {
   ConflictChunk,
+  findMappingsConflicts,
   getGroupConflicts,
   getMeasureConflicts,
   getTwinConflicts,
 } from "../model/ModelsConflicts";
+import {
+  fetchMetadataReferential,
+  resolveMetadataMappings,
+  resolveModelMappings,
+} from "../model/MetadataReferential";
+import {
+  MetadataMappings,
+  MetadataReferential,
+} from "../model/types/ModelContent";
 import { addSchemaToCache } from "../shared/utils/AJValidator";
 import { devicesPlatformMappings } from "../device";
 
@@ -83,6 +93,26 @@ export type AskEngineUpdateConflict = {
   };
 
   result: ConflictChunk[];
+};
+
+/**
+ * Checks a metadata of the metadata referential against the actual metadata mappings
+ * of the assets, devices and groups collections of every engine
+ */
+export type AskEngineMetadataConflict = {
+  name: "ask:device-manager:engine:doesMetadataConflict";
+
+  payload: {
+    metadataMappings: MetadataMappings;
+  };
+
+  result: ConflictChunk[];
+};
+
+const METADATA_COLLECTIONS = {
+  asset: InternalCollection.ASSETS,
+  device: InternalCollection.DEVICES,
+  group: InternalCollection.GROUPS,
 };
 
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
@@ -141,6 +171,16 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           "measure",
         );
 
+        // ? Models mark the metadata of the referential, conflicts are checked on the actual mappings
+        const referential = await fetchMetadataReferential(
+          this.sdk,
+          this.config.platformIndex,
+        );
+        const resolve = <T extends TwinModelContent | GroupModelContent>(
+          models: T[],
+        ) => models.map((model) => resolveModelMappings(referential, model));
+        const newTwinModels = resolve(payload.twin?.models ?? []);
+
         const results = await this.getEngines();
         const tenantClasses = results.map((elt) => elt.engine.group);
         const classesInUse = [undefined, ...new Set(tenantClasses)];
@@ -149,9 +189,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           if (payload.twin) {
             if (tenantClass === undefined) {
               // Platform-level check (no tenant class filter)
-              const twinModels = await this.getModels<TwinModelContent>(
-                this.config.platformIndex,
-                payload.twin.type,
+              const twinModels = resolve(
+                await this.getModels<TwinModelContent>(
+                  this.config.platformIndex,
+                  payload.twin.type,
+                ),
               );
 
               // Platform-level twins can only reference global measures
@@ -162,7 +204,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
               const conflicts = await this.doesTwinUpdateConflicts(
                 payload.twin.type,
                 twinModels,
-                payload.twin.models,
+                newTwinModels,
                 globalMeasures,
               );
 
@@ -177,30 +219,28 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
               );
 
               for (const engineDoc of enginesInClass) {
-                const twinModels = await this.getModels<TwinModelContent>(
-                  this.config.platformIndex,
-                  payload.twin.type,
-                  tenantClass,
-                  engineDoc.engine.index,
+                const twinModels = resolve(
+                  await this.getModels<TwinModelContent>(
+                    this.config.platformIndex,
+                    payload.twin.type,
+                    tenantClass,
+                    engineDoc.engine.index,
+                  ),
                 );
 
                 // Only check new models that will be applied to this engine
-                const applicableNewModels = payload.twin.models.filter(
-                  (model) => {
-                    const assetModel = model as AssetModelContent;
-                    if (assetModel.indexes?.length) {
-                      return assetModel.indexes.includes(
-                        engineDoc.engine.index,
-                      );
-                    }
-                    // Class-scoped or commons: applicable to all engines of the class
-                    return (
-                      !assetModel.tenantClasses?.length ||
-                      assetModel.tenantClasses?.includes(tenantClass) ||
-                      assetModel.tenantClasses?.includes("commons")
-                    );
-                  },
-                );
+                const applicableNewModels = newTwinModels.filter((model) => {
+                  const assetModel = model as AssetModelContent;
+                  if (assetModel.indexes?.length) {
+                    return assetModel.indexes.includes(engineDoc.engine.index);
+                  }
+                  // Class-scoped or commons: applicable to all engines of the class
+                  return (
+                    !assetModel.tenantClasses?.length ||
+                    assetModel.tenantClasses?.includes(tenantClass) ||
+                    assetModel.tenantClasses?.includes("commons")
+                  );
+                });
 
                 if (applicableNewModels.length === 0) {
                   continue;
@@ -223,6 +263,17 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                 if (conflicts.length > 0) {
                   return conflicts;
                 }
+
+                // ? Mappings of deleted models or removed metadata are still in the collection
+                const esConflicts = await this.getModelsMetadataConflicts(
+                  engineDoc.engine.index,
+                  payload.twin.type,
+                  applicableNewModels,
+                );
+
+                if (esConflicts.length > 0) {
+                  return esConflicts;
+                }
               }
             }
           }
@@ -235,19 +286,158 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           );
         }
         if (payload.groupModels) {
-          const groupModels = await this.getModels<GroupModelContent>(
-            this.config.platformIndex,
-            "group",
+          const groupModels = resolve(
+            await this.getModels<GroupModelContent>(
+              this.config.platformIndex,
+              "group",
+            ),
           );
-          return this.doesGroupsUpdateConflicts(
+          const newGroupModels = resolve(payload.groupModels);
+          const conflicts = await this.doesGroupsUpdateConflicts(
             groupModels,
-            payload.groupModels,
+            newGroupModels,
           );
+
+          if (conflicts.length > 0) {
+            return conflicts;
+          }
+
+          // ? Every engine groups collection has the mappings of every group model
+          for (const { engine } of results) {
+            const esConflicts = await this.getModelsMetadataConflicts(
+              engine.index,
+              "group",
+              newGroupModels,
+            );
+
+            if (esConflicts.length > 0) {
+              return esConflicts;
+            }
+          }
         }
 
         return [];
       },
     );
+
+    onAsk<AskEngineMetadataConflict>(
+      "ask:device-manager:engine:doesMetadataConflict",
+      async ({ metadataMappings }) => {
+        const conflicts: ConflictChunk[] = [];
+
+        for (const { engine } of await this.getEngines()) {
+          for (const collection of Object.values(METADATA_COLLECTIONS)) {
+            const esConflicts = findMappingsConflicts(
+              await this.getCollectionMetadataMappings(
+                engine.index,
+                collection,
+              ),
+              metadataMappings,
+              `${collection}.metadata`,
+            );
+
+            if (esConflicts.length > 0) {
+              conflicts.push({
+                conflicts: esConflicts,
+                modelType: "metadata",
+                newModel: "metadata-referential",
+                sourceModel: `${engine.index}/${collection}`,
+              });
+            }
+          }
+        }
+
+        return conflicts;
+      },
+    );
+  }
+
+  /**
+   * Returns the actual metadata mappings of an engine collection
+   *
+   * @returns The mappings of the metadata properties, empty if the collection does not exist
+   */
+  private async getCollectionMetadataMappings(
+    engineIndex: string,
+    collection: string,
+  ): Promise<JSONObject> {
+    try {
+      const mappings: JSONObject = await this.sdk.collection.getMapping(
+        engineIndex,
+        collection,
+      );
+
+      return mappings.properties?.metadata?.properties ?? {};
+    } catch (error) {
+      if (error.status === 404) {
+        return {};
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Return conflicts between the metadata mappings of models and the actual mappings
+   * of their collection in an engine
+   *
+   * @param engineIndex The target engine
+   * @param modelType The models type
+   * @param models The new or updated models, with their referential metadata resolved
+   * @returns An array of ConflictChunk
+   */
+  private async getModelsMetadataConflicts(
+    engineIndex: string,
+    modelType: keyof typeof METADATA_COLLECTIONS,
+    models: Array<TwinModelContent | GroupModelContent>,
+  ): Promise<ConflictChunk[]> {
+    const collection = METADATA_COLLECTIONS[modelType];
+    const metadataMappings = await this.getCollectionMetadataMappings(
+      engineIndex,
+      collection,
+    );
+    const chunks: ConflictChunk[] = [];
+
+    for (const model of models) {
+      const conflicts = findMappingsConflicts(
+        metadataMappings,
+        model[modelType].metadataMappings,
+        `${modelType}.metadataMappings`,
+      );
+
+      if (conflicts.length > 0) {
+        chunks.push({
+          conflicts,
+          modelType,
+          newModel: model[modelType].model,
+          sourceModel: `${engineIndex}/${collection}`,
+        });
+      }
+    }
+
+    return chunks;
+  }
+
+  /**
+   * Merges the mappings of the metadata referential and of models into metadata mappings.
+   * Every referential metadata is merged, used by a model or not.
+   */
+  private mergeMetadataMappings(
+    metadataProperties: JSONObject,
+    referential: MetadataReferential,
+    modelsMappings: MetadataMappings[],
+  ) {
+    _.merge(
+      metadataProperties,
+      _.mapValues(referential, (entry) => _.cloneDeep(entry.mappings)),
+    );
+
+    for (const metadataMappings of modelsMappings) {
+      _.merge(
+        metadataProperties,
+        resolveMetadataMappings(referential, metadataMappings),
+      );
+    }
   }
 
   /**
@@ -669,12 +859,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       ),
     );
 
-    for (const model of models) {
-      _.merge(
-        mappings.properties.metadata.properties,
-        model[digitalTwinType].metadataMappings,
-      );
+    this.mergeMetadataMappings(
+      mappings.properties.metadata.properties,
+      await fetchMetadataReferential(this.sdk, this.config.platformIndex),
+      models.map((model) => model[digitalTwinType].metadataMappings),
+    );
 
+    for (const model of models) {
       for (const { type: measureType } of model[digitalTwinType]
         .measures as NamedMeasures) {
         const measureModel = measureModels.find(
@@ -759,12 +950,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       JSON.stringify(this.config.engineCollections.groups.mappings),
     );
 
-    for (const model of models) {
-      _.merge(
-        mappings.properties.metadata.properties,
-        model.group.metadataMappings,
-      );
-    }
+    this.mergeMetadataMappings(
+      mappings.properties.metadata.properties,
+      await fetchMetadataReferential(this.sdk, this.config.platformIndex),
+      models.map((model) => model.group.metadataMappings),
+    );
+
     return mappings;
   }
 
@@ -796,7 +987,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
               and: [
                 { equals: { indexes: targetIndex } },
                 {
+                  // ? Tenant-scoped asset models have no tenantClasses (exclusive with indexes)
                   or: [
+                    { not: { exists: "tenantClasses" } },
                     { equals: { tenantClasses: tenantClass } },
                     { equals: { tenantClasses: "commons" } },
                   ],

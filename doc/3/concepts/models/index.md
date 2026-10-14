@@ -13,6 +13,83 @@ Each sensor or asset is an instance of a previously defined model.
 
 Models can be defined upstream through the backend framework but also dynamically using the API.
 
+## Metadata Referential
+
+The metadata referential holds, in a single document, the metadata shared by the models of an application: their mappings, default translations, editor hint, default value and icon.
+
+The mappings of every referential metadata are merged into the assets, devices and groups collections of every engine, used by a model or not. Asset, device and group models then use a metadata of the referential with `{ "referential": true }` in their `metadataMappings`, instead of redefining its mappings. This prevents models registered by different parts of an application from defining the same metadata with conflicting mappings.
+
+A referential entry contains the following information:
+
+- `mappings`: metadata mappings, either `{ type: "<type>" }` or `{ properties: { ... } }` (See [Collection Mappings](https://docs.kuzzle.io/core/3/guides/main-concepts/data-storage/#collection-mappings))
+- `locales`: default translations of the metadata
+- `editorHint`: (optional) default editor hint
+- `defaultValue`: (optional) default value
+- `icon`: (optional) icon representing the metadata. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup
+
+When a model is written, the `{ "referential": true }` marker is kept in its `metadataMappings`, and the referential values are copied into the model:
+
+- `metadataDetails`: the referential `editorHint` and `icon` when the model does not define them, and the referential `locales` merged per locale under the model ones. A locale can override only its `friendlyName` or its `description`; a locale missing from the referential defaults to the metadata name and an empty description. The `group` is defined by the model
+- `defaultMetadata`: the referential `defaultValue` when the model does not define one
+
+The get, list and search actions on asset, device and group models return the models resolved: the markers are replaced by the referential mappings, and the details and default values are merged over the current referential values. With `rawModel: true` they return the stored documents as is: sending one back leaves the model unchanged. Sending back a resolved model turns its referential metadata into inline metadata, so edit a model from its raw document.
+
+Rules:
+
+- using an unknown metadata is rejected (400)
+- a model can still define metadata inline with `metadataMappings` (legacy behaviour), but an inline metadata with the name of a referential entry and different mappings is rejected (409)
+- the mappings of a referential entry cannot be modified (400), they are already merged into the engines collections. Its `locales`, `editorHint`, `defaultValue` and `icon` can be updated, they apply to the models written afterwards
+- a new entry is rejected (409) if it conflicts with an inline metadata of the same name of a model, or with the actual mappings of an engine collection
+- a model is rejected (409) if its metadata conflict with the other models or with the actual mappings of its engines collections. Mappings of deleted models or removed metadata stay in Elasticsearch, so they are also checked
+- if Elasticsearch rejects the mappings of a new entry or of a model when the engines collections are updated (e.g. an unknown type), the request fails and the previous referential or model is restored, so the next updates are not affected
+- writes of the referential and of asset, device and group models are serialized, so their conflicts checks always see each other
+- an entry used by a model cannot be deleted. The mappings of a deleted entry stay in the engines collections
+- with the [`models.metadata.referentialOnly`](../configuration/index.md) option, the models written through the API can only add metadata of the referential, new inline metadata are rejected (400)
+- an entry registered from code is flagged `managed: true` and cannot be modified or deleted through the API (400). An entry that is no longer registered from code loses the flag at the next startup. Registering from code an entry whose mappings differ from the stored ones, or a new entry conflicting with the existing mappings, prevents the application from starting
+
+It is possible to fill the referential using either:
+
+- the framework with the method `deviceManager.models.registerMetadata`, the metadata are written at startup and overwrite the details of the ones with the same name. Registering the same name again is allowed only with an identical definition, so several modules can share a metadata
+- the API through the `device-manager/models:writeMetadata` action
+
+**Example: declaration of a metadata and a model using it**
+
+```typescript
+deviceManager.models.registerMetadata("operatingStatus", {
+  mappings: { type: "keyword" },
+  locales: {
+    en: { friendlyName: "Status", description: "Operating status" },
+    fr: { friendlyName: "Statut", description: "Statut de fonctionnement" },
+  },
+  editorHint: {
+    type: EditorHintEnum.OPTION_SELECTOR,
+    values: ["active", "inactive"],
+  },
+  defaultValue: "active",
+  icon: "power-off",
+});
+
+deviceManager.models.registerAsset(["commons"], "Pole", {
+  measures: [{ name: "position", type: "position" }],
+  metadataMappings: {
+    // Inline metadata, not in the referential
+    height: { type: "integer" },
+    operatingStatus: { referential: true },
+  },
+  metadataDetails: {
+    operatingStatus: { icon: "plug", locales: {} },
+  },
+  defaultMetadata: {
+    operatingStatus: "inactive",
+  },
+});
+```
+
+The API also allows to:
+
+- get the referential `device-manager/models:getMetadataReferential`
+- delete an unused metadata `device-manager/models:deleteMetadata`
+
 ## Sensor Model
 
 A sensor model contains the following information:

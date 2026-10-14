@@ -18,6 +18,8 @@ import {
   MetadataDetails,
   MetadataGroups,
   MetadataMappings,
+  MetadataReferential,
+  MetadataReferentialEntry,
   ModelContent,
   TooltipModels,
 } from "./types/ModelContent";
@@ -28,6 +30,20 @@ import { SchemaValidationError } from "../shared/errors/SchemaValidationError";
 import { getNamedMeasuresDuplicates } from "./MeasuresDuplicates";
 import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 import { KuzzleLogger } from "kuzzle-logger";
+import {
+  MetadataModelContent,
+  checkMetadataReferentialEntry,
+  enrichModelMetadata,
+  fetchMetadataModels,
+  fetchMetadataReferential,
+  getEntryModelsConflicts,
+  saveMetadataReferential,
+} from "./MetadataReferential";
+import { ask } from "kuzzle-plugin-commons";
+import { AskEngineMetadataConflict } from "../plugin/DeviceManagerEngine";
+import { ConflictChunk } from "./ModelsConflicts";
+import _ from "lodash";
+
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
@@ -35,6 +51,7 @@ export class ModelsRegister {
   private deviceModels: DeviceModelContent[] = [];
   private groupModels: GroupModelContent[] = [];
   private measureModels: MeasureModelContent[] = [];
+  private metadataReferential: MetadataReferential = {};
   private logger: KuzzleLogger;
 
   private get sdk() {
@@ -48,10 +65,12 @@ export class ModelsRegister {
   }
 
   async loadModels() {
+    const referential = await this.loadMetadataReferential();
+
     await Promise.all([
-      this.load("asset", this.assetModels),
-      this.load("device", this.deviceModels),
-      this.load("group", this.groupModels),
+      this.load("asset", this.resolveModels(referential, this.assetModels)),
+      this.load("device", this.resolveModels(referential, this.deviceModels)),
+      this.load("group", this.resolveModels(referential, this.groupModels)),
       this.load("measure", this.measureModels),
     ]);
 
@@ -59,6 +78,156 @@ export class ModelsRegister {
       this.config.platformIndex,
       InternalCollection.MODELS,
     );
+  }
+
+  /**
+   * Merges the metadata registered from code over the stored metadata referential and saves it.
+   * Metadata added through the API are kept, the details of metadata registered from code win.
+   *
+   * @throws PluginImplementationError if the mappings of a stored metadata are modified, or if a new
+   *  metadata conflicts with the stored models or the engines collections mappings
+   */
+  private async loadMetadataReferential(): Promise<MetadataReferential> {
+    const stored = await fetchMetadataReferential(
+      this.sdk,
+      this.config.platformIndex,
+    );
+
+    const added = Object.keys(this.metadataReferential).filter(
+      (name) => !stored[name],
+    );
+
+    for (const [name, entry] of Object.entries(this.metadataReferential)) {
+      if (stored[name] && !_.isEqual(stored[name].mappings, entry.mappings)) {
+        throw new PluginImplementationError(
+          `The mappings of metadata "${name}" cannot be modified, they are already merged into the engines collections`,
+        );
+      }
+    }
+
+    await this.checkNewMetadata(added);
+
+    // ? Only the metadata still registered from code are managed, the others become editable through the API
+    const referential: MetadataReferential = {
+      ..._.mapValues(stored, (entry) => _.omit(entry, "managed")),
+      ..._.mapValues(this.metadataReferential, (entry) => ({
+        ...entry,
+        managed: true,
+      })),
+    };
+
+    if (!_.isEqual(stored, referential)) {
+      await saveMetadataReferential(
+        this.sdk,
+        this.config.platformIndex,
+        referential,
+      );
+    }
+
+    this.logger.info(
+      `Successfully load metadata referential: ${Object.keys(referential).join(", ")}`,
+    );
+
+    return referential;
+  }
+
+  /**
+   * Checks the metadata registered from code that are not in the stored referential yet
+   * against the inline metadata of the stored models and the engines collections mappings
+   *
+   * @throws PluginImplementationError on a conflict
+   */
+  private async checkNewMetadata(names: string[]) {
+    if (names.length === 0) {
+      return;
+    }
+
+    const models = (
+      await fetchMetadataModels(this.sdk, this.config.platformIndex)
+    ).map(({ _source }) => _source);
+    const conflicts: ConflictChunk[] = [];
+
+    for (const name of names) {
+      conflicts.push(
+        ...getEntryModelsConflicts(
+          name,
+          this.metadataReferential[name],
+          models,
+        ),
+      );
+    }
+
+    conflicts.push(
+      ...(await ask<AskEngineMetadataConflict>(
+        "ask:device-manager:engine:doesMetadataConflict",
+        {
+          metadataMappings: _.mapValues(
+            _.pick(this.metadataReferential, names),
+            (entry) => entry.mappings,
+          ),
+        },
+      )),
+    );
+
+    if (conflicts.length > 0) {
+      throw new PluginImplementationError(
+        `Metadata registered from code conflict with the existing mappings: ${JSON.stringify(conflicts)}`,
+      );
+    }
+  }
+
+  /**
+   * Validates the metadata of models registered from code against the metadata referential
+   * and enriches the details and default values of the metadata coming from it
+   */
+  private resolveModels<T extends MetadataModelContent>(
+    referential: MetadataReferential,
+    models: T[],
+  ): T[] {
+    return models.map((content) => {
+      const twin = content[content.type];
+      const { fields, warnings } = enrichModelMetadata(referential, twin, {
+        createError: (message) => new PluginImplementationError(message),
+        model: twin.model,
+        modelType: content.type,
+      });
+
+      // ? Only logged, rejecting would prevent the application from starting
+      for (const warning of warnings) {
+        this.logger.warn(warning);
+      }
+
+      return { ...content, [content.type]: { ...twin, ...fields } };
+    });
+  }
+
+  /**
+   * Registers a metadata in the metadata referential.
+   * Asset, device and group models can then use it with `{ referential: true }` in their metadataMappings.
+   * Its mappings cannot be modified once loaded, they are merged into the engines collections.
+   * Registering again an identical definition is allowed, so several modules can share a metadata.
+   *
+   * @param name - Name of the metadata
+   * @param definition - Mappings, default translations, editor hint, default value and icon of the metadata
+   * @throws PluginImplementationError if the metadata is invalid or already registered with another definition
+   */
+  registerMetadata(name: string, definition: MetadataReferentialEntry) {
+    checkMetadataReferentialEntry(
+      name,
+      definition,
+      (message) => new PluginImplementationError(message),
+    );
+
+    const entry = { locales: {}, ..._.omit(definition, "managed") };
+    const registered = this.metadataReferential[name];
+
+    if (registered && !_.isEqual(registered, entry)) {
+      throw new PluginImplementationError(
+        `Metadata "${name}" is already registered in the metadata referential with another definition`,
+      );
+    }
+
+    this.metadataReferential[name] = entry;
   }
 
   /**

@@ -43,13 +43,10 @@ function getModelConflicts(
     if (baseMappings === undefined || baseMappings === null) {
       continue;
     }
-    const updatedMappings = JSON.parse(JSON.stringify(baseMappings));
 
-    _.merge(updatedMappings, _.get(additional, mappingsPath));
-
-    const mappingsConflict = findConflicts(
+    const mappingsConflict = findMappingsConflicts(
       baseMappings,
-      updatedMappings,
+      _.get(additional, mappingsPath),
       mappingsPath,
     );
 
@@ -138,6 +135,78 @@ export function getMeasureConflicts(
   );
 }
 
+const OBJECT_TYPES = ["object", "nested"];
+
+/**
+ * Type of a field mappings, "object" for an object without explicit type
+ */
+function getMappingType(mapping: any): string | undefined {
+  if (!_.isPlainObject(mapping)) {
+    return undefined;
+  }
+
+  return mapping.type ?? (mapping.properties ? "object" : undefined);
+}
+
+/**
+ * Find every conflicts between two sets of fields mappings (name => field mappings),
+ * e.g. metadata mappings or the metadata properties of an ES collection.
+ *
+ * Unlike findConflicts, a field defined with a type on one side and with properties on the other
+ * is a conflict, Elasticsearch cannot change a field from a value to an object or the opposite.
+ * Fields defined on one side only are not conflicts.
+ *
+ * @param currentMappings The current fields mappings
+ * @param newMappings The new fields mappings
+ * @param basePath Optional path to be added before conflicts paths
+ * @returns An array of MappingsConflict
+ */
+export function findMappingsConflicts(
+  currentMappings: any,
+  newMappings: any,
+  basePath = "",
+): MappingsConflict[] {
+  const conflicts: MappingsConflict[] = [];
+
+  for (const [name, newMapping] of Object.entries<any>(newMappings ?? {})) {
+    const currentMapping = currentMappings?.[name];
+
+    if (currentMapping === undefined) {
+      continue;
+    }
+
+    const path = basePath ? `${basePath}.${name}` : name;
+    const currentType = getMappingType(currentMapping);
+    const newType = getMappingType(newMapping);
+    const isCurrentObject = OBJECT_TYPES.includes(currentType);
+    const isNewObject = OBJECT_TYPES.includes(newType);
+
+    if (isCurrentObject !== isNewObject) {
+      conflicts.push({ currentType, newType, path });
+      continue;
+    }
+
+    if (!isCurrentObject) {
+      conflicts.push(...findConflicts(currentMapping, newMapping, path));
+      continue;
+    }
+
+    if (currentType !== newType) {
+      conflicts.push({ currentType, newType, path: `${path}.type` });
+    }
+
+    conflicts.push(
+      ...findMappingsConflicts(
+        currentMapping.properties,
+        newMapping.properties,
+        `${path}.properties`,
+      ),
+    );
+  }
+
+  return conflicts;
+}
+
 /**
  * Find every conflicts between two objects.
  * WARNING: "undefined" type of conflicts are not registered
@@ -146,7 +215,11 @@ export function getMeasureConflicts(
  * @param basePath Optional path to be added before conflicts paths
  * @returns An array of MappingsConflict
  */
-function findConflicts(sourceObject: any, objectToCompare: any, basePath = "") {
+export function findConflicts(
+  sourceObject: any,
+  objectToCompare: any,
+  basePath = "",
+) {
   if (sourceObject === objectToCompare) {
     return [];
   }

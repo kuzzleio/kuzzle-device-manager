@@ -1,5 +1,13 @@
 import { DeviceManagerPlugin } from "../../index";
-import { Container, Warehouse, MagicHouse, Room, StreetLamp } from "./assets";
+import {
+  Container,
+  Warehouse,
+  MagicHouse,
+  Pole,
+  Room,
+  StreetLamp,
+} from "./assets";
+import { metadataReferential } from "./metadata";
 import { Parking } from "./groups/Parking";
 import { DummyTemp, DummyTempPosition, EmptyTemp } from "./devices";
 import {
@@ -40,12 +48,17 @@ const assetsModels = {
   // Register assets for specialized groups
   air_quality: [Room],
   public_lighting: [StreetLamp],
+  "other-group": [Pole],
 };
 const groupModels = {
   air_quality: [Parking, AssetRestricted, DeviceRestricted],
 };
 
 export function registerModels(deviceManager: DeviceManagerPlugin) {
+  for (const { name, definition } of metadataReferential) {
+    deviceManager.models.registerMetadata(name, definition);
+  }
+
   for (const model of measuresModels) {
     deviceManager.models.registerMeasure(model.modelName, model.definition);
   }

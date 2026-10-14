@@ -28,7 +28,14 @@ import {
   ApiModelListGroupsResult,
   ApiModelSearchGroupsResult,
   ApiModelWriteGroupResult,
+  ApiModelUpdateGroupResult,
+  ApiModelUpdateDeviceResult,
+  ApiModelGetMetadataReferentialResult,
+  ApiModelWriteMetadataResult,
+  ApiModelDeleteMetadataResult,
 } from "./types/ModelApi";
+import { MetadataReferentialEntry } from "./types/ModelContent";
+import { MetadataModelContent } from "./MetadataReferential";
 import { KuzzleLogger } from "kuzzle-logger";
 
 export class ModelsController {
@@ -53,6 +60,12 @@ export class ModelsController {
           handler: this.deleteGroup.bind(this),
           http: [{ path: "device-manager/models/group/:_id", verb: "delete" }],
         },
+        deleteMetadata: {
+          handler: this.deleteMetadata.bind(this),
+          http: [
+            { path: "device-manager/models/metadata/:name", verb: "delete" },
+          ],
+        },
         deleteMeasure: {
           handler: this.deleteMeasure.bind(this),
           http: [
@@ -70,6 +83,10 @@ export class ModelsController {
         getGroup: {
           handler: this.getGroup.bind(this),
           http: [{ path: "device-manager/models/group/:model", verb: "get" }],
+        },
+        getMetadataReferential: {
+          handler: this.getMetadataReferential.bind(this),
+          http: [{ path: "device-manager/models/metadata", verb: "get" }],
         },
         getMeasure: {
           handler: this.getMeasure.bind(this),
@@ -121,6 +138,18 @@ export class ModelsController {
             { path: "device-manager/models/assets/:model", verb: "patch" },
           ],
         },
+        updateDevice: {
+          handler: this.updateDevice.bind(this),
+          http: [
+            { path: "device-manager/models/devices/:model", verb: "patch" },
+          ],
+        },
+        updateGroup: {
+          handler: this.updateGroup.bind(this),
+          http: [
+            { path: "device-manager/models/groups/:model", verb: "patch" },
+          ],
+        },
         writeAsset: {
           handler: this.writeAsset.bind(this),
           http: [{ path: "device-manager/models/assets", verb: "post" }],
@@ -132,6 +161,10 @@ export class ModelsController {
         writeGroup: {
           handler: this.writeGroup.bind(this),
           http: [{ path: "device-manager/models/groups", verb: "post" }],
+        },
+        writeMetadata: {
+          handler: this.writeMetadata.bind(this),
+          http: [{ path: "device-manager/models/metadata/:name", verb: "put" }],
         },
         writeMeasure: {
           handler: this.writeMeasure.bind(this),
@@ -152,7 +185,9 @@ export class ModelsController {
       model,
     );
 
-    return assetModel;
+    const [resolved] = await this.resolveModels(request, [assetModel]);
+
+    return resolved;
   }
 
   async getDevice(request: KuzzleRequest): Promise<ApiModelGetDeviceResult> {
@@ -160,7 +195,9 @@ export class ModelsController {
 
     const deviceModel = await this.modelService.getDevice(model);
 
-    return deviceModel;
+    const [resolved] = await this.resolveModels(request, [deviceModel]);
+
+    return resolved;
   }
 
   async getGroup(request: KuzzleRequest): Promise<ApiModelGetGroupResult> {
@@ -168,7 +205,9 @@ export class ModelsController {
 
     const groupModel = await this.modelService.getGroup(model);
 
-    return groupModel;
+    const [resolved] = await this.resolveModels(request, [groupModel]);
+
+    return resolved;
   }
   async getMeasure(request: KuzzleRequest): Promise<ApiModelGetMeasureResult> {
     const type = request.getString("type");
@@ -329,7 +368,10 @@ export class ModelsController {
 
     // Super admin without tenantClasses: return all asset models
     if (isAdmin && tenantClasses.length === 0 && !index) {
-      const models = await this.modelService.listAllAssets();
+      const models = await this.resolveModels(
+        request,
+        await this.modelService.listAllAssets(),
+      );
       return { models, total: models.length };
     }
 
@@ -372,7 +414,10 @@ export class ModelsController {
       tenantClasses.push("commons");
     }
 
-    const models = await this.modelService.listAsset(tenantClasses, index);
+    const models = await this.resolveModels(
+      request,
+      await this.modelService.listAsset(tenantClasses, index),
+    );
 
     return {
       models,
@@ -380,8 +425,13 @@ export class ModelsController {
     };
   }
 
-  async listDevices(): Promise<ApiModelListDevicesResult> {
-    const models = await this.modelService.listDevices();
+  async listDevices(
+    request: KuzzleRequest,
+  ): Promise<ApiModelListDevicesResult> {
+    const models = await this.resolveModels(
+      request,
+      await this.modelService.listDevices(),
+    );
 
     return {
       models,
@@ -391,7 +441,10 @@ export class ModelsController {
 
   async listGroups(request: KuzzleRequest): Promise<ApiModelListGroupsResult> {
     const tenantClasses = request.getArray("tenantClasses", []) || ["commons"];
-    const models = await this.modelService.listGroups(tenantClasses);
+    const models = await this.resolveModels(
+      request,
+      await this.modelService.listGroups(tenantClasses),
+    );
 
     return {
       models,
@@ -417,26 +470,37 @@ export class ModelsController {
   ): Promise<ApiModelSearchAssetsResult> {
     const index = request.input.args.index as string | undefined;
 
-    return this.modelService.searchAssets(
+    const result = await this.modelService.searchAssets(
       request.getArray("tenantClasses", []) || ["commons"],
       index,
       request.getSearchParams(),
     );
+    result.hits = await this.resolveModels(request, result.hits);
+
+    return result;
   }
 
   async searchDevices(
     request: KuzzleRequest,
   ): Promise<ApiModelSearchDevicesResult> {
-    return this.modelService.searchDevices(request.getSearchParams());
+    const result = await this.modelService.searchDevices(
+      request.getSearchParams(),
+    );
+    result.hits = await this.resolveModels(request, result.hits);
+
+    return result;
   }
 
   async searchGroups(
     request: KuzzleRequest,
   ): Promise<ApiModelSearchGroupsResult> {
-    return this.modelService.searchGroups(
+    const result = await this.modelService.searchGroups(
       request.getArray("tenantClasses", []) || ["commons"],
       request.getSearchParams(),
     );
+    result.hits = await this.resolveModels(request, result.hits);
+
+    return result;
   }
 
   async searchMeasures(
@@ -478,5 +542,102 @@ export class ModelsController {
     );
 
     return updatedAssetModel;
+  }
+
+  async updateDevice(
+    request: KuzzleRequest,
+  ): Promise<ApiModelUpdateDeviceResult> {
+    const model = request.getString("model");
+    const metadataMappings = request.getBodyObject("metadataMappings");
+    const metadataDetails =
+      request.input.body?.metadataDetails === undefined
+        ? undefined
+        : request.getBodyObject("metadataDetails");
+    const defaultValues =
+      request.input.body?.defaultValues === undefined
+        ? undefined
+        : request.getBodyObject("defaultValues");
+
+    // ? Device models are additive only: only their metadata can be updated
+    const forbiddenFields = Object.keys(request.getBody()).filter(
+      (field) =>
+        !["metadataMappings", "metadataDetails", "defaultValues"].includes(
+          field,
+        ),
+    );
+
+    if (forbiddenFields.length > 0) {
+      throw new BadRequestError(
+        `Device model "${model}" can only be updated with metadata, forbidden fields: ${forbiddenFields.join(", ")}`,
+      );
+    }
+
+    return this.modelService.updateDevice(model, {
+      defaultMetadata: defaultValues,
+      metadataDetails,
+      metadataMappings,
+    });
+  }
+
+  async updateGroup(
+    request: KuzzleRequest,
+  ): Promise<ApiModelUpdateGroupResult> {
+    const requestTenantClasses = request.getArray("tenantClasses", []);
+    const tenantClasses =
+      requestTenantClasses.length > 0 ? requestTenantClasses : ["commons"];
+    const model = request.getString("model");
+    const affinity =
+      request.input.body?.affinity === undefined
+        ? undefined
+        : request.getBodyObject("affinity");
+    const metadataMappings = request.getBodyObject("metadataMappings", {});
+    const defaultValues = request.getBodyObject("defaultValues", {});
+    const metadataDetails = request.getBodyObject("metadataDetails", {});
+    const metadataGroups = request.getBodyObject("metadataGroups", {});
+    const locales = request.getBodyObject("locales", {});
+    const icon = request.input.body?.icon as string | undefined;
+
+    return this.modelService.updateGroup(tenantClasses, model, {
+      affinity,
+      defaultMetadata: defaultValues,
+      icon,
+      locales,
+      metadataDetails,
+      metadataGroups,
+      metadataMappings,
+    });
+  }
+
+  /**
+   * Resolves the referential metadata of models, unless the rawModel flag is set
+   */
+  private async resolveModels<D extends { _source: MetadataModelContent }>(
+    request: KuzzleRequest,
+    documents: D[],
+  ): Promise<D[]> {
+    return request.getBoolean("rawModel")
+      ? documents
+      : this.modelService.resolveModels(documents);
+  }
+
+  async getMetadataReferential(): Promise<ApiModelGetMetadataReferentialResult> {
+    return this.modelService.getMetadataReferential();
+  }
+
+  async writeMetadata(
+    request: KuzzleRequest,
+  ): Promise<ApiModelWriteMetadataResult> {
+    const name = request.getString("name");
+    const definition = request.getBody() as MetadataReferentialEntry;
+
+    return this.modelService.writeMetadata(name, definition);
+  }
+
+  async deleteMetadata(
+    request: KuzzleRequest,
+  ): Promise<ApiModelDeleteMetadataResult> {
+    const name = request.getString("name");
+
+    return this.modelService.deleteMetadata(name);
   }
 }

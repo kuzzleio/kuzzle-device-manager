@@ -128,7 +128,8 @@ export type AssetModelDefinition = {
   icon?: string;
 
   /**
-   * Metadata mappings definition
+   * Metadata mappings definition.
+   * Use `{ referential: true }` for a metadata of the metadata referential.
    */
   metadataMappings?: MetadataMappings;
 
@@ -217,7 +218,8 @@ export type DeviceModelDefinition = {
   icon?: string;
 
   /**
-   * Metadata mappings definition
+   * Metadata mappings definition.
+   * Use `{ referential: true }` for a metadata of the metadata referential.
    */
   metadataMappings?: MetadataMappings;
 
@@ -318,7 +320,8 @@ export type GroupModelDefinition = {
   icon?: string;
 
   /**
-   * Metadata mappings definition
+   * Metadata mappings definition.
+   * Use `{ referential: true }` for a metadata of the metadata referential.
    */
   metadataMappings?: MetadataMappings;
 

@@ -3,6 +3,7 @@ import {
   DeviceModelContent,
   GroupModelContent,
   MeasureModelContent,
+  MetadataReferential,
 } from "./ModelContent";
 
 export type AskModelAssetGet = {
@@ -35,4 +36,12 @@ export type AskModelGroupGet = {
   payload: { model: string };
 
   result: GroupModelContent;
+};
+
+export type AskModelMetadataReferentialGet = {
+  name: "ask:device-manager:model:metadata-referential:get";
+
+  payload: void;
+
+  result: MetadataReferential;
 };

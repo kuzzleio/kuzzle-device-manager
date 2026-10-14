@@ -28,7 +28,22 @@ export interface MetadataObject {
   };
 }
 
+/**
+ * Marks, in the metadataMappings of a model, a metadata defined in the metadata referential.
+ * Its mappings are the referential ones, they are already merged into the engines collections.
+ */
+export interface ReferentialMetadataMapping {
+  referential: true;
+}
+
 export interface MetadataMappings {
+  [key: string]: MetadataProperty | MetadataObject | ReferentialMetadataMapping;
+}
+
+/**
+ * Metadata mappings without referential markers, as merged into the engines collections
+ */
+export interface ResolvedMetadataMappings {
   [key: string]: MetadataProperty | MetadataObject;
 }
 
@@ -106,11 +121,69 @@ export interface MetadataDetails {
      * Then add a new field in EditorHintEnum to define the type of your hint.
      * Finally add the new editor hint interface with a pipe to take in account the new type.
      */
-    editorHint?:
-      | BaseEditorHint
-      | OptionsSelectorEditorHint
-      | DatetimeEditorHint;
+    editorHint?: EditorHint;
+    /**
+     * Icon representing the metadata.
+     * Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup.
+     */
+    icon?: string;
   };
+}
+
+export type EditorHint =
+  | BaseEditorHint
+  | OptionsSelectorEditorHint
+  | DatetimeEditorHint;
+
+/**
+ * A metadata defined once in the application metadata referential.
+ * Its mappings are merged into the engines collections when it is written,
+ * models use it with `{ referential: true }` in their metadataMappings.
+ */
+export interface MetadataReferentialEntry {
+  /**
+   * Mappings of the metadata.
+   * They cannot be modified once written, as they are merged into the engines collections.
+   *
+   * @example
+   * { type: "keyword" }
+   * { properties: { name: { type: "keyword" } } }
+   */
+  mappings: MetadataProperty | MetadataObject;
+  /**
+   * Default translations of the metadata, copied into the metadataDetails of a model using it
+   */
+  locales: {
+    [locale: string]: LocaleDetails;
+  };
+  /**
+   * Default editor hint of the metadata
+   */
+  editorHint?: EditorHint;
+  /**
+   * Default value of the metadata
+   */
+  defaultValue?: unknown;
+  /**
+   * Default icon of the metadata.
+   * Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup.
+   */
+  icon?: string;
+  /**
+   * Set by the plugin: true for a metadata registered from code.
+   * It is written at every startup and cannot be modified or deleted through the API.
+   */
+  managed?: boolean;
+}
+
+export interface MetadataReferential {
+  [name: string]: MetadataReferentialEntry;
+}
+
+export interface MetadataReferentialContent extends KDocumentContent {
+  type: "metadata-referential";
+
+  metadata: MetadataReferential;
 }
 
 export interface MetadataGroupLocale {

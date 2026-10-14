@@ -3,3 +3,4 @@ export * from "./MagicHouse";
 export * from "./Room";
 export * from "./StreetLamp";
 export * from "./Warehouse";
+export * from "./Pole";
