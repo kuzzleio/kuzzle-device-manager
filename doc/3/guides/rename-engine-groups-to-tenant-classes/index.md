@@ -39,11 +39,11 @@ Only the applications that ran a Device Manager 3 pre-release whose models still
 
 3. **Upgrade** the `kuzzle-device-manager` dependency and restart Kuzzle. At startup, the plugin adds `tenantClasses` to the `models` collection mappings. Until the next step, the models created through the API are not taken into account by the tenants: do not create assets or models in between.
 
-4. **Run the upgrade script** with an administrator account:
+4. **Run the upgrade script** with an administrator account. The binary is named `migrate-model-tenant-classes` so that it does not collide with the `migrate-tenant-classes` binary of multi-tenancy, which the applications using both plugins also run:
 
    ```bash
-   npx migrate-tenant-classes --host=localhost --port=7512 --username=admin --password=<password> --dry-run
-   npx migrate-tenant-classes --host=localhost --port=7512 --username=admin --password=<password>
+   npx migrate-model-tenant-classes --host=localhost --port=7512 --username=admin --password=<password> --dry-run
+   npx migrate-model-tenant-classes --host=localhost --port=7512 --username=admin --password=<password>
    ```
 
    The script:
