@@ -3,6 +3,7 @@ import {
   ApiModelUpdateGroupRequest,
   ApiModelUpdateGroupResult,
   ApiModelWriteGroupRequest,
+  GroupAffinity,
 } from "../../../../lib/modules/model";
 import { setupHooks } from "../../../helpers";
 
@@ -11,7 +12,7 @@ vi.setConfig({ testTimeout: 30000 });
 describe("ModelsController:updateGroup", () => {
   const sdk = setupHooks();
 
-  const affinity = {
+  const affinity: GroupAffinity = {
     type: ["assets"],
     models: { assets: ["Container"], devices: [] },
     strict: true,

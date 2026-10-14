@@ -63,7 +63,10 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   action: "writeAsset";
 
   body: {
-    tenantClasses: string[];
+    /**
+     * Mutually exclusive with `indexes`
+     */
+    tenantClasses?: string[];
     indexes?: string[];
     model: string;
     icon?: string;
