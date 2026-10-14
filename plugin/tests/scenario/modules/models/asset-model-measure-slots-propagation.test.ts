@@ -18,7 +18,7 @@ describe("Asset model measure slots propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "Plane",
         metadataMappings: { size: { type: "integer" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -31,7 +31,7 @@ describe("Asset model measure slots propagation", () => {
     >({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Plane",
         reference: "Technoplane",
@@ -49,7 +49,7 @@ describe("Asset model measure slots propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "Plane",
         metadataMappings: { size: { type: "integer" } },
         measures: [
@@ -76,7 +76,7 @@ describe("Asset model measure slots propagation", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "Plane",
         metadataMappings: { size: { type: "integer" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -89,7 +89,7 @@ describe("Asset model measure slots propagation", () => {
     >({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "Plane",
         reference: "Technoplane",
@@ -106,7 +106,7 @@ describe("Asset model measure slots propagation", () => {
     await sdk.query<ApiModelUpdateAssetRequest, ApiModelUpdateAssetResult>({
       controller: "device-manager/models",
       action: "updateAsset",
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
       model: "Plane",
       body: {
         measures: [

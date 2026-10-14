@@ -6,12 +6,12 @@ vi.setConfig({ testTimeout: 30000 });
 describe("ModelsController:assets:multi-group", () => {
   const sdk = setupHooks();
 
-  it("Write model with multiple engineGroups produces multi-group ID", async () => {
+  it("Write model with multiple tenantClasses produces multi-group ID", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality", "public_lighting"],
+        tenantClasses: ["air_quality", "public_lighting"],
         model: "MultiGroupSensor",
         metadataMappings: { location: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -26,7 +26,7 @@ describe("ModelsController:assets:multi-group", () => {
 
     expect(doc._source).toMatchObject({
       type: "asset",
-      engineGroups: ["air_quality", "public_lighting"],
+      tenantClasses: ["air_quality", "public_lighting"],
       asset: {
         model: "MultiGroupSensor",
         metadataMappings: { location: { type: "keyword" } },
@@ -41,7 +41,7 @@ describe("ModelsController:assets:multi-group", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["public_lighting", "air_quality"],
+        tenantClasses: ["public_lighting", "air_quality"],
         model: "SortedGroup",
         metadataMappings: {},
         measures: [],
@@ -58,12 +58,12 @@ describe("ModelsController:assets:multi-group", () => {
     expect(doc._id).toBe("model-asset-air_quality+public_lighting-SortedGroup");
   });
 
-  it("Commons normalization: engineGroups containing 'commons' is normalized to ['commons']", async () => {
+  it("Commons normalization: tenantClasses containing 'commons' is normalized to ['commons']", async () => {
     await sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons", "air_quality"],
+        tenantClasses: ["commons", "air_quality"],
         model: "CommonsNormalized",
         metadataMappings: {},
         measures: [],
@@ -77,7 +77,7 @@ describe("ModelsController:assets:multi-group", () => {
       "model-asset-CommonsNormalized",
     );
 
-    expect(doc._source.engineGroups).toEqual(["commons"]);
+    expect(doc._source.tenantClasses).toEqual(["commons"]);
     expect(doc._id).toBe("model-asset-CommonsNormalized");
   });
 
@@ -86,7 +86,7 @@ describe("ModelsController:assets:multi-group", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "SingleGroupCompat",
         metadataMappings: {},
         measures: [],
@@ -100,7 +100,7 @@ describe("ModelsController:assets:multi-group", () => {
     );
 
     expect(doc._id).toBe("model-asset-SingleGroupCompat");
-    expect(doc._source.engineGroups).toEqual(["air_quality"]);
+    expect(doc._source.tenantClasses).toEqual(["air_quality"]);
   });
 
   it("List from one group returns multi-group models that include that group", async () => {
@@ -108,7 +108,7 @@ describe("ModelsController:assets:multi-group", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality", "public_lighting"],
+        tenantClasses: ["air_quality", "public_lighting"],
         model: "CrossGroup",
         metadataMappings: {},
         measures: [],
@@ -121,7 +121,7 @@ describe("ModelsController:assets:multi-group", () => {
     const listAQ = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
     });
     const idsAQ = listAQ.result.models.map((m: { _id: string }) => m._id);
     expect(idsAQ).toContain(
@@ -132,7 +132,7 @@ describe("ModelsController:assets:multi-group", () => {
     const listPL = await sdk.query({
       controller: "device-manager/models",
       action: "listAssets",
-      engineGroups: ["public_lighting"],
+      tenantClasses: ["public_lighting"],
     });
     const idsPL = listPL.result.models.map((m: { _id: string }) => m._id);
     expect(idsPL).toContain(
@@ -145,7 +145,7 @@ describe("ModelsController:assets:multi-group", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality", "public_lighting"],
+        tenantClasses: ["air_quality", "public_lighting"],
         model: "SharedModel",
         metadataMappings: { scope: { type: "keyword" } },
         defaultValues: { scope: "multi" },
@@ -159,10 +159,10 @@ describe("ModelsController:assets:multi-group", () => {
     const resultAQ = await sdk.query({
       controller: "device-manager/models",
       action: "getAsset",
-      engineGroups: ["air_quality"],
+      tenantClasses: ["air_quality"],
       model: "SharedModel",
     });
-    expect(resultAQ.result._source.engineGroups).toEqual([
+    expect(resultAQ.result._source.tenantClasses).toEqual([
       "air_quality",
       "public_lighting",
     ]);
@@ -172,10 +172,10 @@ describe("ModelsController:assets:multi-group", () => {
     const resultPL = await sdk.query({
       controller: "device-manager/models",
       action: "getAsset",
-      engineGroups: ["public_lighting"],
+      tenantClasses: ["public_lighting"],
       model: "SharedModel",
     });
-    expect(resultPL.result._source.engineGroups).toEqual([
+    expect(resultPL.result._source.tenantClasses).toEqual([
       "air_quality",
       "public_lighting",
     ]);
@@ -188,11 +188,11 @@ describe("ModelsController:assets:multi-group", () => {
         controller: "device-manager/models",
         action: "writeAsset",
         body: {
-          engineGroups: ["air_quality", "public_lighting"],
+          tenantClasses: ["air_quality", "public_lighting"],
           model: "MultiGroupTenant",
           metadataMappings: {},
           measures: [],
-          engineIds: ["engine-ayse"],
+          indexes: ["engine-ayse"],
         },
       }),
     ).rejects.toThrow(/mutually exclusive/);

@@ -28,7 +28,7 @@ describe("ModelsController:updateDevice", () => {
     await sdk.query({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: "UpdSensor",
         reference: "one",
@@ -84,7 +84,7 @@ describe("ModelsController:updateDevice", () => {
     const { result: device } = await sdk.query({
       controller: "device-manager/devices",
       action: "get",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "UpdSensor-one",
     });
 

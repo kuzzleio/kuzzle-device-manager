@@ -17,7 +17,7 @@ Ingest a single measure into an asset.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/:assetId/measures/:slotName
+URL: http://kuzzle:7512/_/device-manager/:index/assets/:assetId/measures/:slotName
 Method: POST
 ```
 
@@ -28,7 +28,7 @@ Method: POST
   "controller": "device-manager/assets",
   "action": "ingestMeasure",
   "assetId": "<assetId>",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "slotName": "<slotName>"
   "body": {
     "dataSource": {
@@ -51,7 +51,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: target engine id
+- `index`: target engine id
 - `assetId`: target asset id
 - `slotName`: target measure slot name
 

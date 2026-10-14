@@ -27,8 +27,8 @@ Method: POST
   "controller": "device-manager/models",
   "action": "writeAsset",
   "body": {
-    "engineGroup": "<engine group>",
-    "engineIds": [
+    "tenantClasses": ["<tenant class>"],
+    "indexes": [
       // Optional. Array of engine IDs (tenant IDs) this model is scoped to.
     ],
     "model": "<asset model>",
@@ -134,8 +134,8 @@ Method: POST
 
 ## Body properties
 
-- `engineGroup`: Name of the engine group
-- `engineIds`: Optional. Array of engine IDs (tenant IDs) this model is scoped to. When set, the model is only available to the specified tenants. When absent, the model is available to all tenants in the engine group.
+- `tenantClasses`: names of the tenant classes
+- `indexes`: Optional. Array of engine IDs (tenant IDs) this model is scoped to. When set, the model is only available to the specified tenants. When absent, the model is available to all tenants in the tenant class.
 - `model`: Asset model name
 - `icon`: Optional. Icon representing the asset model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. This field is not indexed for search.
 - `metadataMappings`: Mappings of the metadata in Elasticsearch format. Use `{ "referential": true }` for a metadata of the [metadata referential](../../../concepts/models/index.md#metadata-referential): its details and default value are filled from the referential when missing

@@ -215,7 +215,7 @@ describe("ModelsController:measures", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "Plane",
         metadataMappings: {
           company: { type: "keyword" },
@@ -235,7 +235,7 @@ describe("ModelsController:measures", () => {
     );
     expect(assetModel._source).toMatchObject<AssetModelContent>({
       type: "asset",
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
       asset: {
         model: "Plane",
         metadataMappings: {
@@ -254,7 +254,7 @@ describe("ModelsController:measures", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
         measures: [{ name: "temperatureExt", type: "temperature" }],
@@ -268,7 +268,7 @@ describe("ModelsController:measures", () => {
     );
     expect(assetModelUpdated._source).toMatchObject<AssetModelContent>({
       type: "asset",
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
       asset: {
         model: "Plane",
         metadataMappings: { company: { type: "keyword" } },
@@ -407,7 +407,7 @@ describe("ModelsController:measures", () => {
       body: {
         model: "TestHouse",
         measures: [{ name: "Test", type: "Test" }],
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
       },
     };
 

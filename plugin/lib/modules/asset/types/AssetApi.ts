@@ -28,7 +28,7 @@ import { DeviceContent } from "lib/modules/device";
 interface AssetsControllerRequest {
   controller: AssetsControllerName;
 
-  engineId: string;
+  index: string;
 }
 
 export interface ApiAssetGetRequest extends AssetsControllerRequest {
@@ -152,7 +152,7 @@ type TypelessApiMeasureSource = Omit<ApiMeasureSource, "type">;
 export interface ApiAssetMeasureIngestRequest extends AssetsControllerRequest {
   action: "ingestMeasure";
   assetId: string;
-  engineId: string;
+  index: string;
   slotName: string;
   body: {
     dataSource: TypelessApiMeasureSource;
@@ -167,7 +167,7 @@ type APIDecodedMeasurement = Omit<Measurement, "type"> & { slotName: string };
 export interface ApiAssetmMeasureIngestRequest extends AssetsControllerRequest {
   action: "mIngestMeasure";
   assetId: string;
-  engineId: string;
+  index: string;
   body: {
     dataSource: TypelessApiMeasureSource;
     measurements: APIDecodedMeasurement[];
@@ -189,7 +189,7 @@ export type ApiAssetMGetLastMeasuresResult =
  * This action can be used only with WebSocket or POST
  *
  * Then the export can be download using HTTP Get and the following route:
- *  `/_/device-manager/:engineId/devices/:_id/measures/_export/:exportId`
+ *  `/_/device-manager/:index/devices/:_id/measures/_export/:exportId`
  */
 export interface ApiAssetExportMeasuresRequest extends AssetsControllerRequest {
   action: "exportMeasures";
@@ -229,10 +229,10 @@ export type ApiAssetExportResult = {
 
 export interface ApiAssetMigrateTenantRequest extends AssetsControllerRequest {
   action: "migrateTenant";
-  engineId: string;
+  index: string;
   body: {
     assetsList: string[];
-    newEngineId: string;
+    newIndex: string;
     includeDevices?: boolean;
   };
 }

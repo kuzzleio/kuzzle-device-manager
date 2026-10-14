@@ -109,8 +109,8 @@ export class ModelService extends BaseService {
   registerAskEvents() {
     onAsk<AskModelAssetGet>(
       "ask:device-manager:model:asset:get",
-      async ({ engineGroups, engineId, model }) => {
-        const assetModel = await this.getAsset(engineGroups, engineId, model);
+      async ({ tenantClasses, index, model }) => {
+        const assetModel = await this.getAsset(tenantClasses, index, model);
 
         return assetModel._source;
       },
@@ -137,8 +137,8 @@ export class ModelService extends BaseService {
     );
     onAsk<AskModelMeasureGet>(
       "ask:device-manager:model:measure:get",
-      async ({ type, engineId }) => {
-        const measureModel = await this.getMeasure(type, engineId);
+      async ({ type, index }) => {
+        const measureModel = await this.getMeasure(type, index);
 
         return measureModel._source;
       },
@@ -355,7 +355,7 @@ export class ModelService extends BaseService {
     return { models, strict, type };
   }
   async writeAsset(
-    engineGroups: string[],
+    tenantClasses: string[],
     model: string,
     metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
@@ -364,7 +364,7 @@ export class ModelService extends BaseService {
     measures: NamedMeasures,
     tooltipModels: TooltipModels,
     locales: { [valueName: string]: LocaleDetails },
-    engineIds?: string[],
+    indexes?: string[],
     icon?: string,
   ): Promise<KDocument<AssetModelContent>> {
     return withMetadataReferentialLock(async () => {
@@ -372,9 +372,9 @@ export class ModelService extends BaseService {
         throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
       }
 
-      if (engineIds?.length && engineGroups?.length) {
+      if (indexes?.length && tenantClasses?.length) {
         throw new BadRequestError(
-          `"engineIds" and "engineGroups" are mutually exclusive on an asset model.`,
+          `"indexes" and "tenantClasses" are mutually exclusive on an asset model.`,
         );
       }
 
@@ -387,15 +387,15 @@ export class ModelService extends BaseService {
         );
       }
 
-      const normalizedEngineGroups = engineGroups.includes("commons")
+      const normalizedTenantClasses = tenantClasses.includes("commons")
         ? ["commons"]
-        : engineGroups;
+        : tenantClasses;
 
       // Anti-shadowing: reject if a model with the same name exists at a different scope level
       const isGlobal =
-        normalizedEngineGroups.includes("commons") &&
-        (!engineIds || engineIds.length === 0);
-      const isTenantScoped = engineIds && engineIds.length > 0;
+        normalizedTenantClasses.includes("commons") &&
+        (!indexes || indexes.length === 0);
+      const isTenantScoped = indexes && indexes.length > 0;
       const isGroupScoped = !isGlobal && !isTenantScoped;
 
       await this.sdk.collection.refresh(
@@ -420,9 +420,9 @@ export class ModelService extends BaseService {
       for (const hit of existing.hits) {
         const doc = hit._source as AssetModelContent;
         const docIsGlobal =
-          doc.engineGroups?.includes("commons") &&
-          (!doc.engineIds || doc.engineIds.length === 0);
-        const docIsTenantScoped = doc.engineIds && doc.engineIds.length > 0;
+          doc.tenantClasses?.includes("commons") &&
+          (!doc.indexes || doc.indexes.length === 0);
+        const docIsTenantScoped = doc.indexes && doc.indexes.length > 0;
         const docIsGroupScoped = !docIsGlobal && !docIsTenantScoped;
 
         // Same scope level: allow overwrite
@@ -475,9 +475,9 @@ export class ModelService extends BaseService {
           model,
           tooltipModels,
         },
-        ...(engineIds?.length
-          ? { engineIds }
-          : { engineGroups: normalizedEngineGroups }),
+        ...(indexes?.length
+          ? { indexes }
+          : { tenantClasses: normalizedTenantClasses }),
         type: "asset",
       } as AssetModelContent;
 
@@ -616,7 +616,7 @@ export class ModelService extends BaseService {
   }
 
   async writeGroup(
-    engineGroups: string[],
+    tenantClasses: string[],
     model: string,
     affinity: JSONObject,
     metadataMappings: MetadataMappings,
@@ -630,8 +630,8 @@ export class ModelService extends BaseService {
       if (Inflector.pascalCase(model) !== model) {
         throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
       }
-      if (engineGroups.includes("commons")) {
-        engineGroups = ["commons"];
+      if (tenantClasses.includes("commons")) {
+        tenantClasses = ["commons"];
       }
 
       const groupAffinity = this.checkGroupAffinity(affinity);
@@ -642,7 +642,7 @@ export class ModelService extends BaseService {
       });
 
       const modelContent: GroupModelContent = {
-        engineGroups,
+        tenantClasses,
         group: {
           ...metadata,
           affinity: groupAffinity,
@@ -700,7 +700,7 @@ export class ModelService extends BaseService {
     locales?: {
       [valueName: string]: LocaleDetails;
     },
-    engineIds?: string[],
+    indexes?: string[],
     icon?: string,
   ): Promise<KDocument<MeasureModelContent>> {
     const modelContent: MeasureModelContent = {
@@ -714,12 +714,12 @@ export class ModelService extends BaseService {
       type: "measure",
     };
 
-    if (engineIds?.length) {
-      modelContent.engineIds = engineIds;
+    if (indexes?.length) {
+      modelContent.indexes = indexes;
     }
 
     // Anti-shadowing: a measure type must be either global or tenant-scoped, not both
-    await this.checkMeasureShadowing(type, engineIds);
+    await this.checkMeasureShadowing(type, indexes);
 
     if (validationSchema) {
       try {
@@ -801,7 +801,7 @@ export class ModelService extends BaseService {
   }
 
   /**
-   * List all asset models regardless of engine group scope.
+   * List all asset models regardless of tenant class scope.
    * Used for super admin global view.
    */
   async listAllAssets(): Promise<KDocument<AssetModelContent>[]> {
@@ -818,7 +818,7 @@ export class ModelService extends BaseService {
   /**
    * Check if an engine (tenant) exists by its ID.
    */
-  async engineExists(engineId: string): Promise<boolean> {
+  async engineExists(index: string): Promise<boolean> {
     try {
       const result = await this.sdk.document.search(
         this.config.platformIndex,
@@ -828,7 +828,7 @@ export class ModelService extends BaseService {
             bool: {
               must: [
                 { term: { type: "engine-device-manager" } },
-                { term: { "engine.index": engineId } },
+                { term: { "engine.index": index } },
               ],
             },
           },
@@ -842,33 +842,11 @@ export class ModelService extends BaseService {
   }
 
   /**
-   * Check if the requesting user has access to an engine.
+   * Find tenant classes that don't exist.
    */
-  async userHasEngineAccess(
-    request: KuzzleRequest,
-    engineId: string,
-  ): Promise<boolean> {
-    try {
-      const result = await this.sdk.security.checkRights(
-        request.context.user?._id,
-        {
-          controller: "device-manager/assets",
-          action: "get",
-          index: engineId,
-        },
-      );
-      return result;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Find engine groups that don't exist.
-   */
-  async findInvalidEngineGroups(engineGroups: string[]): Promise<string[]> {
+  async findInvalidTenantClasses(tenantClasses: string[]): Promise<string[]> {
     // "commons" is always valid
-    const toCheck = engineGroups.filter((g) => g !== "commons");
+    const toCheck = tenantClasses.filter((g) => g !== "commons");
     if (toCheck.length === 0) {
       return [];
     }
@@ -884,20 +862,20 @@ export class ModelService extends BaseService {
       { lang: "koncorde", size: 5000 },
     );
 
-    const existingGroups = new Set(
+    const existingTenantClasses = new Set(
       result.hits.map(
         (h) => (h._source as { engine?: { group?: string } }).engine?.group,
       ),
     );
 
-    return toCheck.filter((g) => !existingGroups.has(g));
+    return toCheck.filter((g) => !existingTenantClasses.has(g));
   }
 
   async listAsset(
-    engineGroups: string[],
-    engineId?: string,
+    tenantClasses: string[],
+    index?: string,
   ): Promise<KDocument<AssetModelContent>[]> {
-    const result = await this.searchAssets(engineGroups, engineId, {
+    const result = await this.searchAssets(tenantClasses, index, {
       searchBody: {
         sort: { "asset.model": "asc" },
       },
@@ -919,9 +897,9 @@ export class ModelService extends BaseService {
   }
 
   async listGroups(
-    engineGroups: string[],
+    tenantClasses: string[],
   ): Promise<KDocument<GroupModelContent>[]> {
-    const result = await this.searchGroups(engineGroups, {
+    const result = await this.searchGroups(tenantClasses, {
       searchBody: {
         sort: { "group.model": "asc" },
       },
@@ -932,9 +910,9 @@ export class ModelService extends BaseService {
   }
 
   async listMeasures(
-    engineId?: string,
+    index?: string,
   ): Promise<KDocument<MeasureModelContent>[]> {
-    const result = await this.searchMeasures(engineId, {
+    const result = await this.searchMeasures(index, {
       searchBody: {
         sort: { "measure.type": "asc" },
       },
@@ -945,29 +923,29 @@ export class ModelService extends BaseService {
   }
 
   async searchAssets(
-    engineGroups: string[],
-    engineId: string | undefined,
+    tenantClasses: string[],
+    index: string | undefined,
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<AssetModelContent>>> {
-    const scopeFilter = engineId
+    const scopeFilter = index
       ? {
           bool: {
             should: [
               {
                 bool: {
-                  must: [{ term: { engineIds: engineId } }],
+                  must: [{ term: { indexes: index } }],
                 },
               },
               {
                 bool: {
-                  must: [{ terms: { engineGroups } }],
-                  must_not: [{ exists: { field: "engineIds" } }],
+                  must: [{ terms: { tenantClasses } }],
+                  must_not: [{ exists: { field: "indexes" } }],
                 },
               },
               {
                 bool: {
-                  must: [{ term: { engineGroups: "commons" } }],
-                  must_not: [{ exists: { field: "engineIds" } }],
+                  must: [{ term: { tenantClasses: "commons" } }],
+                  must_not: [{ exists: { field: "indexes" } }],
                 },
               },
             ],
@@ -978,14 +956,14 @@ export class ModelService extends BaseService {
             should: [
               {
                 bool: {
-                  must: [{ terms: { engineGroups } }],
-                  must_not: [{ exists: { field: "engineIds" } }],
+                  must: [{ terms: { tenantClasses } }],
+                  must_not: [{ exists: { field: "indexes" } }],
                 },
               },
               {
                 bool: {
-                  must: [{ term: { engineGroups: "commons" } }],
-                  must_not: [{ exists: { field: "engineIds" } }],
+                  must: [{ term: { tenantClasses: "commons" } }],
+                  must_not: [{ exists: { field: "indexes" } }],
                 },
               },
             ],
@@ -1047,7 +1025,7 @@ export class ModelService extends BaseService {
   }
 
   async searchGroups(
-    engineGroups: string[],
+    tenantClasses: string[],
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<GroupModelContent>>> {
     const query = {
@@ -1058,8 +1036,8 @@ export class ModelService extends BaseService {
           {
             bool: {
               should: [
-                { terms: { engineGroups } },
-                { term: { engineGroups: "commons" } },
+                { terms: { tenantClasses } },
+                { term: { tenantClasses: "commons" } },
               ],
             },
           },
@@ -1084,21 +1062,21 @@ export class ModelService extends BaseService {
   }
 
   async searchMeasures(
-    engineId: string | undefined,
+    index: string | undefined,
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<MeasureModelContent>>> {
-    const scopeFilter = engineId
+    const scopeFilter = index
       ? {
           bool: {
             should: [
-              { term: { engineIds: engineId } },
-              { bool: { must_not: [{ exists: { field: "engineIds" } }] } },
+              { term: { indexes: index } },
+              { bool: { must_not: [{ exists: { field: "indexes" } }] } },
             ],
           },
         }
       : {
           bool: {
-            must_not: [{ exists: { field: "engineIds" } }],
+            must_not: [{ exists: { field: "indexes" } }],
           },
         };
 
@@ -1165,8 +1143,8 @@ export class ModelService extends BaseService {
   }
 
   async getAsset(
-    engineGroups: string[],
-    engineId: string | undefined,
+    tenantClasses: string[],
+    index: string | undefined,
     model: string,
   ): Promise<KDocument<AssetModelContent>> {
     const baseFilter = [
@@ -1175,10 +1153,10 @@ export class ModelService extends BaseService {
     ];
 
     // Priority 1: tenant-scoped model for this specific engine
-    if (engineId) {
+    if (index) {
       const tenantQuery = {
         bool: {
-          must: [...baseFilter, { term: { engineIds: engineId } }],
+          must: [...baseFilter, { term: { indexes: index } }],
         },
       };
 
@@ -1194,11 +1172,11 @@ export class ModelService extends BaseService {
       }
     }
 
-    // Priority 2: group-scoped model (no engineIds field)
+    // Priority 2: group-scoped model (no indexes field)
     const groupQuery = {
       bool: {
-        must: [...baseFilter, { terms: { engineGroups } }],
-        must_not: [{ exists: { field: "engineIds" } }],
+        must: [...baseFilter, { terms: { tenantClasses } }],
+        must_not: [{ exists: { field: "indexes" } }],
       },
     };
 
@@ -1216,8 +1194,8 @@ export class ModelService extends BaseService {
     // Priority 3: commons model
     const commonsQuery = {
       bool: {
-        must: [...baseFilter, { term: { engineGroups: "commons" } }],
-        must_not: [{ exists: { field: "engineIds" } }],
+        must: [...baseFilter, { term: { tenantClasses: "commons" } }],
+        must_not: [{ exists: { field: "indexes" } }],
       },
     };
 
@@ -1233,7 +1211,7 @@ export class ModelService extends BaseService {
     }
 
     throw new NotFoundError(
-      `Unknown Asset model "${model}" for engineGroups ${engineGroups.join(", ")}.`,
+      `Unknown Asset model "${model}" for tenantClasses ${tenantClasses.join(", ")}.`,
     );
   }
 
@@ -1288,25 +1266,25 @@ export class ModelService extends BaseService {
 
   async getMeasure(
     type: string,
-    engineId?: string,
+    index?: string,
   ): Promise<KDocument<MeasureModelContent>> {
     const baseFilter = [
       { term: { type: "measure" } },
       { term: { "measure.type": type } },
     ];
 
-    const scopeFilter = engineId
+    const scopeFilter = index
       ? {
           bool: {
             should: [
-              { term: { engineIds: engineId } },
-              { bool: { must_not: [{ exists: { field: "engineIds" } }] } },
+              { term: { indexes: index } },
+              { bool: { must_not: [{ exists: { field: "indexes" } }] } },
             ],
           },
         }
       : {
           bool: {
-            must_not: [{ exists: { field: "engineIds" } }],
+            must_not: [{ exists: { field: "indexes" } }],
           },
         };
 
@@ -1336,9 +1314,9 @@ export class ModelService extends BaseService {
    */
   private async checkMeasureShadowing(
     type: string,
-    engineIds?: string[],
+    indexes?: string[],
   ): Promise<void> {
-    const isNewTenantScoped = engineIds && engineIds.length > 0;
+    const isNewTenantScoped = indexes && indexes.length > 0;
 
     // Check for existing measures of the same type at the opposite scope
     const conflictQuery = isNewTenantScoped
@@ -1349,7 +1327,7 @@ export class ModelService extends BaseService {
               { term: { type: "measure" } },
               { term: { "measure.type": type } },
             ],
-            must_not: [{ exists: { field: "engineIds" } }],
+            must_not: [{ exists: { field: "indexes" } }],
           },
         }
       : {
@@ -1358,7 +1336,7 @@ export class ModelService extends BaseService {
             must: [
               { term: { type: "measure" } },
               { term: { "measure.type": type } },
-              { exists: { field: "engineIds" } },
+              { exists: { field: "indexes" } },
             ],
           },
         };
@@ -1382,8 +1360,8 @@ export class ModelService extends BaseService {
    * Update an asset model
    */
   async updateAsset(
-    engineGroups: string[],
-    engineId: string | undefined,
+    tenantClasses: string[],
+    index: string | undefined,
     model: string,
     metadataMappings: MetadataMappings,
     defaultMetadata: JSONObject,
@@ -1400,7 +1378,7 @@ export class ModelService extends BaseService {
         throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
       }
 
-      const existingAsset = await this.getAsset(engineGroups, engineId, model);
+      const existingAsset = await this.getAsset(tenantClasses, index, model);
 
       this.checkReferentialOnly(
         "asset",
@@ -1420,9 +1398,9 @@ export class ModelService extends BaseService {
       const measuresUpdated =
         measures.length === 0 ? existingAsset._source.asset.measures : measures;
 
-      // Preserve the existing scope: scope (engineGroups / engineIds) is decided
+      // Preserve the existing scope: scope (tenantClasses / indexes) is decided
       // at write time and must not be silently rewritten by an update payload.
-      // This also enforces engineGroups / engineIds mutual exclusivity (KZLPRD-1192).
+      // This also enforces tenantClasses / indexes mutual exclusivity (KZLPRD-1192).
       const assetModelContent: AssetModelContent = {
         asset: {
           ...metadata,
@@ -1433,8 +1411,8 @@ export class ModelService extends BaseService {
           model,
           tooltipModels,
         },
-        engineGroups: existingAsset._source.engineGroups,
-        engineIds: existingAsset._source.engineIds,
+        tenantClasses: existingAsset._source.tenantClasses,
+        indexes: existingAsset._source.indexes,
         type: "asset",
       };
       const assetModel = {
@@ -1475,12 +1453,12 @@ export class ModelService extends BaseService {
         assetModel,
         {
           collection: InternalCollection.MODELS,
-          engineId: this.config.platformIndex,
+          index: this.config.platformIndex,
         },
         { source: true },
       );
 
-      // ? Only update engineIds and refresh asset models when necessary
+      // ? Only update indexes and refresh asset models when necessary
       if (
         Object.keys(metadata.metadataMappings).length > 0 ||
         measures.length > 0
@@ -1596,13 +1574,13 @@ export class ModelService extends BaseService {
   }
 
   /**
-   * Returns the group model available for the given engine groups:
-   * a model of these groups first, then a commons model.
+   * Returns the group model available for the given tenant classes:
+   * a model of these classes first, then a commons model.
    *
    * @throws NotFoundError if no group model with this name is available
    */
   private async getScopedGroup(
-    engineGroups: string[],
+    tenantClasses: string[],
     model: string,
   ): Promise<KDocument<GroupModelContent>> {
     const result = await this.sdk.document.search<GroupModelContent>(
@@ -1620,18 +1598,19 @@ export class ModelService extends BaseService {
     );
 
     const scoped = result.hits.find(({ _source }) =>
-      _source.engineGroups.some(
-        (group) => group !== "commons" && engineGroups.includes(group),
+      _source.tenantClasses.some(
+        (tenantClass) =>
+          tenantClass !== "commons" && tenantClasses.includes(tenantClass),
       ),
     );
     const common = result.hits.find(({ _source }) =>
-      _source.engineGroups.includes("commons"),
+      _source.tenantClasses.includes("commons"),
     );
     const groupModel = scoped ?? common;
 
     if (!groupModel) {
       throw new NotFoundError(
-        `Unknown Group model "${model}" for engine groups "${engineGroups.join(", ")}".`,
+        `Unknown Group model "${model}" for tenant classes "${tenantClasses.join(", ")}".`,
       );
     }
 
@@ -1647,7 +1626,7 @@ export class ModelService extends BaseService {
    * @throws MappingsConflictsError if the new mappings conflict with the existing ones
    */
   async updateGroup(
-    engineGroups: string[],
+    tenantClasses: string[],
     model: string,
     {
       affinity,
@@ -1664,7 +1643,7 @@ export class ModelService extends BaseService {
         throw new BadRequestError(`Group model "${model}" must be PascalCase.`);
       }
 
-      const existingGroup = await this.getScopedGroup(engineGroups, model);
+      const existingGroup = await this.getScopedGroup(tenantClasses, model);
       const existing = existingGroup._source.group;
 
       this.checkReferentialOnly(
@@ -1683,7 +1662,7 @@ export class ModelService extends BaseService {
       this.checkDefaultValues(resolvedMappings, metadata.defaultMetadata);
 
       const groupModelContent: GroupModelContent = {
-        engineGroups: existingGroup._source.engineGroups,
+        tenantClasses: existingGroup._source.tenantClasses,
         group: {
           ...metadata,
           affinity:

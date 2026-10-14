@@ -9,7 +9,14 @@ export const modelsMappings: CollectionMappings = {
   dynamic: "strict",
   properties: {
     type: { type: "keyword" },
-    engineGroups: { type: "keyword" },
+    tenantClasses: { type: "keyword" },
+    indexes: { type: "keyword" },
+    /**
+     * @deprecated Former name of `indexes`. Kept in the mapping so the documents
+     * written before the rename stay valid under the strict mapping; their
+     * values are moved to `indexes` at startup (see
+     * `DeviceManagerPlugin.migrateModelIndexes`), after which nothing writes it.
+     */
     engineIds: { type: "keyword" },
 
     /**

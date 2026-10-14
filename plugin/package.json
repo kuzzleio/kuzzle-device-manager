@@ -1,6 +1,6 @@
 {
   "name": "kuzzle-device-manager",
-  "version": "3.0.0-3-dev.18",
+  "version": "3.0.0-3-dev.19",
   "description": "Manage your IoT devices and assets. Choose a provisioning strategy, receive and decode payload, handle your IoT business logic.",
   "author": "The Kuzzle Team (support@kuzzle.io)",
   "repository": {
@@ -24,7 +24,8 @@
   },
   "bin": {
     "migrate-platform": "dist/bin/migration/migration_platform_index.js",
-    "migrate-tenant": "dist/bin/migration/migration_tenant_index.js"
+    "migrate-tenant": "dist/bin/migration/migration_tenant_index.js",
+    "migrate-model-tenant-classes": "dist/bin/migration/migrate-tenant-classes.js"
   },
   "license": "Apache-2.0",
   "dependencies": {

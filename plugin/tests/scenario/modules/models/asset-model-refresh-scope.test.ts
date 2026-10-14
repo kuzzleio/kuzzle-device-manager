@@ -34,11 +34,11 @@ describe("Asset model refresh scope", () => {
     }
   });
 
-  async function getAsset(engineId: string, _id: string) {
+  async function getAsset(index: string, _id: string) {
     const { result } = await sdk.query<ApiAssetGetRequest, ApiAssetGetResult>({
       controller: "device-manager/assets",
       action: "get",
-      engineId,
+      index,
       _id,
     });
 
@@ -51,7 +51,7 @@ describe("Asset model refresh scope", () => {
       action: "writeAsset",
       body: {
         model: "ScopedRefresh",
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
         metadataMappings: { refreshColor: { type: "keyword" } },
         measures: [],
       },
@@ -61,7 +61,7 @@ describe("Asset model refresh scope", () => {
       action: "writeAsset",
       body: {
         model: "ScopedRefresh",
-        engineIds: ["engine-kuzzle"],
+        indexes: ["engine-kuzzle"],
         metadataMappings: { refreshSize: { type: "keyword" } },
         measures: [],
       },
@@ -71,7 +71,7 @@ describe("Asset model refresh scope", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         model: "ScopedRefresh",
         reference: "ayse",
@@ -81,7 +81,7 @@ describe("Asset model refresh scope", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       body: {
         model: "ScopedRefresh",
         reference: "kuzzle",
@@ -94,7 +94,7 @@ describe("Asset model refresh scope", () => {
       action: "writeAsset",
       body: {
         model: "ScopedRefresh",
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
         metadataMappings: {
           refreshColor: { type: "keyword" },
           refreshWeight: { type: "keyword" },
@@ -119,7 +119,7 @@ describe("Asset model refresh scope", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality", "other-group"],
+        tenantClasses: ["air_quality", "other-group"],
         model: "MultiGroupRefresh",
         metadataMappings: { refreshColor: { type: "keyword" } },
         measures: [],
@@ -130,7 +130,7 @@ describe("Asset model refresh scope", () => {
     await sdk.query<ApiAssetCreateRequest>({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-other-group",
+      index: "engine-other-group",
       body: {
         model: "MultiGroupRefresh",
         reference: "other",
@@ -142,7 +142,7 @@ describe("Asset model refresh scope", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality", "other-group"],
+        tenantClasses: ["air_quality", "other-group"],
         model: "MultiGroupRefresh",
         metadataMappings: {
           refreshColor: { type: "keyword" },
@@ -168,7 +168,7 @@ describe("Asset model refresh scope", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "ManyRefresh",
         metadataMappings: { refreshColor: { type: "keyword" } },
         measures: [],
@@ -182,7 +182,7 @@ describe("Asset model refresh scope", () => {
       await sdk.query<ApiAssetCreateRequest>({
         controller: "device-manager/assets",
         action: "create",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         body: {
           model: "ManyRefresh",
           reference,
@@ -195,7 +195,7 @@ describe("Asset model refresh scope", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "ManyRefresh",
         metadataMappings: {
           refreshColor: { type: "keyword" },

@@ -68,7 +68,7 @@ describe("AssetsController:mGetLastMeasures", () => {
     >({
       controller: "device-manager/assets",
       action: "mGetLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { ids: ["Warehouse-linked", "Container-linked2"] },
     });
 
@@ -119,7 +119,7 @@ describe("AssetsController:mGetLastMeasures", () => {
     >({
       controller: "device-manager/assets",
       action: "mGetLastMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: { ids: ["Container-linked1"] },
     });
 

@@ -27,7 +27,7 @@ Method: POST
   "controller": "device-manager/models",
   "action": "writeGroup",
   "body": {
-    "engineGroup": "<engine group>",
+    "tenantClasses": ["<tenant class>"],
     "model": "<group model>",
 
     // Required
@@ -146,7 +146,7 @@ Method: POST
 
 ## Body properties
 
-- `engineGroup`: Name of the engine group
+- `tenantClasses`: names of the tenant classes
 - `model`: Group model name
 - `affinity`: Specifies accepted types and models for group membership (see above)
 - `icon`: Optional. Icon representing the group model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. This field is not indexed for search.

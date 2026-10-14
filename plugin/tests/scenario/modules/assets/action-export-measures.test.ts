@@ -17,7 +17,7 @@ describe("AssetsController:exportMeasures", () => {
       const { result } = await sdk.query<ApiAssetExportMeasuresRequest>({
         controller: "device-manager/assets",
         action: "exportMeasures",
-        engineId: "engine-ayse",
+        index: "engine-ayse",
         _id: "Container-linked2",
         body: {
           query,
@@ -92,7 +92,7 @@ describe("AssetsController:exportMeasures", () => {
     const { result } = await sdk.query<ApiAssetExportMeasuresRequest>({
       controller: "device-manager/assets",
       action: "exportMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       _id: "Container-linked2",
       type: "temperature",
       lang: "koncorde",

@@ -34,7 +34,7 @@ function assetModel(metadataMappings: object): AssetModelContent {
       metadataMappings,
       model: "Container",
     },
-    engineGroups: ["commons"],
+    tenantClasses: ["commons"],
     type: "asset",
   } as AssetModelContent;
 }

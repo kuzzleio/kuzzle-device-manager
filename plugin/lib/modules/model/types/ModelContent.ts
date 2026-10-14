@@ -7,8 +7,8 @@ import { MeasureDefinition } from "../../measure";
 export interface MeasureModelContent extends KDocumentContent {
   type: "measure";
 
-  engineGroups?: string[];
-  engineIds?: string[];
+  tenantClasses?: string[];
+  indexes?: string[];
 
   measure: MeasureDefinition & {
     type: string;
@@ -255,14 +255,14 @@ export interface TooltipModels {
 export interface AssetModelContent extends KDocumentContent {
   type: "asset";
 
-  engineGroups: string[];
+  tenantClasses: string[];
 
   /**
    * Optional list of engine IDs (tenant IDs) this model is scoped to.
    * When set, the model is only available to the specified tenants.
-   * When absent, the model is available to all tenants in the engineGroups.
+   * When absent, the model is available to all tenants in the tenantClasses.
    */
-  engineIds?: string[];
+  indexes?: string[];
 
   asset: {
     /**
@@ -517,7 +517,7 @@ export interface DeviceModelContent extends KDocumentContent {
 export interface GroupModelContent extends KDocumentContent {
   type: "group";
 
-  engineGroups: string[];
+  tenantClasses: string[];
 
   group: {
     /**

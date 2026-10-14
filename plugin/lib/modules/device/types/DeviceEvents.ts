@@ -33,7 +33,7 @@ export type AskDeviceAttachEngine = {
   name: "ask:device-manager:device:attach-engine";
 
   payload: {
-    engineId: string;
+    index: string;
     deviceId: string;
     user: User;
   };

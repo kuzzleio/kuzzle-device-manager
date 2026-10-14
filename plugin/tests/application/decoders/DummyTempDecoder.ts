@@ -1,7 +1,11 @@
 import { PreconditionError } from "kuzzle";
 import { JSONObject } from "kuzzle-sdk";
 
-import { Decoder, DecodedPayload } from "../../../index";
+import {
+  Decoder,
+  DecodedPayload,
+  DecoderValidationResult,
+} from "../../../index";
 
 import { BatteryMeasurement, TemperatureMeasurement } from "../measures";
 
@@ -25,20 +29,28 @@ export class DummyTempDecoder extends Decoder {
     };
   }
 
-  async validate(rawPayload: JSONObject) {
+  async validate(rawPayload: JSONObject): Promise<DecoderValidationResult> {
     if (rawPayload.measurements && rawPayload.measurements.length === 0) {
-      return false;
+      return { reason: "No measurements", status: "invalid" };
     }
 
     const payloads: any[] = rawPayload.measurements ?? [rawPayload];
 
-    return payloads.every((payload) => {
+    for (const payload of payloads) {
       if (!payload.deviceEUI) {
         throw new PreconditionError('Invalid payload: missing "deviceEUI"');
       }
 
-      return !payload.invalid;
-    });
+      if (payload.invalid) {
+        return {
+          customData: { deviceEUI: payload.deviceEUI },
+          reason: "Payload flagged as invalid",
+          status: "invalid",
+        };
+      }
+    }
+
+    return { status: "valid" };
   }
 
   async decode(

@@ -14,7 +14,7 @@ Update an existing asset model.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/models/assets/:model?engineGroup=<engine group>
+URL: http://kuzzle:7512/_/device-manager/models/assets/:model?tenantClasses=<tenant class>
 Method: PUT
 ```
 
@@ -24,7 +24,7 @@ Method: PUT
 {
   "controller": "device-manager/models",
   "action": "updateAsset",
-  "engineGroup": "<engine group>",
+  "tenantClasses": ["<tenant class>"],
   "model": "<asset model>",
 
   "body": {
@@ -135,7 +135,7 @@ Method: PUT
 
 ## Arguments
 
-- `engineGroup`: Name of the engine group
+- `tenantClasses`: names of the tenant classes
 - `model`: Asset model name
 
 ---

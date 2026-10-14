@@ -28,11 +28,11 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "getAsset",
-  "engineGroup": "<engineGroup>",
+  "tenantClasses": ["<tenant class>"],
   "model": "<asset model>",
 
   // optional:
-  "engineId": "<engineId>",
+  "index": "<index>",
   "rawModel": false
 }
 ```
@@ -41,9 +41,9 @@ Method: GET
 
 ## Arguments
 
-- `engineGroup`: name of the engine group
+- `tenantClasses`: names of the tenant classes
 - `model`: asset model
-- `engineId`: optional. Engine ID (tenant ID) to resolve tenant-scoped models. When provided, a tenant-scoped model takes priority over a group-scoped model of the same name. Falls back to group-scoped, then commons.
+- `index`: optional. Engine ID (tenant ID) to resolve tenant-scoped models. When provided, a tenant-scoped model takes priority over a group-scoped model of the same name. Falls back to group-scoped, then commons.
 - `rawModel`: optional, `false` by default. If `true`, returns the stored model without resolving its referential metadata
 
 ---

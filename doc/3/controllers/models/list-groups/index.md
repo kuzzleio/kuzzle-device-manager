@@ -28,7 +28,7 @@ Method: GET
 {
   "controller": "device-manager/models",
   "action": "listGroups",
-  "engineGroup": "<engineGroup>"
+  "tenantClasses": ["<tenant class>"]
 }
 ```
 
@@ -36,7 +36,7 @@ Method: GET
 
 ## Arguments
 
-- `engineGroup`: name of the engine group
+- `tenantClasses`: names of the tenant classes
 - `rawModel`: optional, `false` by default. If `true`, returns the stored models without resolving their referential metadata
 
 ---

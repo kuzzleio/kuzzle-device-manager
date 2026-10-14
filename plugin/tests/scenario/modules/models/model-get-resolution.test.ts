@@ -20,7 +20,7 @@ describe("ModelsController:get, list and search models referential resolution", 
 
   it("Resolves the referential metadata of an asset model by default", async () => {
     const { _source } = await getModel("getAsset", "Pole", {
-      engineGroups: ["other-group"],
+      tenantClasses: ["other-group"],
     });
 
     expect(_source.asset.metadataMappings).toEqual({
@@ -52,7 +52,7 @@ describe("ModelsController:get, list and search models referential resolution", 
 
   it("Returns the stored asset model with rawModel", async () => {
     const { _source } = await getModel("getAsset", "Pole", {
-      engineGroups: ["other-group"],
+      tenantClasses: ["other-group"],
       rawModel: true,
     });
 
@@ -128,7 +128,7 @@ describe("ModelsController:get, list and search models referential resolution", 
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "GetResFleet",
         affinity: {
           type: ["assets"],
@@ -159,7 +159,7 @@ describe("ModelsController:get, list and search models referential resolution", 
       const { result } = await sdk.query({
         controller: "device-manager/models",
         action,
-        engineGroups: ["other-group"],
+        tenantClasses: ["other-group"],
         ...args,
       });
 
@@ -195,7 +195,7 @@ describe("ModelsController:get, list and search models referential resolution", 
       controller: "device-manager/models",
       action: "writeGroup",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "ListResFleet",
         affinity: {
           type: ["assets"],
@@ -225,13 +225,13 @@ describe("ModelsController:get, list and search models referential resolution", 
         const { result: listed } = await sdk.query({
           controller: "device-manager/models",
           action: list,
-          engineGroups: ["commons"],
+          tenantClasses: ["commons"],
           rawModel,
         });
         const { result: searched } = await sdk.query({
           controller: "device-manager/models",
           action: search,
-          engineGroups: ["commons"],
+          tenantClasses: ["commons"],
           rawModel,
           body: { query: { term: { [`${type}.model`]: model } } },
         });

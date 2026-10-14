@@ -54,29 +54,25 @@ export class DevicesController {
       actions: {
         create: {
           handler: this.create.bind(this),
-          http: [{ path: "device-manager/:engineId/devices", verb: "post" }],
+          http: [{ path: "device-manager/:index/devices", verb: "post" }],
         },
         get: {
           handler: this.get.bind(this),
-          http: [
-            { path: "device-manager/:engineId/devices/:_id", verb: "get" },
-          ],
+          http: [{ path: "device-manager/:index/devices/:_id", verb: "get" }],
         },
         update: {
           handler: this.update.bind(this),
-          http: [
-            { path: "device-manager/:engineId/devices/:_id", verb: "put" },
-          ],
+          http: [{ path: "device-manager/:index/devices/:_id", verb: "put" }],
         },
         upsert: {
           handler: this.upsert.bind(this),
-          http: [{ path: "device-manager/:engineId/devices", verb: "put" }],
+          http: [{ path: "device-manager/:index/devices", verb: "put" }],
         },
         replaceMetadata: {
           handler: this.replaceMetadata.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/metadata",
+              path: "device-manager/:index/devices/:_id/metadata",
               verb: "patch",
             },
           ],
@@ -84,14 +80,14 @@ export class DevicesController {
         search: {
           handler: this.search.bind(this),
           http: [
-            { path: "device-manager/:engineId/devices/_search", verb: "post" },
+            { path: "device-manager/:index/devices/_search", verb: "post" },
           ],
         },
         delete: {
           handler: this.delete.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id",
+              path: "device-manager/:index/devices/:_id",
               verb: "delete",
             },
           ],
@@ -100,7 +96,7 @@ export class DevicesController {
           handler: this.attachEngine.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/_attach",
+              path: "device-manager/:index/devices/:_id/_attach",
               verb: "put",
             },
           ],
@@ -115,7 +111,7 @@ export class DevicesController {
           handler: this.linkAssets.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/_link/",
+              path: "device-manager/:index/devices/:_id/_link/",
               verb: "put",
             },
           ],
@@ -124,7 +120,7 @@ export class DevicesController {
           handler: this.unlinkAssets.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/_unlink",
+              path: "device-manager/:index/devices/:_id/_unlink",
               verb: "delete",
             },
           ],
@@ -133,11 +129,11 @@ export class DevicesController {
           handler: this.getMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/measures",
+              path: "device-manager/:index/devices/:_id/measures",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/devices/:_id/measures",
+              path: "device-manager/:index/devices/:_id/measures",
               verb: "post",
             },
           ],
@@ -146,11 +142,11 @@ export class DevicesController {
           handler: this.getLastMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/lastMeasures",
+              path: "device-manager/:index/devices/:_id/lastMeasures",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/devices/:_id/lastMeasures",
+              path: "device-manager/:index/devices/:_id/lastMeasures",
               verb: "post",
             },
           ],
@@ -159,7 +155,7 @@ export class DevicesController {
           handler: this.mGetLastMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/_mGetLastMeasures",
+              path: "device-manager/:index/devices/_mGetLastMeasures",
               verb: "post",
             },
           ],
@@ -168,11 +164,11 @@ export class DevicesController {
           handler: this.exportMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/measures/_export/:exportId",
+              path: "device-manager/:index/devices/:_id/measures/_export/:exportId",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/devices/:_id/measures/_export",
+              path: "device-manager/:index/devices/:_id/measures/_export",
               verb: "post",
             },
           ],
@@ -181,7 +177,7 @@ export class DevicesController {
           handler: this.receiveMeasures.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/measures",
+              path: "device-manager/:index/devices/:_id/measures",
               verb: "put",
             },
           ],
@@ -190,11 +186,11 @@ export class DevicesController {
           handler: this.export.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/_export/:exportId",
+              path: "device-manager/:index/devices/_export/:exportId",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/devices/_export",
+              path: "device-manager/:index/devices/_export",
               verb: "post",
             },
           ],
@@ -203,11 +199,11 @@ export class DevicesController {
           handler: this.getLastMeasuredAt.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/lastMeasuredAt",
+              path: "device-manager/:index/devices/:_id/lastMeasuredAt",
               verb: "get",
             },
             {
-              path: "device-manager/:engineId/devices/:_id/lastMeasuredAt",
+              path: "device-manager/:index/devices/:_id/lastMeasuredAt",
               verb: "post",
             },
           ],
@@ -216,7 +212,7 @@ export class DevicesController {
           handler: this.mGetLastMeasuredAt.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/_mGetLastMeasuredAt",
+              path: "device-manager/:index/devices/_mGetLastMeasuredAt",
               verb: "post",
             },
           ],
@@ -225,7 +221,7 @@ export class DevicesController {
           handler: this.updateMeasureSlotDisplayName.bind(this),
           http: [
             {
-              path: "device-manager/:engineId/devices/:_id/measure-slot/",
+              path: "device-manager/:index/devices/:_id/measure-slot/",
               verb: "patch",
             },
           ],
@@ -246,20 +242,20 @@ export class DevicesController {
 
   async get(request: KuzzleRequest): Promise<ApiDeviceGetResult> {
     const deviceId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
 
-    const device = await this.deviceService.get(engineId, deviceId, request);
+    const device = await this.deviceService.get(index, deviceId, request);
 
     return DeviceSerializer.serialize(device);
   }
 
   async update(request: KuzzleRequest): Promise<ApiDeviceUpdateResult> {
     const deviceId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const metadata = request.getBodyObject("metadata");
 
     const updatedDevice = await this.deviceService.update(
-      engineId,
+      index,
       deviceId,
       metadata,
       request,
@@ -271,11 +267,11 @@ export class DevicesController {
     request: KuzzleRequest,
   ): Promise<ApiDeviceMetadataReplaceResult> {
     const deviceId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const metadata = request.getBodyObject("metadata");
 
     const updatedDevice = await this.deviceService.replaceMetadata(
-      engineId,
+      index,
       deviceId,
       metadata,
       request,
@@ -284,28 +280,28 @@ export class DevicesController {
     return DeviceSerializer.serialize(updatedDevice);
   }
   async delete(request: KuzzleRequest): Promise<ApiDeviceDeleteResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const deviceId = request.getId();
 
-    await this.deviceService.delete(engineId, deviceId, request);
+    await this.deviceService.delete(index, deviceId, request);
   }
 
   async search(request: KuzzleRequest): Promise<ApiDeviceSearchResult> {
     return this.deviceService.search(
-      request.getString("engineId"),
+      request.getIndex(),
       request.getSearchParams(),
       request,
     );
   }
 
   async upsert(request: KuzzleRequest): Promise<ApiDeviceUpsertResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const model = request.getBodyString("model");
     const reference = request.getBodyString("reference");
     const metadata = request.getBodyObject("metadata");
 
     const upsertDevice = await this.deviceService.upsert(
-      engineId,
+      index,
       model,
       reference,
       metadata,
@@ -339,10 +335,10 @@ export class DevicesController {
   async attachEngine(
     request: KuzzleRequest,
   ): Promise<ApiDeviceAttachEngineResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const deviceId = request.getId();
 
-    await this.deviceService.attachEngine(engineId, deviceId, request);
+    await this.deviceService.attachEngine(index, deviceId, request);
   }
 
   /**
@@ -361,7 +357,7 @@ export class DevicesController {
    */
   async linkAssets(request: KuzzleRequest): Promise<ApiDeviceLinkAssetsResult> {
     const deviceId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measuresTolink = request.getBodyArray(
       "linkedMeasures",
       [],
@@ -383,7 +379,7 @@ export class DevicesController {
       }
       const { asset, device: updatedDevice } =
         await this.deviceService.linkAssetDevice(
-          engineId,
+          index,
           deviceId,
           assetId,
           measureSlots ?? [],
@@ -427,7 +423,7 @@ export class DevicesController {
     request: KuzzleRequest,
   ): Promise<ApiDeviceGetMeasuresResult> {
     const id = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const size = request.input.args.size;
     const from = request.input.args.from;
     const startAt = request.input.args.startAt
@@ -440,7 +436,7 @@ export class DevicesController {
     const lang = request.getLangParam();
 
     const { measures, total } = await this.measureExporter.search(
-      engineId,
+      index,
       {
         endAt,
         id,
@@ -460,11 +456,11 @@ export class DevicesController {
     request: KuzzleRequest,
   ): Promise<ApiDeviceGetLastMeasuresResult> {
     const deviceId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measureCount = request.getNumber("measureCount", 100);
 
     const results = await this.deviceService.getLastMeasures(
-      engineId,
+      index,
       deviceId,
       measureCount,
     );
@@ -496,12 +492,12 @@ export class DevicesController {
   async mGetLastMeasures(
     request: KuzzleRequest,
   ): Promise<ApiDeviceMGetLastMeasuresResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measureCount = request.getNumber("measureCount", 100);
     const deviceIds = request.getBodyArray("ids");
 
     const results = await this.deviceService.mGetLastMeasures(
-      engineId,
+      index,
       deviceIds,
       measureCount,
     );
@@ -537,7 +533,7 @@ export class DevicesController {
   }
 
   async exportMeasures(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
 
     if (
       request.context.connection.protocol === "http" &&
@@ -546,11 +542,8 @@ export class DevicesController {
       try {
         const exportId = request.getString("exportId");
 
-        const { id } = await this.measureExporter.getExport(engineId, exportId);
-        const stream = await this.measureExporter.sendExport(
-          engineId,
-          exportId,
-        );
+        const { id } = await this.measureExporter.getExport(index, exportId);
+        const stream = await this.measureExporter.sendExport(index, exportId);
 
         request.response.configure({
           headers: {
@@ -585,7 +578,7 @@ export class DevicesController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.measureExporter.prepareExport(engineId, user, {
+    const link = await this.measureExporter.prepareExport(index, user, {
       endAt,
       id,
       lang,
@@ -599,7 +592,7 @@ export class DevicesController {
   }
 
   async receiveMeasures(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const deviceId = request.getId();
     const measures = request.getBodyArray("measures") as DecodedMeasurement[];
     const payloadUuids = request.getBodyArray("payloadUuids", []);
@@ -635,7 +628,7 @@ export class DevicesController {
     }
 
     await this.deviceService.receiveMeasures(
-      engineId,
+      index,
       deviceId,
       measures,
       payloadUuids,
@@ -644,7 +637,7 @@ export class DevicesController {
   }
 
   async export(request: KuzzleRequest) {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
 
     if (
       request.context.connection.protocol === "http" &&
@@ -652,7 +645,7 @@ export class DevicesController {
     ) {
       try {
         const exportId = request.getString("exportId");
-        const stream = await this.exporter.sendExport(engineId, exportId);
+        const stream = await this.exporter.sendExport(index, exportId);
 
         request.response.configure({
           headers: {
@@ -681,7 +674,7 @@ export class DevicesController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.exporter.prepareExport(engineId, user, {
+    const link = await this.exporter.prepareExport(index, user, {
       lang,
       query,
       sort,
@@ -694,10 +687,10 @@ export class DevicesController {
     request: KuzzleRequest,
   ): Promise<ApiDeviceGetLastMeasuredAtResult> {
     const deviceId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
 
     const lastMeasuredAt = await this.deviceService.getLastMeasuredAt(
-      engineId,
+      index,
       deviceId,
     );
 
@@ -709,10 +702,10 @@ export class DevicesController {
   async mGetLastMeasuredAt(
     request: KuzzleRequest,
   ): Promise<ApiDeviceMGetLastMeasuredAtResult> {
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const deviceIds = request.getBodyArray("ids");
 
-    return this.deviceService.mGetLastMeasuredAt(engineId, deviceIds);
+    return this.deviceService.mGetLastMeasuredAt(index, deviceIds);
   }
 
   /**
@@ -722,12 +715,12 @@ export class DevicesController {
     request: KuzzleRequest,
   ): Promise<ApiDeviceUpdateMeasureSlotDisplayNameResult> {
     const deviceId = request.getId();
-    const engineId = request.getString("engineId");
+    const index = request.getIndex();
     const measureSlotName = request.getBodyString("measureSlot");
     const displayName = request.getBodyObject("displayName");
 
     const updatedDevice = await this.deviceService.updateMeasureSlotDisplayName(
-      engineId,
+      index,
       deviceId,
       measureSlotName,
       displayName,

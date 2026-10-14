@@ -24,7 +24,7 @@ describe("ModelsController:metadata-referential", () => {
     return sdk.query({
       controller: "device-manager/models",
       action: "writeAsset",
-      body: { engineGroups: ["commons"], model, measures: [], ...body },
+      body: { tenantClasses: ["commons"], model, measures: [], ...body },
     });
   }
 
@@ -127,7 +127,7 @@ describe("ModelsController:metadata-referential", () => {
     const { result } = await sdk.query({
       controller: "device-manager/assets",
       action: "create",
-      engineId: "engine-other-group",
+      index: "engine-other-group",
       body: {
         model: "Pole",
         reference: "pole-1",
@@ -504,7 +504,7 @@ describe("ModelsController:metadata-referential", () => {
       type === "device"
         ? { model, measures: [], metadataMappings }
         : {
-            engineGroups: ["commons"],
+            tenantClasses: ["commons"],
             model,
             metadataMappings,
             affinity: {
@@ -563,7 +563,7 @@ describe("ModelsController:metadata-referential", () => {
       sdk.query({
         controller: "device-manager/models",
         action: "updateAsset",
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "BadUpdatePlane",
         body: {
           metadataMappings: {
@@ -634,7 +634,7 @@ describe("ModelsController:metadata-referential", () => {
         controller: "device-manager/models",
         action: "writeGroup",
         body: {
-          engineGroups: ["commons"],
+          tenantClasses: ["commons"],
           model: "NextFleet",
           affinity: {
             type: ["assets"],

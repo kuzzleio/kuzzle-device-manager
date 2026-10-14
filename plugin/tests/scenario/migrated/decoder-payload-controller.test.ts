@@ -49,14 +49,14 @@ describe("features/Decoder/PayloadController", () => {
   });
 
   it("Reject a DummyTemp payload", async () => {
-    let response;
-    let promise;
-
-    response = await sendPayloads(sdk, "dummy-temp", [
-      { deviceEUI: "12345", temperature: 21, invalid: true },
-    ]);
-
-    expect(response.result).toMatchObject({ valid: false });
+    await expect(
+      sendPayloads(sdk, "dummy-temp", [
+        { deviceEUI: "12345", temperature: 21, invalid: true },
+      ])
+    ).rejects.toMatchObject({
+      status: 400,
+      message: "Payload flagged as invalid",
+    });
 
     await expect(
       sdk.document.exists("device-manager", "devices", "DummyTemp-12345")
@@ -80,6 +80,8 @@ describe("features/Decoder/PayloadController", () => {
     });
     expect(hit.valid).toBeFalsy();
     expect(hit.state).toBe("SKIP");
+    expect(hit.reason).toBe("Payload flagged as invalid");
+    expect(hit.customData).toMatchObject({ deviceEUI: "12345" });
   });
 
   it("Reject a DummyTemp payload because of validation error", async () => {
@@ -180,7 +182,7 @@ describe("features/Decoder/PayloadController", () => {
       type: "position",
     },
   ],
-  engineId: null,
+  index: null,
   lastMeasures: expect.arrayContaining([
     {
       values: {
@@ -277,7 +279,7 @@ describe("features/Decoder/PayloadController", () => {
     response = await sdk.query({
       controller: "device-manager/devices",
       action: "create",
-      engineId: "device-manager",
+      index: "device-manager",
       body: { model: "DummyTemp", reference: "test" },
     });
 

@@ -29,19 +29,19 @@ describe("features/Device/Controller/AttachEngine", () => {
       controller: "device-manager/devices",
       action: "attachEngine",
       _id: "DummyTemp-detached1",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
     });
 
     await expect(
       sdk.document.get("device-manager", "devices", "DummyTemp-detached1")
     ).resolves.toMatchObject({
-      _source: { engineId: "engine-kuzzle", _kuzzle_info: { updater: "-1" } },
+      _source: { index: "engine-kuzzle", _kuzzle_info: { updater: "-1" } },
     });
 
     await expect(
       sdk.document.get("engine-kuzzle", "devices", "DummyTemp-detached1")
     ).resolves.toMatchObject({
-      _source: { engineId: "engine-kuzzle", _kuzzle_info: { author: "-1" } },
+      _source: { index: "engine-kuzzle", _kuzzle_info: { author: "-1" } },
     });
 
     response = await sendPayloads(sdk, "dummy-temp", [
@@ -62,7 +62,7 @@ describe("features/Device/Controller/AttachEngine", () => {
       controller: "device-manager/devices",
       action: "attachEngine",
       _id: "Not-existing-device",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
     });
 
     await expect(promise).rejects.toMatchObject({
@@ -73,7 +73,7 @@ describe("features/Device/Controller/AttachEngine", () => {
       controller: "device-manager/devices",
       action: "attachEngine",
       _id: "DummyTemp-detached1",
-      engineId: "engine-kaliop",
+      index: "engine-kaliop",
     });
 
     await expect(promise).rejects.toMatchObject({
@@ -84,14 +84,14 @@ describe("features/Device/Controller/AttachEngine", () => {
       controller: "device-manager/devices",
       action: "attachEngine",
       _id: "DummyTemp-detached1",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
     });
 
     promise = sdk.query({
       controller: "device-manager/devices",
       action: "attachEngine",
       _id: "DummyTemp-detached1",
-      engineId: "engine-kuzzle",
+      index: "engine-kuzzle",
       strict: true,
     });
 

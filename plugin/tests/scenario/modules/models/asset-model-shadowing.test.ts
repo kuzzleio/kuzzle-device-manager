@@ -14,7 +14,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "ShadowTestGlobal",
         metadataMappings: {},
         measures: [],
@@ -27,7 +27,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
         model: "ShadowTestGlobal",
         metadataMappings: {},
         measures: [],
@@ -44,7 +44,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "ShadowTestGroup",
         metadataMappings: {},
         measures: [],
@@ -57,7 +57,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "ShadowTestGroup",
         metadataMappings: {},
         measures: [],
@@ -74,7 +74,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "ShadowTestGroupToTenant",
         metadataMappings: {},
         measures: [],
@@ -87,7 +87,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
         model: "ShadowTestGroupToTenant",
         metadataMappings: {},
         measures: [],
@@ -102,7 +102,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "ShadowTestSameScope",
         metadataMappings: { field1: { type: "keyword" } },
         measures: [],
@@ -116,7 +116,7 @@ describe("ModelsController:assets:anti-shadowing", () => {
       controller: "device-manager/models",
       action: "writeAsset",
       body: {
-        engineGroups: ["air_quality"],
+        tenantClasses: ["air_quality"],
         model: "ShadowTestSameScope",
         metadataMappings: {
           field1: { type: "keyword" },

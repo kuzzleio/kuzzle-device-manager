@@ -19,7 +19,7 @@ The assets will be unlinked from the group and their `groups` property will be u
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/groups/removeAssets
+URL: http://kuzzle:7512/_/device-manager/:index/groups/removeAssets
 Method: POST
 Body: {
   "path": "<group path>",
@@ -33,7 +33,7 @@ Body: {
 {
   "controller": "device-manager/groups",
   "action": "removeAssets",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "path": "<group path>",
     "assetIds": ["<assetId1>", "<assetId2>", ...]
@@ -45,7 +45,7 @@ Body: {
 
 ## Arguments
 
-- `engineId`: Engine ID (required)
+- `index`: Engine ID (required)
 
 ## Body properties
 

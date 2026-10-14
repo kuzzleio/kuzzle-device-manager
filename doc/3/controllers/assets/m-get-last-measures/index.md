@@ -16,7 +16,7 @@ Retrieves the last measures of multiple assets.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/assets/_mGetLastMeasures
+URL: http://kuzzle:7512/_/device-manager/:index/assets/_mGetLastMeasures
 Method: POST
 ```
 
@@ -26,7 +26,7 @@ Method: POST
 {
   "controller": "device-manager/assets",
   "action": "mGetLastMeasures",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "body": {
     "ids": ["<assetId>", "<anotherAssetId>"]
   }
@@ -37,7 +37,7 @@ Method: POST
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 
 ---
 

@@ -35,7 +35,7 @@ export type AskAssetHistoryAdd<TAssetHistoryEvent extends AssetHistoryEvent> = {
   name: "ask:device-manager:asset:history:add";
 
   payload: {
-    engineId: string;
+    index: string;
     histories: AssetHistoryContent<TAssetHistoryEvent>[];
   };
 

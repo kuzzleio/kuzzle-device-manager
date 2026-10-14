@@ -43,7 +43,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
       body: {
         type: "tenantTemp",
         valuesMappings: { tenantTemp: { type: "float" } },
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
       },
     });
 
@@ -54,7 +54,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
       body: {
         type: "multiTenantTemp",
         valuesMappings: { multiTenantTemp: { type: "float" } },
-        engineIds: ["engine-kuzzle", "engine-ayse"],
+        indexes: ["engine-kuzzle", "engine-ayse"],
       },
     });
 
@@ -101,7 +101,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
 
     expect(doc._source).toMatchObject({
       type: "measure",
-      engineIds: ["engine-ayse"],
+      indexes: ["engine-ayse"],
       measure: {
         type: "tenantTemp",
         valuesMappings: { tenantTemp: { type: "float" } },
@@ -109,7 +109,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
     });
   });
 
-  it("should have created a multi-tenant-scoped measure model with sorted engineIds in ID", async () => {
+  it("should have created a multi-tenant-scoped measure model with sorted indexes in ID", async () => {
     const doc = await sdk.document.get<MeasureModelContent>(
       "device-manager",
       "models",
@@ -117,22 +117,22 @@ describe("ModelsController:measures:tenant-scoped", () => {
     );
 
     expect(doc._source).toMatchObject({
-      engineIds: ["engine-kuzzle", "engine-ayse"],
+      indexes: ["engine-kuzzle", "engine-ayse"],
     });
   });
 
-  it("should have created a global measure model without engineIds", async () => {
+  it("should have created a global measure model without indexes", async () => {
     const doc = await sdk.document.get<MeasureModelContent>(
       "device-manager",
       "models",
       "model-measure-globalTemp",
     );
 
-    expect(doc._source.engineIds).toBeUndefined();
+    expect(doc._source.indexes).toBeUndefined();
     expect(doc._source.measure.type).toBe("globalTemp");
   });
 
-  it("should list only global measures when no engineId provided", async () => {
+  it("should list only global measures when no index provided", async () => {
     const listResult = await sdk.query<
       ApiModelListMeasuresRequest,
       ApiModelListMeasuresResult
@@ -149,14 +149,14 @@ describe("ModelsController:measures:tenant-scoped", () => {
     expect(ids).toContain("model-measure-globalTemp");
   });
 
-  it("should list tenant-scoped + global measures when engineId provided", async () => {
+  it("should list tenant-scoped + global measures when index provided", async () => {
     const listResult = await sdk.query<
       ApiModelListMeasuresRequest,
       ApiModelListMeasuresResult
     >({
       controller: "device-manager/models",
       action: "listMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     const ids = listResult.result.models.map((m) => m._id);
@@ -174,7 +174,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
     >({
       controller: "device-manager/models",
       action: "listMeasures",
-      engineId: "engine-other-group",
+      index: "engine-other-group",
     });
 
     const ids = listResult.result.models.map((m) => m._id);
@@ -182,18 +182,18 @@ describe("ModelsController:measures:tenant-scoped", () => {
     expect(ids).toContain("model-measure-globalTemp");
   });
 
-  it("should get tenant-scoped measure when engineId matches", async () => {
+  it("should get tenant-scoped measure when index matches", async () => {
     const result = await sdk.query<ApiModelGetMeasureRequest>({
       controller: "device-manager/models",
       action: "getMeasure",
       type: "tenantTemp",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
     });
 
     expect(result.result._id).toBe("model-measure-engine-ayse-tenantTemp");
   });
 
-  it("should get global measure when no engineId provided", async () => {
+  it("should get global measure when no index provided", async () => {
     const result = await sdk.query<ApiModelGetMeasureRequest>({
       controller: "device-manager/models",
       action: "getMeasure",
@@ -203,7 +203,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
     expect(result.result._id).toBe("model-measure-globalTemp");
   });
 
-  it("should not find tenant-scoped measure without engineId", async () => {
+  it("should not find tenant-scoped measure without index", async () => {
     await expect(
       sdk.query<ApiModelGetMeasureRequest>({
         controller: "device-manager/models",
@@ -213,11 +213,11 @@ describe("ModelsController:measures:tenant-scoped", () => {
     ).rejects.toThrow();
   });
 
-  it("should search tenant-scoped + global measures when engineId provided", async () => {
+  it("should search tenant-scoped + global measures when index provided", async () => {
     const searchResult = await sdk.query<ApiModelSearchMeasuresRequest>({
       controller: "device-manager/models",
       action: "searchMeasures",
-      engineId: "engine-ayse",
+      index: "engine-ayse",
       body: {
         query: {
           bool: {
@@ -235,7 +235,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
     expect(ids).toContain("model-measure-globalTemp");
   });
 
-  it("should search only global measures when no engineId provided", async () => {
+  it("should search only global measures when no index provided", async () => {
     const searchResult = await sdk.query<ApiModelSearchMeasuresRequest>({
       controller: "device-manager/models",
       action: "searchMeasures",
@@ -263,7 +263,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
         body: {
           type: "globalTemp",
           valuesMappings: { globalTemp: { type: "float" } },
-          engineIds: ["engine-kuzzle"],
+          indexes: ["engine-kuzzle"],
         },
       }),
     ).rejects.toThrow(/already exists as a global measure/);
@@ -289,7 +289,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
       body: {
         type: "tenantTemp",
         valuesMappings: { tenantTemp: { type: "float" } },
-        engineIds: ["engine-other"],
+        indexes: ["engine-other"],
       },
     });
 
@@ -300,7 +300,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
       "models",
       "model-measure-engine-other-tenantTemp",
     );
-    expect(doc._source.engineIds).toEqual(["engine-other"]);
+    expect(doc._source.indexes).toEqual(["engine-other"]);
 
     // Cleanup
     await sdk.document.delete(
@@ -318,7 +318,7 @@ describe("ModelsController:measures:tenant-scoped", () => {
       body: {
         type: "tenantOnlyMeasure",
         valuesMappings: { tenantOnlyVal: { type: "float" } },
-        engineIds: ["engine-ayse"],
+        indexes: ["engine-ayse"],
       },
     });
 

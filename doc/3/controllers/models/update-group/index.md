@@ -9,8 +9,8 @@ description: Update a group model
 
 Update an existing group model.
 
-The group model is the one available for the given engine groups: a model of these groups first, then a `commons` model.
-Its scope (`engineGroups`) is kept.
+The group model is the one available for the given tenant classes: a model of these classes first, then a `commons` model.
+Its scope (`tenantClasses`) is kept.
 
 `affinity`, `icon` and `metadata` are kept when omitted. The other body properties replace the existing ones, and default to empty when omitted.
 
@@ -21,7 +21,7 @@ The metadata of the existing groups of every engine of the model scope are refre
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/models/groups/:model?engineGroups=<engine group>
+URL: http://kuzzle:7512/_/device-manager/models/groups/:model?tenantClasses=<tenant class>
 Method: PATCH
 ```
 
@@ -31,7 +31,7 @@ Method: PATCH
 {
   "controller": "device-manager/models",
   "action": "updateGroup",
-  "engineGroups": ["<engine group>"],
+  "tenantClasses": ["<tenant class>"],
   "model": "<group model>",
 
   "body": {
@@ -100,7 +100,7 @@ Method: PATCH
 
 ## Arguments
 
-- `engineGroups`: Engine groups the group model is available for. Defaults to `["commons"]`
+- `tenantClasses`: Tenant classes the group model is available for. Defaults to `["commons"]`
 - `model`: Group model name
 
 ---
@@ -139,4 +139,4 @@ Method: PATCH
 
 Updating a group model with metadata mappings can cause conflicts, in this case a [ MappingsConflictsError ](../../../errors/mappings-conflicts/index.md) will be thrown with the HTTP code **409**.
 
-A [ NotFoundError ](https://docs.kuzzle.io/core/2/api/errors/types/#notfounderror) is thrown if no group model with this name is available for the engine groups.
+A [ NotFoundError ](https://docs.kuzzle.io/core/2/api/errors/types/#notfounderror) is thrown if no group model with this name is available for the tenant classes.

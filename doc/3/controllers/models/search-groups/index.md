@@ -28,7 +28,7 @@ Method: POST
 {
   "controller": "device-manager/models",
   "action": "searchGroups",
-  "engineGroup": "<engineGroup>",
+  "tenantClasses": ["<tenant class>"],
   "body": {
     "query": {
       // ...
@@ -48,7 +48,7 @@ Method: POST
 
 ## Arguments
 
-- `engineGroup`: name of the engine group
+- `tenantClasses`: names of the tenant classes
 - `from`: paginates search results by defining the offset from the first result you want to fetch. Usually used with the `size` argument
 - `size`: set the maximum number of documents returned per result page
 - `rawModel`: optional, `false` by default. If `true`, returns the stored models without resolving their referential metadata

@@ -54,6 +54,8 @@ export type TwinModelContent = AssetModelContent | DeviceModelContent;
 export interface EngineDocument extends KDocumentContent {
   type: "engine-device-manager";
   engine: {
+    // The tenant class. Named `group` by kuzzle-plugin-commons, which owns the
+    // engine documents and the `engine:create` and `engine:update` API.
     group: string;
     index: string;
     name: string;
@@ -64,7 +66,7 @@ export type AskEngineList = {
   name: "ask:device-manager:engine:list";
 
   payload: {
-    group?: string;
+    tenantClass?: string;
   };
 
   result: EngineContent[];
@@ -135,8 +137,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     this.context = plugin.context;
 
-    onAsk<AskEngineList>("ask:device-manager:engine:list", async ({ group }) =>
-      this.list(group),
+    onAsk<AskEngineList>(
+      "ask:device-manager:engine:list",
+      async ({ tenantClass }) => this.list(tenantClass),
     );
 
     onAsk<AskEngineUpdateAll>(
@@ -179,13 +182,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         const newTwinModels = resolve(payload.twin?.models ?? []);
 
         const results = await this.getEngines();
-        const engineGroups = results.map((elt) => elt.engine.group);
-        const groups = [undefined, ...new Set(engineGroups)];
+        const tenantClasses = results.map((elt) => elt.engine.group);
+        const classesInUse = [undefined, ...new Set(tenantClasses)];
 
-        for (const group of groups) {
+        for (const tenantClass of classesInUse) {
           if (payload.twin) {
-            if (group === undefined) {
-              // Platform-level check (no group filter)
+            if (tenantClass === undefined) {
+              // Platform-level check (no tenant class filter)
               const twinModels = resolve(
                 await this.getModels<TwinModelContent>(
                   this.config.platformIndex,
@@ -195,7 +198,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
               // Platform-level twins can only reference global measures
               const globalMeasures = measureModels.filter(
-                (m) => !m.engineIds?.length,
+                (m) => !m.indexes?.length,
               );
 
               const conflicts = await this.doesTwinUpdateConflicts(
@@ -211,16 +214,16 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
             } else {
               // Per-engine check: each engine has its own ES index,
               // so conflicts are only relevant within the same engine's model set
-              const enginesInGroup = results.filter(
-                (e) => e.engine.group === group,
+              const enginesInClass = results.filter(
+                (e) => e.engine.group === tenantClass,
               );
 
-              for (const engineDoc of enginesInGroup) {
+              for (const engineDoc of enginesInClass) {
                 const twinModels = resolve(
                   await this.getModels<TwinModelContent>(
                     this.config.platformIndex,
                     payload.twin.type,
-                    group,
+                    tenantClass,
                     engineDoc.engine.index,
                   ),
                 );
@@ -228,16 +231,14 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                 // Only check new models that will be applied to this engine
                 const applicableNewModels = newTwinModels.filter((model) => {
                   const assetModel = model as AssetModelContent;
-                  if (assetModel.engineIds?.length) {
-                    return assetModel.engineIds.includes(
-                      engineDoc.engine.index,
-                    );
+                  if (assetModel.indexes?.length) {
+                    return assetModel.indexes.includes(engineDoc.engine.index);
                   }
-                  // Group-scoped or commons: applicable to all engines in group
+                  // Class-scoped or commons: applicable to all engines of the class
                   return (
-                    !assetModel.engineGroups?.length ||
-                    assetModel.engineGroups?.includes(group) ||
-                    assetModel.engineGroups?.includes("commons")
+                    !assetModel.tenantClasses?.length ||
+                    assetModel.tenantClasses?.includes(tenantClass) ||
+                    assetModel.tenantClasses?.includes("commons")
                   );
                 });
 
@@ -248,8 +249,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
                 // Per-engine: global measures + tenant-scoped for this engine
                 const engineMeasures = measureModels.filter(
                   (m) =>
-                    !m.engineIds?.length ||
-                    m.engineIds.includes(engineDoc.engine.index),
+                    !m.indexes?.length ||
+                    m.indexes.includes(engineDoc.engine.index),
                 );
 
                 const conflicts = await this.doesTwinUpdateConflicts(
@@ -570,18 +571,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     }
   }
 
-  async onCreate(index: string, group = "commons") {
+  async onCreate(index: string, tenantClass = "commons") {
     const promises = [];
 
-    promises.push(this.createAssetsCollection(index, group));
+    promises.push(this.createAssetsCollection(index, tenantClass));
 
-    promises.push(this.createAssetsHistoryCollection(index, group));
+    promises.push(this.createAssetsHistoryCollection(index, tenantClass));
 
     promises.push(this.createGroupsCollection(index));
 
     promises.push(this.createDevicesCollection(index));
 
-    promises.push(this.createMeasuresCollection(index, group));
+    promises.push(this.createMeasuresCollection(index, tenantClass));
 
     const collections = await Promise.all(promises);
 
@@ -590,18 +591,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     };
   }
 
-  async onUpdate(index: string, group = "commons") {
+  async onUpdate(index: string, tenantClass = "commons") {
     const promises = [];
 
-    promises.push(this.createAssetsCollection(index, group));
+    promises.push(this.createAssetsCollection(index, tenantClass));
 
-    promises.push(this.createAssetsHistoryCollection(index, group));
+    promises.push(this.createAssetsHistoryCollection(index, tenantClass));
 
     promises.push(this.createGroupsCollection(index));
 
     promises.push(this.createDevicesCollection(index));
 
-    promises.push(this.createMeasuresCollection(index, group));
+    promises.push(this.createMeasuresCollection(index, tenantClass));
 
     const collections = await Promise.all(promises);
 
@@ -632,20 +633,20 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Generate assets mappings and create the assets collection in the engine
    *
-   * @param engineId The target engine Id
-   * @param engineGroup The engine group
+   * @param index The target engine Id
+   * @param tenantClass The tenant class
    *
    * @throws If it failed during the assets collection creation
    */
-  async createAssetsCollection(engineId: string, engineGroup: string) {
+  async createAssetsCollection(index: string, tenantClass: string) {
     const mappings = await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
       "asset",
-      engineGroup,
-      engineId,
+      tenantClass,
+      index,
     );
     const settings = this.config.engineCollections.assets.settings;
 
-    await this.tryCreateCollection(engineId, InternalCollection.ASSETS, {
+    await this.tryCreateCollection(index, InternalCollection.ASSETS, {
       mappings,
       settings,
     });
@@ -656,17 +657,17 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Generate assets mappings and create the assets history collection in the engine
    *
-   * @param engineId The target engine Id
-   * @param engineGroup The engine group
+   * @param index The target engine Id
+   * @param tenantClass The tenant class
    *
    * @throws If it failed during the assets history collection creation
    */
-  async createAssetsHistoryCollection(engineId: string, engineGroup: string) {
+  async createAssetsHistoryCollection(index: string, tenantClass: string) {
     const assetsMappings =
       await this.getDigitalTwinMappingsFromDB<AssetModelContent>(
         "asset",
-        engineGroup,
-        engineId,
+        tenantClass,
+        index,
       );
 
     const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
@@ -675,14 +676,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     const settings = this.config.engineCollections.assetHistory.settings;
 
-    await this.tryCreateCollection(
-      engineId,
-      InternalCollection.ASSETS_HISTORY,
-      {
-        mappings,
-        settings,
-      },
-    );
+    await this.tryCreateCollection(index, InternalCollection.ASSETS_HISTORY, {
+      mappings,
+      settings,
+    });
 
     return InternalCollection.ASSETS_HISTORY;
   }
@@ -690,15 +687,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Create the groups collection with the groups mappings in the engine
    *
-   * @param engineId The target engine Id
-   * @param engineGroup The engine group
+   * @param index The target engine Id
+   * @param tenantClass The tenant class
    *
    * @throws If it failed during the groups collection creation
    */
-  async createGroupsCollection(engineId: string) {
+  async createGroupsCollection(index: string) {
     const settings = this.config.engineCollections.groups.settings;
     const mappings = await this.getAssetGroupsMappingFromDB();
-    await this.tryCreateCollection(engineId, InternalCollection.GROUPS, {
+    await this.tryCreateCollection(index, InternalCollection.GROUPS, {
       mappings: mappings,
       settings,
     });
@@ -709,17 +706,17 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Generate devices mappings and create the devices collection in the engine
    *
-   * @param engineId The target engine Id
-   * @param engineGroup The engine group
+   * @param index The target engine Id
+   * @param tenantClass The tenant class
    *
    * @throws If it failed during the devices collection creation
    */
-  async createDevicesCollection(engineId: string) {
+  async createDevicesCollection(index: string) {
     const mappings =
       await this.getDigitalTwinMappingsFromDB<DeviceModelContent>("device");
     const settings = this.config.engineCollections.devices.settings;
 
-    await this.tryCreateCollection(engineId, InternalCollection.DEVICES, {
+    await this.tryCreateCollection(index, InternalCollection.DEVICES, {
       mappings,
       settings,
     });
@@ -729,8 +726,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Generate devices mappings and create the devices collection in the engine
    *
-   * @param engineId The target engine Id
-   * @param engineGroup The engine group
+   * @param index The target engine Id
+   * @param tenantClass The tenant class
    *
    * @throws If it failed during the devices collection creation
    */
@@ -756,19 +753,16 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Generate measures mappings and create the measures collection in the engine
    *
-   * @param engineId The target engine Id
-   * @param engineGroup The engine group
+   * @param index The target engine Id
+   * @param tenantClass The tenant class
    *
    * @throws If it failed during the measures collection creation
    */
-  async createMeasuresCollection(engineId: string, engineGroup: string) {
-    const mappings = await this.getMeasuresMappingsFromDB(
-      engineGroup,
-      engineId,
-    );
+  async createMeasuresCollection(index: string, tenantClass: string) {
+    const mappings = await this.getMeasuresMappingsFromDB(tenantClass, index);
     const settings = this.config.engineCollections.measures.settings;
 
-    await this.tryCreateCollection(engineId, InternalCollection.MEASURES, {
+    await this.tryCreateCollection(index, InternalCollection.MEASURES, {
       mappings,
       settings,
     });
@@ -809,17 +803,17 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    * Generate ES mappings from twin models and theirs associated measures, all fetched from the database
    *
    * @param digitalTwinType The target twin type
-   * @param engineGroup The twin engine group
+   * @param tenantClass The twin tenant class
    * @returns The complete ES mappings produces by merging all the target type twins
    */
   private async getDigitalTwinMappingsFromDB<
     TDigitalTwin extends TwinModelContent,
-  >(digitalTwinType: TwinType, engineGroup?: string, targetEngineId?: string) {
+  >(digitalTwinType: TwinType, tenantClass?: string, targetIndex?: string) {
     const models = await this.getModels<TDigitalTwin>(
       this.config.platformIndex,
       digitalTwinType,
-      engineGroup,
-      targetEngineId,
+      tenantClass,
+      targetIndex,
     );
 
     const measureModels = await this.getModels<MeasureModelContent>(
@@ -894,12 +888,12 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Generate ES mappings from measures and theirs associated assets, all fetched via the database
    *
-   * @param engineGroup The target engine group
+   * @param tenantClass The target tenant class
    * @returns The complete ES mappings produced by merging models mappings
    */
   private async getMeasuresMappingsFromDB(
-    engineGroup: string,
-    targetEngineId?: string,
+    tenantClass: string,
+    targetIndex?: string,
   ) {
     const models = await this.getModels<MeasureModelContent>(
       this.config.platformIndex,
@@ -908,8 +902,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     const assetsMappings = await this.getDigitalTwinMappingsFromDB(
       "asset",
-      engineGroup,
-      targetEngineId,
+      tenantClass,
+      targetIndex,
     );
 
     const deviceMappings = await this.getDigitalTwinMappingsFromDB("device");
@@ -968,63 +962,63 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Retrieve a certain type of models associated to an engine
    *
-   * @param engineId The target engine Id
+   * @param index The target engine Id
    * @param type The desired model type
-   * @param engineGroup The target engine group
+   * @param tenantClass The target tenant class
    * @returns An array of the generic type provided
    */
   private async getModels<T extends KDocumentContentGeneric>(
-    engineId: string,
+    index: string,
     type: string,
-    engineGroup?: string,
-    targetEngineId?: string,
+    tenantClass?: string,
+    targetIndex?: string,
   ): Promise<T[]> {
     const query: JSONObject = {
       and: [{ equals: { type } }],
     };
 
-    if (engineGroup) {
-      if (targetEngineId) {
+    if (tenantClass) {
+      if (targetIndex) {
         // Tenant-aware: return models applicable to this specific engine
-        // 3-level: tenant-scoped for this engine + group-scoped (no engineIds) + commons (no engineIds)
+        // 3-level: tenant-scoped for this engine + class-scoped (no indexes) + commons (no indexes)
         query.and.push({
           or: [
             {
               and: [
-                { equals: { engineIds: targetEngineId } },
+                { equals: { indexes: targetIndex } },
                 {
-                  // ? Tenant-scoped asset models have no engineGroups (exclusive with engineIds)
+                  // ? Tenant-scoped asset models have no tenantClasses (exclusive with indexes)
                   or: [
-                    { not: { exists: "engineGroups" } },
-                    { equals: { engineGroups: engineGroup } },
-                    { equals: { engineGroups: "commons" } },
+                    { not: { exists: "tenantClasses" } },
+                    { equals: { tenantClasses: tenantClass } },
+                    { equals: { tenantClasses: "commons" } },
                   ],
                 },
               ],
             },
             {
               and: [
-                { not: { exists: "engineIds" } },
-                { equals: { engineGroups: engineGroup } },
+                { not: { exists: "indexes" } },
+                { equals: { tenantClasses: tenantClass } },
               ],
             },
             {
               and: [
-                { not: { exists: "engineIds" } },
-                { equals: { engineGroups: "commons" } },
+                { not: { exists: "indexes" } },
+                { equals: { tenantClasses: "commons" } },
               ],
             },
           ],
         });
       } else {
-        // No target engine: return only group-scoped (no engineIds) + commons (no engineIds)
+        // No target engine: return only class-scoped (no indexes) + commons (no indexes)
         query.and.push({
           and: [
-            { not: { exists: "engineIds" } },
+            { not: { exists: "indexes" } },
             {
               or: [
-                { equals: { engineGroups: engineGroup } },
-                { equals: { engineGroups: "commons" } },
+                { equals: { tenantClasses: tenantClass } },
+                { equals: { tenantClasses: "commons" } },
               ],
             },
           ],
@@ -1033,7 +1027,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     }
 
     const result = await this.sdk.document.search<T>(
-      engineId,
+      index,
       InternalCollection.MODELS,
       { query },
       { lang: "koncorde", size: 5000 },
@@ -1045,10 +1039,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   /**
    * Detach all devices of an index in the platform index
    *
-   * @param engineId The target engine Id
+   * @param index The target engine Id
    * @returns {any}
    */
-  private async detachDevicesFromPlatformIndex(engineId: string) {
+  private async detachDevicesFromPlatformIndex(index: string) {
     const devices = [];
 
     let result = await this.sdk.document.search(
@@ -1056,7 +1050,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       "devices",
       {
         _source: false,
-        query: { bool: { must: { term: { engineId } } } },
+        query: { bool: { must: { term: { index } } } },
       },
       {
         scroll: "2s",
@@ -1072,7 +1066,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         this.config.platformIndex,
         "devices",
         devices.map((device) => {
-          return { _id: device._id, body: { engineId: null } };
+          return { _id: device._id, body: { index: null } };
         }),
       );
     }

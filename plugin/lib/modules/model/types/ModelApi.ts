@@ -24,7 +24,7 @@ interface ModelsControllerRequest {
 export interface ApiModelGetAssetRequest extends ModelsControllerRequest {
   action: "getAsset";
   model: string;
-  engineGroups: string[];
+  tenantClasses: string[];
   /**
    * Returns the stored model, without resolving its referential metadata
    */
@@ -55,7 +55,7 @@ export type ApiModelGetGroupResult = KDocument<GroupModelContent>;
 export interface ApiModelGetMeasureRequest extends ModelsControllerRequest {
   action: "getMeasure";
   type: string;
-  engineId?: string;
+  index?: string;
 }
 export type ApiModelGetMeasureResult = KDocument<MeasureModelContent>;
 
@@ -63,8 +63,8 @@ export interface ApiModelWriteAssetRequest extends ModelsControllerRequest {
   action: "writeAsset";
 
   body: {
-    engineGroups: string[];
-    engineIds?: string[];
+    tenantClasses: string[];
+    indexes?: string[];
     model: string;
     icon?: string;
     metadataDetails?: MetadataDetails;
@@ -98,7 +98,7 @@ export interface ApiModelWriteGroupRequest extends ModelsControllerRequest {
 
   body: {
     affinity: GroupAffinity;
-    engineGroups: string[];
+    tenantClasses: string[];
     model: string;
     icon?: string;
     metadataDetails?: MetadataDetails;
@@ -136,7 +136,7 @@ export type ApiModelUpdateDeviceResult = KDocument<DeviceModelContent>;
 export interface ApiModelUpdateGroupRequest extends ModelsControllerRequest {
   action: "updateGroup";
 
-  engineGroups?: string[];
+  tenantClasses?: string[];
   model: string;
 
   body: {
@@ -156,7 +156,7 @@ export interface ApiModelWriteMeasureRequest extends ModelsControllerRequest {
 
   body: {
     type: string;
-    engineIds?: string[];
+    indexes?: string[];
     icon?: string;
     locales?: {
       [valueName: string]: LocaleDetails;
@@ -171,7 +171,7 @@ export type ApiModelWriteMeasureResult = KDocument<MeasureModelContent>;
 export interface ApiModelUpdateAssetRequest extends ModelsControllerRequest {
   action: "updateAsset";
 
-  engineGroups: string[];
+  tenantClasses: string[];
   model: string;
 
   body: {
@@ -218,7 +218,7 @@ export type ApiModelDeleteMeasureResult = void;
 export interface ApiModelListAssetsRequest extends ModelsControllerRequest {
   action: "listAssets";
 
-  engineGroups: string[];
+  tenantClasses: string[];
   /**
    * Returns the stored model, without resolving its referential metadata
    */
@@ -243,7 +243,7 @@ export type ApiModelListDevicesResult = {
 
 export interface ApiModelListGroupsRequest extends ModelsControllerRequest {
   action: "listGroups";
-  engineGroups: string[];
+  tenantClasses: string[];
   /**
    * Returns the stored model, without resolving its referential metadata
    */
@@ -256,7 +256,7 @@ export type ApiModelListGroupsResult = {
 
 export interface ApiModelListMeasuresRequest extends ModelsControllerRequest {
   action: "listMeasures";
-  engineId?: string;
+  index?: string;
 }
 export type ApiModelListMeasuresResult = {
   models: KDocument<MeasureModelContent>[];
@@ -266,7 +266,7 @@ export type ApiModelListMeasuresResult = {
 export interface ApiModelSearchAssetsRequest extends ModelsControllerRequest {
   action: "searchAssets";
 
-  engineGroups: string[];
+  tenantClasses: string[];
   /**
    * Returns the stored model, without resolving its referential metadata
    */
@@ -297,7 +297,7 @@ export type ApiModelSearchDevicesResult = SearchResult<
 export interface ApiModelSearchGroupsRequest extends ModelsControllerRequest {
   action: "searchGroups";
 
-  engineGroups: string[];
+  tenantClasses: string[];
   /**
    * Returns the stored model, without resolving its referential metadata
    */
@@ -312,7 +312,7 @@ export type ApiModelSearchGroupsResult = SearchResult<KHit<GroupModelContent>>;
 export interface ApiModelSearchMeasuresRequest extends ModelsControllerRequest {
   action: "searchMeasures";
 
-  engineId?: string;
+  index?: string;
   from?: number;
   size?: number;
   scrollTTL?: string;

@@ -16,7 +16,7 @@ Gets a device.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id
 Method: GET
 ```
 
@@ -26,7 +26,7 @@ Method: GET
 {
   "controller": "device-manager/devices",
   "action": "get",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>"
 }
 ```
@@ -35,7 +35,7 @@ Method: GET
 
 ## Arguments
 
-- `engineId`: engine id
+- `index`: engine id
 - `_id`: device id
 
 ---

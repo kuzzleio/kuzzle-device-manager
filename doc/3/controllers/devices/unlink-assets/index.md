@@ -20,7 +20,7 @@ It is possible to combine those parameters.
 ### HTTP
 
 ```http
-URL: http://kuzzle:7512/_/device-manager/:engineId/devices/:_id/unlink
+URL: http://kuzzle:7512/_/device-manager/:index/devices/:_id/unlink
 Method: DELETE
 ```
 
@@ -30,7 +30,7 @@ Method: DELETE
 {
   "controller": "device-manager/devices",
   "action": "unlinkAssets",
-  "engineId": "<engineId>",
+  "index": "<index>",
   "_id": "<deviceId>"
   "body": {
     "allMeasures": "<boolean>"                            // optional Indicates if all the measures from the device must be unlinked
@@ -44,7 +44,7 @@ Method: DELETE
 
 ## Arguments
 
-- `engineId`: Engine ID
+- `index`: Engine ID
 - `_id`: Device ID
 
 ## Body properties

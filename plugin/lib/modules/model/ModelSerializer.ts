@@ -11,12 +11,12 @@ export class ModelSerializer {
   static id<T extends ModelContent>(type: string, model: T) {
     if (type === "asset") {
       const assetModel = model as AssetModelContent;
-      if (assetModel.engineIds?.length) {
-        const sortedEngines = [...assetModel.engineIds].sort().join("+");
+      if (assetModel.indexes?.length) {
+        const sortedEngines = [...assetModel.indexes].sort().join("+");
         return `model-asset-${sortedEngines}-${ModelSerializer.title(type, model)}`;
       }
-      if (assetModel.engineGroups.length > 1) {
-        const sortedGroups = [...assetModel.engineGroups].sort().join("+");
+      if (assetModel.tenantClasses.length > 1) {
+        const sortedGroups = [...assetModel.tenantClasses].sort().join("+");
         return `model-asset-${sortedGroups}-${ModelSerializer.title(type, model)}`;
       }
       return `model-asset-${ModelSerializer.title(type, model)}`;
@@ -24,26 +24,26 @@ export class ModelSerializer {
       return `model-device-${ModelSerializer.title(type, model)}`;
     } else if (type === "group") {
       const groupModel = model as GroupModelContent;
-      if (groupModel.engineGroups.length > 1) {
-        const sortedGroups = [...groupModel.engineGroups].sort().join("+");
+      if (groupModel.tenantClasses.length > 1) {
+        const sortedGroups = [...groupModel.tenantClasses].sort().join("+");
         return `model-group-${sortedGroups}-${ModelSerializer.title(type, model)}`;
       }
       return `model-group-${ModelSerializer.title(type, model)}`;
     } else if (type === "measure") {
       const measureModel = model as MeasureModelContent;
-      if (measureModel.engineIds?.length) {
-        const sortedEngines = [...measureModel.engineIds].sort().join("+");
-        if (measureModel.engineGroups?.length) {
-          const sortedGroups = [...measureModel.engineGroups].sort().join("+");
+      if (measureModel.indexes?.length) {
+        const sortedEngines = [...measureModel.indexes].sort().join("+");
+        if (measureModel.tenantClasses?.length) {
+          const sortedGroups = [...measureModel.tenantClasses].sort().join("+");
           return `model-measure-${sortedGroups}-${sortedEngines}-${ModelSerializer.title(type, model)}`;
         }
         return `model-measure-${sortedEngines}-${ModelSerializer.title(type, model)}`;
       }
       if (
-        measureModel.engineGroups?.length &&
-        measureModel.engineGroups.length > 1
+        measureModel.tenantClasses?.length &&
+        measureModel.tenantClasses.length > 1
       ) {
-        const sortedGroups = [...measureModel.engineGroups].sort().join("+");
+        const sortedGroups = [...measureModel.tenantClasses].sort().join("+");
         return `model-measure-${sortedGroups}-${ModelSerializer.title(type, model)}`;
       }
       return `model-measure-${ModelSerializer.title(type, model)}`;

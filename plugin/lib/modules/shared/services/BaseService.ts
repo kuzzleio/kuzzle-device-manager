@@ -33,7 +33,7 @@ import {
 
 interface PayloadRequest {
   collection: InternalCollection;
-  engineId: string;
+  index: string;
 }
 
 export type SearchParams = ReturnType<KuzzleRequest["getSearchParams"]>;
@@ -65,10 +65,10 @@ export abstract class BaseService {
 
   protected normalizeKuzzleRequest(
     request: KuzzleRequest,
-    { collection, engineId }: PayloadRequest,
+    { collection, index }: PayloadRequest,
   ) {
     request.input.args.collection = collection;
-    request.input.args.index = engineId;
+    request.input.args.index = index;
 
     return request;
   }
@@ -85,12 +85,12 @@ export abstract class BaseService {
   protected async getDocument<T extends KDocumentContent = KDocumentContent>(
     request: KuzzleRequest,
     documentId: string,
-    { collection, engineId }: PayloadRequest,
+    { collection, index }: PayloadRequest,
     options: ArgsDocumentControllerCreate = {},
   ): Promise<KDocument<T>> {
     const kuzzleRequest = this.normalizeKuzzleRequest(request, {
       collection,
-      engineId,
+      index,
     });
     const refresh = kuzzleRequest.getRefresh();
 
@@ -100,12 +100,10 @@ export abstract class BaseService {
       kuzzleRequest,
     );
 
-    const newDocument = await this.sdk.document.get<T>(
-      engineId,
-      collection,
-      _id,
-      { refresh, ...options },
-    );
+    const newDocument = await this.sdk.document.get<T>(index, collection, _id, {
+      refresh,
+      ...options,
+    });
 
     const [endDocument] = await this.app.trigger<
       EventGenericDocumentAfterGet<T>
@@ -126,12 +124,12 @@ export abstract class BaseService {
   protected async createDocument<T extends KDocumentContent = KDocumentContent>(
     request: KuzzleRequest,
     document: KDocument<T>,
-    { collection, engineId }: PayloadRequest,
+    { collection, index }: PayloadRequest,
     options: ArgsDocumentControllerCreate = {},
   ): Promise<KDocument<T>> {
     const kuzzleRequest = this.normalizeKuzzleRequest(request, {
       collection,
-      engineId,
+      index,
     });
     const user = kuzzleRequest.getUser() as any;
     const refresh = kuzzleRequest.getRefresh();
@@ -140,7 +138,7 @@ export abstract class BaseService {
       EventGenericDocumentBeforeWrite<T>
     >("generic:document:beforeWrite", [document], kuzzleRequest);
     const newDocument = await this.impersonatedSdk(user).document.create<T>(
-      engineId,
+      index,
       collection,
       modifiedDocument._source,
       modifiedDocument._id,
@@ -165,12 +163,12 @@ export abstract class BaseService {
   protected async updateDocument<T extends KDocumentContent = KDocumentContent>(
     request: KuzzleRequest,
     document: KDocument<Partial<T>>,
-    { collection, engineId }: PayloadRequest,
+    { collection, index }: PayloadRequest,
     options: ArgsDocumentControllerUpdate = {},
   ): Promise<KDocument<T>> {
     const kuzzleRequest = this.normalizeKuzzleRequest(request, {
       collection,
-      engineId,
+      index,
     });
     const user = kuzzleRequest.getUser() as any;
     const refresh = kuzzleRequest.getRefresh();
@@ -180,7 +178,7 @@ export abstract class BaseService {
     >("generic:document:beforeUpdate", [document], kuzzleRequest);
 
     const updatedDocument = await this.impersonatedSdk(user).document.update<T>(
-      engineId,
+      index,
       collection,
       modifiedDocument._id,
       modifiedDocument._source,
@@ -205,12 +203,12 @@ export abstract class BaseService {
   protected async deleteDocument(
     request: KuzzleRequest,
     documentId: string,
-    { collection, engineId }: PayloadRequest,
+    { collection, index }: PayloadRequest,
     options: ArgsDocumentControllerDelete = {},
   ): Promise<{ _id: string }> {
     const kuzzleRequest = this.normalizeKuzzleRequest(request, {
       collection,
-      engineId,
+      index,
     });
     const user = kuzzleRequest.getUser() as any;
     const refresh = kuzzleRequest.getRefresh();
@@ -223,7 +221,7 @@ export abstract class BaseService {
       );
 
     const deletedDocument = await this.impersonatedSdk(user).document.delete(
-      engineId,
+      index,
       collection,
       modifiedDocument._id,
       { refresh, ...options },
@@ -251,11 +249,11 @@ export abstract class BaseService {
   protected async searchDocument<T extends KDocumentContent = KDocumentContent>(
     request: KuzzleRequest,
     { from, size, scrollTTL: scroll }: SearchParams,
-    { collection, engineId }: PayloadRequest,
+    { collection, index }: PayloadRequest,
   ): Promise<SearchResult<KHit<T>>> {
     const kuzzleRequest = this.normalizeKuzzleRequest(request, {
       collection,
-      engineId,
+      index,
     });
     const {
       protocol,
@@ -278,7 +276,7 @@ export abstract class BaseService {
       collection,
       controller: "document",
       from,
-      index: engineId,
+      index: index,
       lang,
       scroll,
       searchBody: null,

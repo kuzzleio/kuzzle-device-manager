@@ -201,12 +201,12 @@ The API also allows to:
 - delete a measure model `device-manager/models:deleteMeasure`
 ## Asset Model
 
-Unlike sensors and metrics which are available for all engine groups, asset models are specific to a particular engine group.
+Unlike sensors and metrics which are available for all tenant classes, asset models are specific to a particular tenant class.
 
 An asset model contains the following information:
 
 - `model`: model name
-- `engineGroup`: engine group to which the model belongs.
+- `tenantClasses`: tenant classes to which the model belongs (`["commons"]` for every class).
 - `measures`: received measurements
 - `icon`: (optional) Icon representing the asset model. Free-form string, e.g. a FontAwesome icon name, a URL to a PNG/SVG image, or inline SVG markup — the format is up to the application. Not indexed for search.
 - `metadataMappings`: (optional) metadata mappings (See [Collection Mappings](https://docs.kuzzle.io/core/3/guides/main-concepts/data-storage/#collection-mappings))
@@ -237,9 +237,9 @@ import {
     {
       controller: "device-manager/models",
       action: "writeAsset",
-      engineGroup: "asset_tracking",
       body: {
         model: "Container",
+        tenantClasses: ["asset_tracking"],
         measures: [
           { name: "temperatureInternal", type: "temperature" },
           { name: "temperatureExternal", type: "temperature" },

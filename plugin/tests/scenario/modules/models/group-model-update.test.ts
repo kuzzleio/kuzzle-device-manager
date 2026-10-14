@@ -23,18 +23,18 @@ describe("ModelsController:updateGroup", () => {
       action: "writeGroup",
       body: {
         affinity,
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         icon: "truck",
         model: "UpdFleet",
         metadataMappings: { updFleetSize: { type: "integer" } },
       },
     });
 
-    for (const engineId of ["engine-ayse", "engine-other-group"]) {
+    for (const index of ["engine-ayse", "engine-other-group"]) {
       await sdk.query({
         controller: "device-manager/groups",
         action: "create",
-        engineId,
+        index,
         _id: "upd-fleet",
         body: {
           name: "upd fleet",
@@ -54,7 +54,7 @@ describe("ModelsController:updateGroup", () => {
     >({
       controller: "device-manager/models",
       action: "updateGroup",
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
       model: "UpdFleet",
       body,
     });
@@ -62,11 +62,11 @@ describe("ModelsController:updateGroup", () => {
     return result;
   }
 
-  async function getGroupMetadata(engineId: string) {
+  async function getGroupMetadata(index: string) {
     const { result } = await sdk.query({
       controller: "device-manager/groups",
       action: "get",
-      engineId,
+      index,
       _id: "upd-fleet",
     });
 
@@ -86,7 +86,7 @@ describe("ModelsController:updateGroup", () => {
 
     expect(updated._id).toBe("model-group-UpdFleet");
     expect(updated._source).toMatchObject({
-      engineGroups: ["commons"],
+      tenantClasses: ["commons"],
       group: {
         affinity,
         icon: "truck",
@@ -98,8 +98,8 @@ describe("ModelsController:updateGroup", () => {
       },
     });
 
-    for (const engineId of ["engine-ayse", "engine-other-group"]) {
-      await expect(getGroupMetadata(engineId)).resolves.toEqual({
+    for (const index of ["engine-ayse", "engine-other-group"]) {
+      await expect(getGroupMetadata(index)).resolves.toEqual({
         updFleetSize: 3,
         updFleetSector: "north",
       });
@@ -170,7 +170,7 @@ describe("ModelsController:updateGroup", () => {
       sdk.query<ApiModelUpdateGroupRequest>({
         controller: "device-manager/models",
         action: "updateGroup",
-        engineGroups: ["commons"],
+        tenantClasses: ["commons"],
         model: "UpdUnknown",
         body: {},
       }),
