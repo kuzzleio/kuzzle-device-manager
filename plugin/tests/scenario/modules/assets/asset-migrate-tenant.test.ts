@@ -136,6 +136,24 @@ describe("AssetsController:migrateTenant", () => {
     expect(response.status).toBe(200);
     expect(assets.result.hits).toHaveLength(2);
   });
+  it("keeps the source tenant as the request index, devices included", async () => {
+    const response = await sdk.query({
+      controller: "device-manager/assets",
+      action: "migrateTenant",
+      index: "engine-ayse",
+      body: {
+        assetsList: ["Container-linked1", "Container-linked2"],
+        includeDevices: true,
+        newIndex: "engine-kuzzle",
+      },
+    });
+
+    // The action writes in engine-kuzzle and in the platform index: its pipes
+    // and hooks must still see the tenant it was called on
+    expect(response.result.successes).not.toHaveLength(0);
+    expect(response.result.requestIndex).toBe("engine-ayse");
+  });
+
   it("should fail if the user is not an admin", async () => {
     await sdk.auth.login("local", {
       username: "default-user",

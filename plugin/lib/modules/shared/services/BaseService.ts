@@ -63,14 +63,39 @@ export abstract class BaseService {
     };
   }
 
+  /**
+   * Returns a request of its own for a document operation: the
+   * generic:document events see the index and collection written to, while
+   * the caller's request keeps its own. The tenant is the request index, so
+   * overwriting it would hand the next operations, and the pipes and hooks
+   * of the action, the index written last instead of the tenant.
+   */
   protected normalizeKuzzleRequest(
     request: KuzzleRequest,
     { collection, index }: PayloadRequest,
   ) {
-    request.input.args.collection = collection;
-    request.input.args.index = index;
-
-    return request;
+    return new KuzzleRequest(
+      {
+        ...request.input.args,
+        action: request.input.action,
+        body: request.input.body,
+        collection,
+        controller: request.input.controller,
+        index,
+        volatile: request.input.volatile,
+      },
+      {
+        // The connection keeps its fields in symbols: copied one by one
+        connection: {
+          ...request.context.connection.misc,
+          id: request.context.connection.id,
+          ips: request.context.connection.ips,
+          protocol: request.context.connection.protocol,
+        },
+        token: request.context.token,
+        user: request.context.user,
+      },
+    );
   }
 
   /**
