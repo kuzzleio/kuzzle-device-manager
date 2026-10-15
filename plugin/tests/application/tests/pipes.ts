@@ -1,4 +1,4 @@
-import { Backend } from "kuzzle";
+import { Backend, KuzzleRequest } from "kuzzle";
 
 import { MeasureContent, EventMeasureProcessBefore } from "../../../index";
 
@@ -74,6 +74,16 @@ function addTemperatureWeatherMeasure(
 }
 
 export function registerTestPipes(app: Backend) {
+  // Lets the tests check which index the pipes of an action see, once the
+  // action has written documents in other indexes
+  app.pipe.register(
+    "device-manager/assets:afterMigrateTenant",
+    async (request: KuzzleRequest) => {
+      request.result.requestIndex = request.getIndex();
+      return request;
+    },
+  );
+
   app.pipe.register<EventMeasureProcessBefore>(
     "device-manager:measures:process:before",
     async ({ source, target, asset, measures }) => {
