@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.23 (2026-10-15)
+
+* fix(api): keep the tenant as the request index during an action (#497) ([9811cd4](https://github.com/kuzzleio/kuzzle-device-manager/commit/9811cd4)), closes [#497](https://github.com/kuzzleio/kuzzle-device-manager/issues/497) [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490) [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490) [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490)
+
 ## 3.0.0-3-dev.22 (2026-10-15)
 
 * fix(devices): migrate the engineId of the devices to index (#496) ([dab1244](https://github.com/kuzzleio/kuzzle-device-manager/commit/dab1244)), closes [#496](https://github.com/kuzzleio/kuzzle-device-manager/issues/496) [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490)
