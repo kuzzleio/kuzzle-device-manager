@@ -70,11 +70,26 @@ jobs:
           [[ "$exitcode" == "0" ]] || docker compose logs kuzzle
           exit "$exitcode"
 
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-24.04
+    needs: [lint, check-types]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Disabling shallow clones is recommended for improving the relevancy of reporting
+          fetch-depth: 0
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v7.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} # Required for PR decoration
+
   release-device-manager:
     name: Release package
     runs-on: ubuntu-24.04
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/2-stable' || github.ref == 'refs/heads/2-beta' || github.ref == 'refs/heads/3-dev' || github.ref == 'refs/heads/2-dev') }}
-    needs: [functional-tests]
+    needs: [functional-tests, sonarqube]
     permissions:
       contents: write
       issues: write
