@@ -1,3 +1,7 @@
+## 3.0.0-3-dev.22 (2026-10-15)
+
+* fix(devices): migrate the engineId of the devices to index (#496) ([dab1244](https://github.com/kuzzleio/kuzzle-device-manager/commit/dab1244)), closes [#496](https://github.com/kuzzleio/kuzzle-device-manager/issues/496) [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490)
+
 ## 3.0.0-3-dev.21 (2026-10-14)
 
 * feat(metadata): implement the registry of a metadata referential (#493) ([29a77c5](https://github.com/kuzzleio/kuzzle-device-manager/commit/29a77c5)), closes [#493](https://github.com/kuzzleio/kuzzle-device-manager/issues/493)
