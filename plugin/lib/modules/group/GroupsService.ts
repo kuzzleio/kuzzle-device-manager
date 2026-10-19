@@ -1,5 +1,11 @@
 import _ from "lodash";
-import { JSONObject, KDocument } from "kuzzle-sdk";
+import {
+  JSONObject,
+  KDocument,
+  KDocumentContentGeneric,
+  KHit,
+  SearchResult,
+} from "kuzzle-sdk";
 import {
   AskEngineList,
   DeviceManagerPlugin,
@@ -20,6 +26,12 @@ import {
 import { DeviceContent } from "../device";
 import { KuzzleLogger } from "kuzzle-logger";
 import { AskGroupRefreshModel } from "./types/GroupEvents";
+import {
+  GROUP_PATH_SEPARATOR,
+  isInSubtree,
+  rebasePath,
+  subtreeQuery,
+} from "./groupPath";
 
 export class GroupsService extends BaseService {
   readonly logger: KuzzleLogger;
@@ -184,12 +196,54 @@ export class GroupsService extends BaseService {
     return this._update(request, _id, index, updateRequestBody);
   }
 
+  /**
+   * Fetches every document matching the query, the default search size (10)
+   * would miss documents
+   */
+  private async _searchAll<T extends KDocumentContentGeneric>(
+    index: string,
+    collection: InternalCollection,
+    query: JSONObject,
+  ): Promise<KDocument<T>[]> {
+    const documents: KDocument<T>[] = [];
+    let result: SearchResult<KHit<T>> | null =
+      await this.sdk.document.search<T>(
+        index,
+        collection,
+        { query },
+        { scroll: "10s", size: 200 },
+      );
+
+    while (result) {
+      documents.push(...result.hits);
+      result = await result.next();
+    }
+
+    return documents;
+  }
+
+  /**
+   * Makes the latest writes (e.g. items just added to a group) visible to
+   * the subtree searches
+   */
+  private async _refreshGroupCollections(index: string): Promise<void> {
+    await Promise.all(
+      [
+        InternalCollection.GROUPS,
+        InternalCollection.ASSETS,
+        InternalCollection.DEVICES,
+      ].map((collection) => this.sdk.collection.refresh(index, collection)),
+    );
+  }
+
   private async _updatePath(
     request: KuzzleRequest,
     _id: string,
     index: string,
     newPath: string,
   ): Promise<KDocument<GroupContent>> {
+    await this._refreshGroupCollections(index);
+
     const groupToUpdate = await this.sdk.document.get<GroupContent>(
       index,
       InternalCollection.GROUPS,
@@ -202,73 +256,55 @@ export class GroupsService extends BaseService {
 
     const oldPath = groupToUpdate._source.path;
 
-    const { hits: assets } = await this.sdk.document.search<AssetContent>(
+    const rebaseGroups = (groups: AssetContent["groups"]) =>
+      groups.map((grp) => {
+        if (isInSubtree(grp.path, oldPath)) {
+          grp.path = rebasePath(grp.path, oldPath, newPath);
+          grp.date = Date.now();
+        }
+        return grp;
+      });
+
+    const assets = await this._searchAll<AssetContent>(
       index,
       InternalCollection.ASSETS,
-      { query: { prefix: { "groups.path": { value: oldPath } } } },
-      { lang: "koncorde" },
+      subtreeQuery("groups.path", oldPath),
     );
     await this.sdk.document.mUpdate(
       index,
       InternalCollection.ASSETS,
       assets.map((asset) => ({
         _id: asset._id,
-        body: {
-          groups: asset._source.groups.map((grp) => {
-            if (grp.path.includes(oldPath)) {
-              grp.path = grp.path.replace(oldPath, newPath);
-              grp.date = Date.now();
-            }
-            return grp;
-          }),
-        },
+        body: { groups: rebaseGroups(asset._source.groups) },
       })),
       { strict: true },
     );
 
-    const { hits: devices } = await this.sdk.document.search<DeviceContent>(
+    const devices = await this._searchAll<DeviceContent>(
       index,
       InternalCollection.DEVICES,
-      { query: { prefix: { "groups.path": { value: oldPath } } } },
-      { lang: "koncorde" },
+      subtreeQuery("groups.path", oldPath),
     );
     await this.sdk.document.mUpdate(
       index,
       InternalCollection.DEVICES,
       devices.map((device) => ({
         _id: device._id,
-        body: {
-          groups: device._source.groups.map((grp) => {
-            if (grp.path.includes(oldPath)) {
-              grp.path = grp.path.replace(oldPath, newPath);
-              grp.date = Date.now();
-            }
-            return grp;
-          }),
-        },
+        body: { groups: rebaseGroups(device._source.groups) },
       })),
       { strict: true },
     );
 
-    const { hits: childrenGroups } =
-      await this.sdk.document.search<GroupContent>(
-        index,
-        InternalCollection.GROUPS,
-        {
-          query: {
-            and: [
-              { prefix: { path: { value: oldPath } } },
-              { not: { equals: { path: oldPath } } },
-            ],
-          },
-        },
-        { lang: "koncorde" },
-      );
+    const childrenGroups = await this._searchAll<GroupContent>(
+      index,
+      InternalCollection.GROUPS,
+      subtreeQuery("path", oldPath, { includeSelf: false }),
+    );
     await this.sdk.document.mUpdate(
       index,
       InternalCollection.GROUPS,
       childrenGroups.map((grp) => {
-        grp._source.path = grp._source.path.replace(oldPath, newPath);
+        grp._source.path = rebasePath(grp._source.path, oldPath, newPath);
         grp._source.lastUpdate = Date.now();
         return { _id: grp._id, body: grp._source };
       }),
@@ -332,21 +368,15 @@ export class GroupsService extends BaseService {
     if (!group) {
       throw new BadRequestError(`The group with id "${_id}" does not exist`);
     }
-    const { hits: assets } = await this.sdk.document.search<AssetContent>(
+    const groupPath = group._source.path;
+
+    await this._refreshGroupCollections(index);
+
+    const assets = await this._searchAll<AssetContent>(
       index,
       InternalCollection.ASSETS,
-      {
-        query: {
-          prefix: {
-            "groups.path": {
-              value: group._source.path,
-            },
-          },
-        },
-      },
-      { lang: "koncorde" },
+      subtreeQuery("groups.path", groupPath),
     );
-
     await this.sdk.document.mUpdate(
       index,
       InternalCollection.ASSETS,
@@ -354,27 +384,18 @@ export class GroupsService extends BaseService {
         _id: asset._id,
         body: {
           groups: asset._source.groups.filter(
-            (grp) => !grp.path.includes(group._source.path),
+            (grp) => !isInSubtree(grp.path, groupPath),
           ),
         },
       })),
       { strict: true },
     );
-    const { hits: devices } = await this.sdk.document.search<AssetContent>(
+
+    const devices = await this._searchAll<DeviceContent>(
       index,
       InternalCollection.DEVICES,
-      {
-        query: {
-          prefix: {
-            "groups.path": {
-              value: group._source.path,
-            },
-          },
-        },
-      },
-      { lang: "koncorde" },
+      subtreeQuery("groups.path", groupPath),
     );
-
     await this.sdk.document.mUpdate(
       index,
       InternalCollection.DEVICES,
@@ -382,32 +403,23 @@ export class GroupsService extends BaseService {
         _id: device._id,
         body: {
           groups: device._source.groups.filter(
-            (grp) => !grp.path.includes(group._source.path),
+            (grp) => !isInSubtree(grp.path, groupPath),
           ),
         },
       })),
       { strict: true },
     );
-    const { hits: childrenGroups } =
-      await this.sdk.document.search<GroupContent>(
-        index,
-        InternalCollection.GROUPS,
-        {
-          query: {
-            prefix: {
-              path: {
-                value: group._source.path,
-              },
-            },
-          },
-        },
-        { lang: "koncorde" },
-      );
 
+    // ? Includes the group itself
+    const subtreeGroups = await this._searchAll<GroupContent>(
+      index,
+      InternalCollection.GROUPS,
+      subtreeQuery("path", groupPath),
+    );
     await this.sdk.document.mDelete(
       index,
       InternalCollection.GROUPS,
-      childrenGroups.map((g) => g._id),
+      subtreeGroups.map((g) => g._id),
       { strict: true, triggerEvents: true },
     );
 
@@ -438,13 +450,7 @@ export class GroupsService extends BaseService {
     }
     const body = includeChildren
       ? {
-          query: {
-            prefix: {
-              "groups.path": {
-                value: group._source.path,
-              },
-            },
-          },
+          query: subtreeQuery("groups.path", group._source.path),
         }
       : {
           query: {
@@ -887,7 +893,7 @@ export class GroupsService extends BaseService {
         toUpdate.push(g);
       } catch {
         g.path = g.path ?? g._id;
-        if (!g.path.includes(g._id)) {
+        if (g.path.split(GROUP_PATH_SEPARATOR).pop() !== g._id) {
           g.path += `.${g._id}`;
         }
         toCreate.push(g);
