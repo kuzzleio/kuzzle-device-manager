@@ -216,7 +216,8 @@ export class GroupsService extends BaseService {
 
     while (result) {
       documents.push(...result.hits);
-      result = await result.next();
+      // ? Each scroll page needs the cursor of the previous one, it cannot be parallelized
+      result = await result.next(); // NOSONAR
     }
 
     return documents;
