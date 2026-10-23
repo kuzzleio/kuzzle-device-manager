@@ -734,11 +734,12 @@ export class AssetsController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.exporter.prepareExport(index, user, {
-      lang,
-      query,
-      sort,
-    });
+    const link = await this.exporter.prepareExport(
+      index,
+      user,
+      { lang, query, sort },
+      request,
+    );
 
     return { link };
   }

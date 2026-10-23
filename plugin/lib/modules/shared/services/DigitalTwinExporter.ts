@@ -1,4 +1,4 @@
-import { JSONObject, KHit, SearchResult } from "kuzzle";
+import { JSONObject, KHit, KuzzleRequest, SearchResult, User } from "kuzzle";
 import { ask } from "kuzzle-plugin-commons";
 import { UUID } from "node:crypto";
 
@@ -16,8 +16,17 @@ import {
   AssetModelContent,
   DeviceModelContent,
 } from "../../model";
-import { DeviceManagerPlugin, InternalCollection } from "../../plugin";
-import { AbstractExporter, Column, ExporterOption } from "./AbstractExporter";
+import {
+  DeviceManagerPlugin,
+  EventGenericDocumentBeforeSearch,
+  InternalCollection,
+} from "../../plugin";
+import {
+  AbstractExporter,
+  Column,
+  ExporterOption,
+  ExportParams,
+} from "./AbstractExporter";
 
 interface MeasureColumn extends Column {
   isMeasure: boolean;
@@ -47,6 +56,33 @@ export class DigitalTwinExporter extends AbstractExporter {
     return `/_/device-manager/${index}/${this.target}/_export/${exportId}`;
   }
 
+  /**
+   * Prepare an export of the digital twins matching the search.
+   *
+   * The search goes through the same "generic:document:beforeSearch" pipe as the
+   * search action of the request controller, so the export only contains the
+   * digital twins the user can search.
+   */
+  async prepareExport(
+    index: string,
+    user: User,
+    params: ExportParams,
+    request?: KuzzleRequest,
+  ) {
+    if (request) {
+      const { query, sort } =
+        await global.app.trigger<EventGenericDocumentBeforeSearch>(
+          "generic:document:beforeSearch",
+          { query: params.query, sort: params.sort },
+          request,
+        );
+
+      params = { ...params, query, sort };
+    }
+
+    return super.prepareExport(index, user, params);
+  }
+
   async sendExport(index: string, exportId: string) {
     const {
       query,
@@ -58,7 +94,8 @@ export class DigitalTwinExporter extends AbstractExporter {
       index,
       this.target,
       { query, sort },
-      { lang, size: 200 },
+      // ? Scroll: search_after pagination would need a unique sort
+      { lang, scroll: "30s", size: 200 },
     );
 
     const namedMeasures = await this.getNamedMeasures(index);

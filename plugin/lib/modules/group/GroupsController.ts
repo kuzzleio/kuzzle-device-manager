@@ -243,7 +243,7 @@ export class GroupsController {
   async checkGroupName(
     index: string,
     name: GroupsBodyRequest["name"],
-    assetId?: string,
+    groupId?: string,
   ) {
     if (typeof name !== "string") {
       return;
@@ -257,7 +257,8 @@ export class GroupsController {
           bool: {
             must: [
               {
-                regexp: {
+                // literal match: the name must not be interpreted as a pattern
+                term: {
                   name: {
                     case_insensitive: true,
                     value: name,
@@ -268,7 +269,7 @@ export class GroupsController {
             must_not: [
               {
                 terms: {
-                  _id: typeof assetId === "string" ? [assetId] : [],
+                  _id: typeof groupId === "string" ? [groupId] : [],
                 },
               },
             ],
@@ -390,6 +391,15 @@ export class GroupsController {
     const index = request.getIndex();
     const _id = request.getId();
     const { targetGroupId } = request.getBody() as ApiGroupMoveRequest["body"];
+
+    if (
+      targetGroupId !== null &&
+      (typeof targetGroupId !== "string" || targetGroupId.length === 0)
+    ) {
+      throw new BadRequestError(
+        `"targetGroupId" must be a group id, or null to move the group to the root`,
+      );
+    }
 
     return this.groupsService.moveGroup(index, _id, targetGroupId, request);
   }
