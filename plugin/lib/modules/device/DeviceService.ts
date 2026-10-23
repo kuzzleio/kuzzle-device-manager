@@ -1,4 +1,4 @@
-import { BadRequestError, ForbiddenError, KuzzleRequest } from "kuzzle";
+import { BadRequestError, KuzzleRequest } from "kuzzle";
 import { ask, onAsk } from "kuzzle-plugin-commons";
 import { JSONObject, KDocument, KHit, SearchResult } from "kuzzle-sdk";
 
@@ -747,28 +747,6 @@ export class DeviceService extends DigitalTwinService {
 
     if (!exists) {
       throw new BadRequestError(`Engine "${index}" does not exists.`);
-    }
-  }
-
-  /**
-   * Checks that the request user may run the request action on the given engine.
-   *
-   * Needed for actions without an index argument (e.g. detachEngine): Kuzzle
-   * ignores the index restrictions of the user profiles for them.
-   */
-  private async checkEngineRights(index: string, request: KuzzleRequest) {
-    const user = request.getUser();
-    const controller = request.input.controller;
-    const action = request.input.action;
-
-    const allowed = await user?.isActionAllowed(
-      new KuzzleRequest({ action, controller, index }),
-    );
-
-    if (!allowed) {
-      throw new ForbiddenError(
-        `Forbidden action [${index}/${controller}/${action}] for user ${user?._id}`,
-      );
     }
   }
 

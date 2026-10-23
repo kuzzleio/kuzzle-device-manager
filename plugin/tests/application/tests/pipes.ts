@@ -1,4 +1,10 @@
-import { Backend, JSONObject, KuzzleRequest } from "kuzzle";
+import {
+  Backend,
+  JSONObject,
+  KDocument,
+  KuzzleRequest,
+  NotFoundError,
+} from "kuzzle";
 
 import { MeasureContent, EventMeasureProcessBefore } from "../../../index";
 
@@ -103,6 +109,24 @@ export function registerTestPipes(app: Backend) {
       }
 
       return searchParams;
+    },
+  );
+
+  // Lets the tests hide a document from the user like a request-side filter
+  // would (e.g. soft-tenants), to check the actions honor it
+  app.pipe.register(
+    "generic:document:afterGet",
+    async (documents: KDocument<JSONObject>[], request: KuzzleRequest) => {
+      const reference = request.input.volatile?.hideReference;
+
+      if (
+        typeof reference === "string" &&
+        documents.some((doc) => doc._source?.reference === reference)
+      ) {
+        throw new NotFoundError("Some documents could not be found");
+      }
+
+      return documents;
     },
   );
 

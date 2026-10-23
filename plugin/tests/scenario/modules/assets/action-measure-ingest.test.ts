@@ -56,6 +56,32 @@ describe("AssetsController:measureIngest", () => {
       });
     });
 
+    it("should not ingest measure on an asset hidden from the user", async () => {
+      const indexId = "engine-ayse";
+
+      await expect(
+        sdk.query({
+          controller: "device-manager/assets",
+          action: "ingestMeasure",
+          assetId: "MagicHouse-debug1",
+          index: indexId,
+          slotName: "magiculeExt",
+          body: {
+            dataSource: { id: "testApi1" },
+            measuredAt: 170000000,
+            values: { magicule: 18 },
+          },
+          volatile: { hideReference: "debug1" },
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+
+      await sdk.collection.refresh(indexId, InternalCollection.MEASURES);
+
+      await expect(
+        sdk.document.count(indexId, InternalCollection.MEASURES),
+      ).resolves.toBe(0);
+    });
+
     it("should not ingest measure with incorrect values", async () => {
       const assetId = "MagicHouse-debug1";
       const indexId = "engine-ayse";

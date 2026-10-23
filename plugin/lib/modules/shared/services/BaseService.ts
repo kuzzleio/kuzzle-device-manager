@@ -14,6 +14,7 @@ import {
   EventGenericDocumentBeforeGet,
   EventGenericDocumentBeforeUpdate,
   EventGenericDocumentBeforeWrite,
+  ForbiddenError,
   KDocument,
   KDocumentContent,
   KHit,
@@ -61,6 +62,40 @@ export abstract class BaseService {
 
       return this.sdk;
     };
+  }
+
+  /**
+   * Tells whether the request user may run the request action on the given
+   * engine.
+   *
+   * Needed for actions without an index argument (e.g. detachEngine): Kuzzle
+   * ignores the index restrictions of the user profiles for them.
+   */
+  protected async isAllowedOnEngine(
+    index: string,
+    request: KuzzleRequest,
+  ): Promise<boolean> {
+    const { action, controller } = request.input;
+
+    return Boolean(
+      await request
+        .getUser()
+        ?.isActionAllowed(new KuzzleRequest({ action, controller, index })),
+    );
+  }
+
+  /**
+   * Throws if the request user may not run the request action on the given
+   * engine.
+   */
+  protected async checkEngineRights(index: string, request: KuzzleRequest) {
+    if (!(await this.isAllowedOnEngine(index, request))) {
+      const { action, controller } = request.input;
+
+      throw new ForbiddenError(
+        `Forbidden action [${index}/${controller}/${action}] for user ${request.getUser()?._id}`,
+      );
+    }
   }
 
   /**
