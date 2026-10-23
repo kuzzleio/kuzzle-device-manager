@@ -1,4 +1,4 @@
-import { Backend, KuzzleRequest } from "kuzzle";
+import { Backend, JSONObject, KuzzleRequest } from "kuzzle";
 
 import { MeasureContent, EventMeasureProcessBefore } from "../../../index";
 
@@ -81,6 +81,28 @@ export function registerTestPipes(app: Backend) {
     async (request: KuzzleRequest) => {
       request.result.requestIndex = request.getIndex();
       return request;
+    },
+  );
+
+  // Lets the tests restrict the searches like a request-side filter would
+  // (e.g. soft-tenants), to check the actions honor it
+  app.pipe.register(
+    "generic:document:beforeSearch",
+    async (searchParams: JSONObject, request: KuzzleRequest) => {
+      const reference = request.input.volatile?.restrictToReference;
+
+      if (typeof reference === "string") {
+        searchParams.query = {
+          bool: {
+            filter: [
+              searchParams.query ?? { match_all: {} },
+              { term: { reference } },
+            ],
+          },
+        };
+      }
+
+      return searchParams;
     },
   );
 

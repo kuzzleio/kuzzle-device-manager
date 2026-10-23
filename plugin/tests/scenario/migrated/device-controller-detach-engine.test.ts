@@ -40,14 +40,61 @@ describe("features/Device/Controller/DetachEngine", () => {
     });
 
     await expect(
-      sdk.document.get("device-manager", "devices", "DummyTemp-detached1")
+      sdk.document.get("device-manager", "devices", "DummyTemp-detached1"),
     ).resolves.toMatchObject({
       _source: { index: null, _kuzzle_info: { updater: "-1" } },
     });
 
     await expect(
-      sdk.document.exists("engine-kuzzle", "devices", "DummyTemp-detached1")
+      sdk.document.exists("engine-kuzzle", "devices", "DummyTemp-detached1"),
     ).resolves.toBe(false);
+  });
+
+  it("Refuse to detach a device of an engine the user has no rights on", async () => {
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "attachEngine",
+      _id: "DummyTemp-detached1",
+      index: "engine-kuzzle",
+    });
+
+    // ? ayse-admin manages the devices of engine-ayse only
+    await sdk.auth.login("local", {
+      username: "ayse-admin",
+      password: "password",
+    });
+
+    try {
+      for (const index of ["engine-ayse", undefined]) {
+        await expect(
+          sdk.query({
+            controller: "device-manager/devices",
+            action: "detachEngine",
+            index,
+            _id: "DummyTemp-detached1",
+          }),
+        ).rejects.toMatchObject({
+          status: 403,
+          message:
+            "Forbidden action [engine-kuzzle/device-manager/devices/detachEngine] for user ayse-admin",
+        });
+      }
+
+      await expect(
+        sdk.query({
+          controller: "device-manager/devices",
+          action: "detachEngine",
+          index: "engine-ayse",
+          _id: "DummyTemp-unlinked1",
+        }),
+      ).resolves.toBeDefined();
+    } finally {
+      sdk.jwt = null;
+    }
+
+    await expect(
+      sdk.document.get("device-manager", "devices", "DummyTemp-detached1"),
+    ).resolves.toMatchObject({ _source: { index: "engine-kuzzle" } });
   });
 
   it("Error if device is not attached", async () => {
@@ -78,11 +125,9 @@ describe("features/Device/Controller/DetachEngine", () => {
     });
 
     await expect(
-      sdk.document.get("engine-ayse", "assets", "Container-linked1")
+      sdk.document.get("engine-ayse", "assets", "Container-linked1"),
     ).resolves.toMatchObject({
       _source: { linkedMeasures: [] },
     });
-
-
   });
 });
