@@ -255,7 +255,7 @@ describe("DecodersController", () => {
     });
 
     await expect(promise).rejects.toMatchObject({
-      message: "The specified device model is unknown",
+      message: 'The specified device model "unknownDecoder" is unknown',
     });
     await sdk.collection.refresh("device-manager", "payloads");
     const payloadReceived = await sdk.query({

@@ -33,6 +33,9 @@ import {
 import { ApiDeviceUnlinkAssetsResult } from "./exports";
 import { KuzzleLogger } from "kuzzle-logger";
 
+// ? Device ids ("model-reference") must fit in an Elasticsearch _id (512 bytes)
+const MAX_REFERENCE_BYTES = 256;
+
 export class DeviceService extends DigitalTwinService {
   readonly logger: KuzzleLogger;
   constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
@@ -99,7 +102,25 @@ export class DeviceService extends DigitalTwinService {
       index: this.config.platformIndex,
     });
     if (index.trim() !== "" && index !== this.config.platformIndex) {
-      device = await this._attachEngine(index, device._id, request, metadata);
+      try {
+        device = await this._attachEngine(index, device._id, request, metadata);
+      } catch (error) {
+        // ? Do not leave a provisioned device marked as attached to a tenant where it does not exist
+        await this.sdk.document
+          .delete(
+            this.config.platformIndex,
+            InternalCollection.DEVICES,
+            device._id,
+            { refresh: "wait_for" },
+          )
+          .catch((rollbackError) =>
+            this.logger.error(
+              `Cannot roll back the provisioning of device "${device._id}": ${rollbackError.message}`,
+            ),
+          );
+
+        throw error;
+      }
 
       refreshableCollections.push({
         collection: InternalCollection.DEVICES,
@@ -139,7 +160,12 @@ export class DeviceService extends DigitalTwinService {
           collection: InternalCollection.DEVICES,
           index: this.config.platformIndex,
         },
-      );
+      ).catch((error) => {
+        if (error.id === "services.storage.document_already_exists") {
+          throw new BadRequestError(`Device "${device._id}" already exists.`);
+        }
+        throw error;
+      });
 
     return deviceProvisioning;
   }
@@ -153,6 +179,7 @@ export class DeviceService extends DigitalTwinService {
     metadata: JSONObject,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
+    this.checkReference(reference);
     const deviceId = DeviceSerializer.id(model, reference);
 
     const device = await lock(`device:${deviceId}`, async () =>
@@ -259,6 +286,7 @@ export class DeviceService extends DigitalTwinService {
     metadata: Metadata,
     request: KuzzleRequest,
   ): Promise<KDocument<DeviceContent>> {
+    this.checkReference(reference);
     const deviceId = DeviceSerializer.id(model, reference);
 
     return lock(`device:${deviceId}`, async () => {
@@ -357,11 +385,19 @@ export class DeviceService extends DigitalTwinService {
 
   public async delete(index: string, deviceId: string, request: KuzzleRequest) {
     return lock<void>(`device:${deviceId}`, async () => {
-      const device = await this.get(index, deviceId, request);
+      let device = await this.get(index, deviceId, request);
+
+      // ? From the platform index, the device is also deleted from its tenant, if any
+      if (index === this.config.platformIndex) {
+        index = device._source.index;
+        device = index
+          ? await this.get(index, deviceId, request).catch(() => null)
+          : null;
+      }
 
       const promises = [];
 
-      if (device._source.linkedMeasures?.length) {
+      if (device?._source.linkedMeasures?.length) {
         const { successes: assets } =
           await this.sdk.document.mGet<AssetContent>(
             index,
@@ -417,12 +453,14 @@ export class DeviceService extends DigitalTwinService {
         }),
       );
 
-      promises.push(
-        this.deleteDocument(request, deviceId, {
-          collection: InternalCollection.DEVICES,
-          index,
-        }),
-      );
+      if (device) {
+        promises.push(
+          this.deleteDocument(request, deviceId, {
+            collection: InternalCollection.DEVICES,
+            index,
+          }),
+        );
+      }
 
       await Promise.all(promises);
     });
@@ -605,11 +643,16 @@ export class DeviceService extends DigitalTwinService {
   async detachEngine(
     deviceId: string,
     request: KuzzleRequest,
+    { checkRights = false }: { checkRights?: boolean } = {},
   ): Promise<KDocument<DeviceProvisioningContent>> {
     return lock(`device:${deviceId}`, async () => {
       const deviceProvisioning = await this.getDeviceProvisioning(deviceId);
 
       this.checkAttachedToEngine(deviceProvisioning);
+
+      if (checkRights) {
+        await this.checkEngineRights(deviceProvisioning._source.index, request);
+      }
 
       const device = await this.sdk.document.get<DeviceContent>(
         deviceProvisioning._source.index,
@@ -704,6 +747,27 @@ export class DeviceService extends DigitalTwinService {
 
     if (!exists) {
       throw new BadRequestError(`Engine "${index}" does not exists.`);
+    }
+  }
+
+  /**
+   * The reference is part of the device id, which is used in the API routes
+   */
+  private checkReference(reference: string) {
+    if (reference.trim() === "") {
+      throw new BadRequestError("The device reference must not be empty.");
+    }
+
+    if (/[\s/?#%\\]/.test(reference)) {
+      throw new BadRequestError(
+        `The device reference "${reference}" must not contain whitespaces or any of the characters / ? # % \\`,
+      );
+    }
+
+    if (Buffer.byteLength(reference) > MAX_REFERENCE_BYTES) {
+      throw new BadRequestError(
+        `The device reference "${reference.slice(0, 32)}..." exceeds ${MAX_REFERENCE_BYTES} bytes.`,
+      );
     }
   }
 
