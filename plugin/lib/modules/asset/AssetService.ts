@@ -176,7 +176,7 @@ export class AssetService extends DigitalTwinService {
             model: asset._source.model,
           },
         );
-        for (const key in unknownMetadata) {
+        for (const key of Object.keys(unknownMetadata)) {
           // ? Same as update, which the strict mappings refuse
           if (!(key in assetModel.asset.metadataMappings)) {
             throw new BadRequestError(

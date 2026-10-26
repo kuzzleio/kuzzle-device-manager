@@ -111,7 +111,9 @@ export class DeviceService extends DigitalTwinService {
             this.config.platformIndex,
             InternalCollection.DEVICES,
             device._id,
-            { refresh: "wait_for" },
+            {
+              refresh: "wait_for",
+            },
           )
           .catch((rollbackError) =>
             this.logger.error(
@@ -385,11 +387,15 @@ export class DeviceService extends DigitalTwinService {
 
   public async delete(index: string, deviceId: string, request: KuzzleRequest) {
     return lock<void>(`device:${deviceId}`, async () => {
-      let device = await this.get(index, deviceId, request);
+      let device: KDocument<DeviceContent> | null = await this.get(
+        index,
+        deviceId,
+        request,
+      );
 
       // ? From the platform index, the device is also deleted from its tenant, if any
       if (index === this.config.platformIndex) {
-        index = device._source.index;
+        index = device._source.index as string;
         device = index
           ? await this.get(index, deviceId, request).catch(() => null)
           : null;
@@ -405,42 +411,17 @@ export class DeviceService extends DigitalTwinService {
             device._source.linkedMeasures.map((link) => link.assetId),
           );
 
-        for (const asset of assets) {
-          const linkedDevices = asset._source.linkedMeasures.filter(
-            (link) => link.deviceId !== device._id,
-          );
-          promises.push(
-            lock(`asset:${index}:${asset._id}`, async () =>
-              this.updateDocument<AssetContent>(
-                request,
-                {
-                  _id: asset._id,
-                  _source: { linkedMeasures: linkedDevices },
-                },
-                { collection: InternalCollection.ASSETS, index },
-              ).then(async (updatedAsset) => {
-                const event: AssetHistoryEventUnlink = {
-                  name: "unlink",
-                  unlink: {
-                    deviceId,
-                  },
-                };
+        const tenantIndex = index;
 
-                await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
-                  "ask:device-manager:asset:history:add",
-                  {
-                    index,
-                    histories: [
-                      {
-                        asset: updatedAsset._source,
-                        event,
-                        id: updatedAsset._id,
-                        timestamp: Date.now(),
-                      },
-                    ],
-                  },
-                );
-              }),
+        for (const asset of assets) {
+          promises.push(
+            lock(`asset:${tenantIndex}:${asset._id}`, async () =>
+              this._removeDeviceFromAssetLinks(
+                request,
+                tenantIndex,
+                asset,
+                device._id,
+              ),
             ),
           );
         }
@@ -703,7 +684,46 @@ export class DeviceService extends DigitalTwinService {
       return deviceProvisioning;
     });
   }
+  private async _removeDeviceFromAssetLinks(
+    request: KuzzleRequest,
+    index: string,
+    asset: KDocument<AssetContent>,
+    deviceId: string,
+  ): Promise<void> {
+    const linkedDevices = asset._source.linkedMeasures.filter(
+      (link) => link.deviceId !== deviceId,
+    );
+    await this.updateDocument<AssetContent>(
+      request,
+      {
+        _id: asset._id,
+        _source: { linkedMeasures: linkedDevices },
+      },
+      { collection: InternalCollection.ASSETS, index },
+    ).then(async (updatedAsset) => {
+      const event: AssetHistoryEventUnlink = {
+        name: "unlink",
+        unlink: {
+          deviceId,
+        },
+      };
 
+      await ask<AskAssetHistoryAdd<AssetHistoryEventUnlink>>(
+        "ask:device-manager:asset:history:add",
+        {
+          index,
+          histories: [
+            {
+              asset: updatedAsset._source,
+              event,
+              id: updatedAsset._id,
+              timestamp: Date.now(),
+            },
+          ],
+        },
+      );
+    });
+  }
   async receiveMeasures(
     index: string,
     deviceId: string,

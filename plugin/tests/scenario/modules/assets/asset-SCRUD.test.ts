@@ -375,7 +375,8 @@ describe("AssetsController:SCRUD", () => {
       }),
     ).rejects.toMatchObject({
       status: 400,
-      message: 'Metadata "unknownMetadata" is not defined on asset model "Container".',
+      message:
+        'Metadata "unknownMetadata" is not defined on asset model "Container".',
     });
 
     const assetDocument = await sdk.document.get(
@@ -394,9 +395,9 @@ describe("AssetsController:SCRUD", () => {
     };
 
     const { result: adminResult } = await sdk.query(query);
-    expect(
-      adminResult.map(({ engineIndex }) => engineIndex).sort(),
-    ).toEqual(expect.arrayContaining(["engine-ayse", "engine-kuzzle"]));
+    expect(adminResult.map(({ engineIndex }) => engineIndex).sort()).toEqual(
+      expect.arrayContaining(["engine-ayse", "engine-kuzzle"]),
+    );
 
     // ? ayse-admin manages the assets of engine-ayse only
     await sdk.auth.login("local", {
