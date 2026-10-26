@@ -755,42 +755,43 @@ export class AssetService extends DigitalTwinService {
       {},
     );
 
-    const results: ApiAssetUpdateModelLocales[] = [];
+    // ? The action takes no index, so Kuzzle ignores the index restrictions
+    const allowed = await Promise.all(
+      engines.map((engine) => this.isAllowedOnEngine(engine.index, request)),
+    );
+    const allowedEngines = engines.filter((engine, i) => allowed[i]);
 
-    for (const engine of engines) {
-      // ? The action takes no index, so Kuzzle ignores the index restrictions
-      if (!(await this.isAllowedOnEngine(engine.index, request))) {
-        continue;
-      }
-
-      const resultUpdateByQuery =
-        await this.sdk.document.updateByQuery<AssetContent>(
-          engine.index,
-          "assets",
-          {
-            bool: {
-              must: [
-                {
-                  term: {
-                    model: model,
+    const results: ApiAssetUpdateModelLocales[] = await Promise.all(
+      allowedEngines.map(async (engine) => {
+        const resultUpdateByQuery =
+          await this.sdk.document.updateByQuery<AssetContent>(
+            engine.index,
+            "assets",
+            {
+              bool: {
+                must: [
+                  {
+                    term: {
+                      model: model,
+                    },
                   },
-                },
-              ],
+                ],
+              },
             },
-          },
-          {
-            modelLocales: locales,
-          },
-        );
+            {
+              modelLocales: locales,
+            },
+          );
 
-      results.push({
-        engineIndex: engine.index,
-        result: {
-          errors: [...resultUpdateByQuery.errors],
-          successes: [...resultUpdateByQuery.successes],
-        },
-      });
-    }
+        return {
+          engineIndex: engine.index,
+          result: {
+            errors: [...resultUpdateByQuery.errors],
+            successes: [...resultUpdateByQuery.successes],
+          },
+        };
+      }),
+    );
 
     const errorsFiltered = results.filter((re) => re.result.errors.length > 0);
 
@@ -987,7 +988,9 @@ export class AssetService extends DigitalTwinService {
             engine.index,
             updatedAssets,
             removedMetadata,
-            { refresh: "wait_for" },
+            {
+              refresh: "wait_for",
+            },
           );
         }
 
