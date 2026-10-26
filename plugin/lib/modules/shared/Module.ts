@@ -11,5 +11,5 @@ export abstract class Module {
     this.plugin = plugin;
   }
 
-  abstract init(): Promise<void>;
+  abstract init(): void;
 }

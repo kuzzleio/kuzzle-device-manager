@@ -58,7 +58,7 @@ export interface ApiGroupDeleteRequest extends GroupControllerRequest {
   _id: string;
 }
 
-export type ApiGroupDeleteResult = void;
+export type ApiGroupDeleteResult = void; // NOSONAR: public per-action API type
 
 export interface ApiGroupSearchRequest extends GroupControllerRequest {
   action: "search";
@@ -89,7 +89,7 @@ export interface ApiGroupAddAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupAddAssetsResult = UpdateLinkResponse;
+export type ApiGroupAddAssetsResult = UpdateLinkResponse; // NOSONAR: public per-action API type
 
 export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
   action: "removeAssets";
@@ -98,7 +98,7 @@ export interface ApiGroupRemoveAssetsRequest extends GroupControllerRequest {
     assetIds: string[];
   };
 }
-export type ApiGroupRemoveAssetsResult = UpdateLinkResponse;
+export type ApiGroupRemoveAssetsResult = UpdateLinkResponse; // NOSONAR: public per-action API type
 export interface ApiGroupAddDevicesRequest extends GroupControllerRequest {
   action: "addDevices";
   body: {
@@ -106,7 +106,7 @@ export interface ApiGroupAddDevicesRequest extends GroupControllerRequest {
     deviceIds: string[];
   };
 }
-export type ApiGroupAddDevicesResult = UpdateLinkResponse;
+export type ApiGroupAddDevicesResult = UpdateLinkResponse; // NOSONAR: public per-action API type
 
 export interface ApiGroupRemoveDevicesRequest extends GroupControllerRequest {
   action: "removeDevices";
@@ -115,7 +115,7 @@ export interface ApiGroupRemoveDevicesRequest extends GroupControllerRequest {
     deviceIds: string[];
   };
 }
-export type ApiGroupRemoveDevicesResult = UpdateLinkResponse;
+export type ApiGroupRemoveDevicesResult = UpdateLinkResponse; // NOSONAR: public per-action API type
 
 export interface ApiGroupMCreateRequest extends GroupControllerRequest {
   action: "mCreate";

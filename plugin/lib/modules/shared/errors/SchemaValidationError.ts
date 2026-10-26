@@ -2,7 +2,7 @@ import { ErrorObject } from "ajv";
 import { KuzzleError } from "kuzzle";
 
 export class SchemaValidationError extends KuzzleError {
-  private schemaErrors: ErrorObject[];
+  private readonly schemaErrors: ErrorObject[];
   constructor(
     message: string,
     schemaErrors: ErrorObject[],

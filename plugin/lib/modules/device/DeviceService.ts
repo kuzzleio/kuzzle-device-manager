@@ -481,7 +481,7 @@ export class DeviceService extends DigitalTwinService {
       }
       for (const asset of assetsToUnlink) {
         const { asset: updatedAsset, device: updatedDevice } =
-          await this.unlinkAssetDevice(deviceId, asset, [], true, request);
+          await this.unlinkAssetDevice(deviceId, asset, [], true, request); // NOSONAR: sequential: each unlink updates the same device
         assets.push(AssetSerializer.serialize(updatedAsset));
         device = DeviceSerializer.serialize(updatedDevice);
       }
@@ -491,7 +491,7 @@ export class DeviceService extends DigitalTwinService {
     // CASE ALL MEASURES FROM SPECIFIC ASSETS TO UNLINK
     for (const asset of assetIds) {
       const { asset: updatedAsset, device: updatedDevice } =
-        await this.unlinkAssetDevice(deviceId, asset, [], true, request);
+        await this.unlinkAssetDevice(deviceId, asset, [], true, request); // NOSONAR: sequential: each unlink updates the same device
       assets.push(AssetSerializer.serialize(updatedAsset));
       device = DeviceSerializer.serialize(updatedDevice);
     }
@@ -502,7 +502,8 @@ export class DeviceService extends DigitalTwinService {
       l.measureSlots.some((s) => measureSlots.includes(s.device)),
     )) {
       const { asset: updatedAsset, device: updatedDevice } =
-        await this.unlinkAssetDevice(
+        // prettier-ignore
+        await this.unlinkAssetDevice( // NOSONAR: sequential: each unlink updates the same device
           deviceId,
           linkedMeasures.assetId,
           linkedMeasures.measureSlots.filter((slot) =>
@@ -820,7 +821,7 @@ export class DeviceService extends DigitalTwinService {
 
     for (const engine of engines) {
       // ? Scroll by pages matching the write limit, the default search size (10) would miss devices
-      let result = await this.sdk.document.search<DeviceContent>(
+      let result = await this.sdk.document.search<DeviceContent>( // NOSONAR: sequential: throttle writes across engines
         engine.index,
         InternalCollection.DEVICES,
         { query: { equals: { model: deviceModel.device.model } } },
@@ -829,7 +830,7 @@ export class DeviceService extends DigitalTwinService {
 
       while (result) {
         if (result.hits.length > 0) {
-          await this.sdk.document.mReplace<DeviceContent>(
+          await this.sdk.document.mReplace<DeviceContent>( // NOSONAR: sequential: write page before scrolling
             engine.index,
             InternalCollection.DEVICES,
             result.hits.map((device) => ({
@@ -844,7 +845,7 @@ export class DeviceService extends DigitalTwinService {
           );
         }
 
-        result = await result.next();
+        result = await result.next(); // NOSONAR: sequential: scroll pagination
       }
     }
   }

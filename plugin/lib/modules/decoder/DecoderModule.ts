@@ -27,7 +27,7 @@ export class DecoderModule extends Module {
     return this.plugin["decodersRegister"];
   }
 
-  public async init(): Promise<void> {
+  public init(): void {
     this.payloadService = new PayloadService(this.plugin, this.payloadLogger);
     this.decoderController = new DecodersController(
       this.payloadService,

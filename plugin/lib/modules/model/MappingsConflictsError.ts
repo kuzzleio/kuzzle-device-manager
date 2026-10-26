@@ -2,7 +2,7 @@ import { KuzzleError } from "kuzzle";
 import { ConflictChunk } from "./ModelsConflicts";
 
 export class MappingsConflictsError extends KuzzleError {
-  private conflicts: ConflictChunk[];
+  private readonly conflicts: ConflictChunk[];
   constructor(
     message: string,
     conflicts: ConflictChunk[],

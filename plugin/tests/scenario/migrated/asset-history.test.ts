@@ -53,7 +53,7 @@ describe('features/Asset/History', () => {
       body: { sort: { '_kuzzle_info.createdAt': 'desc' } },
     });
 
-    expect(assetHistory.result.hits.length).toBe(2);
+    expect(assetHistory.result.hits).toHaveLength(2);
     expect(assetHistory.result.hits[0]._source).toMatchObject({
       id: 'Container-A1',
       event: { name: 'metadata', metadata: { names: ['weight'] } },

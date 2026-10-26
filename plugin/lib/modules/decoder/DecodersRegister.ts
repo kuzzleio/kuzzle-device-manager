@@ -19,7 +19,7 @@ export class DecodersRegister {
   /**
    * Map<deviceModel, Decoder>
    */
-  private _decoders = new Map<string, Decoder>();
+  private readonly _decoders = new Map<string, Decoder>();
 
   private get sdk() {
     return this.context.accessors.sdk;

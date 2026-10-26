@@ -158,7 +158,7 @@ export class DigitalTwinExporter extends AbstractExporter {
           }
         }
       }
-      result = await result.next();
+      result = await result.next(); // NOSONAR: scroll pages are sequential
     }
 
     // ? Ensure stable measures order
@@ -179,9 +179,16 @@ export class DigitalTwinExporter extends AbstractExporter {
   ): Promise<MeasureColumn[]> {
     const columns: MeasureColumn[] = [];
 
-    const measuresPath = new Map<string, string[]>();
+    const measuresType = new Map<string, string>();
     for (const { name, type } of namedMeasures) {
-      if (!measuresPath.has(name)) {
+      if (!measuresType.has(name)) {
+        measuresType.set(name, type);
+      }
+    }
+
+    const measuresPath = new Map<string, string[]>();
+    await Promise.all(
+      [...measuresType].map(async ([name, type]) => {
         const { measure: measureDefinition } = await ask<AskModelMeasureGet>(
           "ask:device-manager:model:measure:get",
           { type, index },
@@ -192,8 +199,10 @@ export class DigitalTwinExporter extends AbstractExporter {
         ).map((path) => path.replace(".type", "").replace(".properties", ""));
 
         measuresPath.set(name, flattenMeasuresPath);
-      }
+      }),
+    );
 
+    for (const { name, type } of namedMeasures) {
       for (const path of measuresPath.get(name)) {
         const header = `${name}.${path}`.replace(`${name}.${type}`, name);
 
@@ -219,7 +228,7 @@ export class DigitalTwinExporter extends AbstractExporter {
       let lastMeasures: MeasureContent[];
 
       try {
-        lastMeasures = await ask<AskDigitalTwinLastMeasuresGet>(
+        lastMeasures = await ask<AskDigitalTwinLastMeasuresGet>( // NOSONAR: one ES search per hit, sequential to bound load
           `ask:device-manager:${type}:get-last-measures`,
           {
             digitalTwinId: hit._id,

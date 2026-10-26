@@ -1,4 +1,4 @@
-import _ from "lodash";
+import pick from "lodash/pick";
 import {
   JSONObject,
   KDocument,
@@ -73,7 +73,7 @@ export class GroupsService extends BaseService {
 
     for (const engine of engines) {
       // ? Scroll by pages matching the write limit, the default search size (10) would miss groups
-      let result = await this.sdk.document.search<GroupContent>(
+      let result = await this.sdk.document.search<GroupContent>( // NOSONAR: engines processed one at a time to bound ES load
         engine.index,
         InternalCollection.GROUPS,
         { query: { equals: { model: groupModel.group.model } } },
@@ -82,7 +82,7 @@ export class GroupsService extends BaseService {
 
       while (result) {
         if (result.hits.length > 0) {
-          await this.sdk.document.mReplace<GroupContent>(
+          await this.sdk.document.mReplace<GroupContent>( // NOSONAR: scroll pages are sequential
             engine.index,
             InternalCollection.GROUPS,
             result.hits.map((group) => ({
@@ -91,7 +91,7 @@ export class GroupsService extends BaseService {
                 ...group._source,
                 metadata: {
                   ...modelMetadata,
-                  ..._.pick(
+                  ...pick(
                     group._source.metadata ?? {},
                     Object.keys(modelMetadata),
                   ),
@@ -102,7 +102,7 @@ export class GroupsService extends BaseService {
           );
         }
 
-        result = await result.next();
+        result = await result.next(); // NOSONAR: scroll pages are sequential
       }
     }
   }
@@ -523,7 +523,7 @@ export class GroupsService extends BaseService {
         `The assets with ids "${errors.join(", ")}" do not exist`,
       );
     }
-    if (model && model.group.affinity.strict) {
+    if (model?.group.affinity.strict) {
       for (const asset of assets) {
         if (!model.group.affinity.models.assets.includes(asset._source.model)) {
           throw new BadRequestError(
@@ -652,7 +652,7 @@ export class GroupsService extends BaseService {
         `The devices with ids "${errors.join(", ")}" do not exist`,
       );
     }
-    if (model && model.group.affinity.strict) {
+    if (model?.group.affinity.strict) {
       for (const device of devices) {
         if (
           !model.group.affinity.models.devices.includes(device._source.model)
@@ -760,59 +760,20 @@ export class GroupsService extends BaseService {
   ): Promise<ApiGroupMCreateResult> {
     const toCreate = [];
     const toCreateErrors = [];
-    for (const g of groups) {
-      try {
-        const groupMetadata = {};
-        if (g.model !== null) {
-          const groupModel = await ask<AskModelGroupGet>(
-            "ask:device-manager:model:group:get",
-            {
-              model: g.model,
-            },
-          );
-          for (const metadataName of Object.keys(
-            groupModel.group.metadataMappings,
-          )) {
-            if (g.metadata[metadataName]) {
-              groupMetadata[metadataName] = g.metadata[metadataName];
-            } else if (groupModel.group.defaultMetadata[metadataName]) {
-              groupMetadata[metadataName] =
-                groupModel.group.defaultMetadata[metadataName];
-            } else {
-              groupMetadata[metadataName] = null;
-            }
-          }
+    const results = await Promise.all(
+      groups.map(async (g) => {
+        try {
+          return { document: await this.buildGroupDocument(g) };
+        } catch (error) {
+          return { error: this.toGroupCreationError(g, error) };
         }
-        toCreate.push({
-          _id: g._id,
-          body: {
-            lastUpdate: Date.now(),
-            metadata: { ...groupMetadata },
-            model: g.model,
-            name: g.name,
-            path: g.path,
-          },
-        });
-      } catch (error) {
-        let reason: string = "";
-        let status: number = 400;
-        if (error instanceof KuzzleError) {
-          reason = error.message;
-          status = error.code;
-        }
-        toCreateErrors.push({
-          document: {
-            _id: g._id,
-            body: {
-              metadata: g.metadata,
-              model: g.model,
-              name: g.name,
-              path: g.path,
-            },
-          },
-          reason,
-          status,
-        });
+      }),
+    );
+    for (const { document, error } of results) {
+      if (document) {
+        toCreate.push(document);
+      } else {
+        toCreateErrors.push(error);
       }
     }
     const { successes, errors } = await this.sdk.document.mCreate<GroupContent>(
@@ -885,14 +846,21 @@ export class GroupsService extends BaseService {
       name: string;
       path: string;
     }> = [];
-    for (const g of groups) {
-      try {
-        await this.getDocument<GroupContent>(request, g._id, {
+    const existing = await Promise.all(
+      groups.map((g) =>
+        this.getDocument<GroupContent>(request, g._id, {
           collection: InternalCollection.GROUPS,
           index,
-        });
+        }).then(
+          () => true,
+          () => false,
+        ),
+      ),
+    );
+    for (const [i, g] of groups.entries()) {
+      if (existing[i]) {
         toUpdate.push(g);
-      } catch {
+      } else {
         g.path = g.path ?? g._id;
         if (g.path.split(GROUP_PATH_SEPARATOR).pop() !== g._id) {
           g.path += `.${g._id}`;
@@ -907,6 +875,77 @@ export class GroupsService extends BaseService {
       successes: [...createdResult.successes, ...updatedResult.successes],
     };
   }
+  private async buildGroupDocument(g: {
+    _id: string;
+    metadata: Metadata;
+    model: string;
+    name: string;
+    path: string;
+  }) {
+    const groupMetadata = {};
+    if (g.model !== null) {
+      const groupModel = await ask<AskModelGroupGet>(
+        "ask:device-manager:model:group:get",
+        {
+          model: g.model,
+        },
+      );
+      for (const metadataName of Object.keys(
+        groupModel.group.metadataMappings,
+      )) {
+        if (g.metadata[metadataName]) {
+          groupMetadata[metadataName] = g.metadata[metadataName];
+        } else if (groupModel.group.defaultMetadata[metadataName]) {
+          groupMetadata[metadataName] =
+            groupModel.group.defaultMetadata[metadataName];
+        } else {
+          groupMetadata[metadataName] = null;
+        }
+      }
+    }
+    return {
+      _id: g._id,
+      body: {
+        lastUpdate: Date.now(),
+        metadata: { ...groupMetadata },
+        model: g.model,
+        name: g.name,
+        path: g.path,
+      },
+    };
+  }
+
+  private toGroupCreationError(
+    g: {
+      _id: string;
+      metadata: Metadata;
+      model: string;
+      name: string;
+      path: string;
+    },
+    error: unknown,
+  ) {
+    let reason: string = "";
+    let status: number = 400;
+    if (error instanceof KuzzleError) {
+      reason = error.message;
+      status = error.code;
+    }
+    return {
+      document: {
+        _id: g._id,
+        body: {
+          metadata: g.metadata,
+          model: g.model,
+          name: g.name,
+          path: g.path,
+        },
+      },
+      reason,
+      status,
+    };
+  }
+
   private async _update(
     request: KuzzleRequest,
     _id: string,

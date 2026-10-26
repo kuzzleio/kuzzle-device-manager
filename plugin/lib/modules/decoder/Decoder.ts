@@ -1,5 +1,5 @@
 import { HttpRoute, KuzzleRequest, PreconditionError } from "kuzzle";
-import _ from "lodash";
+import has from "lodash/has";
 import { JSONObject } from "kuzzle-sdk";
 import { KuzzleLogger } from "kuzzle-logger";
 import { DecodedPayload } from "./DecodedPayload";
@@ -115,27 +115,25 @@ export abstract class Decoder {
   }
 
   get http(): HttpRoute[] {
-    if (!this._http) {
-      this._http = [
-        {
-          openapi: {
-            description: `Receive a payload from a ${this.deviceModel} device`,
-            parameters: [
-              {
-                in: "body",
-                name: "payload",
-                required: true,
-                schema: {
-                  type: "object",
-                },
+    this._http ??= [
+      {
+        openapi: {
+          description: `Receive a payload from a ${this.deviceModel} device`,
+          parameters: [
+            {
+              in: "body",
+              name: "payload",
+              required: true,
+              schema: {
+                type: "object",
               },
-            ],
-          },
-          path: `device-manager/payload/${this.action}`,
-          verb: "post",
+            },
+          ],
         },
-      ];
-    }
+        path: `device-manager/payload/${this.action}`,
+        verb: "post",
+      },
+    ];
 
     return this._http;
   }
@@ -199,7 +197,7 @@ export abstract class Decoder {
    */
   ensureProperties(payload: JSONObject, paths: string[]): void | never {
     for (const path of paths) {
-      if (!_.has(payload, path)) {
+      if (!has(payload, path)) {
         throw new PreconditionError(`Missing property "${path}" in payload`);
       }
     }

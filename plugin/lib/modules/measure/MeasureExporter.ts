@@ -1,6 +1,6 @@
 import { InternalError, JSONObject, KHit, User } from "kuzzle";
 import { ask } from "kuzzle-plugin-commons";
-import _ from "lodash";
+import get from "lodash/get";
 import { UUID } from "node:crypto";
 import { QueryTranslator } from "kuzzle";
 
@@ -120,12 +120,12 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
         return null;
       }
 
-      const formattedValue = _.get(hit, path, null);
+      const formattedValue = get(hit, path, null);
       if (formattedValue !== null && isIsoDate) {
         return new Date(formattedValue).toISOString();
       }
 
-      return _.get(hit, path, null);
+      return get(hit, path, null);
     });
   }
 
@@ -230,8 +230,9 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
     const measures: Array<Column & { shouldCheckName: boolean; name: string }> =
       [];
 
-    for (const { name, type } of documentMeasures) {
-      if (!(type in mappingsByMeasureType)) {
+    const measureTypes = [...new Set(documentMeasures.map(({ type }) => type))];
+    await Promise.all(
+      measureTypes.map(async (type) => {
         const { measure } = await ask<AskModelMeasureGet>(
           "ask:device-manager:model:measure:get",
           { type, index },
@@ -240,8 +241,10 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
         mappingsByMeasureType[type] = Object.keys(
           flattenObject(measure.valuesMappings),
         );
-      }
+      }),
+    );
 
+    for (const { name, type } of documentMeasures) {
       for (const measure of mappingsByMeasureType[type]) {
         /**
          * The path to be used to retrieve the measure values in a Measure Document

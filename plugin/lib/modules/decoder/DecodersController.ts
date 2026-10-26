@@ -9,8 +9,8 @@ import {
 import { KuzzleLogger } from "kuzzle-logger";
 
 export class DecodersController {
-  private payloadService: PayloadService;
-  private decodersRegister: DecodersRegister;
+  private readonly payloadService: PayloadService;
+  private readonly decodersRegister: DecodersRegister;
 
   public definition: ControllerDefinition;
   readonly logger: KuzzleLogger;
@@ -50,7 +50,7 @@ export class DecodersController {
   /**
    * List all available decoders
    */
-  async list(): Promise<ApiDecoderListResult> {
+  /* NOSONAR: Kuzzle controller handlers must return a Promise */ async list(): Promise<ApiDecoderListResult> {
     const decoders = this.decodersRegister.list();
 
     return { decoders };
@@ -85,7 +85,7 @@ export class DecodersController {
       this.logger.warn(
         "Received payload without a device model: routing to receiveUnknown",
       );
-      this.payloadService.receiveUnknown(model, payload, apiAction);
+      await this.payloadService.receiveUnknown(model, payload, apiAction);
       throw new BadRequestError(
         "Payload must specify the deviceModel for proper routing",
       );
@@ -97,7 +97,7 @@ export class DecodersController {
       this.logger.warn(
         `Received payload from ${model} model, no associated decoder found: routing to receiveUnknown`,
       );
-      this.payloadService.receiveUnknown(model, payload, apiAction);
+      await this.payloadService.receiveUnknown(model, payload, apiAction);
       throw new BadRequestError(
         `The specified device model "${model}" is unknown`,
       );

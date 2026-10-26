@@ -1,7 +1,7 @@
 import { KuzzleError } from "kuzzle";
 
 export class MeasuresNamesDuplicatesError extends KuzzleError {
-  private duplicates: string[];
+  private readonly duplicates: string[];
   constructor(
     message: string,
     duplicates: string[],

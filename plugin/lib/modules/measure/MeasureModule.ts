@@ -15,7 +15,7 @@ export class MeasureModule extends Module {
     this.logger = this.plugin.context.logger.child("measures-module");
   }
 
-  public async init(): Promise<void> {
+  public init(): void {
     this.measureService = new MeasureService(this.plugin, this.logger);
 
     this.plugin.imports.roles[RoleMeasuresAdmin.name] =

@@ -7,7 +7,7 @@ export interface MeasureValidationChunks {
 }
 
 export class MeasureValidationError extends KuzzleError {
-  private errors: MeasureValidationChunks[];
+  private readonly errors: MeasureValidationChunks[];
   constructor(
     message: string,
     errors: MeasureValidationChunks[],
