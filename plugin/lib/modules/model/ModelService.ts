@@ -54,7 +54,8 @@ import { MeasuresNamesDuplicatesError } from "./MeasuresNamesDuplicatesError";
 import { AskDeviceRefreshModel } from "../device";
 import { AskGroupRefreshModel } from "../group/types/GroupEvents";
 import { KuzzleLogger } from "kuzzle-logger";
-import _ from "lodash";
+import isEqual from "lodash/isEqual";
+import omit from "lodash/omit";
 import {
   MetadataEnrichment,
   MetadataModelContent,
@@ -97,6 +98,16 @@ export type DeviceModelUpdate = {
   metadataDetails?: MetadataDetails;
   metadataMappings: MetadataMappings;
 };
+
+function getAssetModelScope(
+  tenantClasses: string[] | undefined,
+  indexes: string[] | undefined,
+): "global" | "tenant" | "group" {
+  if (indexes?.length > 0) {
+    return "tenant";
+  }
+  return tenantClasses?.includes("commons") ? "global" : "group";
+}
 
 export class ModelService extends BaseService {
   readonly logger: KuzzleLogger;
@@ -354,6 +365,93 @@ export class ModelService extends BaseService {
     }
     return { models, strict, type };
   }
+
+  private validateAssetModel(
+    model: string,
+    measures: NamedMeasures,
+    tenantClasses: string[],
+    indexes?: string[],
+  ) {
+    if (Inflector.pascalCase(model) !== model) {
+      throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
+    }
+
+    if (indexes?.length && tenantClasses?.length) {
+      throw new BadRequestError(
+        `"indexes" and "tenantClasses" are mutually exclusive on an asset model.`,
+      );
+    }
+
+    const duplicates = getNamedMeasuresDuplicates(measures);
+
+    if (duplicates.length > 0) {
+      throw new MeasuresNamesDuplicatesError(
+        "Asset model measures contain one or multiple duplicate measure name",
+        duplicates,
+      );
+    }
+  }
+
+  /**
+   * Anti-shadowing: rejects the model if one with the same name exists at a different scope level
+   */
+  private async checkAssetModelScope(
+    model: string,
+    normalizedTenantClasses: string[],
+    indexes?: string[],
+  ) {
+    const scope = getAssetModelScope(normalizedTenantClasses, indexes);
+
+    await this.sdk.collection.refresh(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+    );
+    const existing = await this.sdk.document.search(
+      this.config.platformIndex,
+      InternalCollection.MODELS,
+      {
+        query: {
+          bool: {
+            must: [
+              { term: { type: "asset" } },
+              { term: { "asset.model": model } },
+            ],
+          },
+        },
+      },
+      { size: 10 },
+    );
+    for (const hit of existing.hits) {
+      const doc = hit._source as AssetModelContent;
+      const docScope = getAssetModelScope(doc.tenantClasses, doc.indexes);
+
+      // Same scope level: allow overwrite
+      if (scope === docScope) {
+        continue;
+      }
+
+      // Different scope levels: reject
+      if (docScope === "global") {
+        throw new BadRequestError(
+          `Asset model "${model}" already exists as a global (commons) model. A model cannot exist at multiple scopes.`,
+        );
+      }
+      if (scope === "global") {
+        throw new BadRequestError(
+          `Asset model "${model}" already exists at a non-global scope. A model cannot exist at multiple scopes.`,
+        );
+      }
+      if (scope === "tenant") {
+        throw new BadRequestError(
+          `Asset model "${model}" already exists at group scope. A model cannot be both group-scoped and tenant-scoped.`,
+        );
+      }
+      throw new BadRequestError(
+        `Asset model "${model}" already exists at tenant scope. A model cannot be both group-scoped and tenant-scoped.`,
+      );
+    }
+  }
+
   async writeAsset(
     tenantClasses: string[],
     model: string,
@@ -368,96 +466,13 @@ export class ModelService extends BaseService {
     icon?: string,
   ): Promise<KDocument<AssetModelContent>> {
     return withMetadataReferentialLock(async () => {
-      if (Inflector.pascalCase(model) !== model) {
-        throw new BadRequestError(`Asset model "${model}" must be PascalCase.`);
-      }
-
-      if (indexes?.length && tenantClasses?.length) {
-        throw new BadRequestError(
-          `"indexes" and "tenantClasses" are mutually exclusive on an asset model.`,
-        );
-      }
-
-      const duplicates = getNamedMeasuresDuplicates(measures);
-
-      if (duplicates.length > 0) {
-        throw new MeasuresNamesDuplicatesError(
-          "Asset model measures contain one or multiple duplicate measure name",
-          duplicates,
-        );
-      }
+      this.validateAssetModel(model, measures, tenantClasses, indexes);
 
       const normalizedTenantClasses = tenantClasses.includes("commons")
         ? ["commons"]
         : tenantClasses;
 
-      // Anti-shadowing: reject if a model with the same name exists at a different scope level
-      const isGlobal =
-        normalizedTenantClasses.includes("commons") &&
-        (!indexes || indexes.length === 0);
-      const isTenantScoped = indexes && indexes.length > 0;
-      const isGroupScoped = !isGlobal && !isTenantScoped;
-
-      await this.sdk.collection.refresh(
-        this.config.platformIndex,
-        InternalCollection.MODELS,
-      );
-      const existing = await this.sdk.document.search(
-        this.config.platformIndex,
-        InternalCollection.MODELS,
-        {
-          query: {
-            bool: {
-              must: [
-                { term: { type: "asset" } },
-                { term: { "asset.model": model } },
-              ],
-            },
-          },
-        },
-        { size: 10 },
-      );
-      for (const hit of existing.hits) {
-        const doc = hit._source as AssetModelContent;
-        const docIsGlobal =
-          doc.tenantClasses?.includes("commons") &&
-          (!doc.indexes || doc.indexes.length === 0);
-        const docIsTenantScoped = doc.indexes && doc.indexes.length > 0;
-        const docIsGroupScoped = !docIsGlobal && !docIsTenantScoped;
-
-        // Same scope level: allow overwrite
-        if (isGlobal && docIsGlobal) {
-          continue;
-        }
-        if (isTenantScoped && docIsTenantScoped) {
-          continue;
-        }
-        if (isGroupScoped && docIsGroupScoped) {
-          continue;
-        }
-
-        // Different scope levels: reject
-        if (docIsGlobal) {
-          throw new BadRequestError(
-            `Asset model "${model}" already exists as a global (commons) model. A model cannot exist at multiple scopes.`,
-          );
-        }
-        if (isGlobal) {
-          throw new BadRequestError(
-            `Asset model "${model}" already exists at a non-global scope. A model cannot exist at multiple scopes.`,
-          );
-        }
-        if (isTenantScoped && docIsGroupScoped) {
-          throw new BadRequestError(
-            `Asset model "${model}" already exists at group scope. A model cannot be both group-scoped and tenant-scoped.`,
-          );
-        }
-        if (isGroupScoped && docIsTenantScoped) {
-          throw new BadRequestError(
-            `Asset model "${model}" already exists at tenant scope. A model cannot be both group-scoped and tenant-scoped.`,
-          );
-        }
-      }
+      await this.checkAssetModelScope(model, normalizedTenantClasses, indexes);
 
       const { fields: metadata, resolvedMappings } = await this.resolveMetadata(
         "asset",
@@ -615,7 +630,7 @@ export class ModelService extends BaseService {
     });
   }
 
-  async writeGroup(
+  /* NOSONAR: same signature as write* */ async writeGroup(
     tenantClasses: string[],
     model: string,
     affinity: JSONObject,
@@ -922,7 +937,7 @@ export class ModelService extends BaseService {
     return result.hits;
   }
 
-  async searchAssets(
+  searchAssets(
     tenantClasses: string[],
     index: string | undefined,
     searchParams: Partial<SearchParams>,
@@ -996,7 +1011,7 @@ export class ModelService extends BaseService {
     );
   }
 
-  async searchDevices(
+  searchDevices(
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<DeviceModelContent>>> {
     const query = {
@@ -1024,7 +1039,7 @@ export class ModelService extends BaseService {
     );
   }
 
-  async searchGroups(
+  searchGroups(
     tenantClasses: string[],
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<GroupModelContent>>> {
@@ -1061,7 +1076,7 @@ export class ModelService extends BaseService {
     );
   }
 
-  async searchMeasures(
+  searchMeasures(
     index: string | undefined,
     searchParams: Partial<SearchParams>,
   ): Promise<SearchResult<KHit<MeasureModelContent>>> {
@@ -1504,7 +1519,7 @@ export class ModelService extends BaseService {
       const existingMappings = existing.metadataMappings ?? {};
 
       const removed = Object.keys(existingMappings).filter(
-        (name) => !_.isEqual(existingMappings[name], metadataMappings[name]),
+        (name) => !isEqual(existingMappings[name], metadataMappings[name]),
       );
 
       if (removed.length > 0) {
@@ -1786,13 +1801,13 @@ export class ModelService extends BaseService {
       const stored = await this.getMetadataReferential();
       const entry: MetadataReferentialEntry = {
         locales: {},
-        ..._.omit(definition, "managed"),
+        ...omit(definition, "managed"),
       };
 
       this.checkUnmanagedMetadata(stored, name);
 
       if (stored[name]) {
-        if (!_.isEqual(stored[name].mappings, entry.mappings)) {
+        if (!isEqual(stored[name].mappings, entry.mappings)) {
           throw new BadRequestError(
             `The mappings of metadata "${name}" cannot be modified, they are already merged into the engines collections`,
           );
@@ -1895,7 +1910,7 @@ export class ModelService extends BaseService {
         );
       }
 
-      const updatedReferential = _.omit(referential, name);
+      const updatedReferential = omit(referential, name);
 
       await saveMetadataReferential(
         this.sdk,
@@ -1949,7 +1964,7 @@ export class ModelService extends BaseService {
           this.config.platformIndex,
           InternalCollection.MODELS,
           _id,
-          _.omit(previous, "_kuzzle_info"),
+          omit(previous, "_kuzzle_info"),
           { refresh: "wait_for" },
         );
       } else {

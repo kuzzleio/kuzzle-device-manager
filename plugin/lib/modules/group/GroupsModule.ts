@@ -15,7 +15,7 @@ export class GroupsModule extends Module {
     super(plugin);
     this.logger = this.plugin.context.logger.child("groups-module");
   }
-  public async init(): Promise<void> {
+  public init(): void {
     this.groupsService = new GroupsService(this.plugin, this.logger);
     this.groupsController = new GroupsController(
       this.plugin,

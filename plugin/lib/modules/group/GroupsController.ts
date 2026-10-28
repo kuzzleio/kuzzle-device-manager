@@ -42,8 +42,8 @@ export class GroupsController {
   definition: ControllerDefinition;
   readonly logger: KuzzleLogger;
   constructor(
-    private plugin: DeviceManagerPlugin,
-    private groupsService: GroupsService,
+    private readonly plugin: DeviceManagerPlugin,
+    private readonly groupsService: GroupsService,
     logger: KuzzleLogger,
   ) {
     this.logger = logger;
@@ -217,7 +217,7 @@ export class GroupsController {
     if (groups.length === 0) {
       return;
     }
-    const closestParentId = groups[groups.length - 1];
+    const closestParentId = groups.at(-1);
     let parent;
     try {
       parent = await this.sdk.document.get<GroupContent>(
@@ -423,7 +423,7 @@ export class GroupsController {
     const body = request.getBody() as ApiGroupAddAssetsRequest["body"];
     const path = request.getBodyString("path");
     const assetIds = body.assetIds;
-    this.checkPath(index, path);
+    await this.checkPath(index, path);
     return this.groupsService.addAssets(index, path, assetIds, request);
   }
 
@@ -434,7 +434,7 @@ export class GroupsController {
     const body = request.getBody() as ApiGroupRemoveAssetsRequest["body"];
     const path = request.getBodyString("path");
     const assetIds = body.assetIds;
-    this.checkPath(index, path);
+    await this.checkPath(index, path);
     return this.groupsService.removeAssets(index, path, assetIds, request);
   }
 
@@ -443,7 +443,7 @@ export class GroupsController {
     const body = request.getBody() as ApiGroupAddDevicesRequest["body"];
     const path = request.getBodyString("path");
     const deviceIds = body.deviceIds;
-    this.checkPath(index, path);
+    await this.checkPath(index, path);
     return this.groupsService.addDevices(index, path, deviceIds, request);
   }
 
@@ -454,7 +454,7 @@ export class GroupsController {
     const body = request.getBody() as ApiGroupRemoveDevicesRequest["body"];
     const path = request.getBodyString("path");
     const deviceIds = body.deviceIds;
-    this.checkPath(index, path);
+    await this.checkPath(index, path);
     return this.groupsService.removeDevices(index, path, deviceIds, request);
   }
 

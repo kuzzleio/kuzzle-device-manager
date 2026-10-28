@@ -12,13 +12,13 @@ export class AssetModule extends Module {
   private assetService: AssetService;
   private assetHistoryService: AssetHistoryService;
   private assetController: AssetsController;
-  private logger: KuzzleLogger;
+  private readonly logger: KuzzleLogger;
 
   constructor(plugin: DeviceManagerPlugin) {
     super(plugin);
     this.logger = this.plugin.context.logger.child("assets-module");
   }
-  public async init(): Promise<void> {
+  public init(): void {
     this.assetHistoryService = new AssetHistoryService(
       this.plugin,
       this.logger,

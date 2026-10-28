@@ -7,7 +7,7 @@ import {
 } from "kuzzle";
 import { ConfigManager, EngineController } from "kuzzle-plugin-commons";
 import { JSONObject } from "kuzzle-sdk";
-import _ from "lodash";
+import merge from "lodash/merge";
 
 import { MeasureDefinition, measuresMappings, MeasureModule } from "../measure";
 
@@ -472,7 +472,7 @@ export class DeviceManagerPlugin extends Plugin {
    * Init the plugin
    */
   async init(config: JSONObject, context: PluginContext) {
-    this.config = _.merge({}, this.config, config);
+    this.config = merge({}, this.config, config);
     this.context = context;
 
     // Modules creation
@@ -483,12 +483,12 @@ export class DeviceManagerPlugin extends Plugin {
     this.measureModule = new MeasureModule(this);
     this.modelModule = new ModelModule(this);
     // Modules init
-    await this.assetModule.init();
-    await this.deviceModule.init();
-    await this.groupModule.init();
-    await this.decoderModule.init();
-    await this.measureModule.init();
-    await this.modelModule.init();
+    this.assetModule.init();
+    this.deviceModule.init();
+    this.groupModule.init();
+    this.decoderModule.init();
+    this.measureModule.init();
+    this.modelModule.init();
 
     this.decodersRegister.init(this, this.context);
     this.modelsRegister.init(this);

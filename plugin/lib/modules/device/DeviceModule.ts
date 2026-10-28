@@ -19,7 +19,7 @@ export class DeviceModule extends Module {
     this.logger = this.plugin.context.logger.child("devices-module");
   }
 
-  public async init(): Promise<void> {
+  public init(): void {
     this.deviceService = new DeviceService(this.plugin, this.logger);
     this.deviceController = new DevicesController(
       this.plugin,

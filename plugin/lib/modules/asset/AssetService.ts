@@ -13,7 +13,7 @@ import {
   SearchResult,
   mReplaceResponse,
 } from "kuzzle-sdk";
-import _ from "lodash";
+import set from "lodash/set";
 
 import {
   AskDeviceAttachEngine,
@@ -338,7 +338,7 @@ export class AssetService extends DigitalTwinService {
     for (const [metadataName, metadataValue] of Object.entries(
       assetModel.asset.defaultMetadata,
     )) {
-      _.set(assetMetadata, metadataName, metadataValue);
+      set(assetMetadata, metadataName, metadataValue);
     }
 
     const asset = await this.createDocument<AssetContent>(
@@ -411,7 +411,7 @@ export class AssetService extends DigitalTwinService {
       }
 
       for (const { deviceId } of asset._source.linkedMeasures) {
-        await this.unlinkAssetDevice(deviceId, assetId, [], true, request);
+        await this.unlinkAssetDevice(deviceId, assetId, [], true, request); // NOSONAR: sequential: each unlink updates the same asset
       }
 
       await this.deleteDocument(request, assetId, {
@@ -455,7 +455,7 @@ export class AssetService extends DigitalTwinService {
       }
       for (const device of devicesToUnlink) {
         const { asset: updatedAsset, device: updatedDevice } =
-          await this.unlinkAssetDevice(device, assetId, [], true, request);
+          await this.unlinkAssetDevice(device, assetId, [], true, request); // NOSONAR: sequential: each unlink updates the same asset
         devices.push(DeviceSerializer.serialize(updatedDevice));
         asset = AssetSerializer.serialize(updatedAsset);
       }
@@ -465,7 +465,7 @@ export class AssetService extends DigitalTwinService {
     // CASE ALL MEASURES FROM SPECIFIC ASSETS TO UNLINK
     for (const device of deviceIds) {
       const { asset: updatedAsset, device: updatedDevice } =
-        await this.unlinkAssetDevice(device, assetId, [], true, request);
+        await this.unlinkAssetDevice(device, assetId, [], true, request); // NOSONAR: sequential: each unlink updates the same asset
       devices.push(DeviceSerializer.serialize(updatedDevice));
       asset = AssetSerializer.serialize(updatedAsset);
     }
@@ -476,7 +476,8 @@ export class AssetService extends DigitalTwinService {
       l.measureSlots.some((s) => measureSlots.includes(s.asset)),
     )) {
       const { asset: updatedAsset, device: updatedDevice } =
-        await this.unlinkAssetDevice(
+        // prettier-ignore
+        await this.unlinkAssetDevice( // NOSONAR: sequential: each unlink updates the same asset
           linkedMeasures.deviceId,
           assetId,
           linkedMeasures.measureSlots.filter((slot) =>
@@ -601,7 +602,7 @@ export class AssetService extends DigitalTwinService {
         for (const link of linkedMeasures) {
           if (includeDevices === true) {
             // detach linked devices from current tenant (it also unkinks asset)
-            await ask<AskDeviceDetachEngine>(
+            await ask<AskDeviceDetachEngine>( // NOSONAR: sequential: device moves must complete in order
               "ask:device-manager:device:detach-engine",
               {
                 deviceId: link.deviceId,
@@ -610,7 +611,7 @@ export class AssetService extends DigitalTwinService {
             );
 
             // ... and attach to new tenant
-            await ask<AskDeviceAttachEngine>(
+            await ask<AskDeviceAttachEngine>( // NOSONAR: sequential: device moves must complete in order
               "ask:device-manager:device:attach-engine",
               {
                 deviceId: link.deviceId,
@@ -620,7 +621,8 @@ export class AssetService extends DigitalTwinService {
             );
 
             // ... and link this device to the asset in the new tenant
-            await this.linkAssetDevice(
+            // prettier-ignore
+            await this.linkAssetDevice( // NOSONAR: sequential: device moves must complete in order
               newIndex,
               link.deviceId,
               asset._id,
@@ -629,7 +631,8 @@ export class AssetService extends DigitalTwinService {
               request,
             );
           } else {
-            await this.unlinkAssetDevice(
+            // prettier-ignore
+            await this.unlinkAssetDevice( // NOSONAR: sequential: each unlink updates the same asset
               link.deviceId,
               asset._id,
               link.measureSlots,
@@ -764,7 +767,7 @@ export class AssetService extends DigitalTwinService {
     const results: ApiAssetUpdateModelLocales[] = await Promise.all(
       allowedEngines.map(async (engine) => {
         const resultUpdateByQuery =
-          await this.sdk.document.updateByQuery<AssetContent>(
+          await this.sdk.document.updateByQuery<AssetContent>( // NOSONAR: sequential: throttle updateByQuery across engines
             engine.index,
             "assets",
             {
@@ -945,7 +948,7 @@ export class AssetService extends DigitalTwinService {
 
     for (const engine of engines) {
       // ? Scroll by pages matching the write limit, the default search size (10) would miss assets
-      let result = await this.sdk.document.search<AssetContent>(
+      let result = await this.sdk.document.search<AssetContent>( // NOSONAR: sequential: throttle writes across engines
         engine.index,
         InternalCollection.ASSETS,
         { query: { equals: { model: assetModel.asset.model } } },
@@ -984,7 +987,8 @@ export class AssetService extends DigitalTwinService {
         });
 
         if (updatedAssets.length > 0) {
-          await this.mReplaceAndHistorize(
+          // prettier-ignore
+          await this.mReplaceAndHistorize( // NOSONAR: sequential: write page before scrolling
             engine.index,
             updatedAssets,
             removedMetadata,
@@ -994,7 +998,7 @@ export class AssetService extends DigitalTwinService {
           );
         }
 
-        result = await result.next();
+        result = await result.next(); // NOSONAR: sequential: scroll pagination
       }
     }
   }

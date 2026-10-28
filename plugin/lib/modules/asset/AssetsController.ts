@@ -539,16 +539,20 @@ export class AssetsController {
 
     const target = toApiTarget(indexId, assetId, [engine.group]);
 
-    const errors: MeasureValidationChunks[] = [];
-    for (const measure of measurements) {
-      const type = await this.getTypeFromMeasureSlot(
-        indexId,
-        assetId,
-        measure.measureName,
-        request,
-      );
+    const types = await Promise.all(
+      measurements.map((measure) =>
+        this.getTypeFromMeasureSlot(
+          indexId,
+          assetId,
+          measure.measureName,
+          request,
+        ),
+      ),
+    );
 
-      const validator = getValidator(type);
+    const errors: MeasureValidationChunks[] = [];
+    for (const [i, measure] of measurements.entries()) {
+      const validator = getValidator(types[i]);
 
       if (validator) {
         const valid = validator(measure.values);
@@ -841,7 +845,8 @@ export class AssetsController {
         );
       }
       const { asset: updatedAsset, device } =
-        await this.assetService.linkAssetDevice(
+        // prettier-ignore
+        await this.assetService.linkAssetDevice( // NOSONAR: sequential: each link updates the same asset
           index,
           deviceId,
           assetId,

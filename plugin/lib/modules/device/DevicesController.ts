@@ -6,7 +6,7 @@ import {
   KuzzleError,
   KuzzleRequest,
 } from "kuzzle";
-import _ from "lodash";
+import isPlainObject from "lodash/isPlainObject";
 
 import { AssetSerializer } from "../asset/model/AssetSerializer";
 import { MeasureExporter, DecodedMeasurement } from "../measure";
@@ -40,12 +40,12 @@ import { DeviceContent } from "./exports";
 import { KuzzleLogger } from "kuzzle-logger";
 export class DevicesController {
   public definition: ControllerDefinition;
-  private exporter: DigitalTwinExporter;
-  private measureExporter: MeasureExporter;
+  private readonly exporter: DigitalTwinExporter;
+  private readonly measureExporter: MeasureExporter;
   readonly logger: KuzzleLogger;
   constructor(
-    private plugin: DeviceManagerPlugin,
-    private deviceService: DeviceService,
+    private readonly plugin: DeviceManagerPlugin,
+    private readonly deviceService: DeviceService,
     logger: KuzzleLogger,
   ) {
     this.logger = logger;
@@ -380,7 +380,8 @@ export class DevicesController {
         );
       }
       const { asset, device: updatedDevice } =
-        await this.deviceService.linkAssetDevice(
+        // prettier-ignore
+        await this.deviceService.linkAssetDevice( // NOSONAR: sequential: each link updates the same device
           index,
           deviceId,
           assetId,
@@ -610,7 +611,7 @@ export class DevicesController {
         );
       }
 
-      if (typeof measures[i].measuredAt === "undefined") {
+      if (measures[i].measuredAt === undefined) {
         measures[i].measuredAt = Date.now();
       } else if (typeof measures[i].measuredAt !== "number") {
         throw new BadRequestError(
@@ -622,7 +623,7 @@ export class DevicesController {
         throw new BadRequestError(`body.measures[${i}].type must be a string`);
       }
 
-      if (!_.isPlainObject(measures[i].values)) {
+      if (!isPlainObject(measures[i].values)) {
         throw new BadRequestError(
           `body.measures[${i}].values must be an object`,
         );

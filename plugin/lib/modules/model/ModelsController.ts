@@ -39,7 +39,7 @@ import { MetadataModelContent } from "./MetadataReferential";
 import { KuzzleLogger } from "kuzzle-logger";
 
 export class ModelsController {
-  private modelService: ModelService;
+  private readonly modelService: ModelService;
 
   public definition: ControllerDefinition;
   readonly logger: KuzzleLogger;
@@ -384,25 +384,7 @@ export class ModelsController {
 
     // Validate index and tenantClasses for authenticated non-admin users
     if (!isAdmin && !isAnonymous) {
-      // Whether the user may act on this engine is Kuzzle's call, not ours:
-      // the engine is the request `index`, so a profile restricted to its
-      // tenant is refused any other engine by the core before this runs.
-      if (index) {
-        const engineExists = await this.modelService.engineExists(index);
-        if (!engineExists) {
-          throw new NotFoundError(`Engine "${index}" not found.`);
-        }
-      }
-
-      if (tenantClasses.length > 0) {
-        const invalidGroups =
-          await this.modelService.findInvalidTenantClasses(tenantClasses);
-        if (invalidGroups.length > 0) {
-          throw new NotFoundError(
-            `Tenant class(s) not found: ${invalidGroups.join(", ")}.`,
-          );
-        }
-      }
+      await this.checkEngineAndTenantClasses(index, tenantClasses);
     }
 
     // Always include commons alongside requested groups
@@ -423,6 +405,31 @@ export class ModelsController {
       models,
       total: models.length,
     };
+  }
+
+  private async checkEngineAndTenantClasses(
+    index: string | undefined,
+    tenantClasses: string[],
+  ) {
+    // Whether the user may act on this engine is Kuzzle's call, not ours:
+    // the engine is the request `index`, so a profile restricted to its
+    // tenant is refused any other engine by the core before this runs.
+    if (index) {
+      const engineExists = await this.modelService.engineExists(index);
+      if (!engineExists) {
+        throw new NotFoundError(`Engine "${index}" not found.`);
+      }
+    }
+
+    if (tenantClasses.length > 0) {
+      const invalidGroups =
+        await this.modelService.findInvalidTenantClasses(tenantClasses);
+      if (invalidGroups.length > 0) {
+        throw new NotFoundError(
+          `Tenant class(s) not found: ${invalidGroups.join(", ")}.`,
+        );
+      }
+    }
   }
 
   async listDevices(

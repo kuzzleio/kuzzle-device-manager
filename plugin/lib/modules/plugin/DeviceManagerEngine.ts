@@ -13,7 +13,8 @@ import {
   onAsk,
 } from "kuzzle-plugin-commons";
 import { JSONObject } from "kuzzle-sdk";
-import _ from "lodash";
+import mapValues from "lodash/mapValues";
+import merge from "lodash/merge";
 
 import { assetsHistoryMappings } from "../asset";
 import { NamedMeasures } from "../decoder";
@@ -115,6 +116,23 @@ const METADATA_COLLECTIONS = {
   group: InternalCollection.GROUPS,
 };
 
+function isModelApplicableToEngine(
+  model: AssetModelContent,
+  engineIndex: string,
+  tenantClass: string,
+): boolean {
+  if (model.indexes?.length) {
+    return model.indexes.includes(engineIndex);
+  }
+
+  // Class-scoped or commons: applicable to all engines of the class
+  return (
+    !model.tenantClasses?.length ||
+    model.tenantClasses.includes(tenantClass) ||
+    model.tenantClasses.includes("commons")
+  );
+}
+
 export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   public config: DeviceManagerConfiguration;
 
@@ -137,9 +155,8 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
 
     this.context = plugin.context;
 
-    onAsk<AskEngineList>(
-      "ask:device-manager:engine:list",
-      async ({ tenantClass }) => this.list(tenantClass),
+    onAsk<AskEngineList>("ask:device-manager:engine:list", ({ tenantClass }) =>
+      this.list(tenantClass),
     );
 
     onAsk<AskEngineUpdateAll>(
@@ -176,106 +193,19 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           this.sdk,
           this.config.platformIndex,
         );
-        const resolve = <T extends TwinModelContent | GroupModelContent>(
-          models: T[],
-        ) => models.map((model) => resolveModelMappings(referential, model));
-        const newTwinModels = resolve(payload.twin?.models ?? []);
 
-        const results = await this.getEngines();
-        const tenantClasses = results.map((elt) => elt.engine.group);
-        const classesInUse = [undefined, ...new Set(tenantClasses)];
+        const engines = await this.getEngines();
 
-        for (const tenantClass of classesInUse) {
-          if (payload.twin) {
-            if (tenantClass === undefined) {
-              // Platform-level check (no tenant class filter)
-              const twinModels = resolve(
-                await this.getModels<TwinModelContent>(
-                  this.config.platformIndex,
-                  payload.twin.type,
-                ),
-              );
+        if (payload.twin) {
+          const conflicts = await this.getTwinUpdateConflicts(
+            payload.twin,
+            referential,
+            measureModels,
+            engines,
+          );
 
-              // Platform-level twins can only reference global measures
-              const globalMeasures = measureModels.filter(
-                (m) => !m.indexes?.length,
-              );
-
-              const conflicts = await this.doesTwinUpdateConflicts(
-                payload.twin.type,
-                twinModels,
-                newTwinModels,
-                globalMeasures,
-              );
-
-              if (conflicts.length > 0) {
-                return conflicts;
-              }
-            } else {
-              // Per-engine check: each engine has its own ES index,
-              // so conflicts are only relevant within the same engine's model set
-              const enginesInClass = results.filter(
-                (e) => e.engine.group === tenantClass,
-              );
-
-              for (const engineDoc of enginesInClass) {
-                const twinModels = resolve(
-                  await this.getModels<TwinModelContent>(
-                    this.config.platformIndex,
-                    payload.twin.type,
-                    tenantClass,
-                    engineDoc.engine.index,
-                  ),
-                );
-
-                // Only check new models that will be applied to this engine
-                const applicableNewModels = newTwinModels.filter((model) => {
-                  const assetModel = model as AssetModelContent;
-                  if (assetModel.indexes?.length) {
-                    return assetModel.indexes.includes(engineDoc.engine.index);
-                  }
-                  // Class-scoped or commons: applicable to all engines of the class
-                  return (
-                    !assetModel.tenantClasses?.length ||
-                    assetModel.tenantClasses?.includes(tenantClass) ||
-                    assetModel.tenantClasses?.includes("commons")
-                  );
-                });
-
-                if (applicableNewModels.length === 0) {
-                  continue;
-                }
-
-                // Per-engine: global measures + tenant-scoped for this engine
-                const engineMeasures = measureModels.filter(
-                  (m) =>
-                    !m.indexes?.length ||
-                    m.indexes.includes(engineDoc.engine.index),
-                );
-
-                const conflicts = await this.doesTwinUpdateConflicts(
-                  payload.twin.type,
-                  twinModels,
-                  applicableNewModels,
-                  engineMeasures,
-                );
-
-                if (conflicts.length > 0) {
-                  return conflicts;
-                }
-
-                // ? Mappings of deleted models or removed metadata are still in the collection
-                const esConflicts = await this.getModelsMetadataConflicts(
-                  engineDoc.engine.index,
-                  payload.twin.type,
-                  applicableNewModels,
-                );
-
-                if (esConflicts.length > 0) {
-                  return esConflicts;
-                }
-              }
-            }
+          if (conflicts.length > 0) {
+            return conflicts;
           }
         }
 
@@ -286,34 +216,11 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
           );
         }
         if (payload.groupModels) {
-          const groupModels = resolve(
-            await this.getModels<GroupModelContent>(
-              this.config.platformIndex,
-              "group",
-            ),
+          return this.getGroupsUpdateConflicts(
+            payload.groupModels,
+            referential,
+            engines,
           );
-          const newGroupModels = resolve(payload.groupModels);
-          const conflicts = await this.doesGroupsUpdateConflicts(
-            groupModels,
-            newGroupModels,
-          );
-
-          if (conflicts.length > 0) {
-            return conflicts;
-          }
-
-          // ? Every engine groups collection has the mappings of every group model
-          for (const { engine } of results) {
-            const esConflicts = await this.getModelsMetadataConflicts(
-              engine.index,
-              "group",
-              newGroupModels,
-            );
-
-            if (esConflicts.length > 0) {
-              return esConflicts;
-            }
-          }
         }
 
         return [];
@@ -323,33 +230,213 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     onAsk<AskEngineMetadataConflict>(
       "ask:device-manager:engine:doesMetadataConflict",
       async ({ metadataMappings }) => {
-        const conflicts: ConflictChunk[] = [];
+        const engines = await this.getEngines();
+        const targets = engines.flatMap(({ engine }) =>
+          Object.values(METADATA_COLLECTIONS).map((collection) => ({
+            collection,
+            index: engine.index,
+          })),
+        );
 
-        for (const { engine } of await this.getEngines()) {
-          for (const collection of Object.values(METADATA_COLLECTIONS)) {
-            const esConflicts = findMappingsConflicts(
-              await this.getCollectionMetadataMappings(
-                engine.index,
-                collection,
-              ),
-              metadataMappings,
-              `${collection}.metadata`,
-            );
+        const chunks = await Promise.all(
+          targets.map(
+            async ({ index, collection }): Promise<ConflictChunk | null> => {
+              const esConflicts = findMappingsConflicts(
+                await this.getCollectionMetadataMappings(index, collection),
+                metadataMappings,
+                `${collection}.metadata`,
+              );
 
-            if (esConflicts.length > 0) {
-              conflicts.push({
+              if (esConflicts.length === 0) {
+                return null;
+              }
+
+              return {
                 conflicts: esConflicts,
                 modelType: "metadata",
                 newModel: "metadata-referential",
-                sourceModel: `${engine.index}/${collection}`,
-              });
-            }
-          }
-        }
+                sourceModel: `${index}/${collection}`,
+              };
+            },
+          ),
+        );
 
-        return conflicts;
+        return chunks.filter((chunk) => chunk !== null);
       },
     );
+  }
+
+  private resolveModels<T extends TwinModelContent | GroupModelContent>(
+    referential: MetadataReferential,
+    models: T[],
+  ): T[] {
+    return models.map((model) => resolveModelMappings(referential, model));
+  }
+
+  /**
+   * Return conflicts of new twin models, first against the platform models,
+   * then against the models and the actual mappings of every engine
+   */
+  private async getTwinUpdateConflicts(
+    twin: AskEngineUpdateConflict["payload"]["twin"],
+    referential: MetadataReferential,
+    measureModels: MeasureModelContent[],
+    engines: EngineDocument[],
+  ): Promise<ConflictChunk[]> {
+    const newTwinModels = this.resolveModels(referential, twin.models);
+
+    // Platform-level check (no tenant class filter)
+    const twinModels = this.resolveModels(
+      referential,
+      await this.getModels<TwinModelContent>(
+        this.config.platformIndex,
+        twin.type,
+      ),
+    );
+
+    // Platform-level twins can only reference global measures
+    const globalMeasures = measureModels.filter((m) => !m.indexes?.length);
+
+    const conflicts = this.doesTwinUpdateConflicts(
+      twin.type,
+      twinModels,
+      newTwinModels,
+      globalMeasures,
+    );
+
+    if (conflicts.length > 0) {
+      return conflicts;
+    }
+
+    const tenantClasses = new Set(engines.map((elt) => elt.engine.group));
+
+    for (const tenantClass of tenantClasses) {
+      if (tenantClass === undefined) {
+        continue;
+      }
+
+      // Per-engine check: each engine has its own ES index,
+      // so conflicts are only relevant within the same engine's model set
+      for (const engineDoc of engines.filter(
+        (e) => e.engine.group === tenantClass,
+      )) {
+        const engineConflicts = await this.getEngineTwinConflicts(
+          engineDoc.engine.index,
+          tenantClass,
+          twin.type,
+          newTwinModels,
+          measureModels,
+          referential,
+        );
+
+        if (engineConflicts.length > 0) {
+          return engineConflicts;
+        }
+      }
+    }
+
+    return [];
+  }
+
+  /**
+   * Return conflicts of new twin models applicable to an engine, against the engine
+   * models and the actual mappings of its collection
+   */
+  private async getEngineTwinConflicts(
+    engineIndex: string,
+    tenantClass: string,
+    twinType: TwinType,
+    newTwinModels: TwinModelContent[],
+    measureModels: MeasureModelContent[],
+    referential: MetadataReferential,
+  ): Promise<ConflictChunk[]> {
+    const twinModels = this.resolveModels(
+      referential,
+      await this.getModels<TwinModelContent>(
+        this.config.platformIndex,
+        twinType,
+        tenantClass,
+        engineIndex,
+      ),
+    );
+
+    // Only check new models that will be applied to this engine
+    const applicableNewModels = newTwinModels.filter((model) =>
+      isModelApplicableToEngine(
+        model as AssetModelContent,
+        engineIndex,
+        tenantClass,
+      ),
+    );
+
+    if (applicableNewModels.length === 0) {
+      return [];
+    }
+
+    // Per-engine: global measures + tenant-scoped for this engine
+    const engineMeasures = measureModels.filter(
+      (m) => !m.indexes?.length || m.indexes.includes(engineIndex),
+    );
+
+    const conflicts = this.doesTwinUpdateConflicts(
+      twinType,
+      twinModels,
+      applicableNewModels,
+      engineMeasures,
+    );
+
+    if (conflicts.length > 0) {
+      return conflicts;
+    }
+
+    // ? Mappings of deleted models or removed metadata are still in the collection
+    return this.getModelsMetadataConflicts(
+      engineIndex,
+      twinType,
+      applicableNewModels,
+    );
+  }
+
+  /**
+   * Return conflicts of new group models, against the platform group models
+   * then against the actual mappings of every engine groups collection
+   */
+  private async getGroupsUpdateConflicts(
+    groupModels: GroupModelContent[],
+    referential: MetadataReferential,
+    engines: EngineDocument[],
+  ): Promise<ConflictChunk[]> {
+    const currentGroupModels = this.resolveModels(
+      referential,
+      await this.getModels<GroupModelContent>(
+        this.config.platformIndex,
+        "group",
+      ),
+    );
+    const newGroupModels = this.resolveModels(referential, groupModels);
+    const conflicts = this.doesGroupsUpdateConflicts(
+      currentGroupModels,
+      newGroupModels,
+    );
+
+    if (conflicts.length > 0) {
+      return conflicts;
+    }
+
+    // ? Every engine groups collection has the mappings of every group model
+    for (const { engine } of engines) {
+      const esConflicts = await this.getModelsMetadataConflicts(
+        engine.index,
+        "group",
+        newGroupModels,
+      );
+
+      if (esConflicts.length > 0) {
+        return esConflicts;
+      }
+    }
+
+    return [];
   }
 
   /**
@@ -427,13 +514,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     referential: MetadataReferential,
     modelsMappings: MetadataMappings[],
   ) {
-    _.merge(
+    merge(
       metadataProperties,
-      _.mapValues(referential, (entry) => _.cloneDeep(entry.mappings)),
+      mapValues(referential, (entry) => structuredClone(entry.mappings)),
     );
 
     for (const metadataMappings of modelsMappings) {
-      _.merge(
+      merge(
         metadataProperties,
         resolveMetadataMappings(referential, metadataMappings),
       );
@@ -451,22 +538,18 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    * @throws If a measure type declared in the twin does not exists
    * @returns An array of conflict chunk
    */
-  private async doesTwinUpdateConflicts(
+  private doesTwinUpdateConflicts(
     twinType: TwinType,
     twinModels: TwinModelContent[],
     additionalModels: TwinModelContent[],
     measureModels: MeasureModelContent[],
-  ): Promise<ConflictChunk[]> {
+  ): ConflictChunk[] {
     const conflicts: ConflictChunk[] = [];
 
     for (const additional of additionalModels) {
       for (const { type: measureType } of additional[twinType]
         .measures as NamedMeasures) {
-        const measureModel = measureModels.find(
-          (m) => m.measure.type === measureType,
-        );
-
-        if (!measureModel) {
+        if (!measureModels.some((m) => m.measure.type === measureType)) {
           throw new InternalError(
             `Cannot find measure "${measureType}" declared in ${[
               twinType,
@@ -488,10 +571,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    * @param additionalGroups The new or updated group models
    * @returns An array of ConflictChunk
    */
-  private async doesGroupsUpdateConflicts(
+  private doesGroupsUpdateConflicts(
     groupModels: GroupModelContent[],
     additionalGroups: GroupModelContent[],
-  ): Promise<ConflictChunk[]> {
+  ): ConflictChunk[] {
     const conflicts: ConflictChunk[] = [];
 
     for (const model of additionalGroups) {
@@ -508,10 +591,10 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    * @param additionalMeasures The new or updated measure models
    * @returns An array of ConflictChunk
    */
-  private async doesMeasuresUpdateConflicts(
+  private doesMeasuresUpdateConflicts(
     measuresModels: MeasureModelContent[],
     additionalMeasures: MeasureModelContent[],
-  ): Promise<ConflictChunk[]> {
+  ): ConflictChunk[] {
     const conflicts: ConflictChunk[] = [];
 
     for (const model of additionalMeasures) {
@@ -527,7 +610,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     this.context.log.info(`Update ${results.length} existing engines`);
 
     for (const document of results) {
-      await this.onUpdate(document.engine.index, document.engine.group);
+      await this.onUpdate(document.engine.index, document.engine.group); // NOSONAR: engines are updated one at a time to avoid overloading ES with mapping updates
     }
   }
 
@@ -572,17 +655,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async onCreate(index: string, tenantClass = "commons") {
-    const promises = [];
-
-    promises.push(this.createAssetsCollection(index, tenantClass));
-
-    promises.push(this.createAssetsHistoryCollection(index, tenantClass));
-
-    promises.push(this.createGroupsCollection(index));
-
-    promises.push(this.createDevicesCollection(index));
-
-    promises.push(this.createMeasuresCollection(index, tenantClass));
+    const promises = [
+      this.createAssetsCollection(index, tenantClass),
+      this.createAssetsHistoryCollection(index, tenantClass),
+      this.createGroupsCollection(index),
+      this.createDevicesCollection(index),
+      this.createMeasuresCollection(index, tenantClass),
+    ];
 
     const collections = await Promise.all(promises);
 
@@ -592,17 +671,13 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
   }
 
   async onUpdate(index: string, tenantClass = "commons") {
-    const promises = [];
-
-    promises.push(this.createAssetsCollection(index, tenantClass));
-
-    promises.push(this.createAssetsHistoryCollection(index, tenantClass));
-
-    promises.push(this.createGroupsCollection(index));
-
-    promises.push(this.createDevicesCollection(index));
-
-    promises.push(this.createMeasuresCollection(index, tenantClass));
+    const promises = [
+      this.createAssetsCollection(index, tenantClass),
+      this.createAssetsHistoryCollection(index, tenantClass),
+      this.createGroupsCollection(index),
+      this.createDevicesCollection(index),
+      this.createMeasuresCollection(index, tenantClass),
+    ];
 
     const collections = await Promise.all(promises);
 
@@ -670,9 +745,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         index,
       );
 
-    const mappings = JSON.parse(JSON.stringify(assetsHistoryMappings));
+    const mappings = structuredClone(assetsHistoryMappings) as JSONObject;
 
-    _.merge(mappings.properties.asset, assetsMappings);
+    merge(mappings.properties.asset, assetsMappings);
 
     const settings = this.config.engineCollections.assetHistory.settings;
 
@@ -846,18 +921,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
         ? InternalCollection.ASSETS
         : InternalCollection.DEVICES;
     if (
-      this.config.engineCollections[digitalTwinCollection] === undefined ||
-      this.config.engineCollections[digitalTwinCollection].mappings ===
-        undefined
+      this.config.engineCollections[digitalTwinCollection]?.mappings ===
+      undefined
     ) {
       throw new InternalError(`Cannot find mapping for "${digitalTwinType}"`);
     }
 
-    const mappings = JSON.parse(
-      JSON.stringify(
-        this.config.engineCollections[digitalTwinCollection].mappings,
-      ),
-    );
+    const mappings = structuredClone(
+      this.config.engineCollections[digitalTwinCollection].mappings,
+    ) as JSONObject;
 
     this.mergeMetadataMappings(
       mappings.properties.metadata.properties,
@@ -868,11 +940,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     for (const model of models) {
       for (const { type: measureType } of model[digitalTwinType]
         .measures as NamedMeasures) {
-        const measureModel = measureModels.find(
-          (m) => m.measure.type === measureType,
-        );
-
-        if (!measureModel) {
+        if (!measureModels.some((m) => m.measure.type === measureType)) {
           throw new InternalError(
             `Cannot find measure "${measureType}" declared in ${[
               digitalTwinType,
@@ -918,15 +986,15 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
    * @param assetsMappings The assets complete mappings
    * @returns The complete ES mappings produced by merging models mappings
    */
-  private async getMeasuresMappings(
+  private getMeasuresMappings(
     models: MeasureModelContent[],
     assetsMappings: any,
     deviceMappings: any,
   ) {
-    const mappings = JSON.parse(JSON.stringify(measuresMappings));
+    const mappings = structuredClone(measuresMappings) as JSONObject;
 
     for (const model of models) {
-      _.merge(
+      merge(
         mappings.properties.values.properties,
         model.measure.valuesMappings,
       );
@@ -946,9 +1014,9 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
       this.config.platformIndex,
       "group",
     );
-    const mappings = JSON.parse(
-      JSON.stringify(this.config.engineCollections.groups.mappings),
-    );
+    const mappings = structuredClone(
+      this.config.engineCollections.groups.mappings,
+    ) as JSONObject;
 
     this.mergeMetadataMappings(
       mappings.properties.metadata.properties,
@@ -1059,7 +1127,7 @@ export class DeviceManagerEngine extends AbstractEngine<DeviceManagerPlugin> {
     );
     while (result !== null) {
       devices.push(...result.hits);
-      result = await result.next();
+      result = await result.next(); // NOSONAR: scroll pages are fetched sequentially
     }
     if (devices.length > 0) {
       void this.sdk.document.mUpdate(

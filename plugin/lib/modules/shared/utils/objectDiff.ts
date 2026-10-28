@@ -1,5 +1,6 @@
 import { JSONObject } from "kuzzle-sdk";
-import _ from "lodash";
+import isEqual from "lodash/isEqual";
+import isObject from "lodash/isObject";
 
 export function objectDiff(base: JSONObject, object: JSONObject) {
   const changes: string[] = [];
@@ -15,14 +16,14 @@ export function objectDiff(base: JSONObject, object: JSONObject) {
       if (_base[key] === undefined) {
         changes.push([...path, key].join("."));
       } else if (
-        !_.isEqual(_object[key], _base[key]) &&
-        _.isObject(_object[key]) &&
-        _.isObject(_base[key])
+        !isEqual(_object[key], _base[key]) &&
+        isObject(_object[key]) &&
+        isObject(_base[key])
       ) {
         walkObject(_base[key], _object[key], [...path, key]);
       } else if (
-        !_.isObject(_object[key]) &&
-        !_.isObject(_base[key]) &&
+        !isObject(_object[key]) &&
+        !isObject(_base[key]) &&
         _base[key] !== _object[key]
       ) {
         changes.push([...path, key].join("."));
