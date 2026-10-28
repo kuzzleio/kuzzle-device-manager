@@ -484,7 +484,7 @@ export class AssetsController {
    * @param indexId The asset index
    * @param assetId The target asset ID
    * @param measureName The measureName to get the type from
-   * @param tenantClass The target tenant class
+   * @param request The ingestion request, whose user must see the asset
    * @returns The measure type if used in the asset, null otherwise
    * @throws If the asset does not exists
    */
@@ -492,15 +492,17 @@ export class AssetsController {
     indexId: string,
     assetId: string,
     measureName: string,
+    request: KuzzleRequest,
   ) {
     let asset: AssetContent;
     try {
-      const assetDocument =
-        await this.plugin.context.accessors.sdk.document.get<AssetContent>(
-          indexId,
-          InternalCollection.ASSETS,
-          assetId,
-        );
+      // ? Goes through the generic:document events, so the pipes hiding the
+      // ? asset from the user apply
+      const assetDocument = await this.assetService.get(
+        indexId,
+        assetId,
+        request,
+      );
 
       asset = assetDocument._source;
     } catch {
@@ -543,6 +545,7 @@ export class AssetsController {
         indexId,
         assetId,
         measure.measureName,
+        request,
       );
 
       const validator = getValidator(type);
@@ -594,6 +597,7 @@ export class AssetsController {
       indexId,
       assetId,
       measureName,
+      request,
     );
 
     if (!type) {
@@ -734,11 +738,12 @@ export class AssetsController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.exporter.prepareExport(index, user, {
-      lang,
-      query,
-      sort,
-    });
+    const link = await this.exporter.prepareExport(
+      index,
+      user,
+      { lang, query, sort },
+      request,
+    );
 
     return { link };
   }

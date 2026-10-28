@@ -58,6 +58,15 @@ describe("AssetsController:SCRUD", () => {
       /^Missing argument "body.reference".$/,
     );
 
+    for (const reference of ["", "   "]) {
+      await expect(
+        sdk.query({ ...baseQuery, body: { model: "Container", reference } }),
+      ).rejects.toMatchObject({
+        status: 400,
+        message: "The asset reference must not be empty.",
+      });
+    }
+
     const unknownModel: PartialBody = {
       ...baseQuery,
       body: { model: "truck", reference: "BX98HZ" },
@@ -330,5 +339,79 @@ describe("AssetsController:SCRUD", () => {
       height: 21,
       weight: 42,
     });
+  });
+
+  it("refuses to upsert an asset hidden from the user", async () => {
+    await expect(
+      sdk.query({
+        controller: "device-manager/assets",
+        action: "upsert",
+        index: "engine-ayse",
+        body: {
+          model: assetAyseLinked1.model,
+          reference: assetAyseLinked1.reference,
+          metadata: { weight: 42 },
+        },
+        volatile: { hideReference: assetAyseLinked1.reference },
+      }),
+    ).rejects.toMatchObject({ status: 404 });
+
+    const assetDocument = await sdk.document.get(
+      "engine-ayse",
+      InternalCollection.ASSETS,
+      assetAyseLinked1Id,
+    );
+    expect(assetDocument._source.metadata).toEqual(assetAyseLinked1.metadata);
+  });
+
+  it("refuses unknown metadata when replacing metadata", async () => {
+    await expect(
+      sdk.query({
+        controller: "device-manager/assets",
+        action: "replaceMetadata",
+        index: "engine-ayse",
+        _id: assetAyseLinked1Id,
+        body: { metadata: { weight: 42, unknownMetadata: "value" } },
+      }),
+    ).rejects.toMatchObject({
+      status: 400,
+      message:
+        'Metadata "unknownMetadata" is not defined on asset model "Container".',
+    });
+
+    const assetDocument = await sdk.document.get(
+      "engine-ayse",
+      InternalCollection.ASSETS,
+      assetAyseLinked1Id,
+    );
+    expect(assetDocument._source.metadata).toEqual(assetAyseLinked1.metadata);
+  });
+
+  it("updates the model locales only on the engines of the user", async () => {
+    const query = {
+      controller: "device-manager/assets",
+      action: "updateModelLocales",
+      model: "Container",
+    };
+
+    const { result: adminResult } = await sdk.query(query);
+    expect(adminResult.map(({ engineIndex }) => engineIndex).sort()).toEqual(
+      expect.arrayContaining(["engine-ayse", "engine-kuzzle"]),
+    );
+
+    // ? ayse-admin manages the assets of engine-ayse only
+    await sdk.auth.login("local", {
+      username: "ayse-admin",
+      password: "password",
+    });
+
+    try {
+      const { result } = await sdk.query(query);
+      expect(result.map(({ engineIndex }) => engineIndex)).toEqual([
+        "engine-ayse",
+      ]);
+    } finally {
+      sdk.jwt = null;
+    }
   });
 });

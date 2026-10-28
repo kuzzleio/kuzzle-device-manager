@@ -104,14 +104,6 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       sort: params.sort ?? { measuredAt: "desc" },
     };
 
-    /**
-     * ? Prevent error duplicate result on search with sort.
-     * "Unable to retrieve all results from search: the sort combination must identify one item only. Add document "_id" to the sort."
-     */
-    if (exportParams.sort._id === undefined) {
-      exportParams.sort._id = "asc";
-    }
-
     return super.prepareExport(index, user, exportParams);
   }
 
@@ -155,7 +147,9 @@ export class MeasureExporter extends AbstractExporter<MeasureExportParams> {
       index,
       InternalCollection.MEASURES,
       { query, sort },
-      { lang, size: 200 },
+      // ? Scroll: search_after pagination would need a unique sort, and
+      // ? Elasticsearch 8 refuses to sort on "_id"
+      { lang, scroll: "30s", size: 200 },
     );
 
     const targetModel =

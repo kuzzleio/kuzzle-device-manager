@@ -229,6 +229,43 @@ describe("GroupsController", () => {
     expect(result._source.lastUpdate).toBeGreaterThanOrEqual(now);
   });
 
+  it("compares group names literally, ignoring case", async () => {
+    const createGroup = (name: string) =>
+      sdk.query<ApiGroupCreateRequest, ApiGroupCreateResult>({
+        controller: "device-manager/groups",
+        index: "engine-ayse",
+        action: "create",
+        refresh: "wait_for",
+        body: { name, path: undefined },
+      });
+
+    // Lucene regexp special characters must not break the query
+    await expect(createGroup("Quai [")).resolves.toBeDefined();
+
+    // Parentheses must not be read as a regexp group
+    const { result: quaiA } = await createGroup("Quai (A)");
+    await expect(createGroup("Quai (A)")).rejects.toThrow(
+      /^A group with name "Quai \(A\)" already exist$/,
+    );
+    await expect(createGroup("quai (a)")).rejects.toThrow(
+      /^A group with name "quai \(a\)" already exist$/,
+    );
+
+    // "." must not match any character
+    await createGroup("Zone 9x9");
+    await expect(createGroup("Zone 9.9")).resolves.toBeDefined();
+
+    // Updating a group with its own name must not conflict with itself
+    const { result: updated } = await sdk.query<ApiGroupUpdateRequest>({
+      controller: "device-manager/groups",
+      index: "engine-ayse",
+      action: "update",
+      _id: quaiA._id,
+      body: { name: "Quai (A)" },
+    });
+    expect(updated._source.name).toBe("Quai (A)");
+  });
+
   it("can move a group", async () => {
     const missingIdQuery: Omit<ApiGroupMoveRequest, "_id"> = {
       controller: "device-manager/groups",
@@ -247,6 +284,16 @@ describe("GroupsController", () => {
     };
     await expect(sdk.query(missingBodyQuery)).rejects.toThrow(
       /^The request must specify a body.$/,
+    );
+    const missingTargetQuery = {
+      controller: "device-manager/groups",
+      index: "engine-ayse",
+      action: "moveGroup",
+      _id: groupTestChildrenId1,
+      body: {},
+    };
+    await expect(sdk.query(missingTargetQuery)).rejects.toThrow(
+      /^"targetGroupId" must be a group id, or null to move the group to the root$/,
     );
     const selfMoveQuery: ApiGroupMoveRequest = {
       controller: "device-manager/groups",

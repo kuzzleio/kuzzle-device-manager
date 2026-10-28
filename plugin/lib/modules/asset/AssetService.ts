@@ -176,10 +176,15 @@ export class AssetService extends DigitalTwinService {
             model: asset._source.model,
           },
         );
-        for (const key in unknownMetadata) {
-          if (key in assetModel.asset.metadataMappings) {
-            asset._source.metadata[key] = unknownMetadata[key];
+        for (const key of Object.keys(unknownMetadata)) {
+          // ? Same as update, which the strict mappings refuse
+          if (!(key in assetModel.asset.metadataMappings)) {
+            throw new BadRequestError(
+              `Metadata "${key}" is not defined on asset model "${asset._source.model}".`,
+            );
           }
+
+          asset._source.metadata[key] = unknownMetadata[key];
         }
       }
       const updatedPayload = await this.app.trigger<EventAssetUpdateBefore>(
@@ -231,10 +236,27 @@ export class AssetService extends DigitalTwinService {
     metadata: Metadata,
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
+    this.checkReference(reference);
     const assetId = AssetSerializer.id(model, reference);
 
     return lock(`asset:${index}:${assetId}`, async () => {
-      const asset = await this.get(index, assetId, request).catch(() => null);
+      const asset = await this.get(index, assetId, request).catch(
+        async (error) => {
+          // ? A pipe may hide the asset from the user: creating it over would
+          // ? tell them it exists
+          if (
+            await this.sdk.document.exists(
+              index,
+              InternalCollection.ASSETS,
+              assetId,
+            )
+          ) {
+            throw error;
+          }
+
+          return null;
+        },
+      );
 
       if (!asset) {
         return this._create(
@@ -366,6 +388,7 @@ export class AssetService extends DigitalTwinService {
     metadata: JSONObject,
     request: KuzzleRequest,
   ): Promise<KDocument<AssetContent>> {
+    this.checkReference(reference);
     const assetId = AssetSerializer.id(model, reference);
     return lock(`asset:${index}:${assetId}`, async () =>
       this._create(assetId, index, model, reference, metadata, request),
@@ -732,37 +755,43 @@ export class AssetService extends DigitalTwinService {
       {},
     );
 
-    const results: ApiAssetUpdateModelLocales[] = [];
+    // ? The action takes no index, so Kuzzle ignores the index restrictions
+    const allowed = await Promise.all(
+      engines.map((engine) => this.isAllowedOnEngine(engine.index, request)),
+    );
+    const allowedEngines = engines.filter((engine, i) => allowed[i]);
 
-    for (const engine of engines) {
-      const resultUpdateByQuery =
-        await this.sdk.document.updateByQuery<AssetContent>(
-          engine.index,
-          "assets",
-          {
-            bool: {
-              must: [
-                {
-                  term: {
-                    model: model,
+    const results: ApiAssetUpdateModelLocales[] = await Promise.all(
+      allowedEngines.map(async (engine) => {
+        const resultUpdateByQuery =
+          await this.sdk.document.updateByQuery<AssetContent>(
+            engine.index,
+            "assets",
+            {
+              bool: {
+                must: [
+                  {
+                    term: {
+                      model: model,
+                    },
                   },
-                },
-              ],
+                ],
+              },
             },
-          },
-          {
-            modelLocales: locales,
-          },
-        );
+            {
+              modelLocales: locales,
+            },
+          );
 
-      results.push({
-        engineIndex: engine.index,
-        result: {
-          errors: [...resultUpdateByQuery.errors],
-          successes: [...resultUpdateByQuery.successes],
-        },
-      });
-    }
+        return {
+          engineIndex: engine.index,
+          result: {
+            errors: [...resultUpdateByQuery.errors],
+            successes: [...resultUpdateByQuery.successes],
+          },
+        };
+      }),
+    );
 
     const errorsFiltered = results.filter((re) => re.result.errors.length > 0);
 
@@ -959,7 +988,9 @@ export class AssetService extends DigitalTwinService {
             engine.index,
             updatedAssets,
             removedMetadata,
-            { refresh: "wait_for" },
+            {
+              refresh: "wait_for",
+            },
           );
         }
 
@@ -992,5 +1023,14 @@ export class AssetService extends DigitalTwinService {
     return engines.filter((engine) =>
       assetModel.tenantClasses?.includes(engine.group),
     );
+  }
+
+  /**
+   * The reference is part of the asset id
+   */
+  private checkReference(reference: string) {
+    if (reference.trim() === "") {
+      throw new BadRequestError("The asset reference must not be empty.");
+    }
   }
 }

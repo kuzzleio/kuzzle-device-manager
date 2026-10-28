@@ -136,4 +136,34 @@ describe("DevicesController:exportMeasures", () => {
     expect(typeof parseFloat(row2.positionAccuracy)).toBe("number");
     expect(typeof parseFloat(row2.positionAltitude)).toBe("number");
   });
+
+  it("should export only the devices the search pipes let through, with formulas escaped", async () => {
+    await sdk.query({
+      controller: "device-manager/devices",
+      action: "create",
+      index: "engine-ayse",
+      body: { model: "DummyTemp", reference: "=1+1" },
+      refresh: "wait_for",
+    });
+
+    const { result } = await sdk.query<
+      ApiDeviceExportRequest,
+      ApiDeviceExportResult
+    >({
+      controller: "device-manager/devices",
+      action: "export",
+      index: "engine-ayse",
+      // ? Read by a test pipe on "generic:document:beforeSearch"
+      volatile: { restrictToReference: "=1+1" },
+    } as ApiDeviceExportRequest);
+
+    const response = await axios.get("http://localhost:7512" + result.link);
+    const rows = csvParse(response.data);
+
+    expect(rows).toHaveLength(2);
+    expect(getExportedColums(response.data.split("\n")[1])).toMatchObject({
+      model: "DummyTemp",
+      reference: "'=1+1",
+    });
+  });
 });

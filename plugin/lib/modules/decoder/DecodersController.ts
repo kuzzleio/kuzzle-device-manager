@@ -98,7 +98,9 @@ export class DecodersController {
         `Received payload from ${model} model, no associated decoder found: routing to receiveUnknown`,
       );
       this.payloadService.receiveUnknown(model, payload, apiAction);
-      throw new BadRequestError("The specified device model is unknown");
+      throw new BadRequestError(
+        `The specified device model "${model}" is unknown`,
+      );
     }
     this.logger.debug("Routing payload to decoder for " + decoder.deviceModel);
     return this.payloadService.receive(request, decoder);

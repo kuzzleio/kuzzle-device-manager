@@ -40,6 +40,20 @@ export type ExportStreamAugmenter = (
   index: string,
 ) => Promise<void>;
 
+/**
+ * Prevent CSV formula injection: spreadsheets evaluate the cells starting
+ * with one of these characters
+ *
+ * @see https://owasp.org/www-community/attacks/CSV_Injection
+ */
+function escapeCsvCell<T>(value: T): T | string {
+  if (typeof value === "string" && /^[=+\-@\t\r]/.test(value)) {
+    return `'${value}`;
+  }
+
+  return value;
+}
+
 export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
   protected config: ExporterOption = {
     expireTime: 2 * 60,
@@ -152,14 +166,18 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
 
     let result = request;
     try {
-      stream.write(stringify([columns.map((column) => column.header)]));
+      stream.write(
+        stringify([columns.map((column) => escapeCsvCell(column.header))]),
+      );
       while (result) {
         for (const augmenter of this.exportStreamAugmenters) {
           await augmenter(result, columns, index);
         }
 
         for (const hit of result.hits) {
-          stream.write(stringify([this.formatHit(columns, hit)]));
+          stream.write(
+            stringify([this.formatHit(columns, hit).map(escapeCsvCell)]),
+          );
         }
 
         result = result.fetched < 10000 ? await result.next() : null;

@@ -349,7 +349,9 @@ export class DevicesController {
   ): Promise<ApiDeviceDetachEngineResult> {
     const deviceId = request.getId();
 
-    await this.deviceService.detachEngine(deviceId, request);
+    await this.deviceService.detachEngine(deviceId, request, {
+      checkRights: true,
+    });
   }
 
   /**
@@ -674,11 +676,12 @@ export class DevicesController {
     const lang = request.getLangParam();
     const user = request.getUser() as any;
 
-    const link = await this.exporter.prepareExport(index, user, {
-      lang,
-      query,
-      sort,
-    });
+    const link = await this.exporter.prepareExport(
+      index,
+      user,
+      { lang, query, sort },
+      request,
+    );
 
     return { link };
   }
