@@ -602,20 +602,18 @@ export class AssetService extends DigitalTwinService {
         for (const link of linkedMeasures) {
           if (includeDevices === true) {
             // detach linked devices from current tenant (it also unkinks asset)
-            await ask<AskDeviceDetachEngine>(
+            await ask<AskDeviceDetachEngine>( // NOSONAR: sequential: device moves must complete in order
               "ask:device-manager:device:detach-engine",
               {
-                // NOSONAR: sequential: device moves must complete in order
                 deviceId: link.deviceId,
                 user,
               },
             );
 
             // ... and attach to new tenant
-            await ask<AskDeviceAttachEngine>(
+            await ask<AskDeviceAttachEngine>( // NOSONAR: sequential: device moves must complete in order
               "ask:device-manager:device:attach-engine",
               {
-                // NOSONAR: sequential: device moves must complete in order
                 deviceId: link.deviceId,
                 index: newIndex,
                 user,
