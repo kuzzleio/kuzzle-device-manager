@@ -6,8 +6,8 @@ import { ApiPayloadReceiveUnkownResult } from "./types/PayloadApi";
 import { KuzzleLogger } from "kuzzle-logger";
 
 export class PayloadsController {
-  private payloadService: PayloadService;
-  private decodersRegister: DecodersRegister;
+  private readonly payloadService: PayloadService;
+  private readonly decodersRegister: DecodersRegister;
   readonly logger: KuzzleLogger;
   public definition: ControllerDefinition;
 

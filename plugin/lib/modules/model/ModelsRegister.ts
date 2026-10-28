@@ -42,16 +42,19 @@ import {
 import { ask } from "kuzzle-plugin-commons";
 import { AskEngineMetadataConflict } from "../plugin/DeviceManagerEngine";
 import { ConflictChunk } from "./ModelsConflicts";
-import _ from "lodash";
+import isEqual from "lodash/isEqual";
+import mapValues from "lodash/mapValues";
+import omit from "lodash/omit";
+import pick from "lodash/pick";
 
 export class ModelsRegister {
   private config: DeviceManagerConfiguration;
   private context: PluginContext;
-  private assetModels: AssetModelContent[] = [];
-  private deviceModels: DeviceModelContent[] = [];
-  private groupModels: GroupModelContent[] = [];
-  private measureModels: MeasureModelContent[] = [];
-  private metadataReferential: MetadataReferential = {};
+  private readonly assetModels: AssetModelContent[] = [];
+  private readonly deviceModels: DeviceModelContent[] = [];
+  private readonly groupModels: GroupModelContent[] = [];
+  private readonly measureModels: MeasureModelContent[] = [];
+  private readonly metadataReferential: MetadataReferential = {};
   private logger: KuzzleLogger;
 
   private get sdk() {
@@ -98,7 +101,7 @@ export class ModelsRegister {
     );
 
     for (const [name, entry] of Object.entries(this.metadataReferential)) {
-      if (stored[name] && !_.isEqual(stored[name].mappings, entry.mappings)) {
+      if (stored[name] && !isEqual(stored[name].mappings, entry.mappings)) {
         throw new PluginImplementationError(
           `The mappings of metadata "${name}" cannot be modified, they are already merged into the engines collections`,
         );
@@ -109,14 +112,14 @@ export class ModelsRegister {
 
     // ? Only the metadata still registered from code are managed, the others become editable through the API
     const referential: MetadataReferential = {
-      ..._.mapValues(stored, (entry) => _.omit(entry, "managed")),
-      ..._.mapValues(this.metadataReferential, (entry) => ({
+      ...mapValues(stored, (entry) => omit(entry, "managed")),
+      ...mapValues(this.metadataReferential, (entry) => ({
         ...entry,
         managed: true,
       })),
     };
 
-    if (!_.isEqual(stored, referential)) {
+    if (!isEqual(stored, referential)) {
       await saveMetadataReferential(
         this.sdk,
         this.config.platformIndex,
@@ -161,8 +164,8 @@ export class ModelsRegister {
       ...(await ask<AskEngineMetadataConflict>(
         "ask:device-manager:engine:doesMetadataConflict",
         {
-          metadataMappings: _.mapValues(
-            _.pick(this.metadataReferential, names),
+          metadataMappings: mapValues(
+            pick(this.metadataReferential, names),
             (entry) => entry.mappings,
           ),
         },
@@ -218,10 +221,10 @@ export class ModelsRegister {
       (message) => new PluginImplementationError(message),
     );
 
-    const entry = { locales: {}, ..._.omit(definition, "managed") };
+    const entry = { locales: {}, ...omit(definition, "managed") };
     const registered = this.metadataReferential[name];
 
-    if (registered && !_.isEqual(registered, entry)) {
+    if (registered && !isEqual(registered, entry)) {
       throw new PluginImplementationError(
         `Metadata "${name}" is already registered in the metadata referential with another definition`,
       );
@@ -355,7 +358,7 @@ export class ModelsRegister {
    * @param locales - Optional translations specific to the model.
    * @throws PluginImplementationError if the model name is not in PascalCase.
    */
-  registerGroup(
+  /* NOSONAR: public API */ registerGroup(
     tenantClasses: string[],
     model: string,
     affinity: GroupAffinity,

@@ -40,7 +40,7 @@ interface PayloadRequest {
 export type SearchParams = ReturnType<KuzzleRequest["getSearchParams"]>;
 
 export abstract class BaseService {
-  constructor(private plugin: DeviceManagerPlugin) {}
+  constructor(private readonly plugin: DeviceManagerPlugin) {}
 
   protected get app(): Backend {
     return global.app;

@@ -189,10 +189,10 @@ export class DigitalTwinService extends BaseService {
 
       const updatedMeasureSlots: MeasureSlot[] = [];
       for (const measure of measureSlots) {
-        const foundMeasure = deviceModel.device.measures.find(
+        const isMeasureDeclared = deviceModel.device.measures.some(
           (deviceMeasure) => deviceMeasure.name === measure.device,
         );
-        if (!foundMeasure && !implicitMeasuresLinking) {
+        if (!isMeasureDeclared && !implicitMeasuresLinking) {
           throw new BadRequestError(
             `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`,
           );
@@ -638,7 +638,7 @@ export class DigitalTwinService extends BaseService {
       ) {
         continue;
       }
-      const availableMeasures = assetModel.asset.measures.filter((measure) => {
+      const assetMeasure = assetModel.asset.measures.find((measure) => {
         // Check measures of same type
         if (measure.type !== deviceMeasure.type) {
           return false;
@@ -649,7 +649,6 @@ export class DigitalTwinService extends BaseService {
         }
         return true;
       });
-      const assetMeasure = availableMeasures[0];
       // If one assetMeasure exists, request a link
       if (assetMeasure) {
         requestedMeasureSlots.push({
@@ -699,8 +698,8 @@ export class DigitalTwinService extends BaseService {
       InternalCollection.ASSETS,
       assetId,
     );
-    let linkedMeasuresAssets = asset._source.linkedMeasures;
-    let linkedMeasuresDevices = device._source.linkedMeasures;
+    let linkedMeasuresAssets: AssetContent["linkedMeasures"];
+    let linkedMeasuresDevices: typeof device._source.linkedMeasures;
 
     if (allMeasures) {
       linkedMeasuresAssets = asset._source.linkedMeasures.filter(
@@ -828,7 +827,7 @@ export class DigitalTwinService extends BaseService {
 
     return engine._source.engine;
   }
-  protected async getDeviceProvisioning(deviceId: string) {
+  protected getDeviceProvisioning(deviceId: string) {
     return this.sdk.document.get<DeviceProvisioningContent>(
       this.config.platformIndex,
       InternalCollection.DEVICES,

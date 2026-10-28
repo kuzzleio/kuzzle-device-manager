@@ -193,12 +193,12 @@ export class MeasureService extends BaseService {
     }
   }
 
-  private async buildDeviceMeasures(
+  private buildDeviceMeasures(
     source: DeviceMeasureSource,
     asset: KDocument<AssetContent> | null,
     measures: DecodedMeasurement[],
     payloadUuids: string[],
-  ): Promise<MeasureContent[]> {
+  ): MeasureContent[] {
     const deviceMeasures: MeasureContent[] = [];
 
     for (const measure of measures) {
@@ -251,7 +251,7 @@ export class MeasureService extends BaseService {
       asset = { ...assetDocument?._source };
     }
 
-    const measures = await this.buildDeviceMeasures(
+    const measures = this.buildDeviceMeasures(
       source,
       assetDocument,
       measurements,
@@ -278,7 +278,7 @@ export class MeasureService extends BaseService {
 
     const asset = { ...assetDocument._source };
 
-    const measures = await this.buildApiMeasures(
+    const measures = this.buildApiMeasures(
       source,
       assetDocument,
       measurements,
@@ -298,12 +298,12 @@ export class MeasureService extends BaseService {
    * @param tenantClass tenantClass of model
    * @returns A MeasurementContent builded from parameters
    */
-  private async buildApiMeasures(
+  private buildApiMeasures(
     source: ApiMeasureSource,
     asset: KDocument<AssetContent>,
     measures: DecodedMeasurement[],
     payloadUuids: string[],
-  ): Promise<MeasureContent[]> {
+  ): MeasureContent[] {
     const apiMeasures: MeasureContent[] = [];
 
     for (const measure of measures) {

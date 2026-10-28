@@ -1,6 +1,8 @@
 import { EmbeddedSDK } from "kuzzle";
 import { JSONObject, KDocument } from "kuzzle-sdk";
-import _ from "lodash";
+import isEqual from "lodash/isEqual";
+import isPlainObject from "lodash/isPlainObject";
+import union from "lodash/union";
 
 import { InternalCollection } from "../plugin/types/InternalCollection";
 import { lock } from "../shared/utils/lock";
@@ -93,9 +95,7 @@ export type MetadataEnrichment = {
 export function isReferentialMapping(
   mapping: unknown,
 ): mapping is ReferentialMetadataMapping {
-  return (
-    _.isPlainObject(mapping) && (mapping as JSONObject).referential === true
-  );
+  return isPlainObject(mapping) && (mapping as JSONObject).referential === true;
 }
 
 /**
@@ -123,7 +123,7 @@ export function resolveMetadataMappings(
     if (!isReferentialMapping(mapping)) {
       resolved[name] = mapping;
     } else if (referential[name]) {
-      resolved[name] = _.cloneDeep(referential[name].mappings);
+      resolved[name] = structuredClone(referential[name].mappings);
     }
   }
 
@@ -166,7 +166,7 @@ function mergeLocales(
 ): { [locale: string]: LocaleDetails } {
   const locales: { [locale: string]: LocaleDetails } = {};
 
-  for (const locale of _.union(
+  for (const locale of union(
     Object.keys(entryLocales),
     Object.keys(modelLocales),
   )) {
@@ -190,7 +190,9 @@ function enrichDetails(
   details: Partial<MetadataDetails[string]> = {},
 ): MetadataDetails[string] {
   return {
-    ...(entry.editorHint ? { editorHint: _.cloneDeep(entry.editorHint) } : {}),
+    ...(entry.editorHint
+      ? { editorHint: structuredClone(entry.editorHint) }
+      : {}),
     ...(entry.icon !== undefined ? { icon: entry.icon } : {}),
     ...details,
     locales: mergeLocales(name, entry.locales, details.locales),
@@ -214,7 +216,7 @@ function applyReferentialValues(
   );
 
   if (!hasDefault && entry.defaultValue !== undefined) {
-    defaultMetadata[name] = _.cloneDeep(entry.defaultValue);
+    defaultMetadata[name] = structuredClone(entry.defaultValue);
   }
 }
 
@@ -275,28 +277,28 @@ export function checkMetadataReferentialEntry(
     );
   }
 
-  if (!_.isPlainObject(entry)) {
+  if (!isPlainObject(entry)) {
     throw createError(`Metadata "${name}" definition must be an object`);
   }
 
   const mappings = entry.mappings as JSONObject;
 
   if (
-    !_.isPlainObject(mappings) ||
-    (typeof mappings.type !== "string" && !_.isPlainObject(mappings.properties))
+    !isPlainObject(mappings) ||
+    (typeof mappings.type !== "string" && !isPlainObject(mappings.properties))
   ) {
     throw createError(
       `Metadata "${name}" mappings must define either a "type" or "properties"`,
     );
   }
 
-  if (entry.locales !== undefined && !_.isPlainObject(entry.locales)) {
+  if (entry.locales !== undefined && !isPlainObject(entry.locales)) {
     throw createError(`Metadata "${name}" locales must be an object`);
   }
 
   if (
     entry.editorHint !== undefined &&
-    (!_.isPlainObject(entry.editorHint) ||
+    (!isPlainObject(entry.editorHint) ||
       typeof entry.editorHint.type !== "string")
   ) {
     throw createError(
@@ -319,7 +321,7 @@ function getInlineConflicts(
   entry: MetadataReferentialEntry,
   basePath: string,
 ): MappingsConflict[] {
-  if (_.isEqual(inlineMappings, entry.mappings)) {
+  if (isEqual(inlineMappings, entry.mappings)) {
     return [];
   }
 
@@ -372,7 +374,7 @@ export function enrichModelMetadata(
   const warnings: string[] = [];
   const conflicts: MappingsConflict[] = [];
 
-  if (!_.isPlainObject(metadataMappings)) {
+  if (!isPlainObject(metadataMappings)) {
     throw context.createError(
       `Metadata mappings of ${model} must be an object`,
     );
@@ -381,7 +383,7 @@ export function enrichModelMetadata(
   for (const [name, mapping] of Object.entries(metadataMappings)) {
     const entry = referential[name];
 
-    if (_.isPlainObject(mapping) && "referential" in mapping) {
+    if (isPlainObject(mapping) && "referential" in mapping) {
       if (!isReferentialMapping(mapping) || Object.keys(mapping).length !== 1) {
         throw context.createError(
           `The metadata "${name}" of ${model} must be { referential: true } to use the metadata referential`,
@@ -522,7 +524,7 @@ export async function fetchMetadataReferential(
 /**
  * Writes the whole metadata referential document
  */
-export async function saveMetadataReferential(
+export function saveMetadataReferential(
   sdk: EmbeddedSDK,
   platformIndex: string,
   referential: MetadataReferential,
@@ -562,7 +564,7 @@ export async function fetchMetadataModels(
       models.push({ _id: hit._id, _source: hit._source });
     }
 
-    result = await result.next();
+    result = await result.next(); // NOSONAR: scroll pages must be fetched sequentially
   }
 
   return models;

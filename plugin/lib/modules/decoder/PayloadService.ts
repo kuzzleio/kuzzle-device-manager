@@ -23,7 +23,7 @@ import { KuzzleLogger } from "kuzzle-logger";
 
 export class PayloadService extends BaseService {
   readonly logger: KuzzleLogger;
-  private provisioningStrategy: string;
+  private readonly provisioningStrategy: string;
   constructor(plugin: DeviceManagerPlugin, logger: KuzzleLogger) {
     super(plugin);
     this.logger = logger;
@@ -128,104 +128,14 @@ export class PayloadService extends BaseService {
       },
     );
     for (const device of devices) {
-      const {
-        _id,
-        _source: { reference, linkedMeasures, index },
-      } = device;
-      // ? Done here to avoid invoque Measure service only for device metadata change (if no index)
-      const deviceMetadataChanges = decodedPayload.getMetadata(reference);
-      if (
-        changeMetadata &&
-        deviceMetadataChanges !== null &&
-        Object.values(deviceMetadataChanges).length > 0
-      ) {
-        if (index !== null) {
-          await this.sdk.document.update<DeviceContent>(
-            index,
-            InternalCollection.DEVICES,
-            _id,
-            {
-              metadata: deviceMetadataChanges,
-            },
-          );
-        }
-      }
-
-      if (ingestMeasurements) {
-        const measurements = decodedPayload.getMeasurements(reference);
-        // Handle device not attached to an engine
-        if (index === null) {
-          await ask<AskMeasureSourceIngest>(
-            "device-manager:measures:sourceIngest",
-            {
-              measurements,
-              payloadUuids: [uuid],
-              source: this.getDeviceMeasureSource(
-                device,
-                deviceMetadataChanges,
-              ),
-              target: {
-                assetId: null,
-                indexId: index,
-                type: "device",
-              },
-            },
-          );
-          continue;
-        }
-        // Handle every linked assets
-        for (const link of linkedMeasures) {
-          const assetId = link.assetId;
-          const assetMeasurements = measurements.filter((m) =>
-            link.measureSlots
-              .map((slot) => slot.device)
-              .includes(m.measureName),
-          );
-          await ask<AskMeasureSourceIngest>(
-            "device-manager:measures:sourceIngest",
-            {
-              measurements: assetMeasurements,
-              payloadUuids: [uuid],
-              source: this.getDeviceMeasureSource(
-                device,
-                deviceMetadataChanges,
-              ),
-              target: {
-                assetId: assetId,
-                indexId: index,
-                type: "device",
-              },
-            },
-          );
-        }
-        // HANDLE MEASURES NOT LINKED
-        const unlinkedMeasurements = measurements.filter(
-          (m) =>
-            !linkedMeasures.some((link) =>
-              link.measureSlots
-                .map((slot) => slot.device)
-                .includes(m.measureName),
-            ),
-        );
-        if (unlinkedMeasurements.length > 0) {
-          await ask<AskMeasureSourceIngest>(
-            "device-manager:measures:sourceIngest",
-            {
-              measurements: unlinkedMeasurements,
-              payloadUuids: [uuid],
-              source: this.getDeviceMeasureSource(
-                device,
-                deviceMetadataChanges,
-              ),
-              target: {
-                assetId: null,
-                indexId: index,
-                type: "device",
-              },
-            },
-          );
-        }
-      }
+      // prettier-ignore
+      await this.ingestDecodedDevice( // NOSONAR: sequential: keep measures ingestion order
+        device,
+        decodedPayload,
+        uuid,
+        changeMetadata,
+        ingestMeasurements,
+      );
     }
 
     return { valid };
@@ -238,10 +148,10 @@ export class PayloadService extends BaseService {
   ) {
     const apiAction = "device-manager/devices:receiveMeasure";
     const {
-      _source: { model, linkedMeasures, index },
+      _source: { model, index },
     } = device;
 
-    // TODO: do we want update a metadata from formatted payload to ?
+    // Formatted payloads do not update the device metadata
     // Payload is already formated thus valid
     await this.savePayload(
       model,
@@ -252,55 +162,132 @@ export class PayloadService extends BaseService {
     );
 
     if (index !== null) {
-      for (const link of linkedMeasures) {
-        const assetId = link.assetId;
-        const assetMeasurements = measurements.filter((m) =>
-          link.measureSlots.map((mn) => mn.device).includes(m.measureName),
-        );
-        await ask<AskMeasureSourceIngest>(
-          "device-manager:measures:sourceIngest",
-          {
-            measurements: assetMeasurements,
-            payloadUuids,
-            source: this.getDeviceMeasureSource(
-              device,
-              device._source.metadata,
-            ),
-            target: {
-              assetId: assetId,
-              indexId: index,
-              type: "device",
-            },
-          },
-        );
-      }
-      // HANDLE MEASURES NOT LINKED
-      const unlinkedMeasurements = measurements.filter(
-        (measurement) =>
-          !linkedMeasures.some((link) =>
-            link.measureSlots
-              .map((slot) => slot.device)
-              .includes(measurement.measureName),
-          ),
+      await this.ingestEngineMeasurements(
+        device,
+        measurements,
+        device._source.metadata,
+        payloadUuids,
       );
-      if (unlinkedMeasurements.length > 0) {
-        await ask<AskMeasureSourceIngest>(
-          "device-manager:measures:sourceIngest",
-          {
-            measurements: unlinkedMeasurements,
-            payloadUuids,
-            source: this.getDeviceMeasureSource(
-              device,
-              device._source.metadata,
-            ),
-            target: {
-              assetId: null,
-              indexId: index,
-              type: "device",
-            },
+    }
+  }
+
+  private async ingestDecodedDevice(
+    device: KDocument<DeviceContent>,
+    decodedPayload: DecodedPayload<any>,
+    uuid: string,
+    changeMetadata: boolean,
+    ingestMeasurements: boolean,
+  ) {
+    const {
+      _id,
+      _source: { reference, index },
+    } = device;
+    // ? Done here to avoid invoque Measure service only for device metadata change (if no index)
+    const deviceMetadataChanges = decodedPayload.getMetadata(reference);
+    if (
+      changeMetadata &&
+      index !== null &&
+      deviceMetadataChanges !== null &&
+      Object.values(deviceMetadataChanges).length > 0
+    ) {
+      await this.sdk.document.update<DeviceContent>(
+        index,
+        InternalCollection.DEVICES,
+        _id,
+        {
+          metadata: deviceMetadataChanges,
+        },
+      );
+    }
+
+    if (!ingestMeasurements) {
+      return;
+    }
+
+    const measurements = decodedPayload.getMeasurements(reference);
+    // Handle device not attached to an engine
+    if (index === null) {
+      await ask<AskMeasureSourceIngest>(
+        "device-manager:measures:sourceIngest",
+        {
+          measurements,
+          payloadUuids: [uuid],
+          source: this.getDeviceMeasureSource(device, deviceMetadataChanges),
+          target: {
+            assetId: null,
+            indexId: index,
+            type: "device",
           },
-        );
-      }
+        },
+      );
+      return;
+    }
+
+    await this.ingestEngineMeasurements(
+      device,
+      measurements,
+      deviceMetadataChanges,
+      [uuid],
+    );
+  }
+
+  /**
+   * Ingest measurements of a device attached to an engine: measures linked to
+   * an asset go to that asset, the remaining ones to the device only.
+   */
+  private async ingestEngineMeasurements(
+    device: KDocument<DeviceContent>,
+    measurements: DecodedMeasurement[],
+    deviceMetadata: JSONObject,
+    payloadUuids: string[],
+  ) {
+    const {
+      _source: { linkedMeasures, index },
+    } = device;
+
+    // Handle every linked assets
+    for (const link of linkedMeasures) {
+      const assetMeasurements = measurements.filter((m) =>
+        link.measureSlots.map((slot) => slot.device).includes(m.measureName),
+      );
+      await ask<AskMeasureSourceIngest>( // NOSONAR: sequential: each ingestion updates the same device
+        "device-manager:measures:sourceIngest",
+        {
+          measurements: assetMeasurements,
+          payloadUuids,
+          source: this.getDeviceMeasureSource(device, deviceMetadata),
+          target: {
+            assetId: link.assetId,
+            indexId: index,
+            type: "device",
+          },
+        },
+      );
+    }
+
+    // HANDLE MEASURES NOT LINKED
+    const unlinkedMeasurements = measurements.filter(
+      (measurement) =>
+        !linkedMeasures.some((link) =>
+          link.measureSlots
+            .map((slot) => slot.device)
+            .includes(measurement.measureName),
+        ),
+    );
+    if (unlinkedMeasurements.length > 0) {
+      await ask<AskMeasureSourceIngest>(
+        "device-manager:measures:sourceIngest",
+        {
+          measurements: unlinkedMeasurements,
+          payloadUuids,
+          source: this.getDeviceMeasureSource(device, deviceMetadata),
+          target: {
+            assetId: null,
+            indexId: index,
+            type: "device",
+          },
+        },
+      );
     }
   }
 

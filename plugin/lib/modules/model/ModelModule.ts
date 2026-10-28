@@ -13,7 +13,7 @@ export class ModelModule extends Module {
     this.logger = this.plugin.context.logger.child("models-module");
   }
 
-  public async init(): Promise<void> {
+  public init(): void {
     this.modelService = new ModelService(this.plugin, this.logger);
     this.modelController = new ModelsController(this.modelService, this.logger);
 

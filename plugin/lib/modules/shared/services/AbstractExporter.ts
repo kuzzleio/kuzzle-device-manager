@@ -10,7 +10,7 @@ import {
   User,
 } from "kuzzle";
 import { EngineContent } from "kuzzle-plugin-commons";
-import _ from "lodash";
+import get from "lodash/get";
 
 import { DeviceManagerPlugin, InternalCollection } from "../../plugin";
 
@@ -137,11 +137,11 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
     hit: KHit<KDocumentContentGeneric>,
   ): string[] {
     return columns.map(({ path, isIsoDate }) => {
-      const formattedValue = _.get(hit, path, null);
+      const formattedValue = get(hit, path, null);
       if (formattedValue !== null && isIsoDate) {
         return new Date(formattedValue).toISOString();
       }
-      return _.get(hit, path, null);
+      return get(hit, path, null);
     });
   }
 
@@ -171,7 +171,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
       );
       while (result) {
         for (const augmenter of this.exportStreamAugmenters) {
-          await augmenter(result, columns, index);
+          await augmenter(result, columns, index); // NOSONAR: augmenters mutate the page in order
         }
 
         for (const hit of result.hits) {
@@ -180,7 +180,7 @@ export abstract class AbstractExporter<P extends ExportParams = ExportParams> {
           );
         }
 
-        result = result.fetched < 10000 ? await result.next() : null;
+        result = result.fetched < 10000 ? await result.next() : null; // NOSONAR: scroll pages are sequential
       }
     } catch (error) {
       stream.write(error.message);

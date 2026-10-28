@@ -1,4 +1,9 @@
-import _ from "lodash";
+import forOwn from "lodash/forOwn";
+import get from "lodash/get";
+import has from "lodash/has";
+import isEqual from "lodash/isEqual";
+import isObject from "lodash/isObject";
+import isPlainObject from "lodash/isPlainObject";
 import { TwinModelContent, TwinType } from "../plugin";
 import {
   GroupModelContent,
@@ -39,14 +44,14 @@ function getModelConflicts(
   const conflicts: ConflictChunk[] = [];
 
   for (const model of models) {
-    const baseMappings = _.get(model, mappingsPath);
+    const baseMappings = get(model, mappingsPath);
     if (baseMappings === undefined || baseMappings === null) {
       continue;
     }
 
     const mappingsConflict = findMappingsConflicts(
       baseMappings,
-      _.get(additional, mappingsPath),
+      get(additional, mappingsPath),
       mappingsPath,
     );
 
@@ -54,8 +59,8 @@ function getModelConflicts(
       conflicts.push({
         conflicts: mappingsConflict,
         modelType: modelType,
-        newModel: _.get(additional, modelIdPath),
-        sourceModel: _.get(model, modelIdPath),
+        newModel: get(additional, modelIdPath),
+        sourceModel: get(model, modelIdPath),
       });
     }
   }
@@ -135,13 +140,13 @@ export function getMeasureConflicts(
   );
 }
 
-const OBJECT_TYPES = ["object", "nested"];
+const OBJECT_TYPES = new Set(["object", "nested"]);
 
 /**
  * Type of a field mappings, "object" for an object without explicit type
  */
 function getMappingType(mapping: any): string | undefined {
-  if (!_.isPlainObject(mapping)) {
+  if (!isPlainObject(mapping)) {
     return undefined;
   }
 
@@ -178,8 +183,8 @@ export function findMappingsConflicts(
     const path = basePath ? `${basePath}.${name}` : name;
     const currentType = getMappingType(currentMapping);
     const newType = getMappingType(newMapping);
-    const isCurrentObject = OBJECT_TYPES.includes(currentType);
-    const isNewObject = OBJECT_TYPES.includes(newType);
+    const isCurrentObject = OBJECT_TYPES.has(currentType);
+    const isNewObject = OBJECT_TYPES.has(newType);
 
     if (isCurrentObject !== isNewObject) {
       conflicts.push({ currentType, newType, path });
@@ -224,7 +229,7 @@ export function findConflicts(
     return [];
   }
 
-  if (_.isEqual(sourceObject, objectToCompare)) {
+  if (isEqual(sourceObject, objectToCompare)) {
     return [];
   }
 
@@ -232,23 +237,23 @@ export function findConflicts(
 
   function compareObjects(source: any, toCompare: any, path = "") {
     //Loop over the source object properties of distinct depth level
-    _.forOwn(source, (value, key) => {
+    forOwn(source, (value, key) => {
       //Construct full path from the previous path and the current key
       const fullPath = path ? `${path}.${key}` : key;
 
       //Check the object to compare key availibility, if there's nothing return to continue on the next property
-      if (!_.has(toCompare, key)) {
+      if (!has(toCompare, key)) {
         return;
       }
 
       //If the property to compare is an object, recursively call the method to advance on the next depth level
-      if (_.isObject(value) && _.isObject(toCompare[key])) {
+      if (isObject(value) && isObject(toCompare[key])) {
         compareObjects(value, toCompare[key], fullPath);
         return;
       }
 
       //If the property to compare is not an object and is not equal to the source value, add the current/new value with it's corresponding full path
-      if (!_.isEqual(value, toCompare[key])) {
+      if (!isEqual(value, toCompare[key])) {
         conflicts.push({
           currentType: source[key],
           newType: toCompare[key],
