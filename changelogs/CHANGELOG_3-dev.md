@@ -1,3 +1,21 @@
+## 3.0.0-3-dev.24 (2026-10-28)
+
+* Merge pull request #498 from kuzzleio/feat/add-sonarqube ([471fc77](https://github.com/kuzzleio/kuzzle-device-manager/commit/471fc77)), closes [#498](https://github.com/kuzzleio/kuzzle-device-manager/issues/498)
+* Merge pull request #503 from kuzzleio/fix/devices-measures ([057153b](https://github.com/kuzzleio/kuzzle-device-manager/commit/057153b)), closes [#503](https://github.com/kuzzleio/kuzzle-device-manager/issues/503)
+* Merge pull request #504 from kuzzleio/fix/sonar-issues ([9d59245](https://github.com/kuzzleio/kuzzle-device-manager/commit/9d59245)), closes [#504](https://github.com/kuzzleio/kuzzle-device-manager/issues/504)
+* Merge pull request #504 from kuzzleio/fix/sonar-issues ([68157d8](https://github.com/kuzzleio/kuzzle-device-manager/commit/68157d8)), closes [#504](https://github.com/kuzzleio/kuzzle-device-manager/issues/504)
+* Merge pull request #506 from kuzzleio/fix/sonar-issues ([34d6d75](https://github.com/kuzzleio/kuzzle-device-manager/commit/34d6d75)), closes [#506](https://github.com/kuzzleio/kuzzle-device-manager/issues/506)
+* fix(assets): check reference is not empty before creating ([dc082dd](https://github.com/kuzzleio/kuzzle-device-manager/commit/dc082dd))
+* fix(assetService): avoid await in loop ([f4d8635](https://github.com/kuzzleio/kuzzle-device-manager/commit/f4d8635))
+* fix(devices): fix validation and rollback on device creation ([3297ad4](https://github.com/kuzzleio/kuzzle-device-manager/commit/3297ad4))
+* fix(DeviceService): fix lint error ([1203903](https://github.com/kuzzleio/kuzzle-device-manager/commit/1203903))
+* fix(exporter): prevent injections and avoid sort by _id ([8e49560](https://github.com/kuzzleio/kuzzle-device-manager/commit/8e49560))
+* fix(group): fix group subtree logic (#502) ([dba34ae](https://github.com/kuzzleio/kuzzle-device-manager/commit/dba34ae)), closes [#502](https://github.com/kuzzleio/kuzzle-device-manager/issues/502)
+* fix(sonar): fix sonar qube issues ([dc2758e](https://github.com/kuzzleio/kuzzle-device-manager/commit/dc2758e))
+* chore(tests): add some tests ([f1f84ad](https://github.com/kuzzleio/kuzzle-device-manager/commit/f1f84ad))
+* ci: client-id au lieu de app-id (déprécié) (#501) ([f014dc0](https://github.com/kuzzleio/kuzzle-device-manager/commit/f014dc0)), closes [#501](https://github.com/kuzzleio/kuzzle-device-manager/issues/501)
+* feat(sonar): add sonarqube to the ci ([470d790](https://github.com/kuzzleio/kuzzle-device-manager/commit/470d790))
+
 ## 3.0.0-3-dev.23 (2026-10-15)
 
 * fix(api): keep the tenant as the request index during an action (#497) ([9811cd4](https://github.com/kuzzleio/kuzzle-device-manager/commit/9811cd4)), closes [#497](https://github.com/kuzzleio/kuzzle-device-manager/issues/497) [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490) [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490) [#490](https://github.com/kuzzleio/kuzzle-device-manager/issues/490)
