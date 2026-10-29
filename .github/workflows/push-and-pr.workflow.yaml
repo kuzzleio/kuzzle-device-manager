@@ -88,7 +88,7 @@ jobs:
   release-device-manager:
     name: Release package
     runs-on: ubuntu-24.04
-    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/2-stable' || github.ref == 'refs/heads/2-beta' || github.ref == 'refs/heads/3-dev' || github.ref == 'refs/heads/2-dev') }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/2-stable' || github.ref == 'refs/heads/2-beta' || github.ref == 'refs/heads/3-beta' || github.ref == 'refs/heads/3-dev' || github.ref == 'refs/heads/2-dev') }}
     needs: [functional-tests, sonarqube]
     permissions:
       contents: write
