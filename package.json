@@ -13,14 +13,13 @@
   ],
   "scripts": {},
   "license": "Apache-2.0",
-  "dependencies": {},
   "devDependencies": {
     "@commitlint/cli": "19.6.1",
     "@commitlint/config-conventional": "19.6.0",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/git": "10.0.1",
     "cz-conventional-changelog": "3.3.0",
-    "semantic-release-config-kuzzle": "1.5.0",
+    "semantic-release-config-kuzzle": "1.8.0",
     "semantic-release-slack-bot": "4.0.2"
   }
 }
