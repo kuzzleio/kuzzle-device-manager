@@ -1,3 +1,9 @@
+## [2.12.1-dev.1](https://github.com/kuzzleio/kuzzle-device-manager/compare/v2.12.0...v2.12.1-dev.1) (2026-11-03)
+
+### Bug Fixes
+
+* **release:** publish stable releases under the latest dist-tag ([f52e3e0](https://github.com/kuzzleio/kuzzle-device-manager/commit/f52e3e0c48d69baef85dd3602816a6a8ce0caa86))
+
 ## 2.12.0-dev.3 (2026-06-29)
 
 * fix: merge ok ([a462d1b](https://github.com/kuzzleio/kuzzle-device-manager/commit/a462d1b))
