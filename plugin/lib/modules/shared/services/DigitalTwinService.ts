@@ -160,173 +160,186 @@ export class DigitalTwinService extends BaseService {
     asset: KDocument<AssetContent>;
     device: KDocument<DeviceContent>;
   }> {
-    return lock(`device:${deviceId}`, async () => {
-      const deviceProvisioning = await this.getDeviceProvisioning(deviceId);
-      const engine = await this.getEngine(index);
+    // ? The asset is read and written under its lock: an update of its other fields (e.g. the
+    // ? action links of a platform built on this plugin) must not land in between
+    return lock(`device:${deviceId}`, async () =>
+      lock(`asset:${index}:${assetId}`, async () => {
+        const deviceProvisioning = await this.getDeviceProvisioning(deviceId);
+        const engine = await this.getEngine(index);
 
-      this.checkDeviceAttachedToEngine(deviceProvisioning);
-      if (deviceProvisioning._source.index !== index) {
-        throw new BadRequestError(
-          `Device "${deviceProvisioning._id}" is not attached to the specified engine.`,
-        );
-      }
-      const device = await this.sdk.document.get<DeviceContent>(
-        index,
-        InternalCollection.DEVICES,
-        deviceId,
-      );
-
-      const asset = await this.sdk.document.get<AssetContent>(
-        index,
-        InternalCollection.ASSETS,
-        assetId,
-      );
-
-      const [assetModel, deviceModel] = await Promise.all([
-        this.getAssetModel(engine.group, asset._source.model, index),
-        this.getDeviceModel(deviceProvisioning._source.model),
-      ]);
-
-      const updatedMeasureSlots: MeasureSlot[] = [];
-      for (const measure of measureSlots) {
-        const isMeasureDeclared = deviceModel.device.measures.some(
-          (deviceMeasure) => deviceMeasure.name === measure.device,
-        );
-        if (!isMeasureDeclared && !implicitMeasuresLinking) {
+        this.checkDeviceAttachedToEngine(deviceProvisioning);
+        if (deviceProvisioning._source.index !== index) {
           throw new BadRequestError(
-            `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`,
+            `Device "${deviceProvisioning._id}" is not attached to the specified engine.`,
           );
         }
-        updatedMeasureSlots.push({
-          asset: measure.asset,
-          device: measure.device,
-        });
-      }
+        const device = await this.sdk.document.get<DeviceContent>(
+          index,
+          InternalCollection.DEVICES,
+          deviceId,
+        );
 
-      this.checkAssetAlreadyProvidedMeasures(
-        asset,
-        deviceId,
-        updatedMeasureSlots,
-      );
-      this.checkDeviceAlreadyProvidingMeasures(
-        device,
-        assetId,
-        updatedMeasureSlots,
-      );
+        const asset = await this.sdk.document.get<AssetContent>(
+          index,
+          InternalCollection.ASSETS,
+          assetId,
+        );
 
-      if (implicitMeasuresLinking) {
-        this.addAvailableLinkableMeasures(
+        const [assetModel, deviceModel] = await Promise.all([
+          this.getAssetModel(engine.group, asset._source.model, index),
+          this.getDeviceModel(deviceProvisioning._source.model),
+        ]);
+
+        const updatedMeasureSlots: MeasureSlot[] = [];
+        for (const measure of measureSlots) {
+          const isMeasureDeclared = deviceModel.device.measures.some(
+            (deviceMeasure) => deviceMeasure.name === measure.device,
+          );
+          if (!isMeasureDeclared && !implicitMeasuresLinking) {
+            throw new BadRequestError(
+              `Measure "${measure.asset}" is not declared in the device model "${measure.device}".`,
+            );
+          }
+          updatedMeasureSlots.push({
+            asset: measure.asset,
+            device: measure.device,
+          });
+        }
+
+        this.checkAssetAlreadyProvidedMeasures(
           asset,
-          device,
-          assetModel,
-          deviceModel,
+          deviceId,
           updatedMeasureSlots,
         );
-      }
-      if (updatedMeasureSlots.length === 0) {
-        if (
-          !device._source.linkedMeasures.some(
-            (link) => link.assetId === asset._id,
-          )
-        ) {
-          throw new BadRequestError(
-            `No free compatible measure slot available to link device "${deviceId}" to asset "${assetId}".`,
+        this.checkDeviceAlreadyProvidingMeasures(
+          device,
+          assetId,
+          updatedMeasureSlots,
+        );
+
+        if (implicitMeasuresLinking) {
+          this.addAvailableLinkableMeasures(
+            asset,
+            device,
+            assetModel,
+            deviceModel,
+            updatedMeasureSlots,
           );
         }
-      }
-      const previousDeviceLink = device._source.linkedMeasures.find(
-        (link) => link.assetId === asset._id,
-      );
-      if (previousDeviceLink) {
-        previousDeviceLink.measureSlots = [
-          ...updatedMeasureSlots,
-          ...previousDeviceLink.measureSlots.filter(
-            (measure) =>
-              !updatedMeasureSlots.some((m) => m.device === measure.device),
-          ),
-        ];
-      } else {
-        device._source.linkedMeasures.push({
-          assetId: asset._id,
-          measureSlots: updatedMeasureSlots,
-        });
-      }
-      const previousAssetLink = asset._source.linkedMeasures.find(
-        (link) => link.deviceId === device._id,
-      );
-      if (previousAssetLink) {
-        previousAssetLink.measureSlots = [
-          ...updatedMeasureSlots,
-          ...previousAssetLink.measureSlots.filter(
-            (measure) =>
-              !updatedMeasureSlots.some((m) => m.asset === measure.asset),
-          ),
-        ];
-      } else {
-        asset._source.linkedMeasures.push({
-          deviceId,
-          measureSlots: updatedMeasureSlots,
-        });
-      }
+        if (updatedMeasureSlots.length === 0) {
+          if (
+            !device._source.linkedMeasures.some(
+              (link) => link.assetId === asset._id,
+            )
+          ) {
+            throw new BadRequestError(
+              `No free compatible measure slot available to link device "${deviceId}" to asset "${assetId}".`,
+            );
+          }
+        }
+        const previousDeviceLink = device._source.linkedMeasures.find(
+          (link) => link.assetId === asset._id,
+        );
+        if (previousDeviceLink) {
+          previousDeviceLink.measureSlots = [
+            ...updatedMeasureSlots,
+            ...previousDeviceLink.measureSlots.filter(
+              (measure) =>
+                !updatedMeasureSlots.some((m) => m.device === measure.device),
+            ),
+          ];
+        } else {
+          device._source.linkedMeasures.push({
+            assetId: asset._id,
+            measureSlots: updatedMeasureSlots,
+          });
+        }
+        const previousAssetLink = asset._source.linkedMeasures.find(
+          (link) => link.deviceId === device._id,
+        );
+        if (previousAssetLink) {
+          previousAssetLink.measureSlots = [
+            ...updatedMeasureSlots,
+            ...previousAssetLink.measureSlots.filter(
+              (measure) =>
+                !updatedMeasureSlots.some((m) => m.asset === measure.asset),
+            ),
+          ];
+        } else {
+          asset._source.linkedMeasures.push({
+            deviceId,
+            measureSlots: updatedMeasureSlots,
+          });
+        }
 
-      const [updatedDevice, updatedAsset] = await Promise.all([
-        this.updateDocument<DeviceContent>(request, device, {
-          collection: InternalCollection.DEVICES,
-          index: deviceProvisioning._source.index,
-        }),
-
-        lock(`asset:${index}:${asset._id}`, async () =>
+        // ? Only the measure links: the other fields are not this method's to write back
+        const [updatedDevice, updatedAsset] = await Promise.all([
+          this.updateDocument<DeviceContent>(
+            request,
+            {
+              _id: device._id,
+              _source: { linkedMeasures: device._source.linkedMeasures },
+            },
+            {
+              collection: InternalCollection.DEVICES,
+              index: deviceProvisioning._source.index,
+            },
+            { source: true },
+          ),
           this.updateDocument<AssetContent>(
             request,
-            asset,
+            {
+              _id: asset._id,
+              _source: { linkedMeasures: asset._source.linkedMeasures },
+            },
             {
               collection: InternalCollection.ASSETS,
               index: deviceProvisioning._source.index,
             },
             { source: true },
           ),
-        ),
-      ]);
-
-      const event: AssetHistoryEventLink = {
-        link: {
-          deviceId: deviceProvisioning._id,
-        },
-        name: "link",
-      };
-      await ask<AskAssetHistoryAdd<AssetHistoryEventLink>>(
-        "ask:device-manager:asset:history:add",
-        {
-          index,
-          histories: [
-            {
-              asset: updatedAsset._source,
-              event,
-              id: updatedAsset._id,
-              timestamp: Date.now(),
-            },
-          ],
-        },
-      );
-
-      if (request.getRefresh() === "wait_for") {
-        await Promise.all([
-          this.sdk.collection.refresh(
-            this.config.platformIndex,
-            InternalCollection.DEVICES,
-          ),
-          this.sdk.collection.refresh(
-            deviceProvisioning._source.index,
-            InternalCollection.DEVICES,
-          ),
-          this.sdk.collection.refresh(
-            deviceProvisioning._source.index,
-            InternalCollection.ASSETS,
-          ),
         ]);
-      }
-      return { asset: updatedAsset, device: updatedDevice };
-    });
+
+        const event: AssetHistoryEventLink = {
+          link: {
+            deviceId: deviceProvisioning._id,
+          },
+          name: "link",
+        };
+        await ask<AskAssetHistoryAdd<AssetHistoryEventLink>>(
+          "ask:device-manager:asset:history:add",
+          {
+            index,
+            histories: [
+              {
+                asset: updatedAsset._source,
+                event,
+                id: updatedAsset._id,
+                timestamp: Date.now(),
+              },
+            ],
+          },
+        );
+
+        if (request.getRefresh() === "wait_for") {
+          await Promise.all([
+            this.sdk.collection.refresh(
+              this.config.platformIndex,
+              InternalCollection.DEVICES,
+            ),
+            this.sdk.collection.refresh(
+              deviceProvisioning._source.index,
+              InternalCollection.DEVICES,
+            ),
+            this.sdk.collection.refresh(
+              deviceProvisioning._source.index,
+              InternalCollection.ASSETS,
+            ),
+          ]);
+        }
+        return { asset: updatedAsset, device: updatedDevice };
+      }),
+    );
   }
   /**
    * Unlink a device of an asset with lock
