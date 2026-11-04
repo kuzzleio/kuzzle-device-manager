@@ -1,3 +1,10 @@
+## 3.0.0-3-beta.2 (2026-11-04)
+
+* Merge branch '3-dev' into 3-beta ([14dbdfa](https://github.com/kuzzleio/kuzzle-device-manager/commit/14dbdfa))
+* Merge pull request #510 kuzzleio/fix/link-measures-concurrent-writes ([6fafef9](https://github.com/kuzzleio/kuzzle-device-manager/commit/6fafef9)), closes [#510](https://github.com/kuzzleio/kuzzle-device-manager/issues/510)
+* chore(release): 3.0.0-3-dev.25 [skip ci] ([f3cf578](https://github.com/kuzzleio/kuzzle-device-manager/commit/f3cf578))
+* fix(devices): keep the other fields of the documents a measure link writes ([f2842cb](https://github.com/kuzzleio/kuzzle-device-manager/commit/f2842cb))
+
 ## 3.0.0-3-beta.1 (2026-10-29)
 
 * feat!: remove deprecations support (#409) ([3937249](https://github.com/kuzzleio/kuzzle-device-manager/commit/3937249)), closes [#409](https://github.com/kuzzleio/kuzzle-device-manager/issues/409)
