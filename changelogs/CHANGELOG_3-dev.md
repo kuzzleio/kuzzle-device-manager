@@ -1,3 +1,10 @@
+## 3.0.0-3-dev.25 (2026-11-04)
+
+* Merge pull request #507 from kuzzleio/feat/ci-add-3-beta-config ([1945735](https://github.com/kuzzleio/kuzzle-device-manager/commit/1945735)), closes [#507](https://github.com/kuzzleio/kuzzle-device-manager/issues/507)
+* Merge pull request #510 kuzzleio/fix/link-measures-concurrent-writes ([6fafef9](https://github.com/kuzzleio/kuzzle-device-manager/commit/6fafef9)), closes [#510](https://github.com/kuzzleio/kuzzle-device-manager/issues/510)
+* fix(devices): keep the other fields of the documents a measure link writes ([f2842cb](https://github.com/kuzzleio/kuzzle-device-manager/commit/f2842cb))
+* ci: add 3-beta release branch ([6bc5ab7](https://github.com/kuzzleio/kuzzle-device-manager/commit/6bc5ab7))
+
 ## 3.0.0-3-dev.24 (2026-10-28)
 
 * Merge pull request #498 from kuzzleio/feat/add-sonarqube ([471fc77](https://github.com/kuzzleio/kuzzle-device-manager/commit/471fc77)), closes [#498](https://github.com/kuzzleio/kuzzle-device-manager/issues/498)
