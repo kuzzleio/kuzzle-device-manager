@@ -1,3 +1,10 @@
+## 3.0.0-3-beta.3 (2026-11-10)
+
+* Merge branch '3-dev' into 3-beta ([63f8b8e](https://github.com/kuzzleio/kuzzle-device-manager/commit/63f8b8e))
+* Merge pull request #511 from kuzzleio/fix/m-ingest-measure-type ([4dc33d6](https://github.com/kuzzleio/kuzzle-device-manager/commit/4dc33d6)), closes [#511](https://github.com/kuzzleio/kuzzle-device-manager/issues/511)
+* chore(release): 3.0.0-3-dev.26 [skip ci] ([c68abd0](https://github.com/kuzzleio/kuzzle-device-manager/commit/c68abd0))
+* fix(assets): take the measure type from the slot in mIngestMeasure ([1856b5e](https://github.com/kuzzleio/kuzzle-device-manager/commit/1856b5e))
+
 ## 3.0.0-3-beta.2 (2026-11-04)
 
 * Merge branch '3-dev' into 3-beta ([14dbdfa](https://github.com/kuzzleio/kuzzle-device-manager/commit/14dbdfa))
