@@ -1,3 +1,8 @@
+## 3.0.0-3-dev.26 (2026-11-10)
+
+* Merge pull request #511 from kuzzleio/fix/m-ingest-measure-type ([4dc33d6](https://github.com/kuzzleio/kuzzle-device-manager/commit/4dc33d6)), closes [#511](https://github.com/kuzzleio/kuzzle-device-manager/issues/511)
+* fix(assets): take the measure type from the slot in mIngestMeasure ([1856b5e](https://github.com/kuzzleio/kuzzle-device-manager/commit/1856b5e))
+
 ## 3.0.0-3-dev.25 (2026-11-04)
 
 * Merge pull request #507 from kuzzleio/feat/ci-add-3-beta-config ([1945735](https://github.com/kuzzleio/kuzzle-device-manager/commit/1945735)), closes [#507](https://github.com/kuzzleio/kuzzle-device-manager/issues/507)
