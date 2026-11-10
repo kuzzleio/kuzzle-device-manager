@@ -76,6 +76,8 @@ describe("AssetsController:mMeasureIngest", () => {
           _id: "MagicHouse-debug1",
           measureName: "magiculeExt",
         },
+        // ? The type comes from the asset measure slot, as with ingestMeasure
+        type: "magicule",
         values: {
           magicule: 18,
         },
@@ -131,6 +133,62 @@ describe("AssetsController:mMeasureIngest", () => {
           query: {
             equals: {
               "origin._id": "testApi2",
+            },
+          },
+        },
+        { lang: "koncorde" },
+      );
+
+      expect(total).toBe(0);
+    });
+
+    it("should not ingest measures on an unknown measure slot", async () => {
+      const indexId = "engine-ayse";
+
+      const query = sdk.query<
+        ApiAssetmMeasureIngestRequest,
+        ApiAssetmMeasureIngestResult
+      >({
+        controller: "device-manager/assets",
+        action: "mIngestMeasure",
+        assetId: "MagicHouse-debug1",
+        index: indexId,
+        body: {
+          dataSource: {
+            id: "testApiUnknownSlot",
+          },
+          measurements: [
+            {
+              slotName: "magiculeExt",
+              measuredAt: 170000000,
+              values: {
+                magicule: 18,
+              },
+            },
+            {
+              slotName: "notASlot",
+              measuredAt: 170000001,
+              values: {
+                magicule: 25,
+              },
+            },
+          ],
+        },
+      });
+
+      await expect(query).rejects.toThrow(
+        "Slot name notASlot does not exist on Asset MagicHouse-debug1",
+      );
+
+      await sdk.collection.refresh(indexId, InternalCollection.MEASURES);
+
+      const total = await sdk.document.count(
+        indexId,
+        InternalCollection.MEASURES,
+        {
+          query: {
+            equals: {
+              "origin._id": "testApiUnknownSlot",
             },
           },
         },

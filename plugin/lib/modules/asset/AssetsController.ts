@@ -494,6 +494,20 @@ export class AssetsController {
     measureName: string,
     request: KuzzleRequest,
   ) {
+    const measureSlots = await this.getAssetMeasureSlots(
+      indexId,
+      assetId,
+      request,
+    );
+
+    return measureSlots.find((elt) => elt.name === measureName)?.type ?? null;
+  }
+
+  private async getAssetMeasureSlots(
+    indexId: string,
+    assetId: string,
+    request: KuzzleRequest,
+  ) {
     let asset: AssetContent;
     try {
       // ? Goes through the generic:document events, so the pipes hiding the
@@ -510,9 +524,7 @@ export class AssetsController {
         `Asset "${assetId}" does not exists on index "${indexId}"`,
       );
     }
-    return (
-      asset.measureSlots.find((elt) => elt.name === measureName)?.type ?? null
-    );
+    return asset.measureSlots;
   }
 
   async mIngestMeasure(request: KuzzleRequest) {
@@ -528,31 +540,37 @@ export class AssetsController {
       );
     }
     const engine = await this.assetService.getEngine(indexId);
+    const measureSlots = await this.getAssetMeasureSlots(
+      indexId,
+      assetId,
+      request,
+    );
+
+    // ? As with ingestMeasure, the measure type is the one of the asset slot
     const measurements = rawMeasurements.map((elt) => {
+      const type = measureSlots.find(
+        (slot) => slot.name === elt.slotName,
+      )?.type;
+
+      if (!type) {
+        throw new BadRequestError(
+          `Slot name ${elt.slotName} does not exist on Asset ${assetId}`,
+        );
+      }
+
       return {
         measureName: elt.slotName,
         measuredAt: elt.measuredAt,
-        type: elt.type,
+        type,
         values: elt.values,
       };
     }) as DecodedMeasurement<JSONObject>[];
 
     const target = toApiTarget(indexId, assetId, [engine.group]);
 
-    const types = await Promise.all(
-      measurements.map((measure) =>
-        this.getTypeFromMeasureSlot(
-          indexId,
-          assetId,
-          measure.measureName,
-          request,
-        ),
-      ),
-    );
-
     const errors: MeasureValidationChunks[] = [];
-    for (const [i, measure] of measurements.entries()) {
-      const validator = getValidator(types[i]);
+    for (const measure of measurements) {
+      const validator = getValidator(measure.type);
 
       if (validator) {
         const valid = validator(measure.values);
